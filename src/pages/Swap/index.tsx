@@ -39,14 +39,22 @@ import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled, { useTheme } from 'styled-components/macro'
 import invariant from 'tiny-invariant'
-import { currencyAmountToPreciseFloat, formatTransactionAmount } from 'utils/formatNumbers'
+import { currencyAmountToPreciseFloat, formatDollarAmount, formatTransactionAmount } from 'utils/formatNumbers'
 
 import AddressInputPanel from '../../components/AddressInputPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from '../../components/Button'
+<<<<<<< Updated upstream
 import { GrayCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
 import SwapCurrencyInputPanel from '../../components/CurrencyInputPanel/SwapCurrencyInputPanel'
 import { AutoRow } from '../../components/Row'
+=======
+import { BlueCard, GrayCard, LightCard } from '../../components/Card'
+import { AutoColumn, Column } from '../../components/Column'
+import SwapCurrencyInputPanel from '../../components/CurrencyInputPanel/SwapCurrencyInputPanel'
+import LeveragedOutputPanel from '../../components/CurrencyInputPanel/leveragedOutputPanel'
+import { AutoRow, RowBetween, RowFixed } from '../../components/Row'
+>>>>>>> Stashed changes
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
 import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../../components/swap/styleds'
@@ -57,14 +65,81 @@ import { useCurrency, useDefaultActiveTokens } from '../../hooks/Tokens'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import useWrapCallback, { WrapErrorText, WrapType } from '../../hooks/useWrapCallback'
 import { Field } from '../../state/swap/actions'
+<<<<<<< Updated upstream
 import { useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapActionHandlers } from '../../state/swap/hooks'
 import swapReducer, { initialState as initialSwapState } from '../../state/swap/reducer'
 import { useExpertModeManager } from '../../state/user/hooks'
+=======
+import {
+  useDefaultsFromURLSearch,
+  useDerivedLeverageCreationInfo,
+  useDerivedSwapInfo,
+  useBestPoolAddress,
+  useBestPool,
+  useSwapActionHandlers,
+  useSwapState,
+} from '../../state/swap/hooks'
+import { useAddUserToken, useExpertModeManager } from '../../state/user/hooks'
+>>>>>>> Stashed changes
 import { LinkStyledButton, ThemedText } from '../../theme'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from '../../utils/prices'
 import { supportedChainId } from '../../utils/supportedChainId'
+<<<<<<< Updated upstream
+=======
+import Slider from "../../components/Slider"
+import { ResponsiveHeaderText, SmallMaxButton } from '../RemoveLiquidity/styled'
+import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
+import LeveragePositionsList from 'components/LeveragedPositionsList'
+import { LeveragePositionDetails } from 'types/leveragePosition'
+import { BigNumber } from '@ethersproject/bignumber'
+import { AlertTriangle, BookOpen, ChevronDown, ChevronsRight, Inbox, Layers } from 'react-feather'
+import { Chain, TokenPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
+import ChartSection, { PairChartSection } from 'components/Tokens/TokenDetails/ChartSection'
+import CandleChart from 'components/CandleChart/index'
+import TokenDetailsSkeleton, {
+  Hr,
+  LeftPanel,
+  RightPanel,
+  TokenDetailsLayout,
+  TokenInfoContainer,
+  TokenNameCell,
+} from 'components/Tokens/TokenDetails/Skeleton'
+import DoubleCurrencyLogo from 'components/DoubleLogo'
+import { useTokenPriceQuery, useTokenQuery } from 'graphql/data/__generated__/types-and-hooks'
+import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
+import { pageTimePeriodAtom } from 'pages/TokenDetails'
+import { useAtom } from 'jotai'
+import { CHAIN_ID_TO_BACKEND_NAME, toHistoryDuration } from 'graphql/data/util'
+import { Checkbox } from 'nft/components/layout/Checkbox'
+import { feth, fusdc, GlOBAL_STORAGE_ADDRESS, PS_ROUTER, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { ethers } from 'ethers'
+import GlobalStorageData from "../../perpspotContracts/GlobalStorage.json"
+import LeverageManagerData from "../../perpspotContracts/LeverageManager.json"
+import { useLeverageManagerAddress } from 'hooks/useGetLeverageManager'
+import { usePoolAddressCache } from 'components/WalletDropdown/MiniPortfolio/Pools/cache'
+import { computePoolAddress , usePool} from 'hooks/usePools'
+import { useTokenAllowance } from 'hooks/useTokenAllowance'
+import { ApprovalState, useApproval } from 'lib/hooks/useApproval'
+import { useApproveCallback, useFaucetCallback} from 'hooks/useApproveCallback'
+import { BigNumber as BN } from "bignumber.js";
+import { useLeveragePositions } from 'hooks/useV3Positions'
+import { FeeAmount } from '@uniswap/v3-sdk'
+import {Input as NumericalInput} from 'components/NumericalInput'
+import useDebounce from 'hooks/useDebounce'
+import { usePoolPriceData } from 'graphql/limitlessGraph/PoolPriceData'
+import { ONE_HOUR_SECONDS, TimeWindow } from './intervals'
+import dayjs from 'dayjs'
+
+
+const StyledNumericalInput = styled(NumericalInput)`
+  width: 100px;
+  text-align:left;
+  padding: 10px;
+`
+
+>>>>>>> Stashed changes
 const ArrowContainer = styled.div`
   display: inline-block;
   display: inline-flex;
@@ -122,7 +197,42 @@ const DetailsSwapSection = styled(SwapSection)`
   border-top-right-radius: 0;
 `
 
+<<<<<<< Updated upstream
 function getIsValidSwapQuote(
+=======
+const ErrorContainer = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: auto;
+  max-width: 300px;
+  min-height: 25vh;
+`
+
+
+
+
+
+const LeveragePositionsWrapper = styled.main`
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 4px;
+  margin-left: 20px;
+  margin-right:20px;
+  border-radius: 16px;
+  width:100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
+    0px 24px 32px rgba(0, 0, 0, 0.01);
+`
+export const MonoSpace = styled.span`
+  font-variant-numeric: tabular-nums;
+`
+
+export function getIsValidSwapQuote(
+>>>>>>> Stashed changes
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined,
   tradeState: TradeState,
   swapInputError?: ReactNode
@@ -143,6 +253,11 @@ function largerPercentValue(a?: Percent, b?: Percent) {
 
 const TRADE_STRING = 'SwapRouter'
 
+<<<<<<< Updated upstream
+=======
+const TRADE_STRING = 'SwapRouter';
+let nonce = 0 
+>>>>>>> Stashed changes
 export default function Swap({ className }: { className?: string }) {
   const navigate = useNavigate()
   const { account, chainId } = useWeb3React()
@@ -203,7 +318,16 @@ export default function Swap({ className }: { className?: string }) {
     parsedAmount,
     currencies,
     inputError: swapInputError,
+<<<<<<< Updated upstream
   } = useDerivedSwapInfo(state)
+=======
+  } = useDerivedSwapInfo()
+
+  // console.log("tradeState", tradeState)
+  // console.log("trade", trade)
+  // console.log("allowedSlippage", allowedSlippage)
+  // console.log("currenciesswap", currencies)
+>>>>>>> Stashed changes
 
   const {
     wrapType,
@@ -307,6 +431,43 @@ export default function Swap({ className }: { className?: string }) {
         : undefined),
     isSupportedChain(chainId) ? UNIVERSAL_ROUTER_ADDRESS(chainId) : undefined
   )
+<<<<<<< Updated upstream
+=======
+
+  let poolAddress = useBestPoolAddress(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
+  // const [leverageManagerAddress, setLeverageManagerAddress] = useState<string>()
+
+  useEffect(() => {
+    // declare the data fetching function
+    const fetchData = async () => {
+      if (poolAddress && account && provider) {
+        try {
+          let gs = new ethers.Contract(GlOBAL_STORAGE_ADDRESS, GlobalStorageData.abi, provider.getSigner(account).connectUnchecked())
+          let result = await gs.poolData(poolAddress)
+          onLeverageManagerAddress(result.leverageManager)
+        } catch (e) {
+          console.log("LM address error:", e)
+        }
+      }
+    }
+
+    // call the function
+    fetchData()
+      // make sure to catch any error
+      .catch(console.error);
+  }, [poolAddress, account, trade, currencies, account, provider])
+  // console.log("poolAddress", poolAddress, leverageManagerAddress)
+
+  // const { tokenAllowance: leverageManagerAllowanceAmount, isSyncing: boolean } = useTokenAllowance(
+  //   (parsedAmounts[Field.INPUT]?.currency.isToken ? (parsedAmounts[Field.INPUT]?.currency as Token) : undefined)
+  //   , account, leverageManagerAddress ?? undefined)
+
+  // console.log("leverageManagerAllowanceAmount", leverageManagerAllowanceAmount)
+
+
+  // console.log("leverageManagerAddress", leverageManagerAddress)
+
+>>>>>>> Stashed changes
   const isApprovalLoading = allowance.state === AllowanceState.REQUIRED && allowance.isApprovalLoading
   const [isAllowancePending, setIsAllowancePending] = useState(false)
   const updateAllowance = useCallback(async () => {
@@ -476,6 +637,127 @@ export default function Swap({ className }: { className?: string }) {
     !showWrap && userHasSpecifiedInputOutput && (trade || routeIsLoading || routeIsSyncing)
   )
 
+<<<<<<< Updated upstream
+=======
+
+  const [inputCurrency, outputCurrency] = [currencies[Field.INPUT] ? currencies[Field.INPUT] : undefined, currencies[Field.OUTPUT] ? currencies[Field.OUTPUT] : undefined]
+  const [timePeriod, setTimePeriod] = useAtom(pageTimePeriodAtom)
+
+  const [inputAddress, outputAddress] = useMemo(
+    () => {
+      let input
+      let out
+      if (inputCurrency && outputCurrency) {
+        input = inputCurrency.isNative ? inputCurrency.wrapped.address : inputCurrency.address
+        out = outputCurrency.isNative ? outputCurrency.wrapped.address : outputCurrency.address
+      }
+      return [input, out]
+    }
+    , [inputCurrency, outputCurrency])
+
+  const duration = useMemo(() => {
+    return toHistoryDuration(timePeriod)
+  }, [timePeriod])
+  const chain = chainId ? CHAIN_ID_TO_BACKEND_NAME[chainId] : Chain.Ethereum
+
+  const { data: token0PriceQuery } = useTokenPriceQuery({
+    variables: {
+      address: inputAddress,
+      chain,
+      duration,
+    },
+    errorPolicy: 'all',
+  })
+
+  // console.log("poolAddress: ", poolAddress)
+
+  const { data: token1PriceQuery } = useTokenPriceQuery({
+    variables: {
+      address: outputAddress,
+      chain,
+      duration,
+    },
+    errorPolicy: 'all',
+  })
+
+  const leveragePositions = useLeveragePositions(leverageManagerAddress ?? undefined, account, currencies)
+  
+  const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(leverageFactor ?? "1", onLeverageFactorChange);
+  
+  // const [poolState, pool] = usePool(currencies.INPUT ?? undefined, currencies.OUTPUT?? undefined, FeeAmount.LOW)
+  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT?? undefined)
+  // // enter token0 price in token1
+  // const enterPrice = currency0?.wrapped && currency1?.wrapped 
+  // ? tickToPrice(currency0.wrapped, currency1.wrapped, Number(creationTick)) : undefined
+
+  // // token0 price.
+  const enoughAllowance = (!leverage && allowance.state === AllowanceState.REQUIRED) || (leverage && (leverageApprovalState === ApprovalState.NOT_APPROVED))
+  const currentPrice = pool?.token0 != currencies.INPUT? pool?.token0Price.toSignificant(3)
+      : (1/Number(pool?.token0Price.toSignificant(3))).toFixed(3)
+
+
+  // graph data
+  const [latestValue, setLatestValue] = useState<number | undefined>()
+  const [valueLabel, setValueLabel] = useState<string | undefined>()
+  const [timeWindow] = useState(TimeWindow.WEEK)
+  const priceData = usePoolPriceData(pool?.token0, pool?.token1, pool?.fee, ONE_HOUR_SECONDS, timeWindow)
+  console.log("priceData: ", priceData)
+  // const adjustedToCurrent = useMemo(() => {
+  //   if (priceData && tokenData && priceData.length > 0) {
+  //     const adjusted = Object.assign([], priceData)
+  //     adjusted.push({
+  //       time: currentTimestamp() / 1000,
+  //       open: priceData[priceData.length - 1].close,
+  //       close: tokenData?.priceUSD,
+  //       high: tokenData?.priceUSD,
+  //       low: priceData[priceData.length - 1].close,
+  //     })
+  //     return adjusted
+  //   } else {
+  //     return undefined
+  //   }
+  // }, [priceData, tokenData])
+
+  // close
+  // : 
+  // 16.0465835688061
+  // high
+  // : 
+  // 16.0465835688061
+  // low
+  // : 
+  // 16.0465835688061
+  // open
+  // : 
+  // 16.0465835688061
+  // time
+  // : 
+  // 1682377200
+  const fakePriceData = [
+    {
+      time: 1682377200,
+      open: 5.0465835688061,
+      close: 16.0465835688061,
+      high: 20.0465835688061,
+      low: 3.0465835688061,
+    },
+    {
+      time: 1682377350,
+      open: 13.0465835688061,
+      close: 16.0465835688061,
+      high: 12.0465835688061,
+      low: 20.0465835688061,
+    },
+    {
+      time: 1682377900,
+      open: 50.0465835688061,
+      close: 25.0465835688061,
+      high: 80.0465835688061,
+      low: 20.0465835688061,
+    },    
+  ]
+
+>>>>>>> Stashed changes
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
@@ -497,6 +779,7 @@ export default function Swap({ className }: { className?: string }) {
               width="100%"
             />
           ) : (
+<<<<<<< Updated upstream
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
               <SwapHeader allowedSlippage={allowedSlippage} />
               <ConfirmSwapModal
@@ -523,6 +806,364 @@ export default function Swap({ className }: { className?: string }) {
                       label={
                         independentField === Field.OUTPUT && !showWrap ? (
                           <Trans>From (at most)</Trans>
+=======
+            <AutoColumn>
+              <RowBetween align="flex-start">
+                <AutoRow marginRight="20px" marginLeft="20px" marginBottom="10px">
+                  <TokenInfoContainer data-testid="token-info-container">
+                    <TokenNameCell>
+                      {inputCurrency && outputCurrency && <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={18} margin />}
+                      {inputCurrency && outputCurrency && currentPrice
+                        ? `${(outputCurrency.symbol)}/${(inputCurrency.symbol) + " Price: "+ currentPrice.toString()}` 
+                        : <Trans>Pair not found</Trans>}
+                    </TokenNameCell>
+                  </TokenInfoContainer>
+                  <AutoRow>
+                  <AutoColumn>
+                    <RowFixed>
+                      <ThemedText.BodySecondary>
+                        <MonoSpace>
+                          {latestValue
+                            ? formatDollarAmount(latestValue, 2)
+                          : null
+                          }
+                        </MonoSpace>
+                      </ThemedText.BodySecondary>
+                    </RowFixed>
+                    <ThemedText.DeprecatedMain>
+                      {valueLabel ? (
+                        <MonoSpace>{valueLabel} (UTC)</MonoSpace>
+                      ) : (
+                        <MonoSpace>{dayjs.utc().format('MMM D, YYYY')}</MonoSpace>
+                      )}
+                    </ThemedText.DeprecatedMain>
+                  </AutoColumn>
+                  <CandleChart
+                        data={fakePriceData ?? []}
+                        setValue={setLatestValue}
+                        setLabel={setValueLabel}
+                        // color={"#2172E5"}
+                      />
+                  </AutoRow>
+                  {/* <PairChartSection token0PriceQuery={token0PriceQuery} token1PriceQuery={token1PriceQuery} token0symbol={inputCurrency?.symbol} token1symbol={outputCurrency?.symbol} onChangeTimePeriod={setTimePeriod} /> */}
+                </AutoRow>
+                <SwapWrapper chainId={chainId} className={className} id="swap-page">
+                  <SwapHeader allowedSlippage={allowedSlippage} />
+                  { leverage ? (
+                    <LeverageConfirmModal
+                    isOpen={showLeverageConfirm}
+                    trade={trade}
+                    originalTrade={tradeToConfirm}
+                    onAcceptChanges={handleAcceptChanges}
+                    attemptingTxn={attemptingTxn}
+                    txHash={txHash}
+                    recipient={recipient}
+                    allowedSlippage={allowedSlippage}
+                    onConfirm={handleLeverageCreation}
+                    swapErrorMessage={swapErrorMessage}
+                    onDismiss={handleConfirmDismiss}
+                    swapQuoteReceivedDate={swapQuoteReceivedDate}
+                    fiatValueInput={fiatValueTradeInput}
+                    fiatValueOutput={fiatValueTradeOutput}
+                    leverageFactor={leverageFactor ?? "1"}
+                    leverageTrade={leverageTrade}
+                    />
+                  ) : (
+                    <ConfirmSwapModal
+                    isOpen={showConfirm}
+                    trade={trade}
+                    originalTrade={tradeToConfirm}
+                    onAcceptChanges={handleAcceptChanges}
+                    attemptingTxn={attemptingTxn}
+                    txHash={txHash}
+                    recipient={recipient}
+                    allowedSlippage={allowedSlippage}
+                    onConfirm={handleSwap}
+                    swapErrorMessage={swapErrorMessage}
+                    onDismiss={handleConfirmDismiss}
+                    swapQuoteReceivedDate={swapQuoteReceivedDate}
+                    fiatValueInput={fiatValueTradeInput}
+                    fiatValueOutput={fiatValueTradeOutput}
+                  />
+                  )}
+
+                  <div style={{ display: 'relative' }}>
+                    <InputSection leverage={leverage}>
+                      <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
+                        <SwapCurrencyInputPanel
+                          label={
+                            independentField === Field.OUTPUT && !showWrap ? (
+                              <Trans>From (at most)</Trans>
+                            ) : (
+                              <Trans>From</Trans>
+                            )
+                          }
+                          value={formattedAmounts[Field.INPUT]}
+                          showMaxButton={showMaxButton}
+                          currency={currencies[Field.INPUT] ?? null}
+                          onUserInput={handleTypeInput}
+                          onMax={handleMaxInput}
+                          fiatValue={fiatValueInput}
+                          onCurrencySelect={handleInputSelect}
+                          otherCurrency={currencies[Field.OUTPUT]}
+                          showCommonBases={true}
+                          id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
+                          loading={independentField === Field.OUTPUT && routeIsSyncing}
+                          isInput={true}
+                        />
+                      </Trace>
+                    </InputSection>
+                    {leverage && <InputLeverageSection>
+                      <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
+                        <LeveragedOutputPanel
+                          label={
+                            independentField === Field.OUTPUT && !showWrap ? (
+                              <Trans>From (at most)</Trans>
+                            ) : (
+                              <Trans>From</Trans>
+                            )
+                          }
+                          value={ (Number(formattedAmounts[Field.INPUT])* Number(leverageFactor)).toFixed(3).toString()
+                          }
+                          showMaxButton={showMaxButton}
+                          currency={currencies[Field.INPUT] ?? null}
+                          onUserInput={handleTypeInput}
+                          onMax={handleMaxInput}
+                          fiatValue={fiatValueInput}
+                          onCurrencySelect={handleInputSelect}
+                          otherCurrency={currencies[Field.OUTPUT]}
+                          showCommonBases={true}
+                          id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
+                          loading={independentField === Field.OUTPUT && routeIsSyncing}
+                          noLeverageValue={formattedAmounts[Field.INPUT]}
+                          disabled={true}
+                        />
+                      </Trace>
+                    </InputLeverageSection>}
+                    <ArrowWrapper clickable={isSupportedChain(chainId)}>
+                      <TraceEvent
+                        events={[BrowserEvent.onClick]}
+                        name={SwapEventName.SWAP_TOKENS_REVERSED}
+                        element={InterfaceElementName.SWAP_TOKENS_REVERSE_ARROW_BUTTON}
+                      >
+                        <ArrowContainer
+                          onClick={() => {
+                            onSwitchTokens()
+                          }}
+                          color={theme.textPrimary}
+                        >
+                          <ArrowDown
+                            size="16"
+                            color={
+                              currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary
+                            }
+                          />
+                        </ArrowContainer>
+                      </TraceEvent>
+                    </ArrowWrapper>
+                  </div>
+                  <AutoColumn gap="md">
+                    <div>
+                      <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
+                        <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
+                          <SwapCurrencyInputPanel
+                            value={
+                              (leverageApprovalState === ApprovalState.NOT_APPROVED)? 
+                              "-"
+                              :
+                              !leverage ? formattedAmounts[Field.OUTPUT] : 
+                              leverageTrade?.expectedOutput ? 
+                                new BN(leverageTrade.expectedOutput).toString() 
+                                : leverageTrade?.quotedPremium!="0" ? 
+                                "-"
+                                : "searching liquidity"
+                            }
+                            onUserInput={handleTypeOutput}
+                            label={
+                              independentField === Field.INPUT && !showWrap ? (
+                                <Trans>To (at least)</Trans>
+                              ) : (
+                                <Trans>To</Trans>
+                              )
+                            }
+                            showMaxButton={false}
+                            hideBalance={false}
+                            fiatValue={fiatValueOutput}
+                            priceImpact={stablecoinPriceImpact}
+                            currency={currencies[Field.OUTPUT] ?? null}
+                            onCurrencySelect={handleOutputSelect}
+                            otherCurrency={currencies[Field.INPUT]}
+                            showCommonBases={true}
+                            id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
+                            loading={independentField === Field.INPUT && routeIsSyncing}
+                            isInput={false}
+                            isLevered={leverage}
+                            disabled={leverage}
+                          />
+                        </Trace>
+
+                        {recipient !== null && !showWrap ? (
+                          <>
+                            <AutoRow justify="space-between" style={{ padding: '0 1rem' }}>
+                              <ArrowWrapper clickable={false}>
+                                <ArrowDown size="16" color={theme.textSecondary} />
+                              </ArrowWrapper>
+                              <LinkStyledButton id="remove-recipient-button" onClick={() => onChangeRecipient(null)}>
+                                <Trans>- Remove recipient</Trans>
+                              </LinkStyledButton>
+                            </AutoRow>
+                            <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
+                          </>
+                        ) : null}
+                      </OutputSwapSection>
+                      <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)} >
+                        <LightCard>
+                          <AutoColumn gap="md">
+                            <RowBetween>
+                              <ThemedText.DeprecatedMain fontWeight={400}>
+                                <Trans>Leverage</Trans>
+                              </ThemedText.DeprecatedMain>
+                              <Checkbox hovered={false} checked={leverage} onClick={() => {
+                                onLeverageChange(!leverage)
+                              }}>
+                              </Checkbox>
+                            </RowBetween>
+                            {leverage && (
+                              <>
+                                <RowBetween>
+
+                                  <LeverageInputSection>
+                                  <StyledNumericalInput
+                                    className="token-amount-input"
+                                    value={debouncedLeverageFactor ?? ""}
+                                    placeholder="1"
+                                    onUserInput={(str: string) => {
+                                      if (str === "") {
+                                        onDebouncedLeverageFactor("")
+                                      } else if ( new BN(str).isGreaterThan(new BN("1000")) ) {
+                                        return
+                                      } else if (new BN(str).dp() as number > 1 ) {
+                                        onDebouncedLeverageFactor(String(new BN(str).decimalPlaces(1, BN.ROUND_DOWN)))
+                                      } else {
+                                        onDebouncedLeverageFactor(str)
+                                      }
+                                    }}
+                                    disabled={false}
+                                  />
+                                  </LeverageInputSection>
+                              
+                                  <AutoRow gap="4px" justify="flex-end">
+                                    <SmallMaxButton onClick={() => onLeverageFactorChange("10")} width="20%">
+                                      <Trans>10</Trans>
+                                    </SmallMaxButton>
+                                    <SmallMaxButton onClick={() => onLeverageFactorChange("100")} width="20%">
+                                      <Trans>100</Trans>
+                                    </SmallMaxButton>
+                                    <SmallMaxButton onClick={() => onLeverageFactorChange("1000")} width="20%">
+                                      <Trans>500</Trans>
+                                    </SmallMaxButton>
+                                    <SmallMaxButton onClick={() => onLeverageFactorChange("1000")} width="20%">
+                                      <Trans>1000</Trans>
+                                    </SmallMaxButton>
+                                  </AutoRow>
+                                </RowBetween>
+                                <Slider
+                                  value={sliderLeverageFactor === "" ? 1.0 : parseFloat(sliderLeverageFactor)}
+                                  onChange={(val) => setSliderLeverageFactor(val.toString())}
+                                  min={1.0}
+                                  max={1000.0}
+                                  step={1}
+                                  float={true}
+                                />
+                              </>
+                            )}
+                          </AutoColumn>
+                        </LightCard>
+                      </LeverageGaugeSection>
+                      {
+                          <DetailsSwapSection>
+                            <SwapDetailsDropdown
+                              trade={trade}
+                              syncing={routeIsSyncing}
+                              loading={routeIsLoading}
+                              allowedSlippage={allowedSlippage}
+                              leverageTrade={leverageTrade}
+                            />
+                          </DetailsSwapSection>
+                      }
+                    </div>
+                    {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}
+                    <div>
+                      {swapIsUnsupported ? (
+                        <ButtonPrimary disabled={true}>
+                          <ThemedText.DeprecatedMain mb="4px">
+                            <Trans>Unsupported Asset</Trans>
+                          </ThemedText.DeprecatedMain>
+                        </ButtonPrimary>
+                      ) : !account ? (
+                        <TraceEvent
+                          events={[BrowserEvent.onClick]}
+                          name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                          properties={{ received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError) }}
+                          element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+                        >
+                          <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+                            <Trans>Connect Wallet</Trans>
+                          </ButtonLight>
+                        </TraceEvent>
+                      ) : showWrap ? (
+                        <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap} fontWeight={600}>
+                          {wrapInputError ? (
+                            <WrapErrorText wrapInputError={wrapInputError} />
+                          ) : wrapType === WrapType.WRAP ? (
+                            <Trans>Wrap</Trans>
+                          ) : wrapType === WrapType.UNWRAP ? (
+                            <Trans>Unwrap</Trans>
+                          ) : null}
+                        </ButtonPrimary>
+                      ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
+                        <GrayCard style={{ textAlign: 'center' }}>
+                          <ThemedText.DeprecatedMain mb="4px">
+                            <Trans>Insufficient liquidity for this trade.</Trans>
+                          </ThemedText.DeprecatedMain>
+                        </GrayCard>
+                      ) : isValid &&
+                        ((!leverage && allowance.state === AllowanceState.REQUIRED) || (leverage && (leverageApprovalState === ApprovalState.NOT_APPROVED))) ? (
+                        !leverage ? (
+                          <ButtonPrimary
+                            onClick={updateAllowance}
+                            disabled={isAllowancePending || isApprovalLoading}
+                            style={{ gap: 14 }}
+                          >
+                            {isAllowancePending ? (
+                              <>
+                                <Loader size="20px" />
+                                <Trans>Approve in your wallet</Trans>
+                              </>
+                            ) : isApprovalLoading ? (
+                              <>
+                                <Loader size="20px" />
+                                <Trans>Approval pending</Trans>
+                              </>
+                            ) : (
+                              <>
+                                <div style={{ height: 20 }}>
+                                  <MouseoverTooltip
+                                    text={
+                                      <Trans>
+                                        Permission is required for Uniswap to swap each token. This will expire after one
+                                        month for your security.
+                                      </Trans>
+                                    }
+                                  >
+                                    <Info size={20} />
+                                  </MouseoverTooltip>
+                                </div>
+                                <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                              </>
+                            )}
+                          </ButtonPrimary>
+>>>>>>> Stashed changes
                         ) : (
                           <Trans>From</Trans>
                         )

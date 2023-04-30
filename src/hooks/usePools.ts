@@ -76,6 +76,75 @@ class PoolCache {
   }
 }
 
+export interface LeverageManager {
+
+}
+
+export interface PoolManagers {
+  leverageManager: LeverageManager
+}
+
+// class ManagerCache {
+//   // Evict after 128 entries. Empirically, a swap uses 64 entries.
+//   private static MAX_ENTRIES = 128
+
+//   // These are FIFOs, using unshift/pop. This makes recent entries faster to find.
+//   private static managers: PoolManagers[] = []
+//   private static addresses: { key: string; address: string }[] = []
+
+//   static getPoolAddress(factoryAddress: string, tokenA: Token, tokenB: Token, fee: FeeAmount): string {
+//     if (this.addresses.length > this.MAX_ENTRIES) {
+//       this.addresses = this.addresses.slice(0, this.MAX_ENTRIES / 2)
+//     }
+
+//     const { address: addressA } = tokenA
+//     const { address: addressB } = tokenB
+//     const key = `${factoryAddress}:${addressA}:${addressB}:${fee.toString()}`
+//     const found = this.addresses.find((address) => address.key === key)
+//     if (found) return found.address
+
+//     const address = {
+//       key,
+//       address: computePoolAddress({
+//         factoryAddress,
+//         tokenA,
+//         tokenB,
+//         fee
+//       }),
+//     }
+//     this.addresses.unshift(address)
+//     return address.address
+//   }
+
+//   static getPool(
+//     tokenA: Token,
+//     tokenB: Token,
+//     fee: FeeAmount,
+//     sqrtPriceX96: BigintIsh,
+//     liquidity: BigintIsh,
+//     tick: number
+//   ): Pool {
+//     if (this.pools.length > this.MAX_ENTRIES) {
+//       this.pools = this.pools.slice(0, this.MAX_ENTRIES / 2)
+//     }
+
+//     const found = this.pools.find(
+//       (pool) =>
+//         pool.token0 === tokenA &&
+//         pool.token1 === tokenB &&
+//         pool.fee === fee &&
+//         JSBI.EQ(pool.sqrtRatioX96, sqrtPriceX96) &&
+//         JSBI.EQ(pool.liquidity, liquidity) &&
+//         pool.tickCurrent === tick
+//     )
+//     if (found) return found
+
+//     const pool = new Pool(tokenA, tokenB, fee, sqrtPriceX96, liquidity, tick)
+//     this.pools.unshift(pool)
+//     return pool
+//   }
+// }
+
 export enum PoolState {
   LOADING,
   NOT_EXISTS,

@@ -1,18 +1,10 @@
 import { FACTORY_ADDRESS as V2_FACTORY_ADDRESS } from '@uniswap/v2-sdk'
 import { FACTORY_ADDRESS as V3_FACTORY_ADDRESS } from '@uniswap/v3-sdk'
+import { SupportedChainId } from 'constants/chains'
 
-import { SupportedChainId } from './chains'
+import { constructSameAddressMap } from '../utils/constructSameAddressMap'
 
 type AddressMap = { [chainId: number]: string }
-
-const DEFAULT_NETWORKS = [SupportedChainId.MAINNET, SupportedChainId.GOERLI]
-
-function constructSameAddressMap(address: string, additionalNetworks: SupportedChainId[] = []): AddressMap {
-  return DEFAULT_NETWORKS.concat(additionalNetworks).reduce<AddressMap>((memo, chainId) => {
-    memo[chainId] = address
-    return memo
-  }, {})
-}
 
 export const UNI_ADDRESS: AddressMap = constructSameAddressMap('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
 
@@ -52,22 +44,6 @@ const ARBITRUM_GOERLI_MULTICALL_ADDRESS = '0x8260CB40247290317a4c062F3542622367F
 const ARBITRUM_GOERLI_QUOTER_ADDRESSES = '0x1dd92b83591781D0C6d98d07391eea4b9a6008FA'
 const ARBITRUM_GOERLI_NONFUNGIBLE_POSITION_MANAGER_ADDRESSES = '0x622e4726a167799826d1E1D150b076A7725f5D81'
 const ARBITRUM_GOERLI_TICK_LENS_ADDRESSES = '0xb52429333da969a0C79a60930a4Bf0020E5D1DE8'
-<<<<<<< Updated upstream
-=======
-
-export const UNISWAP_POOL_INIT_CODE_HASH = '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54'
-// limitless constants
-export const PS_V3_POOL_FACTORY = '0xC2Fe1De749c82aFFfA3DDB16c465Cd62A10a2D1F'
-export const tokenA = "0xC98ceDe38A5692989363aef8a945EccE2930683c"
-export const tokenB = "0x3324ff636509c8263F5Bc8241177eBc418d0A34e"
-export const feth = "0xa826985DF0507632C7DAB6de761d8d4efC353d1F"
-export const fusdc = "0x54D374769278b45713549B85Ca9Dd9cae3e286cc"
-export const PS_QUOTER_V2 = '0x2ded45679675Eb49bEd3d657aFA60E58c422b206'
-export const PS_ROUTER = '0x0A027C85148a1FC21C80c7F78c97f210aD2b5EFd'
-export const PS_NONFUNGIBLE_POSITION_MANAGER = '0x750786Ff68B11af9E130d8271BB8581471e7aAe3'
-export const POOL_INIT_CODE_HASH = "0xe01c3dec4a274848acd93fb2e2f445648d723fbaebdd93fb6d2743ffecae893d"
-export const GlOBAL_STORAGE_ADDRESS = "0x31529e345334708423373188c64E05A553439b98";
->>>>>>> Stashed changes
 
 /* V3 Contract Addresses */
 export const V3_CORE_FACTORY_ADDRESSES: AddressMap = {
