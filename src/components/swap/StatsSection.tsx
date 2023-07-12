@@ -46,6 +46,7 @@ const NoData = styled.div`
   color: ${({ theme }) => theme.textTertiary};
 `
 const StatsWrapper = styled.div`
+  display: flex;
   gap: 16px;
   ${textFadeIn}
 `
@@ -115,8 +116,6 @@ export default function StatsSection(props: StatsSectionProps) {
   if (stats?.high24h || stats?.low24h || stats?.delta || stats?.price) {
     return (
       <StatsWrapper data-testid="token-details-stats">
-        <TokenStatsSection>
-          <StatPair>
             <Stat
               dataCy="current-price"
               value={stats?.price}
@@ -144,24 +143,23 @@ export default function StatsSection(props: StatsSectionProps) {
                 </AutoRow>
               </StatPrice>
             </StatWrapper>
-          </StatPair>
-          <StatPair>
+          
+          
             <Stat dataCy="24h-low" value={
               stats?.low24h
             } title={<Trans>24h low ({baseQuoteSymbol})</Trans>} />
             <Stat dataCy="24h-high" value={
               stats?.high24h
             } title={<Trans>24h high ({baseQuoteSymbol})</Trans>} />
-          </StatPair>
-          <StatPair>
+          
+          
             <Stat dataCy="liq-below" value={
               stats?.token1Reserve
             } title={<Trans>Liquidity Below ({token1Symbol})</Trans>} />
             <Stat dataCy="liq-above" value={
               stats?.token0Reserve
             } title={<Trans>Liquidity Above ({token0Symbol})</Trans>} />
-          </StatPair>
-        </TokenStatsSection>
+          
       </StatsWrapper>
     )
   } else {

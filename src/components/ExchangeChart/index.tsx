@@ -13,20 +13,18 @@ import { useTokenContract } from 'hooks/useContract';
 import { usePool } from 'hooks/usePools';
 import moment from "moment"
 import {
-	IChartingLibraryWidget,
-	LanguageCode,
-	widget} from 'public/charting_library';
-import { useEffect, useMemo,useRef } from 'react';
+	LanguageCode} from 'public/charting_library';
+import { useEffect, useMemo } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components/macro';
 
-import { defaultChartProps } from "./constants";
 import useDatafeed from "./useDataFeed";
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const StatsContainer = styled.div`
-	margin-bottom: 15px;
+	margin-left: 5px;
+	width: 100%;
 `
 
 // interface ChartContainerProps {
@@ -63,9 +61,9 @@ export const PoolDataSection = ({
 	token1: Token | undefined,
 	fee: FeeAmount | undefined,
 }) => {
-	const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
+	// const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
 	const { datafeed } = useDatafeed({ chainId });
-	const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
+	// const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
 	const [chartReady, setChartReady] = useState(false);
 	const [chartDataLoading, setChartDataLoading] = useState(true);
 	const [lastUpdate, setLastUpdate] = useState(moment.now())
@@ -276,52 +274,52 @@ export const PoolDataSection = ({
 		}
 	}, [token0, token1, chainId, limitlessPool, limitlessPoolAddress, uniswapPoolAddress, uniswapPoolExists, uniswapToken0Price])
 
-	useEffect(() => {
-		// console.log("symbolExchangeChart: ", symbol)
-		const widgetOptions = {
-			debug: false,
-			symbol: !symbol ? "missing pool" : symbol,
-			datafeed,
-			theme: defaultChartProps.theme,
-			container: chartContainerRef.current,
-			library_path: defaultChartProps.library_path,
-			locale: defaultChartProps.locale,
-			loading_screen: defaultChartProps.loading_screen,
-			enabled_features: defaultChartProps.enabled_features,
-			disabled_features: defaultChartProps.disabled_features,
-			client_id: defaultChartProps.clientId,
-			user_id: defaultChartProps.userId,
-			//fullscreen: defaultChartProps.fullscreen,
-			// autosize: defaultChartProps.autosize,
-			// custom_css_url: defaultChartProps.custom_css_url,
-			autosize: true,
-			overrides: defaultChartProps.overrides,
-			interval: "60",//getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
-			favorites: defaultChartProps.favorites,
-			custom_formatters: defaultChartProps.custom_formatters,
-			// save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
-		};
+	// useEffect(() => {
+	// 	// console.log("symbolExchangeChart: ", symbol)
+	// 	const widgetOptions = {
+	// 		debug: false,
+	// 		symbol: !symbol ? "missing pool" : symbol,
+	// 		datafeed,
+	// 		theme: defaultChartProps.theme,
+	// 		container: chartContainerRef.current,
+	// 		library_path: defaultChartProps.library_path,
+	// 		locale: defaultChartProps.locale,
+	// 		loading_screen: defaultChartProps.loading_screen,
+	// 		enabled_features: defaultChartProps.enabled_features,
+	// 		disabled_features: defaultChartProps.disabled_features,
+	// 		client_id: defaultChartProps.clientId,
+	// 		user_id: defaultChartProps.userId,
+	// 		//fullscreen: defaultChartProps.fullscreen,
+	// 		// autosize: defaultChartProps.autosize,
+	// 		// custom_css_url: defaultChartProps.custom_css_url,
+	// 		autosize: true,
+	// 		overrides: defaultChartProps.overrides,
+	// 		interval: "60",//getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
+	// 		favorites: defaultChartProps.favorites,
+	// 		custom_formatters: defaultChartProps.custom_formatters,
+	// 		// save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
+	// 	};
 
-		tvWidgetRef.current = new widget(widgetOptions as any);
+	// 	tvWidgetRef.current = new widget(widgetOptions as any);
 
-		tvWidgetRef.current?.onChartReady(function () {
-			setChartReady(true);
+	// 	tvWidgetRef.current?.onChartReady(function () {
+	// 		setChartReady(true);
 
-			tvWidgetRef.current?.activeChart().dataReady(() => {
-				setChartDataLoading(false);
-			});
-		});
+	// 		tvWidgetRef.current?.activeChart().dataReady(() => {
+	// 			setChartDataLoading(false);
+	// 		});
+	// 	});
 
 
-		return () => {
-			if (tvWidgetRef.current) {
-				tvWidgetRef.current.remove();
-				tvWidgetRef.current = null;
-				setChartReady(false);
-				setChartDataLoading(true);
-			}
-		};
-	}, [chainId, symbol, uniswapPoolAddress, fee, datafeed]);
+	// 	return () => {
+	// 		if (tvWidgetRef.current) {
+	// 			tvWidgetRef.current.remove();
+	// 			tvWidgetRef.current = null;
+	// 			setChartReady(false);
+	// 			setChartDataLoading(true);
+	// 		}
+	// 	};
+	// }, [chainId, symbol, uniswapPoolAddress, fee, datafeed]);
 
 	return (
 		<>
@@ -334,7 +332,7 @@ export const PoolDataSection = ({
 					stats={stats}
 				/>
 			</StatsContainer>
-			<div style={{ height: "450px" }}>
+			{/* <div style={{ height: "450px" }}>
 				<div
 					style={{
 						height: '100%'
@@ -342,9 +340,7 @@ export const PoolDataSection = ({
 					ref={chartContainerRef}
 					className="TVChartContainer"
 				/>
-			</div>
+			</div> */}
 		</>
-
-
 	);
 };

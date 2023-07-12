@@ -10,6 +10,7 @@ import { BigNumber as BN } from "bignumber.js";
 import BorrowPositionsTable from "components/BorrowPositionTable/TokenTable"
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
+import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import LeveragePositionsTable from 'components/LeveragePositionTable/TokenTable'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { TokenSelector } from 'components/swap/TokenSelector'
@@ -20,7 +21,7 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import {
   TokenInfoContainer,
   TokenNameCell,
-} from 'components/Tokens/TokenDetails/Skeleton'
+} from 'components/Tokens/TokenDetails/Skeleton';
 import { WarningIcon } from 'components/TokenSafety/TokenSafetyIcon'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
@@ -170,8 +171,8 @@ export const LeverageGaugeSection = styled(SwapSection) <{ showDetailsDropdown: 
 export const DetailsSwapSection = styled(SwapSection)`
   padding: 0;
   border-top-left-radius: 0;
-  border-top-right-radius: 0;
-`
+  border-top-right-radius: 0;`
+
 
 
 
@@ -183,9 +184,9 @@ const PositionsContainer = styled.div`
   width: 100%;
   border-radius: 32px;
   padding: 12px;
-  margin-left: auto
+  margin-left: auto;
+  `
 
-`
 
 const StatsContainer = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -194,15 +195,14 @@ const StatsContainer = styled.div`
   width: 100%;
   margin-top: 0px;
   margin-right: 20px;
-  margin-left: auto
-`
+  margin-left: auto;`
 
 const LeftContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-content: center;
-`
+  align-content: center;`
+
 
 
 const ActivityWrapper = styled.main`
@@ -657,80 +657,134 @@ export default function Swap({ className }: { className?: string }) {
           showCancel={true}
         />
         <PageWrapper>
-        <LeftContainer>
-              <StatsContainer>
-                <TokenInfoContainer data-testid="token-info-container">
-                  <TokenNameCell>
-                    {inputCurrency && outputCurrency && <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={40} margin />}
-                    {inputCurrency && outputCurrency
-                      ? (
-                        <Row>
-                          <TokenSelector isInput={false}/><TokenSelector isInput={true}/>
-                        </Row>
-                      )
-                      : <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>}
-
-                    {inputApprovalState !== ApprovalState.APPROVED && <SmallMaxButton onClick={() => inputApprove()} width="10%">
-                      <Trans><WarningIcon size="1.25em" />Approve {inputCurrency?.symbol}</Trans>
-                    </SmallMaxButton>}
-                    {outputApprovalState !== ApprovalState.APPROVED && <SmallMaxButton onClick={() => outputApprove()} width="10%">
-                      <Trans><WarningIcon size="1.25em" /> Approve {outputCurrency?.symbol}</Trans>
-                    </SmallMaxButton>}
-                  </TokenNameCell>
-                </TokenInfoContainer>
-                <PoolDataSection
-                  chainId={chainId ?? 11155111}
-                  token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                  token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                  fee={pool?.fee}
+          <LeftContainer>
+            <TokenInfoContainer data-testid="token-info-container">
+                <TokenNameCell>
+                  {inputCurrency && outputCurrency && (
+                    <DoubleCurrencyLogo
+                      currency0={inputCurrency as Currency}
+                      currency1={outputCurrency as Currency}
+                      size={40}
+                      margin
+                    />
+                  )}
+                  {inputCurrency && outputCurrency ? (
+                    <Row>
+                      <TokenSelector isInput={false} />
+                      <TokenSelector isInput={true} />
+                    </Row>
+                  ) : (
+                    <ThemedText.LargeHeader>
+                      Pair not found
+                    </ThemedText.LargeHeader>
+                  )}
+  
+                  {inputApprovalState !== ApprovalState.APPROVED && (
+                    <SmallMaxButton onClick={() => inputApprove()} width="10%">
+                      <Trans>
+                        <WarningIcon size="1.25em" />
+                        Approve {inputCurrency?.symbol}
+                      </Trans>
+                    </SmallMaxButton>
+                  )}
+                  {outputApprovalState !== ApprovalState.APPROVED && (
+                    <SmallMaxButton onClick={() => outputApprove()} width="10%">
+                      <Trans>
+                        <WarningIcon size="1.25em" /> Approve{' '}
+                        {outputCurrency?.symbol}
+                      </Trans>
+                    </SmallMaxButton>
+                  )}
+                </TokenNameCell>
+            <PoolDataSection
+              chainId={chainId ?? 11155111}
+              token0={
+                inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped
+              }
+              token1={
+                inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped
+              }
+              fee={pool?.fee}
+              />
+            </TokenInfoContainer>
+            <StatsContainer>
+              <PoolDataChart
+                chainId={chainId ?? 11155111}
+                token0={
+                  inputIsToken0
+                    ? inputCurrency?.wrapped
+                    : outputCurrency?.wrapped
+                }
+                token1={
+                  inputIsToken0
+                    ? outputCurrency?.wrapped
+                    : inputCurrency?.wrapped
+                }
+                fee={pool?.fee}
+              />
+            </StatsContainer>
+            <PositionsContainer>
+              <TableHeader>
+                <TabNavItem
+                  id={1}
+                  activeTab={activePositionTable}
+                  setActiveTab={setActiveTable}
+                  first={true}
+                >
+                  Leverage Positions
+                </TabNavItem>
+                <TabNavItem
+                  id={2}
+                  activeTab={activePositionTable}
+                  setActiveTab={setActiveTable}
+                >
+                  Borrow Positions
+                </TabNavItem>
+                <TabNavItem
+                  id={3}
+                  activeTab={activePositionTable}
+                  setActiveTab={setActiveTable}
+                  last={true}
+                >
+                  History
+                </TabNavItem>
+              </TableHeader>
+              <TabContent id={1} activeTab={activePositionTable}>
+                <LeveragePositionsTable
+                  positions={leveragePositions}
+                  loading={limitlessPositionsLoading}
                 />
-              </StatsContainer>
-              <PositionsContainer>
-                <TableHeader>
-                  <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
-                    Leverage Positions
-                  </TabNavItem>
-                  <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-                    Borrow Positions
-                  </TabNavItem>
-                  <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
-                    History
-                  </TabNavItem>
-                </TableHeader>
-                <TabContent id={1} activeTab={activePositionTable}>
-                <LeveragePositionsTable positions={leveragePositions} loading={limitlessPositionsLoading} />
-                </TabContent>
-                <TabContent id={2} activeTab={activePositionTable}>
-                <BorrowPositionsTable positions={borrowPositions} loading={limitlessPositionsLoading} />
-                </TabContent>
-                <TabContent id={3} activeTab={activePositionTable}>
-                {!account ?(
-                  <Trans>
-                    Missing Account
-                  </Trans>
+              </TabContent>
+              <TabContent id={2} activeTab={activePositionTable}>
+                <BorrowPositionsTable
+                  positions={borrowPositions}
+                  loading={limitlessPositionsLoading}
+                />
+              </TabContent>
+              <TabContent id={3} activeTab={activePositionTable}>
+                {!account ? (
+                  <Trans>Missing Account</Trans>
                 ) : (
                   <ActivityWrapper>
-                    <ActivityTab account={account}/>
+                    <ActivityTab account={account} />
                   </ActivityWrapper>
-                  
-                )
-                }
-                </TabContent>
-              </PositionsContainer>
-            </LeftContainer>
-
-            <SwapWrapper chainId={chainId} className={className} id="swap-page">
-              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-
-              <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
-                <TradeTabContent />
+                )}
               </TabContent>
+            </PositionsContainer>
+          </LeftContainer>
 
-              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-                <BorrowTabContent />
-              </TabContent>
-
-            </SwapWrapper>
+          <SwapWrapper chainId={chainId} className={className} id="swap-page">
+            <SwapHeader
+              allowedSlippage={allowedSlippage}
+              activeTab={activeTab}
+            />
+            <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
+              <TradeTabContent />
+            </TabContent>
+            <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
+              <BorrowTabContent />
+            </TabContent>
+          </SwapWrapper>
         </PageWrapper>
         {!swapIsUnsupported ? null : (
           <UnsupportedCurrencyFooter
@@ -740,5 +794,5 @@ export default function Swap({ className }: { className?: string }) {
         )}
       </>
     </Trace>
-  )
+  );
 }
