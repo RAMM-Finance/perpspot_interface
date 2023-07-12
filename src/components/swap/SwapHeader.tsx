@@ -1,16 +1,13 @@
-import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
-import styled from 'styled-components/macro'
-
-import { ThemedText } from '../../theme'
-import { RowBetween, RowFixed } from '../Row'
-import SettingsTab from '../Settings'
-import { ButtonPrimary } from '../Button'
 import { SmallButtonPrimary } from 'components/Button'
-import SwapTabHeader, { TabNavItem } from 'components/Tabs'
+import SwapTabHeader from 'components/Tabs'
+import { useCallback } from 'react'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers } from 'state/swap/hooks'
-import { useCallback } from 'react'
+import styled from 'styled-components/macro'
+
+import { RowBetween, RowFixed } from '../Row'
+import SettingsTab from '../Settings'
 
 const StyledSwapHeader = styled.div`
   padding: 0px 12px;

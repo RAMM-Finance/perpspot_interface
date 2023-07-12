@@ -179,7 +179,7 @@ const PositionsContainer = styled.div`
   margin-right: 20px;
   margin-top: 15px;
   // background-color: ${({ theme }) => theme.backgroundSurface};
-  max-width: 1200px;
+  /* max-width: 1200px; */
   width: 100%;
   border-radius: 32px;
   padding: 12px;

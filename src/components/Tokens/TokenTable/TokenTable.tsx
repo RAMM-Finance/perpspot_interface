@@ -1,4 +1,6 @@
 import { Trans } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
 import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
 import { ReactNode } from 'react'
@@ -6,17 +8,12 @@ import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 
-import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
-import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
-// import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
-
-import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
-import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
-import { useLeverageManagerContract, useTokenContract } from 'hooks/useContract'
 // import {useToken} from 'hooks/Tokens'
 import { useToken } from '../../../hooks/Tokens'
-import { SupportedChainId } from 'constants/chains'
-import { useWeb3React } from '@web3-react/core'
+import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
+// import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
+import { PHeaderRow, PLoadedRow } from './PairsRow'
+import { HeaderRow, LoadingRow } from './TokenRow'
 
 const GridContainer = styled.div`
   display: flex;

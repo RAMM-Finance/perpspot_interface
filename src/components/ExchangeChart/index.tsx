@@ -26,7 +26,7 @@ import useDatafeed from "./useDataFeed";
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const StatsContainer = styled.div`
-	margin-top:0px;
+	margin-bottom: 15px;
 `
 
 // interface ChartContainerProps {
