@@ -19,7 +19,7 @@ import styled from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
 
-import { isTransactionRecent, useAllTransactions, useClearTransactions } from '../../state/transactions/hooks'
+import { isTransactionRecent, useAllTransactions } from '../../state/transactions/hooks'
 import { TransactionDetails } from '../../state/transactions/types'
 import { shortenAddress } from '../../utils'
 import { ButtonSecondary } from '../Button'
@@ -169,7 +169,6 @@ function  Web3StatusInner() {
 
   const allTransactions = useAllTransactions()  
 
-  // console.log("allTransactions", allTransactions)
 
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)

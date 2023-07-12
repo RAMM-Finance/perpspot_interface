@@ -38,7 +38,7 @@ const FaucetsContainer = styled.div`
   margin-top: 16px;
 `
 
-const GenesisAddressses = ['0x515c07dd7cd01496d4000e4998b4fd5acd2c09e1',
+const GenesisAddressses = ['0x64c714e37469878f2e6eaa9564727720Eb6B7094','0x515c07dd7cd01496d4000e4998b4fd5acd2c09e1',
   '0x65f106ec944aF77914d6DF5EaC6488a147a5d054',
   '0xaEe294951f2B69b8C7720Eed7FF05DbB4B184a86',
   '0x565d380416a2889b817c6eb493f6deef029212aa',

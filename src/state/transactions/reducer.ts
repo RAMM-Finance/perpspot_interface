@@ -25,6 +25,12 @@ const transactionSlice = createSlice({
       txs[hash] = { hash, info, from, addedTime: now() }
       transactions[chainId] = txs
     },
+    removeTransaction(transactions, { payload: { chainId, hash }}) {
+      const txs = transactions[chainId] ?? {}
+      if (txs[hash]) {
+        delete txs[hash];
+      }
+    },
     clearAllTransactions(transactions, { payload: { chainId } }) {
       console.log("clearAllTransactions", !transactions[chainId], chainId)
       if (!transactions[chainId]) return
@@ -66,6 +72,6 @@ const transactionSlice = createSlice({
   },
 })
 
-export const { addTransaction, clearAllTransactions, checkedTransaction, finalizeTransaction } =
+export const { addTransaction, removeTransaction, clearAllTransactions, checkedTransaction, finalizeTransaction } =
   transactionSlice.actions
 export default transactionSlice.reducer
