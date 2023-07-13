@@ -60,6 +60,7 @@ export default function Updater() {
       dispatch(checkedTransaction({ chainId, hash, blockNumber })),
     [dispatch]
   )
+
   const onReceipt = useCallback(
     ({ chainId, hash, receipt }: { chainId: number; hash: string; receipt: SerializableTransactionReceipt }) => {
       dispatch(

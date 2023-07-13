@@ -5,7 +5,7 @@ import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 
-import { addTransaction, clearAllTransactions } from './reducer'
+import { addTransaction, clearAllTransactions, removeTransaction } from './reducer'
 import { TransactionDetails, TransactionInfo, TransactionType } from './types'
 
 // helper that can take a ethers library transaction response and add it to the list of transactions
@@ -36,6 +36,15 @@ export function useClearTransactions(): (chainId: number) => void {
       dispatch(clearAllTransactions({ chainId }))
     },
     [dispatch]
+  )
+}
+
+export function useRemoveTransaction(): (chainId: number, hash: string) =>  void {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (chainId: number, hash: string) => {
+      dispatch(removeTransaction({chainId, hash}))
+    }, [dispatch]
   )
 }
 
@@ -94,6 +103,7 @@ export function isTransactionRecent(tx: TransactionDetails): boolean {
 // returns whether a token has a pending approval transaction
 export function useHasPendingApproval(token?: Token, spender?: string): boolean {
   const allTransactions = useAllTransactions()
+
   return useMemo(
     () =>
       typeof token?.address === 'string' &&
