@@ -212,7 +212,7 @@ export const PoolDataSection = ({
     token1,
   ])
 
-  console.log('stats: ', token0?.symbol, token1?.symbol, stats)
+  // console.log("stats: ", token0?.symbol, token1?.symbol, stats)
 
   // useEffect(() => {
   // 	async function fetch() {

@@ -27,7 +27,6 @@ import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hook
 import { useLimitlessPositions } from 'hooks/useV3Positions'
 import { ApprovalState } from 'lib/hooks/useApproval'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
-import moment from 'moment'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactNode } from 'react'
@@ -617,9 +616,6 @@ export default function Swap({ className }: { className?: string }) {
   const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
 
   const leveragePositions = useMemo(() => {
-    const now = moment()
-    // const timestamp = now.unix()
-
     return limitlessPositions && !limitlessPositionsLoading
       ? limitlessPositions.filter((position) => {
           return !position.isBorrow
@@ -627,8 +623,6 @@ export default function Swap({ className }: { className?: string }) {
       : undefined
   }, [limitlessPositionsLoading, limitlessPositions])
   const borrowPositions = useMemo(() => {
-    const now = moment()
-    // const timestamp = now.unix()
     return limitlessPositions && !limitlessPositionsLoading
       ? limitlessPositions.filter((position) => {
           return position.isBorrow

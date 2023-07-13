@@ -701,7 +701,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       
       return position.unusedPremium * (timeLeft.asSeconds() / 86400) < 0 ? 0 : position.unusedPremium * (timeLeft.asSeconds() / 86400);
     }
-    return undefined
+    return 0
   }, [position, now])
 
   // const token0Quote = useMemo(() => {

@@ -269,8 +269,9 @@ export function ReduceLeverageModalFooter({
           position?.isToken0,
           formattedSlippage,
           inputReduceAmount
-        ).then((hash: any) => {
-          addTransaction(hash, {
+        ).then((response: any) => {
+          // console.log('reduceResponse', response.hash, response)
+          addTransaction(response, {
             type: TransactionType.REDUCE_LEVERAGE,
             reduceAmount: inputReduceAmount ?? "",
             pnl: Number(transactionInfo.pnl),
@@ -283,7 +284,7 @@ export function ReduceLeverageModalFooter({
             quoteBaseSymbol: transactionInfo.quoteBaseSymbol,
             timestamp: moment().format('YYYY-MM-DD')
           })
-          setTxHash(hash)
+          setTxHash(response.hash)
           setAttemptingTxn(false)
         }).catch((err: any) => {
           setAttemptingTxn(false)
@@ -293,12 +294,15 @@ export function ReduceLeverageModalFooter({
     }
     return () => { }
   }, [
-    leverageManagerAddress, slippage, tokenId, trader, position, reduceAmount,
+    slippage,  position, reduceAmount,
     token0,
     token1,
     inputIsToken0,
     transactionInfo,
-    leverageManagerContract
+    leverageManagerContract,
+    addTransaction,
+    setTxHash,
+    setAttemptingTxn
   ])
 
   const disabled = !!userError || !transactionInfo
@@ -489,7 +493,7 @@ export function ReduceLeverageModalFooter({
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
                               {
-                                `${formatNumber(Number(transactionInfo?.unusedPremium), NumberType.SwapTradeAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
+                                `${formatNumber(Number(transactionInfo.unusedPremium), NumberType.SwapTradeAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
                               }
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
@@ -538,12 +542,12 @@ export function ReduceLeverageModalFooter({
                             <TruncatedText>
 
                               {
-                                `${formatNumber(Number(transactionInfo?.pnl), NumberType.SwapTradeAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
+                                `${formatNumber(Number(transactionInfo.pnl), NumberType.SwapTradeAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
 
                               }
                             </TruncatedText>
                           <DeltaText delta={Number(100 * (Math.round(Number(transactionInfo?.pnl) * 1000) / 1000) / (Number(initCollateral)))}>
-                            {formatNumber(100 * Number(transactionInfo?.pnl) / (Number(initCollateral)), NumberType.SwapTradeAmount)} %
+                            {formatNumber(100 * Number(transactionInfo.pnl) / (Number(initCollateral)), NumberType.SwapTradeAmount)} %
                           </DeltaText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>

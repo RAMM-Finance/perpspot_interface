@@ -1,22 +1,28 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { InterfaceEventName } from '@uniswap/analytics-events'
-import { formatNumber, formatPrice, formatUSDPrice, NumberType } from '@uniswap/conedison/format'
-import { ParentSize } from '@visx/responsive'
-import SparklineChart from 'components/Charts/SparklineChart'
-import QueryTokenLogo from 'components/Logo/QueryTokenLogo'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from "bignumber.js"
+import { AutoColumn } from 'components/Column'
+import { RowBetween, RowFixed } from 'components/Row'
+import Row from 'components/Row'
+import { AddBorrowPremiumModal, ReduceBorrowCollateralModal, ReduceBorrowDebtModal } from 'components/swap/LMTModals'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { SparklineMap, TopToken } from 'graphql/data/TopTokens'
-import { CHAIN_NAME_TO_CHAIN_ID, getTokenDetailsURL, validateUrlChainParam } from 'graphql/data/util'
+import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
+import { useCurrency } from 'hooks/Tokens'
+import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
+import { formatSymbol } from 'lib/utils/formatSymbol'
+import moment from "moment"
+import { MaxButton } from 'pages/Pool/styleds'
+import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Edit, Edit2, Edit3, Info } from 'react-feather'
-import { Link, useParams } from 'react-router-dom'
-import styled, { css, useTheme } from 'styled-components/macro'
+import { Edit3, Info } from 'react-feather'
+import { Link } from 'react-router-dom'
+import { Box } from 'rebass'
+import styled, { css } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import moment from "moment"
-import { BigNumber as BN } from "bignumber.js"
+import { LimitlessPositionDetails } from 'types/leveragePosition'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -27,29 +33,9 @@ import {
 import { LoadingBubble } from './loading'
 import {
   filterStringAtom,
-  filterTimeAtom,
   PositionSortMethod,
-  sortAscendingAtom,
-  sortMethodAtom,
   useSetSortMethod,
 } from './state'
-import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
-import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { useCurrency } from 'hooks/Tokens'
-import { AutoRow, RowBetween, RowFixed } from 'components/Row'
-import { LimitlessPositionDetails } from 'types/leveragePosition'
-import { AutoColumn } from 'components/Column'
-import ReducePositionModal, { AddBorrowPremiumModal, ReduceBorrowCollateralModal, ReduceBorrowDebtModal } from 'components/swap/LMTModals'
-import { useWeb3React } from '@web3-react/core'
-import { SmallButtonPrimary } from 'components/Button'
-import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
-import { MaxButton } from 'pages/Pool/styleds'
-import { usePool } from 'hooks/usePools'
-import { Fraction, Price } from '@uniswap/sdk-core'
-import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
-import { formatSymbol } from 'lib/utils/formatSymbol'
-import Row from 'components/Row'
-import { Box } from 'rebass'
 // import { FlexStartRow } from 'components/LeveragePositionTable/TokenRow'
 
 const FlexStartRow = styled(Row)`
@@ -489,7 +475,7 @@ function PositionRow({
     </ActionsContainer>
   ): (
     (
-      <MouseoverTooltip text={"(reduce): reduce position, (pay): pay premium"} placement="right">
+      <MouseoverTooltip text="(reduce): reduce position, (pay): pay premium" placement="right">
         <InfoIconContainer>
           <Info size={14} />
         </InfoIconContainer>
@@ -631,7 +617,7 @@ const InputText = styled.div`
 
 
 /* Loaded State: row component with token information */
-export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+ const RawLoadedRow = (props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position } = props
@@ -655,24 +641,28 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     return [`${Math.abs(hours)}h ${Math.abs(minutes)}m`, isNegative]
   }, [position, now])
 
-  const quoteBaseSymbol = useMemo(() => {
-    if (token0 && token1 && pool?.token0Price) {
-      if (pool.token0Price.greaterThan(1)) {
-        return `${token0.symbol}/${token1.symbol}`
-      } else {
-        return `${token1.symbol}/${token0.symbol}`
-      }
-    }
-    return ''
-  }, [pool, token1, token0])
+  // const quoteBaseSymbol = useMemo(() => {
+  //   if (token0 && token1 && pool?.token0Price) {
+  //     if (pool.token0Price.greaterThan(1)) {
+  //       return `${token0.symbol}/${token1.symbol}`
+  //     } else {
+  //       return `${token1.symbol}/${token0.symbol}`
+  //     }
+  //   }
+  //   return ''
+  // }, [pool, token1, token0])
 
   const ltv = useMemo(() => {
-    const collateralIsToken0 = position.isToken0; // position.isToken0 === position.borrowBelow
-    const price = collateralIsToken0 ? pool?.token0Price.toFixed(DEFAULT_ERC20_DECIMALS) : pool?.token1Price.toFixed(DEFAULT_ERC20_DECIMALS);
-    const ltv = new BN(position.totalDebtInput).div(
-      new BN(position.initialCollateral).multipliedBy(new BN(price ?? "0"))
-    )
-    return ltv.toNumber();
+    if (pool?.token0Price && pool?.token1Price) {
+      const collateralIsToken0 = position.isToken0; // position.isToken0 === position.borrowBelow
+      const price = collateralIsToken0 ? pool?.token0Price.toFixed(DEFAULT_ERC20_DECIMALS) : pool?.token1Price.toFixed(DEFAULT_ERC20_DECIMALS);
+      const ltv = new BN(position.totalDebtInput).div(
+        new BN(position.initialCollateral).multipliedBy(new BN(price))
+      )
+      return ltv.toNumber();
+    }
+    return 0;
+
   }, [position, pool])
 
   const [inputCurrencySymbol, outputCurrencySymbol] = useMemo(() => {
@@ -760,6 +750,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       </StyledLoadedRow>
     </div>
   )
-})
+}
+export const LoadedRow = forwardRef(RawLoadedRow);
 
 

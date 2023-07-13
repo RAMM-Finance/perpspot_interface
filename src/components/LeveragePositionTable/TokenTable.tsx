@@ -84,7 +84,7 @@ export default function PositionsTable({positions, loading}: {positions?: Limitl
   // const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
 
   /* loading and error state */
-  if (loading || !positions) {
+  if (loading) {
     return <LoadingTokenTable rowCount={1} />
   } else if (positions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
