@@ -73,7 +73,7 @@ export const TokenInfoContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start;
+  /* align-items: flex-start; */
   margin-bottom: 15px;
   ${textFadeIn};
   animation-duration: ${({ theme }) => theme.transition.duration.medium};`

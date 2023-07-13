@@ -1,40 +1,29 @@
-import { Interface } from '@ethersproject/abi';
-import { Token } from '@uniswap/sdk-core';
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json';
-import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk';
-import { BigNumber as BN } from 'bignumber.js';
-import StatsSection from 'components/swap/StatsSection';
-import {
-  POOL_INIT_CODE_HASH,
-  V3_CORE_FACTORY_ADDRESSES as LIMITLESS_FACTORIES,
-} from 'constants/addresses';
-import { getFakePool, getFakeSymbol, isFakePair } from 'constants/fake-tokens';
-import {
-  LATEST_POOL_DAY_QUERY,
-  LATEST_POOL_INFO_QUERY,
-} from 'graphql/limitlessGraph/poolPriceData';
-import { uniswapClient } from 'graphql/limitlessGraph/uniswapClients';
-import { useCurrency } from 'hooks/Tokens';
-import { useTokenContract } from 'hooks/useContract';
-import { usePool } from 'hooks/usePools';
-import moment from 'moment';
-import {
-  IChartingLibraryWidget,
-  LanguageCode,
-  widget,
-} from 'public/charting_library';
-import { useEffect, useMemo, useRef } from 'react';
-import { useState } from 'react';
-import styled from 'styled-components/macro';
+import { Interface } from '@ethersproject/abi'
+import { Token } from '@uniswap/sdk-core'
+import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
+import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES as LIMITLESS_FACTORIES } from 'constants/addresses'
+import { getFakePool, getFakeSymbol, isFakePair } from 'constants/fake-tokens'
+import { LATEST_POOL_DAY_QUERY, LATEST_POOL_INFO_QUERY } from 'graphql/limitlessGraph/poolPriceData'
+import { uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
+import { useCurrency } from 'hooks/Tokens'
+import { useTokenContract } from 'hooks/useContract'
+import { usePool } from 'hooks/usePools'
+import moment from 'moment'
+import { IChartingLibraryWidget, LanguageCode, widget } from 'public/charting_library'
+import { useEffect, useMemo, useRef } from 'react'
+import { useState } from 'react'
+import styled from 'styled-components/macro'
 
-import { defaultChartProps } from './constants';
-import useDatafeed from './useDataFeed';
+import { defaultChartProps } from './constants'
+import useDatafeed from './useDataFeed'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI);
+const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const StatsContainer = styled.div`
   margin-bottom: 15px;
-`;
+`
 
 // interface ChartContainerProps {
 // 	symbol: ChartingLibraryWidgetOptions['symbol'];
@@ -54,12 +43,10 @@ const StatsContainer = styled.div`
 // }
 
 const getLanguageFromURL = (): LanguageCode | null => {
-  const regex = new RegExp('[\\?&]lang=([^&#]*)');
-  const results = regex.exec(location.search);
-  return results === null
-    ? null
-    : (decodeURIComponent(results[1].replace(/\+/g, ' ')) as LanguageCode);
-};
+  const regex = new RegExp('[\\?&]lang=([^&#]*)')
+  const results = regex.exec(location.search)
+  return results === null ? null : (decodeURIComponent(results[1].replace(/\+/g, ' ')) as LanguageCode)
+}
 
 export const PoolDataChart = ({
   chainId,
@@ -67,42 +54,31 @@ export const PoolDataChart = ({
   token1,
   fee,
 }: {
-  chainId: number;
-  token0: Token | undefined;
-  token1: Token | undefined;
-  fee: FeeAmount | undefined;
+  chainId: number
+  token0: Token | undefined
+  token1: Token | undefined
+  fee: FeeAmount | undefined
 }) => {
-  const chartContainerRef =
-    useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
-  const { datafeed } = useDatafeed({ chainId });
-  const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
-  const [chartReady, setChartReady] = useState(false);
-  const [chartDataLoading, setChartDataLoading] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState(moment.now());
-  const [, pool] = usePool(token0, token1, fee);
+  const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
+  const { datafeed } = useDatafeed({ chainId })
+  const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
+  const [chartReady, setChartReady] = useState(false)
+  const [chartDataLoading, setChartDataLoading] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState(moment.now())
+  const [, pool] = usePool(token0, token1, fee)
 
   useEffect(() => {
     // if longer than 1 seconds w/o update, reload
     if (lastUpdate < moment.now() - 5000 * 1) {
-      setLastUpdate(moment.now());
+      setLastUpdate(moment.now())
     }
-  });
+  })
 
   const uniswapPoolAddress = useMemo(() => {
     if (chainId && token0 && token1) {
       // console.log('getFakePool', getFakePool(token0.address.toLowerCase(), token1.address.toLowerCase()))
-      if (
-        isFakePair(
-          chainId,
-          token0.address.toLowerCase(),
-          token1.address.toLowerCase()
-        )
-      ) {
-        return getFakePool(
-          chainId,
-          token0.address.toLowerCase(),
-          token1.address.toLowerCase()
-        );
+      if (isFakePair(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())) {
+        return getFakePool(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())
       }
 
       // return computePoolAddress({
@@ -113,8 +89,8 @@ export const PoolDataChart = ({
       // 	initCodeHashManualOverride: UNISWAP_POOL_INIT_CODE_HASH
       // }).toLowerCase()
     }
-    return undefined;
-  }, [chainId, token0, token1]);
+    return undefined
+  }, [chainId, token0, token1])
 
   // console.log("uniswapPoolAddress", uniswapPoolAddress)
 
@@ -126,39 +102,33 @@ export const PoolDataChart = ({
         tokenB: token1,
         fee,
         initCodeHashManualOverride: POOL_INIT_CODE_HASH,
-      }).toLowerCase();
+      }).toLowerCase()
     }
-    return undefined;
-  }, [chainId, token0, token1, fee]);
+    return undefined
+  }, [chainId, token0, token1, fee])
 
   // const uniswapPoolContract = useContract(uniswapPoolAddress, POOL_STATE_INTERFACE)
 
-  const [uniswapPoolExists, setUniswapPoolExists] = useState(false);
-  const [uniswapToken0Price, setUniswapToken0Price] = useState<
-    number | undefined
-  >();
-  const currency0 = useCurrency(token0?.address);
-  const currency1 = useCurrency(token1?.address);
-  const [poolState, limitlessPool] = usePool(
-    currency0 ?? undefined,
-    currency1 ?? undefined,
-    fee
-  );
-  const [symbol, setSymbol] = useState('missing pool');
+  const [uniswapPoolExists, setUniswapPoolExists] = useState(false)
+  const [uniswapToken0Price, setUniswapToken0Price] = useState<number | undefined>()
+  const currency0 = useCurrency(token0?.address)
+  const currency1 = useCurrency(token1?.address)
+  const [poolState, limitlessPool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
+  const [symbol, setSymbol] = useState('missing pool')
   const [stats, setStats] = useState<{
-    price: number;
-    delta: number;
+    price: number
+    delta: number
     // token0Volume: number | null,
     // token1Volume: number | null,
-    high24h: number;
-    low24h: number;
-    invertPrice: boolean;
-    token1Reserve: number;
-    token0Reserve: number;
-  }>();
+    high24h: number
+    low24h: number
+    invertPrice: boolean
+    token1Reserve: number
+    token0Reserve: number
+  }>()
 
-  const token0Contract = useTokenContract(token0?.address);
-  const token1Contract = useTokenContract(token1?.address);
+  const token0Contract = useTokenContract(token0?.address)
+  const token1Contract = useTokenContract(token1?.address)
 
   useEffect(() => {
     if (token0 && token1) {
@@ -166,26 +136,17 @@ export const PoolDataChart = ({
       // console.log("lmt: ", uniswapPoolAddress)
       const fetch = async () => {
         try {
-          if (
-            uniswapPoolAddress &&
-            token0Contract &&
-            token1Contract &&
-            limitlessPoolAddress
-          ) {
+          if (uniswapPoolAddress && token0Contract && token1Contract && limitlessPoolAddress) {
             const result = await uniswapClient.query({
               query: LATEST_POOL_DAY_QUERY,
               variables: {
                 address: uniswapPoolAddress,
               },
               fetchPolicy: 'network-only',
-            });
+            })
 
-            const token1Reserve = await token1Contract.callStatic.balanceOf(
-              limitlessPoolAddress
-            );
-            const token0Reserve = await token0Contract.callStatic.balanceOf(
-              limitlessPoolAddress
-            );
+            const token1Reserve = await token1Contract.callStatic.balanceOf(limitlessPoolAddress)
+            const token0Reserve = await token0Contract.callStatic.balanceOf(limitlessPoolAddress)
 
             const priceQuery = await uniswapClient.query({
               query: LATEST_POOL_INFO_QUERY,
@@ -193,38 +154,30 @@ export const PoolDataChart = ({
                 address: uniswapPoolAddress,
               },
               fetchPolicy: 'network-only',
-            });
+            })
 
             // console.log("priceQuery", priceQuery, result)
 
-            if (
-              !result.error &&
-              !result.loading &&
-              !priceQuery.error &&
-              !priceQuery.loading
-            ) {
-              const data = result.data.poolDayDatas;
+            if (!result.error && !result.loading && !priceQuery.error && !priceQuery.loading) {
+              const data = result.data.poolDayDatas
 
-              let price = priceQuery.data.pool.token0Price;
+              let price = priceQuery.data.pool.token0Price
 
-              const invertPrice = price < 1;
-              const { high, low, open } = data[0];
-              let delta;
-              let price24hHigh;
-              let price24hLow;
+              const invertPrice = price < 1
+              const { high, low, open } = data[0]
+              let delta
+              let price24hHigh
+              let price24hLow
               if (invertPrice) {
-                price = 1 / price;
-                const price24hAgo = 1 / open;
-                delta =
-                  ((Number(price) - Number(price24hAgo)) /
-                    Number(price24hAgo)) *
-                  100;
-                price24hHigh = 1 / Number(low); // Math.max(...data.map((item: any) => 1 / Number(item.high)))
-                price24hLow = 1 / Number(high); // Math.min(...data.map((item: any) => 1 / Number(item.low)))
+                price = 1 / price
+                const price24hAgo = 1 / open
+                delta = ((Number(price) - Number(price24hAgo)) / Number(price24hAgo)) * 100
+                price24hHigh = 1 / Number(low) // Math.max(...data.map((item: any) => 1 / Number(item.high)))
+                price24hLow = 1 / Number(high) // Math.min(...data.map((item: any) => 1 / Number(item.low)))
               } else {
-                delta = ((Number(price) - Number(open)) / Number(open)) * 100;
-                price24hHigh = Number(high);
-                price24hLow = Number(low);
+                delta = ((Number(price) - Number(open)) / Number(open)) * 100
+                price24hHigh = Number(high)
+                price24hLow = Number(low)
               }
 
               setStats({
@@ -233,22 +186,18 @@ export const PoolDataChart = ({
                 high24h: price24hHigh,
                 low24h: price24hLow,
                 invertPrice,
-                token0Reserve: new BN(token0Reserve.toString())
-                  .shiftedBy(-18)
-                  .toNumber(),
-                token1Reserve: new BN(token1Reserve.toString())
-                  .shiftedBy(-18)
-                  .toNumber(),
-              });
+                token0Reserve: new BN(token0Reserve.toString()).shiftedBy(-18).toNumber(),
+                token1Reserve: new BN(token1Reserve.toString()).shiftedBy(-18).toNumber(),
+              })
             }
           }
         } catch (err) {
-          console.log('stats section error: ', err);
-          setStats(undefined);
+          console.log('stats section error: ', err)
+          setStats(undefined)
         }
-      };
+      }
 
-      fetch();
+      fetch()
     }
   }, [
     lastUpdate,
@@ -260,9 +209,9 @@ export const PoolDataChart = ({
     token1Contract,
     token0,
     token1,
-  ]);
+  ])
 
-  console.log('stats: ', token0?.symbol, token1?.symbol, stats);
+  console.log('stats: ', token0?.symbol, token1?.symbol, stats)
 
   // useEffect(() => {
   // 	async function fetch() {
@@ -284,24 +233,10 @@ export const PoolDataChart = ({
   // })
   // console.log('symbol', symbol)
   useEffect(() => {
-    if (
-      token0 &&
-      token1 &&
-      isFakePair(
-        chainId,
-        token0?.address.toLowerCase(),
-        token1?.address.toLowerCase()
-      )
-    ) {
-      setSymbol(
-        getFakeSymbol(
-          chainId,
-          token0.address.toLowerCase(),
-          token1.address.toLowerCase()
-        ) as string
-      );
+    if (token0 && token1 && isFakePair(chainId, token0?.address.toLowerCase(), token1?.address.toLowerCase())) {
+      setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
     } else if (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress) {
-      const token0IsBase = uniswapToken0Price > 1;
+      const token0IsBase = uniswapToken0Price > 1
       setSymbol(
         JSON.stringify({
           poolAddress: uniswapPoolAddress,
@@ -310,9 +245,9 @@ export const PoolDataChart = ({
           invertPrice: !token0IsBase,
           useUniswapSubgraph: true,
         })
-      );
+      )
     } else if (!uniswapPoolExists && limitlessPoolAddress && limitlessPool) {
-      const token0IsBase = limitlessPool.token0Price.greaterThan(1);
+      const token0IsBase = limitlessPool.token0Price.greaterThan(1)
       setSymbol(
         JSON.stringify({
           poolAddress: limitlessPoolAddress,
@@ -321,9 +256,9 @@ export const PoolDataChart = ({
           invertPrice: !token0IsBase,
           useUniswapSubgraph: false,
         })
-      );
+      )
     } else {
-      setSymbol('missing pool');
+      setSymbol('missing pool')
     }
   }, [
     token0,
@@ -334,7 +269,7 @@ export const PoolDataChart = ({
     uniswapPoolAddress,
     uniswapPoolExists,
     uniswapToken0Price,
-  ]);
+  ])
 
   useEffect(() => {
     // console.log("symbolExchangeChart: ", symbol)
@@ -360,39 +295,37 @@ export const PoolDataChart = ({
       favorites: defaultChartProps.favorites,
       custom_formatters: defaultChartProps.custom_formatters,
       // save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
-    };
+    }
 
-    tvWidgetRef.current = new widget(widgetOptions as any);
+    tvWidgetRef.current = new widget(widgetOptions as any)
 
     tvWidgetRef.current?.onChartReady(function () {
-      setChartReady(true);
+      setChartReady(true)
 
       tvWidgetRef.current?.activeChart().dataReady(() => {
-        setChartDataLoading(false);
-      });
-    });
+        setChartDataLoading(false)
+      })
+    })
 
     return () => {
       if (tvWidgetRef.current) {
-        tvWidgetRef.current.remove();
-        tvWidgetRef.current = null;
-        setChartReady(false);
-        setChartDataLoading(true);
+        tvWidgetRef.current.remove()
+        tvWidgetRef.current = null
+        setChartReady(false)
+        setChartDataLoading(true)
       }
-    };
-  }, [chainId, symbol, uniswapPoolAddress, fee, datafeed]);
+    }
+  }, [chainId, symbol, uniswapPoolAddress, fee, datafeed])
 
   return (
-    
-      <div style={{ height: '450px' }}>
-        <div
-          style={{
-            height: '100%',
-          }}
-          ref={chartContainerRef}
-          className="TVChartContainer"
-        />
-      </div>
-    
-  );
-};
+    <div style={{ height: '450px' }}>
+      <div
+        style={{
+          height: '100%',
+        }}
+        ref={chartContainerRef}
+        className="TVChartContainer"
+      />
+    </div>
+  )
+}
