@@ -67,19 +67,25 @@ const LoadingChartContainer = styled.div`
   overflow: hidden;
 `
 export const TokenInfoContainer = styled.div`
+  background-color: #0D111C;
+  border-radius: 32px;
+  padding: 25px 30px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+  /* align-items: flex-start; */
+  margin-bottom: 15px;
   ${textFadeIn};
-  animation-duration: ${({ theme }) => theme.transition.duration.medium};
-`
+  animation-duration: ${({ theme }) => theme.transition.duration.medium};`
+
 export const TokenNameCell = styled.div`
   display: flex;
   gap: 8px;
   font-size: 20px;
   line-height: 28px;
   align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
 `
 /* Loading state bubbles */
 const DetailBubble = styled(LoadingBubble)`

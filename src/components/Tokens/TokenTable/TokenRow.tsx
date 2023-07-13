@@ -33,257 +33,7 @@ import {
 } from '../state'
 import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
 
-const Cell = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-const StyledTokenRow = styled.div<{
-  first?: boolean
-  last?: boolean
-  loading?: boolean
-}>`
-  background-color: transparent;
-  display: grid;
-  font-size: 16px;
-  grid-template-columns: 1fr 7fr 4fr 4fr 4fr 4fr 5fr;
-  line-height: 24px;
-  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
-  min-width: 390px;
-  ${({ first, last }) => css`
-    height: ${first || last ? '72px' : '64px'};
-    padding-top: ${first ? '8px' : '0px'};
-    padding-bottom: ${last ? '8px' : '0px'};
-  `}
-  padding-left: 12px;
-  padding-right: 12px;
-  transition: ${({
-    theme: {
-      transition: { duration, timing },
-    },
-  }) => css`background-color ${duration.medium} ${timing.ease}`};
-  width: 100%;
-  transition-duration: ${({ theme }) => theme.transition.duration.fast};
 
-  &:hover {
-    ${({ loading, theme }) =>
-      !loading &&
-      css`
-        background-color: ${theme.hoverDefault};
-      `}
-    ${({ last }) =>
-      last &&
-      css`
-        border-radius: 0px 0px 8px 8px;
-      `}
-  }
-
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-  }
-
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 7.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-  }
-
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 10fr 5fr 5fr 1.2fr;
-  }
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 2fr 3fr;
-    min-width: unset;
-    border-bottom: 0.5px solid ${({ theme }) => theme.backgroundModule};
-
-    :last-of-type {
-      border-bottom: none;
-    }
-  }
-`
-
-const ClickableContent = styled.div`
-  display: flex;
-  text-decoration: none;
-  color: ${({ theme }) => theme.textPrimary};
-  align-items: center;
-  cursor: pointer;
-`
-const ClickableName = styled(ClickableContent)`
-  gap: 8px;
-  max-width: 100%;
-`
-const StyledHeaderRow = styled(StyledTokenRow)`
-  border-bottom: 1px solid;
-  border-color: ${({ theme }) => theme.backgroundOutline};
-  border-radius: 8px 8px 0px 0px;
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 14px;
-  height: 48px;
-  line-height: 16px;
-  padding: 0px 12px;
-  width: 100%;
-  justify-content: center;
-
-  &:hover {
-    background-color: transparent;
-  }
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    justify-content: space-between;
-  }
-`
-
-const ListNumberCell = styled(Cell)<{ header: boolean }>`
-  color: ${({ theme }) => theme.textSecondary};
-  min-width: 32px;
-  font-size: 14px;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const DataCell = styled(Cell)<{ sortable: boolean }>`
-  justify-content: flex-end;
-  min-width: 80px;
-  user-select: ${({ sortable }) => (sortable ? 'none' : 'unset')};
-  transition: ${({
-    theme: {
-      transition: { duration, timing },
-    },
-  }) => css`background-color ${duration.medium} ${timing.ease}`};
-`
-const TvlCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const NameCell = styled(Cell)`
-  justify-content: flex-start;
-  padding: 0px 8px;
-  min-width: 240px;
-  gap: 8px;
-`
-const PriceCell = styled(DataCell)`
-  padding-right: 8px;
-`
-const PercentChangeCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const PercentChangeInfoCell = styled(Cell)`
-  display: none;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: flex;
-    justify-content: flex-end;
-    color: ${({ theme }) => theme.textSecondary};
-    font-size: 12px;
-    line-height: 16px;
-  }
-`
-const PriceInfoCell = styled(Cell)`
-  justify-content: flex-end;
-  flex: 1;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    flex-direction: column;
-    align-items: flex-end;
-  }
-`
-
-const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
-  align-items: center;
-  cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
-  display: flex;
-  gap: 4px;
-  justify-content: flex-end;
-  width: 100%;
-
-  &:hover {
-    ${ClickableStyle}
-  }
-`
-const SparkLineCell = styled(Cell)`
-  padding: 0px 24px;
-  min-width: 120px;
-
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const SparkLine = styled(Cell)`
-  width: 124px;
-  height: 42px;
-`
-const StyledLink = styled(Link)`
-  text-decoration: none;
-`
-const TokenInfoCell = styled(Cell)`
-  gap: 8px;
-  line-height: 24px;
-  font-size: 16px;
-  max-width: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    justify-content: flex-start;
-    flex-direction: column;
-    gap: 0px;
-    width: max-content;
-    font-weight: 500;
-  }
-`
-const TokenName = styled.div`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-`
-const TokenSymbol = styled(Cell)`
-  color: ${({ theme }) => theme.textTertiary};
-  text-transform: uppercase;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    font-size: 12px;
-    height: 16px;
-    justify-content: flex-start;
-    width: 100%;
-  }
-`
-const VolumeCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const SmallLoadingBubble = styled(LoadingBubble)`
-  width: 25%;
-`
-const MediumLoadingBubble = styled(LoadingBubble)`
-  width: 65%;
-`
-const LongLoadingBubble = styled(LoadingBubble)`
-  width: 90%;
-`
-const IconLoadingBubble = styled(LoadingBubble)`
-  border-radius: 50%;
-  width: 24px;
-`
-export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
-  height: 4px;
-`
-
-const InfoIconContainer = styled.div`
-  margin-left: 2px;
-  display: flex;
-  align-items: center;
-  cursor: help;
-`
 
 export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
@@ -525,3 +275,255 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 })
 
 LoadedRow.displayName = 'LoadedRow'
+
+const Cell = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const StyledTokenRow = styled.div<{
+  first?: boolean;
+  last?: boolean;
+  loading?: boolean;
+}>`
+  background-color: transparent;
+  display: grid;
+  font-size: 16px;
+  grid-template-columns: 1fr 7fr 4fr 4fr 4fr 4fr 5fr;
+  line-height: 24px;
+  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  min-width: 390px;
+  ${({ first, last }) => css`
+    height: ${first || last ? '72px' : '64px'};
+    padding-top: ${first ? '8px' : '0px'};
+    padding-bottom: ${last ? '8px' : '0px'};
+  `}
+  padding-left: 12px;
+  padding-right: 12px;
+  transition: ${({
+    theme: {
+      transition: { duration, timing },
+    },
+  }) => css`background-color ${duration.medium} ${timing.ease}`};
+  width: 100%;
+  transition-duration: ${({ theme }) => theme.transition.duration.fast};
+
+  &:hover {
+    ${({ loading, theme }) =>
+      !loading &&
+      css`
+        background-color: ${theme.hoverDefault};
+      `}
+    ${({ last }) =>
+      last &&
+      css`
+        border-radius: 0px 0px 8px 8px;
+      `}
+  }
+
+  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
+  }
+
+  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr 7.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
+  }
+
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr 10fr 5fr 5fr 1.2fr;
+  }
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 2fr 3fr;
+    min-width: unset;
+    border-bottom: 0.5px solid ${({ theme }) => theme.backgroundModule};
+
+    :last-of-type {
+      border-bottom: none;
+    }
+  }
+`;
+
+const ClickableContent = styled.div`
+  display: flex;
+  text-decoration: none;
+  color: ${({ theme }) => theme.textPrimary};
+  align-items: center;
+  cursor: pointer;
+`;
+const ClickableName = styled(ClickableContent)`
+  gap: 8px;
+  max-width: 100%;
+`;
+const StyledHeaderRow = styled(StyledTokenRow)`
+  border-bottom: 1px solid;
+  border-color: ${({ theme }) => theme.backgroundOutline};
+  border-radius: 8px 8px 0px 0px;
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 14px;
+  height: 48px;
+  line-height: 16px;
+  padding: 0px 12px;
+  width: 100%;
+  justify-content: center;
+
+  &:hover {
+    background-color: transparent;
+  }
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    justify-content: space-between;
+  }
+`;
+
+const ListNumberCell = styled(Cell)<{ header: boolean }>`
+  color: ${({ theme }) => theme.textSecondary};
+  min-width: 32px;
+  font-size: 14px;
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`;
+const DataCell = styled(Cell)<{ sortable: boolean }>`
+  justify-content: flex-end;
+  min-width: 80px;
+  user-select: ${({ sortable }) => (sortable ? 'none' : 'unset')};
+  transition: ${({
+    theme: {
+      transition: { duration, timing },
+    },
+  }) => css`background-color ${duration.medium} ${timing.ease}`};
+`;
+const TvlCell = styled(DataCell)`
+  padding-right: 8px;
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`;
+const NameCell = styled(Cell)`
+  justify-content: flex-start;
+  padding: 0px 8px;
+  min-width: 240px;
+  gap: 8px;
+`;
+const PriceCell = styled(DataCell)`
+  padding-right: 8px;
+`;
+const PercentChangeCell = styled(DataCell)`
+  padding-right: 8px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`;
+const PercentChangeInfoCell = styled(Cell)`
+  display: none;
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    display: flex;
+    justify-content: flex-end;
+    color: ${({ theme }) => theme.textSecondary};
+    font-size: 12px;
+    line-height: 16px;
+  }
+`;
+const PriceInfoCell = styled(Cell)`
+  justify-content: flex-end;
+  flex: 1;
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+`;
+
+const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
+  align-items: center;
+  cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  width: 100%;
+
+  &:hover {
+    ${ClickableStyle}
+  }
+`;
+const SparkLineCell = styled(Cell)`
+  padding: 0px 24px;
+  min-width: 120px;
+
+  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`;
+const SparkLine = styled(Cell)`
+  width: 124px;
+  height: 42px;
+`;
+const StyledLink = styled(Link)`
+  text-decoration: none;
+`;
+const TokenInfoCell = styled(Cell)`
+  gap: 8px;
+  line-height: 24px;
+  font-size: 16px;
+  max-width: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 0px;
+    width: max-content;
+    font-weight: 500;
+  }
+`;
+const TokenName = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+`;
+const TokenSymbol = styled(Cell)`
+  color: ${({ theme }) => theme.textTertiary};
+  text-transform: uppercase;
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    font-size: 12px;
+    height: 16px;
+    justify-content: flex-start;
+    width: 100%;
+  }
+`;
+const VolumeCell = styled(DataCell)`
+  padding-right: 8px;
+  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`;
+const SmallLoadingBubble = styled(LoadingBubble)`
+  width: 25%;
+`;
+const MediumLoadingBubble = styled(LoadingBubble)`
+  width: 65%;
+`;
+const LongLoadingBubble = styled(LoadingBubble)`
+  width: 90%;
+`;
+const IconLoadingBubble = styled(LoadingBubble)`
+  border-radius: 50%;
+  width: 24px;
+`;
+export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
+  height: 4px;
+`;
+
+const InfoIconContainer = styled.div`
+  margin-left: 2px;
+  display: flex;
+  align-items: center;
+  cursor: help;
+`;
