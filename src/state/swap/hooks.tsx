@@ -157,16 +157,16 @@ const BAD_RECIPIENT_ADDRESSES: { [address: string]: true } = {
 export interface LeverageTrade {
   inputAmount: CurrencyAmount<Currency>
   borrowedAmount: CurrencyAmount<Currency>
-  expectedOutput: number // new output. i.e. new position - existing position.
+  expectedTotalPosition: number // new output. i.e. new position - existing position.
   strikePrice: number
   quotedPremium: number
   priceImpact: Percent
   remainingPremium: number
   effectiveLeverage: number
   existingPosition: boolean
-  existingTotalDebtInput?: number
-  existingTotalPosition?: number
-  existingCollateral?: number
+  existingTotalDebtInput: number
+  existingTotalPosition: number
+  existingCollateral: number
   tokenId?: number // if not existing position then this will be undefined
 }
 
@@ -179,8 +179,8 @@ export interface BorrowCreationDetails {
   ltv: number
   // state: TradeState
   existingPosition: boolean
-  existingTotalDebtInput?: number
-  existingCollateral?: number
+  existingTotalDebtInput: number
+  existingCollateral: number
 }
 
 // in its return the pos, vars.prevRemainingPremium, vars.premium, the vars.premium is new quoted, prevRemaining is unused amount you get back,
@@ -410,8 +410,8 @@ export function useDerivedBorrowCreationInfo({ allowance: {input: inputAllowance
 
       // existing position
       const _existingPosition = !!existingPosition
-      const existingTotalDebtInput = existingPosition?.totalDebtInput
-      const existingCollateral = existingPosition?.initialCollateral
+      const existingTotalDebtInput = existingPosition?.totalDebtInput ?? 0
+      const existingCollateral = existingPosition?.initialCollateral ?? 0
       // if (existingPosition) {
       //   _existingPosition = true
       //   existingTotalDebtInput = 
@@ -434,7 +434,7 @@ export function useDerivedBorrowCreationInfo({ allowance: {input: inputAllowance
     } else {
       return undefined
     }
-  }, [inputAllowance, outputAllowance, ltv, initialPrice, tradeState, contractResult, borrowManager, debouncedAmount, currencies, inputCurrency, outputCurrency])
+  }, [existingPosition, ltv, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
 
   // console.log('trade', existingPosition, trade)
 
@@ -459,7 +459,7 @@ export function useDerivedBorrowCreationInfo({ allowance: {input: inputAllowance
         // console.log("alli")
       }
     }
-  }, [activeTab, tradeState, trade, typedValue, pool, ltv])
+  }, [activeTab, tradeState, trade, typedValue, pool, ltv, existingPosition, onPremiumChange, inputIsToken0])
 
 
 
@@ -474,7 +474,7 @@ export function useDerivedBorrowCreationInfo({ allowance: {input: inputAllowance
       _contractError = _contractError ?? <Trans>Invalid Trade</Trans>
     }
     return _contractError
-  }, [error, inputAllowance, outputAllowance, account, allowedSlippage, currencies, currencyBalances, parsedAmount, borrowManager, ltv, inputCurrency, trade])
+  }, [error, tradeState])
 
   return {
     trade,
@@ -683,10 +683,10 @@ export function useDerivedLeverageCreationInfo()
     ) {
             // existing position
       let _existingPosition = false
-      let existingTotalDebtInput
-      let existingTotalPosition
+      let existingTotalDebtInput = 0 
+      let existingTotalPosition = 0 
       let tokenId
-      let existingCollateral
+      let existingCollateral = 0
       if (existingPosition){
         _existingPosition = true
         existingTotalDebtInput = existingPosition.totalDebtInput
@@ -696,9 +696,9 @@ export function useDerivedLeverageCreationInfo()
       }
 
       const position: any = contractResult[0]
-      const expectedOutput = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
+      const expectedTotalPosition = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
       const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
-      const strikePrice = new BN(expectedOutput).div(new BN(borrowedAmount ).plus(debouncedAmount.toExact() )).toNumber()
+      const strikePrice = new BN(expectedTotalPosition).div(new BN(borrowedAmount).plus(debouncedAmount.toExact() )).toNumber()
 
       const quotedPremium = new BN((contractResult[2] as any)
         .toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
@@ -712,7 +712,7 @@ export function useDerivedLeverageCreationInfo()
       return {
         inputAmount: debouncedAmount,
         borrowedAmount: CurrencyAmount.fromRawAmount(inputCurrency?.wrapped, new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)),
-        expectedOutput,
+        expectedTotalPosition,
         strikePrice,
         quotedPremium, //- returnedPremium,
         priceImpact,

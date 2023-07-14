@@ -294,6 +294,7 @@ const TradeTabContent = () => {
   const { callback: leverageCallback } = useAddLeveragePositionCallback(
     leverageManagerAddress ?? undefined,
     trade,
+    leverageTrade,
     leverageAllowedSlippage,
     leverageFactor ?? undefined,
   )
@@ -616,9 +617,9 @@ const TradeTabContent = () => {
                     "-"
                     :
                     (
-                      leverageTrade?.expectedOutput ? (
+                      leverageTrade?.expectedTotalPosition ? (
                         leverageTrade?.existingTotalPosition ?
-                          String(leverageTrade.expectedOutput - leverageTrade.existingTotalPosition) : String(leverageTrade.expectedOutput)
+                          String(leverageTrade.expectedTotalPosition - leverageTrade.existingTotalPosition) : String(leverageTrade.expectedTotalPosition)
                       ) : "-"
                     )
                 }

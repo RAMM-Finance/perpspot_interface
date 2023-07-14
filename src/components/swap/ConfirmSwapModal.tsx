@@ -3,8 +3,11 @@ import { Trace } from '@uniswap/analytics'
 import { InterfaceModalName } from '@uniswap/analytics-events'
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { useCurrency } from 'hooks/Tokens'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { InterfaceTrade } from 'state/routing/types'
+import { Field } from 'state/swap/actions'
+import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
 import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
 import TransactionConfirmationModal, {
@@ -12,10 +15,7 @@ import TransactionConfirmationModal, {
   TransactionErrorContent,
 } from '../TransactionConfirmationModal'
 import SwapModalFooter, { BorrowModalFooter, LeverageModalFooter } from './SwapModalFooter'
-import SwapModalHeader, { BorrowModalHeader, LeverageCloseModalHeader, LeverageModalHeader } from './SwapModalHeader'
-import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
-import { Field } from 'state/swap/actions'
-import { useCurrency } from 'hooks/Tokens'
+import SwapModalHeader, { BorrowModalHeader, LeverageModalHeader } from './SwapModalHeader'
 
 export default function ConfirmSwapModal({
   trade,
@@ -235,7 +235,7 @@ export function LeverageConfirmModal({
   const pendingText = (
     <Trans>
       Borrowing {leverageTrade?.borrowedAmount?.toExact()} {leverageTrade?.inputAmount?.currency?.symbol} and{' '}
-      Recieving {leverageTrade?.expectedOutput} {trade?.outputAmount?.currency?.symbol}
+      Recieving {leverageTrade?.expectedTotalPosition} {trade?.outputAmount?.currency?.symbol}
     </Trans>
   )
 

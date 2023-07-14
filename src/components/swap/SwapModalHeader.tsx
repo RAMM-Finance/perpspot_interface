@@ -439,7 +439,7 @@ export function LeverageModalHeader({
         existingPosition,
         existingTotalDebtInput,
         existingTotalPosition,
-        expectedOutput
+        expectedTotalPosition
       } = leverageTrade
       if (inputAmount && borrowedAmount) {
         totalInput = Number(inputAmount.toExact()) * leverageFactor
@@ -452,10 +452,10 @@ export function LeverageModalHeader({
         //   )
         totalOutput = existingTotalPosition ? 
           (
-            Number(expectedOutput) - existingTotalPosition
+            Number(expectedTotalPosition) - existingTotalPosition
           ) :
           (
-            Number(expectedOutput)
+            Number(expectedTotalPosition)
           )
       }
     }
@@ -584,7 +584,7 @@ export function LeverageModalHeader({
             <Trans>
               Output is estimated. You will receive at least{' '}
               <b>
-                {leverageTrade?.expectedOutput} {trade.outputAmount.currency.symbol}
+                {leverageTrade?.expectedTotalPosition} {trade.outputAmount.currency.symbol}
               </b>{' '}
               or the transaction will revert.
             </Trans>

@@ -243,8 +243,10 @@ export interface ReduceBorrowDebtTransactionInfo {
 
 export interface AddLeverageTransactionInfo {
   type: TransactionType.ADD_LEVERAGE
-  inputCurrencyId: string
-  outputCurrencyId: string
+  inputAmount: number
+  inputCurrencySymbol: string
+  outputCurrencySymbol: string
+  expectedAddedPosition: number
 }
 
 export type TransactionInfo =
