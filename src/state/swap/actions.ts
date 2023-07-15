@@ -7,7 +7,7 @@ export enum Field {
 
 export enum ActiveSwapTab {
   TRADE,
-  BORROW
+  BORROW,
 }
 
 export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')
@@ -32,10 +32,14 @@ export const replaceSwapState = createAction<{
 }>('swap/replaceSwapState')
 export const setRecipient = createAction<{ recipient: string | null }>('swap/setRecipient')
 export const setLeverageFactor = createAction<{ leverageFactor: string }>('swap/setLeverageFactor')
-export const setHideClosedLeveragePositions = createAction<{ hideClosedLeveragePositions: boolean }>('swap/setHideClosedLeveragePositions')
+export const setHideClosedLeveragePositions = createAction<{ hideClosedLeveragePositions: boolean }>(
+  'swap/setHideClosedLeveragePositions'
+)
 export const setLeverage = createAction<{ leverage: boolean }>('swap/setLeverage')
-export const setLeverageManagerAddress = createAction<{ leverageManagerAddress: string }>('swap/setLeverageManagerAddress')
-export const setActiveTab = createAction<{ activeTab: ActiveSwapTab}>('swap/setActiveTab')
+export const setLeverageManagerAddress = createAction<{ leverageManagerAddress: string }>(
+  'swap/setLeverageManagerAddress'
+)
+export const setActiveTab = createAction<{ activeTab: ActiveSwapTab }>('swap/setActiveTab')
 export const setLTV = createAction<{ ltv: string }>('swap/setLTV')
 export const setBorrowManagerAddress = createAction<{ borrowManagerAddress: string }>('swap/setBorrowManagerAddress')
-export const setPremium = createAction<{premium: number }>('swap/setPremium')
+export const setPremium = createAction<{ premium: number }>('swap/setPremium')

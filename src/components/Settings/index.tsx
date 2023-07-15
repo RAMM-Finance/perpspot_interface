@@ -2,7 +2,6 @@
 import { t, Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { sendEvent } from 'components/analytics'
 import { isSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import { useRef, useState } from 'react'
 import { Settings, X } from 'react-feather'
@@ -13,18 +12,15 @@ import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalIsOpen, useToggleSettingsMenu } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
 import { useClientSideRouter, useExpertModeManager } from '../../state/user/hooks'
-import { ThemedText } from '../../theme'
 import { ButtonError } from '../Button'
 import { AutoColumn } from '../Column'
 import Modal from '../Modal'
-import QuestionHelper from '../QuestionHelper'
-import { RowBetween, RowFixed } from '../Row'
-import Toggle from '../Toggle'
+import { RowBetween } from '../Row'
 import TransactionSettings from '../TransactionSettings'
 
 const StyledMenuIcon = styled(Settings)`
-  height: 20px;
-  width: 20px;
+  height: 18px;
+  width: 18px;
 
   > * {
     stroke: ${({ theme }) => theme.textSecondary};
@@ -75,7 +71,7 @@ const EmojiWrapper = styled.div`
 const StyledMenu = styled.div`
   margin-left: 0.5rem;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   position: relative;
   border: none;

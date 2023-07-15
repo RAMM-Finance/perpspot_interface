@@ -118,16 +118,14 @@ export const colors = {
 // $gradient-bottom-left: linear-gradient(315deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
 // $gradient-radial: radial-gradient(#201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
 export const limitlessColors = {
-  darkPurple: "#201426ff",
-  black: "#040505ff",
-  richBlack: "05051Bff",
-  white: "#FFFFFFff",
-  russianViolet: "#23113Bff"
+  darkPurple: '#201426ff',
+  black: '#040505ff',
+  richBlack: '05051Bff',
+  white: '#FFFFFFff',
+  russianViolet: '#23113Bff',
 }
 
-
 type Theme = typeof darkTheme
-
 
 const commonTheme = {
   white: colors.white,
@@ -163,7 +161,7 @@ export const darkTheme = {
   backgroundBackdrop: colors.gray950,
 
   // backgroundSurface: limitlessColors.darkPurple,
- backgroundSurface: colors.gray900,//"#030216", //"#0d0517", //colors.black,// colors.gray900
+  backgroundSurface: colors.gray900, //"#030216", //"#0d0517", //colors.black,// colors.gray900
   backgroundModule: opacify(8, colors.gray300), // #293249', // "#181926", // colors.gray800
   backgroundInteractive: colors.gray700,
   backgroundFloating: opacify(12, colors.black),
@@ -179,7 +177,7 @@ export const darkTheme = {
   accentWarning: colors.gold200,
   accentFailure: colors.red300,
   accentCritical: colors.red300,
-  gold: "#c9b832",
+  gold: '#c9b832',
   accentActionSoft: opacify(24, colors.blue400),
   accentActiveSoft: opacify(24, colors.blue400),
   accentSuccessSoft: opacify(24, colors.green400),
@@ -205,7 +203,6 @@ export const darkTheme = {
   searchBackground: `rgba(255,255,255,0.07)`,
   searchOutline: `rgba(255,255,255,0.07)`,
 }
-
 
 export const lightTheme = {
   ...commonTheme,
