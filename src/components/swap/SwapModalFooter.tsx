@@ -5,7 +5,7 @@ import { formatNumber } from '@uniswap/conedison/format'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from "bignumber.js"
+import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import Card, { DarkCard, OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -59,7 +59,6 @@ import { getTokenPath, RoutingDiagramEntry } from './SwapRoute'
 //   border-radius: 10px;
 //   font-size: 20px;
 // `
-
 
 interface AnalyticsEventProps {
   trade: InterfaceTrade<Currency, Currency, TradeType>
@@ -206,7 +205,6 @@ export default function SwapModalFooter({
 const TransactionDetails = styled.div`
   position: relative;
   width: 100%;
-
 `
 const Wrapper = styled(Row)`
   width: 100%;
@@ -229,13 +227,13 @@ const StyledCard = styled(OutlineCard)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
-const StyledHeaderRow = styled(RowBetween) <{ disabled: boolean; open: boolean }>`
+const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
   padding: 0;
   align-items: center;
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
 `
 
-const RotatingArrow = styled(ChevronDown) <{ open?: boolean }>`
+const RotatingArrow = styled(ChevronDown)<{ open?: boolean }>`
   transform: ${({ open }) => (open ? 'rotate(180deg)' : 'none')};
   transition: transform 0.1s linear;
 `
@@ -312,7 +310,6 @@ const Spinner = styled.div`
   top: -3px;
 `
 
-
 const StyledPriceContainer = styled.button`
   background-color: transparent;
   border: none;
@@ -341,10 +338,9 @@ const SliderText = styled(Text)`
 export enum DerivedInfoState {
   LOADING,
   VALID,
-  INVALID
+  INVALID,
 }
 // (vars.amount0, vars.amount1)
-
 
 function useDerivedBorrowReduceCollateralInfo(
   trader: string | undefined,
@@ -352,17 +348,19 @@ function useDerivedBorrowReduceCollateralInfo(
   position: LimitlessPositionDetails | undefined,
   reduceAmount: string | undefined,
   recieveCollateral: boolean,
-  setState: (state: DerivedInfoState) => void,
+  setState: (state: DerivedInfoState) => void
   // approvalState: ApprovalState
 ): {
-  transactionInfo: {
-    token0Amount: string
-    token1Amount: string
-    pnl: string
-    returnedAmount: string
-    unusedPremium: string
-    premium: string
-  } | undefined,
+  transactionInfo:
+    | {
+        token0Amount: string
+        token1Amount: string
+        pnl: string
+        returnedAmount: string
+        unusedPremium: string
+        premium: string
+      }
+    | undefined
   userError: React.ReactNode | undefined
 } {
   const borrowManagerContract = useBorrowManagerContract(position?.borrowManagerAddress)
@@ -382,24 +380,32 @@ function useDerivedBorrowReduceCollateralInfo(
 
   useEffect(() => {
     const laggedfxn = async () => {
-      if (!borrowManagerContract || !tokenId || !trader && !position || !position?.totalDebtInput || Number(reduceAmount) <= 0 || !reduceAmount) {
+      if (
+        !borrowManagerContract ||
+        !tokenId ||
+        (!trader && !position) ||
+        !position?.totalDebtInput ||
+        Number(reduceAmount) <= 0 ||
+        !reduceAmount
+      ) {
         setState(DerivedInfoState.INVALID)
         return
       }
 
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0);
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
       setState(DerivedInfoState.LOADING)
 
       try {
         // console.log('reducePositionArgsss', position, position.isToken0, position.totalPosition, formattedReduceAmount)
         const reducePositionResult = await borrowManagerContract.callStatic.reduceBorrowPosition(
-          position?.isToken0, true,
+          position?.isToken0,
+          true,
           recieveCollateral,
           formattedReduceAmount
         )
         // console.log('reducePosition', reducePositionResult, tokenId);
         setContractResult({
-          reducePositionResult
+          reducePositionResult,
         })
         setState(DerivedInfoState.VALID)
       } catch (error) {
@@ -415,13 +421,25 @@ function useDerivedBorrowReduceCollateralInfo(
   const transactionInfo = useMemo(() => {
     if (contractResult) {
       const { reducePositionResult } = contractResult
-      console.log("reducePositionResult", reducePositionResult)
-      const token0Amount = new BN(reducePositionResult[0].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const token1Amount = new BN(reducePositionResult[1].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const pnl = new BN(reducePositionResult[2].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const returnedAmount = new BN(reducePositionResult[3].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const unusedPremium = new BN(reducePositionResult[4].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const premium = new BN(reducePositionResult[5].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
+      console.log('reducePositionResult', reducePositionResult)
+      const token0Amount = new BN(reducePositionResult[0].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const token1Amount = new BN(reducePositionResult[1].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const pnl = new BN(reducePositionResult[2].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const returnedAmount = new BN(reducePositionResult[3].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const unusedPremium = new BN(reducePositionResult[4].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const premium = new BN(reducePositionResult[5].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
 
       return {
         token0Amount,
@@ -429,40 +447,33 @@ function useDerivedBorrowReduceCollateralInfo(
         pnl,
         returnedAmount,
         unusedPremium,
-        premium
+        premium,
       }
     }
     return undefined
-  }, [
-    contractResult
-  ])
+  }, [contractResult])
 
   const userError = useMemo(() => {
-    let error;
+    let error
 
     if (position) {
       if (!reduceAmount) {
-        error = (<Trans>
-          Enter a valid amount
-        </Trans>)
+        error = <Trans>Enter a valid amount</Trans>
       }
 
       if (relevantTokenBalances?.length > 0) {
         const tokenBalance = position.isToken0 ? relevantTokenBalances[1] : relevantTokenBalances[0]
         if (Number(tokenBalance) < position.totalDebtInput * 0.002) {
-          error = (<Trans>
-            Insufficient {position.isToken0 ? currency1?.symbol : currency0?.symbol} balance
-          </Trans>)
+          error = <Trans>Insufficient {position.isToken0 ? currency1?.symbol : currency0?.symbol} balance</Trans>
         }
       }
     }
-    return error;
-
+    return error
   }, [relevantTokenBalances, position, reduceAmount])
 
   return {
     transactionInfo,
-    userError
+    userError,
   }
 }
 
@@ -474,14 +485,16 @@ function useDerivedBorrowReduceDebtInfo(
   recieveCollateral: boolean,
   setState: (state: DerivedInfoState) => void
 ): {
-  transactionInfo: {
-    token0Amount: string
-    token1Amount: string
-    pnl: string
-    returnedAmount: string
-    unusedPremium: string
-    premium: string
-  } | undefined,
+  transactionInfo:
+    | {
+        token0Amount: string
+        token1Amount: string
+        pnl: string
+        returnedAmount: string
+        unusedPremium: string
+        premium: string
+      }
+    | undefined
   userError: React.ReactNode | undefined
 } {
   const borrowManagerContract = useBorrowManagerContract(position?.borrowManagerAddress)
@@ -502,7 +515,14 @@ function useDerivedBorrowReduceDebtInfo(
 
   useEffect(() => {
     const laggedfxn = async () => {
-      if (!borrowManagerContract || !tokenId || !trader && !position || !position?.totalDebtInput || Number(reduceAmount) <= 0 || !reduceAmount) {
+      if (
+        !borrowManagerContract ||
+        !tokenId ||
+        (!trader && !position) ||
+        !position?.totalDebtInput ||
+        Number(reduceAmount) <= 0 ||
+        !reduceAmount
+      ) {
         setState(DerivedInfoState.INVALID)
         return
       }
@@ -510,22 +530,30 @@ function useDerivedBorrowReduceDebtInfo(
       const formattedReduceAmount = String(Number(reduceAmount) * 1e18) //new BN(reduceAmount).shiftedBy(18).toFixed(0);
       const inputReduceAmount =
         Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)) < 1e12
-          // Number(position.totalPositionRaw) <= Number(formattedReduceAmount)
-          ? position.totalPositionRaw : formattedReduceAmount
+          ? // Number(position.totalPositionRaw) <= Number(formattedReduceAmount)
+            position.totalPositionRaw
+          : formattedReduceAmount
 
       setState(DerivedInfoState.LOADING)
 
       try {
-        console.log('reducePositionArgsss', position, recieveCollateral, position.isToken0, inputReduceAmount, formattedReduceAmount)
+        console.log(
+          'reducePositionArgsss',
+          position,
+          recieveCollateral,
+          position.isToken0,
+          inputReduceAmount,
+          formattedReduceAmount
+        )
         const reducePositionResult = await borrowManagerContract.callStatic.reduceBorrowPosition(
           position?.isToken0,
           false,
           recieveCollateral,
           inputReduceAmount
         )
-        console.log('reducePosition', reducePositionResult, tokenId);
+        console.log('reducePosition', reducePositionResult, tokenId)
         setContractResult({
-          reducePositionResult
+          reducePositionResult,
         })
         setState(DerivedInfoState.VALID)
       } catch (error) {
@@ -541,12 +569,24 @@ function useDerivedBorrowReduceDebtInfo(
   const transactionInfo = useMemo(() => {
     if (contractResult) {
       const { reducePositionResult } = contractResult
-      const token0Amount = new BN(reducePositionResult[0].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const token1Amount = new BN(reducePositionResult[1].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const pnl = new BN(reducePositionResult[2].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const returnedAmount = new BN(reducePositionResult[3].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const unusedPremium = new BN(reducePositionResult[4].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const premium = new BN(reducePositionResult[5].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
+      const token0Amount = new BN(reducePositionResult[0].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const token1Amount = new BN(reducePositionResult[1].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const pnl = new BN(reducePositionResult[2].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const returnedAmount = new BN(reducePositionResult[3].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const unusedPremium = new BN(reducePositionResult[4].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const premium = new BN(reducePositionResult[5].toString())
+        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
+        .toFixed(DEFAULT_ERC20_DECIMALS)
       // console.log("premium: ", premium)
       return {
         token0Amount,
@@ -554,20 +594,16 @@ function useDerivedBorrowReduceDebtInfo(
         pnl,
         returnedAmount,
         unusedPremium,
-        premium
+        premium,
       }
     }
     return undefined
-  }, [
-    contractResult
-  ])
+  }, [contractResult])
 
   const userError = useMemo(() => {
-    let error;
+    let error
     if (!reduceAmount) {
-      error = (<Trans>
-        Invalid Amount
-      </Trans>)
+      error = <Trans>Invalid Amount</Trans>
     }
 
     // if (relevantTokenBalances?.length > 0 && position && premium) {
@@ -584,7 +620,7 @@ function useDerivedBorrowReduceDebtInfo(
 
   return {
     transactionInfo,
-    userError
+    userError,
   }
 }
 
@@ -615,10 +651,12 @@ function useDerivedAddLeveragePremiumInfo(
   approvalState: ApprovalState,
   premium?: number
 ): {
-  tradeInfo: {
-    remainingPremium: number,
-    totalPremium: number
-  } | undefined,
+  tradeInfo:
+    | {
+        remainingPremium: number
+        totalPremium: number
+      }
+    | undefined
   inputError: React.ReactNode | undefined
 } {
   const liquidityManagerContract = useLiquidityManagerContract(liquidityManagerAddress)
@@ -643,13 +681,9 @@ function useDerivedAddLeveragePremiumInfo(
       const token1Balance = relevantTokenBalances[1]
       let inputError
       if (isToken0 && Number(token1Balance?.toExact()) < premium) {
-        inputError = (<Trans>
-          Insufficient {currency1?.symbol} balance
-        </Trans>)
+        inputError = <Trans>Insufficient {currency1?.symbol} balance</Trans>
       } else if (!isToken0 && Number(token0Balance?.toExact()) < premium) {
-        inputError = (<Trans>
-          Insufficient {currency0?.symbol} balance
-        </Trans>)
+        inputError = <Trans>Insufficient {currency0?.symbol} balance</Trans>
       }
       return inputError
     }
@@ -668,13 +702,17 @@ function useDerivedAddLeveragePremiumInfo(
         // const position = await leverageManagerContract.callStatic.getPosition(trader, tokenId)
         // payPremium(address trader, bool isBorrow, bool isToken0)
         const addPremiumResult = await liquidityManagerContract.callStatic.payPremium(trader, false, isToken0)
-        console.log("addPosition:", addPremiumResult, new BN(addPremiumResult[0]).shiftedBy(-18).toString(), addPremiumResult[1].toString())
+        console.log(
+          'addPosition:',
+          addPremiumResult,
+          new BN(addPremiumResult[0]).shiftedBy(-18).toString(),
+          addPremiumResult[1].toString()
+        )
 
         setContractResult({
-          addPremiumResult
+          addPremiumResult,
         })
         setState(DerivedInfoState.VALID)
-
       } catch (error) {
         console.error('Failed to get addPremium info', error)
         setState(DerivedInfoState.INVALID)
@@ -689,15 +727,13 @@ function useDerivedAddLeveragePremiumInfo(
       const addPremiumResult = contractResult.addPremiumResult
       return {
         totalPremium: Number(addPremiumResult[0].toString()) / 1e18,
-        remainingPremium: Number(addPremiumResult[1].toString()) / 1e18
+        remainingPremium: Number(addPremiumResult[1].toString()) / 1e18,
         // remainingPremium: Number(new BN(addPremiumResult[1]).shiftedBy(-18).toString())
       }
     } else {
       return undefined
     }
-  }, [
-    contractResult
-  ])
+  }, [contractResult])
 
   return { tradeInfo: info, inputError }
 }
@@ -711,11 +747,13 @@ function useDerivedAddBorrowPremiumInfo(
   approvalState: ApprovalState,
   premium?: number
 ): {
-  tradeInfo: {
-    // rate: string,
-    totalPremium: number,
-    remainingPremium: number
-  } | undefined,
+  tradeInfo:
+    | {
+        // rate: string,
+        totalPremium: number
+        remainingPremium: number
+      }
+    | undefined
   inputError: React.ReactNode | undefined
 } {
   const liquidityManagerContract = useLiquidityManagerContract(liquidityManagerAddress)
@@ -741,20 +779,15 @@ function useDerivedAddBorrowPremiumInfo(
       const token1Balance = relevantTokenBalances[1]
       let inputError
       if (isToken0 && Number(token1Balance?.toExact()) < premium) {
-        inputError = (<Trans>
-          Insufficient {currency1?.symbol} balance
-        </Trans>)
+        inputError = <Trans>Insufficient {currency1?.symbol} balance</Trans>
       } else if (!isToken0 && Number(token0Balance?.toExact()) < premium) {
-        inputError = (<Trans>
-          Insufficient {currency0?.symbol} balance
-        </Trans>)
+        inputError = <Trans>Insufficient {currency0?.symbol} balance</Trans>
       }
 
       return inputError
     }
     return undefined
   }, [relevantTokenBalances, position, premium, currency0, currency1])
-
 
   useEffect(() => {
     const laggedfxn = async () => {
@@ -769,11 +802,10 @@ function useDerivedAddBorrowPremiumInfo(
 
         const addPremiumResult = await liquidityManagerContract.callStatic.payPremium(trader, true, isToken0)
         setContractResult({
-          addPremiumResult
+          addPremiumResult,
         })
         setState(DerivedInfoState.VALID)
         // console.log("addPosition:", addPremiumResult)
-
       } catch (error) {
         console.error('Failed to get reduceBorrowCollateral info', error)
         setState(DerivedInfoState.INVALID)
@@ -786,43 +818,35 @@ function useDerivedAddBorrowPremiumInfo(
   const info = useMemo(() => {
     // console.log("addPosition2:", contractResult)
 
-
     if (contractResult) {
       const addPremiumResult = contractResult.addPremiumResult
       return {
         // rate: (Number(contractResult.addPremiumResult) / (1e16)).toString()//.shiftedBy(-18).toFixed(12)
         remainingPremium: new BN(addPremiumResult[1].toString()).shiftedBy(-18).toNumber(),
-        totalPremium: new BN(addPremiumResult[0].toString()).shiftedBy(-18).toNumber()
+        totalPremium: new BN(addPremiumResult[0].toString()).shiftedBy(-18).toNumber(),
       }
     } else {
       return undefined
     }
-  }, [
-    contractResult
-  ])
+  }, [contractResult])
 
   return {
     tradeInfo: info,
-    inputError
+    inputError,
   }
 }
-
-
-
 
 export function AddPremiumLeverageModalFooter({
   liquidityManagerAddress,
   tokenId,
   trader,
-  handleAddPremium
+  handleAddPremium,
 }: {
-  liquidityManagerAddress: string | undefined,
+  liquidityManagerAddress: string | undefined
   tokenId: string | undefined
   trader: string | undefined
   handleAddPremium: () => void
 }) {
-
-
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [showDetails, setShowDetails] = useState(false)
   const theme = useTheme()
@@ -836,11 +860,18 @@ export function AddPremiumLeverageModalFooter({
   }, [position])
 
   const [leverageApprovalState, approveLeverageManager] = useApproveCallback(
-    inputCurrency ?
-      CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0)) : undefined,
+    inputCurrency ? CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0)) : undefined,
     position?.leverageManagerAddress ?? undefined
   )
-  const { tradeInfo, inputError } = useDerivedAddLeveragePremiumInfo(liquidityManagerAddress, trader, tokenId, position?.isToken0, setDerivedState, leverageApprovalState, premium)
+  const { tradeInfo, inputError } = useDerivedAddLeveragePremiumInfo(
+    liquidityManagerAddress,
+    trader,
+    tokenId,
+    position?.isToken0,
+    setDerivedState,
+    leverageApprovalState,
+    premium
+  )
   const inputIsToken0 = !position?.isToken0
   // console.log("tradeInfo: ", tradeInfo);
 
@@ -848,7 +879,7 @@ export function AddPremiumLeverageModalFooter({
     try {
       await approveLeverageManager()
     } catch (err) {
-      console.log("approveLeverageManager err: ", err)
+      console.log('approveLeverageManager err: ', err)
     }
   }, [approveLeverageManager]) // add input to deps.
 
@@ -856,7 +887,9 @@ export function AddPremiumLeverageModalFooter({
   const valid = derivedState === DerivedInfoState.VALID
 
   useEffect(() => {
-    (!tradeInfo || !!inputError || leverageApprovalState !== ApprovalState.APPROVED) && showDetails && setShowDetails(false)
+    ;(!tradeInfo || !!inputError || leverageApprovalState !== ApprovalState.APPROVED) &&
+      showDetails &&
+      setShowDetails(false)
   }, [leverageApprovalState, tradeInfo, inputError, showDetails])
 
   const premiumSymbol = inputIsToken0 ? token0?.symbol : token1?.symbol
@@ -875,14 +908,18 @@ export function AddPremiumLeverageModalFooter({
       <TransactionDetails>
         <Wrapper style={{ marginTop: '0' }}>
           <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-            <StyledHeaderRow onClick={() => {
-              if (!tradeInfo || !!inputError || leverageApprovalState !== ApprovalState.APPROVED) {
-                return
-              }
-              setShowDetails(!showDetails)
-              }} disabled={true} open={showDetails}>
+            <StyledHeaderRow
+              onClick={() => {
+                if (!tradeInfo || !!inputError || leverageApprovalState !== ApprovalState.APPROVED) {
+                  return
+                }
+                setShowDetails(!showDetails)
+              }}
+              disabled={true}
+              open={showDetails}
+            >
               <RowFixed style={{ position: 'relative' }}>
-                {(loading ? (
+                {loading ? (
                   <StyledPolling>
                     <StyledPollingDot>
                       <Spinner />
@@ -890,30 +927,22 @@ export function AddPremiumLeverageModalFooter({
                   </StyledPolling>
                 ) : (
                   <HideSmall>
-
                     <StyledInfoIcon color={liquidityManagerAddress ? theme.textTertiary : theme.deprecated_bg3} />
-
                   </HideSmall>
-                ))}
+                )}
                 {liquidityManagerAddress ? (
                   loading ? (
                     <ThemedText.DeprecatedMain fontSize={14}>
                       <Trans>Fetching expected payment...</Trans>
                     </ThemedText.DeprecatedMain>
                   ) : (
-                    <LoadingOpacityContainer $loading={loading}>
-                      Premium Payment Details
-                    </LoadingOpacityContainer>
+                    <LoadingOpacityContainer $loading={loading}>Premium Payment Details</LoadingOpacityContainer>
                   )
                 ) : null}
               </RowFixed>
               <RowFixed>
-                <RotatingArrow
-                  stroke={theme.textTertiary}
-                  open={Boolean(showDetails)}
-                />
+                <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
               </RowFixed>
-
             </StyledHeaderRow>
             <AnimatedDropdown open={showDetails}>
               <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
@@ -922,13 +951,7 @@ export function AddPremiumLeverageModalFooter({
                     <AutoColumn gap="sm">
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                Expected Total Premium
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>Expected Total Premium</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Premium To Pay</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -936,21 +959,13 @@ export function AddPremiumLeverageModalFooter({
                         </RowFixed>
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                            {
-                              `${tradeInfo ? new BN(tradeInfo.totalPremium).toString() : "-"}` + inputCurrency?.symbol
-                            }
+                            {`${tradeInfo ? new BN(tradeInfo.totalPremium).toString() : '-'}` + inputCurrency?.symbol}
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                Expected Returned Premium
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>Expected Returned Premium</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Returned Premium</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -958,16 +973,14 @@ export function AddPremiumLeverageModalFooter({
                         </RowFixed>
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                            {
-                              `${tradeInfo ? new BN(tradeInfo.remainingPremium).toString() : "-"}` + inputCurrency?.symbol
-                            }
+                            {`${tradeInfo ? new BN(tradeInfo.remainingPremium).toString() : '-'}` +
+                              inputCurrency?.symbol}
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                     </AutoColumn>
                   </StyledCard>
-                )
-                  : null}
+                ) : null}
               </AutoColumn>
             </AnimatedDropdown>
           </AutoColumn>
@@ -987,22 +1000,21 @@ export function AddPremiumLeverageModalFooter({
           ) : (
             <>
               <MouseoverTooltip
-                  text={
-                    <Trans>
-                      Permission is required for Limitless to use each token. {
-                        premium && premiumSymbol ? `Allowance of ${Number(premium)} ${premiumSymbol} required.` : null
-                      }
-                    </Trans>
-                  }
-                >
-                  <RowBetween>
-                  <Info size={20}/>
+                text={
+                  <Trans>
+                    Permission is required for Limitless to use each token.{' '}
+                    {premium && premiumSymbol ? `Allowance of ${Number(premium)} ${premiumSymbol} required.` : null}
+                  </Trans>
+                }
+              >
+                <RowBetween>
+                  <Info size={20} />
                   <Trans>Approve use of {premiumSymbol}</Trans>
-                  </RowBetween>
-                </MouseoverTooltip>
+                </RowBetween>
+              </MouseoverTooltip>
             </>
             // <>
-            
+
             //   <div style={{ height: 20 }}>
             //     <MouseoverTooltip
             //       text={
@@ -1025,23 +1037,17 @@ export function AddPremiumLeverageModalFooter({
           style={{ margin: '10px 0 0 0' }}
           id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
         >
-          {
-            inputError ? (
-              inputError
-            ) : derivedState !== DerivedInfoState.VALID ? (
-              <Trans>
-                Invalid Transaction
-              </Trans>
-            ) : (
-              <Text fontSize={20} fontWeight={500}>
-                <Trans>Add Premium</Trans>
-              </Text>
-            )
-          }
-
+          {inputError ? (
+            inputError
+          ) : derivedState !== DerivedInfoState.VALID ? (
+            <Trans>Invalid Transaction</Trans>
+          ) : (
+            <Text fontSize={20} fontWeight={500}>
+              <Trans>Add Premium</Trans>
+            </Text>
+          )}
         </ButtonError>
-      )
-      }
+      )}
     </AutoRow>
   )
 }
@@ -1050,7 +1056,7 @@ export function AddPremiumBorrowModalFooter({
   liquidityManagerAddress,
   tokenId,
   trader,
-  handleAddPremium
+  handleAddPremium,
 }: {
   liquidityManagerAddress: string | undefined
   tokenId: string | undefined
@@ -1070,16 +1076,22 @@ export function AddPremiumBorrowModalFooter({
   }, [position])
 
   const [approvalState, approveManager] = useApproveCallback(
-    outputCurrency ?
-      CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0)) : undefined,
+    outputCurrency ? CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0)) : undefined,
     position?.borrowManagerAddress ?? undefined
   )
   const token0 = useCurrency(position?.token0Address)
   const token1 = useCurrency(position?.token1Address)
 
-  const { tradeInfo, inputError } = useDerivedAddBorrowPremiumInfo(liquidityManagerAddress, trader, tokenId, position?.isToken0, setDerivedState, approvalState, premium)
+  const { tradeInfo, inputError } = useDerivedAddBorrowPremiumInfo(
+    liquidityManagerAddress,
+    trader,
+    tokenId,
+    position?.isToken0,
+    setDerivedState,
+    approvalState,
+    premium
+  )
   const inputIsToken0 = position?.isToken0
-
 
   // const outputCurrency = useCurrency(position?.isToken0 ? position?.token1Address : position?.token0Address)
 
@@ -1087,7 +1099,7 @@ export function AddPremiumBorrowModalFooter({
     try {
       await approveManager()
     } catch (err) {
-      console.log("approveLeverageManager err: ", err)
+      console.log('approveLeverageManager err: ', err)
     }
   }, [position, approveManager]) // add input to deps.
 
@@ -1096,7 +1108,7 @@ export function AddPremiumBorrowModalFooter({
   const premiumSymbol = inputIsToken0 ? token1?.symbol : token0?.symbol
 
   useEffect(() => {
-    (!tradeInfo || !!inputError || approvalState !== ApprovalState.APPROVED) && showDetails && setShowDetails(false)
+    ;(!tradeInfo || !!inputError || approvalState !== ApprovalState.APPROVED) && showDetails && setShowDetails(false)
   }, [tradeInfo, inputError, approvalState])
   const disabled = !tradeInfo || !!inputError || approvalState !== ApprovalState.APPROVED
 
@@ -1107,18 +1119,23 @@ export function AddPremiumBorrowModalFooter({
         description="Premium Payment Amount"
         value={premium}
         syncing={false}
-        symbolAppend={position?.isToken0 ? token1?.symbol : token0?.symbol} />
+        symbolAppend={position?.isToken0 ? token1?.symbol : token0?.symbol}
+      />
       <TransactionDetails>
         <Wrapper style={{ marginTop: '0' }}>
           <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-            <StyledHeaderRow onClick={() => {
-              if (disabled) {
-                return
-              }
-              setShowDetails(!showDetails)
-            }} disabled={disabled} open={showDetails}>
+            <StyledHeaderRow
+              onClick={() => {
+                if (disabled) {
+                  return
+                }
+                setShowDetails(!showDetails)
+              }}
+              disabled={disabled}
+              open={showDetails}
+            >
               <RowFixed style={{ position: 'relative' }}>
-                {(loading ? (
+                {loading ? (
                   <StyledPolling>
                     <StyledPollingDot>
                       <Spinner />
@@ -1126,42 +1143,28 @@ export function AddPremiumBorrowModalFooter({
                   </StyledPolling>
                 ) : (
                   <HideSmall>
-
                     <StyledInfoIcon color={theme.textTertiary} />
-
                   </HideSmall>
-                ))}
+                )}
                 {liquidityManagerAddress ? (
                   loading ? (
                     <ThemedText.DeprecatedMain fontSize={14}>
                       <Trans>Fetching expected payment...</Trans>
                     </ThemedText.DeprecatedMain>
                   ) : (
-                    <LoadingOpacityContainer $loading={loading}>
-                      Premium Payment Details
-                    </LoadingOpacityContainer>
+                    <LoadingOpacityContainer $loading={loading}>Premium Payment Details</LoadingOpacityContainer>
                   )
                 ) : null}
               </RowFixed>
               <RowFixed>
-                <RotatingArrow
-                  stroke={theme.textTertiary}
-                  open={Boolean(showDetails)}
-                />
+                <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
               </RowFixed>
-
             </StyledHeaderRow>
             <AnimatedDropdown open={showDetails}>
               <AutoColumn gap="sm">
                 <RowBetween>
                   <RowFixed>
-                    <MouseoverTooltip
-                      text={
-                        <Trans>
-                          Expected Total Premium
-                        </Trans>
-                      }
-                    >
+                    <MouseoverTooltip text={<Trans>Expected Total Premium</Trans>}>
                       <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                         <Trans>Premium To Pay</Trans>
                       </ThemedText.DeprecatedSubHeader>
@@ -1169,21 +1172,13 @@ export function AddPremiumBorrowModalFooter({
                   </RowFixed>
                   <TextWithLoadingPlaceholder syncing={loading} width={65}>
                     <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                      {
-                        `${tradeInfo ? new BN(tradeInfo.totalPremium).toString() : "-"}` + outputCurrency?.symbol
-                      }
+                      {`${tradeInfo ? new BN(tradeInfo.totalPremium).toString() : '-'}` + outputCurrency?.symbol}
                     </ThemedText.DeprecatedBlack>
                   </TextWithLoadingPlaceholder>
                 </RowBetween>
                 <RowBetween>
                   <RowFixed>
-                    <MouseoverTooltip
-                      text={
-                        <Trans>
-                          Expected Remaining Premium
-                        </Trans>
-                      }
-                    >
+                    <MouseoverTooltip text={<Trans>Expected Remaining Premium</Trans>}>
                       <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                         <Trans>Returned Premium</Trans>
                       </ThemedText.DeprecatedSubHeader>
@@ -1191,9 +1186,7 @@ export function AddPremiumBorrowModalFooter({
                   </RowFixed>
                   <TextWithLoadingPlaceholder syncing={loading} width={65}>
                     <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                      {
-                        `${tradeInfo ? new BN(tradeInfo.remainingPremium).toString() : "-"}` + outputCurrency?.symbol
-                      }
+                      {`${tradeInfo ? new BN(tradeInfo.remainingPremium).toString() : '-'}` + outputCurrency?.symbol}
                     </ThemedText.DeprecatedBlack>
                   </TextWithLoadingPlaceholder>
                 </RowBetween>
@@ -1209,9 +1202,7 @@ export function AddPremiumBorrowModalFooter({
           style={{ gap: 14 }}
         >
           {inputError ? (
-            <Trans>
-              {inputError}
-            </Trans>
+            <Trans>{inputError}</Trans>
           ) : approvalState === ApprovalState.PENDING ? (
             <>
               <Loader size="20px" />
@@ -1220,19 +1211,18 @@ export function AddPremiumBorrowModalFooter({
           ) : (
             <>
               <MouseoverTooltip
-                  text={
-                    <Trans>
-                      Permission is required for Limitless to use each token. {
-                        premium && premiumSymbol ? `Allowance of ${premium} ${premiumSymbol} required.` : null
-                      }
-                    </Trans>
-                  }
-                >
-                  <RowBetween>
-                  <Info size={20}/>
+                text={
+                  <Trans>
+                    Permission is required for Limitless to use each token.{' '}
+                    {premium && premiumSymbol ? `Allowance of ${premium} ${premiumSymbol} required.` : null}
+                  </Trans>
+                }
+              >
+                <RowBetween>
+                  <Info size={20} />
                   <Trans>Approve use of {premiumSymbol}</Trans>
-                  </RowBetween>
-                </MouseoverTooltip>
+                </RowBetween>
+              </MouseoverTooltip>
             </>
           )}
         </ButtonPrimary>
@@ -1255,8 +1245,7 @@ export function AddPremiumBorrowModalFooter({
             </Text>
           )}
         </ButtonError>
-      )
-      }
+      )}
     </AutoRow>
   )
 }
@@ -1332,7 +1321,6 @@ export function BorrowModalFooter({
   onConfirm,
   errorMessage,
   disabledConfirm,
-
 }: {
   borrowTrade: BorrowCreationDetails | undefined
   // hash: string | undefined
@@ -1340,9 +1328,7 @@ export function BorrowModalFooter({
   onConfirm: () => void
   errorMessage: ReactNode | undefined
   disabledConfirm: boolean
-
 }) {
-
   return (
     <>
       <AutoRow>
@@ -1367,10 +1353,10 @@ export function BorrowReduceCollateralModalFooter({
   tokenId,
   trader,
   setAttemptingTxn,
-  setTxHash
+  setTxHash,
 }: {
   tokenId: string | undefined
-  trader: string | undefined,
+  trader: string | undefined
   setAttemptingTxn: (attemptingTxn: boolean) => void
   setTxHash: (txHash: string) => void
 }) {
@@ -1379,11 +1365,10 @@ export function BorrowReduceCollateralModalFooter({
 
   const [recieveCollateral, setRecieveCollateral] = useState(true)
   // const [newPosition, setNewPosition] = useState("")
-  const [reduceAmount, setReduceAmount] = useState("")
+  const [reduceAmount, setReduceAmount] = useState('')
 
   const borrowManagerContract = useBorrowManagerContract(position?.borrowManagerAddress, true)
   const addTransaction = useTransactionAdder()
-
 
   const token0 = useCurrency(position?.token0Address)
   const token1 = useCurrency(position?.token1Address)
@@ -1391,32 +1376,34 @@ export function BorrowReduceCollateralModalFooter({
 
   const handleReducePosition = useMemo(() => {
     if (
-      borrowManagerContract && position && Number(reduceAmount) > 0 && Number(reduceAmount) <= Number(position.initialCollateral) &&
-      token0 && token1
+      borrowManagerContract &&
+      position &&
+      Number(reduceAmount) > 0 &&
+      Number(reduceAmount) <= Number(position.initialCollateral) &&
+      token0 &&
+      token1
     ) {
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0);
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
       return () => {
         setAttemptingTxn(true)
-        borrowManagerContract.reduceBorrowPosition(
-          position?.isToken0,
-          true,
-          recieveCollateral,
-          formattedReduceAmount
-        ).then((hash: any) => {
-          addTransaction(hash, {
-            type: TransactionType.REDUCE_BORROW_COLLATERAL,
-            inputCurrencyId: inputIsToken0 ? currencyId(token1) : currencyId(token0),
-            outputCurrencyId: !inputIsToken0 ? currencyId(token1) : currencyId(token0)
+        borrowManagerContract
+          .reduceBorrowPosition(position?.isToken0, true, recieveCollateral, formattedReduceAmount)
+          .then((hash: any) => {
+            addTransaction(hash, {
+              type: TransactionType.REDUCE_BORROW_COLLATERAL,
+              inputCurrencyId: inputIsToken0 ? currencyId(token1) : currencyId(token0),
+              outputCurrencyId: !inputIsToken0 ? currencyId(token1) : currencyId(token0),
+            })
+            setTxHash(hash)
+            setAttemptingTxn(false)
           })
-          setTxHash(hash)
-          setAttemptingTxn(false)
-        }).catch((err: any) => {
-          setAttemptingTxn(false)
-          console.log("error closing position: ", err)
-        })
+          .catch((err: any) => {
+            setAttemptingTxn(false)
+            console.log('error closing position: ', err)
+          })
       }
     }
-    return () => { }
+    return () => {}
   }, [recieveCollateral, tokenId, trader, position, reduceAmount])
 
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
@@ -1425,26 +1412,29 @@ export function BorrowReduceCollateralModalFooter({
 
   // what do we need for the simulation
 
-  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount);
+  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount)
 
-  const {
-    transactionInfo,
-    userError
-  } = useDerivedBorrowReduceCollateralInfo(trader, tokenId, position, debouncedReduceAmount, recieveCollateral, setDerivedState)
-
+  const { transactionInfo, userError } = useDerivedBorrowReduceCollateralInfo(
+    trader,
+    tokenId,
+    position,
+    debouncedReduceAmount,
+    recieveCollateral,
+    setDerivedState
+  )
 
   const loading = useMemo(() => derivedState === DerivedInfoState.LOADING, [derivedState])
   // console.log("here: ", token0Amount, token1Amount
 
-  const debt = position?.totalDebtInput;
+  const debt = position?.totalDebtInput
 
   useEffect(() => {
-    (!transactionInfo || !!userError) && showDetails && setShowDetails(false)
+    ;(!transactionInfo || !!userError) && showDetails && setShowDetails(false)
   }, [transactionInfo, userError, showDetails])
 
   const disabled = !transactionInfo || !!userError
 
-  console.log("lmt", position, reduceAmount, transactionInfo, userError)
+  console.log('lmt', position, reduceAmount, transactionInfo, userError)
   // const initCollateral = position?.initialCollateral;
   // const received = inputIsToken0 ? (Math.abs(Number(token0Amount)) - Number(debt))
   //   : (Math.abs(Number(token1Amount)) - Number(debt))
@@ -1457,10 +1447,15 @@ export function BorrowReduceCollateralModalFooter({
             <ThemedText.DeprecatedMain fontWeight={400}>
               <Trans>Recieve Collateral</Trans>
             </ThemedText.DeprecatedMain>
-            <Checkbox hovered={false} checked={recieveCollateral}
+            <Checkbox
+              hovered={false}
+              checked={recieveCollateral}
               onClick={() => {
                 setRecieveCollateral(!recieveCollateral)
-              }}><div></div></Checkbox>
+              }}
+            >
+              <div></div>
+            </Checkbox>
           </RowBetween>
         </AutoColumn>
       </DarkCard>
@@ -1469,7 +1464,15 @@ export function BorrowReduceCollateralModalFooter({
           <>
             <RowBetween>
               <ThemedText.DeprecatedMain fontWeight={400}>
-                <Trans>Collateral Reduce Amount ({`${position?.initialCollateral ? new BN(Number(reduceAmount) / Number(position?.initialCollateral) * 100).toString() : "-"}% Reduction`})</Trans>
+                <Trans>
+                  Collateral Reduce Amount (
+                  {`${
+                    position?.initialCollateral
+                      ? new BN((Number(reduceAmount) / Number(position?.initialCollateral)) * 100).toString()
+                      : '-'
+                  }% Reduction`}
+                  )
+                </Trans>
               </ThemedText.DeprecatedMain>
             </RowBetween>
             <AutoColumn>
@@ -1478,8 +1481,8 @@ export function BorrowReduceCollateralModalFooter({
                 id="reduce-position-input"
                 onUserInput={(str: string) => {
                   if (position?.initialCollateral) {
-                    if (str === "") {
-                      setDebouncedReduceAmount("")
+                    if (str === '') {
+                      setDebouncedReduceAmount('')
                     } else if (new BN(str).isGreaterThan(new BN(position?.initialCollateral))) {
                       return
                     } else {
@@ -1489,7 +1492,7 @@ export function BorrowReduceCollateralModalFooter({
                 }}
                 showMaxButton={true}
                 onMax={() => {
-                  setDebouncedReduceAmount(position?.initialCollateral ? String(position?.initialCollateral) : "")
+                  setDebouncedReduceAmount(position?.initialCollateral ? String(position?.initialCollateral) : '')
                 }}
                 hideBalance={true}
                 currency={inputIsToken0 ? token0 : token1}
@@ -1501,9 +1504,13 @@ export function BorrowReduceCollateralModalFooter({
       <TransactionDetails>
         <Wrapper style={{ marginTop: '0' }}>
           <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-            <StyledHeaderRow onClick={() => !disabled && setShowDetails(!showDetails)} disabled={disabled} open={showDetails}>
+            <StyledHeaderRow
+              onClick={() => !disabled && setShowDetails(!showDetails)}
+              disabled={disabled}
+              open={showDetails}
+            >
               <RowFixed style={{ position: 'relative' }}>
-                {(loading ? (
+                {loading ? (
                   <StyledPolling>
                     <StyledPollingDot>
                       <Spinner />
@@ -1513,16 +1520,14 @@ export function BorrowReduceCollateralModalFooter({
                   <HideSmall>
                     <StyledInfoIcon color={theme.deprecated_bg3} />
                   </HideSmall>
-                ))}
+                )}
                 {position?.borrowManagerAddress ? (
                   loading ? (
                     <ThemedText.DeprecatedMain fontSize={14}>
                       <Trans>Fetching returns...</Trans>
                     </ThemedText.DeprecatedMain>
                   ) : (
-                    <LoadingOpacityContainer $loading={loading}>
-                      Trade Details
-                    </LoadingOpacityContainer>
+                    <LoadingOpacityContainer $loading={loading}>Trade Details</LoadingOpacityContainer>
                   )
                 ) : null}
               </RowFixed>
@@ -1532,7 +1537,6 @@ export function BorrowReduceCollateralModalFooter({
                   open={Boolean(position?.token0Address && showDetails)}
                 />
               </RowFixed>
-
             </StyledHeaderRow>
             <AnimatedDropdown open={showDetails}>
               <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
@@ -1541,13 +1545,7 @@ export function BorrowReduceCollateralModalFooter({
                     <AutoColumn gap="sm">
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                The amount of position you are closing
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>The amount of position you are closing</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Position to close</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -1556,11 +1554,12 @@ export function BorrowReduceCollateralModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${inputIsToken0 ? new BN(transactionInfo.token1Amount).abs().toString() : new BN(transactionInfo.token0Amount).abs().toString()}  ${inputIsToken0 ? token1?.symbol : token0?.symbol}`
-                              }
+                              {`${
+                                inputIsToken0
+                                  ? new BN(transactionInfo.token1Amount).abs().toString()
+                                  : new BN(transactionInfo.token0Amount).abs().toString()
+                              }  ${inputIsToken0 ? token1?.symbol : token0?.symbol}`}
                             </TruncatedText>
-
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
@@ -1570,8 +1569,8 @@ export function BorrowReduceCollateralModalFooter({
                           <MouseoverTooltip
                             text={
                               <Trans>
-                                The amount entire position swaps to at the current market price. May receive less or more if the
-                                market price changes while your transaction is pending.
+                                The amount entire position swaps to at the current market price. May receive less or
+                                more if the market price changes while your transaction is pending.
                               </Trans>
                             }
                           >
@@ -1583,22 +1582,18 @@ export function BorrowReduceCollateralModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${inputIsToken0 ? new BN(transactionInfo.token0Amount).abs().toString() : new BN(transactionInfo.token1Amount).abs().toString()}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {`${
+                                inputIsToken0
+                                  ? new BN(transactionInfo.token0Amount).abs().toString()
+                                  : new BN(transactionInfo.token1Amount).abs().toString()
+                              }  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                The amount of debt automatically repaid when closing
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>The amount of debt automatically repaid when closing</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Premium Returned</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -1607,22 +1602,16 @@ export function BorrowReduceCollateralModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${Number(transactionInfo.unusedPremium)}  ${inputIsToken0 ? token1?.symbol : token0?.symbol}`
-                              }
+                              {`${Number(transactionInfo.unusedPremium)}  ${
+                                inputIsToken0 ? token1?.symbol : token0?.symbol
+                              }`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                The amount of debt automatically repaid when closing
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>The amount of debt automatically repaid when closing</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Premium To Pay</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -1631,22 +1620,14 @@ export function BorrowReduceCollateralModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${Number(transactionInfo.premium)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {`${Number(transactionInfo.premium)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                Expected PnL from what you originally paid
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>Expected PnL from what you originally paid</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Expected PnL</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -1655,18 +1636,14 @@ export function BorrowReduceCollateralModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${(Number(transactionInfo.pnl))}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {`${Number(transactionInfo.pnl)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                     </AutoColumn>
-
                   </StyledCard>
-                )
-                  : null}
+                ) : null}
               </AutoColumn>
             </AnimatedDropdown>
           </AutoColumn>
@@ -1674,23 +1651,23 @@ export function BorrowReduceCollateralModalFooter({
       </TransactionDetails>
 
       <ButtonError
-          onClick={handleReducePosition}
-          disabled={!!userError || !transactionInfo}
-          style={{ margin: '10px 0 0 0' }}
-          id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
-        >
-          {userError ? (
-            userError
-          ) : transactionInfo ? (
-            <Text fontSize={20} fontWeight={500}>
-              <Trans>Reduce Position</Trans>
-            </Text>
-          ) : (
-            <Text fontSize={20} fontWeight={500}>
-              <Trans>Invalid</Trans>
-            </Text>
-          )}
-        </ButtonError>
+        onClick={handleReducePosition}
+        disabled={!!userError || !transactionInfo}
+        style={{ margin: '10px 0 0 0' }}
+        id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
+      >
+        {userError ? (
+          userError
+        ) : transactionInfo ? (
+          <Text fontSize={20} fontWeight={500}>
+            <Trans>Reduce Position</Trans>
+          </Text>
+        ) : (
+          <Text fontSize={20} fontWeight={500}>
+            <Trans>Invalid</Trans>
+          </Text>
+        )}
+      </ButtonError>
     </AutoRow>
   )
 }
@@ -1699,10 +1676,10 @@ export function BorrowReduceDebtModalFooter({
   tokenId,
   trader,
   setAttemptingTxn,
-  setTxHash
+  setTxHash,
 }: {
   tokenId: string | undefined
-  trader: string | undefined,
+  trader: string | undefined
   setAttemptingTxn: (attemptingTxn: boolean) => void
   setTxHash: (txHash: string) => void
 }) {
@@ -1711,7 +1688,7 @@ export function BorrowReduceDebtModalFooter({
 
   const [recieveCollateral, setRecieveCollateral] = useState(true)
   // const [newPosition, setNewPosition] = useState("")
-  const [reduceAmount, setReduceAmount] = useState("")
+  const [reduceAmount, setReduceAmount] = useState('')
 
   const borrowManagerContract = useBorrowManagerContract(position?.borrowManagerAddress, true)
   const addTransaction = useTransactionAdder()
@@ -1722,36 +1699,50 @@ export function BorrowReduceDebtModalFooter({
 
   const handleReducePosition = useMemo(() => {
     if (
-      borrowManagerContract && position && Number(reduceAmount) > 0 && Number(reduceAmount) <= Number(position.totalDebtInput) &&
-      token0 && token1
+      borrowManagerContract &&
+      position &&
+      Number(reduceAmount) > 0 &&
+      Number(reduceAmount) <= Number(position.totalDebtInput) &&
+      token0 &&
+      token1
     ) {
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0);
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
       const inputReduceAmount =
         Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)) < 1e12
-          ? position.totalPositionRaw : formattedReduceAmount
+          ? position.totalPositionRaw
+          : formattedReduceAmount
       return () => {
         setAttemptingTxn(true)
-        borrowManagerContract.reduceBorrowPosition(
-          position?.isToken0,
-          false,
-          recieveCollateral,
-          inputReduceAmount
-        ).then((hash: any) => {
-          addTransaction(hash, {
-            type: TransactionType.REDUCE_BORROW_DEBT,
-            inputCurrencyId: inputIsToken0 ? currencyId(token0) : currencyId(token1),
-            outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1)
+        borrowManagerContract
+          .reduceBorrowPosition(position?.isToken0, false, recieveCollateral, inputReduceAmount)
+          .then((hash: any) => {
+            addTransaction(hash, {
+              type: TransactionType.REDUCE_BORROW_DEBT,
+              inputCurrencyId: inputIsToken0 ? currencyId(token0) : currencyId(token1),
+              outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1),
+            })
+            setTxHash(hash)
+            setAttemptingTxn(false)
           })
-          setTxHash(hash)
-          setAttemptingTxn(false)
-        }).catch((err: any) => {
-          setAttemptingTxn(false)
-          console.log("error closing position: ", err)
-        })
+          .catch((err: any) => {
+            setAttemptingTxn(false)
+            console.log('error closing position: ', err)
+          })
       }
     }
-    return () => { }
-  }, [recieveCollateral, borrowManagerContract, addTransaction, inputIsToken0, setTxHash, setAttemptingTxn, position, reduceAmount, token0, token1])
+    return () => {}
+  }, [
+    recieveCollateral,
+    borrowManagerContract,
+    addTransaction,
+    inputIsToken0,
+    setTxHash,
+    setAttemptingTxn,
+    position,
+    reduceAmount,
+    token0,
+    token1,
+  ])
 
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [showDetails, setShowDetails] = useState(false)
@@ -1773,13 +1764,17 @@ export function BorrowReduceDebtModalFooter({
 
   // what do we need for the simulation
 
-  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount);
+  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount)
   // console.log("nonce: ", nonce, slippage)
 
-  const {
-    transactionInfo,
-    userError
-  } = useDerivedBorrowReduceDebtInfo(trader, tokenId, position, debouncedReduceAmount, recieveCollateral, setDerivedState)
+  const { transactionInfo, userError } = useDerivedBorrowReduceDebtInfo(
+    trader,
+    tokenId,
+    position,
+    debouncedReduceAmount,
+    recieveCollateral,
+    setDerivedState
+  )
 
   const loading = useMemo(() => derivedState === DerivedInfoState.LOADING, [derivedState])
 
@@ -1816,10 +1811,15 @@ export function BorrowReduceDebtModalFooter({
             <ThemedText.DeprecatedMain fontWeight={400}>
               <Trans>Recieve Collateral</Trans>
             </ThemedText.DeprecatedMain>
-            <Checkbox hovered={false} checked={recieveCollateral}
+            <Checkbox
+              hovered={false}
+              checked={recieveCollateral}
               onClick={() => {
                 setRecieveCollateral(!recieveCollateral)
-              }}><div></div></Checkbox>
+              }}
+            >
+              <div></div>
+            </Checkbox>
           </RowBetween>
         </AutoColumn>
       </DarkCard>
@@ -1828,7 +1828,18 @@ export function BorrowReduceDebtModalFooter({
           <>
             <RowBetween>
               <ThemedText.DeprecatedMain fontWeight={400}>
-                <Trans>Debt Reduce Amount ({`${position?.totalDebtInput ? formatNumber(Number(reduceAmount) / Number(position?.totalDebtInput) * 100, NumberType.SwapTradeAmount) : "-"}% Reduction`})</Trans>
+                <Trans>
+                  Debt Reduce Amount (
+                  {`${
+                    position?.totalDebtInput
+                      ? formatNumber(
+                          (Number(reduceAmount) / Number(position?.totalDebtInput)) * 100,
+                          NumberType.SwapTradeAmount
+                        )
+                      : '-'
+                  }% Reduction`}
+                  )
+                </Trans>
               </ThemedText.DeprecatedMain>
             </RowBetween>
             <AutoColumn>
@@ -1837,8 +1848,8 @@ export function BorrowReduceDebtModalFooter({
                 id="reduce-position-input"
                 onUserInput={(str: string) => {
                   if (position?.totalDebtInput) {
-                    if (str === "") {
-                      setDebouncedReduceAmount("")
+                    if (str === '') {
+                      setDebouncedReduceAmount('')
                     } else if (new BN(str).isGreaterThan(new BN(position?.totalDebtInput))) {
                       return
                     } else {
@@ -1848,7 +1859,7 @@ export function BorrowReduceDebtModalFooter({
                 }}
                 showMaxButton={true}
                 onMax={() => {
-                  setDebouncedReduceAmount(position?.totalDebtInput ? position?.totalDebtInput.toFixed(18) : "")
+                  setDebouncedReduceAmount(position?.totalDebtInput ? position?.totalDebtInput.toFixed(18) : '')
                 }}
                 hideBalance={true}
                 currency={!inputIsToken0 ? token0 : token1}
@@ -1862,7 +1873,7 @@ export function BorrowReduceDebtModalFooter({
           <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
             <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
               <RowFixed style={{ position: 'relative' }}>
-                {(loading ? (
+                {loading ? (
                   <StyledPolling>
                     <StyledPollingDot>
                       <Spinner />
@@ -1872,16 +1883,14 @@ export function BorrowReduceDebtModalFooter({
                   <HideSmall>
                     <StyledInfoIcon color={theme.deprecated_bg3} />
                   </HideSmall>
-                ))}
+                )}
                 {position?.borrowManagerAddress ? (
                   loading ? (
                     <ThemedText.DeprecatedMain fontSize={14}>
                       <Trans>Fetching details...</Trans>
                     </ThemedText.DeprecatedMain>
                   ) : (
-                    <LoadingOpacityContainer $loading={loading}>
-                      Trade Details
-                    </LoadingOpacityContainer>
+                    <LoadingOpacityContainer $loading={loading}>Trade Details</LoadingOpacityContainer>
                   )
                 ) : null}
               </RowFixed>
@@ -1899,13 +1908,7 @@ export function BorrowReduceDebtModalFooter({
                     <AutoColumn gap="sm">
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                Amount of Collateral Returned
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Collateral Returned</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -1914,22 +1917,17 @@ export function BorrowReduceDebtModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                transactionInfo && `${Number(transactionInfo?.returnedAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {transactionInfo &&
+                                `${Number(transactionInfo?.returnedAmount)}  ${
+                                  inputIsToken0 ? token0?.symbol : token1?.symbol
+                                }`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                The amount of premiums returned
-                              </Trans>
-                            }
-                          >
+                          <MouseoverTooltip text={<Trans>The amount of premiums returned</Trans>}>
                             <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                               <Trans>Premium Returned</Trans>
                             </ThemedText.DeprecatedSubHeader>
@@ -1938,18 +1936,17 @@ export function BorrowReduceDebtModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                transactionInfo && `${Number(transactionInfo?.unusedPremium)}  ${inputIsToken0 ? token1?.symbol : token0?.symbol}`
-                              }
+                              {transactionInfo &&
+                                `${Number(transactionInfo?.unusedPremium)}  ${
+                                  inputIsToken0 ? token1?.symbol : token0?.symbol
+                                }`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                     </AutoColumn>
-
                   </StyledCard>
-                )
-                  : null}
+                ) : null}
               </AutoColumn>
             </AnimatedDropdown>
           </AutoColumn>
@@ -1973,7 +1970,6 @@ export function BorrowReduceDebtModalFooter({
           </Text>
         )}
       </ButtonError>
-
     </AutoRow>
   )
 }

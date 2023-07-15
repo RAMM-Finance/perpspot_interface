@@ -8,7 +8,7 @@ module.exports = {
     {
       files: ['**/*.ts', '**/*.tsx'],
       rules: {
-        'prettier/prettier': 0,
+        'prettier/prettier': 1,
         // 'no-restricted-imports': [
         //   'error',
         //   {

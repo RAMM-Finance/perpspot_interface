@@ -13,6 +13,8 @@ export const Wrapper = styled.div`
 `
 
 export const SmallMaxButton = styled(MaxButton)`
+  display: flex;
+  align-items: center;
   font-size: 12px;
 `
 

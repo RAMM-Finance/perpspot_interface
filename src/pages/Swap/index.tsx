@@ -1,15 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
-import {
-  InterfacePageName,
-  SwapEventName,
-} from '@uniswap/analytics-events'
+import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, CurrencyAmount, MaxUint256, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from "bignumber.js";
-import BorrowPositionsTable from "components/BorrowPositionTable/TokenTable"
+import { BigNumber as BN } from 'bignumber.js'
+import BorrowPositionsTable from 'components/BorrowPositionTable/TokenTable'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
+import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import LeveragePositionsTable from 'components/LeveragePositionTable/TokenTable'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { TokenSelector } from 'components/swap/TokenSelector'
@@ -17,10 +15,7 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
 import { TabContent, TabNavItem } from 'components/Tabs'
-import {
-  TokenInfoContainer,
-  TokenNameCell,
-} from 'components/Tokens/TokenDetails/Skeleton'
+import { TokenInfoContainer, TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import { WarningIcon } from 'components/TokenSafety/TokenSafetyIcon'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
@@ -61,13 +56,12 @@ import {
 } from '../../state/swap/hooks'
 import { ThemedText } from '../../theme'
 import { supportedChainId } from '../../utils/supportedChainId'
-  import { ResponsiveHeaderText, SmallMaxButton } from '../RemoveLiquidity/styled'
-import BorrowTabContent from "./borrowModal"
+import { ResponsiveHeaderText, SmallMaxButton } from '../RemoveLiquidity/styled'
+import BorrowTabContent from './borrowModal'
 
-const TradeTabContent = React.lazy(() => import('./swapModal'));
+const TradeTabContent = React.lazy(() => import('./swapModal'))
 
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
-
 
 const TableHeader = styled(RowFixed)`
   flex-flow: row nowrap;
@@ -75,13 +69,13 @@ const TableHeader = styled(RowFixed)`
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 100px;
-  text-align:left;
+  text-align: left;
   padding: 10px;
 `
 
 export const StyledBorrowNumericalInput = styled(NumericalInput)`
   width: 120px;
-  text-align:left;
+  text-align: left;
   padding: 10px;
 `
 
@@ -110,7 +104,6 @@ const SwapSection = styled.div`
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
-  
 
   &:before {
     box-sizing: border-box;
@@ -142,20 +135,19 @@ export const InputLeverageSection = styled(SwapSection)`
   border-top-right-radius: 0;
 `
 
-export const InputSection = styled(SwapSection) <{ leverage: boolean }>`
+export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
   border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
   border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
 `
 
-export const OutputSwapSection = styled(SwapSection) <{ showDetailsDropdown: boolean }>`
+export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
   // border-bottom-left-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
   // border-bottom-right-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
   border-bottom-left-radius: 10;
-  border-bottom-right-radius:10;
-
+  border-bottom-right-radius: 10;
 `
-export const LeverageGaugeSection = styled(SwapSection) <{ showDetailsDropdown: boolean }>`
+export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
   border-top-right-radius: 0;
   border-top-left-radius: 0;
@@ -172,28 +164,25 @@ export const DetailsSwapSection = styled(SwapSection)`
   border-top-right-radius: 0;
 `
 
-
-
 const PositionsContainer = styled.div`
   margin-right: 20px;
   margin-top: 15px;
   // background-color: ${({ theme }) => theme.backgroundSurface};
-  max-width: 1200px;
+  /* max-width: 1200px; */
   width: 100%;
   border-radius: 32px;
   padding: 12px;
-  margin-left: auto
-
+  margin-left: auto;
 `
 
 const StatsContainer = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 32px;
+  /* max-width: 1200px; */
   padding: 18px;
   width: 100%;
-  margin-top: 0px;
   margin-right: 20px;
-  margin-left: auto
+  margin-left: auto;
 `
 
 const LeftContainer = styled.div`
@@ -201,13 +190,14 @@ const LeftContainer = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;
+  max-width: 1260px;
+  min-width: 560px;
 `
-
 
 const ActivityWrapper = styled.main`
   max-height: 240px;
   overflow-y: auto;
-  background-color: ${({theme}) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 export function getIsValidSwapQuote(
@@ -229,8 +219,6 @@ export function getIsValidSwapQuote(
 //   return undefined
 // }
 
-
-
 // const TRADE_STRING = 'SwapRouter';
 
 export default function Swap({ className }: { className?: string }) {
@@ -241,10 +229,7 @@ export default function Swap({ className }: { className?: string }) {
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
   // const swapWidgetEnabled = useSwapWidgetEnabled()
 
-  const {
-    onCurrencySelection,
-    onLeverageManagerAddress, onBorrowManagerAddress,
-  } = useSwapActionHandlers()
+  const { onCurrencySelection, onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -294,7 +279,7 @@ export default function Swap({ className }: { className?: string }) {
   const [inputCurrency, outputCurrency] = useMemo(() => {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
   }, [currencies])
-  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined);
+  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
 
   // const theme = useTheme()
 
@@ -315,11 +300,10 @@ export default function Swap({ className }: { className?: string }) {
     activeTab,
     // ltv,
     borrowManagerAddress,
-    premium
+    premium,
   } = useSwapState()
 
   const isBorrowTab = ActiveSwapTab.BORROW == activeTab
-
 
   const {
     wrapType,
@@ -333,26 +317,28 @@ export default function Swap({ className }: { className?: string }) {
     () =>
       showWrap
         ? {
-          [Field.INPUT]: parsedAmount,
-          [Field.OUTPUT]: parsedAmount,
-        }
+            [Field.INPUT]: parsedAmount,
+            [Field.OUTPUT]: parsedAmount,
+          }
         : {
-          [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
-          [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
-        },
+            [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
+            [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
+          },
     [currencies, independentField, parsedAmount, showWrap, trade]
   )
 
-  const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false;
+  const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
-  const [inputApprovalState, inputApprove] = useMaxApproveCallback(inputCurrency ? CurrencyAmount.fromRawAmount(inputCurrency, MaxUint256) : undefined, isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined)
-  const [outputApprovalState, outputApprove] = useMaxApproveCallback(outputCurrency ? CurrencyAmount.fromRawAmount(outputCurrency, MaxUint256) : undefined, isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined)
+  const [inputApprovalState, inputApprove] = useMaxApproveCallback(
+    inputCurrency ? CurrencyAmount.fromRawAmount(inputCurrency, MaxUint256) : undefined,
+    isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined
+  )
+  const [outputApprovalState, outputApprove] = useMaxApproveCallback(
+    outputCurrency ? CurrencyAmount.fromRawAmount(outputCurrency, MaxUint256) : undefined,
+    isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined
+  )
   const [leverageApproveAmount, borrowInputApproveAmount, borrowOutputApproveAmount] = useMemo(() => {
-    if (inputCurrency
-      && parsedAmounts[Field.INPUT]
-      && outputCurrency
-      && premium
-    ) {
+    if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
       return [
         CurrencyAmount.fromRawAmount(
           inputCurrency,
@@ -362,13 +348,9 @@ export default function Swap({ className }: { className?: string }) {
           inputCurrency,
           new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).shiftedBy(18).toFixed(0)
         ),
-        CurrencyAmount.fromRawAmount(
-          outputCurrency,
-          new BN(premium).shiftedBy(18).toFixed(0)
-        )
+        CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0)),
       ]
-    }
-    else {
+    } else {
       return [undefined, undefined, undefined]
     }
   }, [inputCurrency, outputCurrency, premium, parsedAmounts])
@@ -383,23 +365,23 @@ export default function Swap({ className }: { className?: string }) {
     state: leverageState,
     inputError,
     allowedSlippage: leverageAllowedSlippage,
-    contractError
+    contractError,
   } = useDerivedLeverageCreationInfo()
 
-  const [borrowInputApprovalState, ] = useApproveCallback(borrowInputApproveAmount, borrowManagerAddress ?? undefined)
-  const [borrowOutputApprovalState, ] = useApproveCallback(borrowOutputApproveAmount, borrowManagerAddress ?? undefined)
+  const [borrowInputApprovalState] = useApproveCallback(borrowInputApproveAmount, borrowManagerAddress ?? undefined)
+  const [borrowOutputApprovalState] = useApproveCallback(borrowOutputApproveAmount, borrowManagerAddress ?? undefined)
 
   const {
     trade: borrowTrade,
     state: borrowState,
     inputError: borrowInputError,
     allowedSlippage: borrowAllowedSlippage,
-    contractError: borrowContractError
+    contractError: borrowContractError,
   } = useDerivedBorrowCreationInfo({
     allowance: {
       input: borrowInputApprovalState,
       output: borrowOutputApprovalState,
-    }
+    },
   })
 
   // const fiatValueInput = useUSDPrice(parsedAmounts[Field.INPUT])
@@ -510,23 +492,36 @@ export default function Swap({ className }: { className?: string }) {
   useEffect(() => {
     // declare the data fetching function
     if (pool && account && provider && inputCurrency && outputCurrency) {
-      onLeverageManagerAddress(computeLeverageManagerAddress(
-        {
+      onLeverageManagerAddress(
+        computeLeverageManagerAddress({
           factoryAddress: LEVERAGE_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
-          tokenA: inputCurrency?.wrapped.address ?? "",
-          tokenB: outputCurrency?.wrapped.address ?? "",
-          fee: pool.fee
-        }
-      ))
-      onBorrowManagerAddress(computeBorrowManagerAddress(
-        {
+          tokenA: inputCurrency?.wrapped.address ?? '',
+          tokenB: outputCurrency?.wrapped.address ?? '',
+          fee: pool.fee,
+        })
+      )
+      onBorrowManagerAddress(
+        computeBorrowManagerAddress({
           factoryAddress: BORROW_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
-          tokenA: inputCurrency?.wrapped.address ?? "",
-          tokenB: outputCurrency?.wrapped.address ?? "",
-          fee: pool.fee
-        }))
+          tokenA: inputCurrency?.wrapped.address ?? '',
+          tokenB: outputCurrency?.wrapped.address ?? '',
+          fee: pool.fee,
+        })
+      )
     }
-  }, [poolAddress, account, trade, currencies, provider, onBorrowManagerAddress, onLeverageManagerAddress, inputCurrency, outputCurrency, chainId, pool])
+  }, [
+    poolAddress,
+    account,
+    trade,
+    currencies,
+    provider,
+    onBorrowManagerAddress,
+    onLeverageManagerAddress,
+    inputCurrency,
+    outputCurrency,
+    chainId,
+    pool,
+  ])
 
   // const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
   //   () => maxAmountSpend(currencyBalances[Field.INPUT]),
@@ -557,13 +552,10 @@ export default function Swap({ className }: { className?: string }) {
   //   [onCurrencySelection]
   // )
 
-
   // const handleOutputSelect = useCallback(
   //   (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
   //   [onCurrencySelection]
   // )
-
-
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
@@ -571,7 +563,7 @@ export default function Swap({ className }: { className?: string }) {
   // const showPriceImpactWarning = largerPriceImpact && priceImpactSeverity > 3
 
   // const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(leverageFactor ?? "1", onLeverageFactorChange)
-  // const [isTrade, setIsTrade] = useState(true); 
+  // const [isTrade, setIsTrade] = useState(true);
 
   // const { state } = useLocation() as any;
   // if (state) {
@@ -624,22 +616,21 @@ export default function Swap({ className }: { className?: string }) {
   const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
 
   const leveragePositions = useMemo(() => {
-
-
-    return limitlessPositions && !limitlessPositionsLoading ?
-    limitlessPositions.filter((position) => {
-      return !position.isBorrow 
-    }) : undefined
-  }, [limitlessPositionsLoading, limitlessPositions ])
+    return limitlessPositions && !limitlessPositionsLoading
+      ? limitlessPositions.filter((position) => {
+          return !position.isBorrow
+        })
+      : undefined
+  }, [limitlessPositionsLoading, limitlessPositions])
   const borrowPositions = useMemo(() => {
-    return limitlessPositions && !limitlessPositionsLoading ?
-    limitlessPositions.filter((position) => {
-      return position.isBorrow 
-    }) : undefined
+    return limitlessPositions && !limitlessPositionsLoading
+      ? limitlessPositions.filter((position) => {
+          return position.isBorrow
+        })
+      : undefined
   }, [limitlessPositionsLoading, limitlessPositions])
 
   const [activePositionTable, setActiveTable] = useState(1)
-
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -653,80 +644,97 @@ export default function Swap({ className }: { className?: string }) {
           showCancel={true}
         />
         <PageWrapper>
-        <LeftContainer>
-              <StatsContainer>
-                <TokenInfoContainer data-testid="token-info-container">
-                  <TokenNameCell>
-                    {inputCurrency && outputCurrency && <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={40} margin />}
-                    {inputCurrency && outputCurrency
-                      ? (
-                        <Row>
-                          <TokenSelector isInput={false}/><TokenSelector isInput={true}/>
-                        </Row>
-                      )
-                      : <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>}
+          <LeftContainer>
+            <TokenInfoContainer data-testid="token-info-container">
+              <TokenNameCell>
+                {inputCurrency && outputCurrency && (
+                  <DoubleCurrencyLogo
+                    currency0={inputCurrency as Currency}
+                    currency1={outputCurrency as Currency}
+                    size={40}
+                    margin
+                  />
+                )}
+                {inputCurrency && outputCurrency ? (
+                  <Row>
+                    <TokenSelector isInput={false} />
+                    <TokenSelector isInput={true} />
+                  </Row>
+                ) : (
+                  <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>
+                )}
 
-                    {inputApprovalState !== ApprovalState.APPROVED && <SmallMaxButton onClick={() => inputApprove()} width="10%">
-                      <Trans><WarningIcon size="1.25em" />Approve {inputCurrency?.symbol}</Trans>
-                    </SmallMaxButton>}
-                    {outputApprovalState !== ApprovalState.APPROVED && <SmallMaxButton onClick={() => outputApprove()} width="10%">
-                      <Trans><WarningIcon size="1.25em" /> Approve {outputCurrency?.symbol}</Trans>
-                    </SmallMaxButton>}
-                  </TokenNameCell>
-                </TokenInfoContainer>
-                <PoolDataSection
-                  chainId={chainId ?? 11155111}
-                  token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                  token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                  fee={pool?.fee}
-                />
-              </StatsContainer>
-              <PositionsContainer>
-                <TableHeader>
-                  <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
-                    Leverage Positions
-                  </TabNavItem>
-                  <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-                    Borrow Positions
-                  </TabNavItem>
-                  <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
-                    History
-                  </TabNavItem>
-                </TableHeader>
-                <TabContent id={1} activeTab={activePositionTable}>
+                {inputApprovalState !== ApprovalState.APPROVED && (
+                  <SmallMaxButton onClick={() => inputApprove()} width="10%">
+                    <Trans>
+                      <WarningIcon size="1.25em" />
+                      Approve {inputCurrency?.symbol}
+                    </Trans>
+                  </SmallMaxButton>
+                )}
+                {outputApprovalState !== ApprovalState.APPROVED && (
+                  <SmallMaxButton onClick={() => outputApprove()} width="10%">
+                    <Trans>
+                      <WarningIcon size="1.25em" /> Approve {outputCurrency?.symbol}
+                    </Trans>
+                  </SmallMaxButton>
+                )}
+              </TokenNameCell>
+
+              <PoolDataSection
+                chainId={chainId ?? 11155111}
+                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+                fee={pool?.fee}
+              />
+            </TokenInfoContainer>
+            <StatsContainer>
+              <PoolDataChart
+                chainId={chainId ?? 11155111}
+                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+                fee={pool?.fee}
+              />
+            </StatsContainer>
+            <PositionsContainer>
+              <TableHeader>
+                <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
+                  Leverage Positions
+                </TabNavItem>
+                <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+                  Borrow Positions
+                </TabNavItem>
+                <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+                  History
+                </TabNavItem>
+              </TableHeader>
+              <TabContent id={1} activeTab={activePositionTable}>
                 <LeveragePositionsTable positions={leveragePositions} loading={limitlessPositionsLoading} />
-                </TabContent>
-                <TabContent id={2} activeTab={activePositionTable}>
+              </TabContent>
+              <TabContent id={2} activeTab={activePositionTable}>
                 <BorrowPositionsTable positions={borrowPositions} loading={limitlessPositionsLoading} />
-                </TabContent>
-                <TabContent id={3} activeTab={activePositionTable}>
-                {!account ?(
-                  <Trans>
-                    Missing Account
-                  </Trans>
+              </TabContent>
+              <TabContent id={3} activeTab={activePositionTable}>
+                {!account ? (
+                  <Trans>Missing Account</Trans>
                 ) : (
                   <ActivityWrapper>
-                    <ActivityTab account={account}/>
+                    <ActivityTab account={account} />
                   </ActivityWrapper>
-                  
-                )
-                }
-                </TabContent>
-              </PositionsContainer>
-            </LeftContainer>
-
-            <SwapWrapper chainId={chainId} className={className} id="swap-page">
-              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-
-              <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
-                <TradeTabContent />
+                )}
               </TabContent>
+            </PositionsContainer>
+          </LeftContainer>
 
-              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-                <BorrowTabContent />
-              </TabContent>
-
-            </SwapWrapper>
+          <SwapWrapper chainId={chainId} className={className} id="swap-page">
+            <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
+            <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
+              <TradeTabContent />
+            </TabContent>
+            <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
+              <BorrowTabContent />
+            </TabContent>
+          </SwapWrapper>
         </PageWrapper>
         {!swapIsUnsupported ? null : (
           <UnsupportedCurrencyFooter

@@ -1,30 +1,33 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { InterfaceEventName } from '@uniswap/analytics-events'
-import { formatNumber, formatUSDPrice, NumberType } from '@uniswap/conedison/format'
-import { ParentSize } from '@visx/responsive'
-import SparklineChart from 'components/Charts/SparklineChart'
-import QueryTokenLogo from 'components/Logo/QueryTokenLogo'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { Currency, Token } from '@uniswap/sdk-core'
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { SparklineMap, TopToken } from 'graphql/data/TopTokens'
-import { CHAIN_NAME_TO_CHAIN_ID, getTokenDetailsURL, validateUrlChainParam } from 'graphql/data/util'
+import { SparklineMap } from 'graphql/data/TopTokens'
+import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
+import { TimePeriod } from 'graphql/data/util'
+import { usePool } from 'hooks/usePools'
+import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
+import { atomWithReset } from 'jotai/utils'
 import { ForwardedRef, forwardRef } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { Link, useParams } from 'react-router-dom'
-import styled, { css, useTheme } from 'styled-components/macro'
-import { ClickableStyle } from 'theme'
-import { Currency, Token } from '@uniswap/sdk-core'
-import { Field } from '../../../state/swap/actions'
-import { usePool } from 'hooks/usePools'
-import { FeeAmount } from '@uniswap/v3-sdk'
-import { ButtonPrimary,ButtonSecondary} from '../../Button'
-
 import { useCallback, 
   //useEffect, useMemo, useState 
 } from 'react'
+import { ArrowDown, ArrowUp, Info } from 'react-feather'
+import { Link, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import styled, { css, useTheme } from 'styled-components/macro'
+import { ClickableStyle } from 'theme'
 
+import {  useCurrency } from '../../../hooks/Tokens'
+import { Field } from '../../../state/swap/actions'
+import {
+  useSwapActionHandlers,
+  // useSwapState,
+} from '../../../state/swap/hooks'
+import { ButtonPrimary} from '../../Button'
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
@@ -32,28 +35,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from '../constants'
 import { LoadingBubble } from '../loading'
-// import {
-//   filterStringAtom,
-//   filterTimeAtom,
-//   sortAscendingAtom,
-//   sortMethodAtom,
-//   // TokenSortMethod,
-//   useSetSortMethod,
-// } from '../state'
-import { TimePeriod } from 'graphql/data/util'
-import { atom, useAtom } from 'jotai'
-import { atomWithReset } from 'jotai/utils'
-
 import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
-import {
-  // useDefaultsFromURLSearch,
-  // useDerivedLeverageCreationInfo,
-  useDerivedSwapInfo,
-  useSwapActionHandlers,
-  // useSwapState,
-} from '../../../state/swap/hooks'
-import {  useCurrency } from '../../../hooks/Tokens'
-import { useNavigate } from 'react-router-dom'
 
 const Cell = styled.div`
   display: flex;
@@ -439,8 +421,8 @@ function TokenRow({
 
   const rowCells = (
     <>
-
       <ListNumberCell header={header}>{listNumber}</ListNumberCell>
+
       <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
 
       <PriceCell data-testid="price-cell" sortable={header}>
@@ -462,18 +444,29 @@ function TokenRow({
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {UtilRate}
       </VolumeCell>
-      {
-        !header && 
-      <ButtonPrimary
-        style={{ marginLeft: '20px', padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '32px' }}
-        onClick={() =>
-          {if(currency1&&currency0){
-            navigate('/add/'+currency0+"/"+currency1+"/"+"500", {state: {currency0:currency0, currency1: currency1 }})
-          }}
-          } >
-        <Trans>Provide Liquidity</Trans>
-      </ButtonPrimary>
-      }
+      {!header && (
+        <VolumeCell data-testid="volume-cell" sortable={header}>
+          <ButtonPrimary
+            style={{
+              marginLeft: '20px',
+              padding: '.5rem',
+              width: 'fit-content',
+              fontSize: '0.825rem',
+              borderRadius: '32px',
+              height: '30px',
+            }}
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
+                  state: { currency0, currency1 },
+                });
+              }
+            }}
+          >
+            <Trans>Provide Liquidity</Trans>
+          </ButtonPrimary>
+        </VolumeCell>
+      )}
       {/*
         !header && 
       <ButtonPrimary
@@ -487,7 +480,7 @@ function TokenRow({
 
       {/*<SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
-  )
+  );
   if (header) return <StyledHeaderRow data-testid="header-row">{rowCells}</StyledHeaderRow>
   return <StyledTokenRow {...rest}>{rowCells}</StyledTokenRow>
 }
@@ -643,96 +636,130 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         // }
       > */}
 
-        <TokenRow
-          header={false}
-          listNumber={sortRank}
-          tokenInfo={
-            <ClickableName         onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        }>
-              {/*<QueryTokenLogo token={token} />*/}
-              <TokenInfoCell>
-                <TokenName data-cy="token-name">{token1.symbol}/{token0.symbol}</TokenName>
-                <TokenSymbol>{token0.symbol}</TokenSymbol>
-              </TokenInfoCell>
-            </ClickableName>
-          }
-          price={
-            <ClickableContent        onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        } >
-              <PriceInfoCell>
-                {currentPrice &&(priceRounded+" " + token0.symbol +"/"+token1.symbol)}
-                {/*<PercentChangeInfoCell>
+      <TokenRow
+        header={false}
+        listNumber={sortRank}
+        currency0={currency0}
+        currency1={currency1}
+        tokenInfo={
+          <ClickableName
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            {/*<QueryTokenLogo token={token} />*/}
+            <TokenInfoCell>
+              <TokenName data-cy="token-name">
+                {token1.symbol}/{token0.symbol}
+              </TokenName>
+              <TokenSymbol>{token0.symbol}</TokenSymbol>
+            </TokenInfoCell>
+          </ClickableName>
+        }
+        price={
+          <ClickableContent
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            <PriceInfoCell>
+              {currentPrice &&
+                priceRounded + ' ' + token0.symbol + '/' + token1.symbol}
+              {/*<PercentChangeInfoCell>
                   <ArrowCell>{smallArrow}</ArrowCell>
                   <DeltaText delta={delta}>{formattedDelta}</DeltaText>
                 </PercentChangeInfoCell>*/}
-              </PriceInfoCell>
-            </ClickableContent>
-          }
-          percentChange={
-            <ClickableContent         onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        }>
-              <ArrowCell>{arrow}</ArrowCell>
-              <DeltaText delta={delta}>{formattedDelta}</DeltaText>
-            </ClickableContent>
-          }
-          tvl={
-            <ClickableContent         onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        }>
-              {formatNumber(tvl_, NumberType.FiatTokenStats)}
-            </ClickableContent>
-          }
-          volume={
-            <ClickableContent        onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
+            </PriceInfoCell>
+          </ClickableContent>
         }
-            >{formatNumber(volume_, NumberType.FiatTokenStats)}</ClickableContent>
-          }
-          APR = {
-            <ClickableContent         onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        }>{formatNumber(estimatedapr_)+"%"}</ClickableContent>
-
-          }
-          UtilRate = {
-            <ClickableContent         onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        }>{formatNumber(urate_)+"%"}</ClickableContent>            
-          }
-
-          // sparkLine={
-          //   <SparkLine>
-          //     <ParentSize>
-          //       {({ width, height }) =>
-          //         props.sparklineMap && (
-          //           <SparklineChart
-          //             width={width}
-          //             height={height}
-          //             tokenData={token}
-          //             pricePercentChange={token.market?.pricePercentChange?.value}
-          //             sparklineMap={props.sparklineMap}
-          //           />
-          //         )
-          //       }
-          //     </ParentSize>
-          //   </SparkLine>
-          // }
-          first={tokenListIndex === 0}
-          last={tokenListIndex === tokenListLength - 1}
-           // @ts-ignore
-          currency0={currency0?.address}
-           // @ts-ignore
-          currency1={currency1?.address}
-
-        />
+        percentChange={
+          <ClickableContent
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            <ArrowCell>{arrow}</ArrowCell>
+            <DeltaText delta={delta}>{formattedDelta}</DeltaText>
+          </ClickableContent>
+        }
+        tvl={
+          <ClickableContent
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            {formatNumber(tvl_, NumberType.FiatTokenStats)}
+          </ClickableContent>
+        }
+        volume={
+          <ClickableContent
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            {formatNumber(volume_, NumberType.FiatTokenStats)}
+          </ClickableContent>
+        }
+        APR={
+          <ClickableContent
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            {formatNumber(estimatedapr_) + '%'}
+          </ClickableContent>
+        }
+        UtilRate={
+          <ClickableContent
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/swap', { state: { currency0, currency1 } });
+              }
+            }}
+          >
+            {formatNumber(urate_) + '%'}
+          </ClickableContent>
+        }
+        // sparkLine={
+        //   <SparkLine>
+        //     <ParentSize>
+        //       {({ width, height }) =>
+        //         props.sparklineMap && (
+        //           <SparklineChart
+        //             width={width}
+        //             height={height}
+        //             tokenData={token}
+        //             pricePercentChange={token.market?.pricePercentChange?.value}
+        //             sparklineMap={props.sparklineMap}
+        //           />
+        //         )
+        //       }
+        //     </ParentSize>
+        //   </SparkLine>
+        // }
+        first={tokenListIndex === 0}
+        last={tokenListIndex === tokenListLength - 1}
+        // @ts-ignore
+        currency0={currency0?.address}
+        // @ts-ignore
+        currency1={currency1?.address}
+      />
 
       {/*</ClickableContent> */}
-
     </div>
-  )
+  );
 })
 
 // PLoadedRow.displayName = 'LoadedRow'

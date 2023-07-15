@@ -1,7 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from "bignumber.js"
-import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES, LIQUIDITY_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
+import { BigNumber as BN } from 'bignumber.js'
+import {
+  BORROW_MANAGER_FACTORY_ADDRESSES,
+  LEVERAGE_MANAGER_FACTORY_ADDRESSES,
+  LIQUIDITY_MANAGER_FACTORY_ADDRESSES,
+} from 'constants/addresses'
 import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
@@ -10,28 +14,39 @@ import { PositionDetails } from 'types/position'
 import { useGlobalStorageContract, useV3NFTPositionManagerContract } from './useContract'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress, computeLiquidityManagerAddress } from './usePools'
 
-
 interface UseV3PositionsResults {
   loading: boolean
   positions: PositionDetails[] | undefined
 }
 
-export function useLimitlessPositionFromKeys(account: string | undefined, manager: string | undefined, isToken0: boolean | undefined, isBorrow: boolean): {loading: boolean, position: LimitlessPositionDetails | undefined} {
+export function useLimitlessPositionFromKeys(
+  account: string | undefined,
+  manager: string | undefined,
+  isToken0: boolean | undefined,
+  isBorrow: boolean
+): { loading: boolean; position: LimitlessPositionDetails | undefined } {
   const { loading, positions } = useLimitlessPositions(account)
   // console.log("positions", positions)
   const position = useMemo(() => {
     if (positions) {
-      return positions.find(position => (isBorrow ? position.isBorrow && position.borrowManagerAddress === manager : !position.isBorrow && position.leverageManagerAddress === manager) && position.isToken0 === isToken0)
+      return positions.find(
+        (position) =>
+          (isBorrow
+            ? position.isBorrow && position.borrowManagerAddress === manager
+            : !position.isBorrow && position.leverageManagerAddress === manager) && position.isToken0 === isToken0
+      )
     }
     return undefined
-  }
-  , [positions, manager, isToken0, isBorrow])
-  return {loading, position}
+  }, [positions, manager, isToken0, isBorrow])
+  return { loading, position }
 }
 
 // hacked
-export function useLimitlessPositions(account: string | undefined): {loading: boolean, positions: LimitlessPositionDetails[] | undefined} {
-  const {chainId} = useWeb3React()
+export function useLimitlessPositions(account: string | undefined): {
+  loading: boolean
+  positions: LimitlessPositionDetails[] | undefined
+} {
+  const { chainId } = useWeb3React()
   const globalStorage = useGlobalStorageContract()
 
   const { loading: balanceLoading, result: balanceResult } = useSingleCallResult(globalStorage, 'balanceOf', [
@@ -69,7 +84,7 @@ export function useLimitlessPositions(account: string | undefined): {loading: bo
 
   const inputs = useMemo(() => (tokenIds ? tokenIds.map((tokenId) => [BigNumber.from(tokenId)]) : []), [tokenIds])
   //console.log("inputs: ", inputs)
-  
+
   const results = useSingleContractMultipleData(globalStorage, 'getPositionFromId', inputs)
   // console.log("calldataResults: ", results)
 
@@ -78,7 +93,7 @@ export function useLimitlessPositions(account: string | undefined): {loading: bo
 
   const positions = useMemo(() => {
     if (!loading && !error && tokenIds) {
-      const allPositions =  results.map((call, i ) => {
+      const allPositions = results.map((call, i) => {
         const tokenId = tokenIds[i]
         const result = call.result as CallStateResult
         const key = result.key
@@ -89,19 +104,19 @@ export function useLimitlessPositions(account: string | undefined): {loading: bo
             factoryAddress: LEVERAGE_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
             tokenA: key.token0,
             tokenB: key.token1,
-            fee: (key.fee),
+            fee: key.fee,
           }),
           borrowManagerAddress: computeBorrowManagerAddress({
             factoryAddress: BORROW_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
             tokenA: key.token0,
             tokenB: key.token1,
-            fee: (key.fee),
+            fee: key.fee,
           }),
           liquidityManagerAddress: computeLiquidityManagerAddress({
             factoryAddress: LIQUIDITY_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
             tokenA: key.token0,
             tokenB: key.token1,
-            fee: (key.fee)
+            fee: key.fee,
           }),
           isBorrow: position.isBorrow,
           token0Address: key.token0,
@@ -124,7 +139,7 @@ export function useLimitlessPositions(account: string | undefined): {loading: bo
 
       const activePositions = allPositions.filter((position) => {
         return Number(position.openTime) !== 0
-      }) 
+      })
       return activePositions
     }
     return undefined
@@ -132,10 +147,9 @@ export function useLimitlessPositions(account: string | undefined): {loading: bo
 
   return {
     loading,
-    positions
+    positions,
   }
 }
-
 
 export function convertBNToNum(num: BigNumber, decimals: number) {
   return new BN(num.toString()).shiftedBy(-decimals).toNumber()
@@ -145,12 +159,16 @@ export enum PositionState {
   LOADING,
   NOT_EXISTS,
   EXISTS,
-  INVALID
+  INVALID,
 }
 
-export function useLimitlessPositionFromTokenId(tokenId: string | undefined): { loading: boolean, error: any, position: LimitlessPositionDetails | undefined} {
+export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {
+  loading: boolean
+  error: any
+  position: LimitlessPositionDetails | undefined
+} {
   const globalStorage = useGlobalStorageContract()
-  const result = useSingleCallResult(globalStorage, 'getPositionFromId', [tokenId]);
+  const result = useSingleCallResult(globalStorage, 'getPositionFromId', [tokenId])
   const loading = result.loading
   const error = result.error
   const { chainId } = useWeb3React()
@@ -166,25 +184,25 @@ export function useLimitlessPositionFromTokenId(tokenId: string | undefined): { 
           factoryAddress: LEVERAGE_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
           tokenA: key.token0,
           tokenB: key.token1,
-          fee: (key.fee),
+          fee: key.fee,
         }),
         borrowManagerAddress: computeBorrowManagerAddress({
           factoryAddress: BORROW_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
           tokenA: key.token0,
           tokenB: key.token1,
-          fee: (key.fee),
+          fee: key.fee,
         }),
         liquidityManagerAddress: computeLiquidityManagerAddress({
           factoryAddress: LIQUIDITY_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
           tokenA: key.token0,
           tokenB: key.token1,
-          fee: (key.fee)
+          fee: key.fee,
         }),
         token0Address: key.token0,
         token1Address: key.token1,
         poolFee: key.fee,
         totalPosition: convertBNToNum(position.totalPosition, 18),
-        totalPositionRaw: position.isBorrow?position.totalDebtInput.toString(): position.totalPosition.toString(), 
+        totalPositionRaw: position.isBorrow ? position.totalDebtInput.toString() : position.totalPosition.toString(),
         totalDebt: convertBNToNum(position.totalDebt, 18),
         totalDebtInput: convertBNToNum(position.totalDebtInput, 18),
         // creationPrice: convertBNToNum(position.creationPrice, 18),
@@ -195,23 +213,18 @@ export function useLimitlessPositionFromTokenId(tokenId: string | undefined): { 
         isToken0: position.isToken0,
         openTime: position.openTime.toString(),
         repayTime: position.repayTime.toString(),
-        isBorrow: position.isBorrow
+        isBorrow: position.isBorrow,
         // borrowInfo: position.borrowInfo.map((info: any) => convertBNToNum(info, 18)),
       }
       return _position
     }
     return undefined
-  },
-     [
-      loading,
-      error,
-      tokenId
-    ])
+  }, [loading, error, tokenId, chainId, result])
 
   return {
     loading,
     error,
-    position: position ?? undefined
+    position: position ?? undefined,
   }
 }
 
@@ -258,7 +271,6 @@ interface UseV3PositionResults {
   loading: boolean
   position: PositionDetails | undefined
 }
-
 
 export function useV3PositionFromTokenId(tokenId: BigNumber | undefined): UseV3PositionResults {
   const position = useV3PositionsFromTokenIds(tokenId ? [tokenId] : undefined)

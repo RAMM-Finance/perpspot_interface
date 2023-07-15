@@ -3,7 +3,6 @@ import { Token } from '@uniswap/sdk-core'
 import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
-import StatsSection from 'components/swap/StatsSection'
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES as LIMITLESS_FACTORIES } from 'constants/addresses'
 import { getFakePool, getFakeSymbol, isFakePair } from 'constants/fake-tokens'
 import { LATEST_POOL_DAY_QUERY, LATEST_POOL_INFO_QUERY } from 'graphql/limitlessGraph/poolPriceData'
@@ -12,18 +11,18 @@ import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
 import moment from 'moment'
-import { LanguageCode } from 'public/charting_library'
-import { useEffect, useMemo } from 'react'
+import { IChartingLibraryWidget, LanguageCode, widget } from 'public/charting_library'
+import { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 
+import { defaultChartProps } from './constants'
 import useDatafeed from './useDataFeed'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const StatsContainer = styled.div`
-  margin-left: 5px;
-  width: 100%;
+  margin-bottom: 15px;
 `
 
 // interface ChartContainerProps {
@@ -49,7 +48,7 @@ const getLanguageFromURL = (): LanguageCode | null => {
   return results === null ? null : (decodeURIComponent(results[1].replace(/\+/g, ' ')) as LanguageCode)
 }
 
-export const PoolDataSection = ({
+export const PoolDataChart = ({
   chainId,
   token0,
   token1,
@@ -60,9 +59,9 @@ export const PoolDataSection = ({
   token1: Token | undefined
   fee: FeeAmount | undefined
 }) => {
-  // const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
+  const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
   const { datafeed } = useDatafeed({ chainId })
-  // const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
+  const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
@@ -212,7 +211,7 @@ export const PoolDataSection = ({
     token1,
   ])
 
-  // console.log("stats: ", token0?.symbol, token1?.symbol, stats)
+  console.log('stats: ', token0?.symbol, token1?.symbol, stats)
 
   // useEffect(() => {
   // 	async function fetch() {
@@ -272,72 +271,61 @@ export const PoolDataSection = ({
     uniswapToken0Price,
   ])
 
-  // useEffect(() => {
-  // 	// console.log("symbolExchangeChart: ", symbol)
-  // 	const widgetOptions = {
-  // 		debug: false,
-  // 		symbol: !symbol ? "missing pool" : symbol,
-  // 		datafeed,
-  // 		theme: defaultChartProps.theme,
-  // 		container: chartContainerRef.current,
-  // 		library_path: defaultChartProps.library_path,
-  // 		locale: defaultChartProps.locale,
-  // 		loading_screen: defaultChartProps.loading_screen,
-  // 		enabled_features: defaultChartProps.enabled_features,
-  // 		disabled_features: defaultChartProps.disabled_features,
-  // 		client_id: defaultChartProps.clientId,
-  // 		user_id: defaultChartProps.userId,
-  // 		//fullscreen: defaultChartProps.fullscreen,
-  // 		// autosize: defaultChartProps.autosize,
-  // 		// custom_css_url: defaultChartProps.custom_css_url,
-  // 		autosize: true,
-  // 		overrides: defaultChartProps.overrides,
-  // 		interval: "60",//getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
-  // 		favorites: defaultChartProps.favorites,
-  // 		custom_formatters: defaultChartProps.custom_formatters,
-  // 		// save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
-  // 	};
+  useEffect(() => {
+    // console.log("symbolExchangeChart: ", symbol)
+    const widgetOptions = {
+      debug: false,
+      symbol: !symbol ? 'missing pool' : symbol,
+      datafeed,
+      theme: defaultChartProps.theme,
+      container: chartContainerRef.current,
+      library_path: defaultChartProps.library_path,
+      locale: defaultChartProps.locale,
+      loading_screen: defaultChartProps.loading_screen,
+      enabled_features: defaultChartProps.enabled_features,
+      disabled_features: defaultChartProps.disabled_features,
+      client_id: defaultChartProps.clientId,
+      user_id: defaultChartProps.userId,
+      //fullscreen: defaultChartProps.fullscreen,
+      // autosize: defaultChartProps.autosize,
+      // custom_css_url: defaultChartProps.custom_css_url,
+      autosize: true,
+      overrides: defaultChartProps.overrides,
+      interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
+      favorites: defaultChartProps.favorites,
+      custom_formatters: defaultChartProps.custom_formatters,
+      // save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
+    }
 
-  // 	tvWidgetRef.current = new widget(widgetOptions as any);
+    tvWidgetRef.current = new widget(widgetOptions as any)
 
-  // 	tvWidgetRef.current?.onChartReady(function () {
-  // 		setChartReady(true);
+    tvWidgetRef.current?.onChartReady(function () {
+      setChartReady(true)
 
-  // 		tvWidgetRef.current?.activeChart().dataReady(() => {
-  // 			setChartDataLoading(false);
-  // 		});
-  // 	});
+      tvWidgetRef.current?.activeChart().dataReady(() => {
+        setChartDataLoading(false)
+      })
+    })
 
-  // 	return () => {
-  // 		if (tvWidgetRef.current) {
-  // 			tvWidgetRef.current.remove();
-  // 			tvWidgetRef.current = null;
-  // 			setChartReady(false);
-  // 			setChartDataLoading(true);
-  // 		}
-  // 	};
-  // }, [chainId, symbol, uniswapPoolAddress, fee, datafeed]);
+    return () => {
+      if (tvWidgetRef.current) {
+        tvWidgetRef.current.remove()
+        tvWidgetRef.current = null
+        setChartReady(false)
+        setChartDataLoading(true)
+      }
+    }
+  }, [chainId, symbol, uniswapPoolAddress, fee, datafeed])
 
   return (
-    <>
-      <StatsContainer>
-        <StatsSection
-          address={uniswapPoolAddress ?? ''}
-          chainId={chainId}
-          token0Symbol={token0?.symbol}
-          token1Symbol={token1?.symbol}
-          stats={stats}
-        />
-      </StatsContainer>
-      {/* <div style={{ height: "450px" }}>
-				<div
-					style={{
-						height: '100%'
-					}}
-					ref={chartContainerRef}
-					className="TVChartContainer"
-				/>
-			</div> */}
-    </>
+    <div style={{ height: '450px' }}>
+      <div
+        style={{
+          height: '100%',
+        }}
+        ref={chartContainerRef}
+        className="TVChartContainer"
+      />
+    </div>
   )
 }
