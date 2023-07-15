@@ -5,10 +5,13 @@ import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { TransactionPartsFragment, TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
+import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
+import { formatSymbol } from 'lib/utils/formatSymbol'
 import { useMemo } from 'react'
 import { TokenAddressMap, useCombinedActiveList } from 'state/lists/hooks'
 import { useMultichainTransactions } from 'state/transactions/hooks'
 import {
+  AddLeverageTransactionInfo,
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
   ApproveTransactionInfo,
@@ -59,6 +62,35 @@ function parseSwap(
   return {
     descriptor: buildCurrencyDescriptor(tokenIn, inputRaw, tokenOut, outputRaw),
     currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseAddLeverage(
+  info: AddLeverageTransactionInfo
+): Partial<Activity> {
+  const paidAmount = formatLocaleNumber({
+    number: info.inputAmount,
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: 5
+    }
+  })
+
+  const addedPosition = formatLocaleNumber({
+    number: info.expectedAddedPosition,
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: 5
+    }
+  })
+
+  const descriptor = `Paid ${paidAmount} ${formatSymbol(info.inputCurrencySymbol)} and added ${addedPosition} ${formatSymbol(info.outputCurrencySymbol)} to position`
+
+  return {
+    descriptor,
+    // currencies: [tokenIn, tokenOut]
   }
 }
 
@@ -178,6 +210,8 @@ export function parseLocalActivity(
     additionalFields = parseCollectFees(info, chainId, tokens)
   } else if (info.type === TransactionType.MIGRATE_LIQUIDITY_V3 || info.type === TransactionType.CREATE_V3_POOL) {
     additionalFields = parseMigrateCreateV3(info, chainId, tokens)
+  } else if (info.type === TransactionType.ADD_LEVERAGE) {
+    additionalFields = parseAddLeverage(info)
   }
 
   return { ...defaultFields, ...additionalFields }

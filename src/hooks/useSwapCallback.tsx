@@ -6,7 +6,7 @@ import { Contract } from "ethers"
 import { PermitSignature } from 'hooks/usePermitAllowance'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
-import { BorrowCreationDetails } from 'state/swap/hooks'
+import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
 
 import BorrowManagerData from "../perpspotContracts/BorrowManager.json"
 import LeverageManagerData from "../perpspotContracts/LeverageManager.json"
@@ -82,7 +82,8 @@ export function useSwapCallback(
 export function useAddLeveragePositionCallback(
   leverageManagerAddress: string | undefined,
   trade: Trade<Currency, Currency, TradeType> | undefined,
-  allowedSlippage: Percent, // in bips
+  leverageTrade: LeverageTrade | undefined,
+  allowedSlippage: Percent,
   leverageFactor: string | undefined
 ): { callback: null | (() => Promise<string>) } {
   // const deadline = useTransactionDeadline()
@@ -90,27 +91,28 @@ export function useAddLeveragePositionCallback(
 
   const addTransaction = useTransactionAdder()
 
-  if (!leverageManagerAddress) return { callback: null }
-  if (!trade) return { callback: null }
-  if (!account) throw new Error('missing account')
-  if (!chainId) throw new Error('missing chainId')
-  if (!provider) throw new Error('missing provider')
+  const callback =  useMemo(() => {
+    return () => {
+      if (!account) throw new Error('missing account')
+      if (!chainId) throw new Error('missing chainId')
+      if (!provider) throw new Error('missing provider')
+      if (!leverageManagerAddress) throw new Error('missing leverage manager address')
+      if (!trade) throw new Error('missing trade')
+      if (!leverageTrade) throw new Error('missing leverage trade')
+  
+      let isLong = true
+      const decimals = trade?.inputAmount.currency.decimals ?? 18
+      if (trade?.inputAmount.currency.isToken && trade?.outputAmount.currency.isToken) {
+        if (trade.inputAmount.currency.sortsBefore(trade.outputAmount.currency)) {
+          isLong = false
+        }
+      }
+    
+      const input = new BN(leverageTrade.inputAmount.toExact()).shiftedBy(decimals).toFixed(0)
+      const borrowedAmount = new BN(leverageTrade.inputAmount.toExact()).multipliedBy(Number(leverageFactor) - 1 ?? "0").shiftedBy(decimals).toFixed(0)
+      const leverageManagerContract = new Contract(leverageManagerAddress, LeverageManagerData.abi, provider.getSigner())
+      const slippage = new BN(1 + Number(allowedSlippage.toFixed(6)) / 100).shiftedBy(decimals).toFixed(0)
 
-  let isLong = true
-  const decimals = trade?.inputAmount.currency.decimals ?? 18
-  if (trade?.inputAmount.currency.isToken && trade?.outputAmount.currency.isToken) {
-    if (trade.inputAmount.currency.sortsBefore(trade.outputAmount.currency)) {
-      isLong = false
-    }
-  }
-
-  const input = new BN(trade?.inputAmount.toExact() ?? 0).shiftedBy(decimals).toFixed(0)
-  const borrowedAmount = new BN(trade?.inputAmount.toExact() ?? 0).multipliedBy(Number(leverageFactor) - 1 ?? "0").shiftedBy(decimals).toFixed(0)
-  const leverageManagerContract = new Contract(leverageManagerAddress, LeverageManagerData.abi, provider.getSigner())
-  const slippage = new BN(1 + Number(allowedSlippage.toFixed(6)) / 100).shiftedBy(decimals).toFixed(0)
-  // console.log("arguments: ", input, allowedSlippage.toFixed(6), slippage, borrowedAmount, isLong)
-  return {
-    callback: (): any => {
       return leverageManagerContract.addPosition(
         input,
         slippage,
@@ -122,14 +124,44 @@ export function useAddLeveragePositionCallback(
           response,
           {
             type: TransactionType.ADD_LEVERAGE,
-            inputCurrencyId: currencyId(trade.inputAmount.currency),
-            outputCurrencyId: currencyId(trade.outputAmount.currency)
+            inputCurrencySymbol: trade.inputAmount.currency.symbol ?? "",
+            outputCurrencySymbol: trade.outputAmount.currency.symbol ?? "",
+            inputAmount: Number(leverageTrade.inputAmount.toExact()),
+            expectedAddedPosition: leverageTrade.expectedTotalPosition - leverageTrade.existingTotalPosition
           }
         )
         return response.hash
       })
     }
+  }, [account, addTransaction, allowedSlippage, chainId, leverageFactor, leverageManagerAddress, leverageTrade, provider, trade])
+
+  return {
+    callback
   }
+
+  // return {
+  //   callback: (): any => {
+  //     return leverageManagerContract.addPosition(
+  //       input,
+  //       slippage,
+  //       borrowedAmount,
+  //       isLong
+  //     ).then((response: any) => {
+  //       // console.log('leverageResponse', response.hash, response)
+  //       addTransaction(
+  //         response,
+  //         {
+  //           type: TransactionType.ADD_LEVERAGE,
+  //           inputCurrencyId: currencyId(trade.inputAmount.currency),
+  //           outputCurrencyId: currencyId(trade.outputAmount.currency),
+  //           borrowedAmount: new BN(borrowedAmount).shiftedBy(-decimals).toNumber(),
+  //           expectedAddedPosition: leverageTrade.expectedTotalPosition
+  //         }
+  //       )
+  //       return response.hash
+  //     })
+  //   }
+  // }
 }
 
 export function useAddBorrowPositionCallback(
