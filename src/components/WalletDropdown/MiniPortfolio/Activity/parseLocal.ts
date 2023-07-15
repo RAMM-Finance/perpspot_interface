@@ -73,7 +73,6 @@ function parseAddLeverage(
     locale: null,
     options: {
       notation: 'compact',
-      currencyDisplay: formatSymbol(info.inputCurrencySymbol),
       maximumSignificantDigits: 5
     }
   })
@@ -83,12 +82,11 @@ function parseAddLeverage(
     locale: null,
     options: {
       notation: 'compact',
-      currencyDisplay: formatSymbol(info.outputCurrencySymbol),
       maximumSignificantDigits: 5
     }
   })
 
-  const descriptor = `Paid ${paidAmount} and added ${addedPosition} to position`
+  const descriptor = `Paid ${paidAmount} ${formatSymbol(info.inputCurrencySymbol)} and added ${addedPosition} ${formatSymbol(info.outputCurrencySymbol)} to position`
 
   return {
     descriptor,
