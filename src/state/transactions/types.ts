@@ -52,7 +52,7 @@ export enum TransactionType {
   PREMIUM_LEVERAGE,
   PREMIUM_BORROW,
   REDUCE_BORROW_COLLATERAL,
-  REDUCE_BORROW_DEBT
+  REDUCE_BORROW_DEBT,
 }
 
 interface BaseTransactionInfo {
@@ -182,7 +182,6 @@ export interface RemoveLiquidityV3TransactionInfo {
   expectedAmountQuoteRaw: string
 }
 
-
 interface SubmitProposalTransactionInfo {
   type: TransactionType.SUBMIT_PROPOSAL
 }
@@ -190,15 +189,17 @@ interface SubmitProposalTransactionInfo {
 // LIMITLESS INFO
 
 export interface AddBorrowPositionTransactionInfo {
-  type: TransactionType.ADD_BORROW,
-  collateralAmount: string,
-  inputCurrencyId: string,
+  type: TransactionType.ADD_BORROW
+  collateralAmount: number
+  inputCurrencyId: string
   outputCurrencyId: string
+  borrowedAmount: number
 }
 
 export interface ReduceLeveragePositionTransactionInfo {
-  type: TransactionType.REDUCE_LEVERAGE,
-  reduceAmount: string
+  type: TransactionType.REDUCE_LEVERAGE
+  reduceAmount: number
+  newTotalPosition: number
   inputCurrencyId: string
   outputCurrencyId: string
   entryPrice: number
@@ -222,21 +223,33 @@ export interface ReduceLeveragePositionTransactionInfo {
 //             quoteBaseSymbol: transactionInfo.quoteBaseSymbol
 
 export interface AddLeveragePremiumTransactionInfo {
-  type: TransactionType.PREMIUM_LEVERAGE,
+  type: TransactionType.PREMIUM_LEVERAGE
+  inputCurrencyId: string
+  outputCurrencyId: string
 }
 
 export interface AddBorrowPremiumTransactionInfo {
   type: TransactionType.PREMIUM_BORROW
+  inputCurrencyId: string
+  outputCurrencyId: string
 }
 
 export interface ReduceBorrowCollateralTransactionInfo {
   type: TransactionType.REDUCE_BORROW_COLLATERAL
   inputCurrencyId: string
   outputCurrencyId: string
+  reduceAmount: number
+  newExpectedCollateral: number
+  recieveCollateral: boolean
+  expectedReturnedAmount: number
 }
 
 export interface ReduceBorrowDebtTransactionInfo {
   type: TransactionType.REDUCE_BORROW_DEBT
+  reduceAmount: number
+  expectedReturnedAmount: number
+  newTotalPosition: number
+  recieveCollateral: boolean
   inputCurrencyId: string
   outputCurrencyId: string
 }
@@ -244,8 +257,8 @@ export interface ReduceBorrowDebtTransactionInfo {
 export interface AddLeverageTransactionInfo {
   type: TransactionType.ADD_LEVERAGE
   inputAmount: number
-  inputCurrencySymbol: string
-  outputCurrencySymbol: string
+  inputCurrencyId: string
+  outputCurrencyId: string
   expectedAddedPosition: number
 }
 

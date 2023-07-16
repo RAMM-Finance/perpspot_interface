@@ -136,9 +136,9 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Submitted proposal`,
     [TransactionStatus.Failed]: t`Submit proposal failed`,
   },
-  [TransactionType.ADD_BORROW]:{
-    [TransactionStatus.Pending]: t`Adding borrow`,
-    [TransactionStatus.Confirmed]: t`Added borrow`,
+  [TransactionType.ADD_BORROW]: {
+    [TransactionStatus.Pending]: t`Borrowing`,
+    [TransactionStatus.Confirmed]: t`Borrowed`,
     [TransactionStatus.Failed]: t`Add borrow failed`,
   },
   [TransactionType.REDUCE_LEVERAGE]: {
@@ -157,20 +157,20 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Failed]: t`Payment failed`,
   },
   [TransactionType.REDUCE_BORROW_DEBT]: {
-    [TransactionStatus.Pending]: t`Reducing borrow debt`,
-    [TransactionStatus.Confirmed]: t`Reduced borrow debt`,
+    [TransactionStatus.Pending]: t`Reducing Debt`,
+    [TransactionStatus.Confirmed]: t`Reduced Debt`,
     [TransactionStatus.Failed]: t`Reduce borrow debt failed`,
   },
   [TransactionType.REDUCE_BORROW_COLLATERAL]: {
-    [TransactionStatus.Pending]: t`Reducing borrow collateral`,
-    [TransactionStatus.Confirmed]: t`Reduced borrow collateral`,
-    [TransactionStatus.Failed]: t`Reduce borrow collateral failed`,
+    [TransactionStatus.Pending]: t`Reducing Collateral`,
+    [TransactionStatus.Confirmed]: t`Reduced Collateral`,
+    [TransactionStatus.Failed]: t`Reduce Collateral failed`,
   },
   [TransactionType.ADD_LEVERAGE]: {
-    [TransactionStatus.Pending]: t`Adding Leverage Position`,
-    [TransactionStatus.Confirmed]: t`Added Leverage Position`,
+    [TransactionStatus.Pending]: t`Increasing Leverage Position`,
+    [TransactionStatus.Confirmed]: t`Increased Leverage Position`,
     [TransactionStatus.Failed]: t`Leverage Creation Failed`,
-  }
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

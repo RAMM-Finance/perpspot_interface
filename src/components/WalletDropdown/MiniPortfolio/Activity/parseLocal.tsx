@@ -3,7 +3,9 @@ import { formatCurrencyAmount } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
+import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
+import { FakeTokensMapSepolia } from 'constants/fake-tokens'
 import { TransactionPartsFragment, TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
 import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { formatSymbol } from 'lib/utils/formatSymbol'
@@ -11,6 +13,9 @@ import { useMemo } from 'react'
 import { TokenAddressMap, useCombinedActiveList } from 'state/lists/hooks'
 import { useMultichainTransactions } from 'state/transactions/hooks'
 import {
+  AddBorrowPositionTransactionInfo,
+  AddBorrowPremiumTransactionInfo,
+  AddLeveragePremiumTransactionInfo,
   AddLeverageTransactionInfo,
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
@@ -20,6 +25,9 @@ import {
   ExactInputSwapTransactionInfo,
   ExactOutputSwapTransactionInfo,
   MigrateV2LiquidityToV3TransactionInfo,
+  ReduceBorrowCollateralTransactionInfo,
+  ReduceBorrowDebtTransactionInfo,
+  ReduceLeveragePositionTransactionInfo,
   RemoveLiquidityV3TransactionInfo,
   TransactionDetails,
   TransactionType,
@@ -29,8 +37,12 @@ import {
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
 
-function getCurrency(currencyId: string, chainId: SupportedChainId, tokens: TokenAddressMap): Currency | undefined {
-  return currencyId === 'ETH' ? nativeOnChain(chainId) : tokens[chainId]?.[currencyId]?.token
+function getCurrency(currencyId: string, chainId: SupportedChainId, tokens?: TokenAddressMap): Currency | undefined {
+  if (SupportedChainId.SEPOLIA === chainId) return FakeTokensMapSepolia[currencyId]
+  if (tokens) {
+    return currencyId === 'ETH' ? nativeOnChain(chainId) : tokens[chainId]?.[currencyId]?.token
+  }
+  return undefined
 }
 
 function buildCurrencyDescriptor(
@@ -65,16 +77,23 @@ function parseSwap(
   }
 }
 
+const MAX_SIG_FIGS = 5
+
 function parseAddLeverage(
-  info: AddLeverageTransactionInfo
+  info: AddLeverageTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
 ): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
   const paidAmount = formatLocaleNumber({
     number: info.inputAmount,
     locale: null,
     options: {
       notation: 'compact',
-      maximumSignificantDigits: 5
-    }
+      maximumSignificantDigits: MAX_SIG_FIGS,
+    },
   })
 
   const addedPosition = formatLocaleNumber({
@@ -82,15 +101,133 @@ function parseAddLeverage(
     locale: null,
     options: {
       notation: 'compact',
-      maximumSignificantDigits: 5
-    }
+      maximumSignificantDigits: MAX_SIG_FIGS,
+    },
   })
 
-  const descriptor = `Paid ${paidAmount} ${formatSymbol(info.inputCurrencySymbol)} and added ${addedPosition} ${formatSymbol(info.outputCurrencySymbol)} to position`
+  const descriptor = (
+    <Descriptor color="textSecondary">
+      {`${paidAmount} ${formatSymbol(tokenIn?.symbol)} for +${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
+    </Descriptor>
+  )
 
   return {
     descriptor,
-    // currencies: [tokenIn, tokenOut]
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseReduceLeverage(
+  info: ReduceLeveragePositionTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const formattedNewPosition = formatLocaleNumber({
+    number: Number(info.newTotalPosition),
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: MAX_SIG_FIGS,
+    },
+  })
+
+  const PnL = formatLocaleNumber({
+    number: Number(info.pnl),
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: MAX_SIG_FIGS,
+      signDisplay: 'always',
+    },
+  })
+
+  const descriptor = `Reduced ${tokenOut?.symbol}/${tokenIn?.symbol} Position to ${formattedNewPosition} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseAddBorrow(
+  info: AddBorrowPositionTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const formattedCollateralAmount = formatLocaleNumber({
+    number: Number(info.collateralAmount),
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: MAX_SIG_FIGS,
+    },
+  })
+
+  const formattedBorrowAmount = formatLocaleNumber({
+    number: Number(info.borrowedAmount),
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: MAX_SIG_FIGS,
+    },
+  })
+
+  const descriptor = `Deposited ${formattedCollateralAmount} ${tokenIn?.symbol}, Borrowed ${formattedBorrowAmount} ${tokenOut?.symbol}`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseReduceBorrowDebt(
+  info: ReduceBorrowDebtTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const newTotalPosition = formatLocaleNumber({
+    number: Number(info.newTotalPosition),
+    locale: null,
+    options: {
+      notation: 'compact',
+      maximumSignificantDigits: MAX_SIG_FIGS,
+    },
+  })
+
+  const descriptor = `Reduced Debt to ${newTotalPosition} ${tokenOut?.symbol}${
+    info.recieveCollateral ? `, Received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''
+  }`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseReduceBorrowCollateral(
+  info: ReduceBorrowCollateralTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Reduced Collateral to ${info.expectedReturnedAmount} ${tokenIn?.symbol}${
+    info.recieveCollateral ? `, Received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''
+  }`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
   }
 }
 
@@ -162,6 +299,33 @@ function parseMigrateCreateV3(
   return { descriptor, currencies: [baseCurrency, quoteCurrency] }
 }
 
+function parsePremiumLeverage(
+  info: AddLeveragePremiumTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+) {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parsePremiumBorrow(info: AddBorrowPremiumTransactionInfo, chainId: SupportedChainId, tokens: TokenAddressMap) {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
 
 export function parseLocalActivity(
   details: TransactionDetails,
@@ -211,7 +375,19 @@ export function parseLocalActivity(
   } else if (info.type === TransactionType.MIGRATE_LIQUIDITY_V3 || info.type === TransactionType.CREATE_V3_POOL) {
     additionalFields = parseMigrateCreateV3(info, chainId, tokens)
   } else if (info.type === TransactionType.ADD_LEVERAGE) {
-    additionalFields = parseAddLeverage(info)
+    additionalFields = parseAddLeverage(info, chainId, tokens)
+  } else if (info.type === TransactionType.ADD_BORROW) {
+    additionalFields = parseAddBorrow(info, chainId, tokens)
+  } else if (info.type === TransactionType.REDUCE_LEVERAGE) {
+    additionalFields = parseReduceLeverage(info, chainId, tokens)
+  } else if (info.type === TransactionType.REDUCE_BORROW_DEBT) {
+    additionalFields = parseReduceBorrowDebt(info, chainId, tokens)
+  } else if (info.type === TransactionType.REDUCE_BORROW_COLLATERAL) {
+    additionalFields = parseReduceBorrowCollateral(info, chainId, tokens)
+  } else if (info.type === TransactionType.PREMIUM_BORROW) {
+    additionalFields = parsePremiumBorrow(info, chainId, tokens)
+  } else if (info.type === TransactionType.PREMIUM_LEVERAGE) {
+    additionalFields = parsePremiumLeverage(info, chainId, tokens)
   }
 
   return { ...defaultFields, ...additionalFields }

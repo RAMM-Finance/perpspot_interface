@@ -6,7 +6,6 @@ import { useLiquidityManagerContract } from 'hooks/useContract'
 import { useLimitlessPositionFromTokenId } from 'hooks/useV3Positions'
 import { useCallback, useState } from 'react'
 import { useTransactionAdder } from 'state/transactions/hooks'
-import { TransactionType } from 'state/transactions/types'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../TransactionConfirmationModal'
 import { BorrowPremiumPositionDetails, ReduceBorrowDetails, ReduceLeveragePositionDetails } from './AdvancedSwapDetails'
@@ -50,7 +49,7 @@ export default function ReducePositionModal({
 
   const modalHeader = useCallback(() => {
     return <ReduceLeveragePositionDetails leverageTrade={position} />
-  }, [onAcceptChanges, shouldLogModalCloseEvent])
+  }, [position])
 
   const modalBottom = useCallback(() => {
     return (
@@ -63,7 +62,7 @@ export default function ReducePositionModal({
         // setPositionData={setPositionData}
       />
     )
-  }, [onConfirm])
+  }, [leverageManagerAddress, tokenId, trader])
 
   // text to show while loading
   const pendingText = <Trans>Loading...</Trans>
@@ -116,33 +115,7 @@ export function AddLeveragePremiumModal({
   const [txHash, setTxHash] = useState('')
 
   // console.log("args: ", trader, isOpen, tokenId, leverageManagerAddress)
-
-  const { loading, error, position } = useLimitlessPositionFromTokenId(tokenId)
-  const liquidityManagerAddress = position?.liquidityManagerAddress
-  const liquidityManager = useLiquidityManagerContract(position?.liquidityManagerAddress, true)
-
-  const addTransaction = useTransactionAdder()
-
-  const handleAddPremium = useCallback(() => {
-    if (liquidityManager) {
-      setAttemptingTxn(true)
-      // payPremium(address trader, bool isBorrow, bool isToken0)
-      liquidityManager
-        .payPremium(trader, false, position?.isToken0)
-        .then((hash: any) => {
-          addTransaction(hash, {
-            type: TransactionType.PREMIUM_LEVERAGE,
-          })
-          setAttemptingTxn(false)
-          setTxHash(hash)
-          console.log('add premium hash: ', hash)
-        })
-        .catch((err: any) => {
-          setAttemptingTxn(false)
-          console.log('error adding premium: ', err)
-        })
-    }
-  }, [])
+  const { error, position } = useLimitlessPositionFromTokenId(tokenId)
 
   const onModalDismiss = useCallback(() => {
     if (isOpen) setShouldLogModalCloseEvent(true)
@@ -152,18 +125,18 @@ export function AddLeveragePremiumModal({
 
   const modalHeader = useCallback(() => {
     return <ReduceLeveragePositionDetails leverageTrade={position} />
-  }, [onAcceptChanges, shouldLogModalCloseEvent])
+  }, [position])
 
   const modalBottom = useCallback(() => {
     return (
       <AddPremiumLeverageModalFooter
-        liquidityManagerAddress={liquidityManagerAddress}
         tokenId={tokenId}
         trader={trader}
-        handleAddPremium={handleAddPremium}
+        setAttemptingTxn={setAttemptingTxn}
+        setTxHash={setTxHash}
       />
     )
-  }, [onConfirm])
+  }, [tokenId, trader, setAttemptingTxn, setTxHash])
 
   // text to show while loading
   const pendingText = <Trans>Loading...</Trans>
@@ -220,25 +193,25 @@ export function AddBorrowPremiumModal({
   const liquidityManager = useLiquidityManagerContract(liquidityManagerAddress, true)
   const addTransaction = useTransactionAdder()
 
-  const handleAddPremium = useCallback(() => {
-    if (liquidityManager) {
-      setAttemptingTxn(true)
-      liquidityManager
-        .payPremium(trader, true, position?.isToken0)
-        .then((hash: any) => {
-          addTransaction(hash, {
-            type: TransactionType.PREMIUM_BORROW,
-          })
-          setAttemptingTxn(false)
-          setTxHash(hash)
-          console.log('add premium hash: ', hash)
-        })
-        .catch((err: any) => {
-          setAttemptingTxn(false)
-          console.log('error adding premium: ', err)
-        })
-    }
-  }, [])
+  // const handleAddPremium = useCallback(() => {
+  //   if (liquidityManager) {
+  //     setAttemptingTxn(true)
+  //     liquidityManager
+  //       .payPremium(trader, true, position?.isToken0)
+  //       .then((hash: any) => {
+  //         addTransaction(hash, {
+  //           type: TransactionType.PREMIUM_BORROW,
+  //         })
+  //         setAttemptingTxn(false)
+  //         setTxHash(hash)
+  //         console.log('add premium hash: ', hash)
+  //       })
+  //       .catch((err: any) => {
+  //         setAttemptingTxn(false)
+  //         console.log('error adding premium: ', err)
+  //       })
+  //   }
+  // }, [])
 
   const onModalDismiss = useCallback(() => {
     if (isOpen) setShouldLogModalCloseEvent(true)
@@ -248,15 +221,16 @@ export function AddBorrowPremiumModal({
 
   const modalHeader = useCallback(() => {
     return <BorrowPremiumPositionDetails position={position} />
-  }, [onAcceptChanges, shouldLogModalCloseEvent])
+  }, [position])
 
   const modalBottom = useCallback(() => {
     return (
       <AddPremiumBorrowModalFooter
-        liquidityManagerAddress={liquidityManagerAddress}
         tokenId={tokenId}
         trader={trader}
-        handleAddPremium={handleAddPremium}
+        setTxHash={setTxHash}
+        setAttemptingTxn={setAttemptingTxn}
+        // handleAddPremium={handleAddPremium}
       />
     )
   }, [onConfirm])
