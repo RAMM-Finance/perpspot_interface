@@ -310,7 +310,7 @@ export function ReduceLeverageModalFooter({
       if (!position) throw Error('missing position')
       const formattedSlippage = new BN(slippage).plus(100).shiftedBy(16).toFixed(0)
       const formattedReduceAmount =
-        Math.abs(Number(reduceAmount) - position.totalPosition) < 1e-12
+        Math.abs(position.totalPosition - Number(reduceAmount)) < 1e-12
           ? new BN(position.totalPosition).shiftedBy(18).toFixed(0)
           : new BN(reduceAmount).shiftedBy(18).toFixed(0)
 
@@ -336,7 +336,7 @@ export function ReduceLeverageModalFooter({
             quoteBaseSymbol: transactionInfo.quoteBaseSymbol,
             timestamp: moment().format('YYYY-MM-DD'),
             newTotalPosition:
-              Number(reduceAmount) - position.totalPosition < 1e-12 ? 0 : position.totalPosition - Number(reduceAmount),
+              position.totalPosition - Number(reduceAmount) < 1e-12 ? 0 : position.totalPosition - Number(reduceAmount),
           })
           setTxHash(response.hash)
           setAttemptingTxn(false)
@@ -416,7 +416,10 @@ export function ReduceLeverageModalFooter({
                   Reduce Amount (
                   {`${
                     position?.totalPosition
-                      ? new BN((Number(reduceAmount) / Number(position?.totalPosition)) * 100).toString()
+                      ? formatNumber(
+                          (Number(reduceAmount) / Number(position?.totalDebtInput)) * 100,
+                          NumberType.SwapTradeAmount
+                        )
                       : '-'
                   }% Reduction`}
                   )

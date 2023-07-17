@@ -16,7 +16,7 @@ import { Activity } from './types'
 
 const ActivityRowDescriptor = styled(ThemedText.BodySmall)`
   color: ${({ theme }) => theme.textSecondary};
-  ${EllipsisStyle}
+  // ${EllipsisStyle}
 `
 
 const StyledTimestamp = styled(ThemedText.Caption)`

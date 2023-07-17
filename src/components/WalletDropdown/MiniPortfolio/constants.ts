@@ -138,7 +138,7 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
   },
   [TransactionType.ADD_BORROW]: {
     [TransactionStatus.Pending]: t`Borrowing`,
-    [TransactionStatus.Confirmed]: t`Borrowed`,
+    [TransactionStatus.Confirmed]: t`Increased Borrow Position`,
     [TransactionStatus.Failed]: t`Add borrow failed`,
   },
   [TransactionType.REDUCE_LEVERAGE]: {
@@ -148,22 +148,22 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
   },
   [TransactionType.PREMIUM_BORROW]: {
     [TransactionStatus.Pending]: t`Paying Premium`,
-    [TransactionStatus.Confirmed]: t`Paid Premium`,
+    [TransactionStatus.Confirmed]: t`Paid Borrower Premium`,
     [TransactionStatus.Failed]: t`Payment failed`,
   },
   [TransactionType.PREMIUM_LEVERAGE]: {
     [TransactionStatus.Pending]: t`Paying Premium`,
-    [TransactionStatus.Confirmed]: t`Paid Premium`,
+    [TransactionStatus.Confirmed]: t`Paid Trader Premium`,
     [TransactionStatus.Failed]: t`Payment failed`,
   },
   [TransactionType.REDUCE_BORROW_DEBT]: {
     [TransactionStatus.Pending]: t`Reducing Debt`,
-    [TransactionStatus.Confirmed]: t`Reduced Debt`,
+    [TransactionStatus.Confirmed]: t`Reduced Debt for Borrow Position`,
     [TransactionStatus.Failed]: t`Reduce borrow debt failed`,
   },
   [TransactionType.REDUCE_BORROW_COLLATERAL]: {
     [TransactionStatus.Pending]: t`Reducing Collateral`,
-    [TransactionStatus.Confirmed]: t`Reduced Collateral`,
+    [TransactionStatus.Confirmed]: t`Reduced Collateral for Borrow Position`,
     [TransactionStatus.Failed]: t`Reduce Collateral failed`,
   },
   [TransactionType.ADD_LEVERAGE]: {

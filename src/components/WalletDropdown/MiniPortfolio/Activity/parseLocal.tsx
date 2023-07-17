@@ -1,5 +1,5 @@
 import { t } from '@lingui/macro'
-import { formatCurrencyAmount } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
@@ -7,7 +7,6 @@ import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
 import { FakeTokensMapSepolia } from 'constants/fake-tokens'
 import { TransactionPartsFragment, TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
-import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { formatSymbol } from 'lib/utils/formatSymbol'
 import { useMemo } from 'react'
 import { TokenAddressMap, useCombinedActiveList } from 'state/lists/hooks'
@@ -87,27 +86,15 @@ function parseAddLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const paidAmount = formatLocaleNumber({
-    number: info.inputAmount,
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-    },
-  })
+  const paidAmount = formatNumber(info.inputAmount, NumberType.SwapTradeAmount)
 
-  const addedPosition = formatLocaleNumber({
-    number: info.expectedAddedPosition,
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-    },
-  })
+  const addedPosition = formatNumber(info.expectedAddedPosition, NumberType.SwapTradeAmount)
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`${paidAmount} ${formatSymbol(tokenIn?.symbol)} for +${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
+      {`${tokenOut?.symbol}/${tokenIn?.symbol}: Deposited ${paidAmount} ${formatSymbol(
+        tokenIn?.symbol
+      )} for +${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
     </Descriptor>
   )
 
@@ -125,26 +112,11 @@ function parseReduceLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const formattedNewPosition = formatLocaleNumber({
-    number: Number(info.newTotalPosition),
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-    },
-  })
+  const formattedNewPosition = formatNumber(info.newTotalPosition, NumberType.SwapTradeAmount)
 
-  const PnL = formatLocaleNumber({
-    number: Number(info.pnl),
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-      signDisplay: 'always',
-    },
-  })
+  const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
 
-  const descriptor = `Reduced ${tokenOut?.symbol}/${tokenIn?.symbol} Position to ${formattedNewPosition} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}: New position reduced to ${formattedNewPosition} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
 
   return {
     descriptor,
@@ -160,25 +132,11 @@ function parseAddBorrow(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const formattedCollateralAmount = formatLocaleNumber({
-    number: Number(info.collateralAmount),
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-    },
-  })
+  const formattedCollateralAmount = formatNumber(info.collateralAmount, NumberType.SwapTradeAmount)
 
-  const formattedBorrowAmount = formatLocaleNumber({
-    number: Number(info.borrowedAmount),
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-    },
-  })
+  const formattedBorrowAmount = formatNumber(info.borrowedAmount, NumberType.SwapTradeAmount)
 
-  const descriptor = `Deposited ${formattedCollateralAmount} ${tokenIn?.symbol}, Borrowed ${formattedBorrowAmount} ${tokenOut?.symbol}`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} position: Deposited ${formattedCollateralAmount} ${tokenIn?.symbol}, borrowed ${formattedBorrowAmount} ${tokenOut?.symbol}`
 
   return {
     descriptor,
@@ -194,18 +152,13 @@ function parseReduceBorrowDebt(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const newTotalPosition = formatLocaleNumber({
-    number: Number(info.newTotalPosition),
-    locale: null,
-    options: {
-      notation: 'compact',
-      maximumSignificantDigits: MAX_SIG_FIGS,
-    },
-  })
+  const newTotalPosition = formatNumber(info.newTotalPosition, NumberType.SwapTradeAmount)
+  const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
+  // console.log('stuff', info.newTotalPosition, newTotalPosition)
 
-  const descriptor = `Reduced Debt to ${newTotalPosition} ${tokenOut?.symbol}${
-    info.recieveCollateral ? `, Received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''
-  }`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} position: Reduced debt to ${newTotalPosition} ${
+    tokenOut?.symbol
+  }${info.recieveCollateral ? `, received ${returnedAmount} ${tokenIn?.symbol}` : ''}`
 
   return {
     descriptor,
@@ -221,9 +174,9 @@ function parseReduceBorrowCollateral(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const descriptor = `Reduced Collateral to ${info.expectedReturnedAmount} ${tokenIn?.symbol}${
-    info.recieveCollateral ? `, Received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''
-  }`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} position: Reduced collateral to ${
+    info.expectedReturnedAmount
+  } ${tokenIn?.symbol}${info.recieveCollateral ? `, received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''}`
 
   return {
     descriptor,
@@ -307,7 +260,7 @@ function parsePremiumLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
+  const descriptor = `Leverage Position ${tokenOut?.symbol}/${tokenIn?.symbol} Premium Payment`
 
   return {
     descriptor,
@@ -319,7 +272,7 @@ function parsePremiumBorrow(info: AddBorrowPremiumTransactionInfo, chainId: Supp
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
+  const descriptor = `Borrow Position ${tokenOut?.symbol}/${tokenIn?.symbol} Premium Payment`
 
   return {
     descriptor,
@@ -402,6 +355,7 @@ export function useLocalActivities(): ActivityMap | undefined {
     () =>
       chainId
         ? allTransactions.reduce((acc: { [hash: string]: Activity }, [transaction, chainId]) => {
+            if (transaction.info.type === TransactionType.APPROVAL) return acc
             try {
               const localActivity = parseLocalActivity(transaction, chainId, tokens)
               if (localActivity) acc[localActivity.hash] = localActivity
