@@ -21,7 +21,7 @@ import { ThemedText } from '../../theme'
 import { ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
-import { AutoRow, RowBetween, RowFixed } from '../Row'
+import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
 
@@ -204,7 +204,7 @@ interface SwapCurrencyInputPanelProps {
   renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
   locked?: boolean
   loading?: boolean
-  isInput?:boolean
+  isInput?: boolean
   isTrade?: boolean
   isLevered?: boolean
   leverageFactor?: string
@@ -232,10 +232,10 @@ export default function SwapCurrencyInputPanel({
   hideInput = false,
   locked = false,
   loading = false,
-  isTrade = true, 
+  isTrade = true,
   isInput = true,
   isLevered = false,
-  leverageFactor = "1",
+  leverageFactor = '1',
   disabled = false,
   premium,
   ...rest
@@ -264,34 +264,32 @@ export default function SwapCurrencyInputPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-      {isTrade ? (
-        <Trans>{isInput ? ("Pay") :
-        (isLevered ? "Total Output" : "What you get")
-        }</Trans>
-        ): (
-        <Trans>{isInput? "Collateral": 'Added Debt'}</Trans>
-          )
-        }
-        
+        {isTrade ? (
+          <Trans>{isInput ? 'Pay' : isLevered ? 'Total Output' : 'What you get'}</Trans>
+        ) : (
+          <Trans>{isInput ? 'Collateral' : 'Added Debt'}</Trans>
+        )}
+
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-          {!hideInput && (
-            isInput?
-            <StyledNumericalInput
-              className="token-amount-input"
-              value={value}
-              onUserInput={onUserInput}
-              disabled={!chainAllowed || disabled}
-              $loading={loading}
-              placeholder = {"0.000"}
-            />
-            : <StyledNumericalInput
-              className="token-amount-input"
-              value={value}
-              onUserInput={onUserInput}
-              disabled={!chainAllowed || disabled}
-              $loading={loading}
-            />
-          )}
+          {!hideInput &&
+            (isInput ? (
+              <StyledNumericalInput
+                className="token-amount-input"
+                value={value}
+                onUserInput={onUserInput}
+                disabled={!chainAllowed || disabled}
+                $loading={loading}
+                placeholder="0.000"
+              />
+            ) : (
+              <StyledNumericalInput
+                className="token-amount-input"
+                value={value}
+                onUserInput={onUserInput}
+                disabled={!chainAllowed || disabled}
+                $loading={loading}
+              />
+            ))}
           <CurrencySelect
             disabled={!chainAllowed}
             visible={currency !== undefined}
@@ -335,14 +333,16 @@ export default function SwapCurrencyInputPanel({
           <FiatRow>
             <RowBetween>
               {premium && (
-                <RowFixed style={{height: '17px'}}>
+                <RowFixed style={{ height: '17px' }}>
                   <ThemedText.DeprecatedBody
                     color={theme.textSecondary}
                     fontWeight={400}
                     fontSize={14}
                     style={{ display: 'inline' }}
                   >
-                    <Trans>Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}</Trans>
+                    <Trans>
+                      Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
+                    </Trans>
                   </ThemedText.DeprecatedBody>
                 </RowFixed>
               )}
@@ -400,9 +400,8 @@ export default function SwapCurrencyInputPanel({
   )
 }
 
-
 const ModalInputSection = styled.div`
-  width:100%;
+  width: 100%;
   position: relative;
   background-color: ${({ theme }) => theme.backgroundModule};
   border-radius: 12px;
@@ -448,73 +447,72 @@ export function ModalInputPanel({
 
   return (
     <ModalInputSection theme={theme}>
-          <InputPanel id={id} hideInput={hideInput} {...rest}>
-      {locked && (
-        <FixedContainer>
-          <AutoColumn gap="sm" justify="center">
-            <Lock />
-            <ThemedText.DeprecatedLabel fontSize="12px" textAlign="center" padding="0 12px">
-              <Trans>The market price is outside your specified price range. Single-asset deposit only.</Trans>
-            </ThemedText.DeprecatedLabel>
-          </AutoColumn>
-        </FixedContainer>
-      )}
-      <Container hideInput={hideInput}>
-        <Trans>{isInput ? "What you pay" : (isLevered ? "Total Output Position" : "What you get")}</Trans>
-        <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-          {!hideInput && (
-            <StyledNumericalInput
-              className="token-amount-input"
-              value={value}
-              onUserInput={onUserInput}
-              disabled={!chainAllowed || disabled}
-              $loading={loading}
-            />
-          )}
-        </InputRow>
-        {Boolean(!hideInput && !hideBalance) && (
-          <FiatRow>
-            <RowBetween>
-              <LoadingOpacityContainer $loading={loading}>
-                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-              </LoadingOpacityContainer>
-              {account ? (
-                <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
-                    {!hideBalance && currency && selectedCurrencyBalance ? (
-                      renderBalance ? (
-                        renderBalance(selectedCurrencyBalance)
-                      ) : (
-                        <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                      )
-                    ) : null}
-                  </ThemedText.DeprecatedBody>
-                  {showMaxButton && selectedCurrencyBalance ? (
-                    <TraceEvent
-                      events={[BrowserEvent.onClick]}
-                      name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                      element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                    >
-                      <StyledBalanceMax onClick={onMax}>
-                        <Trans>Max</Trans>
-                      </StyledBalanceMax>
-                    </TraceEvent>
-                  ) : null}
-                </RowFixed>
-              ) : (
-                <span />
-              )}
-            </RowBetween>
-          </FiatRow>
+      <InputPanel id={id} hideInput={hideInput} {...rest}>
+        {locked && (
+          <FixedContainer>
+            <AutoColumn gap="sm" justify="center">
+              <Lock />
+              <ThemedText.DeprecatedLabel fontSize="12px" textAlign="center" padding="0 12px">
+                <Trans>The market price is outside your specified price range. Single-asset deposit only.</Trans>
+              </ThemedText.DeprecatedLabel>
+            </AutoColumn>
+          </FixedContainer>
         )}
-      </Container>
-    </InputPanel>
+        <Container hideInput={hideInput}>
+          <Trans>{isInput ? 'What you pay' : isLevered ? 'Total Output Position' : 'What you get'}</Trans>
+          <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
+            {!hideInput && (
+              <StyledNumericalInput
+                className="token-amount-input"
+                value={value}
+                onUserInput={onUserInput}
+                disabled={!chainAllowed || disabled}
+                $loading={loading}
+              />
+            )}
+          </InputRow>
+          {Boolean(!hideInput && !hideBalance) && (
+            <FiatRow>
+              <RowBetween>
+                <LoadingOpacityContainer $loading={loading}>
+                  <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+                </LoadingOpacityContainer>
+                {account ? (
+                  <RowFixed style={{ height: '17px' }}>
+                    <ThemedText.DeprecatedBody
+                      color={theme.textSecondary}
+                      fontWeight={400}
+                      fontSize={14}
+                      style={{ display: 'inline' }}
+                    >
+                      {!hideBalance && currency && selectedCurrencyBalance ? (
+                        renderBalance ? (
+                          renderBalance(selectedCurrencyBalance)
+                        ) : (
+                          <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                        )
+                      ) : null}
+                    </ThemedText.DeprecatedBody>
+                    {showMaxButton && selectedCurrencyBalance ? (
+                      <TraceEvent
+                        events={[BrowserEvent.onClick]}
+                        name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+                        element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                      >
+                        <StyledBalanceMax onClick={onMax}>
+                          <Trans>Max</Trans>
+                        </StyledBalanceMax>
+                      </TraceEvent>
+                    ) : null}
+                  </RowFixed>
+                ) : (
+                  <span />
+                )}
+              </RowBetween>
+            </FiatRow>
+          )}
+        </Container>
+      </InputPanel>
     </ModalInputSection>
-
   )
 }

@@ -13,10 +13,10 @@ export const PageWrapper = styled.div`
   padding: 10px 14px 0px;
   max-width: 1700px;
   display: grid;
-  grid-template-columns: 2fr 400px; 
+  grid-template-columns: 2fr 400px;
   width: 100%;
   margin-right: auto;
-  margin-left:auto;
+  margin-left: auto;
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
   }
@@ -33,8 +33,8 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   border-radius: 32px;
   height: fit-content;
   border: 0px solid ${({ theme }) => theme.background};
-  padding: 18px;
-  box-shadow:  '0px 40px 120px 0px #f0b90b29';
+  padding: 25px 18px;
+  box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;
 
@@ -48,11 +48,11 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
 `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
-  border-radius: 12px;
-  height: 40px;
-  width: 40px;
+  border-radius: 999px;
+  height: 50px;
+  width: 50px;
   position: relative;
-  margin-top: -18px;
+  margin-top: -35px;
   margin-bottom: -18px;
   margin-left: auto;
   margin-right: auto;
@@ -83,9 +83,9 @@ export const ErrorText = styled(Text)<{ severity?: 0 | 1 | 2 | 3 | 4 }>`
       : theme.textSecondary};
 `
 
-export const TruncatedText = styled(Text)<{width?: string}>`
+export const TruncatedText = styled(Text)<{ width?: string }>`
   text-overflow: ellipsis;
-  max-width: ${({width}) => width ? width : '195px'};
+  max-width: ${({ width }) => (width ? width : '195px')};
   overflow: hidden;
   text-align: right;
 `

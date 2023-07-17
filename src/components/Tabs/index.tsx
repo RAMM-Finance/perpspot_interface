@@ -1,21 +1,24 @@
-
-import { Trans } from "@lingui/macro";
-import React, { useCallback } from "react"
-import styled from "styled-components"
-import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
-import { ActiveSwapTab } from "state/swap/actions";
+import { Trans } from '@lingui/macro'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { ActiveSwapTab } from 'state/swap/actions'
+import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { SwapState } from 'state/swap/reducer'
+import styled from 'styled-components/macro'
 // import Styles from "./tabs.styles.less";
 
+const TabContainer = styled.div
+interface ITab extends SwapState {
+  tab: string
+}
 
-const TabContainer = styled.div;
-
-const TabHeader = styled.div<{ isActive: boolean, first: boolean, last: boolean}>`
+const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
   padding: 10px 20px;
-  background-color: ${({ theme, isActive }) => isActive ? theme.backgroundSurface : theme.background};
+  background-color: ${({ theme, isActive }) => (isActive ? theme.backgroundSurface : theme.background)};
   cursor: pointer;
   // border-radius: 10px;
-  border-top-left-radius: ${({first}) => first ? "8px" : "0"};
-  border-top-right-radius: ${({last}) => last ? "8px" : "0"};
+  border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
+  border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
   color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textTertiary)};
   font-size: 16px;
   font-weight: 500;
@@ -26,61 +29,181 @@ const TabHeader = styled.div<{ isActive: boolean, first: boolean, last: boolean}
   }
 `
 
-
 // the order of displayed base currencies from left to right is always in sort order
 // currencyA is treated as the preferred base currency
-export default function SwapTabHeader({
-  activeTab,
-  handleSetTab
-}: {
-  activeTab: number,  
-  handleSetTab: () => void
-}) {
-  const isTrade = activeTab == ActiveSwapTab.TRADE
+export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: number; handleSetTab: () => void }) {
+  // const isTrade = activeTab == ActiveSwapTab.TRADE
+  const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
+  const { leverage } = useSwapState()
+  const { onSwitchTokens } = useSwapActionHandlers()
+  const { onActiveTabChange, onLeverageChange, onSwitchSwapModalTab } = useSwapActionHandlers()
+  const selectedTab = useSelector((state: any) => state.swap.tab)
+  // const handleTabChange = onActiveTabChange(isTrade)
+
+  const onChangeSwapModeHandler = (e: React.MouseEvent<HTMLSpanElement>) => {
+    const eventTarget = e.target as HTMLElement
+    if (eventTarget.innerText === selectedTab) {
+      return
+    }
+
+    setIsTrade(ActiveSwapTab.TRADE)
+    onSwitchSwapModalTab(eventTarget.innerText)
+    onSwitchTokens(leverage)
+    onLeverageChange(true)
+  }
+
+  useEffect(() => {
+    onActiveTabChange(isTrade)
+  }, [isTrade])
+
   return (
-    <div style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }} onClick={handleSetTab}>
-      <ToggleWrapper width="fit-content">
-        <ToggleElement isActive={isTrade} fontSize="20px">
-          <Trans>Trade</Trans>
-        </ToggleElement>
-        <ToggleElement isActive={!isTrade} fontSize="20px">
+    <div
+      style={{
+        // width: 'fit-content',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <TapWrapper>
+        <TabElement
+          onClick={onChangeSwapModeHandler}
+          isActive={isTrade}
+          selectedTab={selectedTab}
+          tabValue="Long"
+          fontSize="18px"
+        >
+          <Trans>Long</Trans>
+        </TabElement>
+        <TabElement
+          onClick={onChangeSwapModeHandler}
+          isActive={isTrade}
+          selectedTab={selectedTab}
+          tabValue="Short"
+          fontSize="18px"
+        >
+          <Trans>Short</Trans>
+        </TabElement>
+        <TabElement
+          onClick={() => {
+            setIsTrade(ActiveSwapTab.BORROW)
+            onSwitchSwapModalTab('notthing')
+          }}
+          isActive={!isTrade}
+          fontSize="18px"
+        >
           <Trans>Borrow</Trans>
-        </ToggleElement>
-      </ToggleWrapper>
+        </TabElement>
+        <SwapBtn
+          disabled={isTrade === 1 ? true : false}
+          onClick={() => onLeverageChange(!leverage)}
+          tabValue="notthing"
+          fontSize="18px"
+          isTrade={isTrade}
+        >
+          <Trans>Swap</Trans>
+        </SwapBtn>
+      </TapWrapper>
     </div>
   )
 }
 
-export const TabContent = ({id, activeTab, children}: {
-  id: number,
-  activeTab: number,
+export const TabContent = ({
+  id,
+  activeTab,
+  children,
+}: {
+  id: number
+  activeTab: number
   children: React.ReactNode
 }) => {
- return (
-   activeTab === id ?
-   <div>
-      {children}
-   </div>
-   : null
- );
-};
+  return activeTab === id ? <div>{children}</div> : null
+}
 
-export const TabNavItem =  ({ id, activeTab, setActiveTab, first, last, children }: {
-  id: number,
-  activeTab: number,
-  setActiveTab: (id: number) => void,
-  children: React.ReactNode,
-  first?: boolean,
+export const TabNavItem = ({
+  id,
+  activeTab,
+  setActiveTab,
+  first,
+  last,
+  children,
+}: {
+  id: number
+  activeTab: number
+  setActiveTab: (id: number) => void
+  children: React.ReactNode
+  first?: boolean
   last?: boolean
 }) => {
-    const handleClick = useCallback(() => {
-      setActiveTab(id);
-    }, [id, setActiveTab]);
-    
-   return (
-      <TabHeader isActive={id === activeTab} onClick={handleClick} first={first ?? false} last={last ?? false}>
-        { children }
-      </TabHeader>
-    );
-   };
+  const handleClick = useCallback(() => {
+    setActiveTab(id)
+  }, [id, setActiveTab])
 
+  return (
+    <TabHeader isActive={id === activeTab} onClick={handleClick} first={first ?? false} last={last ?? false}>
+      {children}
+    </TabHeader>
+  )
+}
+
+const TapWrapper = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0px;
+  background: ${({ theme }) => theme.deprecated_bg1};
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+`
+
+const TabElement = styled.button<{
+  isActive?: number | boolean
+  fontSize?: string
+  selectedTab?: string
+  tabValue?: string
+  isTrade?: number
+}>`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0.6rem;
+  border-radius: 10px;
+  justify-content: center;
+  height: 100%;
+  background: ${({ theme, isActive, selectedTab, tabValue }) => {
+    return !isActive && selectedTab === tabValue ? theme.deprecated_primary5 : 'none'
+  }};
+  color: ${({ theme, isActive, selectedTab, tabValue }) =>
+    !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};
+  font-size: ${({ fontSize }) => fontSize ?? '1rem'};
+  font-weight: 500;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+
+  :hover {
+    user-select: initial;
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+  }
+
+  :active {
+    user-select: initial;
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+    background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
+  }
+`
+
+const SwapBtn = styled(TabElement)`
+  cursor: ${({ isTrade }) => (isTrade === 0 ? 'pointer' : 'default')};
+  :hover {
+    user-select: initial;
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+  }
+  :active {
+    user-select: initial;
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+    background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
+  }
+`

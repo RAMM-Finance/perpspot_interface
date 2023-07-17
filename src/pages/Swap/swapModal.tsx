@@ -1,58 +1,81 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent,Trace, TraceEvent } from "@uniswap/analytics"
-import { BrowserEvent, InterfaceElementName, InterfaceEventName, InterfaceSectionName, SwapEventName } from "@uniswap/analytics-events"
-import { Trade } from "@uniswap/router-sdk"
-import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
-import { useWeb3React } from "@web3-react/core"
-import { BigNumber as BN } from "bignumber.js";
-import AddressInputPanel from "components/AddressInputPanel"
-import { sendEvent } from "components/analytics"
-import { ButtonError, ButtonLight, ButtonPrimary } from "components/Button"
-import { GrayCard } from "components/Card"
-import { AutoColumn } from "components/Column"
-import LeveragedOutputPanel from "components/CurrencyInputPanel/leveragedOutputPanel"
-import SwapCurrencyInputPanel from "components/CurrencyInputPanel/SwapCurrencyInputPanel"
+import { sendAnalyticsEvent, Trace, TraceEvent } from '@uniswap/analytics'
+import {
+  BrowserEvent,
+  InterfaceElementName,
+  InterfaceEventName,
+  InterfaceSectionName,
+  SwapEventName,
+} from '@uniswap/analytics-events'
+import { Trade } from '@uniswap/router-sdk'
+import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
+import AddressInputPanel from 'components/AddressInputPanel'
+import { sendEvent } from 'components/analytics'
+import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
+import { GrayCard } from 'components/Card'
+import { AutoColumn } from 'components/Column'
+import LeveragedOutputPanel from 'components/CurrencyInputPanel/leveragedOutputPanel'
+import SwapCurrencyInputPanel from 'components/CurrencyInputPanel/SwapCurrencyInputPanel'
 import Loader from 'components/Icons/LoadingSpinner'
-import { AutoRow, RowBetween } from "components/Row"
-import Slider from "components/Slider"
-import confirmPriceImpactWithoutFee from "components/swap/confirmPriceImpactWithoutFee"
-import ConfirmSwapModal, { LeverageConfirmModal } from "components/swap/ConfirmSwapModal"
-import PriceImpactWarning from "components/swap/PriceImpactWarning"
-import SwapDetailsDropdown from "components/swap/SwapDetailsDropdown"
-import { MouseoverTooltip } from "components/Tooltip"
-import { useToggleWalletDrawer } from "components/WalletDropdown"
-import { ROUTER_ADDRESSES } from "constants/addresses"
-import { isSupportedChain } from "constants/chains"
-import { ApprovalState, useApproveCallback } from "hooks/useApproveCallback"
-import useDebouncedChangeHandler from "hooks/useDebouncedChangeHandler"
-import useENSAddress from "hooks/useENSAddress"
-import { useIsSwapUnsupported } from "hooks/useIsSwapUnsupported"
-import usePermit2Allowance, { AllowanceState } from "hooks/usePermit2Allowance"
-import { useAddLeveragePositionCallback, useSwapCallback } from "hooks/useSwapCallback"
-import { useUSDPrice } from "hooks/useUSDPrice"
-import useWrapCallback, { WrapErrorText, WrapType } from "hooks/useWrapCallback"
-import JSBI from "jsbi"
-import { Checkbox } from "nft/components/layout/Checkbox"
-import { useCallback, useMemo, useState } from "react"
-import { ArrowDown, Info } from 'react-feather'
+import { AutoRow, RowBetween } from 'components/Row'
+import Slider from 'components/Slider'
+import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee'
+import ConfirmSwapModal, { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
+import PriceImpactWarning from 'components/swap/PriceImpactWarning'
+import SwapDetailsDropdown from 'components/swap/SwapDetailsDropdown'
+import { MouseoverTooltip } from 'components/Tooltip'
+import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { ROUTER_ADDRESSES } from 'constants/addresses'
+import { isSupportedChain } from 'constants/chains'
+import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
+import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
+import useENSAddress from 'hooks/useENSAddress'
+import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
+import usePermit2Allowance, { AllowanceState } from 'hooks/usePermit2Allowance'
+import { useAddLeveragePositionCallback, useSwapCallback } from 'hooks/useSwapCallback'
+import { useUSDPrice } from 'hooks/useUSDPrice'
+import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
+import JSBI from 'jsbi'
+import { Checkbox } from 'nft/components/layout/Checkbox'
+import { useCallback, useMemo, useState } from 'react'
+import { ArrowDown, Info, Maximize2 } from 'react-feather'
+import { useSelector } from 'react-redux'
 import { Text } from 'rebass'
-import { LeverageTradeState, TradeState } from "state/routing/types"
-import { Field } from "state/swap/actions"
-import { useBestPool, useDerivedLeverageCreationInfo, useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from "state/swap/hooks"
-import { useExpertModeManager } from "state/user/hooks"
-import { useTheme } from "styled-components/macro"
-import { LinkStyledButton, ThemedText } from "theme"
-import invariant from "tiny-invariant"
-import { computeFiatValuePriceImpact } from "utils/computeFiatValuePriceImpact"
-import { currencyAmountToPreciseFloat, formatTransactionAmount } from "utils/formatNumbers"
-import { maxAmountSpend } from "utils/maxAmountSpend"
-import { computeRealizedPriceImpact, warningSeverity } from "utils/prices"
+import { LeverageTradeState, TradeState } from 'state/routing/types'
+import { Field } from 'state/swap/actions'
+import {
+  useBestPool,
+  useDerivedLeverageCreationInfo,
+  useDerivedSwapInfo,
+  useSwapActionHandlers,
+  useSwapState,
+} from 'state/swap/hooks'
+import { useExpertModeManager } from 'state/user/hooks'
+import { useTheme } from 'styled-components/macro'
+import { LinkStyledButton, ThemedText } from 'theme'
+import invariant from 'tiny-invariant'
+import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
+import { currencyAmountToPreciseFloat, formatTransactionAmount } from 'utils/formatNumbers'
+import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
 import { SmallMaxButton } from '../RemoveLiquidity/styled'
-import { ArrowContainer, DetailsSwapSection, getIsValidSwapQuote,InputLeverageSection, InputSection, LeverageGaugeSection, LeverageInputSection, OutputSwapSection, StyledNumericalInput } from "."
+import {
+  ArrowContainer,
+  DetailsSwapSection,
+  getIsValidSwapQuote,
+  InputLeverageSection,
+  InputSection,
+  LeverageGaugeSection,
+  LeverageInputSection,
+  OutputSwapSection,
+  StyledNumericalInput,
+} from '.'
 
-const TRADE_STRING = 'SwapRouter';
+const TRADE_STRING = 'SwapRouter'
 
 function largerPercentValue(a?: Percent, b?: Percent) {
   if (a && b) {
@@ -73,12 +96,17 @@ const TradeTabContent = () => {
   // const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   // const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
   // const swapWidgetEnabled = useSwapWidgetEnabled()
+  const tab = useSelector((state: any) => state.swap.tab)
 
   const {
-    onSwitchTokens, onCurrencySelection, onUserInput,
-    onChangeRecipient, onLeverageFactorChange,
-    onLeverageChange, 
-    onPremiumChange
+    onSwitchTokens,
+    onCurrencySelection,
+    onUserInput,
+    onChangeRecipient,
+    onLeverageFactorChange,
+    onLeverageChange,
+    onPremiumChange,
+    onSwitchSwapModalTab,
   } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
@@ -118,31 +146,37 @@ const TradeTabContent = () => {
     // activeTab,
     ltv,
     // borrowManagerAddress,
-    premium
+    premium,
   } = useSwapState()
 
-
-
-  const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash, showLeverageConfirm }, setSwapState] = useState<{
-    showConfirm: boolean
-    tradeToConfirm: Trade<Currency, Currency, TradeType> | undefined
-    attemptingTxn: boolean
-    swapErrorMessage: string | undefined
-    txHash: string | undefined
-    showLeverageConfirm: boolean
-    // showBorrowConfirm: boolean
-  }>({
-    showConfirm: false,
-    tradeToConfirm: undefined,
-    attemptingTxn: false,
-    swapErrorMessage: undefined,
-    txHash: undefined,
-    showLeverageConfirm: false,
-    // showBorrowConfirm: false
-  })
+  const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash, showLeverageConfirm }, setSwapState] =
+    useState<{
+      showConfirm: boolean
+      tradeToConfirm: Trade<Currency, Currency, TradeType> | undefined
+      attemptingTxn: boolean
+      swapErrorMessage: string | undefined
+      txHash: string | undefined
+      showLeverageConfirm: boolean
+      // showBorrowConfirm: boolean
+    }>({
+      showConfirm: false,
+      tradeToConfirm: undefined,
+      attemptingTxn: false,
+      swapErrorMessage: undefined,
+      txHash: undefined,
+      showLeverageConfirm: false,
+      // showBorrowConfirm: false
+    })
 
   const handleAcceptChanges = useCallback(() => {
-    setSwapState({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showConfirm, showLeverageConfirm: false })
+    setSwapState({
+      tradeToConfirm: trade,
+      swapErrorMessage,
+      txHash,
+      attemptingTxn,
+      showConfirm,
+      showLeverageConfirm: false,
+    })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
   const fiatValueTradeInput = useUSDPrice(trade?.inputAmount)
@@ -167,21 +201,21 @@ const TradeTabContent = () => {
     () =>
       showWrap
         ? {
-          [Field.INPUT]: parsedAmount,
-          [Field.OUTPUT]: parsedAmount,
-        }
+            [Field.INPUT]: parsedAmount,
+            [Field.OUTPUT]: parsedAmount,
+          }
         : {
-          [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
-          [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
-        },
+            [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
+            [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
+          },
     [independentField, parsedAmount, showWrap, trade]
   )
 
   const allowance = usePermit2Allowance(
     maximumAmountIn ??
-    (parsedAmounts[Field.INPUT]?.currency.isToken
-      ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
-      : undefined),
+      (parsedAmounts[Field.INPUT]?.currency.isToken
+        ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
+        : undefined),
     isSupportedChain(chainId) ? ROUTER_ADDRESSES[chainId] : undefined
   )
 
@@ -196,14 +230,16 @@ const TradeTabContent = () => {
 
   const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
     () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
-    [trade, tradeState])
+    [trade, tradeState]
+  )
 
   const stablecoinPriceImpact = useMemo(
     () =>
       routeIsSyncing || !trade
         ? undefined
         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
-    [fiatValueTradeInput, fiatValueTradeOutput, routeIsSyncing, trade])
+    [fiatValueTradeInput, fiatValueTradeOutput, routeIsSyncing, trade]
+  )
 
   const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
     () => maxAmountSpend(currencyBalances[Field.INPUT]),
@@ -228,10 +264,24 @@ const TradeTabContent = () => {
     if (stablecoinPriceImpact && !confirmPriceImpactWithoutFee(stablecoinPriceImpact)) {
       return
     }
-    setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined, showLeverageConfirm })
+    setSwapState({
+      attemptingTxn: true,
+      tradeToConfirm,
+      showConfirm,
+      swapErrorMessage: undefined,
+      txHash: undefined,
+      showLeverageConfirm,
+    })
     swapCallback()
       .then((hash) => {
-        setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash, showLeverageConfirm })
+        setSwapState({
+          attemptingTxn: false,
+          tradeToConfirm,
+          showConfirm,
+          swapErrorMessage: undefined,
+          txHash: hash,
+          showLeverageConfirm,
+        })
         sendEvent({
           category: 'Swap',
           action: 'transaction hash',
@@ -243,8 +293,8 @@ const TradeTabContent = () => {
             recipient === null
               ? 'Swap w/o Send'
               : (recipientAddress ?? recipient) === account
-                ? 'Swap w/o Send + recipient'
-                : 'Swap w/ Send',
+              ? 'Swap w/o Send + recipient'
+              : 'Swap w/ Send',
           label: [TRADE_STRING, trade?.inputAmount?.currency?.symbol, trade?.outputAmount?.currency?.symbol, 'MH'].join(
             '/'
           ),
@@ -257,7 +307,7 @@ const TradeTabContent = () => {
           showConfirm,
           swapErrorMessage: error.message,
           txHash: undefined,
-          showLeverageConfirm
+          showLeverageConfirm,
         })
       })
   }, [
@@ -270,7 +320,7 @@ const TradeTabContent = () => {
     account,
     trade?.inputAmount?.currency?.symbol,
     trade?.outputAmount?.currency?.symbol,
-    showLeverageConfirm
+    showLeverageConfirm,
   ])
 
   const { priceImpactSeverity, largerPriceImpact } = useMemo(() => {
@@ -284,7 +334,7 @@ const TradeTabContent = () => {
     state: leverageState,
     inputError,
     allowedSlippage: leverageAllowedSlippage,
-    contractError
+    contractError,
   } = useDerivedLeverageCreationInfo()
 
   const [inputCurrency, outputCurrency] = useMemo(() => {
@@ -296,7 +346,7 @@ const TradeTabContent = () => {
     trade,
     leverageTrade,
     leverageAllowedSlippage,
-    leverageFactor ?? undefined,
+    leverageFactor ?? undefined
   )
 
   const dependentField: Field = independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT
@@ -315,44 +365,72 @@ const TradeTabContent = () => {
     if (!leverageCallback) {
       return
     }
-    setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined, showLeverageConfirm })
-    leverageCallback().then((hash: any) => {
-      setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash, showLeverageConfirm })
-      sendEvent({
-        category: 'Swap',
-        action: 'transaction hash',
-        label: hash,
-      })
-      sendEvent({
-        category: 'Swap',
-        action:
-          recipient === null
-            ? 'Swap w/o Send'
-            : (recipientAddress ?? recipient) === account
-              ? 'Swap w/o Send + recipient'
-              : 'Swap w/ Send',
-        label: [TRADE_STRING, inputCurrency?.symbol, outputCurrency?.symbol, 'MH'].join(
-          '/'
-        ),
-      })
+    setSwapState({
+      attemptingTxn: true,
+      tradeToConfirm,
+      showConfirm,
+      swapErrorMessage: undefined,
+      txHash: undefined,
+      showLeverageConfirm,
     })
-      .catch((error: any) => {
-        console.log("leverageCreationError: ", error)
+    leverageCallback()
+      .then((hash: any) => {
         setSwapState({
           attemptingTxn: false,
           tradeToConfirm,
           showConfirm,
-          swapErrorMessage: "Failed creation",//error.message,
+          swapErrorMessage: undefined,
+          txHash: hash,
+          showLeverageConfirm,
+        })
+        sendEvent({
+          category: 'Swap',
+          action: 'transaction hash',
+          label: hash,
+        })
+        sendEvent({
+          category: 'Swap',
+          action:
+            recipient === null
+              ? 'Swap w/o Send'
+              : (recipientAddress ?? recipient) === account
+              ? 'Swap w/o Send + recipient'
+              : 'Swap w/ Send',
+          label: [TRADE_STRING, inputCurrency?.symbol, outputCurrency?.symbol, 'MH'].join('/'),
+        })
+      })
+      .catch((error: any) => {
+        console.log('leverageCreationError: ', error)
+        setSwapState({
+          attemptingTxn: false,
+          tradeToConfirm,
+          showConfirm,
+          swapErrorMessage: 'Failed creation', //error.message,
           txHash: undefined,
-          showLeverageConfirm
+          showLeverageConfirm,
         })
       })
   }, [
-    leverageCallback, showLeverageConfirm, account, recipient, inputCurrency, outputCurrency, recipientAddress, showConfirm, tradeToConfirm
+    leverageCallback,
+    showLeverageConfirm,
+    account,
+    recipient,
+    inputCurrency,
+    outputCurrency,
+    recipientAddress,
+    showConfirm,
+    tradeToConfirm,
   ])
 
   const handleConfirmDismiss = useCallback(() => {
-    setSwapState({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash, showLeverageConfirm: false })
+    setSwapState({
+      showConfirm: false,
+      tradeToConfirm,
+      attemptingTxn,
+      swapErrorMessage,
+      txHash,
+      showLeverageConfirm: false,
+    })
     if (txHash) {
       onUserInput(Field.INPUT, '')
       onLeverageFactorChange('1')
@@ -405,13 +483,20 @@ const TradeTabContent = () => {
   const priceImpactTooHigh = priceImpactSeverity > 3 && !isExpertMode
   const showPriceImpactWarning = largerPriceImpact && priceImpactSeverity > 3
 
-  const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(leverageFactor ?? "1", onLeverageFactorChange);
-  const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(leverageFactor ?? "1", onLeverageFactorChange)
+  const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
+    leverageFactor ?? '1',
+    onLeverageFactorChange
+  )
+  const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(
+    leverageFactor ?? '1',
+    onLeverageFactorChange
+  )
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
   const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
-    () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING]
-    , [leverageState])
+    () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING],
+    [leverageState]
+  )
   const isApprovalLoading = allowance.state === AllowanceState.REQUIRED && allowance.isApprovalLoading
   const [isAllowancePending, setIsAllowancePending] = useState(false)
   const updateAllowance = useCallback(async () => {
@@ -430,22 +515,17 @@ const TradeTabContent = () => {
       setIsAllowancePending(false)
     }
   }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
-  
-  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined);
+
+  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   const [leverageApproveAmount] = useMemo(() => {
-    if (inputCurrency
-      && parsedAmounts[Field.INPUT]
-      && outputCurrency
-      && premium
-    ) {
+    if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
       return [
         CurrencyAmount.fromRawAmount(
           inputCurrency,
           new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).plus(premium).shiftedBy(18).toFixed(0)
-        )
+        ),
       ]
-    }
-    else {
+    } else {
       return [undefined]
     }
   }, [inputCurrency, parsedAmounts, outputCurrency, premium])
@@ -458,7 +538,7 @@ const TradeTabContent = () => {
     try {
       await approveLeverageManager()
     } catch (err) {
-      console.log("approveLeverageManager err: ", err)
+      console.log('approveLeverageManager err: ', err)
     }
   }, [approveLeverageManager])
 
@@ -480,7 +560,7 @@ const TradeTabContent = () => {
           swapQuoteReceivedDate={swapQuoteReceivedDate}
           fiatValueInput={fiatValueTradeInput}
           fiatValueOutput={fiatValueTradeOutput}
-          leverageFactor={leverageFactor ?? "1"}
+          leverageFactor={leverageFactor ?? '1'}
           leverageTrade={leverageTrade}
         />
       ) : (
@@ -507,11 +587,7 @@ const TradeTabContent = () => {
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <SwapCurrencyInputPanel
               label={
-                independentField === Field.OUTPUT && !showWrap ? (
-                  <Trans>From (at most)</Trans>
-                ) : (
-                  <Trans>From</Trans>
-                )
+                independentField === Field.OUTPUT && !showWrap ? <Trans>From (at most)</Trans> : <Trans>From</Trans>
               }
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={showMaxButton}
@@ -525,40 +601,43 @@ const TradeTabContent = () => {
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={independentField === Field.OUTPUT && routeIsSyncing}
               isInput={true}
-              premium={inputCurrency && premium ? CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0)) : undefined}
+              premium={
+                inputCurrency && premium
+                  ? CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0))
+                  : undefined
+              }
               isLevered={leverage}
             />
           </Trace>
         </InputSection>
 
-        {leverage && <InputLeverageSection>
-          <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
-            <LeveragedOutputPanel
-              label={
-                independentField === Field.OUTPUT && !showWrap ? (
-                  <Trans>From (at most)</Trans>
-                ) : (
-                  <Trans>From</Trans>
-                )
-              }
-              value={
-                parsedAmount && leverageFactor ? String(Number(parsedAmount.toExact()) * Number(leverageFactor)) : ""
-              }
-              showMaxButton={showMaxButton}
-              currency={currencies[Field.INPUT] ?? null}
-              onUserInput={handleTypeInput}
-              onMax={handleMaxInput}
-              fiatValue={fiatValueInput}
-              onCurrencySelect={handleInputSelect}
-              otherCurrency={currencies[Field.OUTPUT]}
-              showCommonBases={true}
-              id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
-              loading={independentField === Field.OUTPUT && routeIsSyncing}
-              disabled={true}
-              parsedAmount={parsedAmount}
-            />
-          </Trace>
-        </InputLeverageSection>}
+        {leverage && (
+          <InputLeverageSection>
+            <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
+              <LeveragedOutputPanel
+                label={
+                  independentField === Field.OUTPUT && !showWrap ? <Trans>From (at most)</Trans> : <Trans>From</Trans>
+                }
+                value={
+                  parsedAmount && leverageFactor ? String(Number(parsedAmount.toExact()) * Number(leverageFactor)) : ''
+                }
+                showMaxButton={showMaxButton}
+                currency={currencies[Field.INPUT] ?? null}
+                onUserInput={handleTypeInput}
+                onMax={handleMaxInput}
+                fiatValue={fiatValueInput}
+                onCurrencySelect={handleInputSelect}
+                otherCurrency={currencies[Field.OUTPUT]}
+                showCommonBases={true}
+                id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
+                loading={independentField === Field.OUTPUT && routeIsSyncing}
+                disabled={true}
+                parsedAmount={parsedAmount}
+              />
+            </Trace>
+          </InputLeverageSection>
+        )}
+
         <ArrowWrapper clickable={isSupportedChain(chainId)}>
           <TraceEvent
             events={[BrowserEvent.onClick]}
@@ -568,14 +647,13 @@ const TradeTabContent = () => {
             <ArrowContainer
               onClick={() => {
                 onSwitchTokens(leverage)
+                tab === 'Long' ? onSwitchSwapModalTab('Short') : onSwitchSwapModalTab('Long')
               }}
               color={theme.textPrimary}
-            >  
-              <ArrowDown
+            >
+              <Maximize2
                 size="16"
-                color={
-                  currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary
-                }
+                color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />
             </ArrowContainer>
           </TraceEvent>
@@ -661,62 +739,65 @@ const TradeTabContent = () => {
               </>
             ) : null}
           </OutputSwapSection>
-          <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)} >
-              <AutoColumn gap="md">
-                <RowBetween>
-                  <ThemedText.DeprecatedMain fontWeight={400}>
-                    <Trans>Leverage</Trans>
-                  </ThemedText.DeprecatedMain>
-                  <Checkbox hovered={false} checked={leverage} onClick={() => {
+          <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)}>
+            <AutoColumn gap="md">
+              <RowBetween>
+                <ThemedText.DeprecatedMain fontWeight={400}>
+                  <Trans>Leverage</Trans>
+                </ThemedText.DeprecatedMain>
+                <Checkbox
+                  hovered={false}
+                  checked={leverage}
+                  onClick={() => {
                     onLeverageChange(!leverage)
-                  }}>
-                  </Checkbox>
-                </RowBetween>
-                {leverage && (
-                  <>
-                    <RowBetween>
-                      <LeverageInputSection>
-                        <StyledNumericalInput
-                          className="token-amount-input"
-                          value={debouncedLeverageFactor ?? ""}
-                          placeholder="1"
-                          onUserInput={(str: string) => {
-                            if (str === "") {
-                              onDebouncedLeverageFactor("")
-                            } else if (new BN(str).isGreaterThan(new BN("500"))) {
-                              return
-                            } else if (new BN(str).dp() as number > 1) {
-                              onDebouncedLeverageFactor(String(new BN(str).decimalPlaces(1, BN.ROUND_DOWN)))
-                            } else {
-                              onDebouncedLeverageFactor(str)
-                            }
-                          }}
-                          disabled={false}
-                        />
-                      </LeverageInputSection>
-                      <AutoRow gap="4px" justify="flex-end">
-                        <SmallMaxButton onClick={() => onLeverageFactorChange("10")} width="20%">
-                          <Trans>10</Trans>
-                        </SmallMaxButton>
-                        <SmallMaxButton onClick={() => onLeverageFactorChange("100")} width="20%">
-                          <Trans>100</Trans>
-                        </SmallMaxButton>
-                        <SmallMaxButton onClick={() => onLeverageFactorChange("500")} width="20%">
-                          <Trans>500</Trans>
-                        </SmallMaxButton>
-                      </AutoRow>
-                    </RowBetween>
-                    <Slider
-                      value={sliderLeverageFactor === "" ? 1 : parseFloat(sliderLeverageFactor)}
-                      onChange={(val) => setSliderLeverageFactor(val.toString())}
-                      min={1}
-                      max={500.0}
-                      step={0.5}
-                      float={true}
-                    />
-                  </>
-                )}
-              </AutoColumn>
+                  }}
+                ></Checkbox>
+              </RowBetween>
+              {leverage && (
+                <>
+                  <RowBetween>
+                    <LeverageInputSection>
+                      <StyledNumericalInput
+                        className="token-amount-input"
+                        value={debouncedLeverageFactor ?? ''}
+                        placeholder="1"
+                        onUserInput={(str: string) => {
+                          if (str === '') {
+                            onDebouncedLeverageFactor('')
+                          } else if (new BN(str).isGreaterThan(new BN('500'))) {
+                            return
+                          } else if ((new BN(str).dp() as number) > 1) {
+                            onDebouncedLeverageFactor(String(new BN(str).decimalPlaces(1, BN.ROUND_DOWN)))
+                          } else {
+                            onDebouncedLeverageFactor(str)
+                          }
+                        }}
+                        disabled={false}
+                      />
+                    </LeverageInputSection>
+                    <AutoRow gap="4px" justify="flex-end">
+                      <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
+                        <Trans>10</Trans>
+                      </SmallMaxButton>
+                      <SmallMaxButton onClick={() => onLeverageFactorChange('100')} width="20%">
+                        <Trans>100</Trans>
+                      </SmallMaxButton>
+                      <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
+                        <Trans>500</Trans>
+                      </SmallMaxButton>
+                    </AutoRow>
+                  </RowBetween>
+                  <Slider
+                    value={sliderLeverageFactor === '' ? 1 : parseFloat(sliderLeverageFactor)}
+                    onChange={(val) => setSliderLeverageFactor(val.toString())}
+                    min={1}
+                    max={500.0}
+                    step={0.5}
+                    float={true}
+                  />
+                </>
+              )}
+            </AutoColumn>
           </LeverageGaugeSection>
           <DetailsSwapSection>
             <SwapDetailsDropdown
@@ -729,208 +810,203 @@ const TradeTabContent = () => {
               leverageInputError={!!inputError}
             />
           </DetailsSwapSection>
-
         </div>
         {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}
         <div>
-          {!leverage && (swapIsUnsupported ? (
-            <ButtonPrimary disabled={true}>
-              <ThemedText.DeprecatedMain mb="4px">
-                <Trans>Unsupported Asset</Trans>
-              </ThemedText.DeprecatedMain>
-            </ButtonPrimary>
-          ) : !account ? (
-            <TraceEvent
-              events={[BrowserEvent.onClick]}
-              name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-              properties={{ received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError) }}
-              element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-            >
-              <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
-                <Trans>Connect Wallet</Trans>
-              </ButtonLight>
-            </TraceEvent>
-          ) : showWrap ? (
-            <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap} fontWeight={600}>
-              {wrapInputError ? (
-                <WrapErrorText wrapInputError={wrapInputError} />
-              ) : wrapType === WrapType.WRAP ? (
-                <Trans>Wrap</Trans>
-              ) : wrapType === WrapType.UNWRAP ? (
-                <Trans>Unwrap</Trans>
-              ) : null}
-            </ButtonPrimary>
-          ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
-                <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
-          ) : isValid && allowance.state === AllowanceState.REQUIRED ? (
-            <ButtonPrimary
-              onClick={updateAllowance}
-              disabled={isAllowancePending || isApprovalLoading}
-              style={{ gap: 14 }}
-            >
-              {isAllowancePending ? (
-                <>
-                  <Loader size="20px" />
-                  <Trans>Approve in your wallet</Trans>
-                </>
-              ) : isApprovalLoading ? (
-                <>
-                  <Loader size="20px" />
-                  <Trans>Approval pending</Trans>
-                </>
-              ) : (
-                <>
-                  <div style={{ height: 20 }}>
+          {!leverage &&
+            (swapIsUnsupported ? (
+              <ButtonPrimary disabled={true}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Unsupported Asset</Trans>
+                </ThemedText.DeprecatedMain>
+              </ButtonPrimary>
+            ) : !account ? (
+              <TraceEvent
+                events={[BrowserEvent.onClick]}
+                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                properties={{
+                  received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError),
+                }}
+                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+              >
+                <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+                  <Trans>Connect Wallet</Trans>
+                </ButtonLight>
+              </TraceEvent>
+            ) : showWrap ? (
+              <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap} fontWeight={600}>
+                {wrapInputError ? (
+                  <WrapErrorText wrapInputError={wrapInputError} />
+                ) : wrapType === WrapType.WRAP ? (
+                  <Trans>Wrap</Trans>
+                ) : wrapType === WrapType.UNWRAP ? (
+                  <Trans>Unwrap</Trans>
+                ) : null}
+              </ButtonPrimary>
+            ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
+              <GrayCard style={{ textAlign: 'center' }}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Insufficient liquidity for this trade.</Trans>
+                </ThemedText.DeprecatedMain>
+              </GrayCard>
+            ) : isValid && allowance.state === AllowanceState.REQUIRED ? (
+              <ButtonPrimary
+                onClick={updateAllowance}
+                disabled={isAllowancePending || isApprovalLoading}
+                style={{ gap: 14 }}
+              >
+                {isAllowancePending ? (
+                  <>
+                    <Loader size="20px" />
+                    <Trans>Approve in your wallet</Trans>
+                  </>
+                ) : isApprovalLoading ? (
+                  <>
+                    <Loader size="20px" />
+                    <Trans>Approval pending</Trans>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ height: 20 }}>
+                      <MouseoverTooltip text={<Trans>Permission is required for Limitless to trade each token.</Trans>}>
+                        <Info size={20} />
+                      </MouseoverTooltip>
+                    </div>
+                    <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                  </>
+                )}
+              </ButtonPrimary>
+            ) : (
+              <ButtonError
+                onClick={() => {
+                  if (isExpertMode) {
+                    handleSwap()
+                  } else {
+                    setSwapState({
+                      tradeToConfirm: trade,
+                      attemptingTxn: false,
+                      swapErrorMessage: undefined,
+                      showConfirm: true,
+                      txHash: undefined,
+                      showLeverageConfirm: false,
+                    })
+                  }
+                }}
+                id="swap-button"
+                disabled={
+                  !isValid ||
+                  routeIsSyncing ||
+                  routeIsLoading ||
+                  priceImpactTooHigh ||
+                  allowance.state !== AllowanceState.ALLOWED
+                }
+                error={isValid && priceImpactSeverity > 2 && allowance.state === AllowanceState.ALLOWED}
+              >
+                <Text fontSize={20} fontWeight={600}>
+                  {swapInputError ? (
+                    swapInputError
+                  ) : routeIsSyncing || routeIsLoading ? (
+                    <Trans>Swap</Trans>
+                  ) : priceImpactTooHigh ? (
+                    <Trans>Price Impact Too High</Trans>
+                  ) : priceImpactSeverity > 2 ? (
+                    <Trans>Swap Anyway</Trans>
+                  ) : (
+                    <Trans>Swap</Trans>
+                  )}
+                </Text>
+              </ButtonError>
+            ))}
+
+          {leverage &&
+            (swapIsUnsupported ? (
+              <ButtonPrimary disabled={true}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Unsupported Asset</Trans>
+                </ThemedText.DeprecatedMain>
+              </ButtonPrimary>
+            ) : !account ? (
+              <TraceEvent
+                events={[BrowserEvent.onClick]}
+                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                properties={{
+                  received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError),
+                }}
+                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+              >
+                <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+                  <Trans>Connect Wallet</Trans>
+                </ButtonLight>
+              </TraceEvent>
+            ) : lmtRouteNotFound && userHasSpecifiedInputOutput && !lmtRouteIsLoading ? (
+              <GrayCard style={{ textAlign: 'center' }}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Insufficient liquidity for this trade.</Trans>
+                </ThemedText.DeprecatedMain>
+              </GrayCard>
+            ) : lmtIsValid && leverageApprovalState !== ApprovalState.APPROVED ? (
+              <ButtonPrimary
+                onClick={updateLeverageAllowance}
+                style={{ gap: 14 }}
+                disabled={leverageApprovalState === ApprovalState.PENDING}
+              >
+                {leverageApprovalState === ApprovalState.PENDING ? (
+                  <>
+                    <Loader size="20px" />
+                    <Trans>Approval pending</Trans>
+                  </>
+                ) : (
+                  <>
                     <MouseoverTooltip
                       text={
                         <Trans>
-                          Permission is required for Limitless to trade each token.
+                          Permission is required for Limitless to use each token.{' '}
+                          {premium && typedValue && inputCurrency
+                            ? `Allowance of ${premium + Number(typedValue)} ${inputCurrency.symbol} required.`
+                            : null}
                         </Trans>
                       }
                     >
-                      <Info size={20} />
+                      <RowBetween>
+                        <Info size={20} />
+                        <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                      </RowBetween>
                     </MouseoverTooltip>
-                  </div>
-                  <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
-                </>
-              )}
-            </ButtonPrimary>
-          ) : (
-            <ButtonError
-              onClick={() => {
-                if (isExpertMode) {
-                  handleSwap()
-                } else {
+                  </>
+                )}
+              </ButtonPrimary>
+            ) : (
+              <ButtonError
+                onClick={() => {
                   setSwapState({
                     tradeToConfirm: trade,
                     attemptingTxn: false,
                     swapErrorMessage: undefined,
-                    showConfirm: true,
+                    showConfirm: false,
                     txHash: undefined,
-                    showLeverageConfirm: false
+                    showLeverageConfirm: true,
                   })
-                }
-              }}
-              id="swap-button"
-              disabled={
-                !isValid ||
-                routeIsSyncing ||
-                routeIsLoading ||
-                priceImpactTooHigh ||
-                allowance.state !== AllowanceState.ALLOWED
-              }
-              error={isValid && priceImpactSeverity > 2 && allowance.state === AllowanceState.ALLOWED}
-            >
-              <Text fontSize={20} fontWeight={600}>
-                {swapInputError ? (
-                  swapInputError
-                ) : routeIsSyncing || routeIsLoading ? (
-                  <Trans>Swap</Trans>
-                ) : priceImpactTooHigh ? (
-                  <Trans>Price Impact Too High</Trans>
-                ) : priceImpactSeverity > 2 ? (
-                  <Trans>Swap Anyway</Trans>
-                ) : (
-                  <Trans>Swap</Trans>
-                )}
-              </Text>
-            </ButtonError>
-          ))}
-
-          {leverage && (swapIsUnsupported ? (
-            <ButtonPrimary disabled={true}>
-              <ThemedText.DeprecatedMain mb="4px">
-                <Trans>Unsupported Asset</Trans>
-              </ThemedText.DeprecatedMain>
-            </ButtonPrimary>
-          ) : !account ? (
-            <TraceEvent
-              events={[BrowserEvent.onClick]}
-              name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-              properties={{ received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError) }}
-              element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-            >
-              <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
-                <Trans>Connect Wallet</Trans>
-              </ButtonLight>
-            </TraceEvent>
-          ) : (lmtRouteNotFound && userHasSpecifiedInputOutput && !lmtRouteIsLoading ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
-                <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
-          ) : lmtIsValid && (leverageApprovalState !== ApprovalState.APPROVED) ? (
-            <ButtonPrimary
-              onClick={updateLeverageAllowance}
-              style={{ gap: 14 }}
-              disabled={leverageApprovalState === ApprovalState.PENDING}
-            >
-              {leverageApprovalState === ApprovalState.PENDING ? (
-                <>
-                  <Loader size="20px" />
-                  <Trans>Approval pending</Trans>
-                </>
-              ) : (
-                <>
-                  <MouseoverTooltip
-                    text={
-                      <Trans>
-                        Permission is required for Limitless to use each token. {
-                          premium && typedValue && inputCurrency ? `Allowance of ${premium + Number(typedValue)} ${inputCurrency.symbol} required.` : null
-                        }
-                      </Trans>
-                    }
-                  >
-                    <RowBetween>
-                      <Info size={20} />
-                      <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
-                    </RowBetween>
-                  </MouseoverTooltip>
-                </>
-              )}
-            </ButtonPrimary>
-          ) : (
-            <ButtonError
-              onClick={() => {
-                setSwapState({
-                  tradeToConfirm: trade,
-                  attemptingTxn: false,
-                  swapErrorMessage: undefined,
-                  showConfirm: false,
-                  txHash: undefined,
-                  showLeverageConfirm: true
-                })
-              }}
-              id="leverage-button"
-              disabled={
-                !!inputError || !!contractError ||
-                priceImpactTooHigh || !lmtIsValid || lmtRouteIsLoading
-              }
-            >
-              <Text fontSize={20} fontWeight={600}>
-                {inputError ? (
-                  inputError
-                ) : contractError ? (
-                  contractError
-                ) : routeIsSyncing || routeIsLoading ? (
-                  <Trans>Leverage</Trans>
-                ) : priceImpactTooHigh ? (
-                  <Trans>Price Impact Too High</Trans>
-                ) : priceImpactSeverity > 2 ? (
-                  <Trans>Leverage Anyway</Trans>
-                ) : (
-                  <Trans>Leverage</Trans>
-                )}
-              </Text>
-            </ButtonError>
-          )
-          )
-          )}
+                }}
+                id="leverage-button"
+                disabled={!!inputError || !!contractError || priceImpactTooHigh || !lmtIsValid || lmtRouteIsLoading}
+              >
+                <Text fontSize={20} fontWeight={600}>
+                  {inputError ? (
+                    inputError
+                  ) : contractError ? (
+                    contractError
+                  ) : routeIsSyncing || routeIsLoading ? (
+                    <Trans>Leverage</Trans>
+                  ) : priceImpactTooHigh ? (
+                    <Trans>Price Impact Too High</Trans>
+                  ) : priceImpactSeverity > 2 ? (
+                    <Trans>Leverage Anyway</Trans>
+                  ) : (
+                    <Trans>Leverage</Trans>
+                  )}
+                </Text>
+              </ButtonError>
+            ))}
           {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
         </div>
       </div>

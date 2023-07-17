@@ -44,6 +44,8 @@ import {
   setLTV,
   setPremium,
   setRecipient,
+
+  setSwapTab,
   switchCurrencies,
   typeInput,
 } from './actions'
@@ -68,6 +70,7 @@ export function useSwapActionHandlers(): {
   onLTVChange: (ltv: string) => void
   onBorrowManagerAddress: (borrowManagerAddress: string) => void
   onPremiumChange: (premium: number) => void
+  onSwitchSwapModalTab: (tab: string) => void
 } {
   const dispatch = useAppDispatch()
   const onCurrencySelection = useCallback(
@@ -160,6 +163,14 @@ export function useSwapActionHandlers(): {
     [dispatch]
   )
 
+
+  const onSwitchSwapModalTab = useCallback(
+    (tab: string) => {
+      dispatch(setSwapTab({ tab }))
+    },
+    [dispatch]
+  )
+
   return {
     onSwitchTokens,
     onCurrencySelection,
@@ -173,6 +184,8 @@ export function useSwapActionHandlers(): {
     onLTVChange,
     onBorrowManagerAddress,
     onPremiumChange,
+
+    onSwitchSwapModalTab,
   }
 }
 
@@ -493,6 +506,7 @@ export function useDerivedBorrowCreationInfo({
     } else {
       return undefined
     }
+
   }, [existingPosition, ltv, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
 
 
@@ -517,6 +531,7 @@ export function useDerivedBorrowCreationInfo({
         // console.log("alli")
       }
     }
+
   }, [activeTab, tradeState, trade, typedValue, pool, ltv, existingPosition, onPremiumChange, inputIsToken0])
 
   const contractError = useMemo(() => {
@@ -530,8 +545,8 @@ export function useDerivedBorrowCreationInfo({
       _contractError = _contractError ?? <Trans>Invalid Trade</Trans>
     }
     return _contractError
-  }, [error, tradeState])
 
+  }, [error, tradeState])
 
   return {
     trade,
@@ -751,6 +766,7 @@ export function useDerivedLeverageCreationInfo(): {
       let existingTotalDebtInput = 0 
       let existingTotalPosition = 0 
       let tokenId
+
       let existingCollateral = 0
       if (existingPosition){
         _existingPosition = true
@@ -761,6 +777,7 @@ export function useDerivedLeverageCreationInfo(): {
       }
 
       const position: any = contractResult[0]
+
       const expectedTotalPosition = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
       const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
       const strikePrice = new BN(expectedTotalPosition).div(new BN(borrowedAmount).plus(debouncedAmount.toExact() )).toNumber()
@@ -770,7 +787,6 @@ export function useDerivedLeverageCreationInfo(): {
       const returnedPremium = new BN((contractResult[1] as any)
         .toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
       const t = new BN(strikePrice).minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS)).abs().dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS)).multipliedBy(1000).toFixed(0)
-
       const priceImpact = new Percent(t, 1000)
 
       const effectiveLeverage = new BN(
@@ -782,7 +798,6 @@ export function useDerivedLeverageCreationInfo(): {
         inputAmount: debouncedAmount,
         borrowedAmount: CurrencyAmount.fromRawAmount(inputCurrency?.wrapped, new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)),
         expectedTotalPosition,
-
         strikePrice,
         quotedPremium, //- returnedPremium,
         priceImpact,
@@ -1034,6 +1049,7 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     ltv: null,
     borrowManagerAddress: null,
     premium: null,
+    tab: 'Long',
   }
 }
 
@@ -1063,6 +1079,7 @@ export function useDefaultsFromURLSearch(): SwapState {
         hideClosedLeveragePositions: true,
         leverage: true,
         activeTab: ActiveSwapTab.TRADE,
+        tab: 'Long',
       })
     )
   }, [dispatch, chainId, parsedSwapState])

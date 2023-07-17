@@ -84,7 +84,7 @@ export const ArrowContainer = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
+  rotate: -45deg;
   width: 100%;
   height: 100%;
 `
@@ -133,11 +133,23 @@ const SwapSection = styled.div`
 export const InputLeverageSection = styled(SwapSection)`
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  background-color: #131a2a;
+  margin-bottom: 20px;
 `
 
 export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
   border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
   border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
+  margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
+  background-color: #131a2a;
+
+  ::after {
+    content: '';
+    margin-top: 30px;
+    background-color: #98a1c03d;
+    display: ${({ leverage }) => (leverage ? 'block' : 'none')};
+    height: 0.1em;
+  }
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
@@ -146,6 +158,8 @@ export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: bool
   // border-bottom-right-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
   border-bottom-left-radius: 10;
   border-bottom-right-radius: 10;
+  background-color: #131a2a;
+  margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
@@ -229,7 +243,7 @@ export default function Swap({ className }: { className?: string }) {
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
   // const swapWidgetEnabled = useSwapWidgetEnabled()
 
-  const { onCurrencySelection, onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
+  const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -295,7 +309,7 @@ export default function Swap({ className }: { className?: string }) {
     typedValue,
     // recipient,
     // leverageFactor,
-    // leverage,
+    leverage,
     leverageManagerAddress,
     activeTab,
     // ltv,

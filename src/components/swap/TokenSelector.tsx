@@ -1,73 +1,59 @@
 import { t } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
-import { MouseoverTooltip } from 'components/Tooltip'
-import { ConnectionType } from 'connection'
-import { useGetConnection } from 'connection'
-import { getChainInfo } from 'constants/chainInfo'
-import { SupportedChainId } from 'constants/chains'
+import { Currency, Token } from '@uniswap/sdk-core'
+import { NavDropdown } from 'components/NavBar/NavDropdown'
+import { SearchInput } from 'components/SearchModal/styleds'
+import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
+import useDebounce from 'hooks/useDebounce'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
-import useSelectChain from 'hooks/useSelectChain'
-import useSyncChainQuery from 'hooks/useSyncChainQuery'
+import useNativeCurrency from 'lib/hooks/useNativeCurrency'
+import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
+import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
 import { Box } from 'nft/components/Box'
 import { Portal } from 'nft/components/common/Portal'
 import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
 import { ChangeEvent, KeyboardEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp } from 'react-feather'
-import { useTheme } from 'styled-components/macro'
+import { ChevronDown, ChevronUp } from 'react-feather'
 import { FixedSizeList } from 'react-window'
+import { useAllTokenBalances } from 'state/connection/hooks'
+import { Field } from 'state/swap/actions'
+import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useTheme } from 'styled-components/macro'
+import { ThemedText } from 'theme'
+import { UserAddedToken } from 'types/tokens'
+import { isAddress } from 'utils'
+import { currencyId } from 'utils/currencyId'
 
 import * as styles from './TokenSelector.css'
 import TokenSelectorRow from './TokenSelectorRow'
-import { NavDropdown } from 'components/NavBar/NavDropdown'
-import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
-import { Currency, Token } from '@uniswap/sdk-core'
-import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
-import useDebounce from 'hooks/useDebounce'
-import { isAddress } from 'utils'
-import { useAllTokenBalances } from 'state/connection/hooks'
-import { UserAddedToken } from 'types/tokens'
-import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
-import { currencyId } from 'utils/currencyId'
-import { SearchInput } from 'components/SearchModal/styleds'
-import { ThemedText } from 'theme'
 
-
-
-export const TokenSelector = ({ isInput }: { isInput: boolean}) => {
-
-  const onlyShowCurrenciesWithBalance = false;
+export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
+  const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState();
+  } = useSwapState()
 
-  const {
-    onCurrencySelection
-  } = useSwapActionHandlers()
+  const { onCurrencySelection } = useSwapActionHandlers()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
   // const {chainId} = useWeb3React()
   const [searchQuery, setSearchQuery] = useState<string>('')
-  
+
   const debouncedQuery = useDebounce(searchQuery, 200)
   const defaultTokens = useDefaultActiveTokens()
 
-
   const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
-    // Timeout token loader after 3 seconds to avoid hanging in a loading state.
-    useEffect(() => {
-      const tokenLoaderTimer = setTimeout(() => {
-        setTokenLoaderTimerElapsed(true)
-      }, 3000)
-      return () => clearTimeout(tokenLoaderTimer)
-    }, [])
-  
+  // Timeout token loader after 3 seconds to avoid hanging in a loading state.
+  useEffect(() => {
+    const tokenLoaderTimer = setTimeout(() => {
+      setTokenLoaderTimerElapsed(true)
+    }, 3000)
+    return () => clearTimeout(tokenLoaderTimer)
+  }, [])
+
   const filteredTokens: Token[] = useMemo(() => {
     return Object.values(defaultTokens).filter(getTokenFilter(debouncedQuery))
   }, [defaultTokens, debouncedQuery])
@@ -114,12 +100,12 @@ export const TokenSelector = ({ isInput }: { isInput: boolean}) => {
   const searchCurrencies: Currency[] = useMemo(() => {
     const s = debouncedQuery.toLowerCase().trim()
 
-    const tokens = filteredSortedTokens.filter((t) => !(t.equals(wrapped) || (t.isNative)))
+    const tokens = filteredSortedTokens.filter((t) => !(t.equals(wrapped) || t.isNative))
     const shouldShowWrapped =
       !onlyShowCurrenciesWithBalance || (!balancesAreLoading && balances[wrapped.address]?.greaterThan(0))
-    const natives = (
-      native.equals(wrapped) ? [wrapped] : shouldShowWrapped ? [native, wrapped] : [native]
-    ).filter((n) => n.symbol?.toLowerCase()?.indexOf(s) !== -1 || n.name?.toLowerCase()?.indexOf(s) !== -1)
+    const natives = (native.equals(wrapped) ? [wrapped] : shouldShowWrapped ? [native, wrapped] : [native]).filter(
+      (n) => n.symbol?.toLowerCase()?.indexOf(s) !== -1 || n.name?.toLowerCase()?.indexOf(s) !== -1
+    )
 
     return [...natives, ...tokens]
   }, [
@@ -132,9 +118,12 @@ export const TokenSelector = ({ isInput }: { isInput: boolean}) => {
     native,
   ])
 
-  const handleCurrencySelect = useCallback((currency: Currency) => {
-    onCurrencySelection(isInput ? Field.INPUT : Field.OUTPUT, currency)
-  }, [inputCurrencyId, outputCurrencyId, isInput])
+  const handleCurrencySelect = useCallback(
+    (currency: Currency) => {
+      onCurrencySelection(isInput ? Field.INPUT : Field.OUTPUT, currency)
+    },
+    [inputCurrencyId, outputCurrencyId, isInput]
+  )
 
   const inputRef = useRef<HTMLInputElement>()
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -172,7 +161,6 @@ export const TokenSelector = ({ isInput }: { isInput: boolean}) => {
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
-
   const dropdown = (
     <NavDropdown top="56" ref={modalRef}>
       <Row>
@@ -207,18 +195,16 @@ export const TokenSelector = ({ isInput }: { isInput: boolean}) => {
 
   return (
     <Box position="relative" ref={ref}>
-        <Row
-          as="button"
-          gap="8"
-          className={styles.ChainSelector}
-          background={isOpen ? 'accentActiveSoft' : 'none'}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <ThemedText.LmtWhite>
-            {isInput ? inputCurrency?.symbol : outputCurrency?.symbol}
-          </ThemedText.LmtWhite>
-          {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
-        </Row>
+      <Row
+        as="button"
+        gap="8"
+        className={styles.ChainSelector}
+        background={isOpen ? 'accentActiveSoft' : 'none'}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <ThemedText.LmtWhite>{isInput ? inputCurrency?.symbol : outputCurrency?.symbol}</ThemedText.LmtWhite>
+        {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
+      </Row>
       {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
     </Box>
   )

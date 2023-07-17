@@ -7,7 +7,7 @@ import * as styles from './Checkbox.css'
 
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hovered: boolean
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const Checkbox: React.FC<CheckboxProps> = ({ hovered, children, ...props }: CheckboxProps) => {
@@ -21,7 +21,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({ hovered, children, ...props 
       cursor="pointer"
       lineHeight="1"
     >
-      {children}
+      {children && children}
       <Box
         as="span"
         borderColor={props.checked || hovered ? 'accentAction' : 'gray400'}

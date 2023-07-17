@@ -6,13 +6,17 @@ export const ToggleWrapper = styled.button<{ width?: string }>`
   width: ${({ width }) => width ?? '100%'};
   padding: 0px;
   background: ${({ theme }) => theme.deprecated_bg1};
-  border-radius: 6px;
-  border: ${({ theme }) => '1px solid ' + theme.backgroundInteractive};
+  border-radius: 10px;
+  border: none /* ${({ theme }) => '1px solid ' + theme.backgroundInteractive} */;
   cursor: pointer;
   outline: none;
+  box-sizing: border-box;
 `
 
-export const ToggleElement = styled.span<{ isActive?: boolean; fontSize?: string }>`
+export const ToggleElement = styled.span<{
+  isActive?: number | boolean
+  fontSize?: string
+}>`
   display: flex;
   align-items: center;
   width: 100%;
