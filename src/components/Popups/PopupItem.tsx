@@ -1,13 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { X } from 'react-feather'
+import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { useRemovePopup } from '../../state/application/hooks'
 import { PopupContent } from '../../state/application/reducer'
 import FailedNetworkSwitchPopup from './FailedNetworkSwitchPopup'
 import TransactionPopup from './TransactionPopup'
-import { useTransaction } from 'state/transactions/hooks'
-import { TransactionType } from 'state/transactions/types'
 
 const StyledClose = styled(X)`
   position: absolute;
@@ -47,7 +46,7 @@ export default function PopupItem({
   popKey: string
 }) {
   const removePopup = useRemovePopup()
-  removeAfterMs = null; //45000;
+  removeAfterMs = 25000
   const removeThisPopup = useCallback(() => removePopup(popKey), [popKey, removePopup])
   useEffect(() => {
     if (removeAfterMs === null) return undefined
@@ -64,23 +63,17 @@ export default function PopupItem({
   const theme = useTheme()
 
   let popupContent
-  let transactionType: TransactionType;
+  let transactionType: TransactionType
   if ('txn' in content) {
-    
     popupContent = TransactionPopup({ hash: content.txn.hash, removeThisPopup })
 
-    return (
-      <>
-      { popupContent }
-      </>
-    )
-    
+    return <>{popupContent}</>
   } else if ('failedSwitchNetwork' in content) {
     popupContent = <FailedNetworkSwitchPopup chainId={content.failedSwitchNetwork} />
 
     return (
       <Popup>
-      <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
+        <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
         {popupContent}
       </Popup>
     )

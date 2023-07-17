@@ -282,8 +282,8 @@ export function ReduceLeverageTransactionPopupContent({
         </CloseItem>
       </CenterRow>
       <AgencyB size={24} color="#ffffff">
-        {`${formatNumber(leverageFactor, NumberType.SwapTradeAmount)}x | Long ${inputCurrency?.symbol}/${
-          outputCurrency?.symbol
+        {`${formatNumber(leverageFactor, NumberType.SwapTradeAmount)}x | Long ${outputCurrency?.symbol} / ${
+          inputCurrency?.symbol
         }`}
       </AgencyB>
       <AmboyText size={48} color={pnl > 0 ? '#00ff0c' : '#ff2a00'}>
@@ -315,7 +315,13 @@ export function ReduceLeverageTransactionPopupContent({
     <PortfolioRow
       left={<PopupAlertTriangle />}
       title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
-      descriptor={<Descriptor color="textSecondary">{activity.descriptor}</Descriptor>}
+      descriptor={
+        typeof activity.descriptor === 'string' ? (
+          <Descriptor color="textSecondary">{activity.descriptor}</Descriptor>
+        ) : (
+          activity.descriptor
+        )
+      }
       onClick={() => window.open(explorerUrl, '_blank')}
     />
   )

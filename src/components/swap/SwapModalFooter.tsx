@@ -20,7 +20,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useBorrowManagerContract, useLiquidityManagerContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useLimitlessPositionFromTokenId } from 'hooks/useV3Positions'
+import { convertBNToNum, useLimitlessPositionFromTokenId } from 'hooks/useV3Positions'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import {
   formatPercentInBasisPointsNumber,
@@ -353,12 +353,12 @@ function useDerivedBorrowReduceCollateralInfo(
 ): {
   transactionInfo:
     | {
-        token0Amount: string
-        token1Amount: string
-        pnl: string
-        returnedAmount: string
-        unusedPremium: string
-        premium: string
+        token0Amount: number
+        token1Amount: number
+        pnl: number
+        returnedAmount: number
+        unusedPremium: number
+        premium: number
       }
     | undefined
   userError: React.ReactNode | undefined
@@ -421,25 +421,13 @@ function useDerivedBorrowReduceCollateralInfo(
   const transactionInfo = useMemo(() => {
     if (contractResult) {
       const { reducePositionResult } = contractResult
-      console.log('reducePositionResult', reducePositionResult)
-      const token0Amount = new BN(reducePositionResult[0].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const token1Amount = new BN(reducePositionResult[1].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const pnl = new BN(reducePositionResult[2].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const returnedAmount = new BN(reducePositionResult[3].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const unusedPremium = new BN(reducePositionResult[4].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const premium = new BN(reducePositionResult[5].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
+
+      const token0Amount = convertBNToNum(reducePositionResult[0], DEFAULT_ERC20_DECIMALS)
+      const token1Amount = convertBNToNum(reducePositionResult[1], DEFAULT_ERC20_DECIMALS)
+      const pnl = convertBNToNum(reducePositionResult[2], DEFAULT_ERC20_DECIMALS)
+      const returnedAmount = convertBNToNum(reducePositionResult[3], DEFAULT_ERC20_DECIMALS)
+      const unusedPremium = convertBNToNum(reducePositionResult[4], DEFAULT_ERC20_DECIMALS)
+      const premium = convertBNToNum(reducePositionResult[5], DEFAULT_ERC20_DECIMALS)
 
       return {
         token0Amount,
@@ -469,7 +457,7 @@ function useDerivedBorrowReduceCollateralInfo(
       }
     }
     return error
-  }, [relevantTokenBalances, position, reduceAmount])
+  }, [relevantTokenBalances, position, reduceAmount, currency0, currency1])
 
   return {
     transactionInfo,
@@ -487,12 +475,12 @@ function useDerivedBorrowReduceDebtInfo(
 ): {
   transactionInfo:
     | {
-        token0Amount: string
-        token1Amount: string
-        pnl: string
-        returnedAmount: string
-        unusedPremium: string
-        premium: string
+        token0Amount: number
+        token1Amount: number
+        pnl: number
+        returnedAmount: number
+        unusedPremium: number
+        premium: number
       }
     | undefined
   userError: React.ReactNode | undefined
@@ -502,16 +490,6 @@ function useDerivedBorrowReduceDebtInfo(
   const [contractResult, setContractResult] = useState<{
     reducePositionResult: any
   }>()
-
-  // const { account } = useWeb3React()
-  // const currency0 = useCurrency(position?.token0Address)
-  // const currency1 = useCurrency(position?.token1Address)
-  // const relevantTokenBalances = useCurrencyBalances(
-  //   account ?? undefined,
-  //   useMemo(() => [currency0 ?? undefined, currency1 ?? undefined], [currency0, currency1])
-  // )
-
-  // console.log('useDerivedBorrowReduceDebtInfo', position, position?.borrowManagerAddress, borrowManagerContract)
 
   useEffect(() => {
     const laggedfxn = async () => {
@@ -527,31 +505,20 @@ function useDerivedBorrowReduceDebtInfo(
         return
       }
 
-      const formattedReduceAmount = String(Number(reduceAmount) * 1e18) //new BN(reduceAmount).shiftedBy(18).toFixed(0);
-      const inputReduceAmount =
-        Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)) < 1e12
-          ? // Number(position.totalPositionRaw) <= Number(formattedReduceAmount)
-            position.totalPositionRaw
-          : formattedReduceAmount
+      const formattedReduceAmount =
+        Math.abs(Number(position.totalPosition) - Number(reduceAmount)) < 1e-12
+          ? new BN(position.totalPosition).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0)
+          : new BN(reduceAmount).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0) //new BN(reduceAmount).shiftedBy(18).toFixed(0);
 
       setState(DerivedInfoState.LOADING)
 
       try {
-        console.log(
-          'reducePositionArgsss',
-          position,
-          recieveCollateral,
-          position.isToken0,
-          inputReduceAmount,
-          formattedReduceAmount
-        )
         const reducePositionResult = await borrowManagerContract.callStatic.reduceBorrowPosition(
           position?.isToken0,
           false,
           recieveCollateral,
-          inputReduceAmount
+          formattedReduceAmount
         )
-        console.log('reducePosition', reducePositionResult, tokenId)
         setContractResult({
           reducePositionResult,
         })
@@ -569,24 +536,13 @@ function useDerivedBorrowReduceDebtInfo(
   const transactionInfo = useMemo(() => {
     if (contractResult) {
       const { reducePositionResult } = contractResult
-      const token0Amount = new BN(reducePositionResult[0].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const token1Amount = new BN(reducePositionResult[1].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const pnl = new BN(reducePositionResult[2].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const returnedAmount = new BN(reducePositionResult[3].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const unusedPremium = new BN(reducePositionResult[4].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
-      const premium = new BN(reducePositionResult[5].toString())
-        .shiftedBy(-DEFAULT_ERC20_DECIMALS)
-        .toFixed(DEFAULT_ERC20_DECIMALS)
+      const token0Amount = convertBNToNum(reducePositionResult[0], DEFAULT_ERC20_DECIMALS)
+
+      const token1Amount = convertBNToNum(reducePositionResult[1], DEFAULT_ERC20_DECIMALS)
+      const pnl = convertBNToNum(reducePositionResult[2], DEFAULT_ERC20_DECIMALS)
+      const returnedAmount = convertBNToNum(reducePositionResult[3], DEFAULT_ERC20_DECIMALS)
+      const unusedPremium = convertBNToNum(reducePositionResult[4], DEFAULT_ERC20_DECIMALS)
+      const premium = convertBNToNum(reducePositionResult[5], DEFAULT_ERC20_DECIMALS)
       // console.log("premium: ", premium)
       return {
         token0Amount,
@@ -688,7 +644,7 @@ function useDerivedAddLeveragePremiumInfo(
       return inputError
     }
     return undefined
-  }, [relevantTokenBalances, account, position, approvalState])
+  }, [relevantTokenBalances, position, currency0, currency1, premium])
 
   useEffect(() => {
     const laggedfxn = async () => {
@@ -837,24 +793,29 @@ function useDerivedAddBorrowPremiumInfo(
 }
 
 export function AddPremiumLeverageModalFooter({
-  liquidityManagerAddress,
   tokenId,
   trader,
-  handleAddPremium,
+  setAttemptingTxn,
+  setTxHash,
 }: {
-  liquidityManagerAddress: string | undefined
   tokenId: string | undefined
   trader: string | undefined
-  handleAddPremium: () => void
+  setAttemptingTxn: (attemptingTxn: boolean) => void
+  setTxHash: (txHash: string) => void
 }) {
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [showDetails, setShowDetails] = useState(false)
   const theme = useTheme()
 
   const { error, position } = useLimitlessPositionFromTokenId(tokenId)
+  const liquidityManagerAddress = position?.liquidityManagerAddress
+  const liquidityManager = useLiquidityManagerContract(position?.liquidityManagerAddress, true)
+
+  const addTransaction = useTransactionAdder()
   const token0 = useToken(position?.token0Address)
   const token1 = useToken(position?.token1Address)
   const inputCurrency = useCurrency(position?.isToken0 ? position?.token1Address : position?.token0Address)
+  const outputCurrency = useCurrency(position?.isToken0 ? position?.token0Address : position?.token1Address)
   const premium = useMemo(() => {
     return position?.totalDebtInput ? position.totalDebtInput * 0.002 : 0
   }, [position])
@@ -873,6 +834,51 @@ export function AddPremiumLeverageModalFooter({
     premium
   )
   const inputIsToken0 = !position?.isToken0
+
+  // const { loading, error, position } = useLimitlessPositionFromTokenId(tokenId)
+
+  const { account, provider } = useWeb3React()
+
+  const handleAddPremium = useMemo(() => {
+    return () => {
+      if (!account) throw new Error('Wallet must be connected')
+      if (!liquidityManager) throw new Error('Liquidity Manager must be connected')
+      if (!provider) throw new Error('Provider must be connected')
+      if (!tradeInfo || !inputCurrency || !outputCurrency) throw new Error('Trade info must be valid')
+
+      setAttemptingTxn(true)
+
+      liquidityManager
+        .payPremium(trader, false, position?.isToken0)
+        .then((hash: any) => {
+          addTransaction(hash, {
+            type: TransactionType.PREMIUM_LEVERAGE,
+            inputCurrencyId: currencyId(inputCurrency),
+            outputCurrencyId: currencyId(outputCurrency),
+          })
+          setAttemptingTxn(false)
+          setTxHash(hash)
+          console.log('add premium hash: ', hash)
+        })
+        .catch((err: any) => {
+          setAttemptingTxn(false)
+          console.log('error adding premium: ', err)
+        })
+    }
+  }, [
+    account,
+    addTransaction,
+    inputCurrency,
+    outputCurrency,
+    inputError,
+    tradeInfo,
+    liquidityManager,
+    provider,
+    position,
+    setTxHash,
+    setAttemptingTxn,
+    trader,
+  ])
   // console.log("tradeInfo: ", tradeInfo);
 
   const updateLeverageAllowance = useCallback(async () => {
@@ -1053,20 +1059,27 @@ export function AddPremiumLeverageModalFooter({
 }
 
 export function AddPremiumBorrowModalFooter({
-  liquidityManagerAddress,
   tokenId,
   trader,
-  handleAddPremium,
-}: {
-  liquidityManagerAddress: string | undefined
+  setTxHash,
+  setAttemptingTxn,
+}: // handleAddPremium,
+{
   tokenId: string | undefined
   trader: string | undefined
-  handleAddPremium: () => void
+  setTxHash: (txHash: string) => void
+  setAttemptingTxn: (attemptingTxn: boolean) => void
+  // handleAddPremium: () => void
 }) {
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [showDetails, setShowDetails] = useState(false)
   const { error, position } = useLimitlessPositionFromTokenId(tokenId)
+
+  const liquidityManagerAddress = position?.liquidityManagerAddress
+  const liquidityManager = useLiquidityManagerContract(liquidityManagerAddress, true)
+  const addTransaction = useTransactionAdder()
   const theme = useTheme()
+  const inputCurrency = useCurrency(position?.isToken0 ? position?.token0Address : position?.token1Address)
   const outputCurrency = useCurrency(position?.isToken0 ? position?.token1Address : position?.token0Address)
   const premium = useMemo(() => {
     if (position) {
@@ -1093,6 +1106,49 @@ export function AddPremiumBorrowModalFooter({
   )
   const inputIsToken0 = position?.isToken0
 
+  const { account, provider } = useWeb3React()
+
+  const handleAddPremium = useMemo(() => {
+    return () => {
+      if (!account) throw new Error('Wallet must be connected')
+      if (!liquidityManager) throw new Error('Liquidity Manager must be connected')
+      if (!provider) throw new Error('Provider must be connected')
+      if (!tradeInfo || !inputCurrency || !outputCurrency) throw new Error('Trade info must be valid')
+
+      setAttemptingTxn(true)
+
+      liquidityManager
+        .payPremium(trader, true, position?.isToken0)
+        .then((hash: any) => {
+          addTransaction(hash, {
+            type: TransactionType.PREMIUM_BORROW,
+            inputCurrencyId: currencyId(inputCurrency),
+            outputCurrencyId: currencyId(outputCurrency),
+          })
+          setAttemptingTxn(false)
+          setTxHash(hash)
+          console.log('add premium hash: ', hash)
+        })
+        .catch((err: any) => {
+          setAttemptingTxn(false)
+          console.log('error adding premium: ', err)
+        })
+    }
+  }, [
+    account,
+    addTransaction,
+    inputCurrency,
+    outputCurrency,
+    inputError,
+    tradeInfo,
+    liquidityManager,
+    provider,
+    position,
+    setTxHash,
+    setAttemptingTxn,
+    trader,
+  ])
+
   // const outputCurrency = useCurrency(position?.isToken0 ? position?.token1Address : position?.token0Address)
 
   const updateAllowance = useCallback(async () => {
@@ -1101,7 +1157,7 @@ export function AddPremiumBorrowModalFooter({
     } catch (err) {
       console.log('approveLeverageManager err: ', err)
     }
-  }, [position, approveManager]) // add input to deps.
+  }, [approveManager]) // add input to deps.
 
   const loading = derivedState === DerivedInfoState.LOADING
 
@@ -1109,7 +1165,7 @@ export function AddPremiumBorrowModalFooter({
 
   useEffect(() => {
     ;(!tradeInfo || !!inputError || approvalState !== ApprovalState.APPROVED) && showDetails && setShowDetails(false)
-  }, [tradeInfo, inputError, approvalState])
+  }, [tradeInfo, inputError, approvalState, showDetails])
   const disabled = !tradeInfo || !!inputError || approvalState !== ApprovalState.APPROVED
 
   return (
@@ -1374,38 +1430,7 @@ export function BorrowReduceCollateralModalFooter({
   const token1 = useCurrency(position?.token1Address)
   const inputIsToken0 = position?.isToken0
 
-  const handleReducePosition = useMemo(() => {
-    if (
-      borrowManagerContract &&
-      position &&
-      Number(reduceAmount) > 0 &&
-      Number(reduceAmount) <= Number(position.initialCollateral) &&
-      token0 &&
-      token1
-    ) {
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
-      return () => {
-        setAttemptingTxn(true)
-        borrowManagerContract
-          .reduceBorrowPosition(position?.isToken0, true, recieveCollateral, formattedReduceAmount)
-          .then((hash: any) => {
-            addTransaction(hash, {
-              type: TransactionType.REDUCE_BORROW_COLLATERAL,
-              inputCurrencyId: inputIsToken0 ? currencyId(token1) : currencyId(token0),
-              outputCurrencyId: !inputIsToken0 ? currencyId(token1) : currencyId(token0),
-            })
-            setTxHash(hash)
-            setAttemptingTxn(false)
-          })
-          .catch((err: any) => {
-            setAttemptingTxn(false)
-            console.log('error closing position: ', err)
-          })
-      }
-    }
-    return () => {}
-  }, [recieveCollateral, tokenId, trader, position, reduceAmount])
-
+  const { account, provider } = useWeb3React()
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [showDetails, setShowDetails] = useState(false)
   const theme = useTheme()
@@ -1422,6 +1447,55 @@ export function BorrowReduceCollateralModalFooter({
     recieveCollateral,
     setDerivedState
   )
+
+  const handleReducePosition = useMemo(() => {
+    return () => {
+      if (!account) throw new Error('Wallet must be connected')
+      if (!provider) throw new Error('Provider must be connected')
+      if (!borrowManagerContract) throw new Error('Borrow Manager Contract must be connected')
+      if (!position) throw new Error('Position must be connected')
+      if (!token0 || !token1) throw new Error('Tokens must be connected')
+      if (!transactionInfo) throw new Error('Transaction Info must be connected')
+      if (!reduceAmount) return null
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
+
+      setAttemptingTxn(true)
+      return borrowManagerContract
+        .reduceBorrowPosition(position?.isToken0, true, recieveCollateral, formattedReduceAmount)
+        .then((hash: any) => {
+          addTransaction(hash, {
+            type: TransactionType.REDUCE_BORROW_COLLATERAL,
+            reduceAmount: Number(reduceAmount),
+            inputCurrencyId: inputIsToken0 ? currencyId(token1) : currencyId(token0),
+            outputCurrencyId: !inputIsToken0 ? currencyId(token1) : currencyId(token0),
+            newExpectedCollateral: position.initialCollateral - Number(reduceAmount),
+            recieveCollateral,
+            expectedReturnedAmount: transactionInfo.returnedAmount,
+          })
+
+          setTxHash(hash)
+          setAttemptingTxn(false)
+        })
+        .catch((err: any) => {
+          setAttemptingTxn(false)
+          console.log('error closing position: ', err)
+        })
+    }
+  }, [
+    recieveCollateral,
+    position,
+    reduceAmount,
+    borrowManagerContract,
+    addTransaction,
+    inputIsToken0,
+    setAttemptingTxn,
+    setTxHash,
+    token0,
+    token1,
+    transactionInfo,
+    account,
+    provider,
+  ])
 
   const loading = useMemo(() => derivedState === DerivedInfoState.LOADING, [derivedState])
   // console.log("here: ", token0Amount, token1Amount
@@ -1697,40 +1771,59 @@ export function BorrowReduceDebtModalFooter({
   const token1 = useCurrency(position?.token1Address)
   const inputIsToken0 = position?.isToken0
 
+  const { account, provider } = useWeb3React()
+
+  const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
+  const [showDetails, setShowDetails] = useState(false)
+  const theme = useTheme()
+
+  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount)
+
+  const { transactionInfo, userError } = useDerivedBorrowReduceDebtInfo(
+    trader,
+    tokenId,
+    position,
+    debouncedReduceAmount,
+    recieveCollateral,
+    setDerivedState
+  )
+
   const handleReducePosition = useMemo(() => {
-    if (
-      borrowManagerContract &&
-      position &&
-      Number(reduceAmount) > 0 &&
-      Number(reduceAmount) <= Number(position.totalDebtInput) &&
-      token0 &&
-      token1
-    ) {
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
-      const inputReduceAmount =
-        Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)) < 1e12
-          ? position.totalPositionRaw
-          : formattedReduceAmount
-      return () => {
-        setAttemptingTxn(true)
-        borrowManagerContract
-          .reduceBorrowPosition(position?.isToken0, false, recieveCollateral, inputReduceAmount)
-          .then((hash: any) => {
-            addTransaction(hash, {
-              type: TransactionType.REDUCE_BORROW_DEBT,
-              inputCurrencyId: inputIsToken0 ? currencyId(token0) : currencyId(token1),
-              outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1),
-            })
-            setTxHash(hash)
-            setAttemptingTxn(false)
+    return () => {
+      if (!account) throw new Error('Wallet must be connected')
+      if (!provider) throw new Error('Provider must be connected')
+      if (!borrowManagerContract) throw new Error('BorrowManagerContract must be connected')
+      if (!transactionInfo) throw new Error('Transaction invalid')
+      if (!position || !token0 || !token1) return null
+
+      const formattedReduceAmount =
+        Math.abs(Number(position.totalDebtInput) - Number(reduceAmount)) < 1e-12
+          ? new BN(position.totalDebtInput).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0)
+          : new BN(reduceAmount).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0)
+
+      setAttemptingTxn(true)
+
+      return borrowManagerContract
+        .reduceBorrowPosition(position?.isToken0, false, recieveCollateral, formattedReduceAmount)
+        .then((hash: any) => {
+          addTransaction(hash, {
+            type: TransactionType.REDUCE_BORROW_DEBT,
+            inputCurrencyId: inputIsToken0 ? currencyId(token0) : currencyId(token1),
+            outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1),
+            reduceAmount: new BN(formattedReduceAmount).shiftedBy(-DEFAULT_ERC20_DECIMALS).toNumber(),
+            recieveCollateral,
+            newTotalPosition:
+              position.totalDebtInput - new BN(formattedReduceAmount).shiftedBy(-DEFAULT_ERC20_DECIMALS).toNumber(),
+            expectedReturnedAmount: transactionInfo.returnedAmount,
           })
-          .catch((err: any) => {
-            setAttemptingTxn(false)
-            console.log('error closing position: ', err)
-          })
-      }
+          setTxHash(hash)
+          setAttemptingTxn(false)
+        })
+        .catch((err: any) => {
+          setAttemptingTxn(false)
+          console.log('error closing position: ', err)
+        })
     }
-    return () => {}
   }, [
     recieveCollateral,
     borrowManagerContract,
@@ -1742,69 +1835,15 @@ export function BorrowReduceDebtModalFooter({
     reduceAmount,
     token0,
     token1,
+    account,
+    provider,
+    transactionInfo,
   ])
-
-  const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  const [showDetails, setShowDetails] = useState(false)
-  const theme = useTheme()
-
-  // const premium = useMemo(() => {
-  //   if (position && token1 && token0 && Number(reduceAmount) > 0) {
-  //     return (position.totalDebtInput - Number(reduceAmount)) * 0.002
-  //   }
-  //   return 0
-  // }, [position, reduceAmount, token0, token1])
-
-  // const [approvalState, approveManager] = useApproveCallback(
-  //   position?.isToken0 && token1 ?
-  //     CurrencyAmount.fromRawAmount(token1, new BN(premium).shiftedBy(18).toFixed(0)) : token0 ?
-  //       CurrencyAmount.fromRawAmount(token0, new BN(premium).shiftedBy(18).toFixed(0)) : undefined
-  //   , position?.borrowManagerAddress
-  // );
-
-  // what do we need for the simulation
-
-  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount)
-  // console.log("nonce: ", nonce, slippage)
-
-  const { transactionInfo, userError } = useDerivedBorrowReduceDebtInfo(
-    trader,
-    tokenId,
-    position,
-    debouncedReduceAmount,
-    recieveCollateral,
-    setDerivedState
-  )
 
   const loading = useMemo(() => derivedState === DerivedInfoState.LOADING, [derivedState])
 
-  // const handleApprove = useCallback(async () => {
-  //   try {
-  //     await approveManager()
-  //   } catch (err) {
-  //     console.log("approve err: ", err)
-  //   }
-  // }, [approveManager])
-
-  // const debt = position?.totalDebtInput;
-  // const initCollateral = position?.initialCollateral;
-  // const received = inputIsToken0 ? (Math.abs(Number(transactionInfo?.token0Amount)) - Number(debt))
-  //   : (Math.abs(Number(transactionInfo?.token1Amount)) - Number(debt))
-  // console.log('returned amount', returnedAmount)
-
   return (
     <AutoRow>
-      {/* <Card padding="0" marginTop="12px">
-        <ValueLabel 
-          value={premium}
-          label="Expected Premium Payment"
-          description="Premium paid on reducing the position"
-          symbolAppend={
-            position?.isToken0 ? token1?.symbol : token0?.symbol
-          }
-          syncing={false}
-        />
-      </Card> */}
       <DarkCard marginTop="5px" padding="5px">
         <AutoColumn gap="4px">
           <RowBetween>

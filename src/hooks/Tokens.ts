@@ -2,6 +2,7 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
+import { getFakeTokensMap } from 'constants/fake-tokens'
 import { DEFAULT_INACTIVE_LIST_URLS, DEFAULT_LIST_OF_LISTS } from 'constants/lists'
 import { useCurrencyFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
@@ -12,7 +13,6 @@ import { useAllLists, useCombinedActiveList, useCombinedTokenMapFromUrls } from 
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens, useUserAddedTokensOnChain } from '../state/user/hooks'
 import { TokenAddressMap, useUnsupportedTokenList } from './../state/lists/hooks'
-import { getFakeTokensMap } from 'constants/fake-tokens'
 
 // reduce token map into standard address <-> Token mapping, optionally include user added tokens
 function useTokensFromMap(tokenMap: TokenAddressMap): { [address: string]: Token } {
@@ -37,24 +37,22 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   const defaultListTokens = useCombinedActiveList()
   const tokensFromMap = useTokensFromMap(defaultListTokens)
   // const fakeTokens = FakeTokensMap
-  const {chainId} = useWeb3React()
+  const { chainId } = useWeb3React()
 
   const userAddedTokens = useUserAddedTokens()
   return useMemo(() => {
-    return (
-      getFakeTokensMap(chainId ?? 80001)
-      // userAddedTokens
-      //   // reduce into all ALL_TOKENS filtered by the current chain
-      //   .reduce<{ [address: string]: Token }>(
-      //     (tokenMap, token) => {
-      //       tokenMap[token.address] = token
-      //       return tokenMap
-      //     },
-      //     // must make a copy because reduce modifies the map, and we do not
-      //     // want to make a copy in every iteration
-      //     { ...tokensFromMap },
-      //   )
-    )
+    return getFakeTokensMap(chainId ?? 80001)
+    // userAddedTokens
+    //   // reduce into all ALL_TOKENS filtered by the current chain
+    //   .reduce<{ [address: string]: Token }>(
+    //     (tokenMap, token) => {
+    //       tokenMap[token.address] = token
+    //       return tokenMap
+    //     },
+    //     // must make a copy because reduce modifies the map, and we do not
+    //     // want to make a copy in every iteration
+    //     { ...tokensFromMap },
+    //   )
   }, [tokensFromMap, userAddedTokens])
 }
 
