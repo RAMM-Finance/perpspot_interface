@@ -19,7 +19,7 @@ import { useAllTokenBalances } from 'state/connection/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { UserAddedToken } from 'types/tokens'
 
-import { useCurrency, useDefaultActiveTokens, useIsUserAddedToken, useSearchInactiveTokenLists, useToken } from '../../hooks/Tokens'
+import { useDefaultActiveTokens, useIsUserAddedToken, useSearchInactiveTokenLists, useToken } from '../../hooks/Tokens'
 import { CloseIcon, ThemedText } from '../../theme'
 import { isAddress } from '../../utils'
 import Column from '../Column'
@@ -28,8 +28,6 @@ import CommonBases from './CommonBases'
 import { CurrencyRow, formatAnalyticsEventProperties } from './CurrencyList'
 import CurrencyList from './CurrencyList'
 import { PaddedColumn, SearchInput, Separator } from './styleds'
-import { FakeTokens_SEPOLIA,FakeTokens_MUMBAI } from 'constants/fake-tokens'
-import { SupportedChainId } from 'constants/chains'
 
 const ContentWrapper = styled(Column)`
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -88,7 +86,7 @@ export function CurrencySearch({
   }, [isAddressSearch])
 
   const defaultTokens = useDefaultActiveTokens()
-  
+
   // console.log('defaultTokens', defaultTokens)
   const filteredTokens: Token[] = useMemo(() => {
     return Object.values(defaultTokens).filter(getTokenFilter(debouncedQuery))
@@ -146,7 +144,6 @@ export function CurrencySearch({
 
     const tokens = filteredSortedTokens.filter((t) => !(t.equals(wrapped) || (disableNonToken && t.isNative)))
 
-
     const shouldShowWrapped =
       !onlyShowCurrenciesWithBalance || (!balancesAreLoading && balances[wrapped.address]?.greaterThan(0))
     const natives = (
@@ -162,7 +159,7 @@ export function CurrencySearch({
     balances,
     wrapped,
     disableNonToken,
-    native
+    native,
   ])
 
   const handleCurrencySelect = useCallback(

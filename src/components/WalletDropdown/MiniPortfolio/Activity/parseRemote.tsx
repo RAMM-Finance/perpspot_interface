@@ -13,12 +13,12 @@ import {
   TokenTransferPartsFragment,
 } from 'graphql/data/__generated__/types-and-hooks'
 import { fromGraphQLChain } from 'graphql/data/util'
+import moment from 'moment'
 import ms from 'ms.macro'
 import { useEffect, useState } from 'react'
 import { isAddress } from 'utils'
 
 import { Activity } from './types'
-
 type TransactionChanges = {
   NftTransfer: NftTransferPartsFragment[]
   TokenTransfer: TokenTransferPartsFragment[]
@@ -306,4 +306,9 @@ export function useTimeSince(timestamp: number) {
   }, [timestamp])
 
   return timeSince
+}
+
+export function useTimeStamp(timestamp: number) {
+  const formattedTimestamp = moment(timestamp * 1000).format('D MMM YYYY, h:mm A')
+  return formattedTimestamp
 }

@@ -177,6 +177,7 @@ export const darkTheme = {
   accentWarning: colors.gold200,
   accentFailure: colors.red300,
   accentCritical: colors.red300,
+  popup: '#2f343f',
   gold: '#c9b832',
   accentActionSoft: opacify(24, colors.blue400),
   accentActiveSoft: opacify(24, colors.blue400),
@@ -225,7 +226,7 @@ export const lightTheme = {
   accentWarning: colors.gold200,
   accentFailure: colors.red300,
   accentCritical: colors.red300,
-
+  popup: '#414755',
   accentActionSoft: opacify(24, colors.blue400),
   accentActiveSoft: opacify(24, colors.blue400),
   accentSuccessSoft: opacify(24, colors.green400),

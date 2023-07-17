@@ -10,13 +10,17 @@ import { useCombinedActiveList } from 'state/lists/hooks'
 import { useTransaction } from 'state/transactions/hooks'
 import { TransactionDetails, TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
-import { EllipsisStyle, ThemedText } from 'theme'
+import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
 
 export const Descriptor = styled(ThemedText.BodySmall)`
-  ${EllipsisStyle}
+  display: flex;
+  flex-flow: row nowrap;
+  white-space: wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
 
 const Wrapper = styled.div``
@@ -49,10 +53,14 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
       }
       title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
       descriptor={
-        <Descriptor color="textSecondary">
-          {activity.descriptor}
-          {ENSName ?? activity.otherAccount}
-        </Descriptor>
+        typeof activity.descriptor === 'string' ? (
+          <Descriptor color="textSecondary">
+            {activity.descriptor}
+            {ENSName ?? activity.otherAccount}
+          </Descriptor>
+        ) : (
+          activity.descriptor
+        )
       }
       onClick={() => window.open(explorerUrl, '_blank')}
     />
@@ -71,11 +79,10 @@ const StyledClose = styled(X)`
 const Popup = styled.div`
   display: inline-block;
   width: 100%;
-  padding: 1em;
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.popup};
   position: relative;
   border-radius: 16px;
-  padding: 20px;
+  padding: 4px;
   padding-right: 35px;
   overflow: hidden;
 
@@ -87,7 +94,7 @@ const Popup = styled.div`
   `}
 `
 
-export default function TransactionPopup({ hash, removeThisPopup }: { hash: string, removeThisPopup: () => void }) {
+export default function TransactionPopup({ hash, removeThisPopup }: { hash: string; removeThisPopup: () => void }) {
   const { chainId } = useWeb3React()
 
   const tx = useTransaction(hash)
@@ -95,11 +102,9 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
 
   if (!chainId || !tx) return null
 
-
-
-  switch(tx.info.type) {
+  switch (tx.info.type) {
     case TransactionType.REDUCE_LEVERAGE:
-      return <ReduceLeverageTransactionPopupContent tx={tx} chainId={chainId} removeThisPopup={removeThisPopup}/>
+      return <ReduceLeverageTransactionPopupContent tx={tx} chainId={chainId} removeThisPopup={removeThisPopup} />
     default:
       return (
         <Popup>
@@ -107,7 +112,5 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
           <TransactionPopupContent tx={tx} chainId={chainId} />
         </Popup>
       )
-      
   }
-  
 }

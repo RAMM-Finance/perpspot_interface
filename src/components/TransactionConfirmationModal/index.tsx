@@ -1,18 +1,28 @@
 import { Trans } from '@lingui/macro'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import backgroundImage from 'assets/images/visualbg.png'
 import Badge from 'components/Badge'
+import { PopupAlertTriangle } from 'components/Popups/FailedNetworkSwitchPopup'
+import { Descriptor } from 'components/Popups/TransactionPopup'
+import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Activity/parseLocal'
+import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId, SupportedL2ChainId } from 'constants/chains'
+import { useCurrency } from 'hooks/Tokens'
 import useCurrencyLogoURIs from 'lib/hooks/useCurrencyLogoURIs'
 import { ReactNode, useCallback, useState } from 'react'
 import { AlertCircle, AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
 import { Text } from 'rebass'
+import { useCombinedActiveList } from 'state/lists/hooks'
 import { useIsTransactionConfirmed, useTransaction } from 'state/transactions/hooks'
+import { ReduceLeveragePositionTransactionInfo, TransactionDetails } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { isL2ChainId } from 'utils/chains'
 
 import Circle from '../../assets/images/blue-loader.svg'
+import { ReactComponent as LogoGradient } from '../../assets/svg/full_logo_gradient.svg'
 import { ExternalLink, ThemedText } from '../../theme'
 import { CloseIcon, CustomLightSpinner } from '../../theme'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
@@ -20,19 +30,8 @@ import { TransactionSummary } from '../AccountDetails/TransactionSummary'
 import { ButtonLight, ButtonPrimary } from '../Button'
 import { AutoColumn, ColumnCenter } from '../Column'
 import Modal from '../Modal'
-import Row, { AutoRow, RowBetween, RowFixed } from '../Row'
+import { RowBetween, RowFixed } from '../Row'
 import AnimatedConfirmation from './AnimatedConfirmation'
-import { SmallButtonPrimary } from 'components/Button'
-import { ReactComponent as LogoGradient } from '../../assets/svg/full_logo_gradient.svg'
-import { NumberType, formatNumber } from '@uniswap/conedison/format'
-import { useCurrency } from 'hooks/Tokens'
-import { ReduceLeveragePositionTransactionInfo, TransactionDetails, TransactionInfo, TransactionType } from 'state/transactions/types'
-import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
-import { PopupAlertTriangle } from 'components/Popups/FailedNetworkSwitchPopup'
-import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Activity/parseLocal'
-import { useCombinedActiveList } from 'state/lists/hooks'
-import { Descriptor } from 'components/Popups/TransactionPopup'
-import backgroundImage from 'assets/images/visualbg.png'
 
 const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundFloating};
@@ -155,15 +154,15 @@ export function TransactionSubmittedContent({
             <ButtonLight mt="12px" padding="6px 12px" width="fit-content" onClick={addToken}>
               {!success ? (
                 <RowFixed>
-                <Text color={theme.accentTextLightPrimary}>
-                  <Trans>Add {currencyToAdd.symbol}</Trans>
-                </Text>
+                  <Text color={theme.accentTextLightPrimary}>
+                    <Trans>Add {currencyToAdd.symbol}</Trans>
+                  </Text>
                 </RowFixed>
               ) : (
                 <RowFixed>
-                <Text color={theme.accentTextLightPrimary}>
-                  <Trans>Added {currencyToAdd.symbol}</Trans>
-                </Text>                
+                  <Text color={theme.accentTextLightPrimary}>
+                    <Trans>Added {currencyToAdd.symbol}</Trans>
+                  </Text>
                   <CheckCircle size="16px" stroke={theme.accentSuccess} style={{ marginLeft: '6px' }} />
                 </RowFixed>
               )}
@@ -187,7 +186,6 @@ export function TransactionSubmittedContent({
   )
 }
 
-
 const ReduceWrapper = styled.div`
   display: flex;
   flex-flow: column nowrap;
@@ -202,28 +200,27 @@ const ReduceWrapper = styled.div`
   padding: 1.25rem;
 `
 
-
 export interface TransactionPositionDetails {
-  pnl: number,
-  initialCollateral: number,
-  inputCurrencyId: string,
-  outputCurrencyId: string,
-  entryPrice: number,
-  markPrice: number,
-  leverageFactor: number,
+  pnl: number
+  initialCollateral: number
+  inputCurrencyId: string
+  outputCurrencyId: string
+  entryPrice: number
+  markPrice: number
+  leverageFactor: number
   quoteBaseSymbol: string
 }
 
-const AmboyText = styled.div<{ color: string, size: number}>`
+const AmboyText = styled.div<{ color: string; size: number }>`
   font-family: 'Parkinson Amboy Black', Roboto;
-  font-size: ${({size}) => size}px;
-  color: ${({color}) => color};
+  font-size: ${({ size }) => size}px;
+  color: ${({ color }) => color};
 `
 
-const AgencyB = styled.div<{color: string, size: number}>`
+const AgencyB = styled.div<{ color: string; size: number }>`
   font-family: 'AGENCYB', Roboto;
-  font-size: ${({size}) => size}px;
-  color: ${({color}) => color};
+  font-size: ${({ size }) => size}px;
+  color: ${({ color }) => color};
 `
 const CenterRow = styled.div`
   display: flex;
@@ -237,10 +234,18 @@ const CloseItem = styled.div`
   justify-self: flex-end;
 `
 
-export function  ReduceLeverageTransactionPopupContent({ tx, chainId, removeThisPopup }: {tx: TransactionDetails, chainId: number, removeThisPopup: () => void}) {
-  const theme = useTheme()
+export function ReduceLeverageTransactionPopupContent({
+  tx,
+  chainId,
+  removeThisPopup,
+}: {
+  tx: TransactionDetails
+  chainId: number
+  removeThisPopup: () => void
+}) {
+  // const theme = useTheme()
 
-  const { connector } = useWeb3React()
+  // const { connector } = useWeb3React()
   const tokens = useCombinedActiveList()
   const activity = parseLocalActivity(tx, chainId, tokens)
 
@@ -252,12 +257,10 @@ export function  ReduceLeverageTransactionPopupContent({ tx, chainId, removeThis
     entryPrice,
     markPrice,
     leverageFactor,
-    quoteBaseSymbol
+    quoteBaseSymbol,
   } = tx.info as ReduceLeveragePositionTransactionInfo
 
   const success = tx.receipt?.status === 1
-
-
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -268,56 +271,61 @@ export function  ReduceLeverageTransactionPopupContent({ tx, chainId, removeThis
 
   const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
 
-  return (
-    success ? (
-      <ReduceWrapper>
-        <CenterRow>
-          <AmboyText size={36} color={"#ffffff"}>
-            Closed Position
-          </AmboyText>
-          <CloseItem>
-            <CloseIcon onClick={removeThisPopup}/>
-          </CloseItem>
-        </CenterRow>
-        <AgencyB size={24} color={"#ffffff"}>
-          {`${formatNumber(leverageFactor, NumberType.SwapTradeAmount)}x | Long ${inputCurrency?.symbol}/${outputCurrency?.symbol}`}
-        </AgencyB>
-        <AmboyText size={48} color={pnl > 0 ? "#00ff0c" : "#ff2a00"}>
-          {`${formatNumber(pnl/initialCollateral * 100)}%`}
+  return success ? (
+    <ReduceWrapper>
+      <CenterRow>
+        <AmboyText size={36} color="#ffffff">
+          Closed Position
         </AmboyText>
-        <AgencyB size={24} color={"#ffffff"}>
-        ({pnl > 0 ? `+ ${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}` : `${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`})
-        </AgencyB>
-        <CenterRow>
-        <div style={{ "margin": "3px"}}><AgencyB size={24} color={"#ffffff"}>{`Entry Price: `}</AgencyB></div>
-          
-          <AgencyB size={24} color={'#f600ff'}>{` ${formatNumber(entryPrice)} ${quoteBaseSymbol}`}</AgencyB>
-        </CenterRow>
-        <CenterRow>
-          <div style={{ "margin": "3px"}}>
-          <AgencyB size={24} color={"#ffffff"}>{`Mark Price: `}</AgencyB>
-          </div>
-          <AgencyB size={24} color={'#f600ff'}>{` ${formatNumber(markPrice)} ${quoteBaseSymbol}`}</AgencyB>
-        </CenterRow>
-        <LogoGradient width={150} height={50}/>
+        <CloseItem>
+          <CloseIcon onClick={removeThisPopup} />
+        </CloseItem>
+      </CenterRow>
+      <AgencyB size={24} color="#ffffff">
+        {`${formatNumber(leverageFactor, NumberType.SwapTradeAmount)}x | Long ${outputCurrency?.symbol} / ${
+          inputCurrency?.symbol
+        }`}
+      </AgencyB>
+      <AmboyText size={48} color={pnl > 0 ? '#00ff0c' : '#ff2a00'}>
+        {`${formatNumber((pnl / initialCollateral) * 100)}%`}
+      </AmboyText>
+      <AgencyB size={24} color="#ffffff">
+        (
+        {pnl > 0
+          ? `+ ${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`
+          : `${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`}
+        )
+      </AgencyB>
+      <CenterRow>
+        <div style={{ margin: '3px' }}>
+          <AgencyB size={24} color="#ffffff">{`Entry Price: `}</AgencyB>
+        </div>
+
+        <AgencyB size={24} color="#f600ff">{` ${formatNumber(entryPrice)} ${quoteBaseSymbol}`}</AgencyB>
+      </CenterRow>
+      <CenterRow>
+        <div style={{ margin: '3px' }}>
+          <AgencyB size={24} color="#ffffff">{`Mark Price: `}</AgencyB>
+        </div>
+        <AgencyB size={24} color="#f600ff">{` ${formatNumber(markPrice)} ${quoteBaseSymbol}`}</AgencyB>
+      </CenterRow>
+      <LogoGradient width={150} height={50} />
     </ReduceWrapper>
-    ) : (
-      <PortfolioRow
-        left={
-          <PopupAlertTriangle/>
-        }
-        title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
-        descriptor={
-          <Descriptor color="textSecondary">
-            {activity.descriptor}
-          </Descriptor>
-        }
-        onClick={() => window.open(explorerUrl, '_blank')}
-      />
-  ))
+  ) : (
+    <PortfolioRow
+      left={<PopupAlertTriangle />}
+      title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
+      descriptor={
+        typeof activity.descriptor === 'string' ? (
+          <Descriptor color="textSecondary">{activity.descriptor}</Descriptor>
+        ) : (
+          activity.descriptor
+        )
+      }
+      onClick={() => window.open(explorerUrl, '_blank')}
+    />
+  )
 }
-
-
 
 export function ConfirmationModalContent({
   title,
@@ -480,7 +488,7 @@ interface ConfirmationModalProps {
   pendingText: ReactNode
   positionData?: TransactionPositionDetails | undefined
   currencyToAdd?: Currency | undefined
-  setIsLoadingQuote?: (arg:boolean) => void
+  setIsLoadingQuote?: (arg: boolean) => void
   isLoadingQuote?: boolean
 }
 
@@ -526,7 +534,7 @@ export function ReduceLeverageTransactionConfirmationModal({
   pendingText,
   content,
   currencyToAdd,
-  positionData
+  positionData,
 }: ConfirmationModalProps) {
   const { chainId } = useWeb3React()
 
@@ -540,7 +548,7 @@ export function ReduceLeverageTransactionConfirmationModal({
       ) : attemptingTxn ? (
         <ConfirmationPendingContent onDismiss={onDismiss} pendingText={pendingText} />
       ) : hash ? (
-        <TransactionSubmittedContent 
+        <TransactionSubmittedContent
           chainId={chainId}
           hash={hash}
           onDismiss={onDismiss}

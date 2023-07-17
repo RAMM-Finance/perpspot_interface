@@ -1,8 +1,9 @@
 import { Trans } from '@lingui/macro'
 import { InterfaceElementName } from '@uniswap/analytics-events'
-import { formatNumber,NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { useWeb3React } from '@web3-react/core'
 // import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from "bignumber.js"
+import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -18,9 +19,9 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 // import { Info } from 'react-feather'
 // import Loader from 'components/Icons/LoadingSpinner'
 import { usePool } from 'hooks/usePools'
-import { useLimitlessPositionFromTokenId } from 'hooks/useV3Positions'
+import { convertBNToNum, useLimitlessPositionFromTokenId } from 'hooks/useV3Positions'
 // import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
-import moment from "moment"
+import moment from 'moment'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { useEffect, useMemo, useState } from 'react'
 import { Text } from 'rebass'
@@ -33,11 +34,24 @@ import { currencyId } from 'utils/currencyId'
 
 import { ButtonError } from '../Button'
 import { AutoRow, RowBetween, RowFixed } from '../Row'
-import {DerivedInfoState, RotatingArrow, SliderText, Spinner, StyledCard, StyledHeaderRow, StyledInfoIcon, StyledPolling, StyledPollingDot, TextWithLoadingPlaceholder, TransactionDetails, TruncatedText,Wrapper } from './common'
+import {
+  DerivedInfoState,
+  RotatingArrow,
+  SliderText,
+  Spinner,
+  StyledCard,
+  StyledHeaderRow,
+  StyledInfoIcon,
+  StyledPolling,
+  StyledPollingDot,
+  TextWithLoadingPlaceholder,
+  TransactionDetails,
+  TruncatedText,
+  Wrapper,
+} from './common'
 // import { useSingleCallResult } from 'lib/hooks/multicall'
 // import { QuoterV2 } from 'types/v3'
 // import { MouseoverValueLabel } from 'components/swap/AdvancedSwapDetails'
-
 
 function useDerivedLeverageReduceInfo(
   leverageManager: string | undefined,
@@ -47,21 +61,24 @@ function useDerivedLeverageReduceInfo(
   position: LimitlessPositionDetails | undefined,
   reduceAmount: string | undefined,
   //newTotalPosition: string | undefined,
-  setState: (state: DerivedInfoState) => void,
+  setState: (state: DerivedInfoState) => void
   // approvalState: ApprovalState,
   // setPremium: (premium: number) => void
 ): {
-  transactionInfo: {
-    token0Amount: string
-    token1Amount: string
-    pnl: string
-    returnedAmount: string
-    unusedPremium: string
-    premium: string,
-    currentPrice: number,
-    entryPrice: number,
-    quoteBaseSymbol: string
-  } | undefined,
+  transactionInfo:
+    | {
+        token0Amount: number
+        token1Amount: number
+        pnl: number
+        returnedAmount: number
+        unusedPremium: number
+        premium: number
+        currentPrice: number
+        entryPrice: number
+        quoteBaseSymbol: string
+        newTotalPosition: number
+      }
+    | undefined
   userError: React.ReactNode | undefined
 } {
   const leverageManagerContract = useLeverageManagerContract(leverageManager)
@@ -74,43 +91,57 @@ function useDerivedLeverageReduceInfo(
   const currency0 = useCurrency(position?.token0Address)
   const currency1 = useCurrency(position?.token1Address)
 
-  
-
   // const relevantTokenBalances = useCurrencyBalances(
   //   account ?? undefined,
   //   useMemo(() => [currency0 ?? undefined, currency1 ?? undefined], [currency0, currency1])
   // )
   const userError = useMemo(() => {
-    let error;
+    let error
     if (!reduceAmount || Number(reduceAmount) <= 0) {
-      error = (<Trans>
-        Invalid Amount
-      </Trans>)
+      error = <Trans>Invalid Amount</Trans>
     }
     return error
   }, [reduceAmount])
-  
+
   useEffect(() => {
     const laggedfxn = async () => {
-      if (!leverageManagerContract || !tokenId || !trader || parseFloat(allowedSlippage) <= 0 && !position || !position?.totalPosition || Number(reduceAmount) <= 0 || !reduceAmount) {
+      if (
+        !leverageManagerContract ||
+        !tokenId ||
+        !trader ||
+        (parseFloat(allowedSlippage) <= 0 && !position) ||
+        !position ||
+        Number(reduceAmount) <= 0 ||
+        !reduceAmount
+      ) {
         setState(DerivedInfoState.INVALID)
         return
       }
+
       const formattedSlippage = new BN(allowedSlippage).plus(100).shiftedBy(16).toFixed(0)
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0);
-      const inputReduceAmount =
-        Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)) < 1e12
-          // Number(position.totalPositionRaw) <= Number(formattedReduceAmount)
-          ? position.totalPositionRaw : formattedReduceAmount
+
+      const formattedReduceAmount =
+        Math.abs(Number(reduceAmount) - position.totalPosition) < 1e-12
+          ? new BN(position.totalPosition).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0)
+          : new BN(reduceAmount).shiftedBy(18).toFixed(0)
+
+      // const inputReduceAmount =
+      //   Math.abs(Number(position.totalPosition) - Number(formattedReduceAmount)) < 1e12
+      //     ? // Number(position.totalPositionRaw) <= Number(formattedReduceAmount)
+      //       position.totalPositionRaw
+      //     : formattedReduceAmount
 
       setState(DerivedInfoState.LOADING)
 
       try {
-        console.log('reducePositionArgs', Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)), position, position.isToken0, position.totalPosition, position.totalPositionRaw, formattedSlippage, inputReduceAmount)
-        const reducePositionResult = await leverageManagerContract.callStatic.reducePosition(position?.isToken0, formattedSlippage, inputReduceAmount)
-        console.log('reducePosition', reducePositionResult, tokenId, formattedSlippage);
+        // console.log('reducePositionArgs', Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)), position, position.isToken0, position.totalPosition, position.totalPositionRaw, formattedSlippage, inputReduceAmount)
+        const reducePositionResult = await leverageManagerContract.callStatic.reducePosition(
+          position?.isToken0,
+          formattedSlippage,
+          formattedReduceAmount
+        )
         setContractResult({
-          reducePositionResult
+          reducePositionResult,
         })
         setState(DerivedInfoState.VALID)
       } catch (error) {
@@ -121,10 +152,20 @@ function useDerivedLeverageReduceInfo(
     }
 
     !userError && laggedfxn()
-  }, [userError, leverageManager, trader, tokenId, allowedSlippage, reduceAmount, leverageManagerContract, position, setState])
+  }, [
+    userError,
+    leverageManager,
+    trader,
+    tokenId,
+    allowedSlippage,
+    reduceAmount,
+    leverageManagerContract,
+    position,
+    setState,
+  ])
 
   const [poolState, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolFee)
-  
+
   const [entryPrice, currentPrice, quoteBaseSymbol] = useMemo(() => {
     if (
       pool?.token0Price &&
@@ -134,44 +175,51 @@ function useDerivedLeverageReduceInfo(
       currency0 &&
       currency1
     ) {
-      const curPrice = position.isToken0 ? new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
-      : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
-     
+      // const curPrice = position.isToken0
+      //   ? new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
+      //   : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
+
       // entryPrice if isToken0, output is in token0. so entry price would be in input token / output token
-      const _entryPrice = new BN(position.initialCollateral).plus(position.totalDebtInput).dividedBy(position.totalPosition)
+      const _entryPrice = new BN(position.initialCollateral)
+        .plus(position.totalDebtInput)
+        .dividedBy(position.totalPosition)
 
       // use token0 as quote, token1 as base
       // pnl will be in output token
       // entry price will be in quote token.
 
       if (pool.token0Price.greaterThan(1)) {
-        // entry price = token1 / token0
+        // entry price = token1 / token0 (token0 is quote and token1 is base)
         return [
-          position.isToken0 ? _entryPrice.toNumber() : new BN(1).dividedBy(_entryPrice).toNumber(), 
-          position.isToken0 ? new BN(1).dividedBy(curPrice).toNumber(): curPrice.toNumber(),
-          `${currency0.symbol}/${currency1.symbol}`
+          position.isToken0 ? _entryPrice.toNumber() : new BN(1).dividedBy(_entryPrice).toNumber(),
+          new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS)).toNumber(),
+          `${currency0.symbol}/${currency1.symbol}`,
         ]
       } else {
-        // entry price = token0 / token1
+        // entry price = token0 / token1 (token1 is quote and token0 is base)
         return [
-          position.isToken0 ? new BN(1).dividedBy(_entryPrice).toNumber() : _entryPrice.toNumber(), 
-          new BN(1).dividedBy(curPrice).toNumber(),
-          `${currency1.symbol}/${currency0.symbol}`
+          position.isToken0 ? new BN(1).dividedBy(_entryPrice).toNumber() : _entryPrice.toNumber(),
+          new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS)).toNumber(),
+          `${currency1.symbol}/${currency0.symbol}`,
         ]
       }
     }
     return [undefined, undefined, undefined]
   }, [position, pool?.token0Price, pool?.token1Price, currency0, currency1])
-  
+
   const transactionInfo = useMemo(() => {
-    if (contractResult && entryPrice && currentPrice && quoteBaseSymbol) {
+    if (contractResult && entryPrice && currentPrice && quoteBaseSymbol && position && reduceAmount) {
       const { reducePositionResult } = contractResult
-      const token0Amount = new BN(reducePositionResult[0].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const token1Amount = new BN(reducePositionResult[1].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const pnl = new BN(reducePositionResult[2].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const returnedAmount = new BN(reducePositionResult[3].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const unusedPremium = new BN(reducePositionResult[4].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
-      const premium = new BN(reducePositionResult[5].toString()).shiftedBy(-DEFAULT_ERC20_DECIMALS).toFixed(DEFAULT_ERC20_DECIMALS)
+      const token0Amount = convertBNToNum(reducePositionResult[0], DEFAULT_ERC20_DECIMALS)
+      const token1Amount = convertBNToNum(reducePositionResult[1], DEFAULT_ERC20_DECIMALS)
+      const pnl = convertBNToNum(reducePositionResult[2], DEFAULT_ERC20_DECIMALS)
+      const returnedAmount = convertBNToNum(reducePositionResult[3], DEFAULT_ERC20_DECIMALS)
+      const unusedPremium = convertBNToNum(reducePositionResult[4], DEFAULT_ERC20_DECIMALS)
+      const premium = convertBNToNum(reducePositionResult[5], DEFAULT_ERC20_DECIMALS)
+      const formattedReduceAmount =
+        Math.abs(Number(reduceAmount) - position.totalPosition) < 1e-12
+          ? position.totalPosition
+          : new BN(reduceAmount).shiftedBy(18).toFixed(0)
 
       return {
         token0Amount,
@@ -182,22 +230,17 @@ function useDerivedLeverageReduceInfo(
         premium,
         entryPrice,
         currentPrice,
-        quoteBaseSymbol
+        quoteBaseSymbol,
+        newTotalPosition: position.totalPosition - Number(formattedReduceAmount),
       }
     } else {
       return undefined
     }
-  }, [
-    contractResult,
-    currentPrice, entryPrice,
-    quoteBaseSymbol
-  ])
-
-
+  }, [contractResult, currentPrice, entryPrice, quoteBaseSymbol])
 
   return {
     transactionInfo,
-    userError
+    userError,
   }
 }
 
@@ -207,11 +250,11 @@ export function ReduceLeverageModalFooter({
   trader,
   setAttemptingTxn,
   setTxHash,
-  // setPositionData
-}: {
+}: // setPositionData
+{
   leverageManagerAddress: string | undefined
   tokenId: string | undefined
-  trader: string | undefined,
+  trader: string | undefined
   setAttemptingTxn: (attemptingTxn: boolean) => void
   setTxHash: (txHash: string) => void
   // setPositionData: (positionData: TransactionPositionDetails) => void
@@ -219,16 +262,16 @@ export function ReduceLeverageModalFooter({
   // const [nonce, setNonce] = useState(0)
   const { error, position } = useLimitlessPositionFromTokenId(tokenId)
 
-  const [slippage, setSlippage] = useState("1")
+  const [slippage, setSlippage] = useState('1')
   // const [newPosition, setNewPosition] = useState("")
-  const [reduceAmount, setReduceAmount] = useState("")
+  const [reduceAmount, setReduceAmount] = useState('')
   // const [premium, setPremium ] = useState(0)
 
   const leverageManagerContract = useLeverageManagerContract(leverageManagerAddress, true)
   const addTransaction = useTransactionAdder()
   const token0 = useToken(position?.token0Address)
   const token1 = useToken(position?.token1Address)
-  
+
   const inputIsToken0 = !position?.isToken0
 
   const [derivedState, setDerivedState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
@@ -238,63 +281,75 @@ export function ReduceLeverageModalFooter({
   // const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolFee)
 
   const [debouncedSlippage, setDebouncedSlippage] = useDebouncedChangeHandler(slippage, setSlippage)
-  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount);
+  const [debouncedReduceAmount, setDebouncedReduceAmount] = useDebouncedChangeHandler(reduceAmount, setReduceAmount)
 
-  const {
-    transactionInfo,
-    userError
-  } = useDerivedLeverageReduceInfo(leverageManagerAddress, trader, tokenId, debouncedSlippage, position, debouncedReduceAmount, setDerivedState)
-  
+  const { transactionInfo, userError } = useDerivedLeverageReduceInfo(
+    leverageManagerAddress,
+    trader,
+    tokenId,
+    debouncedSlippage,
+    position,
+    debouncedReduceAmount,
+    setDerivedState
+  )
+
   useEffect(() => {
-    (!!userError || !transactionInfo) && showDetails && setShowDetails(false)
+    ;(!!userError || !transactionInfo) && showDetails && setShowDetails(false)
   }, [userError, transactionInfo, showDetails])
   const loading = useMemo(() => derivedState === DerivedInfoState.LOADING, [derivedState])
 
-  // console.log('reduceLeverage', showDetails, transactionInfo, userError)
+  const { account, provider } = useWeb3React()
 
   const handleReducePosition = useMemo(() => {
-    if (
-      leverageManagerContract && position && Number(reduceAmount) > 0 && Number(reduceAmount) <= Number(position.totalPosition) &&
-      token0 && token1 && transactionInfo
-      ) {
+    return () => {
+      if (!account) throw Error('missing account')
+      if (!provider) throw Error('missing provider')
+      if (!leverageManagerContract) throw Error('missing contract')
+      if (!transactionInfo) throw Error('missing transaction info')
+      if (!token0 || !token1) throw Error('missing tokens')
+      if (!position) throw Error('missing position')
       const formattedSlippage = new BN(slippage).plus(100).shiftedBy(16).toFixed(0)
-      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0);
-      const inputReduceAmount =
-        Math.abs(Number(position.totalPositionRaw) - Number(formattedReduceAmount)) < 1e12
-          // Number(position.totalPositionRaw) <= Number(formattedReduceAmount)
-          ? position.totalPositionRaw : formattedReduceAmount
-      return () => {
-        setAttemptingTxn(true)
-        leverageManagerContract.reducePosition(
-          position?.isToken0,
-          formattedSlippage,
-          inputReduceAmount
-        ).then((response: any) => {
-          // console.log('reduceResponse', response.hash, response)
+      const formattedReduceAmount =
+        Math.abs(position.totalPosition - Number(reduceAmount)) < 1e-12
+          ? new BN(position.totalPosition).shiftedBy(18).toFixed(0)
+          : new BN(reduceAmount).shiftedBy(18).toFixed(0)
+
+      setAttemptingTxn(true)
+
+      return leverageManagerContract
+        .reducePosition(position?.isToken0, formattedSlippage, formattedReduceAmount)
+        .then((response: any) => {
+          // amount0, amount1
+          console.log('reduceResponse', response)
           addTransaction(response, {
             type: TransactionType.REDUCE_LEVERAGE,
-            reduceAmount: inputReduceAmount ?? "",
+            reduceAmount: new BN(formattedReduceAmount).shiftedBy(-DEFAULT_ERC20_DECIMALS).toNumber(),
             pnl: Number(transactionInfo.pnl),
-            initialCollateral: Number(position.initialCollateral),
-            leverageFactor: (Number(position.totalDebtInput) + Number(position.initialCollateral)) / Number(position.initialCollateral),
-            inputCurrencyId:  inputIsToken0 ? currencyId(token0) : currencyId(token1),
+            initialCollateral: position.initialCollateral,
+            leverageFactor:
+              (Number(position.totalDebtInput) + Number(position.initialCollateral)) /
+              Number(position.initialCollateral),
+            inputCurrencyId: inputIsToken0 ? currencyId(token0) : currencyId(token1),
             outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1),
             entryPrice: transactionInfo.entryPrice,
             markPrice: transactionInfo.currentPrice,
             quoteBaseSymbol: transactionInfo.quoteBaseSymbol,
-            timestamp: moment().format('YYYY-MM-DD')
+            timestamp: moment().format('YYYY-MM-DD'),
+            newTotalPosition:
+              position.totalPosition - Number(reduceAmount) < 1e-12 ? 0 : position.totalPosition - Number(reduceAmount),
           })
           setTxHash(response.hash)
           setAttemptingTxn(false)
-        }).catch((err: any) => {
-          setAttemptingTxn(false)
-          console.log("error closing position: ", err)
         })
-      }
+        .catch((err: any) => {
+          setAttemptingTxn(false)
+          console.log('error closing position: ', err)
+        })
     }
-    return () => { }
   }, [
-    slippage,  position, reduceAmount,
+    slippage,
+    position,
+    reduceAmount,
     token0,
     token1,
     inputIsToken0,
@@ -302,12 +357,14 @@ export function ReduceLeverageModalFooter({
     leverageManagerContract,
     addTransaction,
     setTxHash,
-    setAttemptingTxn
+    setAttemptingTxn,
+    account,
+    provider,
   ])
 
   const disabled = !!userError || !transactionInfo
   // const debt = position?.totalDebtInput;
-  const initCollateral = position?.initialCollateral;
+  const initCollateral = position?.initialCollateral
 
   return (
     <AutoRow>
@@ -324,16 +381,16 @@ export function ReduceLeverageModalFooter({
                 <Trans>{debouncedSlippage}%</Trans>
               </SliderText>
               <AutoRow gap="4px" justify="flex-end">
-                <SmallMaxButton onClick={() => setSlippage("0.5")} width="20%">
+                <SmallMaxButton onClick={() => setSlippage('0.5')} width="20%">
                   <Trans>0.5</Trans>
                 </SmallMaxButton>
-                <SmallMaxButton onClick={() => setSlippage("1")} width="20%">
+                <SmallMaxButton onClick={() => setSlippage('1')} width="20%">
                   <Trans>1</Trans>
                 </SmallMaxButton>
-                <SmallMaxButton onClick={() => setSlippage("3")} width="20%">
+                <SmallMaxButton onClick={() => setSlippage('3')} width="20%">
                   <Trans>3</Trans>
                 </SmallMaxButton>
-                <SmallMaxButton onClick={() => setSlippage("5")} width="20%">
+                <SmallMaxButton onClick={() => setSlippage('5')} width="20%">
                   <Trans>Max</Trans>
                 </SmallMaxButton>
               </AutoRow>
@@ -355,7 +412,18 @@ export function ReduceLeverageModalFooter({
           <>
             <RowBetween>
               <ThemedText.DeprecatedMain fontWeight={400}>
-                <Trans>Reduce Amount ({`${position?.totalPosition ? new BN((Number(reduceAmount) / Number(position?.totalPosition) * 100)).toString() : "-"}% Reduction`})</Trans>
+                <Trans>
+                  Reduce Amount (
+                  {`${
+                    position?.totalPosition
+                      ? formatNumber(
+                          (Number(reduceAmount) / Number(position?.totalDebtInput)) * 100,
+                          NumberType.SwapTradeAmount
+                        )
+                      : '-'
+                  }% Reduction`}
+                  )
+                </Trans>
               </ThemedText.DeprecatedMain>
             </RowBetween>
             <AutoColumn>
@@ -364,8 +432,8 @@ export function ReduceLeverageModalFooter({
                 id="reduce-position-input"
                 onUserInput={(str: string) => {
                   if (position?.totalPosition) {
-                    if (str === "") {
-                      setDebouncedReduceAmount("")
+                    if (str === '') {
+                      setDebouncedReduceAmount('')
                     } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
                       return
                     } else {
@@ -375,7 +443,7 @@ export function ReduceLeverageModalFooter({
                 }}
                 showMaxButton={true}
                 onMax={() => {
-                  setDebouncedReduceAmount(position?.totalPosition ? String(position?.totalPosition) : "")
+                  setDebouncedReduceAmount(position?.totalPosition ? String(position?.totalPosition) : '')
                 }}
                 hideBalance={true}
                 currency={inputIsToken0 ? token1 : token0}
@@ -387,9 +455,13 @@ export function ReduceLeverageModalFooter({
       <TransactionDetails>
         <Wrapper style={{ marginTop: '0' }}>
           <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-            <StyledHeaderRow onClick={() => !disabled && setShowDetails(!showDetails)} disabled={disabled} open={showDetails}>
+            <StyledHeaderRow
+              onClick={() => !disabled && setShowDetails(!showDetails)}
+              disabled={disabled}
+              open={showDetails}
+            >
               <RowFixed style={{ position: 'relative' }}>
-                {(loading ? (
+                {loading ? (
                   <StyledPolling>
                     <StyledPollingDot>
                       <Spinner />
@@ -399,16 +471,14 @@ export function ReduceLeverageModalFooter({
                   <HideSmall>
                     <StyledInfoIcon color={leverageManagerAddress ? theme.textTertiary : theme.deprecated_bg3} />
                   </HideSmall>
-                ))}
+                )}
                 {leverageManagerAddress ? (
                   loading ? (
                     <ThemedText.DeprecatedMain fontSize={14}>
                       <Trans>Fetching returns...</Trans>
                     </ThemedText.DeprecatedMain>
                   ) : (
-                    <LoadingOpacityContainer $loading={loading}>
-                      Trade Details
-                    </LoadingOpacityContainer>
+                    <LoadingOpacityContainer $loading={loading}>Trade Details</LoadingOpacityContainer>
                   )
                 ) : null}
               </RowFixed>
@@ -418,7 +488,6 @@ export function ReduceLeverageModalFooter({
                   open={Boolean(showDetails)}
                 />
               </RowFixed>
-
             </StyledHeaderRow>
             <AnimatedDropdown open={showDetails}>
               <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
@@ -427,14 +496,8 @@ export function ReduceLeverageModalFooter({
                     <AutoColumn gap="sm">
                       <RowBetween>
                         <RowFixed>
-                          <MouseoverTooltip
-                            text={
-                              <Trans>
-                                The amount of position you are closing
-                              </Trans>
-                            }
-                          >
-                            <ThemedText.LabelSmall >
+                          <MouseoverTooltip text={<Trans>The amount of position you are closing</Trans>}>
+                            <ThemedText.LabelSmall>
                               <Trans>Position to close</Trans>
                             </ThemedText.LabelSmall>
                           </MouseoverTooltip>
@@ -442,9 +505,11 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${inputIsToken0 ? new BN(reduceAmount).abs().toString() : new BN(reduceAmount).abs().toString()}  ${!inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {`${
+                                inputIsToken0
+                                  ? new BN(reduceAmount).abs().toString()
+                                  : new BN(reduceAmount).abs().toString()
+                              }  ${!inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
@@ -455,12 +520,12 @@ export function ReduceLeverageModalFooter({
                           <MouseoverTooltip
                             text={
                               <Trans>
-                                The amount entire position swaps to at the current market price. May receive less or more if the
-                                market price changes while your transaction is pending.
+                                The amount entire position swaps to at the current market price. May receive less or
+                                more if the market price changes while your transaction is pending.
                               </Trans>
                             }
                           >
-                            <ThemedText.LabelSmall >
+                            <ThemedText.LabelSmall>
                               <Trans>Exp. Output</Trans>
                             </ThemedText.LabelSmall>
                           </MouseoverTooltip>
@@ -468,9 +533,11 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${inputIsToken0 ? new BN(transactionInfo?.token0Amount).abs().toString() : new BN(transactionInfo?.token1Amount).abs().toString()}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {`${
+                                inputIsToken0
+                                  ? new BN(transactionInfo?.token0Amount).abs().toString()
+                                  : new BN(transactionInfo?.token1Amount).abs().toString()
+                              }  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
@@ -480,11 +547,12 @@ export function ReduceLeverageModalFooter({
                           <MouseoverTooltip
                             text={
                               <Trans>
-                                Premium remaining from last payment returned. The amount returned is inversely proportional to how long the position was opened. 
+                                Premium remaining from last payment returned. The amount returned is inversely
+                                proportional to how long the position was opened.
                               </Trans>
                             }
                           >
-                            <ThemedText.LabelSmall >
+                            <ThemedText.LabelSmall>
                               <Trans>Premium Returned</Trans>
                             </ThemedText.LabelSmall>
                           </MouseoverTooltip>
@@ -492,9 +560,9 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${formatNumber(Number(transactionInfo.unusedPremium), NumberType.SwapTradeAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-                              }
+                              {`${formatNumber(Number(transactionInfo.unusedPremium), NumberType.SwapTradeAmount)}  ${
+                                inputIsToken0 ? token0?.symbol : token1?.symbol
+                              }`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
@@ -504,11 +572,12 @@ export function ReduceLeverageModalFooter({
                           <MouseoverTooltip
                             text={
                               <Trans>
-                                May be positive when price moves against you, where some portion of your margin will be converted to trade output asset. 
+                                May be positive when price moves against you, where some portion of your margin will be
+                                converted to trade output asset.
                               </Trans>
                             }
                           >
-                            <ThemedText.LabelSmall >
+                            <ThemedText.LabelSmall>
                               <Trans>Returned Amount</Trans>
                             </ThemedText.LabelSmall>
                           </MouseoverTooltip>
@@ -516,9 +585,9 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {
-                                `${Number(transactionInfo?.returnedAmount)}  ${inputIsToken0 ? token1?.symbol : token0?.symbol}`
-                              }
+                              {`${Number(transactionInfo?.returnedAmount)}  ${
+                                inputIsToken0 ? token1?.symbol : token0?.symbol
+                              }`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
@@ -532,7 +601,7 @@ export function ReduceLeverageModalFooter({
                               </Trans>
                             }
                           >
-                            <ThemedText.LabelSmall >
+                            <ThemedText.LabelSmall>
                               <Trans>Expected PnL</Trans>
                             </ThemedText.LabelSmall>
                           </MouseoverTooltip>
@@ -540,49 +609,53 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-
-                              {
-                                `${formatNumber(Number(transactionInfo.pnl), NumberType.SwapTradeAmount)}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-
-                              }
+                              {`${formatNumber(Number(transactionInfo.pnl), NumberType.SwapTradeAmount)}  ${
+                                inputIsToken0 ? token0?.symbol : token1?.symbol
+                              }`}
                             </TruncatedText>
-                          <DeltaText delta={Number(100 * (Math.round(Number(transactionInfo?.pnl) * 1000) / 1000) / (Number(initCollateral)))}>
-                            {formatNumber(100 * Number(transactionInfo.pnl) / (Number(initCollateral)), NumberType.SwapTradeAmount)} %
-                          </DeltaText>
+                            <DeltaText
+                              delta={Number(
+                                (100 * (Math.round(Number(transactionInfo?.pnl) * 1000) / 1000)) /
+                                  Number(initCollateral)
+                              )}
+                            >
+                              {formatNumber(
+                                (100 * Number(transactionInfo.pnl)) / Number(initCollateral),
+                                NumberType.SwapTradeAmount
+                              )}{' '}
+                              %
+                            </DeltaText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
                     </AutoColumn>
-
                   </StyledCard>
-                )
-                  : null}
+                ) : null}
               </AutoColumn>
             </AnimatedDropdown>
           </AutoColumn>
         </Wrapper>
       </TransactionDetails>
-        <ButtonError
-          onClick={handleReducePosition}
-          disabled={!!userError || !transactionInfo}
-          style={{ margin: '0px 0 0 0' }}
-          id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
-        >
-          {userError ? (
-            userError
-           ) : transactionInfo ? (
-            <Text fontSize={18} fontWeight={500}>
-              <Trans>Reduce Position</Trans>
-            </Text>
-          ) : (
-            <Text fontSize={18} fontWeight={500}>
-              <Trans>Invalid</Trans>
-            </Text>
-          )}
-        </ButtonError>
-      
-      
-        {/* {userError ? (
+      <ButtonError
+        onClick={handleReducePosition}
+        disabled={!!userError || !transactionInfo}
+        style={{ margin: '0px 0 0 0' }}
+        id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
+      >
+        {userError ? (
+          userError
+        ) : transactionInfo ? (
+          <Text fontSize={18} fontWeight={500}>
+            <Trans>Reduce Position</Trans>
+          </Text>
+        ) : (
+          <Text fontSize={18} fontWeight={500}>
+            <Trans>Invalid</Trans>
+          </Text>
+        )}
+      </ButtonError>
+
+      {/* {userError ? (
           userError
         ) : derivedState !== DerivedInfoState.VALID ? (
           <Trans>

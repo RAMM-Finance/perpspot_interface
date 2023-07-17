@@ -612,14 +612,14 @@ export function AdvancedLeverageSwapDetails({
   //   borrowedAmount, 
   //   inputAmount
   // } = leverageTrade;
-  const price = leverageTrade?.existingTotalPosition?(Number(leverageTrade?.expectedOutput ) - Number(leverageTrade?.existingTotalPosition))
+  const price = leverageTrade?.existingTotalPosition?(Number(leverageTrade?.expectedTotalPosition ) - Number(leverageTrade?.existingTotalPosition))
   / (Number(leverageTrade?.borrowedAmount?.toExact()) - Number(leverageTrade?.existingTotalDebtInput) + Number(leverageTrade?.inputAmount?.toExact())  )
-  : Number(leverageTrade?.expectedOutput )/(Number(leverageTrade?.borrowedAmount?.toExact()) + Number(leverageTrade?.inputAmount?.toExact()))
+  : Number(leverageTrade?.expectedTotalPosition )/(Number(leverageTrade?.borrowedAmount?.toExact()) + Number(leverageTrade?.inputAmount?.toExact()))
   const fees= leverageTrade?.existingTotalPosition?(Number(leverageTrade?.borrowedAmount?.toExact())- Number(leverageTrade?.existingTotalDebtInput) + Number(leverageTrade?.inputAmount?.toExact())) * 0.0005
   : (Number(leverageTrade?.borrowedAmount?.toExact())+ Number(leverageTrade?.inputAmount?.toExact())) * 0.0005
   // const fees = (Number(leverageTrade?.borrowedAmount?.toExact())- Number(leverageTrade?.existingTotalDebtInput) + Number(leverageTrade?.inputAmount?.toExact())) * 0.0005
-  const addedOutput = (leverageTrade?.expectedOutput) ? (
-    leverageTrade?.existingPosition && leverageTrade?.existingTotalPosition ? leverageTrade?.expectedOutput -  leverageTrade?.existingTotalPosition : leverageTrade?.expectedOutput
+  const addedOutput = (leverageTrade?.expectedTotalPosition) ? (
+    leverageTrade?.existingPosition && leverageTrade?.existingTotalPosition ? leverageTrade?.expectedTotalPosition -  leverageTrade?.existingTotalPosition : leverageTrade?.expectedTotalPosition
               ) : 0
   return (
     <StyledCard>

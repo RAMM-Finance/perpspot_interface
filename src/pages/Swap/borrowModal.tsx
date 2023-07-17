@@ -35,6 +35,7 @@ import useWrapCallback, { WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { useCallback, useMemo, useState } from 'react'
+
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { Text } from 'rebass'
 import { TradeState } from 'state/routing/types'

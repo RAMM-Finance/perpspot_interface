@@ -4,6 +4,8 @@ import { SupportedChainId } from 'constants/chains'
 import useBlockNumber, { useFastForwardBlockNumber } from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
 import { useCallback, useEffect } from 'react'
+import { useRemoveTransaction } from 'state/transactions/hooks'
+import { TransactionDetails } from 'state/transactions/types'
 import { retry, RetryableError, RetryOptions } from 'utils/retry'
 
 interface Transaction {
@@ -39,7 +41,7 @@ const RETRY_OPTIONS_BY_CHAIN_ID: { [chainId: number]: RetryOptions } = {
 const DEFAULT_RETRY_OPTIONS: RetryOptions = { n: 1, minWait: 0, maxWait: 0 }
 
 interface UpdaterProps {
-  pendingTransactions: { [hash: string]: Transaction }
+  pendingTransactions: { [hash: string]: TransactionDetails }
   onCheck: (tx: { chainId: number; hash: string; blockNumber: number }) => void
   onReceipt: (tx: { chainId: number; hash: string; receipt: TransactionReceipt }) => void
 }
@@ -49,6 +51,7 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
 
   const lastBlockNumber = useBlockNumber()
   const fastForwardBlockNumber = useFastForwardBlockNumber()
+  const removeTransaction = useRemoveTransaction()
 
   const getReceipt = useCallback(
     (hash: string) => {
@@ -58,6 +61,10 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
         () =>
           provider.getTransactionReceipt(hash).then((receipt) => {
             if (receipt === null) {
+              if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
+                removeTransaction(chainId, hash);
+                return
+              }
               console.debug(`Retrying tranasaction receipt for ${hash}`)
               throw new RetryableError()
             }
@@ -66,7 +73,18 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
         retryOptions
       )
     },
-    [chainId, provider]
+    [chainId, provider, removeTransaction, pendingTransactions]
+  )
+
+  const getTransaction = useCallback(
+    (tx: TransactionDetails) => {
+      if (!provider || !chainId) throw new Error('No provider or chainId')
+      return provider.getTransaction(tx.hash).then((response) => {
+        if (!response) {
+          removeTransaction(chainId, tx.hash)
+        }
+      })
+    }, [chainId, provider, removeTransaction]
   )
 
   useEffect(() => {
@@ -91,6 +109,10 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
             }
           })
         return cancel
+      })
+    
+      Object.values(pendingTransactions).forEach((tx) => {
+        getTransaction(tx);
       })
 
     return () => {
