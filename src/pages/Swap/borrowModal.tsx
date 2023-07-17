@@ -35,7 +35,7 @@ import useWrapCallback, { WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { useCallback, useMemo, useState } from 'react'
-import { ArrowDown, Info } from 'react-feather'
+import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { Text } from 'rebass'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -403,7 +403,7 @@ const BorrowTabContent = () => {
               }}
               color={theme.textPrimary}
             >
-              <ArrowDown
+              <Maximize2
                 size="16"
                 color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />

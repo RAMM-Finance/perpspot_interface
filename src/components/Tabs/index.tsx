@@ -1,11 +1,16 @@
 import { Trans } from '@lingui/macro'
-import React, { useCallback, useLayoutEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { SwapState } from 'state/swap/reducer'
 import styled from 'styled-components/macro'
 // import Styles from "./tabs.styles.less";
 
 const TabContainer = styled.div
+interface ITab extends SwapState {
+  tab: string
+}
 
 const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
   padding: 10px 20px;
@@ -30,29 +35,26 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
   // const isTrade = activeTab == ActiveSwapTab.TRADE
   const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
   const { leverage } = useSwapState()
-  const [swapModalMode, setSwapModalMode] = useState('Long')
   const { onSwitchTokens } = useSwapActionHandlers()
-  const { onActiveTabChange, onLeverageChange } = useSwapActionHandlers()
-
+  const { onActiveTabChange, onLeverageChange, onSwitchSwapModalTab } = useSwapActionHandlers()
+  const selectedTab = useSelector((state: any) => state.swap.tab)
   // const handleTabChange = onActiveTabChange(isTrade)
-
-  console.log(isTrade)
 
   const onChangeSwapModeHandler = (e: React.MouseEvent<HTMLSpanElement>) => {
     const eventTarget = e.target as HTMLElement
-    if (eventTarget.innerText === swapModalMode) {
+    if (eventTarget.innerText === selectedTab) {
       return
     }
+
     setIsTrade(ActiveSwapTab.TRADE)
-    setSwapModalMode(eventTarget.innerText)
+    onSwitchSwapModalTab(eventTarget.innerText)
     onSwitchTokens(leverage)
+    onLeverageChange(true)
   }
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     onActiveTabChange(isTrade)
   }, [isTrade])
-
-  console.log(isTrade)
 
   return (
     <div
@@ -60,45 +62,46 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
         // width: 'fit-content',
         display: 'flex',
         alignItems: 'center',
-      }} /* onClick={handleTabChange} */
+      }}
     >
       <TapWrapper>
-        <TapElement
+        <TabElement
           onClick={onChangeSwapModeHandler}
           isActive={isTrade}
-          swapModalMode={swapModalMode}
-          test="Long"
+          selectedTab={selectedTab}
+          tabValue="Long"
           fontSize="18px"
         >
           <Trans>Long</Trans>
-        </TapElement>
-        <TapElement
+        </TabElement>
+        <TabElement
           onClick={onChangeSwapModeHandler}
           isActive={isTrade}
-          swapModalMode={swapModalMode}
-          test="Short"
+          selectedTab={selectedTab}
+          tabValue="Short"
           fontSize="18px"
         >
           <Trans>Short</Trans>
-        </TapElement>
-        <TapElement
+        </TabElement>
+        <TabElement
           onClick={() => {
             setIsTrade(ActiveSwapTab.BORROW)
-            setSwapModalMode('notthing')
+            onSwitchSwapModalTab('notthing')
           }}
           isActive={!isTrade}
           fontSize="18px"
         >
           <Trans>Borrow</Trans>
-        </TapElement>
-        <TapElement
-          disabled={isTrade ? true : false}
+        </TabElement>
+        <SwapBtn
+          disabled={isTrade === 1 ? true : false}
           onClick={() => onLeverageChange(!leverage)}
-          test="notthing"
+          tabValue="notthing"
           fontSize="18px"
+          isTrade={isTrade}
         >
           <Trans>Swap</Trans>
-        </TapElement>
+        </SwapBtn>
       </TapWrapper>
     </div>
   )
@@ -155,11 +158,12 @@ const TapWrapper = styled.button`
   box-sizing: border-box;
 `
 
-const TapElement = styled.button<{
+const TabElement = styled.button<{
   isActive?: number | boolean
   fontSize?: string
-  swapModalMode?: string
-  test?: string
+  selectedTab?: string
+  tabValue?: string
+  isTrade?: number
 }>`
   display: flex;
   align-items: center;
@@ -168,10 +172,11 @@ const TapElement = styled.button<{
   border-radius: 10px;
   justify-content: center;
   height: 100%;
-  background: ${({ theme, isActive, swapModalMode, test }) =>
-    !isActive && swapModalMode === test ? theme.deprecated_primary5 : 'none'};
-  color: ${({ theme, isActive, swapModalMode, test }) =>
-    !isActive && swapModalMode === test ? theme.textSecondary : theme.textTertiary};
+  background: ${({ theme, isActive, selectedTab, tabValue }) => {
+    return !isActive && selectedTab === tabValue ? theme.deprecated_primary5 : 'none'
+  }};
+  color: ${({ theme, isActive, selectedTab, tabValue }) =>
+    !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
   font-weight: 500;
   white-space: nowrap;
@@ -180,12 +185,25 @@ const TapElement = styled.button<{
 
   :hover {
     user-select: initial;
-    color: ${({ theme }) => theme.textSecondary};
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
   }
 
   :active {
     user-select: initial;
-    color: ${({ theme }) => theme.textSecondary};
-    background: ${({ theme }) => theme.deprecated_primary5};
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+    background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
+  }
+`
+
+const SwapBtn = styled(TabElement)`
+  cursor: ${({ isTrade }) => (isTrade === 0 ? 'pointer' : 'default')};
+  :hover {
+    user-select: initial;
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+  }
+  :active {
+    user-select: initial;
+    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+    background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
   }
 `

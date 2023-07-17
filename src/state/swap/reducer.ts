@@ -15,6 +15,7 @@ import {
   setLTV,
   setPremium,
   setRecipient,
+  setSwapTab,
   switchCurrencies,
   typeInput,
 } from './actions'
@@ -39,9 +40,15 @@ export interface SwapState {
   readonly ltv: string | undefined | null
   readonly borrowManagerAddress: string | undefined | null
   readonly premium: number | undefined | null
+  tab: string
 }
 
 const initialState: SwapState = queryParametersToSwapState(parsedQueryString())
+// const tabReducerInit = { tab: 'long' }
+
+// export const tabReducer = createReducer(tabReducerInit, (builder) =>
+//   builder.addCase(setSwapTab, (state, { payload: { tab } }) => ({ ...state, tab }))
+// )
 
 export default createReducer<SwapState>(initialState, (builder) =>
   builder
@@ -64,6 +71,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
             ltv,
             borrowManagerAddress,
             premium,
+            tab,
           },
         }
       ) => {
@@ -85,6 +93,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
           ltv: ltv ?? null,
           borrowManagerAddress: borrowManagerAddress ?? null,
           premium: premium ?? null,
+          tab: tab ?? 'Long',
         }
       }
     )
@@ -107,17 +116,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {
-      const test = {
-        ...state,
-        independentField: !leverage
-          ? state.independentField === Field.INPUT
-            ? Field.OUTPUT
-            : Field.INPUT
-          : Field.INPUT,
-        [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
-        [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
-      }
-      console.log(test)
       return {
         ...state,
         independentField: !leverage
@@ -176,5 +174,9 @@ export default createReducer<SwapState>(initialState, (builder) =>
     .addCase(setPremium, (state, { payload: { premium } }) => ({
       ...state,
       premium,
+    }))
+    .addCase(setSwapTab, (state, { payload: { tab } }) => ({
+      ...state,
+      tab,
     }))
 )

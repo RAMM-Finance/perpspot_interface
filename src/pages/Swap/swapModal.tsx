@@ -40,7 +40,8 @@ import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import { Checkbox } from 'nft/components/layout/Checkbox'
 import { useCallback, useMemo, useState } from 'react'
-import { ArrowDown, Info } from 'react-feather'
+import { ArrowDown, Info, Maximize2 } from 'react-feather'
+import { useSelector } from 'react-redux'
 import { Text } from 'rebass'
 import { LeverageTradeState, TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -95,6 +96,7 @@ const TradeTabContent = () => {
   // const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   // const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
   // const swapWidgetEnabled = useSwapWidgetEnabled()
+  const tab = useSelector((state: any) => state.swap.tab)
 
   const {
     onSwitchTokens,
@@ -104,6 +106,7 @@ const TradeTabContent = () => {
     onLeverageFactorChange,
     onLeverageChange,
     onPremiumChange,
+    onSwitchSwapModalTab,
   } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
@@ -538,8 +541,6 @@ const TradeTabContent = () => {
     }
   }, [approveLeverageManager])
 
-  console.log(leverage)
-
   return (
     <>
       {leverage ? (
@@ -645,11 +646,12 @@ const TradeTabContent = () => {
             <ArrowContainer
               onClick={() => {
                 onSwitchTokens(leverage)
+                tab === 'Long' ? onSwitchSwapModalTab('Short') : onSwitchSwapModalTab('Long')
               }}
               color={theme.textPrimary}
             >
-              <ArrowDown
-                size="20"
+              <Maximize2
+                size="16"
                 color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />
             </ArrowContainer>

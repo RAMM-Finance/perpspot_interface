@@ -84,7 +84,7 @@ export const ArrowContainer = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
+  rotate: -45deg;
   width: 100%;
   height: 100%;
 `

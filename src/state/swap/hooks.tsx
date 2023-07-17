@@ -44,6 +44,7 @@ import {
   setLTV,
   setPremium,
   setRecipient,
+  setSwapTab,
   switchCurrencies,
   typeInput,
 } from './actions'
@@ -68,6 +69,7 @@ export function useSwapActionHandlers(): {
   onLTVChange: (ltv: string) => void
   onBorrowManagerAddress: (borrowManagerAddress: string) => void
   onPremiumChange: (premium: number) => void
+  onSwitchSwapModalTab: (tab: string) => void
 } {
   const dispatch = useAppDispatch()
   const onCurrencySelection = useCallback(
@@ -160,6 +162,13 @@ export function useSwapActionHandlers(): {
     [dispatch]
   )
 
+  const onSwitchSwapModalTab = useCallback(
+    (tab: string) => {
+      dispatch(setSwapTab({ tab }))
+    },
+    [dispatch]
+  )
+
   return {
     onSwitchTokens,
     onCurrencySelection,
@@ -173,6 +182,7 @@ export function useSwapActionHandlers(): {
     onLTVChange,
     onBorrowManagerAddress,
     onPremiumChange,
+    onSwitchSwapModalTab,
   }
 }
 
@@ -1069,6 +1079,7 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     ltv: null,
     borrowManagerAddress: null,
     premium: null,
+    tab: 'Long',
   }
 }
 
@@ -1098,6 +1109,7 @@ export function useDefaultsFromURLSearch(): SwapState {
         hideClosedLeveragePositions: true,
         leverage: true,
         activeTab: ActiveSwapTab.TRADE,
+        tab: 'Long',
       })
     )
   }, [dispatch, chainId, parsedSwapState])
