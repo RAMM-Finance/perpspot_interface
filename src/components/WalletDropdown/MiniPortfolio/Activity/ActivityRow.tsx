@@ -11,7 +11,7 @@ import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 import { PortfolioLogo } from '../PortfolioLogo'
 import PortfolioRow from '../PortfolioRow'
-import { useTimeSince } from './parseRemote'
+import { useTimeStamp } from './parseRemote'
 import { Activity } from './types'
 
 const ActivityRowDescriptor = styled(ThemedText.BodySmall)`
@@ -31,7 +31,7 @@ export function ActivityRow({
   activity: Activity
 }) {
   const { ENSName } = useENSName(otherAccount)
-  const timeSince = useTimeSince(timestamp)
+  const timeSince = useTimeStamp(timestamp)
 
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
 

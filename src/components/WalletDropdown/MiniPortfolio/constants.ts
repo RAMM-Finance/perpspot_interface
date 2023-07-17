@@ -142,9 +142,9 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Failed]: t`Add borrow failed`,
   },
   [TransactionType.REDUCE_LEVERAGE]: {
-    [TransactionStatus.Pending]: t`Reducing leverage`,
-    [TransactionStatus.Confirmed]: t`Reduced leverage`,
-    [TransactionStatus.Failed]: t`Reduce leverage failed`,
+    [TransactionStatus.Pending]: t`Decreasing leverage`,
+    [TransactionStatus.Confirmed]: t`Decreased leverage`,
+    [TransactionStatus.Failed]: t`Decrease leverage failed`,
   },
   [TransactionType.PREMIUM_BORROW]: {
     [TransactionStatus.Pending]: t`Paying Premium`,

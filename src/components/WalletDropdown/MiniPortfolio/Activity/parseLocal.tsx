@@ -92,9 +92,7 @@ function parseAddLeverage(
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`${tokenOut?.symbol}/${tokenIn?.symbol}: Deposited ${paidAmount} ${formatSymbol(
-        tokenIn?.symbol
-      )} for +${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
+      {`${tokenOut?.symbol}/${tokenIn?.symbol}, +${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
     </Descriptor>
   )
 
@@ -112,11 +110,11 @@ function parseReduceLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const formattedNewPosition = formatNumber(info.newTotalPosition, NumberType.SwapTradeAmount)
+  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}: New position reduced to ${formattedNewPosition} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
 
   return {
     descriptor,
@@ -136,7 +134,7 @@ function parseAddBorrow(
 
   const formattedBorrowAmount = formatNumber(info.borrowedAmount, NumberType.SwapTradeAmount)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} position: Deposited ${formattedCollateralAmount} ${tokenIn?.symbol}, borrowed ${formattedBorrowAmount} ${tokenOut?.symbol}`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, +${formattedBorrowAmount} ${tokenOut?.symbol}`
 
   return {
     descriptor,
@@ -152,13 +150,13 @@ function parseReduceBorrowDebt(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const newTotalPosition = formatNumber(info.newTotalPosition, NumberType.SwapTradeAmount)
+  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
   const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
   // console.log('stuff', info.newTotalPosition, newTotalPosition)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} position: Reduced debt to ${newTotalPosition} ${
-    tokenOut?.symbol
-  }${info.recieveCollateral ? `, received ${returnedAmount} ${tokenIn?.symbol}` : ''}`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenOut?.symbol}${
+    info.recieveCollateral ? `, received ${returnedAmount} ${tokenIn?.symbol}` : ''
+  }`
 
   return {
     descriptor,
@@ -174,9 +172,12 @@ function parseReduceBorrowCollateral(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} position: Reduced collateral to ${
-    info.expectedReturnedAmount
-  } ${tokenIn?.symbol}${info.recieveCollateral ? `, received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''}`
+  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
+  // const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
+
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenIn?.symbol}${
+    info.recieveCollateral ? `, received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''
+  }`
 
   return {
     descriptor,
@@ -260,7 +261,7 @@ function parsePremiumLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const descriptor = `Leverage Position ${tokenOut?.symbol}/${tokenIn?.symbol} Premium Payment`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
 
   return {
     descriptor,
@@ -272,7 +273,7 @@ function parsePremiumBorrow(info: AddBorrowPremiumTransactionInfo, chainId: Supp
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const descriptor = `Borrow Position ${tokenOut?.symbol}/${tokenIn?.symbol} Premium Payment`
+  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
 
   return {
     descriptor,
