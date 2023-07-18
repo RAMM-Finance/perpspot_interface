@@ -139,7 +139,6 @@ export default function ConfirmSwapModal({
   )
 }
 
-
 export function LeverageConfirmModal({
   trade,
   originalTrade,
@@ -156,7 +155,7 @@ export function LeverageConfirmModal({
   fiatValueInput,
   fiatValueOutput,
   leverageFactor,
-  leverageTrade
+  leverageTrade,
 }: {
   isOpen: boolean
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined
@@ -234,8 +233,8 @@ export function LeverageConfirmModal({
   // text to show while loading
   const pendingText = (
     <Trans>
-      Borrowing {leverageTrade?.borrowedAmount?.toExact()} {leverageTrade?.inputAmount?.currency?.symbol} and{' '}
-      Recieving {leverageTrade?.expectedTotalPosition} {trade?.outputAmount?.currency?.symbol}
+      Borrowing {leverageTrade?.borrowedAmount?.toExact()} {leverageTrade?.inputAmount?.currency?.symbol} and Recieving{' '}
+      {leverageTrade?.expectedTotalPosition} {trade?.outputAmount?.currency?.symbol}
     </Trans>
   )
 
@@ -279,9 +278,9 @@ export function BorrowConfirmModal({
   isOpen,
   attemptingTxn,
   txHash,
-  // fiatValueInput,
-  // fiatValueOutput,
-}: {
+}: // fiatValueInput,
+// fiatValueOutput,
+{
   borrowTrade?: BorrowCreationDetails
   isOpen: boolean
   attemptingTxn: boolean
@@ -294,11 +293,10 @@ export function BorrowConfirmModal({
   // fiatValueInput: { data?: number; isLoading: boolean }
   // fiatValueOutput: { data?: number; isLoading: boolean }
 }) {
-
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    ltv
+    ltv,
   } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
@@ -310,13 +308,23 @@ export function BorrowConfirmModal({
 
   const modalHeader = useCallback(() => {
     return (
-      <BorrowModalHeader trade={borrowTrade} inputCurrency={inputCurrency ?? undefined} outputCurrency={outputCurrency ?? undefined} recipient={recipient} />
+      <BorrowModalHeader
+        trade={borrowTrade}
+        inputCurrency={inputCurrency ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
+        recipient={recipient}
+      />
     )
   }, [borrowTrade, allowedSlippage, recipient])
 
   const modalBottom = useCallback(() => {
     return (
-      <BorrowModalFooter borrowTrade={borrowTrade} onConfirm={onConfirm} errorMessage={errorMessage} disabledConfirm={false} />
+      <BorrowModalFooter
+        borrowTrade={borrowTrade}
+        onConfirm={onConfirm}
+        errorMessage={errorMessage}
+        disabledConfirm={false}
+      />
     )
   }, [
     onConfirm,

@@ -24,7 +24,7 @@ import Slider from 'components/Slider'
 import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal, { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import PriceImpactWarning from 'components/swap/PriceImpactWarning'
-import SwapDetailsDropdown from 'components/swap/SwapDetailsDropdown'
+import SwapDetailsDropdown, { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
@@ -663,66 +663,58 @@ const TradeTabContent = () => {
         <div>
           <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
-              {!leverage && <SwapCurrencyInputPanel
-                value={
-                  formattedAmounts[Field.OUTPUT]
-                }
-                onUserInput={handleTypeOutput}
-                label={
-                  independentField === Field.INPUT && !showWrap ? (
-                    <Trans>To (at least)</Trans>
-                  ) : (
-                    <Trans>To</Trans>
-                  )
-                }
-                showMaxButton={false}
-                hideBalance={false}
-                fiatValue={fiatValueOutput}
-                priceImpact={stablecoinPriceImpact}
-                currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
-                otherCurrency={currencies[Field.INPUT]}
-                showCommonBases={true}
-                id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
-                loading={independentField === Field.INPUT && routeIsSyncing}
-                isInput={false}
-                isLevered={leverage}
-                disabled={leverage}
-              />}
-              {leverage && <SwapCurrencyInputPanel
-                value={
-                  (leverageState !== LeverageTradeState.VALID) ?
-                    "-"
-                    :
-                    (
-                      leverageTrade?.expectedTotalPosition ? (
-                        leverageTrade?.existingTotalPosition ?
-                          String(leverageTrade.expectedTotalPosition - leverageTrade.existingTotalPosition) : String(leverageTrade.expectedTotalPosition)
-                      ) : "-"
-                    )
-                }
-                onUserInput={handleTypeOutput}
-                label={
-                  independentField === Field.INPUT && !showWrap ? (
-                    <Trans>To (at least)</Trans>
-                  ) : (
-                    <Trans>To</Trans>
-                  )
-                }
-                showMaxButton={false}
-                hideBalance={false}
-                fiatValue={fiatValueOutput}
-                priceImpact={stablecoinPriceImpact}
-                currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
-                otherCurrency={currencies[Field.INPUT]}
-                showCommonBases={true}
-                id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
-                loading={independentField === Field.INPUT && routeIsSyncing}
-                isInput={false}
-                isLevered={leverage}
-                disabled={true}
-              />}
+              {!leverage && (
+                <SwapCurrencyInputPanel
+                  value={formattedAmounts[Field.OUTPUT]}
+                  onUserInput={handleTypeOutput}
+                  label={
+                    independentField === Field.INPUT && !showWrap ? <Trans>To (at least)</Trans> : <Trans>To</Trans>
+                  }
+                  showMaxButton={false}
+                  hideBalance={false}
+                  fiatValue={fiatValueOutput}
+                  priceImpact={stablecoinPriceImpact}
+                  currency={currencies[Field.OUTPUT] ?? null}
+                  onCurrencySelect={handleOutputSelect}
+                  otherCurrency={currencies[Field.INPUT]}
+                  showCommonBases={true}
+                  id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
+                  loading={independentField === Field.INPUT && routeIsSyncing}
+                  isInput={false}
+                  isLevered={leverage}
+                  disabled={leverage}
+                />
+              )}
+              {leverage && (
+                <SwapCurrencyInputPanel
+                  value={
+                    leverageState !== LeverageTradeState.VALID
+                      ? '-'
+                      : leverageTrade?.expectedTotalPosition
+                      ? leverageTrade?.existingTotalPosition
+                        ? String(leverageTrade.expectedTotalPosition - leverageTrade.existingTotalPosition)
+                        : String(leverageTrade.expectedTotalPosition)
+                      : '-'
+                  }
+                  onUserInput={handleTypeOutput}
+                  label={
+                    independentField === Field.INPUT && !showWrap ? <Trans>To (at least)</Trans> : <Trans>To</Trans>
+                  }
+                  showMaxButton={false}
+                  hideBalance={false}
+                  fiatValue={fiatValueOutput}
+                  priceImpact={stablecoinPriceImpact}
+                  currency={currencies[Field.OUTPUT] ?? null}
+                  onCurrencySelect={handleOutputSelect}
+                  otherCurrency={currencies[Field.INPUT]}
+                  showCommonBases={true}
+                  id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
+                  loading={independentField === Field.INPUT && routeIsSyncing}
+                  isInput={false}
+                  isLevered={leverage}
+                  disabled={true}
+                />
+              )}
             </Trace>
 
             {recipient !== null && !showWrap ? (
@@ -800,15 +792,20 @@ const TradeTabContent = () => {
             </AutoColumn>
           </LeverageGaugeSection>
           <DetailsSwapSection>
-            <SwapDetailsDropdown
-              trade={trade}
-              syncing={routeIsSyncing}
-              loading={routeIsLoading}
-              allowedSlippage={allowedSlippage}
-              leverageTrade={leverageTrade}
-              leverageState={leverageState}
-              leverageInputError={!!inputError}
-            />
+            {!leverage ? (
+              <SwapDetailsDropdown
+                trade={trade}
+                syncing={routeIsSyncing}
+                loading={routeIsLoading}
+                allowedSlippage={allowedSlippage}
+              />
+            ) : (
+              <LeverageDetailsDropdown
+                trade={leverageTrade}
+                loading={lmtRouteIsLoading}
+                allowedSlippage={allowedSlippage}
+              />
+            )}
           </DetailsSwapSection>
         </div>
         {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}

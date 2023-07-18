@@ -44,7 +44,6 @@ import {
   setLTV,
   setPremium,
   setRecipient,
-
   setSwapTab,
   switchCurrencies,
   typeInput,
@@ -162,7 +161,6 @@ export function useSwapActionHandlers(): {
     },
     [dispatch]
   )
-
 
   const onSwitchSwapModalTab = useCallback(
     (tab: string) => {
@@ -506,9 +504,7 @@ export function useDerivedBorrowCreationInfo({
     } else {
       return undefined
     }
-
   }, [existingPosition, ltv, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
-
 
   // console.log('trade', existingPosition, trade)
 
@@ -531,7 +527,6 @@ export function useDerivedBorrowCreationInfo({
         // console.log("alli")
       }
     }
-
   }, [activeTab, tradeState, trade, typedValue, pool, ltv, existingPosition, onPremiumChange, inputIsToken0])
 
   const contractError = useMemo(() => {
@@ -545,7 +540,6 @@ export function useDerivedBorrowCreationInfo({
       _contractError = _contractError ?? <Trans>Invalid Trade</Trans>
     }
     return _contractError
-
   }, [error, tradeState])
 
   return {
@@ -656,7 +650,7 @@ export function useDerivedLeverageCreationInfo(): {
   )
 
   // TODO calculate slippage from the pool
-  const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), []) // new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
+  const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), [])
 
   const globalStorageAddress = useSingleCallResult(leverageManager, 'globalStorage')
 
@@ -763,12 +757,12 @@ export function useDerivedLeverageCreationInfo(): {
     ) {
       // existing position
       let _existingPosition = false
-      let existingTotalDebtInput = 0 
-      let existingTotalPosition = 0 
+      let existingTotalDebtInput = 0
+      let existingTotalPosition = 0
       let tokenId
 
       let existingCollateral = 0
-      if (existingPosition){
+      if (existingPosition) {
         _existingPosition = true
         existingTotalDebtInput = existingPosition.totalDebtInput
         existingTotalPosition = existingPosition.totalPosition
@@ -778,15 +772,28 @@ export function useDerivedLeverageCreationInfo(): {
 
       const position: any = contractResult[0]
 
-      const expectedTotalPosition = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
-      const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
-      const strikePrice = new BN(expectedTotalPosition).div(new BN(borrowedAmount).plus(debouncedAmount.toExact() )).toNumber()
+      const expectedTotalPosition = new BN(position.totalPosition.toString())
+        .shiftedBy(-outputCurrency?.wrapped.decimals)
+        .toNumber()
+      const borrowedAmount = new BN(position.totalDebtInput.toString())
+        .shiftedBy(-inputCurrency?.wrapped.decimals)
+        .toNumber()
+      const strikePrice = new BN(expectedTotalPosition)
+        .div(new BN(borrowedAmount).plus(debouncedAmount.toExact()))
+        .toNumber()
 
-      const quotedPremium = new BN((contractResult[2] as any)
-        .toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
-      const returnedPremium = new BN((contractResult[1] as any)
-        .toString()).shiftedBy(-inputCurrency?.wrapped.decimals).toNumber()
-      const t = new BN(strikePrice).minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS)).abs().dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS)).multipliedBy(1000).toFixed(0)
+      const quotedPremium = new BN((contractResult[2] as any).toString())
+        .shiftedBy(-inputCurrency?.wrapped.decimals)
+        .toNumber()
+      const returnedPremium = new BN((contractResult[1] as any).toString())
+        .shiftedBy(-inputCurrency?.wrapped.decimals)
+        .toNumber()
+      const t = new BN(strikePrice)
+        .minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
+        .abs()
+        .dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
+        .multipliedBy(1000)
+        .toFixed(0)
       const priceImpact = new Percent(t, 1000)
 
       const effectiveLeverage = new BN(
@@ -796,7 +803,10 @@ export function useDerivedLeverageCreationInfo(): {
 
       return {
         inputAmount: debouncedAmount,
-        borrowedAmount: CurrencyAmount.fromRawAmount(inputCurrency?.wrapped, new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)),
+        borrowedAmount: CurrencyAmount.fromRawAmount(
+          inputCurrency?.wrapped,
+          new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)
+        ),
         expectedTotalPosition,
         strikePrice,
         quotedPremium, //- returnedPremium,
