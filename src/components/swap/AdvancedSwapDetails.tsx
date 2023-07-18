@@ -542,13 +542,15 @@ export function ValueLabel({
 }: {
   description: string
   label: string
-  value?: number
+
+  value?: number | string
   syncing: boolean
   symbolAppend?: string
   hideInfoTooltips?: boolean
   width?: string
 }) {
   const theme = useTheme()
+
   return (
     <RowBetween>
       <RowFixed>
@@ -562,8 +564,8 @@ export function ValueLabel({
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
         <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
           <RowFixed>
-            <TruncatedText width={width}>{typeof value === 'number' ? `${value.toString()}` : '0'}</TruncatedText>
-            {symbolAppend}
+            <TruncatedText width={width}>{value ? `${value.toString()}` : '-'}</TruncatedText>
+            {value ? symbolAppend : null}
           </RowFixed>
         </ThemedText.DeprecatedBlack>
       </TextWithLoadingPlaceholder>
@@ -604,7 +606,6 @@ export function AdvancedLeverageSwapDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-
   // const {
   //   existingTotalPosition,
   //   existingPosition,
@@ -648,7 +649,8 @@ export function AdvancedLeverageSwapDetails({
           label="Quoted Price"
           value={Math.round(Number(price) * 1000000) / 1000000}
           syncing={syncing}
-          symbolAppend={'/' + String(Math.round(Number(1 / price) * 1000000) / 1000000)}
+
+          symbolAppend={price ? '/' + String(Math.round(Number(1 / price) * 1000000) / 1000000) : '/-'}
           // symbolAppend={`${trade?.outputAmount.currency.symbol} / ${trade?.inputAmount.currency.symbol}`}
         />
         <ValueLabel
@@ -681,6 +683,7 @@ export function AdvancedLeverageSwapDetails({
           value={Math.round(Number(fees) * 100000) / 100000}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
+
         />
 
         <Separator />
@@ -702,7 +705,11 @@ export function AdvancedLeverageSwapDetails({
           </RowFixed>
           <TextWithLoadingPlaceholder syncing={syncing} width={70}>
             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-              <TruncatedText>{`${addedOutput ?? '-'}  ${outputCurrency?.symbol}`}</TruncatedText>
+              <TruncatedText>
+                {trade?.tradeType === TradeType.EXACT_INPUT
+                  ? `${addedOutput ?? '-'}  ${trade?.outputAmount.currency.symbol}`
+                  : '-'}
+              </TruncatedText>
             </ThemedText.DeprecatedBlack>
           </TextWithLoadingPlaceholder>
         </RowBetween>

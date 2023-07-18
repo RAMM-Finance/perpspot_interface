@@ -129,11 +129,11 @@ interface BorrowDetailsDropdownProps {
   allowedSlippage: Percent
 }
 
+
 export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
   const theme = useTheme()
   const { chainId } = useWeb3React()
   const [showDetails, setShowDetails] = useState(false)
-
   return (
     <Wrapper>
       <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
@@ -190,6 +190,7 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
         )}
       </AutoColumn>
     </Wrapper>
+
   )
 }
 
@@ -249,6 +250,7 @@ export function LeverageDetailsDropdown({
                   disableHover={showDetails}
                 />
               )} */}
+
               <RotatingArrow
                 stroke={trade ? theme.textTertiary : theme.deprecated_bg3}
                 open={Boolean(trade && showDetails)}

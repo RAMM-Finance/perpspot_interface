@@ -1048,6 +1048,8 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     [Field.OUTPUT]: {
       currencyId: outputCurrency === '' ? null : outputCurrency ?? null,
     },
+    originInputId: inputCurrency === '' ? null : inputCurrency ?? null,
+    originOutputId: outputCurrency === '' ? null : outputCurrency ?? null,
     typedValue,
     independentField,
     recipient,
@@ -1082,6 +1084,8 @@ export function useDefaultsFromURLSearch(): SwapState {
       replaceSwapState({
         typedValue: parsedSwapState.typedValue,
         field: parsedSwapState.independentField,
+        originInputId: inputCurrencyId,
+        originOutputId: outputCurrencyId,
         inputCurrencyId,
         outputCurrencyId,
         recipient: parsedSwapState.recipient,
