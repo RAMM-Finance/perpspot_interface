@@ -24,7 +24,7 @@ import Slider from 'components/Slider'
 import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal, { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import PriceImpactWarning from 'components/swap/PriceImpactWarning'
-import SwapDetailsDropdown from 'components/swap/SwapDetailsDropdown'
+import SwapDetailsDropdown, { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
@@ -802,15 +802,20 @@ const TradeTabContent = () => {
             </AutoColumn>
           </LeverageGaugeSection>
           <DetailsSwapSection>
-            <SwapDetailsDropdown
-              trade={trade}
-              syncing={routeIsSyncing}
-              loading={routeIsLoading}
-              allowedSlippage={allowedSlippage}
-              leverageTrade={leverageTrade}
-              leverageState={leverageState}
-              leverageInputError={!!inputError}
-            />
+            {!leverage ? (
+              <SwapDetailsDropdown
+                trade={trade}
+                syncing={routeIsSyncing}
+                loading={routeIsLoading}
+                allowedSlippage={allowedSlippage}
+              />
+            ) : (
+              <LeverageDetailsDropdown
+                trade={leverageTrade}
+                loading={lmtRouteIsLoading}
+                allowedSlippage={allowedSlippage}
+              />
+            )}
           </DetailsSwapSection>
         </div>
         {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}

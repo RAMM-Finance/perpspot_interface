@@ -542,6 +542,7 @@ export function ValueLabel({
 }: {
   description: string
   label: string
+
   value?: number | string
   syncing: boolean
   symbolAppend?: string
@@ -590,7 +591,6 @@ export function ValueLabel({
 // }
 
 export function AdvancedLeverageSwapDetails({
-  trade,
   allowedSlippage,
   syncing = false,
   hideInfoTooltips = false,
@@ -598,9 +598,14 @@ export function AdvancedLeverageSwapDetails({
   leverageTrade,
 }: AdvancedAddLeverageDetailsProps) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
-  const nativeCurrency = useNativeCurrency()
 
+  const {
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+  } = useSwapState()
+
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
   // const {
   //   existingTotalPosition,
   //   existingPosition,
@@ -637,13 +642,14 @@ export function AdvancedLeverageSwapDetails({
           label={leverageTrade?.existingPosition ? 'Added Position' : 'Exp. Output'}
           value={addedOutput}
           syncing={syncing}
-          symbolAppend={trade?.outputAmount.currency.symbol}
+          symbolAppend={outputCurrency?.symbol}
         />
         <ValueLabel
           description="Amount In / Amount Out"
           label="Quoted Price"
           value={Math.round(Number(price) * 1000000) / 1000000}
           syncing={syncing}
+
           symbolAppend={price ? '/' + String(Math.round(Number(1 / price) * 1000000) / 1000000) : '/-'}
           // symbolAppend={`${trade?.outputAmount.currency.symbol} / ${trade?.inputAmount.currency.symbol}`}
         />
@@ -652,7 +658,7 @@ export function AdvancedLeverageSwapDetails({
           label="Quoted Premium"
           value={Math.round(Number(leverageTrade?.quotedPremium) * 100000) / 100000}
           syncing={syncing}
-          symbolAppend={trade?.inputAmount.currency.symbol}
+          symbolAppend={inputCurrency?.symbol}
         />
         {leverageTrade?.existingPosition && (
           <ValueLabel
@@ -660,7 +666,7 @@ export function AdvancedLeverageSwapDetails({
             label="Returned premium"
             value={Math.round(Number(leverageTrade?.remainingPremium) * 100000) / 100000}
             syncing={syncing}
-            symbolAppend={trade?.inputAmount.currency.symbol}
+            symbolAppend={inputCurrency?.symbol}
           />
         )}
         <ValueLabel
@@ -669,14 +675,15 @@ export function AdvancedLeverageSwapDetails({
           label="Maximum Loss"
           value={Math.round(Number(leverageTrade?.inputAmount?.toExact()) * 100000) / 100000}
           syncing={syncing}
-          symbolAppend={trade?.inputAmount.currency.symbol}
+          symbolAppend={inputCurrency?.symbol}
         />
         <ValueLabel
           description="Fees paid for trade "
           label="Fees"
           value={Math.round(Number(fees) * 100000) / 100000}
           syncing={syncing}
-          symbolAppend={trade?.inputAmount.currency.symbol}
+          symbolAppend={inputCurrency?.symbol}
+
         />
 
         <Separator />
@@ -692,12 +699,7 @@ export function AdvancedLeverageSwapDetails({
               disableHover={hideInfoTooltips}
             >
               <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-                {trade?.tradeType === TradeType.EXACT_INPUT ? (
-                  <Trans>Minimum output</Trans>
-                ) : (
-                  <Trans>Minimum output</Trans>
-                )}{' '}
-                <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
+                <Trans>Minimum output</Trans> <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
               </ThemedText.DeprecatedSubHeader>
             </MouseoverTooltip>
           </RowFixed>
@@ -711,7 +713,7 @@ export function AdvancedLeverageSwapDetails({
             </ThemedText.DeprecatedBlack>
           </TextWithLoadingPlaceholder>
         </RowBetween>
-        {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
+        {/* {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
           <RowBetween>
             <MouseoverTooltip
               text={
@@ -731,7 +733,7 @@ export function AdvancedLeverageSwapDetails({
               </ThemedText.DeprecatedBlack>
             </TextWithLoadingPlaceholder>
           </RowBetween>
-        )}
+        )} */}
       </AutoColumn>
     </StyledCard>
   )

@@ -650,7 +650,7 @@ export function useDerivedLeverageCreationInfo(): {
   )
 
   // TODO calculate slippage from the pool
-  const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), []) // new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
+  const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), [])
 
   const globalStorageAddress = useSingleCallResult(leverageManager, 'globalStorage')
 

@@ -11,13 +11,12 @@ import Row, { RowBetween, RowFixed } from 'components/Row'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useEffect, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
-import { InterfaceTrade, LeverageTradeState, TradeState } from 'state/routing/types'
-import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
+import { InterfaceTrade, TradeState } from 'state/routing/types'
+import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import { AdvancedBorrowSwapDetails, AdvancedLeverageSwapDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
-import GasEstimateBadge from './GasEstimateBadge'
 // import { useCurrency } from 'hooks/Tokens'
 // import { Field } from 'state/swap/actions'
 import GasEstimateTooltip from './GasEstimateTooltip'
@@ -117,9 +116,9 @@ interface SwapDetailsInlineProps {
   syncing: boolean
   loading: boolean
   allowedSlippage: Percent
-  leverageTrade?: LeverageTrade
-  leverageState: LeverageTradeState
-  leverageInputError: boolean
+  // leverageTrade?: LeverageTrade
+  // lmtLoading: boolean
+  // leverageInputError: boolean
 }
 
 interface BorrowDetailsDropdownProps {
@@ -130,41 +129,12 @@ interface BorrowDetailsDropdownProps {
   allowedSlippage: Percent
 }
 
-export default function SwapDetailsDropdown({
-  trade,
-  syncing,
-  loading,
-  allowedSlippage,
-  leverageTrade,
-  leverageState,
-  leverageInputError,
-}: SwapDetailsInlineProps) {
+
+export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
   const theme = useTheme()
   const { chainId } = useWeb3React()
-  const [showDetails, setShowDetails] = useState(true)
-  const { leverage } = useSwapState()
-
-  // useEffect(() => {
-  //   if (leverage && leverageTrade.state !== LeverageTradeState.VALID) {
-  //     setShowDetails(false)
-  //   }
-  // }, [leverageTrade, leverage])
-
-  const disabled =
-    (!leverage && !trade) || (leverage && (leverageState !== LeverageTradeState.VALID || !!leverageInputError))
-  // console.log('leverageTrade.state', leverageTrade.state, disabled, leverage, leverageTrade)
-
-  useEffect(() => {
-    if (leverageState !== LeverageTradeState.VALID) {
-      leverage && showDetails // && setShowDetails(false)
-    }
-  }, [leverageState, leverage, showDetails])
-
-  // console.log('swapDetailsDropdown', showDetails)
-
-  // console.log('leverageState', leverageState)
-
-  return !leverage ? (
+  const [showDetails, setShowDetails] = useState(false)
+  return (
     <Wrapper>
       <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
         <TraceEvent
@@ -220,7 +190,24 @@ export default function SwapDetailsDropdown({
         )}
       </AutoColumn>
     </Wrapper>
-  ) : (
+
+  )
+}
+
+export function LeverageDetailsDropdown({
+  trade,
+  loading,
+  allowedSlippage,
+}: {
+  trade: LeverageTrade | undefined
+  loading: boolean
+  allowedSlippage: Percent
+}) {
+  const theme = useTheme()
+  const { chainId } = useWeb3React()
+  const [showDetails, setShowDetails] = useState(false)
+
+  return (
     <Wrapper style={{ marginTop: '0' }}>
       <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
         <TraceEvent
@@ -229,34 +216,30 @@ export default function SwapDetailsDropdown({
           element={InterfaceElementName.SWAP_DETAILS_DROPDOWN}
           shouldLogImpression={!showDetails}
         >
-          <StyledHeaderRow
-            onClick={() => (!disabled ? setShowDetails(!showDetails) : null)}
-            disabled={disabled}
-            open={showDetails}
-          >
+          <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={!trade} open={showDetails}>
             <RowFixed style={{ position: 'relative' }}>
-              {Boolean(leverageState === LeverageTradeState.LOADING) && (
+              {Boolean(loading) && (
                 <StyledPolling>
                   <StyledPollingDot>
                     <Spinner />
                   </StyledPollingDot>
                 </StyledPolling>
               )}
-              {leverageState === LeverageTradeState.LOADING ? (
-                <ThemedText.DeprecatedMain fontSize={14}>
-                  <Trans>Simulating position ...</Trans>
-                </ThemedText.DeprecatedMain>
-              ) : leverageState === LeverageTradeState.VALID ? (
-                <LoadingOpacityContainer $loading={syncing}>
+              {trade ? (
+                <LoadingOpacityContainer $loading={loading}>
                   <RowFixed>
                     <Info size={12} />
                     <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
                   </RowFixed>
                 </LoadingOpacityContainer>
+              ) : loading ? (
+                <ThemedText.DeprecatedMain fontSize={14}>
+                  <Trans>Simulating position ...</Trans>
+                </ThemedText.DeprecatedMain>
               ) : null}
             </RowFixed>
             <RowFixed>
-              {!trade?.gasUseEstimateUSD ||
+              {/* {!trade?.gasUseEstimateUSD ||
               showDetails ||
               !chainId ||
               !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
@@ -266,7 +249,8 @@ export default function SwapDetailsDropdown({
                   showRoute={!showDetails}
                   disableHover={showDetails}
                 />
-              )}
+              )} */}
+
               <RotatingArrow
                 stroke={trade ? theme.textTertiary : theme.deprecated_bg3}
                 open={Boolean(trade && showDetails)}
@@ -276,16 +260,15 @@ export default function SwapDetailsDropdown({
         </TraceEvent>
         <AnimatedDropdown open={showDetails}>
           <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-            {/* {leverageState === LeverageTradeState.VALID ? ( */}
-            <StyledCard>
-              <AdvancedLeverageSwapDetails
-                leverageTrade={leverageTrade}
-                trade={trade}
-                allowedSlippage={allowedSlippage}
-                syncing={syncing}
-              />
-            </StyledCard>
-            {/* ) : null} */}
+            {trade && (
+              <StyledCard>
+                <AdvancedLeverageSwapDetails
+                  leverageTrade={trade}
+                  allowedSlippage={allowedSlippage}
+                  syncing={loading}
+                />
+              </StyledCard>
+            )}
           </AutoColumn>
         </AnimatedDropdown>
       </AutoColumn>
