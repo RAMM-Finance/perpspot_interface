@@ -21,7 +21,7 @@ import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
 // import Widget from 'components/Widget'
-import { useApproveCallback, useMaxApproveCallback } from 'hooks/useApproveCallback'
+import { useMaxApproveCallback } from 'hooks/useApproveCallback'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hooks/usePools'
 import { useLimitlessPositions } from 'hooks/useV3Positions'
@@ -48,8 +48,6 @@ import {
   useBestPool,
   useBestPoolAddress,
   useDefaultsFromURLSearch,
-  useDerivedBorrowCreationInfo,
-  useDerivedLeverageCreationInfo,
   useDerivedSwapInfo,
   useSwapActionHandlers,
   useSwapState,
@@ -222,19 +220,6 @@ export function getIsValidSwapQuote(
   return !!swapInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
-// function largerPercentValue(a?: Percent, b?: Percent) {
-//   if (a && b) {
-//     return a.greaterThan(b) ? a : b
-//   } else if (a) {
-//     return a
-//   } else if (b) {
-//     return b
-//   }
-//   return undefined
-// }
-
-// const TRADE_STRING = 'SwapRouter';
-
 export default function Swap({ className }: { className?: string }) {
   const navigate = useNavigate()
   const { account, chainId, provider } = useWeb3React()
@@ -338,7 +323,7 @@ export default function Swap({ className }: { className?: string }) {
             [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
             [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
           },
-    [currencies, independentField, parsedAmount, showWrap, trade]
+    [independentField, parsedAmount, showWrap, trade]
   )
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
@@ -369,35 +354,6 @@ export default function Swap({ className }: { className?: string }) {
     }
   }, [inputCurrency, outputCurrency, premium, parsedAmounts])
 
-  // const [leverageApprovalState, approveLeverageManager] = useApproveCallback(
-  //   leverageApproveAmount,
-  //   leverageManagerAddress ?? undefined
-  // )
-
-  const {
-    trade: leverageTrade,
-    state: leverageState,
-    inputError,
-    allowedSlippage: leverageAllowedSlippage,
-    contractError,
-  } = useDerivedLeverageCreationInfo()
-
-  const [borrowInputApprovalState] = useApproveCallback(borrowInputApproveAmount, borrowManagerAddress ?? undefined)
-  const [borrowOutputApprovalState] = useApproveCallback(borrowOutputApproveAmount, borrowManagerAddress ?? undefined)
-
-  const {
-    trade: borrowTrade,
-    state: borrowState,
-    inputError: borrowInputError,
-    allowedSlippage: borrowAllowedSlippage,
-    contractError: borrowContractError,
-  } = useDerivedBorrowCreationInfo({
-    allowance: {
-      input: borrowInputApprovalState,
-      output: borrowOutputApprovalState,
-    },
-  })
-
   // const fiatValueInput = useUSDPrice(parsedAmounts[Field.INPUT])
   // const fiatValueOutput = useUSDPrice(parsedAmounts[Field.OUTPUT])
 
@@ -406,100 +362,11 @@ export default function Swap({ className }: { className?: string }) {
     [trade, tradeState]
   )
 
-  // const [borrowRouteNotFound, borrowRouteIsLoading] = useMemo(
-  //   () => [borrowState === TradeState.NO_ROUTE_FOUND, borrowState === TradeState.LOADING]
-  //   , [borrowTrade])
-
-  // const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
-  //   () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING]
-  //   , [leverageState])
-
-  // const fiatValueTradeInput = useUSDPrice(trade?.inputAmount)
-  // const fiatValueTradeOutput = useUSDPrice(trade?.outputAmount)
-  // const stablecoinPriceImpact = useMemo(
-  //   () =>
-  //     routeIsSyncing || !trade
-  //       ? undefined
-  //       : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
-  //   [fiatValueTradeInput, fiatValueTradeOutput, routeIsSyncing, trade]
-  // )
-
-  // const isValid = !swapInputError
-  // const lmtIsValid = !inputError
-  // const dependentField: Field = independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT
-
-  // valid user input
-  // const lmtIsValid = !inputError
-
-  // const borrowIsValid = !borrowInputError
-
-  // const handleTypeInput = useCallback(
-  //   (value: string) => {
-  //     onUserInput(Field.INPUT, value)
-  //   },
-  //   [onUserInput]
-  // )
-  // const handleTypeOutput = useCallback(
-  //   (value: string) => {
-  //     onUserInput(Field.OUTPUT, value)
-  //   },
-  //   [onUserInput]
-  // )
-
   // reset if they close warning without tokens in params
   const handleDismissTokenWarning = useCallback(() => {
     setDismissTokenWarning(true)
     navigate('/swap/')
   }, [navigate])
-
-  // console.log("valid borrow", borrowIsValid)
-
-  // modal and loading
-  // const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash, showLeverageConfirm, showBorrowConfirm }, setSwapState] = useState<{
-  //   showConfirm: boolean
-  //   tradeToConfirm: Trade<Currency, Currency, TradeType> | undefined
-  //   attemptingTxn: boolean
-  //   swapErrorMessage: string | undefined
-  //   txHash: string | undefined
-  //   showLeverageConfirm: boolean
-  //   showBorrowConfirm: boolean
-  // }>({
-  //   showConfirm: false,
-  //   tradeToConfirm: undefined,
-  //   attemptingTxn: false,
-  //   swapErrorMessage: undefined,
-  //   txHash: undefined,
-  //   showLeverageConfirm: false,
-  //   showBorrowConfirm: false
-  // })
-
-  // const formattedAmounts = useMemo(
-  //   () => ({
-  //     [independentField]: typedValue,
-  //     [dependentField]: showWrap
-  //       ? parsedAmounts[independentField]?.toExact() ?? ''
-  //       : formatTransactionAmount(currencyAmountToPreciseFloat(parsedAmounts[dependentField])),
-  //   }),
-  //   [currencies, dependentField, independentField, parsedAmounts, showWrap, typedValue]
-  // )
-
-  // const userHasSpecifiedInputOutput = Boolean(
-  //   currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
-  // )
-
-  // const maximumAmountIn = useMemo(() => {
-  //   const maximumAmountIn = trade?.maximumAmountIn(allowedSlippage)
-  //   return maximumAmountIn?.currency.isToken ? (maximumAmountIn as CurrencyAmount<Token>) : undefined
-  // }, [allowedSlippage, trade])
-
-  // const allowance = usePermit2Allowance(
-  //   maximumAmountIn ??
-  //   (parsedAmounts[Field.INPUT]?.currency.isToken
-  //     ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
-  //     : undefined),
-  //   // isSupportedChain(chainId) ? UNIVERSAL_ROUTER_ADDRESS(chainId) : undefined
-  //   isSupportedChain(chainId) ? ROUTER_ADDRESSES[chainId] : undefined
-  // )
 
   const poolAddress = useBestPoolAddress(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
 
@@ -537,59 +404,11 @@ export default function Swap({ className }: { className?: string }) {
     pool,
   ])
 
-  // const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
-  //   () => maxAmountSpend(currencyBalances[Field.INPUT]),
-  //   [currencyBalances]
-  // )
-
-  // const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
-  // const swapFiatValues = useMemo(() => {
-  //   return { amountIn: fiatValueTradeInput.data, amountOut: fiatValueTradeOutput.data }
-  // }, [fiatValueTradeInput, fiatValueTradeOutput])
-
-  // the callback to execute the swap
-  // const { callback: swapCallback } = useSwapCallback(
-  //   trade,
-  //   swapFiatValues,
-  //   allowedSlippage,
-  //   allowance.state === AllowanceState.ALLOWED ? allowance.permitSignature : undefined
-  // )
-
   // errors
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
   // warnings on the greater of fiat value price impact and execution price impact
 
-  // const handleInputSelect = useCallback(
-  //   (inputCurrency: Currency) => {
-  //     onCurrencySelection(Field.INPUT, inputCurrency)
-  //   },
-  //   [onCurrencySelection]
-  // )
-
-  // const handleOutputSelect = useCallback(
-  //   (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
-  //   [onCurrencySelection]
-  // )
-
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
-
-  // const priceImpactTooHigh = priceImpactSeverity > 3 && !isExpertMode
-  // const showPriceImpactWarning = largerPriceImpact && priceImpactSeverity > 3
-
-  // const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(leverageFactor ?? "1", onLeverageFactorChange)
-  // const [isTrade, setIsTrade] = useState(true);
-
-  // const { state } = useLocation() as any;
-  // if (state) {
-  //   // console.log('state', state)
-  //   const { currency0, currency1 } = state
-
-  //   useEffect(() => {
-  //     handleInputSelect(currency0)
-  //     handleOutputSelect(currency1)
-
-  //   }, [currency0, currency1])
-  // }
 
   // Handle time based logging events and event properties.
   useEffect(() => {
@@ -622,10 +441,6 @@ export default function Swap({ className }: { className?: string }) {
     trade,
     setSwapQuoteReceivedDate,
   ])
-
-  // const showDetailsDropdown = Boolean(
-  //   !showWrap && userHasSpecifiedInputOutput && (trade || routeIsLoading || routeIsSyncing)
-  // )
 
   const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
 
