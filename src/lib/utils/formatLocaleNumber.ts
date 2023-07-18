@@ -1,4 +1,6 @@
+import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Price } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from 'constants/locales'
 
 interface FormatLocaleNumberArgs {
@@ -37,4 +39,8 @@ export default function formatLocaleNumber({
   }
 
   return numberString.toLocaleString(localeArg, options)
+}
+
+export function formatBNToString(n: BN | undefined, type = NumberType.SwapTradeAmount): string {
+  return n ? formatNumberOrString(n?.toString(10), type) : ''
 }

@@ -68,7 +68,7 @@ export function useSwapActionHandlers(): {
   onActiveTabChange: (activeTab: ActiveSwapTab) => void
   onLTVChange: (ltv: string) => void
   onBorrowManagerAddress: (borrowManagerAddress: string) => void
-  onPremiumChange: (premium: number) => void
+  onPremiumChange: (premium: BN) => void
   onSwitchSwapModalTab: (tab: string) => void
 } {
   const dispatch = useAppDispatch()
@@ -156,7 +156,7 @@ export function useSwapActionHandlers(): {
   )
 
   const onPremiumChange = useCallback(
-    (premium: number) => {
+    (premium: BN) => {
       dispatch(setPremium({ premium }))
     },
     [dispatch]
@@ -196,30 +196,29 @@ const BAD_RECIPIENT_ADDRESSES: { [address: string]: true } = {
 export interface LeverageTrade {
   inputAmount: CurrencyAmount<Currency>
   borrowedAmount: CurrencyAmount<Currency>
-  expectedTotalPosition: number // new output. i.e. new position - existing position.
-  strikePrice: number
-  quotedPremium: number
+  expectedTotalPosition: BN // new output. i.e. new position - existing position.
+  strikePrice: BN
+  quotedPremium: BN
   priceImpact: Percent
-  remainingPremium: number
+  remainingPremium: BN
   effectiveLeverage: number
   existingPosition: boolean
-  existingTotalDebtInput: number
-  existingTotalPosition: number
-  existingCollateral: number
+  existingTotalDebtInput: BN
+  existingTotalPosition: BN
+  existingCollateral: BN
   tokenId?: number // if not existing position then this will be undefined
 }
 
 export interface BorrowCreationDetails {
-  collateralAmount: number // CurrencyAmount<Currency> | undefined
-  borrowedAmount: number // totalDebtInput
-  quotedPremium: number
-  unusedPremium: number
+  collateralAmount: BN // CurrencyAmount<Currency> | undefined
+  borrowedAmount: BN // totalDebtInput
+  quotedPremium: BN
+  unusedPremium: BN
   priceImpact: Percent
-  ltv: number
   // state: TradeState
   existingPosition: boolean
-  existingTotalDebtInput: number
-  existingCollateral: number
+  existingTotalDebtInput: BN
+  existingCollateral: BN
 }
 
 // in its return the pos, vars.prevRemainingPremium, vars.premium, the vars.premium is new quoted, prevRemaining is unused amount you get back,
@@ -460,17 +459,11 @@ export function useDerivedBorrowCreationInfo({
       const position: any = contractResult[0]
       // const expectedOutput = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
 
-      const borrowedAmount = new BN(position.totalDebtInput.toString())
-        .shiftedBy(-inputCurrency?.wrapped.decimals)
-        .toNumber()
-      const unusedPremium = new BN((contractResult[1] as any).toString())
-        .shiftedBy(-inputCurrency?.wrapped.decimals)
-        .toNumber()
-      const strikePrice = new BN(borrowedAmount).div(debouncedAmount.toExact()).toNumber()
-      const quotedPremium = new BN((contractResult[2] as any).toString())
-        .shiftedBy(-inputCurrency?.wrapped.decimals)
-        .toNumber()
-      const t = new BN(strikePrice)
+      const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+      const unusedPremium = new BN((contractResult[1] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+      const strikePrice = new BN(borrowedAmount).div(debouncedAmount.toExact())
+      const quotedPremium = new BN((contractResult[2] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+      const t = strikePrice
         .minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
         .abs()
         .dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
@@ -480,8 +473,8 @@ export function useDerivedBorrowCreationInfo({
 
       // existing position
       const _existingPosition = !!existingPosition
-      const existingTotalDebtInput = existingPosition?.totalDebtInput ?? 0
-      const existingCollateral = existingPosition?.initialCollateral ?? 0
+      const existingTotalDebtInput = existingPosition?.totalDebtInput ?? new BN(0)
+      const existingCollateral = existingPosition?.initialCollateral ?? new BN(0)
       // if (existingPosition) {
       //   _existingPosition = true
       //   existingTotalDebtInput =
@@ -489,14 +482,13 @@ export function useDerivedBorrowCreationInfo({
       // }
 
       return {
-        collateralAmount: Number(debouncedAmount.toExact()),
+        collateralAmount: new BN(debouncedAmount.toExact()),
         borrowedAmount, // CurrencyAmount.fromRawAmount(inputCurrency?.wrapped, new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)),
         state: tradeState,
         unusedPremium,
         strikePrice,
         quotedPremium, // quotedPremium - unusedPremium,
         priceImpact,
-        ltv: Number(ltv),
         existingPosition: _existingPosition,
         existingTotalDebtInput,
         existingCollateral,
@@ -504,7 +496,7 @@ export function useDerivedBorrowCreationInfo({
     } else {
       return undefined
     }
-  }, [existingPosition, ltv, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
+  }, [existingPosition, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
 
   // console.log('trade', existingPosition, trade)
 
@@ -517,14 +509,12 @@ export function useDerivedBorrowCreationInfo({
       if (tradeState === TradeState.VALID && trade) {
         onPremiumChange(trade.quotedPremium)
       } else if (existingPosition && amount && Number(_ltv) > 0) {
-        const addedDebt = Number(amount) * Number(price)
-        onPremiumChange((addedDebt + Number(existingPosition?.totalDebtInput)) * 0.002)
+        const addedDebt = new BN(Number(amount) * Number(price))
+        onPremiumChange(addedDebt.plus(existingPosition?.totalDebtInput).times(0.002))
       } else if (Number(_ltv) > 0 && amount) {
-        onPremiumChange(Number(amount) * Number(price) * 0.002)
-        // console.log("zeke")
+        onPremiumChange(new BN(Number(amount) * Number(price) * 0.002))
       } else {
-        onPremiumChange(0)
-        // console.log("alli")
+        onPremiumChange(new BN(0))
       }
     }
   }, [activeTab, tradeState, trade, typedValue, pool, ltv, existingPosition, onPremiumChange, inputIsToken0])
@@ -757,11 +747,11 @@ export function useDerivedLeverageCreationInfo(): {
     ) {
       // existing position
       let _existingPosition = false
-      let existingTotalDebtInput = 0
-      let existingTotalPosition = 0
+      let existingTotalDebtInput = new BN(0)
+      let existingTotalPosition = new BN(0)
       let tokenId
 
-      let existingCollateral = 0
+      let existingCollateral = new BN(0)
       if (existingPosition) {
         _existingPosition = true
         existingTotalDebtInput = existingPosition.totalDebtInput
@@ -772,23 +762,17 @@ export function useDerivedLeverageCreationInfo(): {
 
       const position: any = contractResult[0]
 
-      const expectedTotalPosition = new BN(position.totalPosition.toString())
-        .shiftedBy(-outputCurrency?.wrapped.decimals)
-        .toNumber()
-      const borrowedAmount = new BN(position.totalDebtInput.toString())
-        .shiftedBy(-inputCurrency?.wrapped.decimals)
-        .toNumber()
-      const strikePrice = new BN(expectedTotalPosition)
-        .div(new BN(borrowedAmount).plus(debouncedAmount.toExact()))
-        .toNumber()
+      const expectedTotalPosition = new BN(position.totalPosition.toString()).shiftedBy(
+        -outputCurrency?.wrapped.decimals
+      )
+      const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+      const strikePrice = new BN(expectedTotalPosition).div(new BN(borrowedAmount).plus(debouncedAmount.toExact()))
 
-      const quotedPremium = new BN((contractResult[2] as any).toString())
-        .shiftedBy(-inputCurrency?.wrapped.decimals)
-        .toNumber()
-      const returnedPremium = new BN((contractResult[1] as any).toString())
-        .shiftedBy(-inputCurrency?.wrapped.decimals)
-        .toNumber()
-      const t = new BN(strikePrice)
+      const quotedPremium = new BN((contractResult[2] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+
+      const returnedPremium = new BN((contractResult[1] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+
+      const t = strikePrice
         .minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
         .abs()
         .dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
@@ -832,14 +816,14 @@ export function useDerivedLeverageCreationInfo(): {
         onPremiumChange(trade.quotedPremium)
         return
       } else if (existingPosition && Number(leverageFactor) > 1 && amount) {
-        const addedDebt = Number(amount) * (Number(leverageFactor) - 1)
-        onPremiumChange((addedDebt + Number(existingPosition.totalDebtInput)) * 0.002)
+        const addedDebt = new BN(Number(amount) * (Number(leverageFactor) - 1))
+        onPremiumChange(addedDebt.plus(existingPosition.totalDebtInput).times(0.002))
         return
       } else if (Number(leverageFactor) > 1 && amount) {
-        onPremiumChange(Number(amount) * (Number(leverageFactor) - 1) * 0.002)
+        onPremiumChange(new BN(Number(amount) * (Number(leverageFactor) - 1) * 0.002))
         return
       } else {
-        onPremiumChange(0)
+        onPremiumChange(new BN(0))
       }
     }
   }, [tradeState, onPremiumChange, trade, typedValue, activeTab, leverage, leverageFactor, existingPosition])

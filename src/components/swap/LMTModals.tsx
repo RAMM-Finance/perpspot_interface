@@ -48,8 +48,8 @@ export default function ReducePositionModal({
   }, [isOpen, onDismiss])
 
   const modalHeader = useCallback(() => {
-    return <ReduceLeveragePositionDetails leverageTrade={position} />
-  }, [position])
+    return <ReduceLeveragePositionDetails loading={loading} leverageTrade={position} />
+  }, [position, loading])
 
   const modalBottom = useCallback(() => {
     return (
@@ -115,7 +115,7 @@ export function AddLeveragePremiumModal({
   const [txHash, setTxHash] = useState('')
 
   // console.log("args: ", trader, isOpen, tokenId, leverageManagerAddress)
-  const { error, position } = useLimitlessPositionFromTokenId(tokenId)
+  const { error, loading, position } = useLimitlessPositionFromTokenId(tokenId)
 
   const onModalDismiss = useCallback(() => {
     if (isOpen) setShouldLogModalCloseEvent(true)
@@ -124,8 +124,8 @@ export function AddLeveragePremiumModal({
   // console.log("postionState: ", position)
 
   const modalHeader = useCallback(() => {
-    return <ReduceLeveragePositionDetails leverageTrade={position} />
-  }, [position])
+    return <ReduceLeveragePositionDetails loading={loading} leverageTrade={position} />
+  }, [position, loading])
 
   const modalBottom = useCallback(() => {
     return (
@@ -220,8 +220,8 @@ export function AddBorrowPremiumModal({
   // console.log("postionState: ", position)
 
   const modalHeader = useCallback(() => {
-    return <BorrowPremiumPositionDetails position={position} />
-  }, [position])
+    return <BorrowPremiumPositionDetails loading={loading} position={position} />
+  }, [position, loading])
 
   const modalBottom = useCallback(() => {
     return (
@@ -233,7 +233,7 @@ export function AddBorrowPremiumModal({
         // handleAddPremium={handleAddPremium}
       />
     )
-  }, [onConfirm])
+  }, [tokenId, trader])
 
   // text to show while loading
   const pendingText = <Trans>Loading...</Trans>
@@ -295,8 +295,8 @@ export function ReduceBorrowCollateralModal({
   }, [isOpen, onDismiss])
 
   const modalHeader = useCallback(() => {
-    return <ReduceBorrowDetails position={position} />
-  }, [onAcceptChanges, shouldLogModalCloseEvent])
+    return <ReduceBorrowDetails loading={loading} position={position} />
+  }, [position, loading])
 
   const modalBottom = useCallback(() => {
     return (
@@ -307,7 +307,7 @@ export function ReduceBorrowCollateralModal({
         setTxHash={setTxHash}
       />
     )
-  }, [onConfirm])
+  }, [tokenId, trader, setAttemptingTxn, setTxHash])
 
   // text to show while loading
   const pendingText = <Trans>Loading...</Trans>
@@ -366,8 +366,8 @@ export function ReduceBorrowDebtModal({
   }, [isOpen, onDismiss])
 
   const modalHeader = useCallback(() => {
-    return <ReduceBorrowDetails position={position} />
-  }, [onAcceptChanges, shouldLogModalCloseEvent])
+    return <ReduceBorrowDetails loading={loading} position={position} />
+  }, [position, loading])
 
   const modalBottom = useCallback(() => {
     return (
@@ -378,7 +378,7 @@ export function ReduceBorrowDebtModal({
         setTxHash={setTxHash}
       />
     )
-  }, [onConfirm])
+  }, [tokenId, trader, setAttemptingTxn, setTxHash])
 
   // text to show while loading
   const pendingText = <Trans>Loading...</Trans>

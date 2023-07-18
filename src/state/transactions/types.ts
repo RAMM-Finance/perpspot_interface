@@ -190,10 +190,10 @@ interface SubmitProposalTransactionInfo {
 
 export interface AddBorrowPositionTransactionInfo {
   type: TransactionType.ADD_BORROW
-  collateralAmount: number
+  collateralAmount: string
   inputCurrencyId: string
   outputCurrencyId: string
-  borrowedAmount: number
+  borrowedAmount: string
 }
 
 export interface ReduceLeveragePositionTransactionInfo {
@@ -256,10 +256,10 @@ export interface ReduceBorrowDebtTransactionInfo {
 
 export interface AddLeverageTransactionInfo {
   type: TransactionType.ADD_LEVERAGE
-  inputAmount: number
+  inputAmount: string
   inputCurrencyId: string
   outputCurrencyId: string
-  expectedAddedPosition: number
+  expectedAddedPosition: string
 }
 
 export type TransactionInfo =

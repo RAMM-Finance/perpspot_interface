@@ -38,6 +38,7 @@ import { useAddLeveragePositionCallback, useSwapCallback } from 'hooks/useSwapCa
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { useSelector } from 'react-redux'
@@ -434,7 +435,7 @@ const TradeTabContent = () => {
       onUserInput(Field.INPUT, '')
       onLeverageFactorChange('1')
       // onLTVChange('')
-      onPremiumChange(0)
+      onPremiumChange(new BN(0))
     }
   }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash, onLeverageFactorChange, onPremiumChange])
 
@@ -695,13 +696,11 @@ const TradeTabContent = () => {
               {leverage && (
                 <SwapCurrencyInputPanel
                   value={
-                    leverageState !== LeverageTradeState.VALID
+                    leverageState !== LeverageTradeState.VALID || !leverageTrade
                       ? '-'
-                      : leverageTrade?.expectedTotalPosition
-                      ? leverageTrade?.existingTotalPosition
-                        ? String(leverageTrade.expectedTotalPosition - leverageTrade.existingTotalPosition)
-                        : String(leverageTrade.expectedTotalPosition)
-                      : '-'
+                      : leverageTrade?.existingPosition
+                      ? formatBNToString(leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition))
+                      : formatBNToString(leverageTrade.expectedTotalPosition)
                   }
                   onUserInput={handleTypeOutput}
                   label={
@@ -969,7 +968,9 @@ const TradeTabContent = () => {
                         <Trans>
                           Permission is required for Limitless to use each token.{' '}
                           {premium && typedValue && inputCurrency
-                            ? `Allowance of ${premium + Number(typedValue)} ${inputCurrency.symbol} required.`
+                            ? `Allowance of ${formatBNToString(premium.plus(Number(typedValue)))} ${
+                                inputCurrency.symbol
+                              } required.`
                             : null}
                         </Trans>
                       }

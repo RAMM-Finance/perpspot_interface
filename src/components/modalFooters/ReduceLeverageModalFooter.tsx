@@ -20,6 +20,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 // import Loader from 'components/Icons/LoadingSpinner'
 import { usePool } from 'hooks/usePools'
 import { convertBNToNum, useLimitlessPositionFromTokenId } from 'hooks/useV3Positions'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 // import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import moment from 'moment'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -120,10 +121,11 @@ function useDerivedLeverageReduceInfo(
 
       const formattedSlippage = new BN(allowedSlippage).plus(100).shiftedBy(16).toFixed(0)
 
-      const formattedReduceAmount =
-        Math.abs(Number(reduceAmount) - position.totalPosition) < 1e-12
-          ? new BN(position.totalPosition).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0)
-          : new BN(reduceAmount).shiftedBy(18).toFixed(0)
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
+      console.log('formattedReduceAmount', formattedReduceAmount)
+      // Math.abs(Number(reduceAmount) - position.totalPosition) < 1e-12
+      //   ? new BN(position.totalPosition).shiftedBy(DEFAULT_ERC20_DECIMALS).toFixed(0)
+      //   : new BN(reduceAmount).shiftedBy(18).toFixed(0)
 
       // const inputReduceAmount =
       //   Math.abs(Number(position.totalPosition) - Number(formattedReduceAmount)) < 1e12
@@ -140,6 +142,7 @@ function useDerivedLeverageReduceInfo(
           formattedSlippage,
           formattedReduceAmount
         )
+        console.log('reducePositionResult', reducePositionResult)
         setContractResult({
           reducePositionResult,
         })
@@ -216,10 +219,7 @@ function useDerivedLeverageReduceInfo(
       const returnedAmount = convertBNToNum(reducePositionResult[3], DEFAULT_ERC20_DECIMALS)
       const unusedPremium = convertBNToNum(reducePositionResult[4], DEFAULT_ERC20_DECIMALS)
       const premium = convertBNToNum(reducePositionResult[5], DEFAULT_ERC20_DECIMALS)
-      const formattedReduceAmount =
-        Math.abs(Number(reduceAmount) - position.totalPosition) < 1e-12
-          ? position.totalPosition
-          : new BN(reduceAmount).shiftedBy(18).toFixed(0)
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
 
       return {
         token0Amount,
@@ -231,12 +231,12 @@ function useDerivedLeverageReduceInfo(
         entryPrice,
         currentPrice,
         quoteBaseSymbol,
-        newTotalPosition: position.totalPosition - Number(formattedReduceAmount),
+        newTotalPosition: position.totalPosition.toNumber() - Number(formattedReduceAmount),
       }
     } else {
       return undefined
     }
-  }, [contractResult, currentPrice, entryPrice, quoteBaseSymbol])
+  }, [contractResult, currentPrice, entryPrice, quoteBaseSymbol, position, reduceAmount])
 
   return {
     transactionInfo,
@@ -296,6 +296,7 @@ export function ReduceLeverageModalFooter({
   useEffect(() => {
     ;(!!userError || !transactionInfo) && showDetails && setShowDetails(false)
   }, [userError, transactionInfo, showDetails])
+
   const loading = useMemo(() => derivedState === DerivedInfoState.LOADING, [derivedState])
 
   const { account, provider } = useWeb3React()
@@ -309,10 +310,7 @@ export function ReduceLeverageModalFooter({
       if (!token0 || !token1) throw Error('missing tokens')
       if (!position) throw Error('missing position')
       const formattedSlippage = new BN(slippage).plus(100).shiftedBy(16).toFixed(0)
-      const formattedReduceAmount =
-        Math.abs(position.totalPosition - Number(reduceAmount)) < 1e-12
-          ? new BN(position.totalPosition).shiftedBy(18).toFixed(0)
-          : new BN(reduceAmount).shiftedBy(18).toFixed(0)
+      const formattedReduceAmount = new BN(reduceAmount).shiftedBy(18).toFixed(0)
 
       setAttemptingTxn(true)
 
@@ -323,20 +321,20 @@ export function ReduceLeverageModalFooter({
           console.log('reduceResponse', response)
           addTransaction(response, {
             type: TransactionType.REDUCE_LEVERAGE,
-            reduceAmount: new BN(formattedReduceAmount).shiftedBy(-DEFAULT_ERC20_DECIMALS).toNumber(),
+            reduceAmount: Number(reduceAmount),
             pnl: Number(transactionInfo.pnl),
-            initialCollateral: position.initialCollateral,
-            leverageFactor:
-              (Number(position.totalDebtInput) + Number(position.initialCollateral)) /
-              Number(position.initialCollateral),
+            initialCollateral: position.initialCollateral.toNumber(),
+            leverageFactor: position.totalDebtInput
+              .plus(position.initialCollateral)
+              .div(position.initialCollateral)
+              .toNumber(),
             inputCurrencyId: inputIsToken0 ? currencyId(token0) : currencyId(token1),
             outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1),
             entryPrice: transactionInfo.entryPrice,
             markPrice: transactionInfo.currentPrice,
             quoteBaseSymbol: transactionInfo.quoteBaseSymbol,
             timestamp: moment().format('YYYY-MM-DD'),
-            newTotalPosition:
-              position.totalPosition - Number(reduceAmount) < 1e-12 ? 0 : position.totalPosition - Number(reduceAmount),
+            newTotalPosition: position.totalPosition.minus(reduceAmount).toNumber(),
           })
           setTxHash(response.hash)
           setAttemptingTxn(false)
@@ -417,7 +415,7 @@ export function ReduceLeverageModalFooter({
                   {`${
                     position?.totalPosition
                       ? formatNumber(
-                          (Number(reduceAmount) / Number(position?.totalDebtInput)) * 100,
+                          (Number(reduceAmount) / Number(position?.totalPosition)) * 100,
                           NumberType.SwapTradeAmount
                         )
                       : '-'
@@ -443,7 +441,7 @@ export function ReduceLeverageModalFooter({
                 }}
                 showMaxButton={true}
                 onMax={() => {
-                  setDebouncedReduceAmount(position?.totalPosition ? String(position?.totalPosition) : '')
+                  setDebouncedReduceAmount(position?.totalPosition ? position?.totalPosition.toString(10) : '')
                 }}
                 hideBalance={true}
                 currency={inputIsToken0 ? token1 : token0}
@@ -613,14 +611,9 @@ export function ReduceLeverageModalFooter({
                                 inputIsToken0 ? token0?.symbol : token1?.symbol
                               }`}
                             </TruncatedText>
-                            <DeltaText
-                              delta={Number(
-                                (100 * (Math.round(Number(transactionInfo?.pnl) * 1000) / 1000)) /
-                                  Number(initCollateral)
-                              )}
-                            >
-                              {formatNumber(
-                                (100 * Number(transactionInfo.pnl)) / Number(initCollateral),
+                            <DeltaText delta={Number(transactionInfo.pnl)}>
+                              {formatBNToString(
+                                new BN(transactionInfo.pnl).div(position?.initialCollateral ?? 1).multipliedBy(100),
                                 NumberType.SwapTradeAmount
                               )}{' '}
                               %
@@ -654,19 +647,6 @@ export function ReduceLeverageModalFooter({
           </Text>
         )}
       </ButtonError>
-
-      {/* {userError ? (
-          userError
-        ) : derivedState !== DerivedInfoState.VALID ? (
-          <Trans>
-            Invalid Transaction
-          </Trans>
-        ) : (
-          <Text fontSize={20} fontWeight={500}>
-            <Trans>Reduce Position</Trans>
-          </Text>
-        )
-        } */}
     </AutoRow>
   )
 }

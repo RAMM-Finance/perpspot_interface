@@ -1,4 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit'
+import { BigNumber as BN } from 'bignumber.js'
 import { parsedQueryString } from 'hooks/useParsedQueryString'
 
 import {
@@ -41,7 +42,7 @@ export interface SwapState {
   readonly activeTab: ActiveSwapTab
   readonly ltv: string | undefined | null
   readonly borrowManagerAddress: string | undefined | null
-  readonly premium: number | undefined | null
+  readonly premium: BN | undefined | null
   tab: string
 }
 

@@ -13,7 +13,7 @@ const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
   // margin-top: 8px;
-  width:100%;
+  width: 100%;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   background-color: ${({ theme }) => theme.backgroundSurface};
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
@@ -71,7 +71,7 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   return (
     <GridContainer>
-      <HeaderRow/>
+      <HeaderRow />
       <TokenDataContainer>
         <LoadingRows rowCount={rowCount} />
       </TokenDataContainer>
@@ -79,7 +79,13 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-export default function PositionsTable({positions, loading}: {positions?: LimitlessPositionDetails[], loading: boolean}) {
+export default function PositionsTable({
+  positions,
+  loading,
+}: {
+  positions?: LimitlessPositionDetails[]
+  loading: boolean
+}) {
   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   // const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
 
@@ -94,17 +100,10 @@ export default function PositionsTable({positions, loading}: {positions?: Limitl
         <HeaderRow />
         <TokenDataContainer>
           {positions?.map(
-            (position, index) =>
-            position?.tokenId && (
-                <LoadedRow
-                  key={position.tokenId}
-                  position={position}
-                />
-              )
+            (position, index) => position?.tokenId && <LoadedRow key={position.tokenId} position={position} />
           )}
         </TokenDataContainer>
       </GridContainer>
-      
     )
   }
 }

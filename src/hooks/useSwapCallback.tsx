@@ -1,9 +1,11 @@
+import { formatNumber, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { Contract } from 'ethers'
 import { PermitSignature } from 'hooks/usePermitAllowance'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
 import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
@@ -125,8 +127,10 @@ export function useAddLeveragePositionCallback(
           type: TransactionType.ADD_LEVERAGE,
           inputCurrencyId: currencyId(trade.inputAmount.currency),
           outputCurrencyId: currencyId(trade.outputAmount.currency),
-          inputAmount: Number(leverageTrade.inputAmount.toExact()),
-          expectedAddedPosition: leverageTrade.expectedTotalPosition - leverageTrade.existingTotalPosition,
+          inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
+          expectedAddedPosition: formatBNToString(
+            leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
+          ),
         })
         return response.hash
       })
@@ -197,10 +201,10 @@ export function useAddBorrowPositionCallback(
           console.log('borrowResponse', response)
           addTransaction(response, {
             type: TransactionType.ADD_BORROW,
-            collateralAmount: Number(parsedAmount?.toExact()),
+            collateralAmount: formatNumber(Number(parsedAmount?.toExact())),
             inputCurrencyId: currencyId(inputCurrency),
             outputCurrencyId: currencyId(outputCurrency),
-            borrowedAmount: borrowTrade.borrowedAmount,
+            borrowedAmount: formatBNToString(borrowTrade.borrowedAmount),
           })
           return response.hash
         })

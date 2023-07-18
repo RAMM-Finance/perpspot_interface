@@ -122,14 +122,14 @@ export function useLimitlessPositions(account: string | undefined): {
           token0Address: key.token0,
           token1Address: key.token1,
           poolFee: key.fee,
-          totalPosition: convertBNToNum(position.totalPosition, 18),
-          totalDebt: convertBNToNum(position.totalDebt, 18),
-          totalDebtInput: convertBNToNum(position.totalDebtInput, 18),
+          totalPosition: convertToBN(position.totalPosition, 18),
+          totalDebt: convertToBN(position.totalDebt, 18),
+          totalDebtInput: convertToBN(position.totalDebtInput, 18),
           // creationPrice: convertBNToNum(position.creationPrice, 18),
-          initialCollateral: convertBNToNum(position.initCollateral, 18),
-          recentPremium: convertBNToNum(position.recentPremium, 18),
-          unusedPremium: convertBNToNum(position.unusedPremium, 18),
-          totalPremium: convertBNToNum(position.totalPremium, 18),
+          initialCollateral: convertToBN(position.initCollateral, 18),
+          recentPremium: convertToBN(position.recentPremium, 18),
+          unusedPremium: convertToBN(position.unusedPremium, 18),
+          totalPremium: convertToBN(position.totalPremium, 18),
           isToken0: position.isToken0,
           openTime: position.openTime,
           repayTime: position.repayTime,
@@ -153,6 +153,10 @@ export function useLimitlessPositions(account: string | undefined): {
 
 export function convertBNToNum(num: BigNumber, decimals: number) {
   return new BN(num.toString()).shiftedBy(-decimals).toNumber()
+}
+
+export function convertToBN(num: BigNumber, decimals: number) {
+  return new BN(num.toString()).shiftedBy(-decimals)
 }
 
 export enum PositionState {
@@ -201,18 +205,25 @@ export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {
         token0Address: key.token0,
         token1Address: key.token1,
         poolFee: key.fee,
-        totalPosition: convertBNToNum(position.totalPosition, 18),
+        totalPosition: convertToBN(position.totalPosition, 18),
+        totalPositionNumber: convertBNToNum(position.totalPosition, 18),
         totalPositionRaw: position.isBorrow ? position.totalDebtInput.toString() : position.totalPosition.toString(),
-        totalDebt: convertBNToNum(position.totalDebt, 18),
-        totalDebtInput: convertBNToNum(position.totalDebtInput, 18),
+        totalDebt: convertToBN(position.totalDebt, 18),
+        totalDebtNumber: convertBNToNum(position.totalDebt, 18),
+        totalDebtInput: convertToBN(position.totalDebtInput, 18),
+        totalDebtInputNumber: convertBNToNum(position.totalDebtInput, 18),
         // creationPrice: convertBNToNum(position.creationPrice, 18),
-        initialCollateral: convertBNToNum(position.initCollateral, 18),
-        recentPremium: convertBNToNum(position.recentPremium, 18),
-        totalPremium: convertBNToNum(position.totalPremium, 18),
-        unusedPremium: convertBNToNum(position.unusedPremium, 18),
+        initialCollateral: convertToBN(position.initCollateral, 18),
+        initialCollateralNumber: convertBNToNum(position.initCollateral, 18),
+        recentPremium: convertToBN(position.recentPremium, 18),
+        recentPremiumNumber: convertBNToNum(position.recentPremium, 18),
+        totalPremium: convertToBN(position.totalPremium, 18),
+        totalPremiumNumber: convertBNToNum(position.totalPremium, 18),
+        unusedPremium: convertToBN(position.unusedPremium, 18),
+        unusedPremiumNumber: convertBNToNum(position.unusedPremium, 18),
         isToken0: position.isToken0,
-        openTime: position.openTime.toString(),
-        repayTime: position.repayTime.toString(),
+        openTime: position.openTime,
+        repayTime: position.repayTime,
         isBorrow: position.isBorrow,
         // borrowInfo: position.borrowInfo.map((info: any) => convertBNToNum(info, 18)),
       }

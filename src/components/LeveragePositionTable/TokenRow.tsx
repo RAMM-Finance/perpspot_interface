@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from "bignumber.js"
+import { BigNumber as BN } from 'bignumber.js'
 import { EditCell, UnderlineText } from 'components/BorrowPositionTable/TokenRow'
 import { AutoColumn } from 'components/Column'
 import Row, { AutoRow, RowBetween, RowFixed } from 'components/Row'
@@ -12,8 +12,9 @@ import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { formatSymbol } from 'lib/utils/formatSymbol'
-import moment from "moment"
+import moment from 'moment'
 import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -31,11 +32,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
 import { LoadingBubble } from './loading'
-import {
-  filterStringAtom,
-  PositionSortMethod,
-  useSetSortMethod,
-} from './state'
+import { filterStringAtom, PositionSortMethod, useSetSortMethod } from './state'
 
 const Cell = styled.div`
   display: flex;
@@ -64,22 +61,22 @@ const StyledTokenRow = styled.div<{
   // padding-left: 8px;
   // padding-right: 8px;
   transition: ${({
-  theme: {
-    transition: { duration, timing },
-  },
-}) => css`background-color ${duration.medium} ${timing.ease}`};
+    theme: {
+      transition: { duration, timing },
+    },
+  }) => css`background-color ${duration.medium} ${timing.ease}`};
   width: 100%;
   transition-duration: ${({ theme }) => theme.transition.duration.fast};
 
   &:hover {
     ${({ loading, theme }) =>
-    !loading &&
-    css`
+      !loading &&
+      css`
         background-color: ${theme.hoverDefault};
       `}
     ${({ last }) =>
-    last &&
-    css`
+      last &&
+      css`
         border-radius: 0px 0px 8px 8px;
       `}
   }
@@ -93,7 +90,7 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns:  0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr 0.5fr;
+    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr 0.5fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -139,7 +136,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   }
 `
 
-const ListNumberCell = styled(Cell) <{ header: boolean }>`
+const ListNumberCell = styled(Cell)<{ header: boolean }>`
   color: ${({ theme }) => theme.textSecondary};
   min-width: 32px;
   font-size: 14px;
@@ -148,14 +145,14 @@ const ListNumberCell = styled(Cell) <{ header: boolean }>`
     display: none;
   }
 `
-const DataCell = styled(Cell) <{ sortable: boolean }>`
+const DataCell = styled(Cell)<{ sortable: boolean }>`
   justify-content: flex-end;
   user-select: ${({ sortable }) => (sortable ? 'none' : 'unset')};
   transition: ${({
-  theme: {
-    transition: { duration, timing },
-  },
-}) => css`background-color ${duration.medium} ${timing.ease}`};
+    theme: {
+      transition: { duration, timing },
+    },
+  }) => css`background-color ${duration.medium} ${timing.ease}`};
 `
 const TvlCell = styled(DataCell)`
   padding-right: 8px;
@@ -207,16 +204,12 @@ const PriceInfoCell = styled(Cell)`
 `
 
 const GreenText = styled.span`
-  color: ${({ theme }) =>
-    theme.accentSuccess
-  };
+  color: ${({ theme }) => theme.accentSuccess};
 `
 
 const RedText = styled.span`
-  color: ${({ theme }) =>
-    theme.accentFailure
-  };
-  `
+  color: ${({ theme }) => theme.accentFailure};
+`
 
 const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   align-items: center;
@@ -248,7 +241,7 @@ const StyledLink = styled(Link)`
 `
 
 const StyledLoadedRow = styled.div`
-text-decoration: none;
+  text-decoration: none;
 `
 
 const TokenInfoCell = styled(Cell)`
@@ -341,42 +334,13 @@ const ActionsContainer = styled(AutoColumn)`
 `
 
 export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
-  [PositionSortMethod.VALUE]: (
-    <Trans>
-      Position Value
-    </Trans>
-  ),
-  [PositionSortMethod.COLLATERAL]: (
-    <Trans>
-      Initial Collateral Deposited
-    </Trans>
-  ),
-  [PositionSortMethod.REPAYTIME]: (
-    <Trans>
-      Maximum time left until premium repayment
-    </Trans>
-  ),
-  [PositionSortMethod.ENTRYPRICE]: (
-    <Trans>
-      Your Entry and Current Price
-    </Trans>
-  ),
-  [PositionSortMethod.PNL]: (
-    <Trans>
-      Profit/Loss excluding slippage+fees, loss may be greater than collateral 
-    </Trans>
-  ),
-  [PositionSortMethod.REMAINING]: (
-    <Trans>
-      Remaining Premium
-    </Trans>
-  ),
-  [PositionSortMethod.ACTIONS]: (
-    <Trans>
-      (Reduce): reduce position size
-      (Pay): pay premium
-    </Trans>
-  )
+  [PositionSortMethod.VALUE]: <Trans>Position Value</Trans>,
+  [PositionSortMethod.COLLATERAL]: <Trans>Initial Collateral Deposited</Trans>,
+  [PositionSortMethod.REPAYTIME]: <Trans>Maximum time left until premium repayment</Trans>,
+  [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
+  [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
+  [PositionSortMethod.REMAINING]: <Trans>Remaining Premium</Trans>,
+  [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
   // [PositionSortMethod.RECENT_PREMIUM]: (
   //   <Trans>Recent Premium (Total Premium Paid)</Trans>
   // ),
@@ -400,14 +364,11 @@ function HeaderCell({
       {description && (
         <MouseoverTooltip text={description} placement="right">
           <RowFixed>
-          <ThemedText.TableText>
-            {category}
-          </ThemedText.TableText>
-          <InfoIconContainer>
-            <Info size={10} />
-          </InfoIconContainer>
+            <ThemedText.TableText>{category}</ThemedText.TableText>
+            <InfoIconContainer>
+              <Info size={10} />
+            </InfoIconContainer>
           </RowFixed>
-          
         </MouseoverTooltip>
       )}
     </HeaderCellWrapper>
@@ -439,39 +400,37 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
-  position?: LimitlessPositionDetails,
+  position?: LimitlessPositionDetails
   last?: boolean
   style?: CSSProperties
 }) {
-  const [showReduce, setShowReduce] = useState(false);
-  const [showAddPremium, setShowAddPremium] = useState(false);
+  const [showReduce, setShowReduce] = useState(false)
+  const [showAddPremium, setShowAddPremium] = useState(false)
   const { account } = useWeb3React()
 
   // const collateral = (totalLiquidity - totalDebt)
   const handleConfirmDismiss = () => {
-    setShowReduce(false);
+    setShowReduce(false)
   }
   const handlePremiumConfirmDismiss = () => {
-    setShowAddPremium(false);
+    setShowAddPremium(false)
   }
-  const actions = (!header ? (
+  const actions = !header ? (
     <ActionsContainer>
-      <ReduceButton width="auto" onClick={() => setShowReduce(!showReduce)} >
+      <ReduceButton width="auto" onClick={() => setShowReduce(!showReduce)}>
         <Trans>reduce</Trans>
       </ReduceButton>
-      <ReduceButton width="auto" onClick={() => setShowAddPremium(!showAddPremium)} >
+      <ReduceButton width="auto" onClick={() => setShowAddPremium(!showAddPremium)}>
         <Trans>pay</Trans>
       </ReduceButton>
     </ActionsContainer>
-  ): (
-    (
-      <MouseoverTooltip text="(reduce): reduce position, (pay): pay premium" placement="right">
-        <InfoIconContainer>
-          <Info size={14} />
-        </InfoIconContainer>
-      </MouseoverTooltip>
-    )
-  ))
+  ) : (
+    <MouseoverTooltip text="(reduce): reduce position, (pay): pay premium" placement="right">
+      <InfoIconContainer>
+        <Info size={14} />
+      </InfoIconContainer>
+    </MouseoverTooltip>
+  )
 
   const rowCells = (
     <>
@@ -483,8 +442,8 @@ function PositionRow({
           leverageManagerAddress={position?.leverageManagerAddress ?? undefined}
           tokenId={position?.tokenId ?? undefined}
           onDismiss={handleConfirmDismiss}
-          onAcceptChanges={() => { }}
-          onConfirm={() => { }}
+          onAcceptChanges={() => {}}
+          onConfirm={() => {}}
         />
       )}
       {!header && showAddPremium && (
@@ -494,14 +453,19 @@ function PositionRow({
           tokenId={position?.tokenId ?? undefined}
           leverageManagerAddress={position?.leverageManagerAddress ?? undefined}
           onDismiss={handlePremiumConfirmDismiss}
-          onAcceptChanges={() => { }}
-          onConfirm={() => { }}
+          onAcceptChanges={() => {}}
+          onConfirm={() => {}}
         />
       )}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
-        <EditCell onClick={() => {setShowReduce(!showReduce)}} disabled={false}>
-        {value}
+        <EditCell
+          onClick={() => {
+            setShowReduce(!showReduce)
+          }}
+          disabled={false}
+        >
+          {value}
         </EditCell>
       </PriceCell>
       <PriceCell data-testid="collateral-cell" sortable={header}>
@@ -520,9 +484,7 @@ function PositionRow({
         {PnL}
       </PriceCell>
       <ActionCell data-testid="action-cell" sortable={header}>
-        {
-          actions
-        }
+        {actions}
       </ActionCell>
       {/* <SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
@@ -537,9 +499,11 @@ export function HeaderRow() {
   return (
     <PositionRow
       header={true}
-      positionInfo={<Box marginLeft="8px">
-        <ThemedText.TableText>Position</ThemedText.TableText>
-      </Box>}
+      positionInfo={
+        <Box marginLeft="8px">
+          <ThemedText.TableText>Position</ThemedText.TableText>
+        </Box>
+      }
       value={<HeaderCell category={PositionSortMethod.VALUE} />}
       collateral={<HeaderCell category={PositionSortMethod.COLLATERAL} />}
       PnL={<HeaderCell category={PositionSortMethod.PNL} />}
@@ -550,11 +514,10 @@ export function HeaderRow() {
   )
 }
 
-
 export const TruncatedTableText = styled(ThemedText.TableText)`
-overflow: hidden;
-white-space: nowrap;
-text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `
 /* Loading State: row component with loading bubbles */
 export function LoadingRow(props: { first?: boolean; last?: boolean }) {
@@ -583,7 +546,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
 const FlexStartRow = styled(Row)`
   flex-flow: row nowrap;
   align-items: center;
-  justify-content:flex-start;
+  justify-content: flex-start;
 `
 
 interface LoadedRowProps {
@@ -596,26 +559,25 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { position } = props
 
-  const { isToken0, token0Address, token1Address, initialCollateral, totalDebtInput } = position;
+  const { isToken0, token0Address, token1Address, initialCollateral, totalDebtInput } = position
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolFee)
 
-  const leverageFactor = useMemo(() => (
-    (Number(initialCollateral) + Number(totalDebtInput)) / Number(initialCollateral)
-  ), [initialCollateral, totalDebtInput]);
+  const leverageFactor = useMemo(
+    () => (Number(initialCollateral) + Number(totalDebtInput)) / Number(initialCollateral),
+    [initialCollateral, totalDebtInput]
+  )
 
-  const now = moment();
+  const now = moment()
   const [timeLeft, isOverDue] = useMemo(() => {
     const duration = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now))
-    const hours = duration.hours();
-    const isNegative = hours < 0;
+    const hours = duration.hours()
+    const isNegative = hours < 0
     const minutes = duration.minutes()
     return [`${Math.abs(hours)}h ${Math.abs(minutes)}m`, isNegative]
   }, [position, now])
-
-
 
   // /**
   //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
@@ -637,25 +599,30 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       token0 &&
       token1
     ) {
-      const curPrice = position.isToken0 ? new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
-      : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
-     
+      const curPrice = position.isToken0
+        ? new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
+        : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
+
       // entryPrice if isToken0, output is in token0. so entry price would be in input token / output token
-      const _entryPrice = new BN(position.initialCollateral).plus(position.totalDebtInput).dividedBy(position.totalPosition)
+      const _entryPrice = position.initialCollateral.plus(position.totalDebtInput).dividedBy(position.totalPosition)
 
       // token0Price => token1 / token0, token1Price => token0 / token1.
       // total position is in output token
-      const _pnl = position.isToken0 ? (
-        // token0Price => input / output, token1Price => output / input
-        // entry price => input / output -> token1 / token0. 
-        // total position -> output -> token0
-        new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS)).minus(_entryPrice).multipliedBy(position.totalPosition).toNumber() // pnl in token1
-      ) : (
-        // token1Price -> token0 / token1
-        // entry price -> input / output -> token0 / token1
-        // total position -> output -> token1
-        new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS)).minus(_entryPrice).multipliedBy(position.totalPosition).toNumber() // pnl in token0
-      )
+      const _pnl = position.isToken0
+        ? // token0Price => input / output, token1Price => output / input
+          // entry price => input / output -> token1 / token0.
+          // total position -> output -> token0
+          new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
+            .minus(_entryPrice)
+            .multipliedBy(position.totalPosition)
+            .toNumber() // pnl in token1
+        : // token1Price -> token0 / token1
+          // entry price -> input / output -> token0 / token1
+          // total position -> output -> token1
+          new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
+            .minus(_entryPrice)
+            .multipliedBy(position.totalPosition)
+            .toNumber() // pnl in token0
 
       // use token0 as quote, token1 as base
       // pnl will be in output token
@@ -663,10 +630,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
       if (pool.token0Price.greaterThan(1)) {
         // entry price = token1 / token0
-        return [_pnl, position.isToken0 ? _entryPrice.toNumber() : new BN(1).dividedBy(_entryPrice).toNumber(), position.isToken0? new BN(1).dividedBy(curPrice).toNumber(): curPrice.toNumber()]
+        return [
+          _pnl,
+          position.isToken0 ? _entryPrice.toNumber() : new BN(1).dividedBy(_entryPrice).toNumber(),
+          position.isToken0 ? new BN(1).dividedBy(curPrice).toNumber() : curPrice.toNumber(),
+        ]
       } else {
         // entry price = token0 / token1
-        return [_pnl, position.isToken0 ? new BN(1).dividedBy(_entryPrice).toNumber() : _entryPrice.toNumber(), new BN(1).dividedBy(curPrice).toNumber()]
+        return [
+          _pnl,
+          position.isToken0 ? new BN(1).dividedBy(_entryPrice).toNumber() : _entryPrice.toNumber(),
+          new BN(1).dividedBy(curPrice).toNumber(),
+        ]
       }
     }
     return [0, 0, 0]
@@ -674,7 +649,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // console.log('tokens', token0, token1,quoteBaseSymbol )
   const quoteBaseSymbol = useMemo(() => {
     if (token0 && token1 && pool?.token0Price) {
-      if (!pool.token0Price.greaterThan(1)) {
+      if (pool.token0Price.greaterThan(1)) {
         return `${token0.symbol}/${token1.symbol}`
       } else {
         return `${token1.symbol}/${token0.symbol}`
@@ -689,19 +664,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     } else {
       return [formatSymbol(token0?.symbol), formatSymbol(token1?.symbol)]
     }
-  }, [
-    token0,
-    token1,
-    position
-  ])
+  }, [token0, token1, position])
 
   const remainingPremium = useMemo(() => {
     if (position) {
-      const timeLeft = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now));
-      
-      return position.unusedPremium * (timeLeft.asSeconds() / 86400) < 0 ? 0 : position.unusedPremium * (timeLeft.asSeconds() / 86400);
+      const timeLeft = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now))
+
+      return position.unusedPremium.multipliedBy(timeLeft.asSeconds() / 86400).toNumber() < 0
+        ? '0'
+        : formatBNToString(position.unusedPremium.multipliedBy(timeLeft.asSeconds() / 86400))
     }
-    return 0
+    return '0'
   }, [position, now])
 
   // const token0Quote = useMemo(() => {
@@ -723,9 +696,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <ClickableContent>
               <RowBetween>
                 <PositionInfo>
-                    <GreenText> x{
-                      `${(Math.round(leverageFactor*1000)/1000)} ${outputCurrencySymbol}`
-                    }</GreenText> 
+                  <GreenText> x{`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrencySymbol}`}</GreenText>
                 </PositionInfo>
               </RowBetween>
             </ClickableContent>
@@ -733,56 +704,46 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow>
               <UnderlineText>
-              {`${formatNumber(Number(position.totalPosition), NumberType.SwapTradeAmount)} ${outputCurrencySymbol}`}
+                {`${formatBNToString(position.totalPosition, NumberType.SwapTradeAmount)} ${outputCurrencySymbol}`}
               </UnderlineText>
-              <Edit3 size={14}/>
+              <Edit3 size={14} />
             </FlexStartRow>
           }
           collateral={
             <FlexStartRow>
-              {`${formatNumber(Number(position.initialCollateral), NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
+              {`${formatBNToString(position.initialCollateral, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
             </FlexStartRow>
           }
-          repaymentTime={
-            <Trans>
-                {!isOverDue ? (
-                  <GreenText>
-                    {timeLeft}
-                  </GreenText>
-                ) : (
-                  <RedText>
-                    {0}
-                  </RedText>
-                )
-                }
-            </Trans>
-          }
+          repaymentTime={<Trans>{!isOverDue ? <GreenText>{timeLeft}</GreenText> : <RedText>{0}</RedText>}</Trans>}
           PnL={
             <Trans>
               <AutoRow>
-              <RowBetween>
+                <RowBetween>
                   <DeltaText delta={Number(pnl)}>
-                    {pnl ? `${formatNumber(Number(pnl), NumberType.SwapTradeAmount)} ${inputCurrencySymbol}` : "-"} 
-                  </DeltaText>   
+                    {pnl ? `${formatNumber(Number(pnl), NumberType.SwapTradeAmount)} ${inputCurrencySymbol}` : '-'}
+                  </DeltaText>
                   {/* <ArrowCell>
                     {arrow}
                   </ArrowCell>            */}
                 </RowBetween>
-              
               </AutoRow>
-                
             </Trans>
           }
           entryPrice={
             <Trans>
               <AutoColumn>
-                {`${formatNumber(Number(entryPrice), NumberType.SwapTradeAmount)}/${formatNumber(Number(currentPrice), NumberType.SwapTradeAmount)} ${quoteBaseSymbol}`}
+                {`${formatNumber(Number(entryPrice), NumberType.SwapTradeAmount)}/${formatNumber(
+                  Number(currentPrice),
+                  NumberType.SwapTradeAmount
+                )} ${quoteBaseSymbol}`}
               </AutoColumn>
             </Trans>
           }
           remainingPremium={
             <Trans>
-              {`${(remainingPremium ? formatNumber(Number(remainingPremium),NumberType.SwapTradeAmount)  : 0)}/${formatNumber(position.unusedPremium, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
+              {`${remainingPremium ? remainingPremium : 0}/${formatBNToString(
+                position.unusedPremium
+              )} ${inputCurrencySymbol}`}
             </Trans>
           }
           position={position}
@@ -792,4 +753,4 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   )
 })
 
-
+LoadedRow.displayName = 'LoadedRow'

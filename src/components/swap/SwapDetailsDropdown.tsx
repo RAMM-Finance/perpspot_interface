@@ -129,7 +129,6 @@ interface BorrowDetailsDropdownProps {
   allowedSlippage: Percent
 }
 
-
 export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
   const theme = useTheme()
   const { chainId } = useWeb3React()
@@ -190,7 +189,6 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
         )}
       </AutoColumn>
     </Wrapper>
-
   )
 }
 
@@ -292,7 +290,7 @@ export function BorrowDetailsDropdown({
     if (tradeState !== TradeState.VALID) {
       showDetails ?? setShowDetails(false)
     }
-  }, [tradeState])
+  }, [tradeState, showDetails])
   const disabled = tradeState !== TradeState.VALID
   // console.log('borrow.state', tradeState, disabled, loading)
   return (

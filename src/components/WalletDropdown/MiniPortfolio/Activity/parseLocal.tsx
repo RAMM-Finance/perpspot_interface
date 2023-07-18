@@ -86,9 +86,9 @@ function parseAddLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const paidAmount = formatNumber(info.inputAmount, NumberType.SwapTradeAmount)
+  const paidAmount = info.inputAmount
 
-  const addedPosition = formatNumber(info.expectedAddedPosition, NumberType.SwapTradeAmount)
+  const addedPosition = info.expectedAddedPosition
 
   const descriptor = (
     <Descriptor color="textSecondary">
@@ -130,9 +130,9 @@ function parseAddBorrow(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const formattedCollateralAmount = formatNumber(info.collateralAmount, NumberType.SwapTradeAmount)
+  const formattedCollateralAmount = info.collateralAmount
 
-  const formattedBorrowAmount = formatNumber(info.borrowedAmount, NumberType.SwapTradeAmount)
+  const formattedBorrowAmount = info.borrowedAmount
 
   const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, +${formattedBorrowAmount} ${tokenOut?.symbol}`
 

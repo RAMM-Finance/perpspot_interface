@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Token } from '@uniswap/sdk-core'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
+import {BigNumber as BN} from 'bignumber.js'
 
 export interface LimitlessPositionDetails {
   leverageManagerAddress: string | undefined
@@ -11,14 +12,14 @@ export interface LimitlessPositionDetails {
   token1Address: string | undefined
   poolFee: FeeAmount | undefined
   tokenId: string
-  totalPosition: number // totalPosition
-  totalDebt: number // total debt in output token
-  totalDebtInput: number // total debt in input token
-  initialCollateral: number
+  totalPosition: BN // totalPosition
+  totalDebt: BN // total debt in output token
+  totalDebtInput: BN // total debt in input token
+  initialCollateral: BN
   // creationPrice: string,
-  recentPremium: number
-  totalPremium: number,
-  unusedPremium: number,
+  recentPremium: BN
+  totalPremium: BN,
+  unusedPremium: BN,
   isToken0: boolean
   openTime: number
   repayTime: number

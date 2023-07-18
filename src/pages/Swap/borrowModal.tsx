@@ -33,9 +33,9 @@ import { useAddBorrowPositionCallback } from 'hooks/useSwapCallback'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import useWrapCallback, { WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { useCallback, useMemo, useState } from 'react'
-
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { Text } from 'rebass'
 import { TradeState } from 'state/routing/types'
@@ -336,7 +336,7 @@ const BorrowTabContent = () => {
       onUserInput(Field.INPUT, '')
       onLeverageFactorChange('1')
       onLTVChange('')
-      onPremiumChange(0)
+      onPremiumChange(new BN(0))
     }
   }, [attemptingTxn, onUserInput, txHash, onLTVChange, onLeverageFactorChange, onPremiumChange])
 
@@ -419,13 +419,12 @@ const BorrowTabContent = () => {
               <SwapCurrencyInputPanel
                 value={
                   borrowInputApprovalState === ApprovalState.NOT_APPROVED ||
-                  borrowOutputApprovalState === ApprovalState.NOT_APPROVED
+                  borrowOutputApprovalState === ApprovalState.NOT_APPROVED ||
+                  !borrowTrade
                     ? '-'
-                    : borrowTrade?.borrowedAmount
-                    ? borrowTrade?.existingTotalDebtInput
-                      ? String(borrowTrade.borrowedAmount - borrowTrade.existingTotalDebtInput)
-                      : String(borrowTrade.borrowedAmount)
-                    : '-'
+                    : borrowTrade?.existingPosition
+                    ? formatBNToString(borrowTrade.borrowedAmount.minus(borrowTrade.existingTotalDebtInput))
+                    : formatBNToString(borrowTrade.borrowedAmount)
                 }
                 onUserInput={handleTypeOutput}
                 label={<Trans>To</Trans>}

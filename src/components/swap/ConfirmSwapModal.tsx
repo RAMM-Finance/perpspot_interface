@@ -4,6 +4,7 @@ import { InterfaceModalName } from '@uniswap/analytics-events'
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useCurrency } from 'hooks/Tokens'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -201,7 +202,16 @@ export function LeverageConfirmModal({
         leverageFactor={Number(leverageFactor)}
       />
     ) : null
-  }, [leverageTrade, allowedSlippage, onAcceptChanges, recipient, showAcceptChanges, trade, shouldLogModalCloseEvent])
+  }, [
+    leverageTrade,
+    leverageFactor,
+    allowedSlippage,
+    onAcceptChanges,
+    recipient,
+    showAcceptChanges,
+    trade,
+    shouldLogModalCloseEvent,
+  ])
 
   const modalBottom = useCallback(() => {
     return trade ? (
@@ -219,7 +229,6 @@ export function LeverageConfirmModal({
     ) : null
   }, [
     onConfirm,
-    leverageTrade,
     showAcceptChanges,
     swapErrorMessage,
     trade,
@@ -234,7 +243,7 @@ export function LeverageConfirmModal({
   const pendingText = (
     <Trans>
       Borrowing {leverageTrade?.borrowedAmount?.toExact()} {leverageTrade?.inputAmount?.currency?.symbol} and Recieving{' '}
-      {leverageTrade?.expectedTotalPosition} {trade?.outputAmount?.currency?.symbol}
+      {formatBNToString(leverageTrade?.expectedTotalPosition)} {trade?.outputAmount?.currency?.symbol}
     </Trans>
   )
 
@@ -330,6 +339,7 @@ export function BorrowConfirmModal({
     onConfirm,
     allowedSlippage,
     txHash,
+    borrowTrade,
     // fiatValueInput,
     // fiatValueOutput,
   ])
@@ -337,7 +347,7 @@ export function BorrowConfirmModal({
   // text to show while loading
   const pendingText = (
     <Trans>
-      Recieving {borrowTrade?.borrowedAmount} {outputCurrency?.symbol}
+      Recieving {formatBNToString(borrowTrade?.borrowedAmount)} {outputCurrency?.symbol}
     </Trans>
   )
 

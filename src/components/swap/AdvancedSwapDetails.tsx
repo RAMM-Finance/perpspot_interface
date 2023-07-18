@@ -9,6 +9,7 @@ import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -214,8 +215,10 @@ export function MouseoverValueLabel({
 
 export function ReduceLeveragePositionDetails({
   leverageTrade, // user defined slippage.
+  loading,
 }: {
   leverageTrade: LimitlessPositionDetails | undefined
+  loading: boolean
   // allowedSlippage: Percent | undefined
 }) {
   // const theme = useTheme()
@@ -233,26 +236,28 @@ export function ReduceLeveragePositionDetails({
         <MouseoverValueLabel
           description="Total position size in the output token of the leverage trade"
           label={<Trans>Added Position</Trans>}
-          syncing={false}
+          syncing={loading}
           value={`${leverageTrade?.totalPosition ?? '-'}`}
           appendSymbol={inputIsToken0 ? token1?.symbol : token0?.symbol}
         />
         <MouseoverValueLabel
           description="Total debt of the position"
           label={<Trans>Debt</Trans>}
-          value={`${Number(leverageTrade?.totalDebtInput) ?? '-'}`}
+          value={`${formatBNToString(leverageTrade?.totalDebtInput) ?? '-'}`}
           appendSymbol={inputIsToken0 ? token0?.symbol : token1?.symbol}
-          syncing={false}
+          syncing={loading}
         />
         <MouseoverValueLabel
           description="Leverage Factor"
           label={<Trans>Leverage</Trans>}
+          syncing={loading}
           value={
             leverageTrade?.totalDebtInput && leverageTrade?.initialCollateral
-              ? `${
-                  (Number(leverageTrade?.totalDebtInput) + Number(leverageTrade.initialCollateral)) /
-                  Number(leverageTrade?.initialCollateral)
-                }x`
+              ? `${formatBNToString(
+                  (leverageTrade?.totalDebtInput)
+                    .plus(leverageTrade.initialCollateral)
+                    .div(leverageTrade?.initialCollateral)
+                )}x`
               : '-'
           }
         />
@@ -334,8 +339,10 @@ export function ReduceLeveragePositionDetails({
 
 export function BorrowPremiumPositionDetails({
   position, // user defined slippage.
+  loading,
 }: {
   position: LimitlessPositionDetails | undefined
+  loading: boolean
   // allowedSlippage: Percent | undefined
 }) {
   // const theme = useTheme()
@@ -370,21 +377,21 @@ export function BorrowPremiumPositionDetails({
           description="Total collateral amount"
           label={<Trans>Total Collateral</Trans>}
           syncing={false}
-          value={`${position?.initialCollateral ?? '-'}`}
+          value={`${formatBNToString(position?.initialCollateral) ?? '-'}`}
           appendSymbol={inputIsToken0 ? token0?.symbol : token1?.symbol}
         />
         <MouseoverValueLabel
           description="Total debt of the position"
           label={<Trans>Debt</Trans>}
           syncing={false}
-          value={`${Number(position?.totalDebtInput) ?? '-'} `}
+          value={`${formatBNToString(position?.totalDebtInput) ?? '-'} `}
           appendSymbol={inputIsToken0 ? token1?.symbol : token0?.symbol}
         />
         <MouseoverValueLabel
           description="Loan-to-Value"
           label={<Trans>LTV</Trans>}
           syncing={false}
-          value={ltv ? `${new BN(ltv * 100).toString()}%` : '-'}
+          value={ltv ? `${formatBNToString(new BN(ltv * 100))}%` : '-'}
         />
         {/* <RowBetween>
           <RowFixed>
@@ -616,47 +623,55 @@ export function AdvancedLeverageSwapDetails({
   //   borrowedAmount,
   //   inputAmount
   // } = leverageTrade;
-  const price = leverageTrade?.existingTotalPosition
-    ? (Number(leverageTrade?.expectedTotalPosition) - Number(leverageTrade?.existingTotalPosition)) /
-      (Number(leverageTrade?.borrowedAmount?.toExact()) -
-        Number(leverageTrade?.existingTotalDebtInput) +
-        Number(leverageTrade?.inputAmount?.toExact()))
-    : Number(leverageTrade?.expectedTotalPosition) /
-      (Number(leverageTrade?.borrowedAmount?.toExact()) + Number(leverageTrade?.inputAmount?.toExact()))
-  const fees = leverageTrade?.existingTotalPosition
-    ? (Number(leverageTrade?.borrowedAmount?.toExact()) -
-        Number(leverageTrade?.existingTotalDebtInput) +
-        Number(leverageTrade?.inputAmount?.toExact())) *
-      0.0005
-    : (Number(leverageTrade?.borrowedAmount?.toExact()) + Number(leverageTrade?.inputAmount?.toExact())) * 0.0005
-  // const fees = (Number(leverageTrade?.borrowedAmount?.toExact())- Number(leverageTrade?.existingTotalDebtInput) + Number(leverageTrade?.inputAmount?.toExact())) * 0.0005
-  const addedOutput = leverageTrade?.expectedTotalPosition
-    ? leverageTrade?.existingPosition && leverageTrade?.existingTotalPosition
-      ? leverageTrade?.expectedTotalPosition - leverageTrade?.existingTotalPosition
-      : leverageTrade?.expectedTotalPosition
-    : 0
+  const [price, fees, addedOutput] = useMemo(() => {
+    let _price
+    let _fees
+    let _addedOutput
+    if (leverageTrade) {
+      if (leverageTrade.existingPosition) {
+        _price = leverageTrade?.expectedTotalPosition
+          .minus(leverageTrade?.existingTotalPosition)
+          .div(leverageTrade?.borrowedAmount?.toExact())
+        _fees = new BN(leverageTrade?.borrowedAmount?.toExact())
+          .minus(leverageTrade?.existingTotalDebtInput)
+          .plus(leverageTrade?.inputAmount?.toExact())
+          .times(0.0005)
+        _addedOutput = leverageTrade?.expectedTotalPosition.minus(leverageTrade?.existingTotalPosition)
+      } else {
+        _price = leverageTrade?.expectedTotalPosition.div(
+          new BN(leverageTrade?.borrowedAmount?.toExact()).plus(leverageTrade?.inputAmount?.toExact())
+        )
+        _fees = new BN(leverageTrade?.borrowedAmount?.toExact())
+          .plus(leverageTrade?.inputAmount?.toExact())
+          .times(0.0005)
+        _addedOutput = leverageTrade?.expectedTotalPosition
+      }
+    }
+
+    return [_price, _fees, _addedOutput]
+  }, [leverageTrade])
+
   return (
     <StyledCard>
       <AutoColumn gap="sm">
         <ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={leverageTrade?.existingPosition ? 'Added Position' : 'Exp. Output'}
-          value={addedOutput}
+          value={formatBNToString(addedOutput)}
           syncing={syncing}
           symbolAppend={outputCurrency?.symbol}
         />
         <ValueLabel
           description="Amount In / Amount Out"
           label="Quoted Price"
-          value={Math.round(Number(price) * 1000000) / 1000000}
+          value={formatBNToString(price)}
           syncing={syncing}
-          symbolAppend={price ? '/' + String(Math.round(Number(1 / price) * 1000000) / 1000000) : '/-'}
-          // symbolAppend={`${trade?.outputAmount.currency.symbol} / ${trade?.inputAmount.currency.symbol}`}
+          symbolAppend={price ? '/' + formatBNToString(new BN(1).div(price)) : '/-'}
         />
         <ValueLabel
           description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
           label="Quoted Premium"
-          value={Math.round(Number(leverageTrade?.quotedPremium) * 100000) / 100000}
+          value={formatBNToString(leverageTrade?.quotedPremium)}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
         />
@@ -664,7 +679,7 @@ export function AdvancedLeverageSwapDetails({
           <ValueLabel
             description="The premium refunded from your old payment"
             label="Returned premium"
-            value={Math.round(Number(leverageTrade?.remainingPremium) * 100000) / 100000}
+            value={formatBNToString(leverageTrade?.remainingPremium)}
             syncing={syncing}
             symbolAppend={inputCurrency?.symbol}
           />
@@ -673,14 +688,16 @@ export function AdvancedLeverageSwapDetails({
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
           The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."
           label="Maximum Loss"
-          value={Math.round(Number(leverageTrade?.inputAmount?.toExact()) * 100000) / 100000}
+          value={formatBNToString(
+            leverageTrade?.inputAmount ? new BN(leverageTrade?.inputAmount?.toExact()) : undefined
+          )}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
         />
         <ValueLabel
           description="Fees paid for trade "
           label="Fees"
-          value={Math.round(Number(fees) * 100000) / 100000}
+          value={formatBNToString(fees)}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
         />
@@ -706,7 +723,7 @@ export function AdvancedLeverageSwapDetails({
             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
               <TruncatedText>
                 {trade?.tradeType === TradeType.EXACT_INPUT
-                  ? `${addedOutput ?? '-'}  ${trade?.outputAmount.currency.symbol}`
+                  ? `${formatBNToString(addedOutput) ?? '-'}  ${trade?.outputAmount.currency.symbol}`
                   : '-'}
               </TruncatedText>
             </ThemedText.DeprecatedBlack>
@@ -738,29 +755,29 @@ export function AdvancedLeverageSwapDetails({
   )
 }
 
-export function ReduceBorrowDetails({ position }: { position?: LimitlessPositionDetails }) {
+export function ReduceBorrowDetails({ position, loading }: { position?: LimitlessPositionDetails; loading: boolean }) {
   const currency0 = useCurrency(position?.token0Address)
   const currency1 = useCurrency(position?.token1Address)
-  return (
+  return position ? (
     <StyledCard marginTop="10px">
       <AutoColumn gap="md">
         <ValueLabel
           description="Existing collateral amount for this position."
-          value={position?.initialCollateral}
+          value={formatBNToString(position?.initialCollateral)}
           label="Current Collateral Amount"
-          syncing={false}
+          syncing={loading}
           symbolAppend={position?.isToken0 ? currency0?.symbol : currency1?.symbol}
         />
         <ValueLabel
           description="Existing borrowed amount for this position."
-          value={position?.totalDebtInput}
+          value={formatBNToString(position?.totalDebtInput)}
           label="Current Borrowed Amount"
-          syncing={false}
+          syncing={loading}
           symbolAppend={position?.isToken0 ? currency1?.symbol : currency0?.symbol}
         />
       </AutoColumn>
     </StyledCard>
-  )
+  ) : null
 }
 
 // export const DefaultBorrowDetails: BorrowCreationDetails = {
@@ -805,17 +822,17 @@ export function AdvancedBorrowSwapDetails({
   // const theme = useTheme()
 
   const displayValues = useMemo(() => {
-    let additionalCollateral = 0
-    let totalExistingCollateral = 0
-    let totalExistingBorrowed = 0
-    let _borrowedAmount = 0
+    let additionalCollateral
+    let totalExistingCollateral
+    let totalExistingBorrowed
+    let _borrowedAmount
     if (borrowTrade) {
       const { collateralAmount, borrowedAmount, existingCollateral, existingTotalDebtInput } = borrowTrade
       if (collateralAmount && borrowedAmount) {
-        totalExistingCollateral = existingCollateral ?? 0
-        totalExistingBorrowed = existingTotalDebtInput ?? 0
+        totalExistingCollateral = existingCollateral
+        totalExistingBorrowed = existingTotalDebtInput
         additionalCollateral = collateralAmount
-        _borrowedAmount = borrowedAmount ?? 0
+        _borrowedAmount = borrowedAmount
       }
     }
     return {
@@ -835,7 +852,7 @@ export function AdvancedBorrowSwapDetails({
             borrowTrade?.existingPosition ? 'Collateral Added to Position' : 'Net collateral for the transaction'
           }
           label={borrowTrade?.existingPosition ? 'Additonal Collateral' : 'Total Collateral'}
-          value={displayValues.additionalCollateral}
+          value={formatBNToString(displayValues.additionalCollateral)}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
           width="100px"
@@ -847,7 +864,7 @@ export function AdvancedBorrowSwapDetails({
               : 'The borrowed amount you expect to receive at the current market price.'
           }
           label="Total Borrow Amount"
-          value={displayValues.borrowedAmount}
+          value={formatBNToString(displayValues.borrowedAmount)}
           syncing={syncing}
           symbolAppend={outputCurrency?.symbol}
           width="100px"
@@ -856,7 +873,7 @@ export function AdvancedBorrowSwapDetails({
         <ValueLabel
           description="The quoted premium you are expected to pay, which depletes in 24hrs."
           label="Quoted Premium"
-          value={borrowTrade?.quotedPremium}
+          value={formatBNToString(borrowTrade?.quotedPremium)}
           syncing={syncing}
           symbolAppend={outputCurrency?.symbol}
           width="100px"
