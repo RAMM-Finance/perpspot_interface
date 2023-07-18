@@ -24,6 +24,8 @@ import { queryParametersToSwapState } from './hooks'
 export interface SwapState {
   readonly independentField: Field
   readonly typedValue: string
+  readonly originInputId: string | undefined | null
+  readonly originOutputId: string | undefined | null
   readonly [Field.INPUT]: {
     readonly currencyId: string | undefined | null
   }
@@ -61,6 +63,8 @@ export default createReducer<SwapState>(initialState, (builder) =>
             typedValue,
             recipient,
             field,
+            originInputId,
+            originOutputId,
             inputCurrencyId,
             outputCurrencyId,
             leverage,
@@ -82,6 +86,8 @@ export default createReducer<SwapState>(initialState, (builder) =>
           [Field.OUTPUT]: {
             currencyId: outputCurrencyId ?? null,
           },
+          originInputId,
+          originOutputId,
           independentField: field,
           typedValue,
           recipient,
@@ -116,15 +122,32 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {
-      return {
-        ...state,
-        independentField: !leverage
-          ? state.independentField === Field.INPUT
-            ? Field.OUTPUT
-            : Field.INPUT
-          : Field.INPUT,
-        [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
-        [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
+      if (state.tab === 'Long') {
+        return {
+          ...state,
+          independentField: Field.INPUT,
+          [Field.INPUT]: { currencyId: state.originInputId },
+          [Field.OUTPUT]: { currencyId: state.originOutputId },
+        }
+      } else if (state.tab === 'Short') {
+        return {
+          ...state,
+          independentField: Field.OUTPUT,
+          [Field.INPUT]: { currencyId: state.originOutputId },
+          [Field.OUTPUT]: { currencyId: state.originInputId },
+        }
+      } else {
+        return {
+          ...state,
+          independentField: !leverage
+            ? state.independentField === Field.INPUT
+              ? Field.OUTPUT
+              : Field.INPUT
+            : Field.INPUT,
+
+          [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
+          [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
+        }
       }
     })
     .addCase(typeInput, (state, { payload: { field, typedValue } }) => {

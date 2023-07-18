@@ -18,6 +18,8 @@ export const typeInput = createAction<{ field: Field; typedValue: string }>('swa
 export const replaceSwapState = createAction<{
   field: Field
   typedValue: string
+  originInputId?: string
+  originOutputId?: string
   inputCurrencyId?: string
   outputCurrencyId?: string
   recipient: string | null
@@ -44,4 +46,4 @@ export const setActiveTab = createAction<{ activeTab: ActiveSwapTab }>('swap/set
 export const setLTV = createAction<{ ltv: string }>('swap/setLTV')
 export const setBorrowManagerAddress = createAction<{ borrowManagerAddress: string }>('swap/setBorrowManagerAddress')
 export const setPremium = createAction<{ premium: number }>('swap/setPremium')
-export const setSwapTab = createAction<{ tab: string }>('tab/setSwapTab')
+export const setSwapTab = createAction<{ tab: string }>('swap/setSwapTab')

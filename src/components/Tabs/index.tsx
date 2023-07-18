@@ -3,14 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { SwapState } from 'state/swap/reducer'
 import styled from 'styled-components/macro'
 // import Styles from "./tabs.styles.less";
-
-const TabContainer = styled.div
-interface ITab extends SwapState {
-  tab: string
-}
 
 const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
   padding: 10px 20px;
@@ -42,14 +36,25 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
 
   const onChangeSwapModeHandler = (e: React.MouseEvent<HTMLSpanElement>) => {
     const eventTarget = e.target as HTMLElement
+    console.log(eventTarget)
+
     if (eventTarget.innerText === selectedTab) {
       return
     }
 
-    setIsTrade(ActiveSwapTab.TRADE)
-    onSwitchSwapModalTab(eventTarget.innerText)
-    onSwitchTokens(leverage)
-    onLeverageChange(true)
+    if (eventTarget.innerText === 'Long' || eventTarget.innerText === 'Short') {
+      setIsTrade(ActiveSwapTab.TRADE)
+      onSwitchSwapModalTab(eventTarget.innerText)
+      onSwitchTokens(leverage)
+      onLeverageChange(true)
+    }
+
+    if (eventTarget.innerText === 'Swap') {
+      setIsTrade(ActiveSwapTab.TRADE)
+      onSwitchSwapModalTab(eventTarget.innerText)
+      onSwitchTokens(leverage)
+      onLeverageChange(false)
+    }
   }
 
   useEffect(() => {
@@ -93,15 +98,17 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
         >
           <Trans>Borrow</Trans>
         </TabElement>
-        <SwapBtn
-          disabled={isTrade === 1 ? true : false}
-          onClick={() => onLeverageChange(!leverage)}
-          tabValue="notthing"
+        <TabElement
+          // onClick={() =>
+          //   onLeverageChange(!leverage)}
+          onClick={onChangeSwapModeHandler}
+          isActive={isTrade}
+          selectedTab={selectedTab}
+          tabValue="Swap"
           fontSize="18px"
-          isTrade={isTrade}
         >
           <Trans>Swap</Trans>
-        </SwapBtn>
+        </TabElement>
       </TapWrapper>
     </div>
   )
