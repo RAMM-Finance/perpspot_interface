@@ -595,6 +595,7 @@ export function AdvancedLeverageSwapDetails({
   syncing = false,
   hideInfoTooltips = false,
   // leverageFactor,
+  trade,
   leverageTrade,
 }: AdvancedAddLeverageDetailsProps) {
   const theme = useTheme()
@@ -649,7 +650,6 @@ export function AdvancedLeverageSwapDetails({
           label="Quoted Price"
           value={Math.round(Number(price) * 1000000) / 1000000}
           syncing={syncing}
-
           symbolAppend={price ? '/' + String(Math.round(Number(1 / price) * 1000000) / 1000000) : '/-'}
           // symbolAppend={`${trade?.outputAmount.currency.symbol} / ${trade?.inputAmount.currency.symbol}`}
         />
@@ -683,7 +683,6 @@ export function AdvancedLeverageSwapDetails({
           value={Math.round(Number(fees) * 100000) / 100000}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
-
         />
 
         <Separator />
