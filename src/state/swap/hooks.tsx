@@ -4,8 +4,6 @@ import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
-import { FETH_MUMBAI, FETH_SEPOLIA, FUSDC_MUMBAI, FUSDC_SEPOLIA } from 'constants/fake-tokens'
 import { useAllV3Routes } from 'hooks/useAllV3Routes'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
@@ -1017,7 +1015,8 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
     // Defaults to having the native currency selected
-    inputCurrency = 'ETH'
+    inputCurrency = '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
+    outputCurrency = '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A'
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''
@@ -1061,8 +1060,10 @@ export function useDefaultsFromURLSearch(): SwapState {
 
   useEffect(() => {
     if (!chainId) return
-    const inputCurrencyId = chainId === SupportedChainId.SEPOLIA ? FUSDC_SEPOLIA.address : FUSDC_MUMBAI.address // parsedSwapState[Field.INPUT].currencyId ?? undefined
-    const outputCurrencyId = chainId === SupportedChainId.SEPOLIA ? FETH_SEPOLIA.address : FETH_MUMBAI.address // parsedSwapState[Field.OUTPUT].currencyId ?? undefined
+    // const inputCurrencyId = chainId === SupportedChainId.SEPOLIA ? FUSDC_SEPOLIA.address : FUSDC_MUMBAI.address // parsedSwapState[Field.INPUT].currencyId ?? undefined
+    // const outputCurrencyId = chainId === SupportedChainId.SEPOLIA ? FETH_SEPOLIA.address : FETH_MUMBAI.address // parsedSwapState[Field.OUTPUT].currencyId ?? undefined
+    const inputCurrencyId = parsedSwapState[Field.INPUT].currencyId ?? undefined
+    const outputCurrencyId = parsedSwapState[Field.OUTPUT].currencyId ?? undefined
 
     dispatch(
       replaceSwapState({
