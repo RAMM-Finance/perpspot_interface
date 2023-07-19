@@ -64,8 +64,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
             typedValue,
             recipient,
             field,
-            originInputId,
-            originOutputId,
             inputCurrencyId,
             outputCurrencyId,
             leverage,
@@ -87,10 +85,10 @@ export default createReducer<SwapState>(initialState, (builder) =>
           [Field.OUTPUT]: {
             currencyId: outputCurrencyId ?? null,
           },
-          originInputId,
-          originOutputId,
+          originInputId: inputCurrencyId,
+          originOutputId: outputCurrencyId,
           independentField: field,
-          typedValue,
+          typedValue: '',
           recipient,
           leverageFactor: leverageFactor ?? null,
           leverage,
@@ -106,7 +104,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
     )
     .addCase(selectCurrency, (state, { payload: { currencyId, field } }) => {
       const otherField = field === Field.INPUT ? Field.OUTPUT : Field.INPUT
-      //필드가 input이면 아웃풋 아우풋이면 인풋
       if (currencyId === state[otherField].currencyId) {
         // the case where we have to swap the order
         return {
@@ -140,6 +137,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
         return {
           ...state,
           independentField: Field.INPUT,
+          typedValue: '',
           [Field.INPUT]: { currencyId: state.originInputId },
           [Field.OUTPUT]: { currencyId: state.originOutputId },
         }
@@ -147,6 +145,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
         return {
           ...state,
           independentField: Field.OUTPUT,
+          typedValue: '',
           [Field.INPUT]: { currencyId: state.originOutputId },
           [Field.OUTPUT]: { currencyId: state.originInputId },
         }
@@ -158,7 +157,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
               ? Field.OUTPUT
               : Field.INPUT
             : Field.INPUT,
-
+          typedValue: '',
           [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
           [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
         }
@@ -214,6 +213,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
     }))
     .addCase(setSwapTab, (state, { payload: { tab } }) => ({
       ...state,
+      typedValue: '',
       tab,
     }))
 )
