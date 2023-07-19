@@ -1015,8 +1015,8 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
     // Defaults to having the native currency selected
-    inputCurrency = '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
-    outputCurrency = '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A'
+    inputCurrency = '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A'
+    outputCurrency = '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''
