@@ -93,7 +93,6 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-
 // export default function TokenTable() {
 //   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
 //   const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
@@ -141,39 +140,43 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
 export default function TokenTable() {
   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
-  const levManagerAddreses = ["0x184773ef390325BEbe7d49d8481A5914B35c6c4C"]
+  const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
   //   const leverageManager = useLeverageManagerContract(value)
   //   const { result: token0_, loading, error } = useSingleCallResult(leverageManager, 'token0', [])
   //   const { result: token1_, loading: l, error:e } = useSingleCallResult(leverageManager, 'token1', [])
   //   const token0 = useToken(token0_?.toString())
   //   const token1 = useToken(token1_?.toString())
-  //   // names, price, percentchange, tvl, volume 
-  //   // const token0_ = useTokenContract(token0); 
-  //   // const token1_ = useTokenContract(token1); 
+  //   // names, price, percentchange, tvl, volume
+  //   // const token0_ = useTokenContract(token0);
+  //   // const token1_ = useTokenContract(token1);
 
   //   // const{ result: name0, loading: l0, error:e0 } = useSingleCallResult(token0_, 'name', [])
   //   // const{ result: name1, loading: l1, error:e1 } = useSingleCallResult(token1_, 'name', [])
 
   //   return {token0, token1}
   // } )
-  const tokenAddresses = [["0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A","0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9"],
-  ["0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A", "0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F"], 
-  ["0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9", "0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F"] ]
-  const _tokens = tokenAddresses.map((value:string[])=>{
+  const tokenAddresses = [
+    ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'],
+    ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
+    ['0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
+  ]
+  const _tokens = tokenAddresses.map((value: string[]) => {
     const token0 = useToken(value[0])
     const token1 = useToken(value[1])
-    return{token0, token1}
+    return { token0, token1 }
   })
 
   const { chainId, account, provider } = useWeb3React()
 
-
   /* loading and error state */
   if (chainId !== SupportedChainId.SEPOLIA || !account || !provider) {
-    return <GridContainer><Trans>Connect Wallet to Sepolia</Trans></GridContainer>
-  }
-  else if (loadingTokens && !tokens) {
+    return (
+      <GridContainer>
+        <Trans>Connect Wallet to Sepolia</Trans>
+      </GridContainer>
+    )
+  } else if (loadingTokens && !tokens) {
     return <LoadingTokenTable rowCount={PAGE_SIZE} />
   } else if (!tokens) {
     return (
@@ -191,11 +194,12 @@ export default function TokenTable() {
   } else {
     return (
       <GridContainer>
-        <PHeaderRow /> 
+        <PHeaderRow />
         <TokenDataContainer>
           {_tokens.map(
-            ({token0, token1}) =>
-              (token0?.address && token1?.address)&&(
+            ({ token0, token1 }) =>
+              token0?.address &&
+              token1?.address && (
                 <PLoadedRow
                   key={token0?.address}
                   tokenListIndex={1}

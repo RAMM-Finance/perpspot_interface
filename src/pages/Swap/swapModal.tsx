@@ -753,7 +753,6 @@ const TradeTabContent = () => {
                 ></Checkbox> */}
                 </RowBetween>
               ) : null}
-
               {leverage && (
                 <>
                   <RowBetween>

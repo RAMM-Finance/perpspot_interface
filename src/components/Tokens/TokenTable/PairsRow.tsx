@@ -12,8 +12,9 @@ import { useAtomValue } from 'jotai/utils'
 import { atomWithReset } from 'jotai/utils'
 import { ForwardedRef, forwardRef } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { useCallback, 
-  //useEffect, useMemo, useState 
+import {
+  useCallback,
+  //useEffect, useMemo, useState
 } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link, useParams } from 'react-router-dom'
@@ -21,13 +22,13 @@ import { useNavigate } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
 
-import {  useCurrency } from '../../../hooks/Tokens'
+import { useCurrency } from '../../../hooks/Tokens'
 import { Field } from '../../../state/swap/actions'
 import {
   useSwapActionHandlers,
   // useSwapState,
 } from '../../../state/swap/hooks'
-import { ButtonPrimary} from '../../Button'
+import { ButtonPrimary } from '../../Button'
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
@@ -84,7 +85,7 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     //grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-    grid-template-columns: 1fr 7fr 4fr 4fr 4fr 4fr 5fr 6fr
+    grid-template-columns: 1fr 7fr 4fr 4fr 4fr 4fr 5fr 6fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
@@ -298,10 +299,9 @@ enum TokenSortMethod {
   PERCENT_CHANGE = 'Change',
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
-  APR = "Estimated APR",
-  URate = "Utilization Rate", 
+  APR = 'Estimated APR',
+  URate = 'Utilization Rate',
 }
-
 
 export const filterStringAtom = atomWithReset<string>('')
 export const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
@@ -323,25 +323,27 @@ export function useSetSortMethod(newSortMethod: TokenSortMethod) {
   }, [sortMethod, setSortMethod, setSortAscending, sortAscending, newSortMethod])
 }
 
-
-
 export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
   [TokenSortMethod.PERCENT_CHANGE]: undefined,
   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-    <Trans>
-      Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.
-    </Trans>
+    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
   ),
   [TokenSortMethod.VOLUME]: (
     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
   ),
-  [TokenSortMethod.APR]:(
-    <Trans>Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing liquidity between 50% and 200% of current price</Trans>
-    ), 
-  [TokenSortMethod.URate]:(
-    <Trans>Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the APR.</Trans>
-    ), 
+  [TokenSortMethod.APR]: (
+    <Trans>
+      Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
+      liquidity between 50% and 200% of current price
+    </Trans>
+  ),
+  [TokenSortMethod.URate]: (
+    <Trans>
+      Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
+      APR.
+    </Trans>
+  ),
 }
 
 // price, TVL, volume, util rate, expected apr
@@ -391,8 +393,8 @@ function TokenRow({
   percentChange,
   tvl,
   volume,
-  APR, 
-  UtilRate, 
+  APR,
+  UtilRate,
   sparkLine,
   currency0,
   currency1,
@@ -409,15 +411,13 @@ function TokenRow({
   tokenInfo: ReactNode
   volume: ReactNode
   APR: ReactNode
-  UtilRate:ReactNode
+  UtilRate: ReactNode
   currency0?: string
   currency1?: string
   last?: boolean
   style?: CSSProperties
 }) {
-
   const navigate = useNavigate()
-
 
   const rowCells = (
     <>
@@ -459,7 +459,7 @@ function TokenRow({
               if (currency1 && currency0) {
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
                   state: { currency0, currency1 },
-                });
+                })
               }
             }}
           >
@@ -480,11 +480,10 @@ function TokenRow({
 
       {/*<SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
-  );
+  )
   if (header) return <StyledHeaderRow data-testid="header-row">{rowCells}</StyledHeaderRow>
   return <StyledTokenRow {...rest}>{rowCells}</StyledTokenRow>
 }
-
 
 /* Header Row: top header row component for table */
 export function PHeaderRow() {
@@ -497,8 +496,8 @@ export function PHeaderRow() {
       percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
-      APR = {<HeaderCell category={TokenSortMethod.APR} />}
-      UtilRate = {<HeaderCell category={TokenSortMethod.URate} />}
+      APR={<HeaderCell category={TokenSortMethod.APR} />}
+      UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
       // volume={<HeaderCell category={""} />}
 
       sparkLine={null}
@@ -523,9 +522,8 @@ export function PLoadingRow(props: { first?: boolean; last?: boolean }) {
       percentChange={<LoadingBubble />}
       tvl={<LoadingBubble />}
       volume={<LoadingBubble />}
-      APR = {<LoadingBubble />}
-      UtilRate = {<LoadingBubble />}
-
+      APR={<LoadingBubble />}
+      UtilRate={<LoadingBubble />}
       sparkLine={<SparkLineLoadingBubble />}
       {...props}
     />
@@ -544,13 +542,13 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, token0,token1,  sortRank } = props
+  const { tokenListIndex, tokenListLength, token0, token1, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
 
   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
   const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
   const timePeriod = useAtomValue(filterTimeAtom)
-  const delta = 0//token.market?.pricePercentChange?.value
+  const delta = 0 //token.market?.pricePercentChange?.value
   const arrow = getDeltaArrow(delta)
   const smallArrow = getDeltaArrow(delta, 14)
   const formattedDelta = formatDelta(delta)
@@ -565,13 +563,22 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     time_frame: timePeriod,
     search_token_address_input: filterString,
   }
-      //   <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
-      //   <Trans>Swap</Trans>
-      // </MenuItem>
-  // logo, tokenname, price, tvl, 
-  // go to swap page 
+  //   <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
+  //   <Trans>Swap</Trans>
+  // </MenuItem>
+  // logo, tokenname, price, tvl,
+  // go to swap page
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
-  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient, onLeverageFactorChange, onHideClosedLeveragePositions, onLeverageChange, onLeverageManagerAddress } = useSwapActionHandlers()
+  const {
+    onSwitchTokens,
+    onCurrencySelection,
+    onUserInput,
+    onChangeRecipient,
+    onLeverageFactorChange,
+    onHideClosedLeveragePositions,
+    onLeverageChange,
+    onLeverageManagerAddress,
+  } = useSwapActionHandlers()
   // const handleInputSelect = useCallback(
   //   (inputCurrency: Currency) => {
   //     onCurrencySelection(Field.INPUT, inputCurrency)
@@ -579,9 +586,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   [onCurrencySelection]
   // )
   const navigate = useNavigate()
-  const handleInputSelect= (inputCurrency: Currency)=>{
-      onCurrencySelection(Field.INPUT, inputCurrency)
-
+  const handleInputSelect = (inputCurrency: Currency) => {
+    onCurrencySelection(Field.INPUT, inputCurrency)
   }
 
   const handleOutputSelect = useCallback(
@@ -596,36 +602,42 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   currencies,
   //   // inputError: swapInputError,
   // } = useDerivedSwapInfo()
-  const currency0 = useCurrency(token0.address )
-  const currency1 = useCurrency(token1.address )
-  const [poolState, pool] = usePool(currency0 ?? undefined, currency1?? undefined, FeeAmount.LOW)
-  console.log('pools',token0.address, token1.address, pool);
+  const currency0 = useCurrency(token0.address)
+  const currency1 = useCurrency(token1.address)
+  const [poolState, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, FeeAmount.LOW)
+  // console.log('pools', token0.address, token1.address, pool)
   const currentPrice = pool?.token0Price.toSignificant(3)
-  const priceRounded = token1.address == "0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F"? 
-    ((Math.round(1/Number(currentPrice)) *1000000)/1000000).toString()
-    :  (Math.round(Number(currentPrice) *1000000)/1000000).toString()
+  const priceRounded =
+    token1.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+      ? ((Math.round(1 / Number(currentPrice)) * 1000000) / 1000000).toString()
+      : (Math.round(Number(currentPrice) * 1000000) / 1000000).toString()
 
-  let tvl_; 
-  let volume_; 
-  let estimatedapr_; 
-  let urate_; 
+  let tvl_
+  let volume_
+  let estimatedapr_
+  let urate_
 
-  if(token0.address == "0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A"&& token1.address == "0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9")
-  {
+  if (
+    token0.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+    token1.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
+  ) {
     tvl_ = 2313000000
     volume_ = 1300000
     estimatedapr_ = 23.5
     urate_ = 42.32
-  } else if(token0.address =="0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A"&& token1.address=="0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F"){
+  } else if (
+    token0.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+    token1.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+  ) {
     tvl_ = 1530000000
     volume_ = 210000
     estimatedapr_ = 32.1
-    urate_ = 77.6   
-  } else{
+    urate_ = 77.6
+  } else {
     tvl_ = 3212000000
     volume_ = 2830000
     estimatedapr_ = 25.7
-    urate_ = 56.3     
+    urate_ = 56.3
   }
   return (
     <div ref={ref} data-testid={`token-table-row-${token0.symbol}`}>
@@ -645,11 +657,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableName
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
           >
-            {/*<QueryTokenLogo token={token} />*/}
+            {/* <QueryTokenLogo token={token} /> */}
             <TokenInfoCell>
               <TokenName data-cy="token-name">
                 {token1.symbol}/{token0.symbol}
@@ -662,13 +677,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
           >
             <PriceInfoCell>
-              {currentPrice &&
-                priceRounded + ' ' + token0.symbol + '/' + token1.symbol}
+              {currentPrice && priceRounded + ' ' + token0.symbol + '/' + token1.symbol}
               {/*<PercentChangeInfoCell>
                   <ArrowCell>{smallArrow}</ArrowCell>
                   <DeltaText delta={delta}>{formattedDelta}</DeltaText>
@@ -680,7 +694,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
           >
@@ -692,7 +706,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
           >
@@ -703,7 +717,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
           >
@@ -714,7 +728,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
           >
@@ -725,7 +739,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } });
+                navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
           >
@@ -759,7 +773,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
       {/*</ClickableContent> */}
     </div>
-  );
+  )
 })
 
 // PLoadedRow.displayName = 'LoadedRow'

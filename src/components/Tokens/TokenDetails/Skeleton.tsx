@@ -67,7 +67,7 @@ const LoadingChartContainer = styled.div`
   overflow: hidden;
 `
 export const TokenInfoContainer = styled.div`
-  background-color: #0D111C;
+  background-color: #0d111c;
   border-radius: 32px;
   padding: 25px 30px;
   display: flex;
@@ -76,7 +76,8 @@ export const TokenInfoContainer = styled.div`
   /* align-items: flex-start; */
   margin-bottom: 15px;
   ${textFadeIn};
-  animation-duration: ${({ theme }) => theme.transition.duration.medium};`
+  animation-duration: ${({ theme }) => theme.transition.duration.medium};
+`
 
 export const TokenNameCell = styled.div`
   display: flex;
