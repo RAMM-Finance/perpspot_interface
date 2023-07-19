@@ -657,7 +657,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableName
             onClick={() => {
               if (currency1 && currency0) {
-                console.log('currency0', currency0)
                 navigate({
                   pathname: '/swap',
                   search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
