@@ -87,27 +87,26 @@ export function AdvancedSwapDetails({
     }
   }, [trade])
 
-  return !trade ? null : (
-    <StyledCard>
+  return (
+    /* !trade ? null :  */ <StyledCard>
       <AutoColumn gap="sm">
         <MouseoverValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           value={trade?.outputAmount.toFixed(3)}
           label={<Trans>Output</Trans>}
-          appendSymbol={trade.outputAmount.currency.symbol}
+          appendSymbol={trade ? trade.outputAmount.currency.symbol : '-'}
         />
         <MouseoverValueLabel
           description="The impact your trade has on the market price of this pool."
           value={<FormattedPriceImpact priceImpact={priceImpact} />}
           label={<Trans>Price Impact</Trans>}
         />
-
         <Separator />
         <MouseoverValueLabel
           description="The minimum amount you are guaranteed to receive. If the price slips any further, your transaction will revert."
           label={
             <>
-              {trade.tradeType === TradeType.EXACT_INPUT ? (
+              {!trade ? null : trade.tradeType === TradeType.EXACT_INPUT ? (
                 <Trans>Minimum received</Trans>
               ) : (
                 <Trans>Maximum sent</Trans>
@@ -117,7 +116,9 @@ export function AdvancedSwapDetails({
           }
           syncing={syncing}
           value={
-            trade.tradeType === TradeType.EXACT_INPUT
+            !trade
+              ? '-'
+              : trade.tradeType === TradeType.EXACT_INPUT
               ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
               : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`
           }
@@ -205,7 +206,7 @@ export function MouseoverValueLabel({
       </RowFixed>
       <TextWithLoadingPlaceholder syncing={syncing ?? false} width={65}>
         <StyledText textAlign="right" fontSize={14}>
-          <TruncatedText>{value ?? '-'}</TruncatedText>
+          <TruncatedText>{value}</TruncatedText>
           {appendSymbol}
         </StyledText>
       </TextWithLoadingPlaceholder>
