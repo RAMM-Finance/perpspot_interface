@@ -36,7 +36,6 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
 
   const onChangeSwapModeHandler = (e: React.MouseEvent<HTMLSpanElement>) => {
     const eventTarget = e.target as HTMLElement
-    console.log(eventTarget)
 
     if (eventTarget.innerText === selectedTab) {
       return
