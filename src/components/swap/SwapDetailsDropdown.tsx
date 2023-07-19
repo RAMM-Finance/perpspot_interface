@@ -33,7 +33,7 @@ const Wrapper = styled(Row)`
 `
 
 const SwapDetailsWrapper = styled.div`
-  padding-top: ${({ theme }) => theme.grids.md};
+  /* padding-top: ${({ theme }) => theme.grids.md}; */
 `
 
 const StyledInfoIcon = styled(Info)`
@@ -336,11 +336,7 @@ export function BorrowDetailsDropdown({
         <AnimatedDropdown open={showDetails}>
           <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
             <StyledCard>
-              {tradeState === TradeState.VALID ? (
-                <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={syncing} />
-              ) : (
-                <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={syncing} />
-              )}
+              <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={syncing} />
             </StyledCard>
           </AutoColumn>
         </AnimatedDropdown>
