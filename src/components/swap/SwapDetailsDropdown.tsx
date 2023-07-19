@@ -132,7 +132,7 @@ interface BorrowDetailsDropdownProps {
 export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
   const theme = useTheme()
   const { chainId } = useWeb3React()
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(true)
   return (
     <Wrapper>
       <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
@@ -145,7 +145,7 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
           <StyledHeaderRow
             data-testid="swap-details-header-row"
             onClick={() => setShowDetails(!showDetails)}
-            disabled={!trade}
+            disabled={false}
             open={showDetails}
           >
             <RowFixed>
@@ -164,7 +164,12 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
                 <ThemedText.DeprecatedMain fontSize={14}>
                   <Trans>Fetching best price...</Trans>
                 </ThemedText.DeprecatedMain>
-              ) : null}
+              ) : (
+                <RowFixed>
+                  <Info size={12} />
+                  <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
+                </RowFixed>
+              )}
             </RowFixed>
             <RowFixed>
               {!trade?.gasUseEstimateUSD ||
@@ -173,20 +178,19 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
               !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
                 <GasEstimateTooltip trade={trade} loading={syncing || loading} disabled={showDetails} />
               )}
-              <RotatingArrow
-                stroke={trade ? theme.textTertiary : theme.deprecated_bg3}
-                open={Boolean(trade && showDetails)}
-              />
+              <RotatingArrow stroke={trade ? theme.textTertiary : theme.deprecated_bg3} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>
         </TraceEvent>
-        {trade && (
-          <AnimatedDropdown open={showDetails}>
-            <SwapDetailsWrapper data-testid="advanced-swap-details">
+        {/* {trade && ( */}
+        <AnimatedDropdown open={showDetails}>
+          <SwapDetailsWrapper data-testid="advanced-swap-details">
+            <StyledCard>
               <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} syncing={syncing} />
-            </SwapDetailsWrapper>
-          </AnimatedDropdown>
-        )}
+            </StyledCard>
+          </SwapDetailsWrapper>
+        </AnimatedDropdown>
+        {/* )} */}
       </AutoColumn>
     </Wrapper>
   )
@@ -203,7 +207,7 @@ export function LeverageDetailsDropdown({
 }) {
   const theme = useTheme()
   const { chainId } = useWeb3React()
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(true)
 
   return (
     <Wrapper style={{ marginTop: '0' }}>
@@ -214,7 +218,7 @@ export function LeverageDetailsDropdown({
           element={InterfaceElementName.SWAP_DETAILS_DROPDOWN}
           shouldLogImpression={!showDetails}
         >
-          <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={!trade} open={showDetails}>
+          <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
             <RowFixed style={{ position: 'relative' }}>
               {Boolean(loading) && (
                 <StyledPolling>
@@ -223,18 +227,18 @@ export function LeverageDetailsDropdown({
                   </StyledPollingDot>
                 </StyledPolling>
               )}
-              {trade ? (
+              {loading ? (
+                <ThemedText.DeprecatedMain fontSize={14}>
+                  <Trans>Simulating position ...</Trans>
+                </ThemedText.DeprecatedMain>
+              ) : (
                 <LoadingOpacityContainer $loading={loading}>
                   <RowFixed>
                     <Info size={12} />
                     <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
                   </RowFixed>
                 </LoadingOpacityContainer>
-              ) : loading ? (
-                <ThemedText.DeprecatedMain fontSize={14}>
-                  <Trans>Simulating position ...</Trans>
-                </ThemedText.DeprecatedMain>
-              ) : null}
+              )}
             </RowFixed>
             <RowFixed>
               {/* {!trade?.gasUseEstimateUSD ||
@@ -249,24 +253,17 @@ export function LeverageDetailsDropdown({
                 />
               )} */}
 
-              <RotatingArrow
-                stroke={trade ? theme.textTertiary : theme.deprecated_bg3}
-                open={Boolean(trade && showDetails)}
-              />
+              <RotatingArrow stroke={trade ? theme.textTertiary : theme.deprecated_bg3} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>
         </TraceEvent>
         <AnimatedDropdown open={showDetails}>
           <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-            {trade && (
-              <StyledCard>
-                <AdvancedLeverageSwapDetails
-                  leverageTrade={trade}
-                  allowedSlippage={allowedSlippage}
-                  syncing={loading}
-                />
-              </StyledCard>
-            )}
+            {/* {trade && ( */}
+            <StyledCard>
+              <AdvancedLeverageSwapDetails leverageTrade={trade} allowedSlippage={allowedSlippage} syncing={loading} />
+            </StyledCard>
+            {/* )} */}
           </AutoColumn>
         </AnimatedDropdown>
       </AutoColumn>
@@ -283,12 +280,12 @@ export function BorrowDetailsDropdown({
 }: BorrowDetailsDropdownProps) {
   const theme = useTheme()
   // const { chainId } = useWeb3React()
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(true)
   // const { ltv } = useSwapState()
 
   useEffect(() => {
     if (tradeState !== TradeState.VALID) {
-      showDetails ?? setShowDetails(false)
+      showDetails ?? setShowDetails(true)
     }
   }, [tradeState, showDetails])
   const disabled = tradeState !== TradeState.VALID
@@ -302,11 +299,7 @@ export function BorrowDetailsDropdown({
           element={InterfaceElementName.SWAP_DETAILS_DROPDOWN}
           shouldLogImpression={!showDetails}
         >
-          <StyledHeaderRow
-            onClick={() => (!disabled ? setShowDetails(!showDetails) : null)}
-            disabled={disabled}
-            open={showDetails}
-          >
+          <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
             <RowFixed style={{ position: 'relative' }}>
               {Boolean(tradeState === TradeState.LOADING || tradeState === TradeState.SYNCING) && (
                 <StyledPolling>
@@ -326,13 +319,17 @@ export function BorrowDetailsDropdown({
                     <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
                   </RowFixed>
                 </LoadingOpacityContainer>
-              ) : null}
+              ) : (
+                <LoadingOpacityContainer $loading={syncing}>
+                  <RowFixed>
+                    <Info size={12} />
+                    <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
+                  </RowFixed>
+                </LoadingOpacityContainer>
+              )}
             </RowFixed>
             <RowFixed>
-              <RotatingArrow
-                stroke={trade ? theme.textTertiary : theme.deprecated_bg3}
-                open={Boolean(trade && showDetails)}
-              />
+              <RotatingArrow stroke={trade ? theme.textTertiary : theme.deprecated_bg3} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>
         </TraceEvent>
@@ -341,7 +338,9 @@ export function BorrowDetailsDropdown({
             <StyledCard>
               {tradeState === TradeState.VALID ? (
                 <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={syncing} />
-              ) : null}
+              ) : (
+                <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={syncing} />
+              )}
             </StyledCard>
           </AutoColumn>
         </AnimatedDropdown>
