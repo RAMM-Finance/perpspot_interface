@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Token } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
+import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
@@ -667,6 +668,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           >
             {/* <QueryTokenLogo token={token} /> */}
             <TokenInfoCell>
+              <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={30} margin={true} />
               <TokenName data-cy="token-name">
                 {token1.symbol}/{token0.symbol}
               </TokenName>
