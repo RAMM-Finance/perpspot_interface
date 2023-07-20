@@ -133,7 +133,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {
-      if (state.tab === 'Long' || state.tab === 'Swap') {
+      if (state.tab === 'Long') {
         return {
           ...state,
           independentField: Field.INPUT,

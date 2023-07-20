@@ -51,7 +51,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 14px;
-  grid-template-columns: 1fr 7fr 4fr 4fr 4fr 4fr 5fr 6fr;
+  grid-template-columns: 5fr 5fr 5fr 5fr 5fr 5fr 5fr;
   line-height: 24px;
   max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
   min-width: 390px;
@@ -60,8 +60,8 @@ const StyledTokenRow = styled.div<{
     padding-top: ${first ? '14px' : '0px'};
     padding-bottom: ${last ? '14px' : '0px'};
   `}
-  padding-left: 20px;
-  padding-right: 20px;
+  /* padding-left: 20px;
+  padding-right: 20px; */
   transition: ${({
     theme: {
       transition: { duration, timing },
@@ -130,7 +130,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   font-size: 13px;
   height: 64px;
   line-height: 16px;
-  padding: 0px 12px;
+  /* padding: 0px 12px; */
   width: 100%;
   justify-content: center;
 
@@ -153,7 +153,7 @@ const ListNumberCell = styled(Cell)<{ header: boolean }>`
   }
 `
 const DataCell = styled(Cell)<{ sortable: boolean }>`
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-width: 80px;
   user-select: ${({ sortable }) => (sortable ? 'none' : 'unset')};
   transition: ${({
@@ -163,22 +163,21 @@ const DataCell = styled(Cell)<{ sortable: boolean }>`
   }) => css`background-color ${duration.medium} ${timing.ease}`};
 `
 const TvlCell = styled(DataCell)`
-  padding-right: 8px;
+  /* padding-right: 8px; */
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     display: none;
   }
 `
 const NameCell = styled(Cell)`
   justify-content: flex-start;
-  padding: 0px 8px;
   min-width: 240px;
-  gap: 8px;
+  /* gap: 8px; */
 `
 const PriceCell = styled(DataCell)`
-  padding-right: 8px;
+  /* padding-right: 8px; */
 `
 const PercentChangeCell = styled(DataCell)`
-  padding-right: 8px;
+  /* padding-right: 8px; */
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: none;
   }
@@ -195,9 +194,11 @@ const PercentChangeInfoCell = styled(Cell)`
   }
 `
 const PriceInfoCell = styled(Cell)`
-  justify-content: flex-end;
-  flex: 1;
-  margin-left: 16px;
+  justify-content: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* margin-left: 16px; */
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     flex-direction: column;
     align-items: flex-end;
@@ -209,7 +210,7 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
   display: flex;
   gap: 4px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   width: 100%;
 
   &:hover {
@@ -266,7 +267,7 @@ const TokenSymbol = styled(Cell)`
   }
 `
 const VolumeCell = styled(DataCell)`
-  padding-right: 8px;
+  /* padding-right: 8px; */
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
     display: none;
   }
@@ -366,9 +367,9 @@ function HeaderCell({
       {sortMethod === category && (
         <>
           {sortAscending ? (
-            <ArrowUp size={20} strokeWidth={1.8} color={theme.accentActive} />
+            <ArrowUp size={15} strokeWidth={1.8} color={theme.accentActive} />
           ) : (
-            <ArrowDown size={20} strokeWidth={1.8} color={theme.accentActive} />
+            <ArrowDown size={15} strokeWidth={1.8} color={theme.accentActive} />
           )}
         </>
       )}
@@ -421,7 +422,7 @@ function TokenRow({
 
   const rowCells = (
     <>
-      <ListNumberCell header={header}>{listNumber}</ListNumberCell>
+      {/* <ListNumberCell header={header}>{listNumber}</ListNumberCell> */}
 
       <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
 
@@ -682,7 +683,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             }}
           >
             <PriceInfoCell>
-              {currentPrice && priceRounded + ' ' + token0.symbol + '/' + token1.symbol}
+              <span>{currentPrice && priceRounded}</span>
+              <span>{token0.symbol + '/' + token1.symbol}</span>
+              {/* {currentPrice && priceRounded + ' ' + token0.symbol + '/' + token1.symbol} */}
               {/*<PercentChangeInfoCell>
                   <ArrowCell>{smallArrow}</ArrowCell>
                   <DeltaText delta={delta}>{formattedDelta}</DeltaText>
