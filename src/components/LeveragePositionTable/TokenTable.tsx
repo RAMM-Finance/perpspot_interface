@@ -26,7 +26,7 @@ const GridContainer = styled.div`
     0px 24px 32px rgba(0, 0, 0, 0.01);
   /* margin-left: auto;
   margin-right: auto; */
-  padding: 10px 0;
+  padding: 8px 0;
   border-radius: 12px;
   border-top-left-radius: 0;
   justify-content: flex-start;
