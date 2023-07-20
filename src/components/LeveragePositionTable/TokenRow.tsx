@@ -4,7 +4,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { EditCell, UnderlineText } from 'components/BorrowPositionTable/TokenRow'
 import { AutoColumn } from 'components/Column'
-import Row, { AutoRow, RowBetween, RowFixed } from 'components/Row'
+import Row, { AutoRow, RowBetween } from 'components/Row'
 import ReducePositionModal, { AddLeveragePremiumModal } from 'components/swap/LMTModals'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -18,10 +18,10 @@ import moment from 'moment'
 import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { Edit3, Info } from 'react-feather'
+import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
-import styled, { css } from 'styled-components/macro'
+import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 
@@ -32,7 +32,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
 import { LoadingBubble } from './loading'
-import { filterStringAtom, PositionSortMethod, useSetSortMethod } from './state'
+import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
 const Cell = styled.div`
   display: flex;
@@ -349,26 +349,47 @@ export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefin
   // )
 }
 
+const SortingEnabled = {
+  [PositionSortMethod.VALUE]: false,
+  [PositionSortMethod.COLLATERAL]: false,
+  [PositionSortMethod.REPAYTIME]: true,
+  [PositionSortMethod.ENTRYPRICE]: false,
+  [PositionSortMethod.PNL]: false,
+  [PositionSortMethod.REMAINING]: true,
+  [PositionSortMethod.ACTIONS]: false,
+}
+
 /* Get singular header cell for header row */
 function HeaderCell({
   category,
 }: {
   category: PositionSortMethod // TODO: change this to make it work for trans
 }) {
+  const theme = useTheme()
+  const sortAscending = useAtomValue(sortAscendingAtom)
   const handleSortCategory = useSetSortMethod(category)
+  const sortMethod = useAtomValue(sortMethodAtom)
 
   const description = HEADER_DESCRIPTIONS[category]
+  const enabled = SortingEnabled[category]
 
   return (
-    <HeaderCellWrapper onClick={handleSortCategory}>
+    <HeaderCellWrapper onClick={() => enabled && handleSortCategory()}>
+      {sortMethod === category && enabled && (
+        <>
+          {sortAscending ? (
+            <ArrowUp size={20} strokeWidth={1.8} color={theme.accentActive} />
+          ) : (
+            <ArrowDown size={20} strokeWidth={1.8} color={theme.accentActive} />
+          )}
+        </>
+      )}
+      {category}
       {description && (
         <MouseoverTooltip text={description} placement="right">
-          <RowFixed>
-            <ThemedText.TableText>{category}</ThemedText.TableText>
-            <InfoIconContainer>
-              <Info size={10} />
-            </InfoIconContainer>
-          </RowFixed>
+          <InfoIconContainer>
+            <Info size={14} />
+          </InfoIconContainer>
         </MouseoverTooltip>
       )}
     </HeaderCellWrapper>

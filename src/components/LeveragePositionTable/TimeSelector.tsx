@@ -1,15 +1,8 @@
 import { TimePeriod } from 'graphql/data/util'
-import { useOnClickOutside } from 'hooks/useOnClickOutside'
-import { useAtom } from 'jotai'
-import { useRef } from 'react'
-import { Check, ChevronDown, ChevronUp } from 'react-feather'
-import { useModalIsOpen, useToggleModal } from 'state/application/hooks'
-import { ApplicationModal } from 'state/application/reducer'
-import styled, { useTheme } from 'styled-components/macro'
+import styled from 'styled-components/macro'
 
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
-import { filterTimeAtom } from './state'
-import FilterOption from './FilterOption'
+// import { filterTimeAtom } from './state'
 
 export const DISPLAYS: Record<TimePeriod, string> = {
   [TimePeriod.HOUR]: '1H',
@@ -101,45 +94,45 @@ const Chevron = styled.span<{ open: boolean }>`
 `
 
 // TODO: change this to reflect data pipeline
-export default function TimeSelector() {
-  const theme = useTheme()
-  const node = useRef<HTMLDivElement | null>(null)
-  const open = useModalIsOpen(ApplicationModal.TIME_SELECTOR)
-  const toggleMenu = useToggleModal(ApplicationModal.TIME_SELECTOR)
-  useOnClickOutside(node, open ? toggleMenu : undefined)
-  const [activeTime, setTime] = useAtom(filterTimeAtom)
+// export default function TimeSelector() {
+//   const theme = useTheme()
+//   const node = useRef<HTMLDivElement | null>(null)
+//   const open = useModalIsOpen(ApplicationModal.TIME_SELECTOR)
+//   const toggleMenu = useToggleModal(ApplicationModal.TIME_SELECTOR)
+//   useOnClickOutside(node, open ? toggleMenu : undefined)
+//   const [activeTime, setTime] = useAtom(filterTimeAtom)
 
-  return (
-    <StyledMenu ref={node}>
-      <FilterOption onClick={toggleMenu} aria-label="timeSelector" active={open} data-testid="time-selector">
-        <StyledMenuContent>
-          {DISPLAYS[activeTime]}
-          <Chevron open={open}>
-            {open ? (
-              <ChevronUp width={20} height={15} viewBox="0 0 24 20" />
-            ) : (
-              <ChevronDown width={20} height={15} viewBox="0 0 24 20" />
-            )}
-          </Chevron>
-        </StyledMenuContent>
-      </FilterOption>
-      {open && (
-        <MenuTimeFlyout>
-          {ORDERED_TIMES.map((time) => (
-            <InternalLinkMenuItem
-              key={DISPLAYS[time]}
-              data-testid={DISPLAYS[time]}
-              onClick={() => {
-                setTime(time)
-                toggleMenu()
-              }}
-            >
-              <div>{DISPLAYS[time]}</div>
-              {time === activeTime && <Check color={theme.accentAction} size={16} />}
-            </InternalLinkMenuItem>
-          ))}
-        </MenuTimeFlyout>
-      )}
-    </StyledMenu>
-  )
-}
+//   return (
+//     <StyledMenu ref={node}>
+//       <FilterOption onClick={toggleMenu} aria-label="timeSelector" active={open} data-testid="time-selector">
+//         <StyledMenuContent>
+//           {DISPLAYS[activeTime]}
+//           <Chevron open={open}>
+//             {open ? (
+//               <ChevronUp width={20} height={15} viewBox="0 0 24 20" />
+//             ) : (
+//               <ChevronDown width={20} height={15} viewBox="0 0 24 20" />
+//             )}
+//           </Chevron>
+//         </StyledMenuContent>
+//       </FilterOption>
+//       {open && (
+//         <MenuTimeFlyout>
+//           {ORDERED_TIMES.map((time) => (
+//             <InternalLinkMenuItem
+//               key={DISPLAYS[time]}
+//               data-testid={DISPLAYS[time]}
+//               onClick={() => {
+//                 setTime(time)
+//                 toggleMenu()
+//               }}
+//             >
+//               <div>{DISPLAYS[time]}</div>
+//               {time === activeTime && <Check color={theme.accentAction} size={16} />}
+//             </InternalLinkMenuItem>
+//           ))}
+//         </MenuTimeFlyout>
+//       )}
+//     </StyledMenu>
+//   )
+// }

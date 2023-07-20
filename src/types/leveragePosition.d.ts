@@ -8,8 +8,8 @@ export interface LimitlessPositionDetails {
   borrowManagerAddress: string | undefined
   liquidityManagerAddress: string | undefined
   isBorrow: boolean
-  token0Address: string | undefined
-  token1Address: string | undefined
+  token0Address: string 
+  token1Address: string
   poolFee: FeeAmount | undefined
   tokenId: string
   totalPosition: BN // totalPosition

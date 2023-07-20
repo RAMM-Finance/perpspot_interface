@@ -1,4 +1,3 @@
-import { TimePeriod } from 'graphql/data/util'
 import { atom, useAtom } from 'jotai'
 import { atomWithReset } from 'jotai/utils'
 import { useCallback } from 'react'
@@ -10,14 +9,13 @@ export enum PositionSortMethod {
   REPAYTIME = 'Time Left',
   PNL = 'PnL',
   ENTRYPRICE = 'Entry/Current Price',
-  REMAINING = "Prem. Left",
-  ACTIONS = 'Actions'
+  REMAINING = 'Prem. Left',
+  ACTIONS = 'Actions',
   // UNUSED_PREMIUM = 'Unused Premium'
 }
 
 export const filterStringAtom = atomWithReset<string>('')
-export const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
-export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.VALUE)
+export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.REPAYTIME)
 export const sortAscendingAtom = atom<boolean>(false)
 
 /* keep track of sort category for token table */
