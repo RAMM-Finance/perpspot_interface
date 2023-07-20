@@ -220,7 +220,6 @@ export function ReduceLeveragePositionDetails({
 }: {
   leverageTrade: LimitlessPositionDetails | undefined
   loading: boolean
-  // allowedSlippage: Percent | undefined
 }) {
   // const theme = useTheme()
   // const { chainId } = useWeb3React()

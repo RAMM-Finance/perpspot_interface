@@ -560,15 +560,6 @@ function useDerivedBorrowReduceDebtInfo(
       error = <Trans>Invalid Amount</Trans>
     }
 
-    // if (relevantTokenBalances?.length > 0 && position && premium) {
-    //   const tokenBalance = position.isToken0 ? relevantTokenBalances[1] : relevantTokenBalances[0]
-    //   if (Number(tokenBalance?.toExact()) < premium) {
-    //     error = (<Trans>
-    //       Insufficient {position.isToken0 ? currency1?.symbol : currency0?.symbol} balance
-    //     </Trans>)
-    //   }
-    // }
-
     return error
   }, [reduceAmount])
 

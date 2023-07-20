@@ -36,7 +36,11 @@ import {
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
 
-function getCurrency(currencyId: string, chainId: SupportedChainId, tokens?: TokenAddressMap): Currency | undefined {
+export function getCurrency(
+  currencyId: string,
+  chainId: SupportedChainId,
+  tokens?: TokenAddressMap
+): Currency | undefined {
   if (SupportedChainId.SEPOLIA === chainId) return FakeTokensMapSepolia[currencyId]
   if (tokens) {
     return currencyId === 'ETH' ? nativeOnChain(chainId) : tokens[chainId]?.[currencyId]?.token

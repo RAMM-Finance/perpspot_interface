@@ -7,15 +7,15 @@ export enum PositionSortMethod {
   BORROWED_AMOUNT = 'Borrowed',
   COLLATERAL = 'Collateral',
   REPAYTIME = 'Time Left',
-  REMAINING = "Prem. Left",
+  REMAINING = 'Prem. Left',
   ACTIONS = 'Actions',
-  LTV="LTV"
+  LTV = 'LTV',
   // UNUSED_PREMIUM = 'Unused Premium'
 }
 
 export const filterStringAtom = atomWithReset<string>('')
 export const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
-export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.BORROWED_AMOUNT)
+export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.REPAYTIME)
 export const sortAscendingAtom = atom<boolean>(false)
 
 /* keep track of sort category for token table */

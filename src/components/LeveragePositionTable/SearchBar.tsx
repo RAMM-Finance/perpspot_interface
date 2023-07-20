@@ -95,7 +95,7 @@ export default function SearchBar() {
           </TraceEvent>
         )}
       >
-        Filter tokens
+        Filter positions
       </Trans>
     </SearchBarContainer>
   )
