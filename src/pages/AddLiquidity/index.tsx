@@ -8,6 +8,7 @@ import { FeeAmount, NonfungiblePositionManager } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
+import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import usePrevious from 'hooks/usePrevious'
@@ -816,7 +817,7 @@ export default function AddLiquidity() {
                             </AutoRow>
                           )}
 
-                          {/*<LiquidityChartRangeInput
+                          <LiquidityChartRangeInput
                             currencyA={baseCurrency ?? undefined}
                             currencyB={quoteCurrency ?? undefined}
                             feeAmount={feeAmount}
@@ -829,7 +830,7 @@ export default function AddLiquidity() {
                             onLeftRangeInput={onLeftRangeInput}
                             onRightRangeInput={onRightRangeInput}
                             interactive={!hasExistingPosition}
-                          /> */}
+                          />
                         </>
                       ) : (
                         <AutoColumn gap="md">
