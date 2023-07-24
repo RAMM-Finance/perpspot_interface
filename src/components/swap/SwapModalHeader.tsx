@@ -643,7 +643,7 @@ export function BorrowModalHeader({
               <Text fontSize={12} fontWeight={300} marginRight="2px">
                 Total Collateral
               </Text>
-              <CurrencyLogo currency={outputCurrency} size="20px" style={{ marginRight: '12px' }} />
+              <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
               <Text fontSize={20} fontWeight={500}>
                 {inputCurrency?.symbol}
               </Text>
