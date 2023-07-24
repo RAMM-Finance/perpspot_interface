@@ -57,6 +57,7 @@ const StyledTokenRow = styled.div<{
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   max-width: 1480px;
   min-width: 390px;
+
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '14px' : '0px'};
@@ -138,6 +139,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   font-weight: 900;
   height: 64px;
   line-height: 16px;
+  margin-bottom: 15px;
   /* padding: 0px 12px; */
   width: 100%;
   justify-content: center;
@@ -246,7 +248,7 @@ const StyledLink = styled(Link)`
   text-decoration: none;
 `
 const TokenInfoCell = styled(Cell)`
-  gap: 8px;
+  gap: 10px;
   line-height: 24px;
   font-size: 16px;
   max-width: inherit;
@@ -266,6 +268,7 @@ const TokenName = styled.div`
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+  font-weight: 900;
 `
 const TokenSymbol = styled(Cell)`
   color: ${({ theme }) => theme.textTertiary};
