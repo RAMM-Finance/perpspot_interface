@@ -69,9 +69,7 @@ export default function RangeBadge({
       ) : (
         <MouseoverTooltip
           text={
-            <Trans>
-              The price of this pool is outside of your selected range. Your position will earn premiums.
-            </Trans>
+            <Trans>The price of this pool is outside of your selected range. Your position will earn premiums.</Trans>
           }
         >
           <LabelText color={theme.accentWarning}>

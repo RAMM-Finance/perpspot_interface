@@ -9,9 +9,7 @@ import { useIsPoolsPage } from 'hooks/useIsPoolsPage'
 import { useAtomValue } from 'jotai/utils'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
-import { UniIcon } from 'nft/components/icons'
 import { useProfilePageState } from 'nft/hooks'
-import { ProfilePageStateType } from 'nft/types'
 import { ReactNode } from 'react'
 import { NavLink, NavLinkProps, useLocation, useNavigate } from 'react-router-dom'
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
@@ -20,8 +18,6 @@ import styled from 'styled-components/macro'
 // import { Bag } from './Bag'
 import Blur from './Blur'
 import { ChainSelector } from './ChainSelector'
-import { MenuDropdown } from './MenuDropdown'
-import { SearchBar } from './SearchBar'
 import * as styles from './style.css'
 
 const Nav = styled.nav`
@@ -73,16 +69,14 @@ export const PageTabs = () => {
       <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
         <Trans>Trade</Trans>
       </MenuItem>
-       <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
-          <Trans>Pools</Trans>
-        </MenuItem>
-     
-        <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={isPoolActive}>
-          <Trans>Faucets</Trans>
-        </MenuItem>
-      <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full">
+      <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
+        <Trans>Pools</Trans>
+      </MenuItem>
 
-      </Box>
+      <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={isPoolActive}>
+        <Trans>Faucets</Trans>
+      </MenuItem>
+      <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
       {micrositeEnabled && (
         <Box display={{ sm: 'none', xxxl: 'flex' }}>
           <MenuItem href="/wallet" isActive={pathname.startsWith('/wallet')}>
@@ -132,9 +126,7 @@ const Navbar = ({ blur }: { blur: boolean }) => {
               <PageTabs />
             </Row>
           </Box>
-          <Box className={styles.searchContainer}>
-            {/* <SearchBar /> */}
-          </Box>
+          <Box className={styles.searchContainer}>{/* <SearchBar /> */}</Box>
           <Box className={styles.rightSideContainer}>
             <Row gap="12">
               <Box position="relative" display={{ sm: 'flex', navSearchInputVisible: 'none' }}>

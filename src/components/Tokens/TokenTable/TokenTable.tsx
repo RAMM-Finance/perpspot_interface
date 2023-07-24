@@ -18,17 +18,18 @@ import { HeaderRow, LoadingRow } from './TokenRow'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
-  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
+  max-width: 1480px;
   background-color: ${({ theme }) => theme.background};
+  /* background-color: #0e111c; */
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
     0px 24px 32px rgba(0, 0, 0, 0.01);
-  padding: 10px 10px;
+  padding: 40px;
   margin-left: auto;
   margin-right: auto;
   border-radius: 36px;
   justify-content: center;
   align-items: center;
-  border: 20px solid ${({ theme }) => theme.background};
 `
 
 const TokenDataContainer = styled.div`

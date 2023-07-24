@@ -1,16 +1,9 @@
-import { Trans } from '@lingui/macro'
-import { Currency, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
-import Loader from 'components/Icons/LoadingSpinner'
+import { Currency } from '@uniswap/sdk-core'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import QueryTokenLogo from 'components/Logo/QueryTokenLogo'
-import { getChainInfo } from 'constants/chainInfo'
-import { SupportedChainId } from 'constants/chains'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
-import { useCallback } from 'react'
 import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
 const LOGO_SIZE = 20
@@ -46,6 +39,7 @@ const Label = styled.div`
   grid-column: 2;
   grid-row: 1;
   font-size: 16px;
+  margin-left: 5px;
 `
 
 const Status = styled.div`
@@ -79,13 +73,11 @@ export default function ChainSelectorRow({ currencyId, isInput, onCurrencySelect
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState();
+  } = useSwapState()
 
   const active = isInput ? currencyId === inputCurrencyId : currencyId === outputCurrencyId
   const currency = useCurrency(currencyId)
   const label = currency?.symbol as string
-
-
 
   const theme = useTheme()
 
@@ -99,9 +91,7 @@ export default function ChainSelectorRow({ currencyId, isInput, onCurrencySelect
     >
       <CurrencyLogo currency={currency} />
       <Label>{label}</Label>
-      <Status>
-        {active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}
-      </Status>
+      <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )
 }

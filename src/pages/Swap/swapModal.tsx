@@ -737,9 +737,9 @@ const TradeTabContent = () => {
               </>
             ) : null}
           </OutputSwapSection>
-          <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)}>
-            <AutoColumn gap="md">
-              {tab !== 'Swap' ? (
+          {tab !== 'Swap' ? (
+            <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)}>
+              <AutoColumn gap="md">
                 <RowBetween>
                   <ThemedText.DeprecatedMain fontWeight={400}>
                     <Trans>Leverage</Trans>
@@ -752,53 +752,54 @@ const TradeTabContent = () => {
                   }}
                 ></Checkbox> */}
                 </RowBetween>
-              ) : null}
-              {leverage && (
-                <>
-                  <RowBetween>
-                    <LeverageInputSection>
-                      <StyledNumericalInput
-                        className="token-amount-input"
-                        value={debouncedLeverageFactor ?? ''}
-                        placeholder="1"
-                        onUserInput={(str: string) => {
-                          if (str === '') {
-                            onDebouncedLeverageFactor('')
-                          } else if (new BN(str).isGreaterThan(new BN('500'))) {
-                            return
-                          } else if ((new BN(str).dp() as number) > 1) {
-                            onDebouncedLeverageFactor(String(new BN(str).decimalPlaces(1, BN.ROUND_DOWN)))
-                          } else {
-                            onDebouncedLeverageFactor(str)
-                          }
-                        }}
-                        disabled={false}
-                      />
-                    </LeverageInputSection>
-                    <AutoRow gap="4px" justify="flex-end">
-                      <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
-                        <Trans>10</Trans>
-                      </SmallMaxButton>
-                      <SmallMaxButton onClick={() => onLeverageFactorChange('100')} width="20%">
-                        <Trans>100</Trans>
-                      </SmallMaxButton>
-                      <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
-                        <Trans>500</Trans>
-                      </SmallMaxButton>
-                    </AutoRow>
-                  </RowBetween>
-                  <Slider
-                    value={sliderLeverageFactor === '' ? 1 : parseFloat(sliderLeverageFactor)}
-                    onChange={(val) => setSliderLeverageFactor(val.toString())}
-                    min={1}
-                    max={500.0}
-                    step={0.5}
-                    float={true}
-                  />
-                </>
-              )}
-            </AutoColumn>
-          </LeverageGaugeSection>
+
+                {leverage && (
+                  <>
+                    <RowBetween>
+                      <LeverageInputSection>
+                        <StyledNumericalInput
+                          className="token-amount-input"
+                          value={debouncedLeverageFactor ?? ''}
+                          placeholder="1"
+                          onUserInput={(str: string) => {
+                            if (str === '') {
+                              onDebouncedLeverageFactor('')
+                            } else if (new BN(str).isGreaterThan(new BN('500'))) {
+                              return
+                            } else if ((new BN(str).dp() as number) > 1) {
+                              onDebouncedLeverageFactor(String(new BN(str).decimalPlaces(1, BN.ROUND_DOWN)))
+                            } else {
+                              onDebouncedLeverageFactor(str)
+                            }
+                          }}
+                          disabled={false}
+                        />
+                      </LeverageInputSection>
+                      <AutoRow gap="4px" justify="flex-end">
+                        <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
+                          <Trans>10</Trans>
+                        </SmallMaxButton>
+                        <SmallMaxButton onClick={() => onLeverageFactorChange('100')} width="20%">
+                          <Trans>100</Trans>
+                        </SmallMaxButton>
+                        <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
+                          <Trans>500</Trans>
+                        </SmallMaxButton>
+                      </AutoRow>
+                    </RowBetween>
+                    <Slider
+                      value={sliderLeverageFactor === '' ? 1 : parseFloat(sliderLeverageFactor)}
+                      onChange={(val) => setSliderLeverageFactor(val.toString())}
+                      min={1}
+                      max={500.0}
+                      step={0.5}
+                      float={true}
+                    />
+                  </>
+                )}
+              </AutoColumn>
+            </LeverageGaugeSection>
+          ) : null}
           <DetailsSwapSection>
             {!leverage ? (
               <SwapDetailsDropdown

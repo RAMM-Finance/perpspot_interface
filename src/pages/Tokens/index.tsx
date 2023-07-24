@@ -16,6 +16,7 @@ const ExploreContainer = styled.div`
   min-width: 320px;
   padding: 68px 12px 0px;
   flex-flow: column nowrap;
+  max-width: 1480px;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
@@ -27,7 +28,8 @@ const ExploreContainer = styled.div`
 `
 const TitleContainer = styled.div`
   margin-bottom: 32px;
-  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
+  max-width: 1480px;
   margin-left: auto;
   margin-right: auto;
   display: flex;
