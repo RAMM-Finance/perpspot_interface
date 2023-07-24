@@ -56,6 +56,7 @@ const Wallet = lazy(() => import('./Wallet'))
 // const Asset = lazy(() => import('nft/pages/asset/Asset'))
 
 const BodyWrapper = styled.div`
+  background: ${({ theme }) => theme.backgroundSurface};
   display: flex;
   flex-direction: column;
   width: 100%;
