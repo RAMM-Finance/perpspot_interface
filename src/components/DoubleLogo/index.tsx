@@ -31,7 +31,6 @@ export default function DoubleCurrencyLogo({
   size = 16,
   margin = false,
 }: DoubleCurrencyLogoProps) {
-  console.log('logo', currency0, currency1)
   return (
     <Wrapper sizeraw={size} margin={margin}>
       {currency0 && (

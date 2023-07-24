@@ -333,15 +333,15 @@ export default function CurrencyInputPanel({
         {showMaxButton && hideBalance && (
           <FiatRow>
             <TraceEvent
-                events={[BrowserEvent.onClick]}
-                name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-              >
-                <StyledBalanceMax onClick={onMax}>
-                  <Trans>MAX</Trans>
-                </StyledBalanceMax>
-              </TraceEvent>
-          </FiatRow>  
+              events={[BrowserEvent.onClick]}
+              name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+              element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+            >
+              <StyledBalanceMax onClick={onMax}>
+                <Trans>MAX</Trans>
+              </StyledBalanceMax>
+            </TraceEvent>
+          </FiatRow>
         )}
       </Container>
       {onCurrencySelect && (

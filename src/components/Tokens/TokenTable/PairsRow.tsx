@@ -52,9 +52,10 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 14px;
-  grid-template-columns: 5fr 5fr 5fr 5fr 5fr 5fr 5fr;
+  grid-template-columns: 5fr 5fr 5fr 5fr 6fr 6fr 4fr;
   line-height: 24px;
-  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
+  max-width: 1480px;
   min-width: 390px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -86,7 +87,8 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     //grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-    grid-template-columns: 1fr 7fr 4fr 4fr 4fr 4fr 5fr 6fr;
+    grid-template-columns: 5fr 5fr 5fr 5fr 6fr 6fr 4fr;
+    font-size: 13px;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
@@ -108,10 +110,10 @@ const StyledTokenRow = styled.div<{
   }
 `
 
-const ClickableContent = styled.div`
+const ClickableContent = styled.div<{ rate?: number }>`
   display: flex;
   text-decoration: none;
-  color: ${({ theme }) => theme.textSecondary};
+  color: ${({ theme, rate }) => (!rate ? theme.textPrimary : rate > 0 ? '#10CC83' : '#FA3C58')};
   align-items: center;
   cursor: pointer;
 
@@ -123,12 +125,17 @@ const ClickableName = styled(ClickableContent)`
   gap: 8px;
   max-width: 100%;
 `
+const ClickableRate = styled(ClickableContent)`
+  font-weight: 700;
+`
+
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
   border-color: ${({ theme }) => theme.backgroundOutline};
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: 900;
   height: 64px;
   line-height: 16px;
   /* padding: 0px 12px; */
@@ -137,6 +144,10 @@ const StyledHeaderRow = styled(StyledTokenRow)`
 
   &:hover {
     background-color: transparent;
+  }
+
+  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
+    font-size: 13px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -197,12 +208,13 @@ const PercentChangeInfoCell = styled(Cell)`
 const PriceInfoCell = styled(Cell)`
   justify-content: flex-start;
   display: flex;
+  line-height: 18px;
   flex-direction: column;
   align-items: flex-start;
   /* margin-left: 16px; */
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
   }
 `
 
@@ -244,8 +256,7 @@ const TokenInfoCell = styled(Cell)`
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     justify-content: flex-start;
-    flex-direction: column;
-    gap: 0px;
+    gap: 8px;
     width: max-content;
     font-weight: 500;
   }
@@ -456,6 +467,7 @@ function TokenRow({
               fontSize: '0.825rem',
               borderRadius: '32px',
               height: '30px',
+              lineHeight: '1',
             }}
             onClick={() => {
               if (currency1 && currency0) {
@@ -613,6 +625,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     token1.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
       ? ((Math.round(1 / Number(currentPrice)) * 1000000) / 1000000).toString()
       : (Math.round(Number(currentPrice) * 1000000) / 1000000).toString()
+  const fomatter = new Intl.NumberFormat(navigator.language)
 
   let tvl_
   let volume_
@@ -672,7 +685,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               <TokenName data-cy="token-name">
                 {token1.symbol}/{token0.symbol}
               </TokenName>
-              <TokenSymbol>{token0.symbol}</TokenSymbol>
+              {/* <TokenSymbol>{token0.symbol}</TokenSymbol> */}
             </TokenInfoCell>
           </ClickableName>
         }
@@ -685,7 +698,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             }}
           >
             <PriceInfoCell>
-              <span>{currentPrice && priceRounded}</span>
+              <Price>{currentPrice && fomatter.format(Number(priceRounded))}</Price>
               <span>{token0.symbol + '/' + token1.symbol}</span>
               {/* {currentPrice && priceRounded + ' ' + token0.symbol + '/' + token1.symbol} */}
               {/*<PercentChangeInfoCell>
@@ -730,26 +743,28 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           </ClickableContent>
         }
         APR={
-          <ClickableContent
+          <ClickableRate
             onClick={() => {
               if (currency1 && currency0) {
                 navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
+            rate={estimatedapr_}
           >
             {formatNumber(estimatedapr_) + '%'}
-          </ClickableContent>
+          </ClickableRate>
         }
         UtilRate={
-          <ClickableContent
+          <ClickableRate
             onClick={() => {
               if (currency1 && currency0) {
                 navigate('/swap', { state: { currency0, currency1 } })
               }
             }}
+            rate={urate_}
           >
             {formatNumber(urate_) + '%'}
-          </ClickableContent>
+          </ClickableRate>
         }
         // sparkLine={
         //   <SparkLine>
@@ -782,3 +797,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 })
 
 // PLoadedRow.displayName = 'LoadedRow'
+
+const Price = styled.span`
+  font-weight: 700;
+`
+
+const Symbol = styled.span`
+  color: ;
+`

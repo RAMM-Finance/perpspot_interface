@@ -78,6 +78,8 @@ export default function AssetLogo({
   const [src, nextSrc] = useTokenLogoSource(address, chainId, isNative, backupImg)
   const L2Icon = getChainInfo(chainId)?.circleLogoUrl
 
+  console.log(symbol)
+
   return (
     <LogoContainer style={style}>
       {src ? (
@@ -85,7 +87,8 @@ export default function AssetLogo({
       ) : (
         <MissingImageLogo size={size}>
           {/* use only first 3 characters of Symbol for design reasons */}
-          {symbol?.toUpperCase().replace('$', '').replace(/\s+/g, '').slice(0, 3)}
+          {/* {symbol?.toUpperCase().replace('$', '').replace(/\s+/g, '').slice(0, 3)} */}
+          <img style={{ width: '100%' }} src={`/images/${symbol}.png`} alt="" />
         </MissingImageLogo>
       )}
       {!hideL2Icon && <L2NetworkLogo networkUrl={L2Icon} parentSize={size} />}

@@ -62,8 +62,6 @@ function TooltipContent({ content, wrap = false, ...rest }: TooltipContentProps)
   return <Popover content={wrap ? <TooltipContainer>{content}</TooltipContainer> : content} {...rest} />
 }
 
-
-
 /** Standard text tooltip. */
 export function MouseoverTooltip({ text, disableHover, children, timeout, ...rest }: Omit<TooltipProps, 'show'>) {
   const [show, setShow] = useState(false)
