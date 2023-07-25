@@ -86,6 +86,7 @@ const GenesisAddressses = [
   '0xC74AB274E594fdC1b5dBD32479F5A25ab7FD8f66',
   '0x47866cB4ed65BFE68436B1174c060C58c09fFE56',
   '0xacF1Dea72FF8faE372BedE5f6Ee1A082B1f453E3',
+  '0x0E99f7d366711f8cCf05Eaf871f72D37AbEC1937',
 ]
 
 export default function FaucetsPage() {
