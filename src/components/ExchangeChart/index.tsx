@@ -320,15 +320,13 @@ export const PoolDataSection = ({
 
   return (
     <>
-      <StatsContainer>
-        <StatsSection
-          address={uniswapPoolAddress ?? ''}
-          chainId={chainId}
-          token0Symbol={token0?.symbol}
-          token1Symbol={token1?.symbol}
-          stats={stats}
-        />
-      </StatsContainer>
+      <StatsSection
+        address={uniswapPoolAddress ?? ''}
+        chainId={chainId}
+        token0Symbol={token0?.symbol}
+        token1Symbol={token1?.symbol}
+        stats={stats}
+      />
       {/* <div style={{ height: "450px" }}>
 				<div
 					style={{

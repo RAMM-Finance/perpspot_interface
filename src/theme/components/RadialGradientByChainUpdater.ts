@@ -50,13 +50,12 @@ export default function RadialGradientByChainUpdater(): null {
       case SupportedChainId.ARBITRUM_ONE:
       case SupportedChainId.ARBITRUM_GOERLI: {
         setBackground(backgroundResetStyles)
-        const arbitrumLightGradient =
-                  'linear-gradient(180deg, #202738 0%, #070816 100%)'
+        const arbitrumLightGradient = 'linear-gradient(180deg, #202738 0%, #070816 100%)'
 
-          // 'radial-gradient(100% 100% at 50% 0%, rgba(205, 232, 251, 0.7) 0%, rgba(252, 243, 249, 0.6536) 49.48%, rgba(255, 255, 255, 0) 100%), #FFFFFF'
+        // 'radial-gradient(100% 100% at 50% 0%, rgba(205, 232, 251, 0.7) 0%, rgba(252, 243, 249, 0.6536) 49.48%, rgba(255, 255, 255, 0) 100%), #FFFFFF'
         const arbitrumDarkGradient =
           // 'radial-gradient(100% 100% at 50% 0%, rgba(10, 41, 75, 0.7) 0%, rgba(34, 30, 48, 0.6536) 49.48%, rgba(31, 33, 40, 0) 100%), #0D0E0E'
-                    'linear-gradient(180deg, #202738 0%, #070816 100%)'
+          'linear-gradient(180deg, #202738 0%, #070816 100%)'
 
         backgroundRadialGradientElement.style.background = darkMode ? arbitrumDarkGradient : arbitrumLightGradient
         break
@@ -74,15 +73,13 @@ export default function RadialGradientByChainUpdater(): null {
       case SupportedChainId.POLYGON:
       case SupportedChainId.POLYGON_MUMBAI: {
         setBackground(backgroundResetStyles)
-        const polygonLightGradient =
-          'linear-gradient(180deg, #202738 0%, #070816 100%)'
-         // 'radial-gradient(100% 100% at 50% 0%, rgba(130, 71, 229, 0.2) 0%, rgba(200, 168, 255, 0.05) 52.6%, rgba(0, 0, 0, 0) 100%), #FFFFFF'
-          // 'radial-gradient(100% 93.36% at 0% 6.64%, rgba(32,38,46,1.000) 0%, rgba(84,15,40,1.000) 100%)',
-          const polygonDarkGradient = 
-          'linear-gradient(180deg, #202738 0%, #070816 100%)'
-          //'radial-gradient(100% 100% at 50% 0%, rgba(130, 71, 229, 0.2) 0%, rgba(200, 168, 255, 0.05) 52.6%, rgba(0, 0, 0, 0) 100%), #0D0E0E'
-          //  'radial-gradient(100% 100% at 50% 0%, rgba(41,6,19, 0.05) 2%, rgba(59,8,26, 0.5) 52.6%, rgba(0, 0, 0, 0) 100%), #0D0E0E'
-        // const polygonDarkGradient = 
+        const polygonLightGradient = 'linear-gradient(180deg, #202738 0%, #070816 100%)'
+        // 'radial-gradient(100% 100% at 50% 0%, rgba(130, 71, 229, 0.2) 0%, rgba(200, 168, 255, 0.05) 52.6%, rgba(0, 0, 0, 0) 100%), #FFFFFF'
+        // 'radial-gradient(100% 93.36% at 0% 6.64%, rgba(32,38,46,1.000) 0%, rgba(84,15,40,1.000) 100%)',
+        const polygonDarkGradient = 'linear-gradient(180deg, #202738 0%, #070816 100%)'
+        //'radial-gradient(100% 100% at 50% 0%, rgba(130, 71, 229, 0.2) 0%, rgba(200, 168, 255, 0.05) 52.6%, rgba(0, 0, 0, 0) 100%), #0D0E0E'
+        //  'radial-gradient(100% 100% at 50% 0%, rgba(41,6,19, 0.05) 2%, rgba(59,8,26, 0.5) 52.6%, rgba(0, 0, 0, 0) 100%), #0D0E0E'
+        // const polygonDarkGradient =
         //   `radial-gradient(100% 100% at 50% 0%, rgba(32, 20, 38, 1) 0%, rgba(4, 5, 5, 1) 52.6%, rgba(0, 0, 0, 0) 100%), #0D0E0E`
         backgroundRadialGradientElement.style.background = darkMode ? polygonDarkGradient : polygonLightGradient
         break
@@ -99,14 +96,12 @@ export default function RadialGradientByChainUpdater(): null {
       }
       case SupportedChainId.BNB: {
         setBackground(backgroundResetStyles)
-        const bscLightGradient =
-                  'linear-gradient(180deg, #202738 0%, #070816 100%)'
+        const bscLightGradient = 'linear-gradient(180deg, #202738 0%, #070816 100%)'
 
-          // 'radial-gradient(100% 100% at 50% 0%, rgba(242 , 186, 8, 0.1) 0%, rgba(238, 182, 6, 0.08) 50%, rgba(140, 185, 11, 0) 100%), #FFFFFF'
-        const bscDarkGradient =
-                  'linear-gradient(180deg, #202738 0%, #070816 100%)'
+        // 'radial-gradient(100% 100% at 50% 0%, rgba(242 , 186, 8, 0.1) 0%, rgba(238, 182, 6, 0.08) 50%, rgba(140, 185, 11, 0) 100%), #FFFFFF'
+        const bscDarkGradient = 'linear-gradient(180deg, #202738 0%, #070816 100%)'
 
-          // 'radial-gradient(100% 100% at 50% 0%, rgba(169, 132, 17, 0.1) 0%, rgba(128, 100, 14, 0.08) 50%, rgba(140, 185, 11, 0) 100%), #0D0E0E'
+        // 'radial-gradient(100% 100% at 50% 0%, rgba(169, 132, 17, 0.1) 0%, rgba(128, 100, 14, 0.08) 50%, rgba(140, 185, 11, 0) 100%), #0D0E0E'
         backgroundRadialGradientElement.style.background = darkMode ? bscDarkGradient : bscLightGradient
         break
       }
@@ -114,8 +109,10 @@ export default function RadialGradientByChainUpdater(): null {
         setBackground(initialStyles)
         const defaultLightGradient =
           'radial-gradient(100% 100% at 50% 0%, rgba(255, 184, 226, 0.51) 0%, rgba(255, 255, 255, 0) 100%), #FFFFFF'
-        const defaultDarkGradient = 'linear-gradient(180deg, #202738 0%, #070816 100%)'
-        backgroundRadialGradientElement.style.background = darkMode ? defaultDarkGradient : defaultLightGradient
+        const defaultDarkGradient = '' //'linear-gradient(180deg, #202738 0%, #070816 100%)'
+        backgroundRadialGradientElement.style.backgroundColor = darkMode
+          ? darkTheme.backgroundBackdrop
+          : lightTheme.backgroundSurface //defaultDarkGradient : defaultLightGradient
       }
     }
   }, [darkMode, chainId, isNftPage])

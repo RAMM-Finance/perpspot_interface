@@ -14,7 +14,8 @@ const ICON_SIZE = '20px'
 
 const SearchBarContainer = styled.div`
   display: flex;
-  flex: 1;
+  width: fit-content;
+  margin: 0.25rem;
 `
 const SearchInput = styled.input`
   background: no-repeat scroll 7px 7px;

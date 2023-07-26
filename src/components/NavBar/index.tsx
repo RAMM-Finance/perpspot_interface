@@ -16,12 +16,11 @@ import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
 
 // import { Bag } from './Bag'
-import Blur from './Blur'
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
 
 const Nav = styled.nav`
-  padding: 20px 12px;
+  padding: 10px 12px;
   width: 100%;
   height: ${({ theme }) => theme.navHeight}px;
   z-index: 2;
@@ -73,7 +72,7 @@ export const PageTabs = () => {
         <Trans>Pools</Trans>
       </MenuItem>
 
-      <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={isPoolActive}>
+      <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
         <Trans>Faucets</Trans>
       </MenuItem>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
@@ -99,7 +98,7 @@ const Navbar = ({ blur }: { blur: boolean }) => {
 
   return (
     <>
-      {blur && <Blur />}
+      {/* {blur && <Blur />} */}
       <Nav>
         <Box display="flex" height="full" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>

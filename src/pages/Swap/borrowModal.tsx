@@ -41,6 +41,7 @@ import { Text } from 'rebass'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedBorrowCreationInfo, useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { LinkStyledButton, ThemedText } from 'theme'
 import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
@@ -69,6 +70,10 @@ function largerPercentValue(a?: Percent, b?: Percent) {
   }
   return undefined
 }
+
+const Wrapper = styled.div`
+  padding: 0 1rem;
+`
 
 const BorrowTabContent = () => {
   const {
@@ -354,7 +359,7 @@ const BorrowTabContent = () => {
   const showBorrowOutputApproval = borrowOutputApprovalState !== ApprovalState.APPROVED
 
   return (
-    <>
+    <Wrapper>
       <div style={{ display: 'relative' }}>
         <BorrowConfirmModal
           borrowTrade={borrowTrade}
@@ -661,7 +666,7 @@ const BorrowTabContent = () => {
           )}
         </div>
       </div>
-    </>
+    </Wrapper>
   )
 }
 

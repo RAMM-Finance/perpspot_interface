@@ -23,21 +23,17 @@ function Stat({
   value,
   title,
   description,
-  isPrice,
-  baseTokenSymbol,
-  quoteTokenSymbol,
+  baseQuoteSymbol,
 }: {
   dataCy: string
   value: NumericStat
   title: ReactNode
   description?: ReactNode
-  isPrice?: boolean
-  baseTokenSymbol?: string
-  quoteTokenSymbol?: string
+  baseQuoteSymbol?: string
 }) {
   let _value = value ? formatNumber(value, NumberType.FiatTokenPrice).replace(/\$/g, '') : '-'
-  if (value && isPrice && baseTokenSymbol && quoteTokenSymbol) {
-    _value = _value + ` ${baseTokenSymbol} / ${quoteTokenSymbol}`
+  if (value && baseQuoteSymbol) {
+    _value = `${_value} ${baseQuoteSymbol}`
   }
   return (
     <StatWrapper data-cy={`${dataCy}`}>
@@ -81,47 +77,42 @@ export default function StatsSection(props: StatsSectionProps) {
   if (stats?.high24h || stats?.low24h || stats?.delta || stats?.price) {
     return (
       <StatsWrapper data-testid="token-details-stats">
-        <TokenStatsSection>
-          <StatPair>
-            <Stat
-              dataCy="current-price"
-              value={stats?.price}
-              description={<Trans>Current Price</Trans>}
-              isPrice={true}
-              baseTokenSymbol={stats?.invertPrice ? token0Symbol : token1Symbol}
-              title={<Trans>Current Price ({baseQuoteSymbol})</Trans>}
-            />
-            <StatWrapper data-cy="delta-24h">
-              <MouseoverTooltip text={<Trans>The amount percentage change in asset over last 24 hours.</Trans>}>
-                <Trans>24h Change</Trans>
-              </MouseoverTooltip>
-              <StatPrice>
-                <AutoRow>
-                  <ArrowCell>{arrow}</ArrowCell>
-                  <DeltaText delta={Number(stats?.delta)}>
-                    {stats?.delta ? formatNumber(stats.delta, NumberType.SwapTradeAmount) : '-'}%
-                  </DeltaText>
-                </AutoRow>
-              </StatPrice>
-            </StatWrapper>
-          </StatPair>
-          <StatPair>
-            <Stat dataCy="24h-low" value={stats?.low24h} title={<Trans>24h low ({baseQuoteSymbol})</Trans>} />
-            <Stat dataCy="24h-high" value={stats?.high24h} title={<Trans>24h high ({baseQuoteSymbol})</Trans>} />
-          </StatPair>
-          <StatPair>
-            <Stat
-              dataCy="liq-below"
-              value={stats?.token1Reserve}
-              title={<Trans>Liquidity Below ({token1Symbol})</Trans>}
-            />
-            <Stat
-              dataCy="liq-above"
-              value={stats?.token0Reserve}
-              title={<Trans>Liquidity Above ({token0Symbol})</Trans>}
-            />
-          </StatPair>
-        </TokenStatsSection>
+        <Stat
+          dataCy="current-price"
+          value={stats?.price}
+          baseQuoteSymbol={baseQuoteSymbol}
+          title={<Trans>Oracle Price</Trans>}
+        />
+        <StatWrapper data-cy="delta-24h">
+          <Trans>24h Change</Trans>
+          <StatPrice>
+            <AutoRow>
+              <ArrowCell>{arrow}</ArrowCell>
+              <DeltaText delta={Number(stats?.delta)}>
+                {stats?.delta ? formatNumber(stats.delta, NumberType.SwapTradeAmount) : '-'}%
+              </DeltaText>
+            </AutoRow>
+          </StatPrice>
+        </StatWrapper>
+        <Stat dataCy="24h-low" value={stats?.low24h} baseQuoteSymbol={baseQuoteSymbol} title={<Trans>24h low</Trans>} />
+        <Stat
+          dataCy="24h-high"
+          value={stats?.high24h}
+          baseQuoteSymbol={baseQuoteSymbol}
+          title={<Trans>24h high</Trans>}
+        />
+        <Stat
+          dataCy="liq-below"
+          value={stats?.token1Reserve}
+          baseQuoteSymbol={token1Symbol}
+          title={<Trans>Liquidity Below</Trans>}
+        />
+        <Stat
+          dataCy="liq-above"
+          value={stats?.token0Reserve}
+          baseQuoteSymbol={token0Symbol}
+          title={<Trans>Liquidity Above</Trans>}
+        />
       </StatsWrapper>
     )
   } else {
@@ -147,10 +138,11 @@ export default function StatsSection(props: StatsSectionProps) {
 
 const StatWrapper = styled.div`
   color: ${({ theme }) => theme.textSecondary};
-  font-size: 14px;
-  min-width: 168px;
-  flex: 1;
-  padding: 2px 0px;
+  font-size: 12px;
+  padding: 0 1rem;
+  width: max-content;
+
+  border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 const TokenStatsSection = styled.div`
   display: flex;
@@ -168,7 +160,7 @@ const Header = styled(ThemedText.MediumHeader)`
 
 const StatPrice = styled.div`
   margin-top: 2px;
-  font-size: 18px;
+  font-size: 12px;
   color: ${({ theme }) => theme.textPrimary};
 `
 const NoData = styled.div`
@@ -177,5 +169,10 @@ const NoData = styled.div`
 const StatsWrapper = styled.div`
   /* display: flex;
   gap: 16px; */
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   ${textFadeIn}
 `

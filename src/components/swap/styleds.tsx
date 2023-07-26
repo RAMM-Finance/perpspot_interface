@@ -10,11 +10,12 @@ import { Z_INDEX } from 'theme/zIndex'
 import { AutoColumn } from '../Column'
 
 export const PageWrapper = styled.div`
-  padding: 10px 14px 0px;
+  // padding: 10px 14px 0px;
   max-width: 1700px;
   display: grid;
   grid-template-columns: 2fr 400px;
   width: 100%;
+  height: 100%;
   margin-right: auto;
   margin-left: auto;
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
@@ -29,22 +30,18 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  background: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 32px;
+  // background: ${({ theme }) => theme.backgroundSurface};
+  // border-radius: 32px;
   height: fit-content;
-  border: 0px solid ${({ theme }) => theme.background};
-  padding: 25px 18px;
+  border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
   box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;
+  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
 
   // box-shadow: ${({ chainId }) => !!chainId && chainId === SupportedChainId.BNB && '0px 40px 120px 0px #f0b90b29'};
   z-index: ${Z_INDEX.deprecated_content};
   transition: transform 250ms ease;
-  margin-left: 20px;
-  &:hover {
-    border: 0px solid ${({ theme }) => theme.backgroundOutline};
-  }
 `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`

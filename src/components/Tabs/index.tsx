@@ -1,4 +1,6 @@
 import { Trans } from '@lingui/macro'
+import { Percent } from '@uniswap/sdk-core'
+import SettingsTab from 'components/Settings'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ActiveSwapTab } from 'state/swap/actions'
@@ -11,10 +13,10 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
   background-color: ${({ theme, isActive }) => (isActive ? theme.backgroundSurface : theme.background)};
   cursor: pointer;
   // border-radius: 10px;
-  border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
-  border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
+  // border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
+  // border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
   color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textTertiary)};
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
 
   :hover {
@@ -23,9 +25,22 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
   }
 `
 
+const SettingWrapper = styled.div`
+  display: flex;
+  margin-right: 10px;
+`
+
 // the order of displayed base currencies from left to right is always in sort order
 // currencyA is treated as the preferred base currency
-export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: number; handleSetTab: () => void }) {
+export default function SwapTabHeader({
+  activeTab,
+  handleSetTab,
+  allowedSlippage,
+}: {
+  activeTab: number
+  handleSetTab: () => void
+  allowedSlippage: Percent
+}) {
   // const isTrade = activeTab == ActiveSwapTab.TRADE
   const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
   const { leverage } = useSwapState()
@@ -58,13 +73,15 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
 
   useEffect(() => {
     onActiveTabChange(isTrade)
-  }, [isTrade])
+  }, [onActiveTabChange, isTrade])
 
   return (
     <div
       style={{
         // width: 'fit-content',
         display: 'flex',
+        flexFlow: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
       }}
     >
@@ -75,6 +92,7 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
           selectedTab={selectedTab}
           tabValue="Long"
           fontSize="18px"
+          first={true}
         >
           <Trans>Long</Trans>
         </TabElement>
@@ -105,10 +123,14 @@ export default function SwapTabHeader({ activeTab, handleSetTab }: { activeTab: 
           selectedTab={selectedTab}
           tabValue="Swap"
           fontSize="18px"
+          last={true}
         >
           <Trans>Swap</Trans>
         </TabElement>
       </TapWrapper>
+      <SettingWrapper>
+        <SettingsTab placeholderSlippage={allowedSlippage} />
+      </SettingWrapper>
     </div>
   )
 }
@@ -156,7 +178,7 @@ const TapWrapper = styled.button`
   align-items: center;
   width: 100%;
   padding: 0px;
-  background: ${({ theme }) => theme.deprecated_bg1};
+  background: transparent;
   border-radius: 10px;
   border: none;
   cursor: pointer;
@@ -170,14 +192,18 @@ const TabElement = styled.button<{
   selectedTab?: string
   tabValue?: string
   isTrade?: number
+  first?: boolean
+  last?: boolean
 }>`
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 8px 0.6rem;
-  border-radius: 10px;
+  padding: 0.25rem 0.6rem;
+  // border-radius: 10px;
   justify-content: center;
   height: 100%;
+  border: none;
+  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
   background: ${({ theme, isActive, selectedTab, tabValue }) => {
     return !isActive && selectedTab === tabValue ? theme.deprecated_primary5 : 'none'
   }};
@@ -186,18 +212,23 @@ const TabElement = styled.button<{
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
   font-weight: 500;
   white-space: nowrap;
-  border: none;
   cursor: pointer;
+
+  // border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
+  // border-bottom-right-radius: ${({ last }) => (last ? '8px' : '0')};
+  // border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
+  // border-bottom-left-radius: ${({ first }) => (first ? '8px' : '0')};
 
   :hover {
     user-select: initial;
-    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
+    color: ${({ isTrade, theme }) => theme.textSecondary};
   }
 
   :active {
     user-select: initial;
     color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
-    background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
+    // background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
+    transition: left 0.5s;
   }
 `
 
