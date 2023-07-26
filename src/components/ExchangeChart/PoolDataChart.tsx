@@ -288,7 +288,7 @@ export const PoolDataChart = ({
       user_id: defaultChartProps.userId,
       //fullscreen: defaultChartProps.fullscreen,
       // autosize: defaultChartProps.autosize,
-      // custom_css_url: defaultChartProps.custom_css_url,
+      custom_css_url: defaultChartProps.custom_css_url,
       autosize: true,
       overrides: defaultChartProps.overrides,
       interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),

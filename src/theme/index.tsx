@@ -112,7 +112,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 export const ThemedGlobalStyle = createGlobalStyle`
   html {
     color: ${({ theme }) => theme.textPrimary};
-    background-color: ${({ theme }) => theme.background} !important;
+    /* background-color: ${({ theme }) => theme.background} !important; */
   }
 
   summary::-webkit-details-marker {

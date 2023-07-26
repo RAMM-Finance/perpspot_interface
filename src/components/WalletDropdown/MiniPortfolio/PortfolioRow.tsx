@@ -6,7 +6,6 @@ import styled, { css, keyframes } from 'styled-components/macro'
 export const PortfolioRowWrapper = styled(Row)<{ onClick?: any }>`
   gap: 12px;
   height: 68px;
-  padding: 0 16px;
 
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} background-color`};
 

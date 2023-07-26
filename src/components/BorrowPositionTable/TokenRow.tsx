@@ -54,7 +54,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 1fr 1fr 1fr 0.75fr 1fr 1fr 0.1fr;
+  grid-template-columns: 1fr 1.3fr 1fr 1fr 1.3fr 1fr 0.1fr;
   line-height: 24px;
   max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
   min-width: 390px;

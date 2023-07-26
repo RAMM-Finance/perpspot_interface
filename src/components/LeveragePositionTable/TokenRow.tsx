@@ -48,7 +48,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 1fr 0.5fr;
   line-height: 24px;
   max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
   min-width: 390px;
@@ -752,11 +752,20 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           entryPrice={
             <Trans>
-              <AutoColumn>
+              <AutoColumn
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center',
+                  lineHeight: 1.5,
+                }}
+              >
                 {`${formatNumber(Number(entryPrice), NumberType.SwapTradeAmount)}/${formatNumber(
                   Number(currentPrice),
                   NumberType.SwapTradeAmount
-                )} ${quoteBaseSymbol}`}
+                )} `}
+                <AutoColumn>{quoteBaseSymbol}</AutoColumn>
               </AutoColumn>
             </Trans>
           }

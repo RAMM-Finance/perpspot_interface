@@ -26,8 +26,8 @@ const GridContainer = styled.div`
     0px 24px 32px rgba(0, 0, 0, 0.01);
   /* margin-left: auto;
   margin-right: auto; */
-  padding: 8px 0;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 32px;
   border-top-left-radius: 0;
   justify-content: flex-start;
   align-items: flex-start;
@@ -79,8 +79,7 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 
 const FilterWrapper = styled.div`
   display: flex;
-  margin-left: 15px;
-  margin-top: 8px;
+  margin: 8px 0;
 `
 
 function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
