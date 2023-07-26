@@ -55,7 +55,7 @@ const ToggleLabel = styled.button`
   cursor: pointer;
   background-color: transparent;
   border: none;
-  color: ${({ theme }) => theme.accentAction};
+  color: ${({ theme }) => theme.textPrimary};
   font-size: 1rem;
 `
 

@@ -137,7 +137,8 @@ const MainContentWrapper = styled.main`
   margin-right: 10px;
   margin-left: 10px;
 
-  background-color: ${({ theme }) => theme.searchBackground};
+  /* background-color: ${({ theme }) => theme.searchBackground}; */
+  background-color: #0d111c;
   border: 2px solid ${({ theme }) => theme.searchBackground};
   padding: 10px;
   border-radius: 32px;

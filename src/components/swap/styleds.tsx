@@ -12,11 +12,11 @@ import { AutoColumn } from '../Column'
 export const PageWrapper = styled.div`
   padding: 10px 14px 0px;
   max-width: 1700px;
-  display: grid;
-  grid-template-columns: 2fr 400px;
+  display: flex;
+  justify-content: center;
   width: 100%;
-  margin-right: auto;
-  margin-left: auto;
+  margin: 0 auto;
+
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
   }
@@ -37,6 +37,7 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;
+  width: 25%;
 
   // box-shadow: ${({ chainId }) => !!chainId && chainId === SupportedChainId.BNB && '0px 40px 120px 0px #f0b90b29'};
   z-index: ${Z_INDEX.deprecated_content};
