@@ -2,14 +2,14 @@ import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
 import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { default as BorrowSearchBar } from 'components/BorrowPositionTable/SearchBar'
-import BorrowPositionsTable from 'components/BorrowPositionTable/TokenTable'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
-import { default as LeverageSearchBar } from 'components/LeveragePositionTable/SearchBar'
-import LeveragePositionsTable from 'components/LeveragePositionTable/TokenTable'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
+import BorrowPositionsTable from 'components/PositionTable/BorrowPositionTable/TokenTable'
+import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
+import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TokenSelector } from 'components/swap/TokenSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
@@ -58,6 +58,8 @@ const TradeTabContent = React.lazy(() => import('./swapModal'))
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
 
 const TableHeader = styled.div`
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 1px 0;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
@@ -95,7 +97,6 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
 const SwapSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 16px;
   padding: 16px;
   color: ${({ theme }) => theme.textSecondary};
   font-size: 14px;
@@ -174,7 +175,9 @@ const PositionsContainer = styled.div`
   // background-color: ${({ theme }) => theme.backgroundSurface};
   /* max-width: 1200px; */
   width: 100%;
-  padding: 12px;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px 0 1px 1px;
+  /* padding: 12px; */
   margin-left: auto;
 `
 
@@ -193,7 +196,7 @@ const LeftContainer = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;
-  max-width: 1260px;
+  /* max-width: 1260px; */
   min-width: 560px;
   border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
@@ -216,7 +219,7 @@ const ActivityInnerWarpper = styled.div`
 
   ::-webkit-scrollbar-thumb {
     background-color: #131a2a;
-    border-radius: 32px;
+    border: none;
   }
   ::-webkit-scrollbar-track {
     background-color: transparent;
@@ -231,6 +234,7 @@ const SwapHeaderWrapper = styled.div`
   align-items: center;
   grid-column: span 2;
   margin: 0.25rem 0;
+  padding-left: 10px;
 `
 
 const TabsWrapper = styled.div`

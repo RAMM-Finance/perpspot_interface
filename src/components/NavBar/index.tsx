@@ -20,7 +20,7 @@ import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
 
 const Nav = styled.nav`
-  padding: 10px 12px;
+  /* padding: 10px 12px; */
   width: 100%;
   height: ${({ theme }) => theme.navHeight}px;
   z-index: 2;
@@ -126,7 +126,7 @@ const Navbar = ({ blur }: { blur: boolean }) => {
             </Row>
           </Box>
           <Box className={styles.searchContainer}>{/* <SearchBar /> */}</Box>
-          <Box className={styles.rightSideContainer}>
+          <Box className={styles.rightSideContainer} style={{ paddingRight: '10px' }}>
             <Row gap="12">
               <Box position="relative" display={{ sm: 'flex', navSearchInputVisible: 'none' }}>
                 {/* <SearchBar /> */}
