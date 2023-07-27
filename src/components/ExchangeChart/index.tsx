@@ -148,6 +148,7 @@ export const PoolDataSection = ({
 
             const token1Reserve = await token1Contract.callStatic.balanceOf(limitlessPoolAddress)
             const token0Reserve = await token0Contract.callStatic.balanceOf(limitlessPoolAddress)
+            const lmtInvertPrice = token1Reserve.gt(token0Reserve)
 
             const priceQuery = await uniswapClient.query({
               query: LATEST_POOL_INFO_QUERY,

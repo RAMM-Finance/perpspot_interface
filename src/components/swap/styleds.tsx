@@ -16,7 +16,7 @@ export const PageWrapper = styled.div`
   grid-template-columns: 2fr 400px;
   // display: flex;
   /* background-color: ${({ theme }) => theme.backgroundModule}; */
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  // border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0;
   justify-content: center;
   width: 100%;
@@ -34,9 +34,10 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  height: 100vh;
+  // height: 100vh;
   border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 0 1px;
+  border-width: 0 0 1px 1px;
+  padding-bottom: 12px;
   box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;

@@ -200,7 +200,7 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={isOpen ? 'accentActiveSoft' : 'none'}
+        background={isOpen ? 'accentActive' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
       >
         <ThemedText.LmtWhite>{isInput ? inputCurrency?.symbol : outputCurrency?.symbol}</ThemedText.LmtWhite>

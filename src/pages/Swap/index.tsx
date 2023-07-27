@@ -48,7 +48,6 @@ import {
   useSwapActionHandlers,
   useSwapState,
 } from '../../state/swap/hooks'
-import { ThemedText } from '../../theme'
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
@@ -495,14 +494,10 @@ export default function Swap({ className }: { className?: string }) {
                   margin
                 />
               )}
-              {inputCurrency && outputCurrency ? (
-                <Row>
-                  <TokenSelector isInput={false} />
-                  <TokenSelector isInput={true} />
-                </Row>
-              ) : (
-                <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>
-              )}
+              <Row>
+                <TokenSelector isInput={false} />
+                <TokenSelector isInput={true} />
+              </Row>
 
               {/* {inputApprovalState !== ApprovalState.APPROVED && (
                   <SmallMaxButton onClick={() => inputApprove()} width="10%">

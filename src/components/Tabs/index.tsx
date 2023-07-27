@@ -205,7 +205,7 @@ const TabElement = styled.button<{
   border: none;
   border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
   background: ${({ theme, isActive, selectedTab, tabValue }) => {
-    return !isActive && selectedTab === tabValue ? theme.deprecated_primary5 : 'none'
+    return !isActive && selectedTab === tabValue ? theme.accentActive : 'none'
   }};
   color: ${({ theme, isActive, selectedTab, tabValue }) =>
     !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};

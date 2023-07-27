@@ -33,15 +33,15 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
-import { abi as LeverageManagerAbi} from "../perpspotContracts/LeverageManager.json"
+
+import { abi as BorrowManagerAbi } from '../perpspotContracts/BorrowManager.json'
+import { abi as GlobalStorageAbi } from '../perpspotContracts/GlobalStorage.json'
+import { abi as LeverageManagerAbi } from '../perpspotContracts/LeverageManager.json'
+import { abi as LiquidityManagerAbi } from '../perpspotContracts/LiquidityManager.json'
 // import {abi as testTokenAbi} from "../perpspotContracts/testERC.json"
-import { abi as testTokenAbi } from "../perpspotContracts/TestToken.json"
-import { abi as PoolAbi } from "../perpspotContracts/UniswapV3Pool.json"
-import { abi as GlobalStorageAbi } from "../perpspotContracts/GlobalStorage.json"
-import { abi as BorrowManagerAbi } from "../perpspotContracts/BorrowManager.json"
-import { abi as LiquidityManagerAbi } from "../perpspotContracts/LiquidityManager.json"
+import { abi as testTokenAbi } from '../perpspotContracts/TestToken.json'
+import { abi as PoolAbi } from '../perpspotContracts/UniswapV3Pool.json'
 import { getContract } from '../utils'
-import { SupportedChainId } from '@looksrare/sdk'
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
 const { abi: IUniswapV2Router02ABI } = IUniswapV2Router02Json
@@ -99,16 +99,15 @@ export function usePoolContract(poolAddress?: string, withSignerIfPossible?: boo
   return useContract(poolAddress, PoolAbi, withSignerIfPossible)
 }
 
-export function useGlobalStorageContract(withSignerIfPossible?:boolean) {
+export function useGlobalStorageContract(withSignerIfPossible?: boolean) {
   return useContract(GLOBAL_STORAGE_ADDRESSES, GlobalStorageAbi, withSignerIfPossible)
 }
 
 export function useTestTokenContract(testTokenAd?: string, withSignerIfPossible?: boolean) {
-  const contract = useContract(testTokenAd, testTokenAbi, withSignerIfPossible); 
+  const contract = useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
 
   return useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
 }
-
 
 export function useWETHContract(withSignerIfPossible?: boolean) {
   const { chainId } = useWeb3React()
@@ -156,7 +155,6 @@ export function useV2RouterContract(): Contract | null {
 }
 
 export function useInterfaceMulticall() {
-
   return useContract<UniswapInterfaceMulticall>(MULTICALL_ADDRESS, MulticallABI, false) as UniswapInterfaceMulticall
 }
 
@@ -175,5 +173,5 @@ export function useQuoter(useQuoterV2: boolean) {
 export function useTickLens(): TickLens | null {
   const { chainId } = useWeb3React()
   const address = chainId ? TICK_LENS_ADDRESSES[chainId] : undefined
-  return useContract(address, TickLensABI) as TickLens | null
+  return useContract(address, TickLensABI, true) as TickLens | null
 }
