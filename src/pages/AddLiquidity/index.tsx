@@ -145,7 +145,6 @@ export default function AddLiquidity() {
   // console.log("baseCurrency: ", baseCurrency)
   // console.log("quoteCurrency: ", quoteCurrency)
   // console.log("pool1: ", usePool(baseCurrency?? undefined , quoteCurrency ?? undefined, feeAmount))
-  console.log('pool: ', pool)
 
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
     useV3MintActionHandlers(noLiquidity)

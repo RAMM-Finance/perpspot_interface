@@ -176,7 +176,9 @@ function useAllV3Ticks(
   error: unknown
   ticks: TickData[] | undefined
 } {
+  console.log('v3틱', currencyA, currencyB, feeAmount)
   const useSubgraph = currencyA ? !CHAIN_IDS_MISSING_SUBGRAPH_DATA.includes(currencyA.chainId) : true
+  console.log(useSubgraph, '섭그래프')
 
   const tickLensTickData = useTicksFromTickLens(!useSubgraph ? currencyA : undefined, currencyB, feeAmount)
 
@@ -217,11 +219,14 @@ export function usePoolActiveLiquidity(
   data: TickProcessed[] | undefined
 } {
   const pool = usePool(currencyA, currencyB, feeAmount)
+  console.log(pool, '풀테스트')
 
   // Find nearest valid tick for pool in case tick is not initialized.
   const activeTick = useMemo(() => getActiveTick(pool[1]?.tickCurrent, feeAmount), [pool, feeAmount])
+  console.log(activeTick, '엑티브틱')
 
   const { isLoading, error, ticks } = useAllV3Ticks(currencyA, currencyB, feeAmount)
+  console.log(isLoading, error, ticks, '틱스')
 
   return useMemo(() => {
     if (
@@ -233,6 +238,7 @@ export function usePoolActiveLiquidity(
       ticks.length === 0 ||
       isLoading
     ) {
+      console.log('nodata')
       return {
         isLoading: isLoading || pool[0] === PoolState.LOADING,
         error,

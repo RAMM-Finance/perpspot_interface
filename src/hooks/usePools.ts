@@ -1,4 +1,7 @@
 import { Interface } from '@ethersproject/abi'
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { getCreate2Address } from '@ethersproject/address'
+import { keccak256 } from '@ethersproject/solidity'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
 import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
@@ -7,11 +10,14 @@ import { useWeb3React } from '@web3-react/core'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
-import { defaultAbiCoder } from '@ethersproject/abi'
-import { getCreate2Address } from '@ethersproject/address'
-import { keccak256 } from '@ethersproject/solidity'
 
-import { BORROW_INIT_CODE_HASH, LEVERAGE_INIT_CODE_HASH, LIQUITITY_INIT_CODE_HASH, POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
+import {
+  BORROW_INIT_CODE_HASH,
+  LEVERAGE_INIT_CODE_HASH,
+  LIQUITITY_INIT_CODE_HASH,
+  POOL_INIT_CODE_HASH,
+  V3_CORE_FACTORY_ADDRESSES,
+} from '../constants/addresses'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
@@ -43,7 +49,7 @@ class PoolCache {
         factoryAddress,
         tokenA,
         tokenB,
-        fee
+        fee,
       }),
     }
     this.addresses.unshift(address)
@@ -89,7 +95,9 @@ export enum PoolState {
 export function usePools(
   poolKeys: [Currency | undefined, Currency | undefined, FeeAmount | undefined][]
 ): [PoolState, Pool | null][] {
+  console.log('풀키', poolKeys)
   const { chainId } = useWeb3React()
+  console.log(chainId, '체인 아이디')
 
   const poolTokens: ([Token, Token, FeeAmount] | undefined)[] = useMemo(() => {
     if (!chainId) return new Array(poolKeys.length)
@@ -100,8 +108,10 @@ export function usePools(
         const tokenB = currencyB.wrapped
         if (tokenA.equals(tokenB)) return undefined
 
+        console.log('if문')
         return tokenA.sortsBefore(tokenB) ? [tokenA, tokenB, feeAmount] : [tokenB, tokenA, feeAmount]
       }
+      console.log('언디파인드')
       return undefined
     })
   }, [chainId, poolKeys])
@@ -157,17 +167,19 @@ export function usePool(
     () => [[currencyA, currencyB, feeAmount]],
     [currencyA, currencyB, feeAmount]
   )
+  console.log('프롭스', currencyA, currencyB, feeAmount)
+  console.log('풀키테스트', poolKeys)
 
+  console.log(usePools(poolKeys)[0])
   return usePools(poolKeys)[0]
 }
-
 
 export function computePoolAddress({
   factoryAddress,
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: Token
@@ -191,7 +203,7 @@ export function computeBorrowManagerAddress({
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: string
@@ -202,10 +214,7 @@ export function computeBorrowManagerAddress({
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]
-    ),
+    keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? BORROW_INIT_CODE_HASH
   )
 }
@@ -215,7 +224,7 @@ export function computeLeverageManagerAddress({
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: string
@@ -226,10 +235,7 @@ export function computeLeverageManagerAddress({
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]
-    ),
+    keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? LEVERAGE_INIT_CODE_HASH
   )
 }
@@ -239,7 +245,7 @@ export function computeLiquidityManagerAddress({
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: string
@@ -250,10 +256,7 @@ export function computeLiquidityManagerAddress({
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]
-    ),
+    keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? LIQUITITY_INIT_CODE_HASH
   )
 }
