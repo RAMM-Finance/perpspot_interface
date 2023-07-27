@@ -10,7 +10,6 @@ import styled from 'styled-components/macro'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
-import SearchBar from './SearchBar'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
 
@@ -25,8 +24,8 @@ const GridContainer = styled.div`
     0px 24px 32px rgba(0, 0, 0, 0.01);
   /* margin-left: auto;
   margin-right: auto; */
-  padding: 20px;
-  border-radius: 32px;
+  // padding: 8px 0;
+  border-radius: 12px;
   border-top-left-radius: 0;
   justify-content: flex-start;
   align-items: flex-start;
@@ -57,9 +56,9 @@ const NoTokenDisplay = styled.div`
 function NoTokensState({ message }: { message: ReactNode }) {
   return (
     <GridContainer>
-      <FilterWrapper>
+      {/* <FilterWrapper>
         <SearchBar />
-      </FilterWrapper>
+      </FilterWrapper> */}
       <HeaderRow />
       <NoTokenDisplay>{message}</NoTokenDisplay>
     </GridContainer>
@@ -79,9 +78,6 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   return (
     <GridContainer>
-      <FilterWrapper>
-        <SearchBar />
-      </FilterWrapper>
       <HeaderRow />
       <TokenDataContainer>
         <LoadingRows rowCount={rowCount} />
@@ -184,20 +180,17 @@ export default function PositionsTable({
   // const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
   const { filteredPositions } = useSelectPositions(positions)
   /* loading and error state */
-  if (loading || !positions) {
+  if (loading) {
     return <LoadingTokenTable rowCount={1} />
-  } else if (filteredPositions?.length == 0) {
+  } else if (!filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
       <GridContainer>
-        <FilterWrapper>
-          <SearchBar />
-        </FilterWrapper>
         <HeaderRow />
         <TokenDataContainer>
           {filteredPositions?.map(
-            (position) => position?.tokenId && <LoadedRow key={position.tokenId} position={position} />
+            (position, index) => position?.tokenId && <LoadedRow key={position.tokenId} position={position} />
           )}
         </TokenDataContainer>
       </GridContainer>

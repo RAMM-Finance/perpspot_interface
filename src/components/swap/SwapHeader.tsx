@@ -6,8 +6,6 @@ import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
 
-import SettingsTab from '../Settings'
-
 type SwapHeaderProps = {
   activeTab: ActiveSwapTab
   allowedSlippage: Percent
@@ -21,11 +19,8 @@ export default function SwapHeader({ activeTab, allowedSlippage }: SwapHeaderPro
   }, [activeTab])
   return (
     <>
-      <SettingTabWarp>
-        <SettingsTab placeholderSlippage={allowedSlippage} />
-      </SettingTabWarp>
       <StyledSwapHeader>
-        <SwapTabHeader activeTab={activeTab} handleSetTab={handleTabChange} />
+        <SwapTabHeader activeTab={activeTab} handleSetTab={handleTabChange} allowedSlippage={allowedSlippage} />
       </StyledSwapHeader>
     </>
   )
@@ -35,6 +30,7 @@ const StyledSwapHeader = styled.div`
   margin-bottom: 20px;
   width: 100%;
   color: ${({ theme }) => theme.textSecondary};
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 const ResponsiveButtonPrimary = styled(SmallButtonPrimary)`
   border-radius: 16px;

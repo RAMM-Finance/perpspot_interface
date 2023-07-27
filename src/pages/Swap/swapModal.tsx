@@ -53,6 +53,7 @@ import {
   useSwapState,
 } from 'state/swap/hooks'
 import { useExpertModeManager } from 'state/user/hooks'
+import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { LinkStyledButton, ThemedText } from 'theme'
 import invariant from 'tiny-invariant'
@@ -76,6 +77,10 @@ import {
 } from '.'
 
 const TRADE_STRING = 'SwapRouter'
+
+const Wrapper = styled.div`
+  padding: 0 1rem;
+`
 
 function largerPercentValue(a?: Percent, b?: Percent) {
   if (a && b) {
@@ -543,7 +548,7 @@ const TradeTabContent = () => {
   }, [approveLeverageManager])
 
   return (
-    <>
+    <Wrapper>
       {leverage ? (
         <LeverageConfirmModal
           isOpen={showLeverageConfirm}
@@ -1018,7 +1023,7 @@ const TradeTabContent = () => {
           {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
         </div>
       </div>
-    </>
+    </Wrapper>
   )
 }
 

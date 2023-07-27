@@ -1,13 +1,13 @@
-import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
 import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
-import { Currency, CurrencyAmount, MaxUint256, Token, TradeType } from '@uniswap/sdk-core'
+import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from 'bignumber.js'
+import { default as BorrowSearchBar } from 'components/BorrowPositionTable/SearchBar'
 import BorrowPositionsTable from 'components/BorrowPositionTable/TokenTable'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
+import { default as LeverageSearchBar } from 'components/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/LeveragePositionTable/TokenTable'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { TokenSelector } from 'components/swap/TokenSelector'
@@ -15,17 +15,14 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
 import { TabContent, TabNavItem } from 'components/Tabs'
-import { TokenInfoContainer, TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
-import { WarningIcon } from 'components/TokenSafety/TokenSafetyIcon'
+import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
 // import Widget from 'components/Widget'
-import { useMaxApproveCallback } from 'hooks/useApproveCallback'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hooks/usePools'
 import { useLimitlessPositions } from 'hooks/useV3Positions'
-import { ApprovalState } from 'lib/hooks/useApproval'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -35,7 +32,6 @@ import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 
-import { RowFixed } from '../../components/Row'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -54,15 +50,18 @@ import {
 } from '../../state/swap/hooks'
 import { ThemedText } from '../../theme'
 import { supportedChainId } from '../../utils/supportedChainId'
-import { ResponsiveHeaderText, SmallMaxButton } from '../RemoveLiquidity/styled'
+import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
 
-const TableHeader = styled(RowFixed)`
+const TableHeader = styled.div`
+  display: flex;
   flex-flow: row nowrap;
+  justify-content: space-between;
+  width: 100%;
 `
 
 export const StyledNumericalInput = styled(NumericalInput)`
@@ -131,7 +130,7 @@ const SwapSection = styled.div`
 export const InputLeverageSection = styled(SwapSection)`
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  background-color: #131a2a;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 20px;
 `
 
@@ -139,35 +138,30 @@ export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
   border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
   border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
   margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
-  background-color: #131a2a;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 
   ::after {
     content: '';
     margin-top: 30px;
-    background-color: #98a1c03d;
+    background-color: ${({ theme }) => theme.backgroundSurface};
     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
     height: 0.1em;
   }
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
-  border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
-  // border-bottom-left-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
-  // border-bottom-right-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
-  border-bottom-left-radius: 10;
-  border-bottom-right-radius: 10;
-  background-color: #131a2a;
-  margin-bottom: 20px;
+  border: 1px solid ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  // margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
-  border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
+  border: 1px solid ${({ theme }) => theme.backgroundSurface};
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-
-  // border-bottom-left-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
-  // border-bottom-right-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
 `
 
 export const DetailsSwapSection = styled(SwapSection)`
@@ -177,11 +171,10 @@ export const DetailsSwapSection = styled(SwapSection)`
 `
 
 const PositionsContainer = styled.div`
-  margin-right: 20px;
   // background-color: ${({ theme }) => theme.backgroundSurface};
   /* max-width: 1200px; */
   width: 100%;
-  border-radius: 32px;
+  padding: 12px;
   margin-left: auto;
 `
 
@@ -202,12 +195,11 @@ const LeftContainer = styled.div`
   align-content: center;
   max-width: 1260px;
   min-width: 560px;
+  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
 const ActivityWrapper = styled.main`
   max-height: 240px;
-  border-radius: 32px;
-  border-top-left-radius: 0;
   overflow: hidden;
 
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -229,6 +221,32 @@ const ActivityInnerWarpper = styled.div`
   ::-webkit-scrollbar-track {
     background-color: transparent;
   }
+`
+
+const SwapHeaderWrapper = styled.div`
+  display: flex;
+  flex-flow: row nowrap;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  grid-column: span 2;
+  margin: 0.25rem 0;
+`
+
+const TabsWrapper = styled.div`
+  display: flex;
+`
+
+const MissingHistoryWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 0;
 `
 
 export function getIsValidSwapQuote(
@@ -347,35 +365,6 @@ export default function Swap({ className }: { className?: string }) {
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
-  const [inputApprovalState, inputApprove] = useMaxApproveCallback(
-    inputCurrency ? CurrencyAmount.fromRawAmount(inputCurrency, MaxUint256) : undefined,
-    isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined
-  )
-  const [outputApprovalState, outputApprove] = useMaxApproveCallback(
-    outputCurrency ? CurrencyAmount.fromRawAmount(outputCurrency, MaxUint256) : undefined,
-    isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined
-  )
-  const [leverageApproveAmount, borrowInputApproveAmount, borrowOutputApproveAmount] = useMemo(() => {
-    if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
-      return [
-        CurrencyAmount.fromRawAmount(
-          inputCurrency,
-          new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).plus(premium).shiftedBy(18).toFixed(0)
-        ),
-        CurrencyAmount.fromRawAmount(
-          inputCurrency,
-          new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).shiftedBy(18).toFixed(0)
-        ),
-        CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0)),
-      ]
-    } else {
-      return [undefined, undefined, undefined]
-    }
-  }, [inputCurrency, outputCurrency, premium, parsedAmounts])
-
-  // const fiatValueInput = useUSDPrice(parsedAmounts[Field.INPUT])
-  // const fiatValueOutput = useUSDPrice(parsedAmounts[Field.OUTPUT])
-
   const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
     () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
     [trade, tradeState]
@@ -492,27 +481,26 @@ export default function Swap({ className }: { className?: string }) {
           showCancel={true}
         />
         <PageWrapper>
-          <LeftContainer>
-            <TokenInfoContainer data-testid="token-info-container">
-              <TokenNameCell>
-                {inputCurrency && outputCurrency && (
-                  <DoubleCurrencyLogo
-                    currency0={inputCurrency as Currency}
-                    currency1={outputCurrency as Currency}
-                    size={40}
-                    margin
-                  />
-                )}
-                {inputCurrency && outputCurrency ? (
-                  <Row>
-                    <TokenSelector isInput={false} />
-                    <TokenSelector isInput={true} />
-                  </Row>
-                ) : (
-                  <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>
-                )}
+          <SwapHeaderWrapper>
+            <TokenNameCell>
+              {inputCurrency && outputCurrency && (
+                <DoubleCurrencyLogo
+                  currency0={inputCurrency as Currency}
+                  currency1={outputCurrency as Currency}
+                  size={30}
+                  margin
+                />
+              )}
+              {inputCurrency && outputCurrency ? (
+                <Row>
+                  <TokenSelector isInput={false} />
+                  <TokenSelector isInput={true} />
+                </Row>
+              ) : (
+                <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>
+              )}
 
-                {inputApprovalState !== ApprovalState.APPROVED && (
+              {/* {inputApprovalState !== ApprovalState.APPROVED && (
                   <SmallMaxButton onClick={() => inputApprove()} width="10%">
                     <Trans>
                       <WarningIcon size="1.25em" />
@@ -526,35 +514,38 @@ export default function Swap({ className }: { className?: string }) {
                       <WarningIcon size="1.25em" /> Approve {outputCurrency?.symbol}
                     </Trans>
                   </SmallMaxButton>
-                )}
-              </TokenNameCell>
-
-              <PoolDataSection
-                chainId={chainId ?? 11155111}
-                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                fee={pool?.fee}
-              />
-            </TokenInfoContainer>
-            <StatsContainer>
-              <PoolDataChart
-                chainId={chainId ?? 11155111}
-                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                fee={pool?.fee}
-              />
-            </StatsContainer>
+                )} */}
+            </TokenNameCell>
+            <PoolDataSection
+              chainId={chainId ?? 11155111}
+              token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+              token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+              fee={pool?.fee}
+            />
+          </SwapHeaderWrapper>
+          <LeftContainer>
+            <PoolDataChart
+              chainId={chainId ?? 11155111}
+              token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+              token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+              fee={pool?.fee}
+            />
             <PositionsContainer>
               <TableHeader>
-                <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
-                  Leverage Positions
-                </TabNavItem>
-                <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-                  Borrow Positions
-                </TabNavItem>
-                <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
-                  History
-                </TabNavItem>
+                <TabsWrapper>
+                  <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
+                    Leverage Positions
+                  </TabNavItem>
+                  <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+                    Borrow Positions
+                  </TabNavItem>
+                  <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+                    History
+                  </TabNavItem>
+                </TabsWrapper>
+
+                {activePositionTable === 1 && <LeverageSearchBar />}
+                {activePositionTable === 2 && <BorrowSearchBar />}
               </TableHeader>
               <TabContent id={1} activeTab={activePositionTable}>
                 <LeveragePositionsTable positions={leveragePositions} loading={limitlessPositionsLoading} />
@@ -564,7 +555,9 @@ export default function Swap({ className }: { className?: string }) {
               </TabContent>
               <TabContent id={3} activeTab={activePositionTable}>
                 {!account ? (
-                  <Trans>Missing Account</Trans>
+                  <ActivityWrapper>
+                    <MissingHistoryWrapper>None</MissingHistoryWrapper>
+                  </ActivityWrapper>
                 ) : (
                   <ActivityWrapper>
                     <ActivityInnerWarpper>

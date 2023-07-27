@@ -10,7 +10,6 @@ import styled from 'styled-components/macro'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
-import SearchBar from './SearchBar'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
 
@@ -26,9 +25,6 @@ const GridContainer = styled.div`
     0px 24px 32px rgba(0, 0, 0, 0.01);
   /* margin-left: auto;
   margin-right: auto; */
-  padding: 20px;
-  border-radius: 32px;
-  border-top-left-radius: 0;
   justify-content: flex-start;
   align-items: flex-start;
   // border: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -58,9 +54,6 @@ const NoTokenDisplay = styled.div`
 function NoTokensState({ message }: { message: ReactNode }) {
   return (
     <GridContainer>
-      <FilterWrapper>
-        <SearchBar />
-      </FilterWrapper>
       <HeaderRow />
       <NoTokenDisplay>{message}</NoTokenDisplay>
     </GridContainer>
@@ -85,9 +78,6 @@ const FilterWrapper = styled.div`
 function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   return (
     <GridContainer>
-      <FilterWrapper>
-        <SearchBar />
-      </FilterWrapper>
       <HeaderRow />
       <TokenDataContainer>
         <LoadingRows rowCount={rowCount} />
@@ -196,14 +186,11 @@ export default function PositionsTable({
   /* loading and error state */
   if (loading) {
     return <LoadingTokenTable rowCount={1} />
-  } else if (filteredPositions?.length == 0) {
+  } else if (!filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
       <GridContainer>
-        <FilterWrapper>
-          <SearchBar />
-        </FilterWrapper>
         <HeaderRow />
         <TokenDataContainer>
           {filteredPositions?.map(

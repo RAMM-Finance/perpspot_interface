@@ -211,27 +211,6 @@ export const PoolDataChart = ({
     token1,
   ])
 
-  // console.log('stats: ', token0?.symbol, token1?.symbol, stats)
-
-  // useEffect(() => {
-  // 	async function fetch() {
-  // 		if (uniswapPoolAddress && uniswapPoolContract) {
-  // 			try {
-  // 				const token0Price = await uniswapPoolContract.callStatic.token0Price()
-  // 				if (token0Price) {
-  // 					setUniswapPoolExists(true)
-  // 					setStats((prev) => ({ ...prev, token0Price: new BN(token0Price.toString()).shiftedBy(18).toNumber() }))
-  // 					setUniswapToken0Price(convertBNToNum(token0Price, 18))
-  // 				}
-  // 			} catch (err) {
-  // 				// console.log("err: ", err)
-  // 			}
-  // 		}
-  // 	}
-
-  // 	fetch()
-  // })
-  // console.log('symbol', symbol)
   useEffect(() => {
     if (token0 && token1 && isFakePair(chainId, token0?.address.toLowerCase(), token1?.address.toLowerCase())) {
       setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
@@ -318,7 +297,7 @@ export const PoolDataChart = ({
   }, [chainId, symbol, uniswapPoolAddress, fee, datafeed])
 
   return (
-    <div style={{ height: '450px' }}>
+    <div style={{ height: '300px' }}>
       <div
         style={{
           height: '100%',

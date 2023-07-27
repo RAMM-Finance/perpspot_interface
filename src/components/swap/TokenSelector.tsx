@@ -181,6 +181,7 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
             currencyId={currencyId(currency)}
             isInput={isInput}
             onCurrencySelect={handleCurrencySelect}
+            key={currencyId(currency)}
           />
         ))}
       </Column>

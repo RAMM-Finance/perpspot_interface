@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css'
 
 import { subhead } from '../../nft/css/common.css'
-import { sprinkles, vars } from '../../nft/css/sprinkles.css'
+import { sprinkles } from '../../nft/css/sprinkles.css'
 
 export const logoContainer = style([
   sprinkles({
@@ -59,7 +59,7 @@ export const rightSideContainer = style([
 const baseMenuItem = style([
   subhead,
   sprinkles({
-    paddingY: '8',
+    paddingY: '4',
     paddingX: '14',
     marginY: '4',
     borderRadius: '12',
@@ -74,23 +74,26 @@ const baseMenuItem = style([
   {
     lineHeight: '24px',
     textDecoration: 'none',
-    ':hover': {
-      background: vars.color.lightGrayOverlay,
-    },
   },
 ])
 
 export const menuItem = style([
   baseMenuItem,
   sprinkles({
-    color: 'textSecondary',
+    color: 'textPrimary',
   }),
+  {
+    ':hover': {
+      color: 'textPrimary',
+      background: 'backgroundFloating',
+    },
+  },
 ])
 
 export const activeMenuItem = style([
   baseMenuItem,
   sprinkles({
+    background: 'accentActiveSoft',
     color: 'textPrimary',
-    background: 'backgroundFloating',
   }),
 ])

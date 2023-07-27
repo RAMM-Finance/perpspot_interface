@@ -14,14 +14,11 @@ import ShareButton from 'components/Tokens/TokenDetails/ShareButton'
 import TokenDetailsSkeleton, {
   Hr,
   LeftPanel,
-  RightPanel,
   TokenDetailsLayout,
   TokenInfoContainer,
   TokenNameCell,
 } from 'components/Tokens/TokenDetails/Skeleton'
 import StatsSection from 'components/Tokens/TokenDetails/StatsSection'
-import TokenSafetyMessage from 'components/TokenSafety/TokenSafetyMessage'
-import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 // import Widget from 'components/Widget'
 // import { SwapTokens } from 'components/Widget/inputs'
 import { NATIVE_CHAIN_ID, nativeOnChain } from 'constants/tokens'
@@ -33,7 +30,6 @@ import { CHAIN_NAME_TO_CHAIN_ID, getTokenDetailsURL } from 'graphql/data/util'
 import { useIsUserAddedTokenOnChain } from 'hooks/Tokens'
 import { useOnGlobalChainSwitch } from 'hooks/useGlobalChainSwitch'
 import { UNKNOWN_TOKEN_SYMBOL, useTokenFromActiveNetwork } from 'lib/hooks/useCurrency'
-import { getTokenAddress } from 'lib/utils/analytics'
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { ArrowLeft } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
