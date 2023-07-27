@@ -297,7 +297,7 @@ export const PoolDataChart = ({
   }, [chainId, symbol, uniswapPoolAddress, fee, datafeed])
 
   return (
-    <div style={{ height: '300px' }}>
+    <div style={{ height: '500px' }}>
       <div
         style={{
           height: '100%',

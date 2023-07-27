@@ -9,6 +9,7 @@ import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 
+import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
@@ -30,14 +31,6 @@ const GridContainer = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   // border: 1px solid ${({ theme }) => theme.backgroundOutline};
-`
-
-const TokenDataContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  height: 100%;
-  width: 100%;
 `
 
 const NoTokenDisplay = styled.div`

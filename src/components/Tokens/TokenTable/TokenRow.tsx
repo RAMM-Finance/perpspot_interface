@@ -33,15 +33,11 @@ import {
 } from '../state'
 import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
 
-
-
 export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
   [TokenSortMethod.PERCENT_CHANGE]: undefined,
   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-    <Trans>
-      Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pools.
-    </Trans>
+    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pools.</Trans>
   ),
   [TokenSortMethod.VOLUME]: (
     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
@@ -280,11 +276,11 @@ const Cell = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
+`
 const StyledTokenRow = styled.div<{
-  first?: boolean;
-  last?: boolean;
-  loading?: boolean;
+  first?: boolean
+  last?: boolean
+  loading?: boolean
 }>`
   background-color: transparent;
   display: grid;
@@ -342,7 +338,7 @@ const StyledTokenRow = styled.div<{
       border-bottom: none;
     }
   }
-`;
+`
 
 const ClickableContent = styled.div`
   display: flex;
@@ -350,11 +346,11 @@ const ClickableContent = styled.div`
   color: ${({ theme }) => theme.textPrimary};
   align-items: center;
   cursor: pointer;
-`;
+`
 const ClickableName = styled(ClickableContent)`
   gap: 8px;
   max-width: 100%;
-`;
+`
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
   border-color: ${({ theme }) => theme.backgroundOutline};
@@ -374,7 +370,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     justify-content: space-between;
   }
-`;
+`
 
 const ListNumberCell = styled(Cell)<{ header: boolean }>`
   color: ${({ theme }) => theme.textSecondary};
@@ -384,7 +380,7 @@ const ListNumberCell = styled(Cell)<{ header: boolean }>`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: none;
   }
-`;
+`
 const DataCell = styled(Cell)<{ sortable: boolean }>`
   justify-content: flex-end;
   min-width: 80px;
@@ -394,28 +390,28 @@ const DataCell = styled(Cell)<{ sortable: boolean }>`
       transition: { duration, timing },
     },
   }) => css`background-color ${duration.medium} ${timing.ease}`};
-`;
+`
 const TvlCell = styled(DataCell)`
   padding-right: 8px;
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     display: none;
   }
-`;
+`
 const NameCell = styled(Cell)`
   justify-content: flex-start;
   padding: 0px 8px;
   min-width: 240px;
   gap: 8px;
-`;
+`
 const PriceCell = styled(DataCell)`
   padding-right: 8px;
-`;
+`
 const PercentChangeCell = styled(DataCell)`
   padding-right: 8px;
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: none;
   }
-`;
+`
 const PercentChangeInfoCell = styled(Cell)`
   display: none;
 
@@ -426,7 +422,7 @@ const PercentChangeInfoCell = styled(Cell)`
     font-size: 12px;
     line-height: 16px;
   }
-`;
+`
 const PriceInfoCell = styled(Cell)`
   justify-content: flex-end;
   flex: 1;
@@ -435,7 +431,7 @@ const PriceInfoCell = styled(Cell)`
     flex-direction: column;
     align-items: flex-end;
   }
-`;
+`
 
 const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   align-items: center;
@@ -448,7 +444,7 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   &:hover {
     ${ClickableStyle}
   }
-`;
+`
 const SparkLineCell = styled(Cell)`
   padding: 0px 24px;
   min-width: 120px;
@@ -456,14 +452,14 @@ const SparkLineCell = styled(Cell)`
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     display: none;
   }
-`;
+`
 const SparkLine = styled(Cell)`
   width: 124px;
   height: 42px;
-`;
+`
 const StyledLink = styled(Link)`
   text-decoration: none;
-`;
+`
 const TokenInfoCell = styled(Cell)`
   gap: 8px;
   line-height: 24px;
@@ -480,13 +476,13 @@ const TokenInfoCell = styled(Cell)`
     width: max-content;
     font-weight: 500;
   }
-`;
+`
 const TokenName = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
-`;
+`
 const TokenSymbol = styled(Cell)`
   color: ${({ theme }) => theme.textTertiary};
   text-transform: uppercase;
@@ -497,33 +493,33 @@ const TokenSymbol = styled(Cell)`
     justify-content: flex-start;
     width: 100%;
   }
-`;
+`
 const VolumeCell = styled(DataCell)`
   padding-right: 8px;
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
     display: none;
   }
-`;
+`
 const SmallLoadingBubble = styled(LoadingBubble)`
   width: 25%;
-`;
+`
 const MediumLoadingBubble = styled(LoadingBubble)`
   width: 65%;
-`;
+`
 const LongLoadingBubble = styled(LoadingBubble)`
   width: 90%;
-`;
+`
 const IconLoadingBubble = styled(LoadingBubble)`
   border-radius: 50%;
   width: 24px;
-`;
+`
 export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
   height: 4px;
-`;
+`
 
 const InfoIconContainer = styled.div`
   margin-left: 2px;
   display: flex;
   align-items: center;
   cursor: help;
-`;
+`

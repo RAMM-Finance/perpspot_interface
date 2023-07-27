@@ -11,15 +11,16 @@ import { AutoColumn } from '../Column'
 
 export const PageWrapper = styled.div`
   // padding: 10px 14px 0px;
-  max-width: 1700px;
+  /* max-width: 1700px; */
   display: grid;
   grid-template-columns: 2fr 400px;
   // display: flex;
+  /* background-color: ${({ theme }) => theme.backgroundModule}; */
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 1px 0;
   justify-content: center;
   width: 100%;
   height: 100%;
-  margin-right: auto;
-  margin-left: auto;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
@@ -33,10 +34,9 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  // background: ${({ theme }) => theme.backgroundSurface};
-  // border-radius: 32px;
-  height: fit-content;
-  border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
+  height: 100vh;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 0 1px;
   box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;

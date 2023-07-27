@@ -15,7 +15,7 @@ const ICON_SIZE = '20px'
 const SearchBarContainer = styled.div`
   display: flex;
   width: fit-content;
-  margin: 0.25rem;
+  /* margin: 0.25rem; */
 `
 const SearchInput = styled.input`
   background: no-repeat scroll 7px 7px;
@@ -23,8 +23,8 @@ const SearchInput = styled.input`
   background-size: 20px 20px;
   background-position: 12px center;
   background-color: ${({ theme }) => theme.backgroundModule};
-  border-radius: 12px;
-  border: 1.5px solid ${({ theme }) => theme.backgroundOutline};
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 0 1px;
   height: 100%;
   width: min(200px, 100%);
   font-size: 14px;
