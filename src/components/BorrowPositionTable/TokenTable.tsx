@@ -180,20 +180,17 @@ export default function PositionsTable({
   // const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
   const { filteredPositions } = useSelectPositions(positions)
   /* loading and error state */
-  if (loading || !positions) {
+  if (loading) {
     return <LoadingTokenTable rowCount={1} />
-  } else if (filteredPositions?.length == 0) {
+  } else if (!filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
       <GridContainer>
-        {/* <FilterWrapper>
-          <SearchBar />
-        </FilterWrapper> */}
         <HeaderRow />
         <TokenDataContainer>
           {filteredPositions?.map(
-            (position) => position?.tokenId && <LoadedRow key={position.tokenId} position={position} />
+            (position, index) => position?.tokenId && <LoadedRow key={position.tokenId} position={position} />
           )}
         </TokenDataContainer>
       </GridContainer>

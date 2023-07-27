@@ -212,27 +212,6 @@ export const PoolDataSection = ({
     token1,
   ])
 
-  // console.log("stats: ", token0?.symbol, token1?.symbol, stats)
-
-  // useEffect(() => {
-  // 	async function fetch() {
-  // 		if (uniswapPoolAddress && uniswapPoolContract) {
-  // 			try {
-  // 				const token0Price = await uniswapPoolContract.callStatic.token0Price()
-  // 				if (token0Price) {
-  // 					setUniswapPoolExists(true)
-  // 					setStats((prev) => ({ ...prev, token0Price: new BN(token0Price.toString()).shiftedBy(18).toNumber() }))
-  // 					setUniswapToken0Price(convertBNToNum(token0Price, 18))
-  // 				}
-  // 			} catch (err) {
-  // 				// console.log("err: ", err)
-  // 			}
-  // 		}
-  // 	}
-
-  // 	fetch()
-  // })
-  // console.log('symbol', symbol)
   useEffect(() => {
     if (token0 && token1 && isFakePair(chainId, token0?.address.toLowerCase(), token1?.address.toLowerCase())) {
       setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
@@ -272,52 +251,6 @@ export const PoolDataSection = ({
     uniswapToken0Price,
   ])
 
-  // useEffect(() => {
-  // 	// console.log("symbolExchangeChart: ", symbol)
-  // 	const widgetOptions = {
-  // 		debug: false,
-  // 		symbol: !symbol ? "missing pool" : symbol,
-  // 		datafeed,
-  // 		theme: defaultChartProps.theme,
-  // 		container: chartContainerRef.current,
-  // 		library_path: defaultChartProps.library_path,
-  // 		locale: defaultChartProps.locale,
-  // 		loading_screen: defaultChartProps.loading_screen,
-  // 		enabled_features: defaultChartProps.enabled_features,
-  // 		disabled_features: defaultChartProps.disabled_features,
-  // 		client_id: defaultChartProps.clientId,
-  // 		user_id: defaultChartProps.userId,
-  // 		//fullscreen: defaultChartProps.fullscreen,
-  // 		// autosize: defaultChartProps.autosize,
-  // 		// custom_css_url: defaultChartProps.custom_css_url,
-  // 		autosize: true,
-  // 		overrides: defaultChartProps.overrides,
-  // 		interval: "60",//getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
-  // 		favorites: defaultChartProps.favorites,
-  // 		custom_formatters: defaultChartProps.custom_formatters,
-  // 		// save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
-  // 	};
-
-  // 	tvWidgetRef.current = new widget(widgetOptions as any);
-
-  // 	tvWidgetRef.current?.onChartReady(function () {
-  // 		setChartReady(true);
-
-  // 		tvWidgetRef.current?.activeChart().dataReady(() => {
-  // 			setChartDataLoading(false);
-  // 		});
-  // 	});
-
-  // 	return () => {
-  // 		if (tvWidgetRef.current) {
-  // 			tvWidgetRef.current.remove();
-  // 			tvWidgetRef.current = null;
-  // 			setChartReady(false);
-  // 			setChartDataLoading(true);
-  // 		}
-  // 	};
-  // }, [chainId, symbol, uniswapPoolAddress, fee, datafeed]);
-
   return (
     <>
       <StatsSection
@@ -327,15 +260,6 @@ export const PoolDataSection = ({
         token1Symbol={token1?.symbol}
         stats={stats}
       />
-      {/* <div style={{ height: "450px" }}>
-				<div
-					style={{
-						height: '100%'
-					}}
-					ref={chartContainerRef}
-					className="TVChartContainer"
-				/>
-			</div> */}
     </>
   )
 }

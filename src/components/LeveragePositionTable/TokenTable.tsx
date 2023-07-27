@@ -186,7 +186,7 @@ export default function PositionsTable({
   /* loading and error state */
   if (loading) {
     return <LoadingTokenTable rowCount={1} />
-  } else if (filteredPositions?.length == 0) {
+  } else if (!filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (

@@ -1,4 +1,3 @@
-import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
 import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, Token, TradeType } from '@uniswap/sdk-core'
@@ -151,23 +150,18 @@ export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
-  border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
-  // border-bottom-left-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
-  // border-bottom-right-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
+  border: 1px solid ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.backgroundSurface};
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  background-color: ${({ theme }) => theme.backgroundSurface};
   // margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
-  border-bottom: ${({ theme }) => `1px solid ${theme.backgroundSurface}`};
+  border: 1px solid ${({ theme }) => theme.backgroundSurface};
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-
-  // border-bottom-left-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
-  // border-bottom-right-radius: ${({ showDetailsDropdown }) => showDetailsDropdown && '0'};
 `
 
 export const DetailsSwapSection = styled(SwapSection)`
@@ -206,8 +200,6 @@ const LeftContainer = styled.div`
 
 const ActivityWrapper = styled.main`
   max-height: 240px;
-  border-radius: 32px;
-  border-top-left-radius: 0;
   overflow: hidden;
 
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -243,6 +235,18 @@ const SwapHeaderWrapper = styled.div`
 
 const TabsWrapper = styled.div`
   display: flex;
+`
+
+const MissingHistoryWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 0;
 `
 
 export function getIsValidSwapQuote(
@@ -360,35 +364,6 @@ export default function Swap({ className }: { className?: string }) {
   )
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
-
-  // const [inputApprovalState, inputApprove] = useMaxApproveCallback(
-  //   inputCurrency ? CurrencyAmount.fromRawAmount(inputCurrency, MaxUint256) : undefined,
-  //   isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined
-  // )
-  // const [outputApprovalState, outputApprove] = useMaxApproveCallback(
-  //   outputCurrency ? CurrencyAmount.fromRawAmount(outputCurrency, MaxUint256) : undefined,
-  //   isBorrowTab ? borrowManagerAddress ?? undefined : leverageManagerAddress ?? undefined
-  // )
-  // const [leverageApproveAmount, borrowInputApproveAmount, borrowOutputApproveAmount] = useMemo(() => {
-  //   if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
-  //     return [
-  //       CurrencyAmount.fromRawAmount(
-  //         inputCurrency,
-  //         new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).plus(premium).shiftedBy(18).toFixed(0)
-  //       ),
-  //       CurrencyAmount.fromRawAmount(
-  //         inputCurrency,
-  //         new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).shiftedBy(18).toFixed(0)
-  //       ),
-  //       CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0)),
-  //     ]
-  //   } else {
-  //     return [undefined, undefined, undefined]
-  //   }
-  // }, [inputCurrency, outputCurrency, premium, parsedAmounts])
-
-  // const fiatValueInput = useUSDPrice(parsedAmounts[Field.INPUT])
-  // const fiatValueOutput = useUSDPrice(parsedAmounts[Field.OUTPUT])
 
   const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
     () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
@@ -580,7 +555,9 @@ export default function Swap({ className }: { className?: string }) {
               </TabContent>
               <TabContent id={3} activeTab={activePositionTable}>
                 {!account ? (
-                  <Trans>Missing Account</Trans>
+                  <ActivityWrapper>
+                    <MissingHistoryWrapper>None</MissingHistoryWrapper>
+                  </ActivityWrapper>
                 ) : (
                   <ActivityWrapper>
                     <ActivityInnerWarpper>

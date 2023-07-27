@@ -9,7 +9,7 @@ import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
-import { ExternalLink, ThemedText } from 'theme'
+import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 
 const UNSUPPORTED_METADATA_CHAINS = [SupportedChainId.BNB]
@@ -74,66 +74,46 @@ export default function StatsSection(props: StatsSectionProps) {
 
   const baseQuoteSymbol = stats?.invertPrice ? `${token0Symbol} / ${token1Symbol}` : `${token1Symbol} / ${token0Symbol}`
 
-  if (stats?.high24h || stats?.low24h || stats?.delta || stats?.price) {
-    return (
-      <StatsWrapper data-testid="token-details-stats">
-        <Stat
-          dataCy="current-price"
-          value={stats?.price}
-          baseQuoteSymbol={baseQuoteSymbol}
-          title={<Trans>Oracle Price</Trans>}
-        />
-        <StatWrapper data-cy="delta-24h">
-          <Trans>24h Change</Trans>
-          <StatPrice>
-            <AutoRow>
-              <ArrowCell>{arrow}</ArrowCell>
-              <DeltaText delta={Number(stats?.delta)}>
-                {stats?.delta ? formatNumber(stats.delta, NumberType.SwapTradeAmount) : '-'}%
-              </DeltaText>
-            </AutoRow>
-          </StatPrice>
-        </StatWrapper>
-        <Stat dataCy="24h-low" value={stats?.low24h} baseQuoteSymbol={baseQuoteSymbol} title={<Trans>24h low</Trans>} />
-        <Stat
-          dataCy="24h-high"
-          value={stats?.high24h}
-          baseQuoteSymbol={baseQuoteSymbol}
-          title={<Trans>24h high</Trans>}
-        />
-        <Stat
-          dataCy="liq-below"
-          value={stats?.token1Reserve}
-          baseQuoteSymbol={token1Symbol}
-          title={<Trans>Liquidity Below</Trans>}
-        />
-        <Stat
-          dataCy="liq-above"
-          value={stats?.token0Reserve}
-          baseQuoteSymbol={token0Symbol}
-          title={<Trans>Liquidity Above</Trans>}
-        />
-      </StatsWrapper>
-    )
-  } else {
-    return UNSUPPORTED_METADATA_CHAINS.includes(chainId) ? (
-      <>
-        <Header>
-          <Trans>Stats</Trans>
-        </Header>
-        <ThemedText.BodySecondary paddingTop="12px">
-          <Trans>
-            Token stats and charts for {label} are available on{' '}
-            <ExternalLink color="currentColor" href={`${infoLink}tokens/${address}`}>
-              info.uniswap.org
-            </ExternalLink>
-          </Trans>
-        </ThemedText.BodySecondary>
-      </>
-    ) : (
-      <NoData>No stats available</NoData>
-    )
-  }
+  return (
+    <StatsWrapper data-testid="token-details-stats">
+      <Stat
+        dataCy="current-price"
+        value={stats?.price}
+        baseQuoteSymbol={baseQuoteSymbol}
+        title={<Trans>Oracle Price</Trans>}
+      />
+      <StatWrapper data-cy="delta-24h">
+        <Trans>24h Change</Trans>
+        <StatPrice>
+          <AutoRow>
+            <ArrowCell>{arrow}</ArrowCell>
+            <DeltaText delta={Number(stats?.delta)}>
+              {stats?.delta ? formatNumber(stats.delta, NumberType.SwapTradeAmount) : '-'}%
+            </DeltaText>
+          </AutoRow>
+        </StatPrice>
+      </StatWrapper>
+      <Stat dataCy="24h-low" value={stats?.low24h} baseQuoteSymbol={baseQuoteSymbol} title={<Trans>24h low</Trans>} />
+      <Stat
+        dataCy="24h-high"
+        value={stats?.high24h}
+        baseQuoteSymbol={baseQuoteSymbol}
+        title={<Trans>24h high</Trans>}
+      />
+      <Stat
+        dataCy="liq-below"
+        value={stats?.token1Reserve}
+        baseQuoteSymbol={token1Symbol}
+        title={<Trans>Liquidity Below</Trans>}
+      />
+      <Stat
+        dataCy="liq-above"
+        value={stats?.token0Reserve}
+        baseQuoteSymbol={token0Symbol}
+        title={<Trans>Liquidity Above</Trans>}
+      />
+    </StatsWrapper>
+  )
 }
 
 const StatWrapper = styled.div`
