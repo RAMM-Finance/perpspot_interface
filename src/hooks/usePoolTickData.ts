@@ -12,12 +12,16 @@ import ms from 'ms.macro'
 import { useEffect, useMemo, useState } from 'react'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 
-import { V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
+import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
 import { useTickLens } from './useContract'
 import { PoolState, usePool } from './usePools'
 
 const PRICE_FIXED_DIGITS = 8
-const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [SupportedChainId.ARBITRUM_ONE, SupportedChainId.ARBITRUM_GOERLI]
+const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [
+  SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.ARBITRUM_GOERLI,
+  SupportedChainId.SEPOLIA,
+]
 
 // Tick with fields parsed to JSBIs, and active liquidity computed.
 export interface TickProcessed {
@@ -59,7 +63,7 @@ function useTicksFromTickLens(
           currencyA?.wrapped,
           currencyB?.wrapped,
           feeAmount,
-          undefined,
+          POOL_INIT_CODE_HASH,
           chainId ? V3_CORE_FACTORY_ADDRESSES[chainId] : undefined
         )
       : undefined
@@ -90,12 +94,16 @@ function useTicksFromTickLens(
   )
 
   const tickLens = useTickLens()
+
   const callStates = useSingleContractMultipleData(
     tickLensArgs.length > 0 ? tickLens : undefined,
     'getPopulatedTicksInWord',
     tickLensArgs,
     REFRESH_FREQUENCY
   )
+
+  // const singleResult = useSingleCallResult(tickLens, 'getPopulatedTicksInWord', [poolAddress, 28])
+  // console.log('callStates', tickLens?.address, singleResult, callStates)
 
   const isError = useMemo(() => callStates.some(({ error }) => error), [callStates])
   const isLoading = useMemo(() => callStates.some(({ loading }) => loading), [callStates])
@@ -120,6 +128,20 @@ function useTicksFromTickLens(
         ),
     [callStates]
   )
+
+  // useEffect(() => {
+  //   async function lagged() {
+  //     let ticks = [] as any[]
+  //     if (tickLens && tickLensArgs?.length > 0) {
+  //       for (let i = 0; i < tickLensArgs.length; i++) {
+  //         const callResult = await tickLens.callStatic.getPopulatedTicksInWord(...tickLensArgs[i])
+  //         ticks.concat(callResult)
+  //       }
+  //     }
+  //     setTickDataLatestSynced
+  //   }
+  //   lagged()
+  // }, [tickLens, tickLensArgs])
 
   // reset on input change
   useEffect(() => {
@@ -187,6 +209,8 @@ function useAllV3Ticks(
     error,
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
+
+  console.log('useAllV3Ticks', tickLensTickData, useSubgraph, data, error)
 
   useEffect(() => {
     if (data?.ticks.length) {

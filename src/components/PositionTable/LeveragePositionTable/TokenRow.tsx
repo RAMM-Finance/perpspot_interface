@@ -733,9 +733,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               {`${formatBNToString(position.initialCollateral, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
             </FlexStartRow>
           }
-          repaymentTime={<Trans>{!isOverDue ? <GreenText>{timeLeft}</GreenText> : <RedText>{0}</RedText>}</Trans>}
+          repaymentTime={
+            <FlexStartRow>{!isOverDue ? <GreenText>{timeLeft}</GreenText> : <RedText>{0}</RedText>}</FlexStartRow>
+          }
           PnL={
-            <Trans>
+            <FlexStartRow>
               <AutoRow>
                 <RowBetween>
                   <DeltaText delta={Number(pnl)}>
@@ -746,10 +748,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   </ArrowCell>            */}
                 </RowBetween>
               </AutoRow>
-            </Trans>
+            </FlexStartRow>
           }
           entryPrice={
-            <Trans>
+            <FlexStartRow>
               <AutoColumn
                 style={{
                   display: 'flex',
@@ -765,14 +767,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 )} `}
                 <AutoColumn>{quoteBaseSymbol}</AutoColumn>
               </AutoColumn>
-            </Trans>
+            </FlexStartRow>
           }
           remainingPremium={
-            <Trans>
+            <FlexStartRow>
               {`${remainingPremium ? remainingPremium : 0}/${formatBNToString(
                 position.unusedPremium
               )} ${inputCurrencySymbol}`}
-            </Trans>
+            </FlexStartRow>
           }
           position={position}
         />
