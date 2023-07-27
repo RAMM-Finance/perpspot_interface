@@ -80,6 +80,11 @@ const createGroups = (activities?: Array<Activity>) => {
 const ActivityGroupWrapper = styled(Column)`
   margin-top: 16px;
   gap: 8px;
+  border-bottom: 1px solid;
+  border-color: ${({ theme }) => theme.backgroundOutline};
+  :last-child {
+    border: none;
+  }
 `
 
 function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = {}): Array<Activity> {
@@ -142,10 +147,10 @@ export function ActivityTab({ account }: { account: string }) {
       <PortfolioTabWrapper>
         {activityGroups.map((activityGroup) => (
           <ActivityGroupWrapper key={activityGroup.title}>
-            <ThemedText.SubHeader color="textSecondary" fontWeight={500} marginLeft="16px">
+            <ThemedText.SubHeader color="textSecondary" fontWeight={500}>
               {activityGroup.title}
             </ThemedText.SubHeader>
-            <Column>
+            <Column style={{ marginBottom: '12px' }}>
               {activityGroup.transactions.map((activity) => (
                 <ActivityRow key={activity.hash} activity={activity} />
               ))}

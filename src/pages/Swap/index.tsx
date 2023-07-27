@@ -190,7 +190,7 @@ const StatsContainer = styled.div`
   /* max-width: 1200px; */
   padding: 18px;
   width: 100%;
-  margin-right: 20px;
+  margin-bottom: 25px;
   margin-left: auto;
 `
 
@@ -206,8 +206,29 @@ const LeftContainer = styled.div`
 
 const ActivityWrapper = styled.main`
   max-height: 240px;
-  overflow-y: auto;
+  border-radius: 32px;
+  border-top-left-radius: 0;
+  overflow: hidden;
+
   background-color: ${({ theme }) => theme.backgroundSurface};
+`
+const ActivityInnerWarpper = styled.div`
+  padding: 20px 30px;
+  overflow-y: auto;
+  max-height: 240px;
+
+  ::-webkit-scrollbar {
+    background-color: transparent;
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #131a2a;
+    border-radius: 32px;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
 `
 
 const SwapHeaderWrapper = styled.div`
@@ -562,7 +583,9 @@ export default function Swap({ className }: { className?: string }) {
                   <Trans>Missing Account</Trans>
                 ) : (
                   <ActivityWrapper>
-                    <ActivityTab account={account} />
+                    <ActivityInnerWarpper>
+                      <ActivityTab account={account} />
+                    </ActivityInnerWarpper>
                   </ActivityWrapper>
                 )}
               </TabContent>

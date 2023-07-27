@@ -166,8 +166,7 @@ function useSelectPositions(positions?: LimitlessPositionDetails[]) {
 
 const FilterWrapper = styled.div`
   display: flex;
-  margin-left: 15px;
-  margin-top: 8px;
+  margin: 8px 0;
 `
 
 export default function PositionsTable({
