@@ -86,7 +86,7 @@ export const menuItem = style([
   {
     ':hover': {
       color: 'textPrimary',
-      background: 'backgroundFloating',
+      background: 'accentActiveSoft',
     },
   },
 ])
@@ -94,7 +94,7 @@ export const menuItem = style([
 export const activeMenuItem = style([
   baseMenuItem,
   sprinkles({
-    background: 'accentActiveSoft',
+    background: 'accentActive',
     color: 'textPrimary',
   }),
 ])

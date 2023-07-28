@@ -54,7 +54,6 @@ type StatsSectionProps = {
     delta: number
     high24h: number
     low24h: number
-    invertPrice: boolean
     token1Reserve: number
     token0Reserve: number
   }
@@ -69,10 +68,12 @@ export default function StatsSection(props: StatsSectionProps) {
   const { chainId, address, stats, token0Symbol, token1Symbol } = props
   const { label, infoLink } = getChainInfo(chainId) ? getChainInfo(chainId) : { label: null, infoLink: null }
 
-  // if inversePrice then token0 is base token, otherwise token0 is quote token
   const arrow = getDeltaArrow(stats?.delta, 18)
 
-  const baseQuoteSymbol = stats?.invertPrice ? `${token0Symbol} / ${token1Symbol}` : `${token1Symbol} / ${token0Symbol}`
+  const baseQuoteSymbol =
+    Number(stats?.token0Reserve) > Number(stats?.token1Reserve)
+      ? `${token1Symbol} / ${token0Symbol}`
+      : `${token0Symbol} / ${token1Symbol}`
 
   return (
     <StatsWrapper data-testid="token-details-stats">
