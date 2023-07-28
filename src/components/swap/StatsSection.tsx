@@ -121,6 +121,7 @@ const StatWrapper = styled.div`
   font-size: 12px;
   padding: 0 1rem;
   width: max-content;
+  font-weight: 900;
 
   border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
@@ -152,7 +153,7 @@ const StatsWrapper = styled.div`
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   width: 100%;
   ${textFadeIn}
 `

@@ -501,7 +501,7 @@ export default function Swap({ className }: { className?: string }) {
                   <TokenSelector isInput={true} />
                 </Row>
               ) : (
-                <ThemedText.LargeHeader>Pair not found</ThemedText.LargeHeader>
+                <ThemedText.HeadlineSmall>Pair not found</ThemedText.HeadlineSmall>
               )}
 
               {/* {inputApprovalState !== ApprovalState.APPROVED && (

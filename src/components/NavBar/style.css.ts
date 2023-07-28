@@ -33,6 +33,7 @@ export const leftSideContainer = style([
   sprinkles({
     alignItems: 'center',
     justifyContent: 'flex-start',
+    borderRadius: '0',
   }),
 ])
 
