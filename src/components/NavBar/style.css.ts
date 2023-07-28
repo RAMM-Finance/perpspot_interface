@@ -33,6 +33,7 @@ export const leftSideContainer = style([
   sprinkles({
     alignItems: 'center',
     justifyContent: 'flex-start',
+    borderRadius: '0',
   }),
 ])
 
@@ -61,10 +62,10 @@ const baseMenuItem = style([
   sprinkles({
     paddingY: '4',
     paddingX: '14',
-    marginY: '4',
+    // marginY: '4',
     borderRadius: '12',
     transition: '250',
-    height: 'min',
+    height: 'max',
     width: 'full',
     textAlign: 'center',
     display: 'flex',

@@ -31,6 +31,7 @@ import { useNavigate } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
@@ -63,6 +64,7 @@ const TableHeader = styled.div`
   flex-flow: row nowrap;
   justify-content: space-between;
   width: 100%;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 export const StyledNumericalInput = styled(NumericalInput)`
@@ -101,6 +103,8 @@ const SwapSection = styled.div`
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
 
   &:before {
     box-sizing: border-box;
@@ -137,24 +141,25 @@ export const InputLeverageSection = styled(SwapSection)`
 export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
   border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
   border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
+  border-bottom: ${({ leverage }) => leverage && 'none'};
   margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
   background-color: ${({ theme }) => theme.backgroundSurface};
 
-  ::after {
+  /* ::after {
     content: '';
     margin-top: 30px;
     background-color: ${({ theme }) => theme.backgroundSurface};
     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
     height: 0.1em;
-  }
+  } */
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
-  border: 1px solid ${({ theme }) => theme.backgroundSurface};
+  /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  // margin-bottom: 20px;
+  /* border-bottom-left-radius: 0; */
+  /* border-bottom-right-radius: 0; */
+  margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
@@ -165,19 +170,17 @@ export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: b
 `
 
 export const DetailsSwapSection = styled(SwapSection)`
-  padding: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  border: none;
+  margin-bottom: 20px;
 `
 
 const PositionsContainer = styled.div`
-  // background-color: ${({ theme }) => theme.backgroundSurface};
-  /* max-width: 1200px; */
   width: 100%;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px 0 1px 1px;
-  /* padding: 12px; */
+  border-width: 1px 0 0 1px;
   margin-left: auto;
+  height: 100%;
 `
 
 const StatsContainer = styled.div`
@@ -195,9 +198,11 @@ const LeftContainer = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;
-  /* max-width: 1260px; */
+  margin-right: 5px;
+  width: 80%;
   min-width: 560px;
-  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px 1px 0 0;
 `
 
 const ActivityWrapper = styled.main`
@@ -228,12 +233,13 @@ const ActivityInnerWarpper = styled.div`
 const SwapHeaderWrapper = styled.div`
   display: flex;
   flex-flow: row nowrap;
-  width: 100%;
   justify-content: space-between;
   align-items: center;
   grid-column: span 2;
   margin: 0.25rem 0;
-  padding-left: 10px;
+  padding: 8px 10px;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 1px 0;
 `
 
 const TabsWrapper = styled.div`
@@ -494,10 +500,14 @@ export default function Swap({ className }: { className?: string }) {
                   margin
                 />
               )}
-              <Row>
-                <TokenSelector isInput={false} />
-                <TokenSelector isInput={true} />
-              </Row>
+              {inputCurrency && outputCurrency ? (
+                <Row>
+                  <TokenSelector isInput={false} />
+                  <TokenSelector isInput={true} />
+                </Row>
+              ) : (
+                <ThemedText.HeadlineSmall>Pair not found</ThemedText.HeadlineSmall>
+              )}
 
               {/* {inputApprovalState !== ApprovalState.APPROVED && (
                   <SmallMaxButton onClick={() => inputApprove()} width="10%">
@@ -522,61 +532,62 @@ export default function Swap({ className }: { className?: string }) {
               fee={pool?.fee}
             />
           </SwapHeaderWrapper>
-          <LeftContainer>
-            <PoolDataChart
-              chainId={chainId ?? 11155111}
-              token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-              token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-              fee={pool?.fee}
-            />
-            <PositionsContainer>
-              <TableHeader>
-                <TabsWrapper>
-                  <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
-                    Leverage Positions
-                  </TabNavItem>
-                  <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-                    Borrow Positions
-                  </TabNavItem>
-                  <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
-                    History
-                  </TabNavItem>
-                </TabsWrapper>
+          <MainWrapper>
+            <LeftContainer>
+              <PoolDataChart
+                chainId={chainId ?? 11155111}
+                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+                fee={pool?.fee}
+              />
+              <PositionsContainer>
+                <TableHeader>
+                  <TabsWrapper>
+                    <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
+                      Leverage Positions
+                    </TabNavItem>
+                    <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+                      Borrow Positions
+                    </TabNavItem>
+                    <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+                      History
+                    </TabNavItem>
+                  </TabsWrapper>
 
-                {activePositionTable === 1 && <LeverageSearchBar />}
-                {activePositionTable === 2 && <BorrowSearchBar />}
-              </TableHeader>
-              <TabContent id={1} activeTab={activePositionTable}>
-                <LeveragePositionsTable positions={leveragePositions} loading={limitlessPositionsLoading} />
+                  {activePositionTable === 1 && <LeverageSearchBar />}
+                  {activePositionTable === 2 && <BorrowSearchBar />}
+                </TableHeader>
+                <TabContent id={1} activeTab={activePositionTable}>
+                  <LeveragePositionsTable positions={leveragePositions} loading={limitlessPositionsLoading} />
+                </TabContent>
+                <TabContent id={2} activeTab={activePositionTable}>
+                  <BorrowPositionsTable positions={borrowPositions} loading={limitlessPositionsLoading} />
+                </TabContent>
+                <TabContent id={3} activeTab={activePositionTable}>
+                  {!account ? (
+                    <ActivityWrapper>
+                      <MissingHistoryWrapper>None</MissingHistoryWrapper>
+                    </ActivityWrapper>
+                  ) : (
+                    <ActivityWrapper>
+                      <ActivityInnerWarpper>
+                        <ActivityTab account={account} />
+                      </ActivityInnerWarpper>
+                    </ActivityWrapper>
+                  )}
+                </TabContent>
+              </PositionsContainer>
+            </LeftContainer>
+            <SwapWrapper chainId={chainId} className={className} id="swap-page">
+              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
+              <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
+                <TradeTabContent />
               </TabContent>
-              <TabContent id={2} activeTab={activePositionTable}>
-                <BorrowPositionsTable positions={borrowPositions} loading={limitlessPositionsLoading} />
+              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
+                <BorrowTabContent />
               </TabContent>
-              <TabContent id={3} activeTab={activePositionTable}>
-                {!account ? (
-                  <ActivityWrapper>
-                    <MissingHistoryWrapper>None</MissingHistoryWrapper>
-                  </ActivityWrapper>
-                ) : (
-                  <ActivityWrapper>
-                    <ActivityInnerWarpper>
-                      <ActivityTab account={account} />
-                    </ActivityInnerWarpper>
-                  </ActivityWrapper>
-                )}
-              </TabContent>
-            </PositionsContainer>
-          </LeftContainer>
-
-          <SwapWrapper chainId={chainId} className={className} id="swap-page">
-            <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-            <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
-              <TradeTabContent />
-            </TabContent>
-            <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-              <BorrowTabContent />
-            </TabContent>
-          </SwapWrapper>
+            </SwapWrapper>
+          </MainWrapper>
         </PageWrapper>
         {!swapIsUnsupported ? null : (
           <UnsupportedCurrencyFooter
@@ -588,3 +599,9 @@ export default function Swap({ className }: { className?: string }) {
     </Trace>
   )
 }
+
+const MainWrapper = styled.article`
+  width: 100%;
+  height: 100%;
+  display: flex;
+`

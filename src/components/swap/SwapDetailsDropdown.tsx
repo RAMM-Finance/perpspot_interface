@@ -25,11 +25,8 @@ import TradePrice from './TradePrice'
 const Wrapper = styled(Row)`
   width: 100%;
   justify-content: center;
-  border-radius: inherit;
-  padding: 12px 12px;
-  margin-top: 0;
   min-height: 32px;
-  margin-bottom: 8px;
+  border: none;
 `
 
 const SwapDetailsWrapper = styled.div`

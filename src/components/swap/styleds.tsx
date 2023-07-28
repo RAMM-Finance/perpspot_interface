@@ -1,5 +1,4 @@
 import { TooltipContainer } from 'components/Tooltip'
-import { SupportedChainId } from 'constants/chains'
 import { transparentize } from 'polished'
 import { ReactNode } from 'react'
 import { AlertTriangle } from 'react-feather'
@@ -12,13 +11,14 @@ import { AutoColumn } from '../Column'
 export const PageWrapper = styled.div`
   // padding: 10px 14px 0px;
   /* max-width: 1700px; */
-  display: grid;
-  grid-template-columns: 2fr 400px;
-  // display: flex;
-  /* background-color: ${({ theme }) => theme.backgroundModule}; */
-  // border: solid ${({ theme }) => theme.backgroundOutline};
+  /* display: grid;
+  grid-template-columns: 2fr 0.6fr; */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0;
-  justify-content: center;
+  margin-top: 50px;
   width: 100%;
   height: 100%;
 
@@ -34,16 +34,15 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  // height: 100vh;
+  min-width: 430px;
+  width: 22%;
   border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 1px 1px;
-  padding-bottom: 12px;
+  border-width: 0 0 0 1px;
   box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;
   border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
-
-  // box-shadow: ${({ chainId }) => !!chainId && chainId === SupportedChainId.BNB && '0px 40px 120px 0px #f0b90b29'};
+  background-color: ${({ theme }) => theme.backgroundSurface};
   z-index: ${Z_INDEX.deprecated_content};
   transition: transform 250ms ease;
 `

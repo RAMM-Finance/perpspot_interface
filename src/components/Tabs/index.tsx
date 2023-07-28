@@ -198,8 +198,7 @@ const TabElement = styled.button<{
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.25rem 0.6rem;
-  // border-radius: 10px;
+  padding: 0.6rem;
   justify-content: center;
   height: 100%;
   border: none;
@@ -210,7 +209,7 @@ const TabElement = styled.button<{
   color: ${({ theme, isActive, selectedTab, tabValue }) =>
     !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
-  font-weight: 500;
+  font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
 

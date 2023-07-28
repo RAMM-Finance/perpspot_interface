@@ -79,7 +79,8 @@ import {
 const TRADE_STRING = 'SwapRouter'
 
 const Wrapper = styled.div`
-  padding: 0 1rem;
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 function largerPercentValue(a?: Percent, b?: Percent) {
