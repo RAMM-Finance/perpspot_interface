@@ -18,7 +18,6 @@ export const PageWrapper = styled.div`
   justify-content: flex-start;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0;
-  margin-top: 50px;
   width: 100%;
   height: 100%;
 
