@@ -21,8 +21,11 @@ import useDatafeed from './useDataFeed'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
-const StatsContainer = styled.div`
-  margin-bottom: 15px;
+const ChartContiner = styled.div`
+  height: 600px;
+  margin-bottom: 5px;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 1px 0;
 `
 
 // interface ChartContainerProps {
@@ -297,14 +300,14 @@ export const PoolDataChart = ({
   }, [chainId, symbol, uniswapPoolAddress, fee, datafeed])
 
   return (
-    <div style={{ height: '500px' }}>
+    <ChartContiner style={{ height: '550px' }}>
       <div
         style={{
-          height: '100%',
+          height: '550px',
         }}
         ref={chartContainerRef}
         className="TVChartContainer"
       />
-    </div>
+    </ChartContiner>
   )
 }

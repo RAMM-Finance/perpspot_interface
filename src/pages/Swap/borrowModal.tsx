@@ -72,7 +72,7 @@ function largerPercentValue(a?: Percent, b?: Percent) {
 }
 
 const Wrapper = styled.div`
-  padding: 0 1rem;
+  padding: 1rem;
 `
 
 const BorrowTabContent = () => {

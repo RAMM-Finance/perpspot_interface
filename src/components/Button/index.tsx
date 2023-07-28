@@ -71,6 +71,8 @@ export const ButtonPrimary = styled(BaseButton)`
   font-weight: 600;
   padding: 16px;
   color: ${({ theme }) => theme.accentTextLightPrimary};
+  border-radius: 0;
+
   &:focus {
     box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.05, theme.accentAction)};
     background-color: ${({ theme }) => darken(0.05, theme.accentAction)};
@@ -250,6 +252,7 @@ export const ButtonText = styled(BaseButton)`
 const ButtonConfirmedStyle = styled(BaseButton)`
   background-color: ${({ theme }) => theme.deprecated_bg3};
   color: ${({ theme }) => theme.textPrimary};
+  border-radius: 0;
   /* border: 1px solid ${({ theme }) => theme.accentSuccess}; */
 
   &:disabled {

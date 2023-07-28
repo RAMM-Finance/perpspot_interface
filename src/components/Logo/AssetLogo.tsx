@@ -1,7 +1,7 @@
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import useTokenLogoSource from 'hooks/useAssetLogoSource'
-import React from 'react'
+import React, { useState } from 'react'
 import styled, { css } from 'styled-components/macro'
 
 export const MissingImageLogo = styled.div<{ size?: string }>`
@@ -77,16 +77,24 @@ export default function AssetLogo({
 
   const [src, nextSrc] = useTokenLogoSource(address, chainId, isNative, backupImg)
   const L2Icon = getChainInfo(chainId)?.circleLogoUrl
+  const [checkedImg, setCheckedImg] = useState(true)
+
+  const isCheckedImg = () => {
+    setCheckedImg(false)
+  }
 
   return (
     <LogoContainer style={style}>
       {src ? (
         <LogoImage {...imageProps} src={src} onError={nextSrc} useBG={true} />
+      ) : checkedImg ? (
+        <MissingImageLogo size={size}>
+          <img style={{ width: '100%' }} src={`/images/${symbol}.png`} onError={isCheckedImg} alt="" />
+        </MissingImageLogo>
       ) : (
         <MissingImageLogo size={size}>
           {/* use only first 3 characters of Symbol for design reasons */}
-          {/* {symbol?.toUpperCase().replace('$', '').replace(/\s+/g, '').slice(0, 3)} */}
-          <img style={{ width: '100%' }} src={`/images/${symbol}.png`} alt="" />
+          {symbol?.toUpperCase().replace('$', '').replace(/\s+/g, '').slice(0, 3)}
         </MissingImageLogo>
       )}
       {!hideL2Icon && <L2NetworkLogo networkUrl={L2Icon} parentSize={size} />}
