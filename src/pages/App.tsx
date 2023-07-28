@@ -59,7 +59,7 @@ const BodyWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100%
+  min-height: 100%;
   padding: ${({ theme }) => theme.navHeight}px 0 0 0;
   align-items: center;
   flex: 1;
