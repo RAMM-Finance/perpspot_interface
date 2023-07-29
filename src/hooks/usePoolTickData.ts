@@ -7,13 +7,12 @@ import { useAllV3TicksQuery } from 'graphql/thegraph/__generated__/types-and-hoo
 import { TickData, Ticks } from 'graphql/thegraph/AllV3TicksQuery'
 import { apolloClient } from 'graphql/thegraph/apollo'
 import JSBI from 'jsbi'
-import { useSingleContractMultipleData } from 'lib/hooks/multicall'
 import ms from 'ms.macro'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
-import { useTickLens } from './useContract'
+import { useInterfaceMulticall, useTickLens } from './useContract'
 import { PoolState, usePool } from './usePools'
 
 const PRICE_FIXED_DIGITS = 8
@@ -84,7 +83,7 @@ function useTicksFromTickLens(
 
   const tickLensArgs: [string, number][] = useMemo(
     () =>
-      maxIndex && minIndex && poolAddress && poolAddress !== ZERO_ADDRESS
+      typeof maxIndex === 'number' && typeof minIndex === 'number' && poolAddress && poolAddress !== ZERO_ADDRESS
         ? new Array(maxIndex - minIndex + 1)
             .fill(0)
             .map((_, i) => i + minIndex)
@@ -95,39 +94,106 @@ function useTicksFromTickLens(
 
   const tickLens = useTickLens()
 
-  const callStates = useSingleContractMultipleData(
-    tickLensArgs.length > 0 ? tickLens : undefined,
-    'getPopulatedTicksInWord',
-    tickLensArgs,
-    REFRESH_FREQUENCY
-  )
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+  const [synced, setSynced] = useState(false)
+  const { provider } = useWeb3React()
+  const multicallContract = useInterfaceMulticall()
+  const [lastSyncedBlock, setLastSyncedBlock] = useState<number>()
 
-  // const singleResult = useSingleCallResult(tickLens, 'getPopulatedTicksInWord', [poolAddress, 28])
-  // console.log('callStates', tickLens?.address, singleResult, callStates)
+  const fetchTicks = useCallback(async () => {
+    console.log('multicall1', tickLensArgs.length, tickLens, provider, !loading, tickDataLatestSynced.length === 0)
+    if (tickLens && provider && !loading && tickDataLatestSynced.length === 0 && tickLensArgs.length > 0) {
+      const currentBlock = await provider?.getBlockNumber()
 
-  const isError = useMemo(() => callStates.some(({ error }) => error), [callStates])
-  const isLoading = useMemo(() => callStates.some(({ loading }) => loading), [callStates])
-  const IsSyncing = useMemo(() => callStates.some(({ syncing }) => syncing), [callStates])
-  const isValid = useMemo(() => callStates.some(({ valid }) => valid), [callStates])
+      console.log('multicall2', loading, currentBlock, lastSyncedBlock)
+      if (!lastSyncedBlock || currentBlock > lastSyncedBlock) {
+        setLoading(true)
+        try {
+          const promises = tickLensArgs.map((args) => tickLens.callStatic.getPopulatedTicksInWord(args[0], args[1]))
+          const callResults = await Promise.all(promises)
+          console.log('multicall3', tickLensArgs, promises, callResults)
 
-  const tickData: TickData[] = useMemo(
-    () =>
-      callStates
-        .map(({ result }) => result?.populatedTicks)
-        .reduce(
-          (accumulator, current) => [
-            ...accumulator,
-            ...(current?.map((tickData: TickData) => {
-              return {
-                tick: tickData.tick,
-                liquidityNet: JSBI.BigInt(tickData.liquidityNet),
-              }
-            }) ?? []),
-          ],
-          []
-        ),
-    [callStates]
-  )
+          const latestTickData = callResults
+            .flatMap((result) =>
+              result.map((response: any) => {
+                return {
+                  tick: response[0],
+                  liquidityNet: JSBI.BigInt(response[1]),
+                  price0: 0,
+                  price1: 0,
+                }
+              })
+            )
+            .sort((a, b) => a.tick - b.tick)
+          console.log('multicall4', latestTickData)
+          setLastSyncedBlock(currentBlock)
+          setTickDataLatestSynced(latestTickData)
+          setError(false)
+        } catch (err) {
+          console.log('multicall err', err)
+          setError(true)
+        }
+      }
+      setLoading(false)
+    }
+  }, [tickLensArgs, tickLens, provider, lastSyncedBlock, loading, tickDataLatestSynced])
+
+  // console.log('tickData', loading, error, activeTick, tickLensArgs, tickLens, provider, tickDataLatestSynced)
+
+  console.log('tickLensArgs', activeTick, minIndex, maxIndex, poolAddress, tickLensArgs)
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>()
+
+  useEffect(() => {
+    if (!intervalId && tickLens && provider) {
+      setIntervalId(
+        setInterval(() => {
+          fetchTicks()
+        }, ms('2.5s'))
+      )
+    }
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        setIntervalId(null)
+      }
+    }
+  }, [fetchTicks, intervalId, tickLens, provider, tickLensArgs])
+
+  // console.log('tickDataLatestSynced', loading, error, tickDataLatestSynced)
+
+  // const callStates = useSingleContractMultipleData(
+  //   tickLensArgs.length > 0 ? tickLens : undefined,
+  //   'getPopulatedTicksInWord',
+  //   tickLensArgs,
+  //   REFRESH_FREQUENCY
+  // )
+
+  // const isError = useMemo(() => callStates.some(({ error }) => error), [callStates])
+  // const isLoading = useMemo(() => callStates.some(({ loading }) => loading), [callStates])
+  // const IsSyncing = useMemo(() => callStates.some(({ syncing }) => syncing), [callStates])
+  // const isValid = useMemo(() => callStates.some(({ valid }) => valid), [callStates])
+
+  // const tickData: TickData[] = useMemo(
+  //   () =>
+  //     callStates
+  //       .map(({ result }) => result?.populatedTicks)
+  //       .reduce(
+  //         (accumulator, current) => [
+  //           ...accumulator,
+  //           ...(current?.map((tickData: TickData) => {
+  //             return {
+  //               tick: tickData.tick,
+  //               liquidityNet: JSBI.BigInt(tickData.liquidityNet),
+  //             }
+  //           }) ?? []),
+  //         ],
+  //         []
+  //       ),
+  //   [callStates]
+  // )
+
+  // tickLens?.interface.encodeFunctionData('getPopulatedTicksInWord', [poolAddress, 28])
 
   // useEffect(() => {
   //   async function lagged() {
@@ -146,18 +212,29 @@ function useTicksFromTickLens(
   // reset on input change
   useEffect(() => {
     setTickDataLatestSynced([])
+    setLastSyncedBlock(undefined)
   }, [currencyA, currencyB, feeAmount])
 
   // return the latest synced tickData even if we are still loading the newest data
-  useEffect(() => {
-    if (!IsSyncing && !isLoading && !isError && isValid) {
-      setTickDataLatestSynced(tickData.sort((a, b) => a.tick - b.tick))
-    }
-  }, [isError, isLoading, IsSyncing, tickData, isValid])
+  // useEffect(() => {
+  //   if (!IsSyncing && !isLoading && !isError && isValid) {
+  //     setTickDataLatestSynced(tickData.sort((a, b) => a.tick - b.tick))
+  //   }
+  // }, [isError, isLoading, IsSyncing, tickData, isValid])
 
+  // return useMemo(
+  //   () => ({ isLoading, IsSyncing, isError, isValid, tickData: tickDataLatestSynced }),
+  //   [isLoading, IsSyncing, isError, isValid, tickDataLatestSynced]
+  // )
   return useMemo(
-    () => ({ isLoading, IsSyncing, isError, isValid, tickData: tickDataLatestSynced }),
-    [isLoading, IsSyncing, isError, isValid, tickDataLatestSynced]
+    () => ({
+      isLoading: loading,
+      IsSyncing: false,
+      isError: error,
+      isValid: true,
+      tickData: tickDataLatestSynced,
+    }),
+    [loading, error, tickDataLatestSynced]
   )
 }
 
@@ -210,7 +287,7 @@ function useAllV3Ticks(
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
 
-  console.log('useAllV3Ticks', tickLensTickData, useSubgraph, data, error)
+  // console.log('useAllV3Ticks', currencyA, currencyB, feeAmount, tickLensTickData)
 
   useEffect(() => {
     if (data?.ticks.length) {
