@@ -202,7 +202,7 @@ const LeftContainer = styled.div`
   width: 80%;
   min-width: 560px;
   border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px 1px 0 0;
+  border-width: 1px 1px 1px 0;
 `
 
 const ActivityWrapper = styled.main`

@@ -16,10 +16,10 @@ export const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 1px 0;
+  /* border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 0 1px 0; */
   width: 100%;
-  height: 100%;
+  height: 100vh;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
@@ -40,7 +40,8 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   box-shadow: '0px 40px 120px 0px #f0b90b29';
   flex-flow: row nowrap;
   align-items: space-evenly;
-  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px 0 1px 1px;
   background-color: ${({ theme }) => theme.backgroundSurface};
   z-index: ${Z_INDEX.deprecated_content};
   transition: transform 250ms ease;
