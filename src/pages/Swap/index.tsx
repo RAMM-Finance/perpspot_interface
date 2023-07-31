@@ -25,7 +25,7 @@ import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hook
 import { useLimitlessPositions } from 'hooks/useV3Positions'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -206,16 +206,16 @@ const LeftContainer = styled.div`
   border-width: 1px 1px 1px 0;
 `
 
-const ActivityWrapper = styled.main`
-  max-height: 240px;
+const ActivityWrapper = styled.section<{ swapHeight: number | undefined }>`
   overflow: hidden;
+  max-height: ${({ swapHeight }) => `calc(${swapHeight}px - 550px)`};
 
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
-const ActivityInnerWarpper = styled.div`
+const ActivityInnerWarpper = styled.div<{ swapHeight: number | undefined }>`
   padding: 20px 30px;
   overflow-y: auto;
-  max-height: 240px;
+  max-height: ${({ swapHeight }) => `calc(${swapHeight}px - 550px)`};
 
   ::-webkit-scrollbar {
     background-color: transparent;
@@ -231,7 +231,7 @@ const ActivityInnerWarpper = styled.div`
   }
 `
 
-const SwapHeaderWrapper = styled.div`
+const SwapHeaderWrapper = styled.div<{ ref: any }>`
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
@@ -273,6 +273,18 @@ export default function Swap({ className }: { className?: string }) {
   const loadedUrlParams = useDefaultsFromURLSearch()
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
+  const [swapHeight, setSwapHeight] = useState<number>()
+
+  /**
+   * @parms swapWrapperREf SwapWrapper componenet height
+   * @parms swapHeaderHeight : SwapHeaderWrapper component height
+   */
+
+  const swapWrapperRef = useRef<HTMLElement>()
+  const swapHeaderRef = useRef<HTMLElement>()
+  const swapWrapperHeight = swapWrapperRef.current?.scrollHeight
+  const swapHeaderHeight = swapHeaderRef.current?.scrollHeight
+
   // const swapWidgetEnabled = useSwapWidgetEnabled()
 
   const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
@@ -460,6 +472,13 @@ export default function Swap({ className }: { className?: string }) {
     setSwapQuoteReceivedDate,
   ])
 
+  useEffect(() => {
+    if (swapHeaderHeight && swapWrapperHeight) {
+      setSwapHeight(swapWrapperHeight - swapHeaderHeight + 12)
+      // swapWrapperHeight - swapHeaderHeight + margin;
+    }
+  }, [swapHeaderHeight, swapWrapperHeight])
+
   const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
 
   const leveragePositions = useMemo(() => {
@@ -492,7 +511,7 @@ export default function Swap({ className }: { className?: string }) {
           showCancel={true}
         />
         <PageWrapper tab={selectedTab}>
-          <SwapHeaderWrapper>
+          <SwapHeaderWrapper ref={swapHeaderRef}>
             <TokenNameCell>
               {inputCurrency && outputCurrency && (
                 <DoubleCurrencyLogo
@@ -567,12 +586,12 @@ export default function Swap({ className }: { className?: string }) {
                 </TabContent>
                 <TabContent id={3} activeTab={activePositionTable}>
                   {!account ? (
-                    <ActivityWrapper>
+                    <ActivityWrapper swapHeight={swapHeight}>
                       <MissingHistoryWrapper>None</MissingHistoryWrapper>
                     </ActivityWrapper>
                   ) : (
-                    <ActivityWrapper>
-                      <ActivityInnerWarpper>
+                    <ActivityWrapper swapHeight={swapHeight}>
+                      <ActivityInnerWarpper swapHeight={swapHeight}>
                         <ActivityTab account={account} />
                       </ActivityInnerWarpper>
                     </ActivityWrapper>
@@ -580,7 +599,7 @@ export default function Swap({ className }: { className?: string }) {
                 </TabContent>
               </PositionsContainer>
             </LeftContainer>
-            <SwapWrapper chainId={chainId} className={className} id="swap-page">
+            <SwapWrapper ref={swapWrapperRef} chainId={chainId} className={className} id="swap-page">
               <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
               <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
                 <TradeTabContent />

@@ -31,7 +31,7 @@ export const PageWrapper = styled.div<{ tab?: any }>`
 `
 
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
-export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
+export const SwapWrapper = styled.main<{ ref: any; chainId: number | undefined }>`
   position: relative;
   min-width: 430px;
   width: 22%;
