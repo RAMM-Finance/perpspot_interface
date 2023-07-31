@@ -15,6 +15,7 @@ import { NavLink, NavLinkProps, useLocation, useNavigate } from 'react-router-do
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
 
+import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
@@ -32,21 +33,28 @@ interface MenuItemProps {
   isActive?: boolean
   children: ReactNode
   dataTestId?: string
+  margin?: string
 }
 
-const MenuItem = ({ href, dataTestId, id, isActive, children }: MenuItemProps) => {
+const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItemProps) => {
   return (
     <NavLink
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none' }}
+      style={{ textDecoration: 'none', marginRight: '4px' }}
       data-testid={dataTestId}
     >
       {children}
     </NavLink>
   )
 }
+
+const LogoSection = styled.div`
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 0 1px 0 0;
+  margin-right: 6px;
+`
 
 export const PageTabs = () => {
   const { pathname } = useLocation()
@@ -61,10 +69,14 @@ export const PageTabs = () => {
 
   return (
     <>
+      <LogoSection>
+        <MenuItem href="/swap">
+          <Logo fill="#fff" width="28px" />
+        </MenuItem>
+      </LogoSection>
       <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
         <Trans>Pairs</Trans>
       </MenuItem>
-
       <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
         <Trans>Trade</Trans>
       </MenuItem>
@@ -104,16 +116,16 @@ const Navbar = ({ blur }: { blur: boolean }) => {
           <Box className={styles.leftSideContainer}>
             {/*<Box className={styles.logoContainer}>
               <UniIcon
-                width="48"
-                height="48"
-                data-testid="uniswap-logo"
-                className={styles.logo}
-                onClick={() => {
-                  navigate({
-                    pathname: '/',
-                    search: '?intro=true',
-                  })
-                }}
+              width="48"
+              height="48"
+              data-testid="uniswap-logo"
+              className={styles.logo}
+              onClick={() => {
+                navigate({
+                  pathname: '/',
+                  search: '?intro=true',
+                })
+              }}
               />
             </Box>*/}
             {!isNftPage && (
