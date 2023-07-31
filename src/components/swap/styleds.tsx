@@ -8,7 +8,7 @@ import { Z_INDEX } from 'theme/zIndex'
 
 import { AutoColumn } from '../Column'
 
-export const PageWrapper = styled.div<{ tab?: any }>`
+export const PageWrapper = styled.div`
   // padding: 10px 14px 0px;
   /* max-width: 1700px; */
   /* display: grid;
@@ -19,7 +19,7 @@ export const PageWrapper = styled.div<{ tab?: any }>`
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
   width: 100%;
-  height: ${({ tab }) => (tab === 'Long' || tab === 'Short' ? '100%' : '100vh')};
+  min-height: calc(100vh - 65px);
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
@@ -31,7 +31,7 @@ export const PageWrapper = styled.div<{ tab?: any }>`
 `
 
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
-export const SwapWrapper = styled.main<{ ref: any; chainId: number | undefined }>`
+export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
   min-width: 430px;
   width: 22%;
