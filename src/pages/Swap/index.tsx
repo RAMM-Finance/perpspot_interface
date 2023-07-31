@@ -276,9 +276,10 @@ export default function Swap({ className }: { className?: string }) {
   const [swapHeight, setSwapHeight] = useState<number>()
 
   /**
-   * @parms swapWrapperREf : SwapWrapper componenet height
+   * @parms swapWrapperREf SwapWrapper componenet height
    * @parms swapHeaderHeight : SwapHeaderWrapper component height
    */
+
   const swapWrapperRef = useRef<HTMLElement>()
   const swapHeaderRef = useRef<HTMLElement>()
   const swapWrapperHeight = swapWrapperRef.current?.scrollHeight
@@ -474,6 +475,7 @@ export default function Swap({ className }: { className?: string }) {
   useEffect(() => {
     if (swapHeaderHeight && swapWrapperHeight) {
       setSwapHeight(swapWrapperHeight - swapHeaderHeight + 12)
+      // swapWrapperHeight - swapHeaderHeight + margin;
     }
   }, [swapHeaderHeight, swapWrapperHeight])
 
