@@ -8,7 +8,7 @@ import { Z_INDEX } from 'theme/zIndex'
 
 import { AutoColumn } from '../Column'
 
-export const PageWrapper = styled.div`
+export const PageWrapper = styled.div<{ tab?: any }>`
   // padding: 10px 14px 0px;
   /* max-width: 1700px; */
   /* display: grid;
@@ -19,7 +19,7 @@ export const PageWrapper = styled.div`
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
   width: 100%;
-  height: 100vh;
+  height: ${({ tab }) => (tab === 'Long' || tab === 'Short' ? '100%' : '100vh')};
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;

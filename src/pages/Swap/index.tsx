@@ -27,6 +27,7 @@ import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactNode } from 'react'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
@@ -477,6 +478,7 @@ export default function Swap({ className }: { className?: string }) {
   }, [limitlessPositionsLoading, limitlessPositions])
 
   const [activePositionTable, setActiveTable] = useState(1)
+  const selectedTab = useSelector((state: any) => state.swap.tab)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -489,7 +491,7 @@ export default function Swap({ className }: { className?: string }) {
           onCancel={handleDismissTokenWarning}
           showCancel={true}
         />
-        <PageWrapper>
+        <PageWrapper tab={selectedTab}>
           <SwapHeaderWrapper>
             <TokenNameCell>
               {inputCurrency && outputCurrency && (
