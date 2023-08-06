@@ -1,19 +1,17 @@
-import { HistoryCallback, PeriodParams, ResolutionString, SubscribeBarsCallback, LibrarySymbolInfo } from "../../public/charting_library";
+import { limitlessClient } from 'graphql/limitlessGraph/limitlessClients'
+import { fetchLiveBar, fetchPoolPriceData } from 'graphql/limitlessGraph/poolPriceData'
+import { uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
+import { useMemo, useRef } from 'react'
 
+import {
+  HistoryCallback,
+  LibrarySymbolInfo,
+  PeriodParams,
+  ResolutionString,
+  SubscribeBarsCallback,
+} from '../../public/charting_library'
 
-import { useEffect, useMemo, useRef } from "react";
-
-import { PriceChartEntry, fetchLiveBar, fetchPoolPriceData } from "graphql/limitlessGraph/poolPriceData";
-import { uniswapClient } from "graphql/limitlessGraph/uniswapClients";
-import { limitlessClient } from "graphql/limitlessGraph/limitlessClients";
-import { useWeb3React } from "@web3-react/core";
-import { Pool } from "@uniswap/v3-sdk";
-import { Bar } from "public/charting_library/datafeed-api";
-
-
-
-export const SUPPORTED_RESOLUTIONS = { 60: "1h", 240: "4h", "1D": "1d" };
-
+export const SUPPORTED_RESOLUTIONS = { 60: '1h', 240: '4h', '1D': '1d' }
 
 const configurationData = {
   supported_resolutions: Object.keys(SUPPORTED_RESOLUTIONS),
@@ -21,70 +19,60 @@ const configurationData = {
   supports_timescale_marks: false,
   supports_time: true,
   reset_cache_timeout: 100,
-};
-
-type SymbolInfo = LibrarySymbolInfo & {
-  poolAddress: string;
-  invertPrice: boolean;
-  useUniswapSubgraph: boolean;
 }
 
+type SymbolInfo = LibrarySymbolInfo & {
+  poolAddress: string
+  invertPrice: boolean
+  useUniswapSubgraph: boolean
+}
 
-export default function useDatafeed(
-  {
-    chainId
-  } :
-  { 
-    chainId: number
-  }
-  ) {
-
-  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>();
-  const resetCacheRef = useRef<() => void | undefined>();
-  const activeTicker = useRef<string | undefined>();
-  const shouldRefetchBars = useRef<boolean>(false);
+export default function useDatafeed({ chainId }: { chainId: number }) {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
+  const resetCacheRef = useRef<() => void | undefined>()
+  const activeTicker = useRef<string | undefined>()
+  const shouldRefetchBars = useRef<boolean>(false)
 
   return useMemo(() => {
     return {
       datafeed: {
         onReady: (callback: any) => {
           // console.log('[onReady]: Method call');
-          setTimeout(() => callback(configurationData));
+          setTimeout(() => callback(configurationData))
         },
         // symbolName => JSON obj. w/ token0Symbol, token1Symbol, poolAddress
-        resolveSymbol: (symbolName: string, onSymbolResolvedCallback: any, onResolveErrorCallback: any, extension: any) => {
-          console.log('[resolveSymbol]: Method call', symbolName);
-          if (symbolName === "") {
-            return onResolveErrorCallback("Symbol cannot be empty");
+        resolveSymbol: (
+          symbolName: string,
+          onSymbolResolvedCallback: any,
+          onResolveErrorCallback: any,
+          extension: any
+        ) => {
+          console.log('[resolveSymbol]: Method call', symbolName)
+          if (symbolName === '') {
+            return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const {
-            baseSymbol,
-            quoteSymbol,
-            poolAddress,
-            invertPrice,
-            useUniswapSubgraph
-          } = JSON.parse(symbolName);
+          const { baseSymbol, quoteSymbol, poolAddress, invertPrice, useUniswapSubgraph } = JSON.parse(symbolName)
 
           // console.log("resolveSymbol", symbolName)
           const symbolInfo = {
-            name: baseSymbol + "/" + quoteSymbol,
-            type: "crypto",
-            description: baseSymbol + "/" + quoteSymbol,
-            ticker: baseSymbol + "/" + quoteSymbol,
-            session: "24x7",
+            name: baseSymbol + '/' + quoteSymbol,
+            type: 'crypto',
+            description: baseSymbol + '/' + quoteSymbol,
+            ticker: baseSymbol + '/' + quoteSymbol,
+            session: '24x7',
             minmov: 1,
             pricescale: 100,
-            timezone: "Etc/UTC",
+            timezone: 'Etc/UTC',
             has_intraday: true,
             has_daily: true,
             currency_code: quoteSymbol,
-            visible_plots_set: "ohlc",
-            data_status: "streaming",
+            visible_plots_set: 'ohlc',
+            data_status: 'streaming',
             poolAddress,
             invertPrice,
-            useUniswapSubgraph
-          };
-          setTimeout(() => onSymbolResolvedCallback(symbolInfo));
+            useUniswapSubgraph,
+          }
+          setTimeout(() => onSymbolResolvedCallback(symbolInfo))
         },
         searchSymbols: (userInput: any, exchange: any, symbolType: any, onResultReadyCallback: any) => {
           // console.log('[searchSymbols]: Method call');
@@ -100,22 +88,28 @@ export default function useDatafeed(
           // if (Object.values(SUPPORTED_RESOLUTIONS).find(str => str === resolution) === undefined) {
           //   return onErrorCallback("[getBars] Invalid resolution");
           // }
-          const { poolAddress, invertPrice, useUniswapSubgraph } = symbolInfo;
-          const { from, to, countBack } = periodParams;
-
+          const { poolAddress, invertPrice, useUniswapSubgraph } = symbolInfo
+          const { from, to, countBack } = periodParams
 
           try {
-            let { data, error } = await fetchPoolPriceData(poolAddress, from, to, countBack, invertPrice, useUniswapSubgraph ? uniswapClient : limitlessClient);
+            const { data, error } = await fetchPoolPriceData(
+              poolAddress,
+              from,
+              to,
+              countBack,
+              invertPrice,
+              useUniswapSubgraph ? uniswapClient : limitlessClient
+            )
             // console.log("data", data)
-            const noData = !data || data.length === 0;
+            const noData = !data || data.length === 0
             if (error) {
-              console.error("subgraph error: ", error, data);
-              return onErrorCallback("Unable to load historical data!");
+              console.error('subgraph error: ', error, data)
+              return onErrorCallback('Unable to load historical data!')
             }
             // console.log(`[getBars]: returned ${data.length} bar(s)`, data[0]);
-            onHistoryCallback(data, { noData });
+            onHistoryCallback(data, { noData })
           } catch (err) {
-            onErrorCallback("Unable to load historical data!");
+            onErrorCallback('Unable to load historical data!')
           }
         },
         subscribeBars: async (
@@ -125,31 +119,27 @@ export default function useDatafeed(
           _subscribeUID: string,
           onResetCacheNeededCallback: () => void
         ) => {
-          const {
-            useUniswapSubgraph,
-            invertPrice,
-            poolAddress
-          } = symbolInfo
+          const { useUniswapSubgraph, invertPrice, poolAddress } = symbolInfo
           // console.log("[subscribe bars]", useUniswapSubgraph)
-          intervalRef.current && clearInterval(intervalRef.current);
+          intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
             fetchLiveBar(
-              chainId, 
-              poolAddress, 
-              invertPrice, 
-              useUniswapSubgraph, 
+              chainId,
+              poolAddress,
+              invertPrice,
+              useUniswapSubgraph,
               useUniswapSubgraph ? uniswapClient : limitlessClient
-              ).then((bar) => {
+            ).then((bar) => {
               if (bar) {
-                onRealtimeCallback((bar));
+                onRealtimeCallback(bar)
               }
-            });
-          }, 1000);
+            })
+          }, 1000)
         },
         unsubscribeBars: () => {
-          intervalRef.current && clearInterval(intervalRef.current);
+          intervalRef.current && clearInterval(intervalRef.current)
         },
-      }
+      },
     }
-  }, [chainId]);
+  }, [chainId])
 }

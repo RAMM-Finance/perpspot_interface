@@ -1,26 +1,27 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { isAddress } from 'ethers/lib/utils'
-import { gql, ApolloClient, NormalizedCacheObject, ApolloError } from '@apollo/client'
-import { Token } from '@uniswap/sdk-core'
-import { FeeAmount, computePoolAddress } from '@uniswap/v3-sdk'
-import { V3_CORE_FACTORY_ADDRESSES as UNISWAP_FACTORIES } from "constants/addresses-uniswap"
-import { V3_CORE_FACTORY_ADDRESSES as LIMITLESS_FACTORIES, POOL_INIT_CODE_HASH, UNISWAP_POOL_INIT_CODE_HASH } from "constants/addresses"
-import { useWeb3React } from '@web3-react/core'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { useContract } from 'hooks/useContract'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import { ApolloClient, gql, NormalizedCacheObject } from '@apollo/client'
 import { Interface } from '@ethersproject/abi'
-import { useLimitlessSubgraph } from './limitlessClients'
+import { Token } from '@uniswap/sdk-core'
+import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
+import { useWeb3React } from '@web3-react/core'
+import {
+  POOL_INIT_CODE_HASH,
+  UNISWAP_POOL_INIT_CODE_HASH,
+  V3_CORE_FACTORY_ADDRESSES as LIMITLESS_FACTORIES,
+} from 'constants/addresses'
+import { V3_CORE_FACTORY_ADDRESSES as UNISWAP_FACTORIES } from 'constants/addresses-uniswap'
 import dayjs, { OpUnitType } from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
+import { useContract } from 'hooks/useContract'
+import { useEffect, useMemo, useState } from 'react'
+
+import { useLimitlessSubgraph } from './limitlessClients'
 
 dayjs.extend(utc)
 dayjs.extend(weekOfYear)
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
-
 
 export type PriceChartEntry = {
   time: number // unix timestamp
@@ -48,8 +49,6 @@ const PRICE_CHART = gql`
   }
 `
 
-
-
 const POOL_PRICE_CHART = gql`
   query poolHourDatas($startTime: Int!, $endTime: Int!, $address: String!, $amount: Int!) {
     poolHourDatas(
@@ -69,12 +68,7 @@ const POOL_PRICE_CHART = gql`
 
 const LATEST_BAR_QUERY = gql`
   query latestBarQuery($address: String!) {
-    poolHourDatas(
-      where: { pool: $address }
-      orderBy: periodStartUnix
-      orderDirection: desc
-      first: 1
-    ) {
+    poolHourDatas(where: { pool: $address }, orderBy: periodStartUnix, orderDirection: desc, first: 1) {
       periodStartUnix
       high
       low
@@ -86,12 +80,7 @@ const LATEST_BAR_QUERY = gql`
 
 export const LATEST_POOL_DAY_QUERY = gql`
   query latestPoolDayInfoQuery($address: String!) {
-    poolDayDatas(
-      where: { pool: $address }
-      orderBy: date
-      orderDirection: desc
-      first: 1
-    ) {
+    poolDayDatas(where: { pool: $address }, orderBy: date, orderDirection: desc, first: 1) {
       date
       high
       low
@@ -103,7 +92,7 @@ export const LATEST_POOL_DAY_QUERY = gql`
 
 export const LATEST_POOL_INFO_QUERY = gql`
   query latestPoolQuery($address: ID!) {
-    pool( id: $address ) {
+    pool(id: $address) {
       token0Price
       token1Price
     }
@@ -126,7 +115,7 @@ export async function fetchPoolPriceData(
   endTimestamp: number,
   countBack: number,
   invertPrice: boolean,
-  dataClient: ApolloClient<NormalizedCacheObject>,
+  dataClient: ApolloClient<NormalizedCacheObject>
 ): Promise<{
   data: PriceChartEntry[]
   error: boolean
@@ -144,7 +133,12 @@ export async function fetchPoolPriceData(
       }
     }
 
-    const { data: result, errors, loading, error } = await dataClient.query({
+    const {
+      data: result,
+      errors,
+      loading,
+      error,
+    } = await dataClient.query({
       query: POOL_PRICE_CHART,
       variables: {
         address: address.toLowerCase(),
@@ -186,7 +180,7 @@ export async function fetchPoolPriceData(
       }
     }
   } catch (e) {
-    console.log("subgraph error:", e)
+    console.log('subgraph error:', e)
     return {
       data: [],
       error: true,
@@ -212,41 +206,43 @@ const tokenSearch = gql`
 
 /// uses limitless subgraph for token search
 export function useTokenSearchQuery(text: string) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [data, setData] = useState(null)
 
-  const limitlessClient = useLimitlessSubgraph();
+  const limitlessClient = useLimitlessSubgraph()
 
   useEffect(() => {
-    let isMounted = true;  // add this flag to prevent state updates on unmounted components
+    let isMounted = true // add this flag to prevent state updates on unmounted components
     if (text.length > 0) {
-      setLoading(true);
-      setError(null);
-      limitlessClient.query({
-        query: tokenSearch,
-        variables: { text: text.toLowerCase() + ":*" }
-      })
+      setLoading(true)
+      setError(null)
+      limitlessClient
+        .query({
+          query: tokenSearch,
+          variables: { text: text.toLowerCase() + ':*' },
+        })
         .then(({ data }) => {
           if (isMounted) {
-            setData(data);
-            setLoading(false);
+            setData(data)
+            setLoading(false)
           }
         })
-        .catch(error => {
+        .catch((error) => {
           if (isMounted) {
-            setError(error);
-            setLoading(false);
+            setError(error)
+            setLoading(false)
           }
-        });
+        })
     }
 
-    return () => { isMounted = false; }; // cleanup function to avoid memory leaks
-  }, [text, limitlessClient]);
+    return () => {
+      isMounted = false
+    } // cleanup function to avoid memory leaks
+  }, [text, limitlessClient])
 
-  return { loading, error, data };
+  return { loading, error, data }
 }
-
 
 export async function fetchLiveBar(
   chainId: number,
@@ -256,35 +252,28 @@ export async function fetchLiveBar(
   dataClient: ApolloClient<NormalizedCacheObject>
 ) {
   try {
-    const barData = await dataClient.query(
-      {
-        query: LATEST_BAR_QUERY,
-        variables: {
-          address: poolAddress.toLowerCase()
-        },
-        fetchPolicy: 'network-only',
-      }
-    )
-    const price = await dataClient.query(
-      {
-        query: LATEST_POOL_INFO_QUERY,
-        variables: {
-          address: poolAddress.toLowerCase()
-        },
-        fetchPolicy: 'network-only'
-      }
-    )
+    const barData = await dataClient.query({
+      query: LATEST_BAR_QUERY,
+      variables: {
+        address: poolAddress.toLowerCase(),
+      },
+      fetchPolicy: 'network-only',
+    })
+    const price = await dataClient.query({
+      query: LATEST_POOL_INFO_QUERY,
+      variables: {
+        address: poolAddress.toLowerCase(),
+      },
+      fetchPolicy: 'network-only',
+    })
 
     // console.log("price: ", barData, price)
     if (price.data && barData.data && !price.error && !barData.error) {
       const {
-        pool: {
-          token0Price,
-          token1Price
-        }
-      } = price.data;
+        pool: { token0Price, token1Price },
+      } = price.data
       const poolHourDatas = barData.data?.poolHourDatas
-      if (poolHourDatas.length === 0 || !token0Price && !token1Price) {
+      if (poolHourDatas.length === 0 || (!token0Price && !token1Price)) {
         return undefined
       }
       let lastBar = poolHourDatas[0]
@@ -308,7 +297,7 @@ export async function fetchLiveBar(
 
       const currentPrice = invertPrice ? token1Price : token0Price
 
-      let result = {
+      const result = {
         time: Date.now(),
         open: lastBar.close,
         close: currentPrice,
@@ -318,14 +307,13 @@ export async function fetchLiveBar(
 
       return result
     }
-  } catch (err) {
-  }
+  } catch (err) {}
   return
 }
 
 interface PoolPrice {
-  oldestFetchedTimestamp: number;
-  priceData: PriceChartEntry[];
+  oldestFetchedTimestamp: number
+  priceData: PriceChartEntry[]
 }
 
 /**
@@ -353,7 +341,7 @@ export function usePoolPriceData(
         tokenA: token0,
         tokenB: token1,
         fee,
-        initCodeHashManualOverride: UNISWAP_POOL_INIT_CODE_HASH
+        initCodeHashManualOverride: UNISWAP_POOL_INIT_CODE_HASH,
       }).toLowerCase()
     }
     return undefined
@@ -366,7 +354,7 @@ export function usePoolPriceData(
         tokenA: token0,
         tokenB: token1,
         fee,
-        initCodeHashManualOverride: POOL_INIT_CODE_HASH
+        initCodeHashManualOverride: POOL_INIT_CODE_HASH,
       }).toLowerCase()
     }
     return undefined
@@ -387,7 +375,7 @@ export function usePoolPriceData(
             setUniswapPoolExists(true)
           }
         } catch (err) {
-          console.log("err: ", err)
+          console.log('err: ', err)
         }
       }
     }
