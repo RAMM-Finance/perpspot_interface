@@ -4,6 +4,7 @@ import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
+import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import LiquidityChart from 'components/LiquidityChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
@@ -624,7 +625,7 @@ export default function Swap({ className }: { className?: string }) {
           </SwapHeaderWrapper>
           <MainWrapper>
             <LeftContainer>
-              {/* <TableHeader>
+              <TableHeader>
                 <TabsWrapper>
                   <TabNavItem id={1} activeTab={activeChart} setActiveTab={setActiveChart} first={true}>
                     Price
@@ -658,22 +659,7 @@ export default function Swap({ className }: { className?: string }) {
                   interactive={!hasExistingPosition}
                   brushDomainTest={null}
                 />
-                )} */}
-              <LiquidityChart
-                currencyA={inputCurrency?.wrapped ?? undefined}
-                currencyB={outputCurrency?.wrapped ?? undefined}
-                // currencyA={currencyA}
-                // currencyB={currencyB}
-                feeAmount={500}
-                ticksAtLimit={ticksAtLimit}
-                price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
-                priceLower={priceLower}
-                priceUpper={priceUpper}
-                // onLeftRangeInput={onLeftRangeInput}
-                // onRightRangeInput={onRightRangeInput}
-                interactive={!hasExistingPosition}
-                brushDomainTest={null}
-              />
+              )}
 
               <PositionsContainer>
                 <TableHeader>
