@@ -102,17 +102,17 @@ function useTicksFromTickLens(
   const [lastSyncedBlock, setLastSyncedBlock] = useState<number>()
 
   const fetchTicks = useCallback(async () => {
-    console.log('multicall1', tickLensArgs.length, tickLens, provider, !loading, tickDataLatestSynced.length === 0)
+    // console.log('multicall1', tickLensArgs.length, tickLens, provider, !loading, tickDataLatestSynced.length === 0)
     if (tickLens && provider && !loading && tickDataLatestSynced.length === 0 && tickLensArgs.length > 0) {
       const currentBlock = await provider?.getBlockNumber()
 
-      console.log('multicall2', loading, currentBlock, lastSyncedBlock)
+      // console.log('multicall2', loading, currentBlock, lastSyncedBlock)
       if (!lastSyncedBlock || currentBlock > lastSyncedBlock) {
         setLoading(true)
         try {
           const promises = tickLensArgs.map((args) => tickLens.callStatic.getPopulatedTicksInWord(args[0], args[1]))
           const callResults = await Promise.all(promises)
-          console.log('multicall3', tickLensArgs, promises, callResults)
+          // console.log('multicall3', tickLensArgs, promises, callResults)
 
           const latestTickData = callResults
             .flatMap((result) =>
@@ -126,7 +126,7 @@ function useTicksFromTickLens(
               })
             )
             .sort((a, b) => a.tick - b.tick)
-          console.log('multicall4', latestTickData)
+          // console.log('multicall4', latestTickData)
           setLastSyncedBlock(currentBlock)
           setTickDataLatestSynced(latestTickData)
           setError(false)
@@ -141,7 +141,7 @@ function useTicksFromTickLens(
 
   // console.log('tickData', loading, error, activeTick, tickLensArgs, tickLens, provider, tickDataLatestSynced)
 
-  console.log('tickLensArgs', activeTick, minIndex, maxIndex, poolAddress, tickLensArgs)
+  // console.log('tickLensArgs', activeTick, minIndex, maxIndex, poolAddress, tickLensArgs)
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>()
 
   useEffect(() => {

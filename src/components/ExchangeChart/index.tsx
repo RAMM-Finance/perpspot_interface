@@ -17,8 +17,6 @@ import { useEffect, useMemo } from 'react'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 
-import useDatafeed from './useDataFeed'
-
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const StatsContainer = styled.div`
@@ -61,10 +59,10 @@ export const PoolDataSection = ({
   fee: FeeAmount | undefined
 }) => {
   // const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
-  const { datafeed } = useDatafeed({ chainId })
+  // const { datafeed } = useDatafeed({ chainId })
   // const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
-  const [chartReady, setChartReady] = useState(false)
-  const [chartDataLoading, setChartDataLoading] = useState(true)
+  // const [chartReady, setChartReady] = useState(false)
+  // const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
   const [, pool] = usePool(token0, token1, fee)
 

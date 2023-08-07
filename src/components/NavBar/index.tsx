@@ -26,6 +26,13 @@ const Nav = styled.nav`
   height: ${({ theme }) => theme.navHeight}px;
   z-index: 2;
 `
+const NavLinkStyle = styled(NavLink)`
+  text-decoration: none;
+  margin-right: 4px;
+  :hover {
+    color: #fff;
+  }
+`
 
 interface MenuItemProps {
   href: string
@@ -38,15 +45,14 @@ interface MenuItemProps {
 
 const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItemProps) => {
   return (
-    <NavLink
+    <NavLinkStyle
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none', marginRight: '4px' }}
       data-testid={dataTestId}
     >
       {children}
-    </NavLink>
+    </NavLinkStyle>
   )
 }
 

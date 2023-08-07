@@ -4,7 +4,7 @@ import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
-import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
+import LiquidityChart from 'components/LiquidityChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import BorrowPositionsTable from 'components/PositionTable/BorrowPositionTable/TokenTable'
@@ -19,16 +19,19 @@ import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
+import { BigNumber } from 'ethers'
+import { useDerivedPositionInfo } from 'hooks/useDerivedPositionInfo'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hooks/usePools'
-import { useLimitlessPositions } from 'hooks/useV3Positions'
+import { useLimitlessPositions, useV3PositionFromTokenId } from 'hooks/useV3Positions'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactNode } from 'react'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { Bound } from 'state/mint/v3/actions'
+import { useV3DerivedMintInfo, useV3MintActionHandlers } from 'state/mint/v3/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
@@ -272,6 +275,8 @@ export default function Swap({ className }: { className?: string }) {
   const loadedUrlParams = useDefaultsFromURLSearch()
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
+  const [selectedChart, setSelectedChart] = useState(true)
+
   // const [swapHeight, setSwapHeight] = useState<number>()
 
   // /**
@@ -293,6 +298,57 @@ export default function Swap({ className }: { className?: string }) {
     useCurrency(loadedUrlParams?.[Field.INPUT]?.currencyId),
     useCurrency(loadedUrlParams?.[Field.OUTPUT]?.currencyId),
   ]
+
+  // --------------------------------------------------Chart Data---------------------------------------------------
+  // const feeAmount: FeeAmount | undefined =
+  //   feeAmountFromUrl && Object.values(FeeAmount).includes(parseFloat(feeAmountFromUrl))
+  //     ? parseFloat(feeAmountFromUrl)
+  //     : undefined
+
+  const tokenId = undefined
+  const { position: existingPositionDetails, loading: positionLoading } = useV3PositionFromTokenId(
+    tokenId ? BigNumber.from(tokenId) : undefined
+  )
+
+  const hasExistingPosition = !!existingPositionDetails && !positionLoading
+  const { position: existingPosition } = useDerivedPositionInfo(existingPositionDetails)
+
+  const {
+    pool: testPool,
+    ticks,
+    dependentField,
+    price,
+    pricesAtTicks,
+    pricesAtLimit,
+    parsedAmounts: testParsedAmounts,
+    currencyBalances,
+    position,
+    noLiquidity,
+    currencies: testCurrencies,
+    errorMessage,
+    invalidPool,
+    invalidRange,
+    outOfRange,
+    depositADisabled,
+    depositBDisabled,
+    invertPrice,
+    ticksAtLimit,
+  } = useV3DerivedMintInfo(
+    loadedInputCurrency ?? undefined,
+    loadedOutputCurrency ?? undefined,
+    500, //feeAmount
+    loadedInputCurrency ?? undefined,
+    existingPosition
+  )
+
+  const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
+  const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
+
+  const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
+    useV3MintActionHandlers(noLiquidity)
+
+  // -----------------------------------------------------------------------------------------------------
+
   const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
   const urlLoadedTokens: Token[] = useMemo(
     () => [loadedInputCurrency, loadedOutputCurrency]?.filter((c): c is Token => c?.isToken ?? false) ?? [],
@@ -333,6 +389,8 @@ export default function Swap({ className }: { className?: string }) {
     currencies,
   } = useDerivedSwapInfo()
 
+  console.log(currencies)
+
   const [inputCurrency, outputCurrency] = useMemo(() => {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
   }, [currencies])
@@ -352,20 +410,20 @@ export default function Swap({ className }: { className?: string }) {
     typedValue,
     // recipient,
     // leverageFactor,
-    leverage,
-    leverageManagerAddress,
+    // leverage,
+    // leverageManagerAddress,
     activeTab,
     // ltv,
-    borrowManagerAddress,
-    premium,
+    // borrowManagerAddress,
+    // premium,
   } = useSwapState()
 
-  const isBorrowTab = ActiveSwapTab.BORROW == activeTab
+  // const isBorrowTab = ActiveSwapTab.BORROW == activeTab
 
   const {
     wrapType,
-    execute: onWrap,
-    inputError: wrapInputError,
+    // execute: onWrap,
+    // inputError: wrapInputError,
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   // const { address: recipientAddress } = useENSAddress(recipient)
@@ -496,7 +554,18 @@ export default function Swap({ className }: { className?: string }) {
   }, [limitlessPositionsLoading, limitlessPositions])
 
   const [activePositionTable, setActiveTable] = useState(1)
-  const selectedTab = useSelector((state: any) => state.swap.tab)
+  const [activeChart, setActiveChart] = useState(1)
+
+  const currencyA: Currency | undefined = currencies
+    ? currencies.INPUT === null
+      ? undefined
+      : currencies.INPUT
+    : undefined
+  const currencyB: Currency | undefined = currencies
+    ? currencies.OUTPUT === null
+      ? undefined
+      : currencies.OUTPUT
+    : undefined
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -545,6 +614,7 @@ export default function Swap({ className }: { className?: string }) {
                   </SmallMaxButton>
                 )} */}
             </TokenNameCell>
+
             <PoolDataSection
               chainId={chainId ?? 11155111}
               token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
@@ -554,12 +624,57 @@ export default function Swap({ className }: { className?: string }) {
           </SwapHeaderWrapper>
           <MainWrapper>
             <LeftContainer>
-              <PoolDataChart
-                chainId={chainId ?? 11155111}
-                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                fee={pool?.fee}
+              {/* <TableHeader>
+                <TabsWrapper>
+                  <TabNavItem id={1} activeTab={activeChart} setActiveTab={setActiveChart} first={true}>
+                    Price
+                  </TabNavItem>
+                  <TabNavItem id={2} activeTab={activeChart} setActiveTab={setActiveChart} last={true}>
+                    Liquidity distribution
+                  </TabNavItem>
+                </TabsWrapper>
+              </TableHeader>
+              {activeChart === 1 && (
+                <PoolDataChart
+                  chainId={chainId ?? 11155111}
+                  token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+                  token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+                  fee={pool?.fee}
+                />
+              )}
+              {activeChart === 2 && (
+                <LiquidityChart
+                  currencyA={inputCurrency?.wrapped ?? undefined}
+                  currencyB={outputCurrency?.wrapped ?? undefined}
+                  // currencyA={currencyA}
+                  // currencyB={currencyB}
+                  feeAmount={500}
+                  ticksAtLimit={ticksAtLimit}
+                  price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
+                  priceLower={priceLower}
+                  priceUpper={priceUpper}
+                  // onLeftRangeInput={onLeftRangeInput}
+                  // onRightRangeInput={onRightRangeInput}
+                  interactive={!hasExistingPosition}
+                  brushDomainTest={null}
+                />
+                )} */}
+              <LiquidityChart
+                currencyA={inputCurrency?.wrapped ?? undefined}
+                currencyB={outputCurrency?.wrapped ?? undefined}
+                // currencyA={currencyA}
+                // currencyB={currencyB}
+                feeAmount={500}
+                ticksAtLimit={ticksAtLimit}
+                price={price ? parseFloat((invertPrice ? price.invert() : price).toSignificant(8)) : undefined}
+                priceLower={priceLower}
+                priceUpper={priceUpper}
+                // onLeftRangeInput={onLeftRangeInput}
+                // onRightRangeInput={onRightRangeInput}
+                interactive={!hasExistingPosition}
+                brushDomainTest={null}
               />
+
               <PositionsContainer>
                 <TableHeader>
                   <TabsWrapper>
