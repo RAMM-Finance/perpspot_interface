@@ -30,7 +30,7 @@ const StyledSwapHeader = styled.div`
   /* margin-bottom: 20px; */
   width: 100%;
   color: ${({ theme }) => theme.textSecondary};
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  
 `
 const ResponsiveButtonPrimary = styled(SmallButtonPrimary)`
   border-radius: 16px;
