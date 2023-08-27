@@ -200,9 +200,10 @@ const LeftContainer = styled.div`
   align-content: center;
   margin-right: 5px;
   width: 80%;
-  min-width: 560px;
+  min-width: 540px;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px 1px 1px 0;
+  border-radius: 10px;
 `
 
 const ActivityWrapper = styled.section`
