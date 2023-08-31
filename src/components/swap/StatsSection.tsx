@@ -120,7 +120,7 @@ export default function StatsSection(props: StatsSectionProps) {
 const StatWrapper = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
-  padding: 0 1rem;
+  padding: 0 0.5rem;
   width: max-content;
   font-weight: 900;
 

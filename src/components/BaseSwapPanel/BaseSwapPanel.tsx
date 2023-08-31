@@ -295,7 +295,6 @@ export function BaseSwapPanel({
               onUserInput={onUserInput}
               disabled={!chainAllowed || disabled}
               $loading={loading}
-              placeholder="0.000"
             />
           )}
           <CurrencySelect

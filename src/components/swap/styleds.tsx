@@ -33,7 +33,7 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  min-width: 430px;
+  min-width: 400px;
   width: 22%;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 0 1px;

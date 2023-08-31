@@ -682,7 +682,7 @@ const TradeTabContent = () => {
                   showCommonBases={true}
                   id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                   loading={independentField === Field.INPUT && routeIsSyncing}
-                  label="Total Output"
+                  label="Recieve"
                   disabled={true}
                 />
               ) : (
@@ -699,7 +699,7 @@ const TradeTabContent = () => {
                   showCommonBases={true}
                   id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                   loading={independentField === Field.INPUT && routeIsSyncing}
-                  label="Total Output"
+                  label="Recieve"
                   disabled={leverage}
                 />
               )}
