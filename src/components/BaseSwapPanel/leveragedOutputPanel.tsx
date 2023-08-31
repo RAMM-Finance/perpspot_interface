@@ -1,31 +1,17 @@
 import { Trans } from '@lingui/macro'
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
-import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { Pair } from '@uniswap/v2-sdk'
-import { useWeb3React } from '@web3-react/core'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
-import { ReactNode, useCallback, useState } from 'react'
 import { Lock } from 'react-feather'
-import styled, { useTheme } from 'styled-components/macro'
+import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
-import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
-import { useCurrencyBalance } from '../../state/connection/hooks'
 import { ThemedText } from '../../theme'
 import { ButtonGray } from '../Button'
-import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
-import { RowBetween, RowFixed } from '../Row'
-import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
-import { FiatValue } from './FiatValue'
-import { formatNumber } from '@uniswap/conedison/format'
-import { useSwapState } from 'state/swap/hooks'
+import { RowBetween } from '../Row'
 
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
@@ -133,30 +119,6 @@ const FiatRow = styled(LabelRow)`
   padding: 8px 0px 0px 0px;
 `
 
-const Aligner = styled.span`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-`
-
-const StyledDropDown = styled(DropDown)<{ selected: boolean }>`
-  margin: 0 0.25rem 0 0.35rem;
-  height: 35%;
-  margin-left: 8px;
-
-  path {
-    stroke: ${({ selected, theme }) => (selected ? theme.textPrimary : theme.white)};
-    stroke-width: 2px;
-  }
-`
-
-const StyledTokenName = styled.span<{ active?: boolean }>`
-  ${({ active }) => (active ? '  margin: 0 0.25rem 0 0.25rem;' : '  margin: 0 0.25rem 0 0.25rem;')}
-  font-size: 20px;
-  font-weight: 600;
-`
-
 const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
   background-color: transparent;
   border: none;
@@ -185,66 +147,52 @@ const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   font-variant: small-caps;
 `
 
-interface SwapCurrencyInputPanelProps {
+// interface SwapCurrencyInputPanelProps {
+//   value: string
+//   onUserInput: (value: string) => void
+//   onMax?: () => void
+//   showMaxButton: boolean
+//   label?: ReactNode
+//   onCurrencySelect?: (currency: Currency) => void
+//   currency?: Currency | null
+//   hideBalance?: boolean
+//   pair?: Pair | null
+//   hideInput?: boolean
+//   otherCurrency?: Currency | null
+//   fiatValue: { data?: number; isLoading: boolean }
+//   priceImpact?: Percent
+//   id: string
+//   showCommonBases?: boolean
+//   showCurrencyAmount?: boolean
+//   disableNonToken?: boolean
+//   renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
+//   locked?: boolean
+//   loading?: boolean
+//   disabled?: boolean
+//   parsedAmount?: CurrencyAmount<Currency> | undefined
+// }
+interface LeverageDebtInputPanelProps {
   value: string
   onUserInput: (value: string) => void
-  onMax?: () => void
-  showMaxButton: boolean
-  label?: ReactNode
-  onCurrencySelect?: (currency: Currency) => void
   currency?: Currency | null
-  hideBalance?: boolean
-  pair?: Pair | null
-  hideInput?: boolean
-  otherCurrency?: Currency | null
-  fiatValue: { data?: number; isLoading: boolean }
-  priceImpact?: Percent
   id: string
-  showCommonBases?: boolean
-  showCurrencyAmount?: boolean
-  disableNonToken?: boolean
-  renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
   locked?: boolean
   loading?: boolean
-  disabled?: boolean
-  parsedAmount?: CurrencyAmount<Currency> | undefined
+  parsedAmount?: CurrencyAmount<Currency>
+  hideInput?: boolean
 }
 
-export default function LeveragedOutputPanel({
+export default function LeverageDebtInputPanel({
   value,
   onUserInput,
-  onMax,
-  showMaxButton,
-  onCurrencySelect,
   currency,
-  otherCurrency,
   id,
-  showCommonBases,
-  showCurrencyAmount,
-  disableNonToken,
-  renderBalance,
-  fiatValue,
-  priceImpact,
-  hideBalance = false,
-  pair = null, // used for double token logo
-  hideInput = false,
   locked = false,
   loading = false,
-  disabled= false,
+  hideInput = false,
   parsedAmount,
   ...rest
-}: SwapCurrencyInputPanelProps) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const { account, chainId } = useWeb3React()
-  const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
-  const theme = useTheme()
-
-  const handleDismissSearch = useCallback(() => {
-    setModalOpen(false)
-  }, [setModalOpen])
-
-  const chainAllowed = isSupportedChain(chainId)
-
+}: LeverageDebtInputPanelProps) {
   const userInputAmount: string | undefined = parsedAmount?.toExact() ?? undefined
 
   return (
@@ -260,74 +208,30 @@ export default function LeveragedOutputPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-       <Trans>Total Input</Trans>
+        <Trans>Total Input</Trans>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
               value={value}
               onUserInput={onUserInput}
-              disabled={!chainAllowed || disabled}
+              disabled={true}
               $loading={loading}
-
             />
           )}
           <CurrencyLogo style={{ marginRight: '2px' }} currency={currency} size="24px" />
         </InputRow>
-        {Boolean(!hideInput && !hideBalance) && (
-          <FiatRow>
-            <RowBetween>
-              <LoadingOpacityContainer $loading={loading}>
-                 <Trans>{"You are borrowing: "}{ Number(value) > 0 && userInputAmount ? (Number(value) - Number(userInputAmount)) : "-"}</Trans>
-                {/*<FiatValue fiatValue={noLeverageValue} priceImpact={priceImpact} />*/}
-              </LoadingOpacityContainer>
-              {account ? (
-                <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
-                    {/*!hideBalance && currency && selectedCurrencyBalance ? (
-                      renderBalance ? (
-                        renderBalance(selectedCurrencyBalance)
-                      ) : (
-                        <Trans>Output: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                      )
-                    ) : null*/}
-                  </ThemedText.DeprecatedBody>
-                  {false && selectedCurrencyBalance ? (
-                    <TraceEvent
-                      events={[BrowserEvent.onClick]}
-                      name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                      element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                    >
-                      <StyledBalanceMax onClick={onMax}>
-                        <Trans>Max</Trans>
-                      </StyledBalanceMax>
-                    </TraceEvent>
-                  ) : null}
-                </RowFixed>
-              ) : (
-                <span />
-              )}
-            </RowBetween>
-          </FiatRow>
-        )}
+        <FiatRow>
+          <RowBetween>
+            <LoadingOpacityContainer $loading={loading}>
+              <Trans>
+                {'You are borrowing: '}
+                {Number(value) > 0 && userInputAmount ? Number(value) - Number(userInputAmount) : '-'}
+              </Trans>
+            </LoadingOpacityContainer>
+          </RowBetween>
+        </FiatRow>
       </Container>
-      {onCurrencySelect && (
-        <CurrencySearchModal
-          isOpen={modalOpen}
-          onDismiss={handleDismissSearch}
-          onCurrencySelect={onCurrencySelect}
-          selectedCurrency={currency}
-          otherSelectedCurrency={otherCurrency}
-          showCommonBases={showCommonBases}
-          showCurrencyAmount={showCurrencyAmount}
-          disableNonToken={disableNonToken}
-        />
-      )}
     </InputPanel>
   )
 }

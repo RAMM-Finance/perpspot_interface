@@ -207,39 +207,61 @@ interface SwapCurrencyInputPanelProps {
   isInput?: boolean
   isTrade?: boolean
   isLevered?: boolean
-  leverageFactor?: string
+  // leverageFactor?: string
   disabled?: boolean
   premium?: CurrencyAmount<Currency>
 }
 
-export default function SwapCurrencyInputPanel({
+interface BaseSwapPanelProps {
+  value: string
+  onUserInput: (value: string) => void
+  onMax?: () => void
+  showMaxButton: boolean
+  onCurrencySelect?: (currency: Currency) => void
+  currency?: Currency
+  hideBalance?: boolean
+  pair?: Pair
+  hideInput?: boolean
+  otherCurrency?: Currency
+  fiatValue: { data?: number; isLoading: boolean }
+  priceImpact?: Percent
+  id: string
+  showCommonBases?: boolean
+  showCurrencyAmount?: boolean
+  disableNonToken?: boolean
+  renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
+  disabled?: boolean
+  locked?: boolean
+  loading?: boolean
+  label?: string
+  premium?: CurrencyAmount<Currency>
+}
+
+export function BaseSwapPanel({
   value,
   onUserInput,
   onMax,
   showMaxButton,
   onCurrencySelect,
   currency,
+  hideBalance = false,
+  pair,
+  hideInput = false,
   otherCurrency,
-  id,
-  showCommonBases,
-  showCurrencyAmount,
-  disableNonToken,
-  renderBalance,
   fiatValue,
   priceImpact,
-  hideBalance = false,
-  pair = null, // used for double token logo
-  hideInput = false,
+  id,
+  showCommonBases = false,
+  showCurrencyAmount = false,
+  disableNonToken,
+  renderBalance,
+  disabled = false,
   locked = false,
   loading = false,
-  isTrade = true,
-  isInput = true,
-  isLevered = false,
-  leverageFactor = '1',
-  disabled = false,
+  label,
   premium,
   ...rest
-}: SwapCurrencyInputPanelProps) {
+}: BaseSwapPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const { account, chainId } = useWeb3React()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
@@ -264,32 +286,18 @@ export default function SwapCurrencyInputPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-        {isTrade ? (
-          <Trans>{isInput ? 'Pay' : isLevered ? 'Total Output' : 'What you get'}</Trans>
-        ) : (
-          <Trans>{isInput ? 'Collateral' : 'Added Debt'}</Trans>
-        )}
-
+        <Trans>{label}</Trans>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-          {!hideInput &&
-            (isInput ? (
-              <StyledNumericalInput
-                className="token-amount-input"
-                value={value}
-                onUserInput={onUserInput}
-                disabled={!chainAllowed || disabled}
-                $loading={loading}
-                placeholder="0.000"
-              />
-            ) : (
-              <StyledNumericalInput
-                className="token-amount-input"
-                value={value}
-                onUserInput={onUserInput}
-                disabled={!chainAllowed || disabled}
-                $loading={loading}
-              />
-            ))}
+          {!hideInput && (
+            <StyledNumericalInput
+              className="token-amount-input"
+              value={value}
+              onUserInput={onUserInput}
+              disabled={!chainAllowed || disabled}
+              $loading={loading}
+              placeholder="0.000"
+            />
+          )}
           <CurrencySelect
             disabled={!chainAllowed}
             visible={currency !== undefined}
@@ -397,122 +405,5 @@ export default function SwapCurrencyInputPanel({
         />
       )}
     </InputPanel>
-  )
-}
-
-const ModalInputSection = styled.div`
-  width: 100%;
-  position: relative;
-  background-color: ${({ theme }) => theme.backgroundModule};
-  border-radius: 12px;
-  padding: 16px;
-  color: ${({ theme }) => theme.textSecondary};
-`
-
-export function ModalInputPanel({
-  value,
-  onUserInput,
-  onMax,
-  showMaxButton,
-  onCurrencySelect,
-  currency,
-  otherCurrency,
-  id,
-  showCommonBases,
-  showCurrencyAmount,
-  disableNonToken,
-  renderBalance,
-  fiatValue,
-  priceImpact,
-  hideBalance = false,
-  pair = null, // used for double token logo
-  hideInput = false,
-  locked = false,
-  loading = false,
-  isInput = true,
-  isLevered = false,
-  disabled = false,
-  ...rest
-}: SwapCurrencyInputPanelProps) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const { account, chainId } = useWeb3React()
-  const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
-  const theme = useTheme()
-
-  const handleDismissSearch = useCallback(() => {
-    setModalOpen(false)
-  }, [setModalOpen])
-
-  const chainAllowed = isSupportedChain(chainId)
-
-  return (
-    <ModalInputSection theme={theme}>
-      <InputPanel id={id} hideInput={hideInput} {...rest}>
-        {locked && (
-          <FixedContainer>
-            <AutoColumn gap="sm" justify="center">
-              <Lock />
-              <ThemedText.DeprecatedLabel fontSize="12px" textAlign="center" padding="0 12px">
-                <Trans>The market price is outside your specified price range. Single-asset deposit only.</Trans>
-              </ThemedText.DeprecatedLabel>
-            </AutoColumn>
-          </FixedContainer>
-        )}
-        <Container hideInput={hideInput}>
-          <Trans>{isInput ? 'What you pay' : isLevered ? 'Total Output Position' : 'What you get'}</Trans>
-          <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-            {!hideInput && (
-              <StyledNumericalInput
-                className="token-amount-input"
-                value={value}
-                onUserInput={onUserInput}
-                disabled={!chainAllowed || disabled}
-                $loading={loading}
-              />
-            )}
-          </InputRow>
-          {Boolean(!hideInput && !hideBalance) && (
-            <FiatRow>
-              <RowBetween>
-                <LoadingOpacityContainer $loading={loading}>
-                  <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-                </LoadingOpacityContainer>
-                {account ? (
-                  <RowFixed style={{ height: '17px' }}>
-                    <ThemedText.DeprecatedBody
-                      color={theme.textSecondary}
-                      fontWeight={400}
-                      fontSize={14}
-                      style={{ display: 'inline' }}
-                    >
-                      {!hideBalance && currency && selectedCurrencyBalance ? (
-                        renderBalance ? (
-                          renderBalance(selectedCurrencyBalance)
-                        ) : (
-                          <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                        )
-                      ) : null}
-                    </ThemedText.DeprecatedBody>
-                    {showMaxButton && selectedCurrencyBalance ? (
-                      <TraceEvent
-                        events={[BrowserEvent.onClick]}
-                        name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                        element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                      >
-                        <StyledBalanceMax onClick={onMax}>
-                          <Trans>Max</Trans>
-                        </StyledBalanceMax>
-                      </TraceEvent>
-                    ) : null}
-                  </RowFixed>
-                ) : (
-                  <span />
-                )}
-              </RowBetween>
-            </FiatRow>
-          )}
-        </Container>
-      </InputPanel>
-    </ModalInputSection>
   )
 }

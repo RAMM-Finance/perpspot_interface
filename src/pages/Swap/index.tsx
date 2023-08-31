@@ -133,24 +133,25 @@ const SwapSection = styled.div`
 `
 
 export const InputLeverageSection = styled(SwapSection)`
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  // border-top-left-radius: 0;
+  // border-top-right-radius: 0;
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 20px;
 `
-
-export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
-  border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
-  border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
-  border-bottom: ${({ leverage }) => leverage && 'none'};
-  margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
+// border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
+// border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
+// border-bottom: ${({ leverage }) => leverage && 'none'};
+// margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
+//     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
+export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.backgroundSurface};
+  margin-bottom: 20px;
 
   /* ::after {
     content: '';
     margin-top: 30px;
     background-color: ${({ theme }) => theme.backgroundSurface};
-    display: ${({ leverage }) => (leverage ? 'block' : 'none')};
+
     height: 0.1em;
   } */
 `
@@ -158,8 +159,6 @@ export const InputSection = styled(SwapSection)<{ leverage: boolean }>`
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
   background-color: ${({ theme }) => theme.backgroundSurface};
-  /* border-bottom-left-radius: 0; */
-  /* border-bottom-right-radius: 0; */
   margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
