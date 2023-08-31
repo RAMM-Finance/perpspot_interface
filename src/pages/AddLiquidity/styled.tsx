@@ -1,5 +1,5 @@
 import { AutoColumn } from 'components/Column'
-import CurrencyInputPanel from 'components/CurrencyInputPanel'
+import CurrencyInputPanel from 'components/BaseSwapPanel'
 import Input from 'components/NumericalInput'
 import { BodyWrapper,BodyWrapperAdd } from 'pages/AppBody'
 import styled from 'styled-components/macro'

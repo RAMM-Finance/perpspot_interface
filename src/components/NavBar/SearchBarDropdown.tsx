@@ -4,12 +4,10 @@ import { InterfaceSectionName, NavBarSearchTypes } from '@uniswap/analytics-even
 import { useWeb3React } from '@web3-react/core'
 import Badge from 'components/Badge'
 import { SupportedChainId } from 'constants/chains'
-import { useNftGraphqlEnabled } from 'featureFlags/flags/nftlGraphql'
 import { HistoryDuration, SafetyLevel } from 'graphql/data/__generated__/types-and-hooks'
 import { useTrendingCollections } from 'graphql/data/nft/TrendingCollections'
 import { SearchToken } from 'graphql/data/SearchTokens'
 import useTrendingTokens from 'graphql/data/TrendingTokens'
-import { useIsNftPage } from 'hooks/useIsNftPage'
 import { Box } from 'nft/components/Box'
 import { Column, Row } from 'nft/components/Flex'
 import { subheadSmall } from 'nft/css/common.css'
@@ -23,10 +21,10 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import BnbLogoURI from '../../assets/svg/bnb-logo.svg'
-import { ClockIcon, TrendingArrow } from '../../nft/components/icons'
+import { ClockIcon } from '../../nft/components/icons'
 import { useRecentlySearchedAssets } from './RecentlySearchedAssets'
 import * as styles from './SearchBar.css'
-import { CollectionRow, SkeletonRow, TokenRow } from './SuggestionRow'
+// import { CollectionRow, SkeletonRow, TokenRow } from './SuggestionRow'
 
 function isCollection(suggestion: GenieCollection | SearchToken | TrendingCollection) {
   return (suggestion as SearchToken).decimals === undefined
@@ -149,7 +147,7 @@ export const SearchBarDropdown = ({
   const { pathname } = useLocation()
   const { chainId } = useWeb3React()
   const isNFTPage = false // useIsNftPage()
-  const isNftGraphqlEnabled = false// useNftGraphqlEnabled()
+  const isNftGraphqlEnabled = false // useNftGraphqlEnabled()
   const isTokenPage = pathname.includes('/tokens')
   const [resultsState, setResultsState] = useState<ReactNode>()
 
@@ -270,9 +268,7 @@ export const SearchBarDropdown = ({
       const currentState = () =>
         hasInput ? (
           // Empty or Up to 8 combined tokens and nfts
-          <Column gap="20">
-            {tokenSearchResults}
-          </Column>
+          <Column gap="20">{tokenSearchResults}</Column>
         ) : (
           // Recent Searches, Trending Tokens, Trending Collections
           <Column gap="20">

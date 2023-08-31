@@ -12,10 +12,10 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AddressInputPanel from 'components/AddressInputPanel'
 import { sendEvent } from 'components/analytics'
+import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import SwapCurrencyInputPanel from 'components/CurrencyInputPanel/SwapCurrencyInputPanel'
 import Loader from 'components/Icons/LoadingSpinner'
 import { AutoRow, RowBetween } from 'components/Row'
 import Slider from 'components/Slider'
@@ -358,6 +358,9 @@ const BorrowTabContent = () => {
   const showBorrowInputApproval = borrowInputApprovalState !== ApprovalState.APPROVED
   const showBorrowOutputApproval = borrowOutputApprovalState !== ApprovalState.APPROVED
 
+  const borrowNotApproved =
+    borrowInputApprovalState === ApprovalState.NOT_APPROVED || borrowOutputApprovalState === ApprovalState.NOT_APPROVED
+
   return (
     <Wrapper>
       <div style={{ display: 'relative' }}>
@@ -372,28 +375,26 @@ const BorrowTabContent = () => {
           onDismiss={handleConfirmDismiss}
           errorMessage={undefined}
         />
-        <InputSection leverage={false}>
+        <InputSection>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
-            <SwapCurrencyInputPanel
-              label={<Trans>Collateral Amount</Trans>}
+            <BaseSwapPanel
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={showMaxButton}
-              currency={currencies[Field.INPUT] ?? null}
+              currency={currencies[Field.INPUT] ?? undefined}
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
               onCurrencySelect={handleInputSelect}
-              otherCurrency={currencies[Field.OUTPUT]}
+              otherCurrency={currencies[Field.OUTPUT] ?? undefined}
               showCommonBases={true}
-              isTrade={false}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={independentField === Field.OUTPUT && routeIsSyncing}
-              isInput={true}
               premium={
                 outputCurrency && premium
                   ? CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0))
                   : undefined
               }
+              label="Collateral"
             />
           </Trace>
         </InputSection>
@@ -421,32 +422,31 @@ const BorrowTabContent = () => {
         <div>
           <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
-              <SwapCurrencyInputPanel
+              <BaseSwapPanel
                 value={
-                  borrowInputApprovalState === ApprovalState.NOT_APPROVED ||
-                  borrowOutputApprovalState === ApprovalState.NOT_APPROVED ||
-                  !borrowTrade
+                  borrowNotApproved || !borrowTrade
                     ? '-'
                     : borrowTrade?.existingPosition
                     ? formatBNToString(borrowTrade.borrowedAmount.minus(borrowTrade.existingTotalDebtInput))
                     : formatBNToString(borrowTrade.borrowedAmount)
                 }
                 onUserInput={handleTypeOutput}
-                label={<Trans>To</Trans>}
+                // label={<Trans>To</Trans>}
                 showMaxButton={false}
                 hideBalance={false}
                 fiatValue={fiatValueOutput}
                 priceImpact={stablecoinPriceImpact}
-                currency={currencies[Field.OUTPUT] ?? null}
+                currency={currencies[Field.OUTPUT] ?? undefined}
                 onCurrencySelect={handleOutputSelect}
-                otherCurrency={currencies[Field.INPUT]}
+                otherCurrency={currencies[Field.INPUT] ?? undefined}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                 loading={independentField === Field.INPUT && routeIsSyncing}
-                isInput={false}
-                isLevered={leverage}
-                disabled={leverage}
-                isTrade={false}
+                // isInput={false}
+                // isLevered={leverage}
+                disabled={true}
+                label="Added Debt"
+                // isTrade={false}
               />
             </Trace>
 

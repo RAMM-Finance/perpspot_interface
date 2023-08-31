@@ -13,11 +13,11 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AddressInputPanel from 'components/AddressInputPanel'
 import { sendEvent } from 'components/analytics'
+import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
+import LeverageDebtInputPanel from 'components/BaseSwapPanel/leveragedOutputPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import LeveragedOutputPanel from 'components/CurrencyInputPanel/leveragedOutputPanel'
-import SwapCurrencyInputPanel from 'components/CurrencyInputPanel/SwapCurrencyInputPanel'
 import Loader from 'components/Icons/LoadingSpinner'
 import { AutoRow, RowBetween } from 'components/Row'
 import Slider from 'components/Slider'
@@ -68,7 +68,6 @@ import {
   ArrowContainer,
   DetailsSwapSection,
   getIsValidSwapQuote,
-  InputLeverageSection,
   InputSection,
   LeverageGaugeSection,
   LeverageInputSection,
@@ -589,59 +588,45 @@ const TradeTabContent = () => {
       )}
 
       <div style={{ display: 'relative' }}>
-        <InputSection leverage={leverage}>
+        <InputSection>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
-            <SwapCurrencyInputPanel
-              label={
-                independentField === Field.OUTPUT && !showWrap ? <Trans>From (at most)</Trans> : <Trans>From</Trans>
-              }
+            <BaseSwapPanel
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={showMaxButton}
-              currency={currencies[Field.INPUT] ?? null}
+              currency={currencies[Field.INPUT] ?? undefined}
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
               onCurrencySelect={handleInputSelect}
-              otherCurrency={currencies[Field.OUTPUT]}
+              otherCurrency={currencies[Field.OUTPUT] ?? undefined}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={independentField === Field.OUTPUT && routeIsSyncing}
-              isInput={true}
               premium={
                 inputCurrency && premium
                   ? CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0))
                   : undefined
               }
-              isLevered={leverage}
+              label="Pay"
             />
           </Trace>
         </InputSection>
 
         {leverage && (
-          <InputLeverageSection>
+          <InputSection>
             <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
-              <LeveragedOutputPanel
-                label={
-                  independentField === Field.OUTPUT && !showWrap ? <Trans>From (at most)</Trans> : <Trans>From</Trans>
-                }
+              <LeverageDebtInputPanel
                 value={
                   parsedAmount && leverageFactor ? String(Number(parsedAmount.toExact()) * Number(leverageFactor)) : ''
                 }
-                showMaxButton={showMaxButton}
                 currency={currencies[Field.INPUT] ?? null}
                 onUserInput={handleTypeInput}
-                onMax={handleMaxInput}
-                fiatValue={fiatValueInput}
-                onCurrencySelect={handleInputSelect}
-                otherCurrency={currencies[Field.OUTPUT]}
-                showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
                 loading={independentField === Field.OUTPUT && routeIsSyncing}
-                disabled={true}
                 parsedAmount={parsedAmount}
               />
             </Trace>
-          </InputLeverageSection>
+          </InputSection>
         )}
 
         <ArrowWrapper clickable={isSupportedChain(chainId)}>
@@ -677,30 +662,8 @@ const TradeTabContent = () => {
         <div>
           <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
-              {!leverage && (
-                <SwapCurrencyInputPanel
-                  value={formattedAmounts[Field.OUTPUT]}
-                  onUserInput={handleTypeOutput}
-                  label={
-                    independentField === Field.INPUT && !showWrap ? <Trans>To (at least)</Trans> : <Trans>To</Trans>
-                  }
-                  showMaxButton={false}
-                  hideBalance={false}
-                  fiatValue={fiatValueOutput}
-                  priceImpact={stablecoinPriceImpact}
-                  currency={currencies[Field.OUTPUT] ?? null}
-                  onCurrencySelect={handleOutputSelect}
-                  otherCurrency={currencies[Field.INPUT]}
-                  showCommonBases={true}
-                  id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
-                  loading={independentField === Field.INPUT && routeIsSyncing}
-                  isInput={false}
-                  isLevered={leverage}
-                  disabled={leverage}
-                />
-              )}
-              {leverage && (
-                <SwapCurrencyInputPanel
+              {leverage ? (
+                <BaseSwapPanel
                   value={
                     leverageState !== LeverageTradeState.VALID || !leverageTrade
                       ? '-'
@@ -709,22 +672,35 @@ const TradeTabContent = () => {
                       : formatBNToString(leverageTrade.expectedTotalPosition)
                   }
                   onUserInput={handleTypeOutput}
-                  label={
-                    independentField === Field.INPUT && !showWrap ? <Trans>To (at least)</Trans> : <Trans>To</Trans>
-                  }
                   showMaxButton={false}
                   hideBalance={false}
                   fiatValue={fiatValueOutput}
                   priceImpact={stablecoinPriceImpact}
-                  currency={currencies[Field.OUTPUT] ?? null}
+                  currency={currencies[Field.OUTPUT] ?? undefined}
                   onCurrencySelect={handleOutputSelect}
-                  otherCurrency={currencies[Field.INPUT]}
+                  otherCurrency={currencies[Field.INPUT] ?? undefined}
                   showCommonBases={true}
                   id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                   loading={independentField === Field.INPUT && routeIsSyncing}
-                  isInput={false}
-                  isLevered={leverage}
+                  label="Total Output"
                   disabled={true}
+                />
+              ) : (
+                <BaseSwapPanel
+                  value={formattedAmounts[Field.OUTPUT]}
+                  onUserInput={handleTypeOutput}
+                  showMaxButton={false}
+                  hideBalance={false}
+                  fiatValue={fiatValueOutput}
+                  priceImpact={stablecoinPriceImpact}
+                  currency={currencies[Field.OUTPUT] ?? undefined}
+                  onCurrencySelect={handleOutputSelect}
+                  otherCurrency={currencies[Field.INPUT] ?? undefined}
+                  showCommonBases={true}
+                  id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
+                  loading={independentField === Field.INPUT && routeIsSyncing}
+                  label="Total Output"
+                  disabled={leverage}
                 />
               )}
             </Trace>
@@ -750,13 +726,6 @@ const TradeTabContent = () => {
                   <ThemedText.DeprecatedMain fontWeight={400}>
                     <Trans>Leverage</Trans>
                   </ThemedText.DeprecatedMain>
-                  {/* <Checkbox
-                  hovered={false}
-                  checked={leverage}
-                  onClick={() => {
-                    onLeverageChange(!leverage)
-                  }}
-                ></Checkbox> */}
                 </RowBetween>
 
                 {leverage && (
