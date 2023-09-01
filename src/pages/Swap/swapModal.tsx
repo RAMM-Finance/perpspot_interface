@@ -731,33 +731,33 @@ const TradeTabContent = () => {
       {leverage && (
         <RowBetween style={{ flexWrap: 'nowrap' }}>
           <LeverageInputSection>
-            <StyledNumericalInput
-              className="token-amount-input"
-              value={debouncedLeverageFactor ?? ''}
-              placeholder="1"
-              onUserInput={(str: string) => {
-                if (str === '') {
-                  onDebouncedLeverageFactor('')
-                } else if (new BN(str).isGreaterThan(new BN('500'))) {
-                  return
-                } else if ((new BN(str).dp() as number) > 1) {
-                  onDebouncedLeverageFactor(String(new BN(str).decimalPlaces(1, BN.ROUND_DOWN)))
-                } else {
-                  onDebouncedLeverageFactor(str)
+          <StyledNumericalInput
+            className="token-amount-input"
+            value={debouncedLeverageFactor ?? ''}
+            placeholder="1"
+            onUserInput={(str: string) => {
+              const isInteger = /^\d+$/.test(str);
+              if (str === '') {
+                onDebouncedLeverageFactor('')
+              } else if (isInteger) {
+                const intValue = parseInt(str, 10);
+                if (intValue >= 1 && intValue <= 500) {
+                  onDebouncedLeverageFactor(str);
                 }
-              }}
-              disabled={false}
-            />
-            <span style={{
-              position: 'absolute',
-              top: '57%',
-              right: '11.5px',
-              transform: 'translateY(-50%)',
-              fontSize: '20px',  // Smaller font size
-              opacity: '0.5',    // Fainter
-              color: '#999'      // Light gray color
-            }}>x</span>
-          </LeverageInputSection>
+              }
+            }}
+            disabled={false}
+          />
+          <span style={{
+            position: 'absolute',
+            top: '57%',
+            right: '11.5px',
+            transform: 'translateY(-50%)',
+            fontSize: '20px',
+            opacity: '0.5',
+            color: '#999' 
+          }}>x</span>
+        </LeverageInputSection>
           <AutoRow gap="4px" justify="flex-end">
             <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
               <Trans>10</Trans>
