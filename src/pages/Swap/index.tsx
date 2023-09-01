@@ -72,6 +72,8 @@ export const StyledNumericalInput = styled(NumericalInput)`
   width: 100px;
   text-align: left;
   padding: 10px;
+  height: 40px;
+  line-height: 40px;
 `
 
 export const StyledBorrowNumericalInput = styled(NumericalInput)`
@@ -94,6 +96,9 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 12px;
   padding-right: 14px;
+  align-items: center;
+  justify-content: space-around;
+  position: relative;
 `
 
 const SwapSection = styled.div`
