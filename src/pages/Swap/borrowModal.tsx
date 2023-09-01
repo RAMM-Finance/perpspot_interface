@@ -380,12 +380,12 @@ const BorrowTabContent = () => {
             <BaseSwapPanel
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={showMaxButton}
-              currency={currencies[Field.INPUT] ?? undefined}
+              currency={currencies[Field.INPUT] ?? null}
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
               onCurrencySelect={handleInputSelect}
-              otherCurrency={currencies[Field.OUTPUT] ?? undefined}
+              otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={independentField === Field.OUTPUT && routeIsSyncing}
@@ -436,9 +436,9 @@ const BorrowTabContent = () => {
                 hideBalance={false}
                 fiatValue={fiatValueOutput}
                 priceImpact={stablecoinPriceImpact}
-                currency={currencies[Field.OUTPUT] ?? undefined}
+                currency={currencies[Field.OUTPUT] ?? null}
                 onCurrencySelect={handleOutputSelect}
-                otherCurrency={currencies[Field.INPUT] ?? undefined}
+                otherCurrency={currencies[Field.INPUT] ?? null}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                 loading={independentField === Field.INPUT && routeIsSyncing}

@@ -218,11 +218,11 @@ interface BaseSwapPanelProps {
   onMax?: () => void
   showMaxButton: boolean
   onCurrencySelect?: (currency: Currency) => void
-  currency?: Currency
+  currency?: Currency | null
   hideBalance?: boolean
-  pair?: Pair
+  pair?: Pair | null
   hideInput?: boolean
-  otherCurrency?: Currency
+  otherCurrency?: Currency | null
   fiatValue: { data?: number; isLoading: boolean }
   priceImpact?: Percent
   id: string
