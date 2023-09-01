@@ -159,7 +159,6 @@ export const InputSection = styled(SwapSection)`
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
   background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundSurface};

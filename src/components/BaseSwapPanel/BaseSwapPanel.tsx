@@ -107,10 +107,10 @@ const CurrencySelect = styled(ButtonGray)<{
 `
 
 const InputRow = styled.div`
-  ${flexRowNoWrap};
-  align-items: center;
-  justify-content: space-between;
-`
+  display: flex;
+  align-items: center;  // vertically align items in the middle
+  justify-content: space-between;  // maximize the space between items
+`;
 
 const LabelRow = styled.div`
   ${flexRowNoWrap};
@@ -182,6 +182,10 @@ const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   line-height: 44px;
   font-variant: small-caps;
 `
+
+// const StyledTrans = styled(Trans)`
+//   margin-right: 10px;
+// `;
 
 interface SwapCurrencyInputPanelProps {
   value: string
@@ -286,8 +290,10 @@ export function BaseSwapPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-        <Trans>{label}</Trans>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
+        <div style={{ marginRight: '10px' }}>
+          <Trans>{label}</Trans>
+        </div>
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
