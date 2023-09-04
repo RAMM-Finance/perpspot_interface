@@ -291,7 +291,7 @@ export function BaseSwapPanel({
       )}
       <Container hideInput={hideInput}>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-        <div style={{ marginRight: '10px' }}>
+        <div style={{ marginRight: '10px', fontSize: '15px' }}>
           <Trans>{label}</Trans>
         </div>
           {!hideInput && (
@@ -353,9 +353,11 @@ export function BaseSwapPanel({
                     fontSize={14}
                     style={{ display: 'inline' }}
                   >
+                  <div style={{ fontSize: '12px' }}>
                     <Trans>
                       Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
                     </Trans>
+                  </div>
                   </ThemedText.DeprecatedBody>
                 </RowFixed>
               )}

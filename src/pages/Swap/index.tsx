@@ -150,7 +150,7 @@ export const InputLeverageSection = styled(SwapSection)`
 //     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
 export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 
   /* ::after {
     content: '';
