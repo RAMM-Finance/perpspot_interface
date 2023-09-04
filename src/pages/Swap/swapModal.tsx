@@ -20,7 +20,6 @@ import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { AutoRow, RowBetween } from 'components/Row'
-import Slider from 'components/Slider'
 import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal, { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import PriceImpactWarning from 'components/swap/PriceImpactWarning'
@@ -74,6 +73,10 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
+
+import Slider from '@mui/material/Slider';
+import Box from '@mui/material/Box';
+import DiscreteSliderMarks from 'components/Slider/MUISlider'
 
 const TRADE_STRING = 'SwapRouter'
 
@@ -774,14 +777,10 @@ const TradeTabContent = () => {
     </RowBetween>
     {leverage && (
       <>
-        <Slider
-          value={sliderLeverageFactor === '' ? 1 : parseFloat(sliderLeverageFactor)}
+      <DiscreteSliderMarks
+          initialValue={sliderLeverageFactor === '' ? 10 : parseInt(sliderLeverageFactor, 10)}
           onChange={(val) => setSliderLeverageFactor(val.toString())}
-          min={1}
-          max={500.0}
-          step={0.5}
-          float={true}
-        />
+      />
       </>
     )}
   </AutoColumn>
