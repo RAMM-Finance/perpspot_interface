@@ -92,7 +92,7 @@ function getSettings(darkMode: boolean) {
     opacity: opacities,
 
     //background handling
-    navbarBackground: '#020823',
+    navbarBackground: '#0e1724',
   }
 }
 
