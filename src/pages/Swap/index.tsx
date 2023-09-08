@@ -72,6 +72,8 @@ export const StyledNumericalInput = styled(NumericalInput)`
   width: 100px;
   text-align: left;
   padding: 10px;
+  height: 40px;
+  line-height: 40px;
 `
 
 export const StyledBorrowNumericalInput = styled(NumericalInput)`
@@ -94,6 +96,9 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 12px;
   padding-right: 14px;
+  align-items: center;
+  justify-content: space-around;
+  position: relative;
 `
 
 const SwapSection = styled.div`
@@ -145,7 +150,7 @@ export const InputLeverageSection = styled(SwapSection)`
 //     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
 export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 
   /* ::after {
     content: '';
@@ -159,7 +164,6 @@ export const InputSection = styled(SwapSection)`
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
   background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 20px;
 `
 export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
@@ -200,9 +204,10 @@ const LeftContainer = styled.div`
   align-content: center;
   margin-right: 5px;
   width: 80%;
-  min-width: 560px;
+  min-width: 540px;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px 1px 1px 0;
+  border-radius: 10px;
 `
 
 const ActivityWrapper = styled.section`

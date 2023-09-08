@@ -208,8 +208,10 @@ export default function LeverageDebtInputPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-        <Trans>Total Input</Trans>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
+        <div style={{ marginRight: '10px', fontSize: '15px' }}>
+          <Trans>Total Input</Trans>
+        </div>
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
@@ -224,10 +226,12 @@ export default function LeverageDebtInputPanel({
         <FiatRow>
           <RowBetween>
             <LoadingOpacityContainer $loading={loading}>
-              <Trans>
-                {'You are borrowing: '}
-                {Number(value) > 0 && userInputAmount ? Number(value) - Number(userInputAmount) : '-'}
-              </Trans>
+              <div style={{ fontSize: '12px' }}>
+                <Trans>
+                  {'You are borrowing: '}
+                  {Number(value) > 0 && userInputAmount ? Number(value) - Number(userInputAmount) : '-'}
+                </Trans>
+              </div>
             </LoadingOpacityContainer>
           </RowBetween>
         </FiatRow>
