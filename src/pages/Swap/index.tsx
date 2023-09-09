@@ -53,6 +53,7 @@ import {
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
+import {PoolSelector} from '../../components/swap/PoolSelector'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
@@ -285,6 +286,7 @@ export default function Swap({ className }: { className?: string }) {
 
   // const swapWidgetEnabled = useSwapWidgetEnabled()
 
+  
   const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
 
   // token warning stuff
@@ -382,6 +384,7 @@ export default function Swap({ className }: { className?: string }) {
           },
     [independentField, parsedAmount, showWrap, trade]
   )
+
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
@@ -513,16 +516,17 @@ export default function Swap({ className }: { className?: string }) {
             <TokenNameCell>
               {inputCurrency && outputCurrency && (
                 <DoubleCurrencyLogo
-                  currency0={inputCurrency as Currency}
-                  currency1={outputCurrency as Currency}
+                  currency0={outputCurrency as Currency}
+                  currency1={inputCurrency as Currency}
                   size={30}
                   margin
                 />
               )}
               {inputCurrency && outputCurrency ? (
                 <Row>
-                  <TokenSelector isInput={false} />
-                  <TokenSelector isInput={true} />
+                  {/* <TokenSelector isInput={true} />
+                  <TokenSelector isInput={false} /> */}
+                  <PoolSelector />
                 </Row>
               ) : (
                 <ThemedText.HeadlineSmall>Pair not found</ThemedText.HeadlineSmall>

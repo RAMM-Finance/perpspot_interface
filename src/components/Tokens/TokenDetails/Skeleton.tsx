@@ -85,6 +85,7 @@ export const TokenNameCell = styled.div`
   font-size: 20px;
   line-height: 28px;
   align-items: center;
+  padding-left: 1rem;
 `
 /* Loading state bubbles */
 const DetailBubble = styled(LoadingBubble)`

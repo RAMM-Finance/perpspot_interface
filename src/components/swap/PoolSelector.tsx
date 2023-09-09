@@ -18,29 +18,41 @@ import { FixedSizeList } from 'react-window'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useTheme } from 'styled-components/macro'
+import styled,{ useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
 import { isAddress } from 'utils'
 import { currencyId } from 'utils/currencyId'
 
-import * as styles from './TokenSelector.css'
-import TokenSelectorRow from './TokenSelectorRow'
+import * as styles from './PoolSelector.css'
+import PoolSelectorRow from './PoolSelectorRow'
 
-export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
+const PoolListHeader = styled.h4`
+font-size: .9rem;
+`
+const PoolListContainer = styled.div`
+display:grid; 
+grid-template-columns:5fr 1fr 2fr; 
+width: 400px;
+`
+
+export const PoolSelector = () => {
   const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
+
   const { onCurrencySelection } = useSwapActionHandlers()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
+
   // const {chainId} = useWeb3React()
   const [searchQuery, setSearchQuery] = useState<string>('')
+
 
   const debouncedQuery = useDebounce(searchQuery, 200)
   const defaultTokens = useDefaultActiveTokens()
@@ -88,6 +100,7 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
       onlyShowCurrenciesWithBalance,
     ]
   )
+
   const isLoading = Boolean(balancesAreLoading && !tokenLoaderTimerElapsed)
 
   const filteredSortedTokens = useSortTokensByQuery(debouncedQuery, sortedTokens)
@@ -119,38 +132,52 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
   ])
 
   const handleCurrencySelect = useCallback(
-    (currency: Currency) => {
-      onCurrencySelection(isInput ? Field.INPUT : Field.OUTPUT, currency)
+    (currencyIn: Currency, currencyOut: Currency) => {
+      onCurrencySelection(Field.INPUT, currencyIn)
+      onCurrencySelection(Field.OUTPUT, currencyOut)
     },
-    [inputCurrencyId, outputCurrencyId, isInput]
+    [inputCurrencyId, outputCurrencyId]
   )
+
+  const filteredSearchCurrencies = searchCurrencies.filter((currency : any) =>  currency.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
 
   const inputRef = useRef<HTMLInputElement>()
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value
-    const checksummedInput = isAddress(input)
-    setSearchQuery(checksummedInput || input)
-    fixedList.current?.scrollTo(0)
+    setSearchQuery(input)
   }, [])
 
-  const handleEnter = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        const s = debouncedQuery.toLowerCase().trim()
-        if (s === native?.symbol?.toLowerCase()) {
-          handleCurrencySelect(native)
-        } else if (searchCurrencies.length > 0) {
-          if (
-            searchCurrencies[0].symbol?.toLowerCase() === debouncedQuery.trim().toLowerCase() ||
-            searchCurrencies.length === 1
-          ) {
-            handleCurrencySelect(searchCurrencies[0])
-          }
-        }
-      }
-    },
-    [debouncedQuery, native, searchCurrencies, handleCurrencySelect]
-  )
+
+  // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
+  // list is created/connected
+
+  // const inputRef = useRef<HTMLInputElement>()
+  // const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+  //   const input = event.target.value
+  //   const checksummedInput = isAddress(input)
+  //   setSearchQuery(checksummedInput || input)
+  //   fixedList.current?.scrollTo(0)
+  // }, [])
+
+
+  // const handleEnter = useCallback(
+  //   (e: KeyboardEvent<HTMLInputElement>) => {
+  //     if (e.key === 'Enter') {
+  //       const s = debouncedQuery.toLowerCase().trim()
+  //       if (s === native?.symbol?.toLowerCase()) {
+  //         handleCurrencySelect(native)
+  //       } else if (searchCurrencies.length > 0) {
+  //         if (
+  //           searchCurrencies[0].symbol?.toLowerCase() === debouncedQuery.trim().toLowerCase() ||
+  //           searchCurrencies.length === 1
+  //         ) {
+  //           handleCurrencySelect(searchCurrencies[0])
+  //         }
+  //       }
+  //     }
+  //   },
+  //   [debouncedQuery, native, searchCurrencies, handleCurrencySelect]
+  // )
 
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
@@ -161,9 +188,10 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
+
   const dropdown = (
-    <NavDropdown top="56" ref={modalRef}>
-      <Row>
+    <NavDropdown top="56" ref={modalRef} style={{ overflowY: 'scroll', height: '600px'}}>
+      <Row style={{flexDirection:'column'}}>
         <SearchInput
           type="text"
           id="token-search-input"
@@ -172,16 +200,19 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
           value={searchQuery}
           ref={inputRef as RefObject<HTMLInputElement>}
           onChange={handleInput}
-          onKeyDown={handleEnter}
         />
+        <PoolListContainer>
+          <PoolListHeader>Pool</PoolListHeader>
+          <PoolListHeader>TVL</PoolListHeader>
+          <PoolListHeader>24h Vol</PoolListHeader>
+        </PoolListContainer>
       </Row>
       <Column paddingX="8">
-        {searchCurrencies.map((currency: Currency) => (
-          <TokenSelectorRow
-            currencyId={currencyId(currency)}
-            isInput={isInput}
+        {filteredSearchCurrencies.flatMap((currencyIn: Currency, i) => searchCurrencies.slice(i + 1).map((currencyOut: Currency) =>
+          <PoolSelectorRow
+            currencyId={[currencyId(currencyIn), currencyId(currencyOut)]}
             onCurrencySelect={handleCurrencySelect}
-            key={currencyId(currency)}
+            key={`${currencyId(currencyIn)}-${currencyId(currencyOut)}`}
           />
         ))}
       </Column>
@@ -202,8 +233,9 @@ export const TokenSelector = ({ isInput }: { isInput: boolean }) => {
         className={styles.ChainSelector}
         background={isOpen ? 'accentActive' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
+        style={{ width:'11rem'}}
       >
-        <ThemedText.LmtWhite>{isInput ? inputCurrency?.symbol : outputCurrency?.symbol}</ThemedText.LmtWhite>
+        <ThemedText.LmtWhite style={{fontSize:'1.3rem'}}>{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.LmtWhite>
         {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
       </Row>
       {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
