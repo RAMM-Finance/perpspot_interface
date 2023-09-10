@@ -27,7 +27,8 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
 
 const SettingWrapper = styled.div`
   display: flex;
-  margin-right: 10px;
+  margin-right: 20px;
+  margin-top: 17px;
 `
 
 // the order of displayed base currencies from left to right is always in sort order
@@ -202,21 +203,37 @@ const TabElement = styled.button<{
   justify-content: center;
   height: 100%;
   border: none;
-  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
   background: ${({ theme, isActive, selectedTab, tabValue }) => {
-    return !isActive && selectedTab === tabValue ? theme.accentActive : 'none'
+    if (!isActive && selectedTab === tabValue) {
+      if (selectedTab === "Long") {
+        return "green";
+      } else if (selectedTab === "Short") {
+        return "red";
+      } else {
+        return theme.accentActive;
+      }
+    }
+    return 'none';
   }};
   color: ${({ theme, isActive, selectedTab, tabValue }) =>
-    !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};
+  !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-
-  // border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  // border-bottom-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  // border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
-  // border-bottom-left-radius: ${({ first }) => (first ? '8px' : '0')};
+  ${({ first, theme }) => first && `
+    border-left: 1px solid ${theme.backgroundOutline};
+  `}
+  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
+  border-bottom-right-radius: ${({ last }) => (last ? '8px' : '0')};
+  border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
+  border-bottom-left-radius: ${({ first }) => (first ? '8px' : '0')};
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
+  margin-left: ${({ first }) => (first ? '17px' : '0')};
+  margin-right: ${({ last }) => (last ? '8px' : '0')};
+  margin-top: 15px;
 
   :hover {
     user-select: initial;

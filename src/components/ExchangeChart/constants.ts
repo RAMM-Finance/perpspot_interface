@@ -18,13 +18,13 @@ const chartStyleOverrides = ['candleStyle', 'hollowCandleStyle', 'haStyle'].redu
 }, {})
 // darkTheme;
 const chartOverrides = {
-  'paneProperties.background': '#0E111C',
-  'paneProperties.backgroundGradientStartColor': '#16182e',
+  'paneProperties.background': '#0e1724',
+  'paneProperties.backgroundGradientStartColor': '#0e1724',
   'paneProperties.backgroundGradientEndColor': '#16182e',
   'paneProperties.backgroundType': 'solid',
-  'paneProperties.vertGridProperties.color': 'rgba(35, 38, 59, 1)',
+  'paneProperties.vertGridProperties.color': '#0e1724',
   'paneProperties.vertGridProperties.style': 2,
-  'paneProperties.horzGridProperties.color': 'rgba(35, 38, 59, 1)',
+  'paneProperties.horzGridProperties.color': '#0e1724',
   'paneProperties.horzGridProperties.style': 2,
   'mainSeriesProperties.priceLineColor': '#3a3e5e',
   'scalesProperties.textColor': '#fff',

@@ -90,6 +90,9 @@ function getSettings(darkMode: boolean) {
     breakpoint: BREAKPOINTS,
     transition: transitions,
     opacity: opacities,
+
+    //background handling
+    navbarBackground: '#0e1724',
   }
 }
 
