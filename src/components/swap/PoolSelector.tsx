@@ -35,7 +35,6 @@ display:grid;
 grid-template-columns:5fr 1fr 2fr; 
 width: 400px;
 `
-
 export const PoolSelector = () => {
   const onlyShowCurrenciesWithBalance = false
   const {
@@ -43,16 +42,13 @@ export const PoolSelector = () => {
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-
   const { onCurrencySelection } = useSwapActionHandlers()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
-
   // const {chainId} = useWeb3React()
   const [searchQuery, setSearchQuery] = useState<string>('')
-
 
   const debouncedQuery = useDebounce(searchQuery, 200)
   const defaultTokens = useDefaultActiveTokens()
@@ -147,7 +143,6 @@ export const PoolSelector = () => {
     setSearchQuery(input)
   }, [])
 
-
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
 
@@ -187,7 +182,6 @@ export const PoolSelector = () => {
   const ref = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
-
 
   const dropdown = (
     <NavDropdown top="56" ref={modalRef} style={{ overflowY: 'scroll', height: '600px'}}>

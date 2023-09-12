@@ -291,7 +291,6 @@ export default function Swap({ className }: { className?: string }) {
 
   // const swapWidgetEnabled = useSwapWidgetEnabled()
 
-  
   const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
 
   // token warning stuff
@@ -389,7 +388,6 @@ export default function Swap({ className }: { className?: string }) {
           },
     [independentField, parsedAmount, showWrap, trade]
   )
-
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
@@ -521,8 +519,8 @@ export default function Swap({ className }: { className?: string }) {
             <TokenNameCell>
               {inputCurrency && outputCurrency && (
                 <DoubleCurrencyLogo
-                  currency0={outputCurrency as Currency}
-                  currency1={inputCurrency as Currency}
+                  currency0={inputCurrency as Currency}
+                  currency1={outputCurrency as Currency}
                   size={30}
                   margin
                 />

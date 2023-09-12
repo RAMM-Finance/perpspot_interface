@@ -29,19 +29,16 @@ const Container = styled.button<{ disabled: boolean }>`
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     width: 100%;
   }
-
   &:hover {
     background-color: ${({ disabled, theme }) => (disabled ? 'none' : theme.backgroundOutline)};
   }
 `
-
 const Label = styled.div`
   grid-column: 2;
   grid-row: 1;
   font-size: 16px;
   margin-left: 5px;
 `
-
 const Status = styled.div`
   grid-column: 3;
   grid-row: 1;
@@ -49,14 +46,12 @@ const Status = styled.div`
   align-items: center;
   width: ${LOGO_SIZE}px;
 `
-
 const CaptionText = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
   grid-column: 2;
   grid-row: 2;
 `
-
 const Logo = styled.img`
   height: ${LOGO_SIZE}px;
   width: ${LOGO_SIZE}px;
@@ -78,9 +73,7 @@ export default function ChainSelectorRow({ currencyId, isInput, onCurrencySelect
   const active = isInput ? currencyId === inputCurrencyId : currencyId === outputCurrencyId
   const currency = useCurrency(currencyId)
   const label = currency?.symbol as string
-
-  console.log(currency)
-
+  
   const theme = useTheme()
 
   return (

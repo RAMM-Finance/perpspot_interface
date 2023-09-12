@@ -34,31 +34,28 @@ const Container = styled.button<{ disabled: boolean }>`
     background-color: ${({ disabled, theme }) => (disabled ? 'none' : theme.backgroundOutline)};
   }
 `
-
 const Label = styled.div`
   font-size: 16px;
   margin-left: 5px;
   width: 10rem;
   padding-left: 1rem;
 `
-
 const Status = styled.div`
   display: flex;
   align-items: center;
   width: ${LOGO_SIZE}px;
 `
-
 const CaptionText = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
 
 `
-
 const Logo = styled.img`
   height: ${LOGO_SIZE}px;
   width: ${LOGO_SIZE}px;
   margin-right: 12px;
 `
+
 interface PoolSelectorRowProps {
   currencyId: string[]
   onCurrencySelect: (currencyIn: Currency, currencyOut: Currency) => void
@@ -71,13 +68,11 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolS
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-
   const active = currencyId[0] === inputCurrencyId && currencyId[1] === outputCurrencyId
   const currencyIn = useCurrency(currencyId[0])
   const labelIn = currencyIn?.symbol as string
   const currencyOut = useCurrency(currencyId[1])
   const labelOut = currencyOut?.symbol as string
-
   
   const theme = useTheme()
 
