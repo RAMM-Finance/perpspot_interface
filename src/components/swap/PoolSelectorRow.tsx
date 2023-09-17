@@ -1,10 +1,10 @@
 import { Currency } from '@uniswap/sdk-core'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Field } from 'state/swap/actions'
 import { useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
+import DoubleCurrencyLogo from 'components/DoubleLogo'
 
 const LOGO_SIZE = 20
 
@@ -16,7 +16,7 @@ const Container = styled.button<{ disabled: boolean }>`
   color: ${({ theme }) => theme.textPrimary};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns: min-content 1fr min-content;
+  grid-template-columns:  1fr 4fr 1fr 1fr 1fr;
   justify-content: space-between;
   line-height: 24px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
@@ -24,24 +24,23 @@ const Container = styled.button<{ disabled: boolean }>`
   text-align: left;
   transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
     background-color;
-  width: 240px;
+  width: 450px;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     width: 100%;
   }
+
   &:hover {
     background-color: ${({ disabled, theme }) => (disabled ? 'none' : theme.backgroundOutline)};
   }
 `
 const Label = styled.div`
-  grid-column: 2;
-  grid-row: 1;
   font-size: 16px;
   margin-left: 5px;
+  width: 10rem;
+  padding-left: 1rem;
 `
 const Status = styled.div`
-  grid-column: 3;
-  grid-row: 1;
   display: flex;
   align-items: center;
   width: ${LOGO_SIZE}px;
@@ -49,30 +48,31 @@ const Status = styled.div`
 const CaptionText = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
-  grid-column: 2;
-  grid-row: 2;
+
 `
 const Logo = styled.img`
   height: ${LOGO_SIZE}px;
   width: ${LOGO_SIZE}px;
   margin-right: 12px;
 `
-interface TokenSelectorRowProps {
-  currencyId: string
-  isInput: boolean
-  onCurrencySelect: (currency: Currency) => void
+
+interface PoolSelectorRowProps {
+  currencyId: string[]
+  onCurrencySelect: (currencyIn: Currency, currencyOut: Currency) => void
 }
 
-export default function ChainSelectorRow({ currencyId, isInput, onCurrencySelect }: TokenSelectorRowProps) {
+export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolSelectorRowProps) {
   // const { chainId } = useWeb3React()
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-  const active = isInput ? currencyId === inputCurrencyId : currencyId === outputCurrencyId
-  const currency = useCurrency(currencyId)
-  const label = currency?.symbol as string
+  const active = currencyId[0] === inputCurrencyId && currencyId[1] === outputCurrencyId
+  const currencyIn = useCurrency(currencyId[0])
+  const labelIn = currencyIn?.symbol as string
+  const currencyOut = useCurrency(currencyId[1])
+  const labelOut = currencyOut?.symbol as string
   
   const theme = useTheme()
 
@@ -80,12 +80,18 @@ export default function ChainSelectorRow({ currencyId, isInput, onCurrencySelect
     <Container
       disabled={false}
       onClick={() => {
-        currency && onCurrencySelect(currency)
+        currencyIn && currencyOut && onCurrencySelect(currencyIn, currencyOut)
       }}
-      data-testid={`chain-selector-option-${label.toLowerCase()}`}
     >
-      <CurrencyLogo currency={currency} />
-      <Label>{label}</Label>
+      <DoubleCurrencyLogo
+          currency0={currencyIn as Currency}
+          currency1={currencyOut as Currency}
+          size={30}
+          margin
+          />
+      <Label>{`${labelIn} - ${labelOut} (fee)`}</Label>
+      <p>Test</p>
+      <p>Test</p>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )

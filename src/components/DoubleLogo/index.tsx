@@ -33,14 +33,14 @@ export default function DoubleCurrencyLogo({
 }: DoubleCurrencyLogoProps) {
   return (
     <Wrapper sizeraw={size} margin={margin}>
-      {currency0 && (
+      {currency1 && (
         <HigherLogoWrapper>
-          <CurrencyLogo hideL2Icon currency={currency0} size={size.toString() + 'px'} />
+          <CurrencyLogo hideL2Icon currency={currency1} size={size.toString() + 'px'} />
         </HigherLogoWrapper>
       )}
-      {currency1 && (
+      {currency0 && (
         <CoveredLogoWapper sizeraw={size}>
-          <CurrencyLogo hideL2Icon currency={currency1} size={size.toString() + 'px'} />
+          <CurrencyLogo hideL2Icon currency={currency0} size={size.toString() + 'px'} />
         </CoveredLogoWapper>
       )}
     </Wrapper>

@@ -34,7 +34,7 @@ export const SearchInput = styled.input`
   padding-left: 40px;
   height: 40px;
   align-items: center;
-  width: 100%;
+  width: 90%;
   white-space: nowrap;
   background-color: ${({ theme }) => theme.backgroundModule};
   border: none;

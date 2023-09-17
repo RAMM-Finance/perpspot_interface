@@ -53,6 +53,7 @@ import {
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
+import {PoolSelector} from '../../components/swap/PoolSelector'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
@@ -526,8 +527,9 @@ export default function Swap({ className }: { className?: string }) {
               )}
               {inputCurrency && outputCurrency ? (
                 <Row>
-                  <TokenSelector isInput={false} />
-                  <TokenSelector isInput={true} />
+                  {/* <TokenSelector isInput={true} />
+                  <TokenSelector isInput={false} /> */}
+                  <PoolSelector />
                 </Row>
               ) : (
                 <ThemedText.HeadlineSmall>Pair not found</ThemedText.HeadlineSmall>
