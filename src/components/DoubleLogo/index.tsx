@@ -18,9 +18,9 @@ interface DoubleCurrencyLogoProps {
 }
 
 const HigherLogoWrapper = styled.div`
-  z-index: 1;
 `
 const CoveredLogoWapper = styled.div<{ sizeraw: number }>`
+  z-index: 1;
   position: absolute;
   left: ${({ sizeraw }) => '-' + (sizeraw / 2).toString() + 'px'} !important;
 `

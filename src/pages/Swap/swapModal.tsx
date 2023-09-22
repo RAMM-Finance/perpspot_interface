@@ -77,7 +77,6 @@ import {
 import Slider from '@mui/material/Slider';
 import Box from '@mui/material/Box';
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
-
 const TRADE_STRING = 'SwapRouter'
 
 const Wrapper = styled.div`
@@ -499,7 +498,7 @@ const TradeTabContent = () => {
     leverageFactor ?? '1',
     onLeverageFactorChange
   )
-
+  
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
   const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
     () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING],
@@ -610,7 +609,7 @@ const TradeTabContent = () => {
                   ? CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0))
                   : undefined
               }
-              label="Pay"
+              label="Collateral"
             />
           </Trace>
         </InputSection>
@@ -783,6 +782,7 @@ const TradeTabContent = () => {
       />
       </>
     )}
+    
   </AutoColumn>
 </LeverageGaugeSection>
           ) : null}

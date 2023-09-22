@@ -445,7 +445,7 @@ const BorrowTabContent = () => {
                 // isInput={false}
                 // isLevered={leverage}
                 disabled={true}
-                label="Added Debt"
+                label="Borrow"
                 // isTrade={false}
               />
             </Trace>
