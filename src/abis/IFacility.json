@@ -1,0 +1,1395 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "pool",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "underAuction",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "isToken0",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalDebtOutput",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalDebtInput",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "recentPremium",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "openTime",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "repayTime",
+                  "type": "uint32"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "int24",
+                      "name": "tick",
+                      "type": "int24"
+                    },
+                    {
+                      "internalType": "uint128",
+                      "name": "liquidity",
+                      "type": "uint128"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "premium",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "Urate",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "feeGrowthInside0LastX128",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "feeGrowthInside1LastX128",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "lastGrowth",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct LiquidityLoan[]",
+                  "name": "borrowInfo",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct Position",
+              "name": "base",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalPosition",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MarginPosition",
+          "name": "position",
+          "type": "tuple"
+        }
+      ],
+      "name": "canForceClose",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "depositPremium",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "pool",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "positionIsToken0",
+          "type": "bool"
+        }
+      ],
+      "name": "maxWithdrawablePremium",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "token0",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token1",
+              "type": "address"
+            },
+            {
+              "internalType": "uint24",
+              "name": "fee",
+              "type": "uint24"
+            }
+          ],
+          "internalType": "struct PoolKey",
+          "name": "key",
+          "type": "tuple"
+        },
+        {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "positionIsToken0",
+          "type": "bool"
+        }
+      ],
+      "name": "payPremium",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "premiumOwed",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "pool",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "isToken0",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "reciever",
+          "type": "address"
+        }
+      ],
+      "name": "withdrawPremium",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "canForceClose(((address,bool,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256,uint256)[]),uint256,uint256))": "d7ae317e",
+    "depositPremium(address,address,uint256)": "868ea000",
+    "maxWithdrawablePremium(address,address,bool)": "e2e374e5",
+    "payPremium((address,address,uint24),address,bool)": "7dc8b1a6",
+    "withdrawPremium(address,bool,uint256,address)": "cf6d6c02"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"pool\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"underAuction\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isToken0\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalDebtOutput\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalDebtInput\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"recentPremium\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"openTime\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"repayTime\",\"type\":\"uint32\"},{\"components\":[{\"internalType\":\"int24\",\"name\":\"tick\",\"type\":\"int24\"},{\"internalType\":\"uint128\",\"name\":\"liquidity\",\"type\":\"uint128\"},{\"internalType\":\"uint256\",\"name\":\"premium\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Urate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"feeGrowthInside0LastX128\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"feeGrowthInside1LastX128\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastGrowth\",\"type\":\"uint256\"}],\"internalType\":\"struct LiquidityLoan[]\",\"name\":\"borrowInfo\",\"type\":\"tuple[]\"}],\"internalType\":\"struct Position\",\"name\":\"base\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"totalPosition\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"margin\",\"type\":\"uint256\"}],\"internalType\":\"struct MarginPosition\",\"name\":\"position\",\"type\":\"tuple\"}],\"name\":\"canForceClose\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"depositPremium\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"pool\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"positionIsToken0\",\"type\":\"bool\"}],\"name\":\"maxWithdrawablePremium\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"token0\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token1\",\"type\":\"address\"},{\"internalType\":\"uint24\",\"name\":\"fee\",\"type\":\"uint24\"}],\"internalType\":\"struct PoolKey\",\"name\":\"key\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"positionIsToken0\",\"type\":\"bool\"}],\"name\":\"payPremium\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"premiumOwed\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"pool\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"isToken0\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"reciever\",\"type\":\"address\"}],\"name\":\"withdrawPremium\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"canForceClose(((address,bool,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256,uint256)[]),uint256,uint256))\":{\"returns\":{\"_0\":\"boolean for whether the position can be forclosed.\"}},\"depositPremium(address,address,uint256)\":{\"params\":{\"amount\":\"amount of premium to deposit\",\"token\":\"address of the token to deposit\",\"trader\":\"address of the trader\"}},\"payPremium((address,address,uint24),address,bool)\":{\"params\":{\"key\":\"pool key, token0, token1, fee\",\"positionIsToken0\":\"true if token escrowed is token0, and margin paid by trader was token1.\",\"trader\":\"address of the trader\"},\"returns\":{\"premiumOwed\":\"amount of premium taken from premiumDeposit to poolManager\"}},\"withdrawPremium(address,bool,uint256,address)\":{\"params\":{\"amount\":\"amount of premium to withdraw\",\"isToken0\":\"true if token0, false if token1\",\"pool\":\"address of the pool\",\"reciever\":\"address of the recieve of funds\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"payPremium((address,address,uint24),address,bool)\":{\"notice\":\"pays premium for a position, can only repay after 24 hours since last payment*, transfers deposited premium from the pool to the facility, doesn't transfer anything from the user.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IFacility.sol\":\"IFacility\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=lib/openzeppelin-contracts/\",\":@prb/test/=lib/prb-test/src/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":prb-test/=lib/prb-test/src/\",\":solmate/=lib/solmate/\",\":universal-router/=lib/universal-router/contracts/\"]},\"sources\":{\"src/interfaces/IFacility.sol\":{\"keccak256\":\"0xcdd0fb66c495784cc888f1942193f2ae940de19b49c71cd4f6efa2824a66f32a\",\"urls\":[\"bzz-raw://d9aa66a1abe2ee37ab80fa7a29a69753b3d7b7cc652b6fe0d59190f762a3a45e\",\"dweb:/ipfs/QmYC7VbpVU8rkSD6e4528EAsND8WhS7XEqCQdYVzjHZLUx\"]},\"src/types.sol\":{\"keccak256\":\"0x749524dd7c8f80d2d2afda61929c7297c7a59e3f3219f5de548af2f132ca8fab\",\"urls\":[\"bzz-raw://905fb505bbed892789f10368ecee365afbb0991f450591e79fa9d45c987b1a09\",\"dweb:/ipfs/QmUkRiyPrPeSJGAr2Dr3yGrZzHTyAWqeWhTMbUzpxiZcnH\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.21+commit.d9974bed"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "struct MarginPosition",
+              "name": "position",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "struct Position",
+                  "name": "base",
+                  "type": "tuple",
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "pool",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "underAuction",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isToken0",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalDebtOutput",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalDebtInput",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "recentPremium",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint32",
+                      "name": "openTime",
+                      "type": "uint32"
+                    },
+                    {
+                      "internalType": "uint32",
+                      "name": "repayTime",
+                      "type": "uint32"
+                    },
+                    {
+                      "internalType": "struct LiquidityLoan[]",
+                      "name": "borrowInfo",
+                      "type": "tuple[]",
+                      "components": [
+                        {
+                          "internalType": "int24",
+                          "name": "tick",
+                          "type": "int24"
+                        },
+                        {
+                          "internalType": "uint128",
+                          "name": "liquidity",
+                          "type": "uint128"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "premium",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "Urate",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "feeGrowthInside0LastX128",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "feeGrowthInside1LastX128",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "lastGrowth",
+                          "type": "uint256"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalPosition",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "margin",
+                  "type": "uint256"
+                }
+              ]
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "canForceClose",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "trader",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "depositPremium"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "pool",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "trader",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "positionIsToken0",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "maxWithdrawablePremium",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "struct PoolKey",
+              "name": "key",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "token0",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "token1",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint24",
+                  "name": "fee",
+                  "type": "uint24"
+                }
+              ]
+            },
+            {
+              "internalType": "address",
+              "name": "trader",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "positionIsToken0",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "payPremium",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "premiumOwed",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "pool",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isToken0",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "reciever",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "withdrawPremium"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "canForceClose(((address,bool,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256,uint256)[]),uint256,uint256))": {
+            "returns": {
+              "_0": "boolean for whether the position can be forclosed."
+            }
+          },
+          "depositPremium(address,address,uint256)": {
+            "params": {
+              "amount": "amount of premium to deposit",
+              "token": "address of the token to deposit",
+              "trader": "address of the trader"
+            }
+          },
+          "payPremium((address,address,uint24),address,bool)": {
+            "params": {
+              "key": "pool key, token0, token1, fee",
+              "positionIsToken0": "true if token escrowed is token0, and margin paid by trader was token1.",
+              "trader": "address of the trader"
+            },
+            "returns": {
+              "premiumOwed": "amount of premium taken from premiumDeposit to poolManager"
+            }
+          },
+          "withdrawPremium(address,bool,uint256,address)": {
+            "params": {
+              "amount": "amount of premium to withdraw",
+              "isToken0": "true if token0, false if token1",
+              "pool": "address of the pool",
+              "reciever": "address of the recieve of funds"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "payPremium((address,address,uint24),address,bool)": {
+            "notice": "pays premium for a position, can only repay after 24 hours since last payment*, transfers deposited premium from the pool to the facility, doesn't transfer anything from the user."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@openzeppelin/=lib/openzeppelin-contracts/",
+        "@prb/test/=lib/prb-test/src/",
+        "ds-test/=lib/forge-std/lib/ds-test/src/",
+        "forge-std/=lib/forge-std/src/",
+        "prb-test/=lib/prb-test/src/",
+        "solmate/=lib/solmate/",
+        "universal-router/=lib/universal-router/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/interfaces/IFacility.sol": "IFacility"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/IFacility.sol": {
+        "keccak256": "0xcdd0fb66c495784cc888f1942193f2ae940de19b49c71cd4f6efa2824a66f32a",
+        "urls": [
+          "bzz-raw://d9aa66a1abe2ee37ab80fa7a29a69753b3d7b7cc652b6fe0d59190f762a3a45e",
+          "dweb:/ipfs/QmYC7VbpVU8rkSD6e4528EAsND8WhS7XEqCQdYVzjHZLUx"
+        ],
+        "license": null
+      },
+      "src/types.sol": {
+        "keccak256": "0x749524dd7c8f80d2d2afda61929c7297c7a59e3f3219f5de548af2f132ca8fab",
+        "urls": [
+          "bzz-raw://905fb505bbed892789f10368ecee365afbb0991f450591e79fa9d45c987b1a09",
+          "dweb:/ipfs/QmUkRiyPrPeSJGAr2Dr3yGrZzHTyAWqeWhTMbUzpxiZcnH"
+        ],
+        "license": null
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/interfaces/IFacility.sol",
+    "id": 59862,
+    "exportedSymbols": {
+      "AddParams": [
+        60378
+      ],
+      "AuctionParam": [
+        60336
+      ],
+      "BorrowPosition": [
+        60317
+      ],
+      "IFacility": [
+        59861
+      ],
+      "Interest": [
+        60261
+      ],
+      "LiquidityLoan": [
+        60276
+      ],
+      "MINIMUM_LIQUIDITY": [
+        60204
+      ],
+      "MarginPosition": [
+        60311
+      ],
+      "MatchMakerParameters": [
+        60224
+      ],
+      "OptionPosition": [
+        60302
+      ],
+      "Order": [
+        60430
+      ],
+      "PoolKey": [
+        60249
+      ],
+      "PoolParam": [
+        60331
+      ],
+      "Position": [
+        60298
+      ],
+      "REPAY_THRESHOLD": [
+        60207
+      ],
+      "ROUND": [
+        60201
+      ],
+      "Rebalance": [
+        60351
+      ],
+      "ReduceParam": [
+        60394
+      ],
+      "ReduceReturn": [
+        60410
+      ],
+      "URateParam": [
+        60362
+      ],
+      "UniswapPosition": [
+        60242
+      ],
+      "UniswapPositionKey": [
+        60231
+      ],
+      "UtilizationGrowth": [
+        60256
+      ],
+      "precision": [
+        60196
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "0:1597:37",
+    "nodes": [
+      {
+        "id": 59804,
+        "nodeType": "PragmaDirective",
+        "src": "0:23:37",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 59805,
+        "nodeType": "ImportDirective",
+        "src": "25:22:37",
+        "nodes": [],
+        "absolutePath": "src/types.sol",
+        "file": "../types.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 59862,
+        "sourceUnit": 60431,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 59861,
+        "nodeType": "ContractDefinition",
+        "src": "49:1547:37",
+        "nodes": [
+          {
+            "id": 59815,
+            "nodeType": "FunctionDefinition",
+            "src": "236:80:37",
+            "nodes": [],
+            "documentation": {
+              "id": 59806,
+              "nodeType": "StructuredDocumentation",
+              "src": "75:156:37",
+              "text": " @param token address of the token to deposit\n @param amount amount of premium to deposit\n @param trader address of the trader"
+            },
+            "functionSelector": "868ea000",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "depositPremium",
+            "nameLocation": "245:14:37",
+            "parameters": {
+              "id": 59813,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59808,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "268:5:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59815,
+                  "src": "260:13:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59807,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "260:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59810,
+                  "mutability": "mutable",
+                  "name": "trader",
+                  "nameLocation": "283:6:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59815,
+                  "src": "275:14:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59809,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "275:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59812,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "299:6:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59815,
+                  "src": "291:14:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 59811,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "291:7:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "259:47:37"
+            },
+            "returnParameters": {
+              "id": 59814,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "315:0:37"
+            },
+            "scope": 59861,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 59827,
+            "nodeType": "FunctionDefinition",
+            "src": "538:97:37",
+            "nodes": [],
+            "documentation": {
+              "id": 59816,
+              "nodeType": "StructuredDocumentation",
+              "src": "322:211:37",
+              "text": " @param pool address of the pool\n @param isToken0 true if token0, false if token1\n @param amount amount of premium to withdraw\n @param reciever address of the recieve of funds"
+            },
+            "functionSelector": "cf6d6c02",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "withdrawPremium",
+            "nameLocation": "547:15:37",
+            "parameters": {
+              "id": 59825,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59818,
+                  "mutability": "mutable",
+                  "name": "pool",
+                  "nameLocation": "571:4:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59827,
+                  "src": "563:12:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59817,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "563:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59820,
+                  "mutability": "mutable",
+                  "name": "isToken0",
+                  "nameLocation": "582:8:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59827,
+                  "src": "577:13:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 59819,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "577:4:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59822,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "600:6:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59827,
+                  "src": "592:14:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 59821,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "592:7:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59824,
+                  "mutability": "mutable",
+                  "name": "reciever",
+                  "nameLocation": "616:8:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59827,
+                  "src": "608:16:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59823,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "608:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "562:63:37"
+            },
+            "returnParameters": {
+              "id": 59826,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "634:0:37"
+            },
+            "scope": 59861,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 59840,
+            "nodeType": "FunctionDefinition",
+            "src": "1139:136:37",
+            "nodes": [],
+            "documentation": {
+              "id": 59828,
+              "nodeType": "StructuredDocumentation",
+              "src": "641:493:37",
+              "text": " @notice pays premium for a position, can only repay after 24 hours since last payment*, transfers\n deposited premium from the pool to the facility, doesn't transfer anything from the user.\n @param key pool key, token0, token1, fee\n @param trader address of the trader\n @param positionIsToken0 true if token escrowed is token0, and margin paid by trader was token1.\n @return premiumOwed amount of premium taken from premiumDeposit to poolManager"
+            },
+            "functionSelector": "7dc8b1a6",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "payPremium",
+            "nameLocation": "1148:10:37",
+            "parameters": {
+              "id": 59836,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59831,
+                  "mutability": "mutable",
+                  "name": "key",
+                  "nameLocation": "1176:3:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59840,
+                  "src": "1159:20:37",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_PoolKey_$60249_calldata_ptr",
+                    "typeString": "struct PoolKey"
+                  },
+                  "typeName": {
+                    "id": 59830,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 59829,
+                      "name": "PoolKey",
+                      "nameLocations": [
+                        "1159:7:37"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 60249,
+                      "src": "1159:7:37"
+                    },
+                    "referencedDeclaration": 60249,
+                    "src": "1159:7:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PoolKey_$60249_storage_ptr",
+                      "typeString": "struct PoolKey"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59833,
+                  "mutability": "mutable",
+                  "name": "trader",
+                  "nameLocation": "1189:6:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59840,
+                  "src": "1181:14:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59832,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1181:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59835,
+                  "mutability": "mutable",
+                  "name": "positionIsToken0",
+                  "nameLocation": "1202:16:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59840,
+                  "src": "1197:21:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 59834,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1197:4:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1158:61:37"
+            },
+            "returnParameters": {
+              "id": 59839,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59838,
+                  "mutability": "mutable",
+                  "name": "premiumOwed",
+                  "nameLocation": "1262:11:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59840,
+                  "src": "1254:19:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 59837,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1254:7:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1253:21:37"
+            },
+            "scope": 59861,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 59849,
+            "nodeType": "FunctionDefinition",
+            "src": "1363:84:37",
+            "nodes": [],
+            "documentation": {
+              "id": 59841,
+              "nodeType": "StructuredDocumentation",
+              "src": "1281:77:37",
+              "text": " @return boolean for whether the position can be forclosed."
+            },
+            "functionSelector": "d7ae317e",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "canForceClose",
+            "nameLocation": "1372:13:37",
+            "parameters": {
+              "id": 59845,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59844,
+                  "mutability": "mutable",
+                  "name": "position",
+                  "nameLocation": "1408:8:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59849,
+                  "src": "1386:30:37",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_MarginPosition_$60311_memory_ptr",
+                    "typeString": "struct MarginPosition"
+                  },
+                  "typeName": {
+                    "id": 59843,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 59842,
+                      "name": "MarginPosition",
+                      "nameLocations": [
+                        "1386:14:37"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 60311,
+                      "src": "1386:14:37"
+                    },
+                    "referencedDeclaration": 60311,
+                    "src": "1386:14:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_MarginPosition_$60311_storage_ptr",
+                      "typeString": "struct MarginPosition"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1385:32:37"
+            },
+            "returnParameters": {
+              "id": 59848,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59847,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59849,
+                  "src": "1441:4:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 59846,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1441:4:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1440:6:37"
+            },
+            "scope": 59861,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 59860,
+            "nodeType": "FunctionDefinition",
+            "src": "1453:141:37",
+            "nodes": [],
+            "functionSelector": "e2e374e5",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "maxWithdrawablePremium",
+            "nameLocation": "1462:22:37",
+            "parameters": {
+              "id": 59856,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59851,
+                  "mutability": "mutable",
+                  "name": "pool",
+                  "nameLocation": "1493:4:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59860,
+                  "src": "1485:12:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59850,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1485:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59853,
+                  "mutability": "mutable",
+                  "name": "trader",
+                  "nameLocation": "1507:6:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59860,
+                  "src": "1499:14:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59852,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1499:7:37",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59855,
+                  "mutability": "mutable",
+                  "name": "positionIsToken0",
+                  "nameLocation": "1520:16:37",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59860,
+                  "src": "1515:21:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 59854,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1515:4:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1484:53:37"
+            },
+            "returnParameters": {
+              "id": 59859,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59858,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59860,
+                  "src": "1585:7:37",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 59857,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1585:7:37",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1584:9:37"
+            },
+            "scope": 59861,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IFacility",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          59861
+        ],
+        "name": "IFacility",
+        "nameLocation": "59:9:37",
+        "scope": 59862,
+        "usedErrors": [],
+        "usedEvents": []
+      }
+    ]
+  },
+  "id": 37
+}

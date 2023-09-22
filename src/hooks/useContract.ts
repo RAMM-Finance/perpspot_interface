@@ -20,8 +20,10 @@ import { ArgentWalletDetector, EnsPublicResolver, EnsRegistrar, Erc20, Erc721, E
 import WETH_ABI from 'abis/weth.json'
 import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
+  DATA_PROVIDER_ADDRESSES,
   ENS_REGISTRAR_ADDRESSES,
   GLOBAL_STORAGE_ADDRESSES,
+  LMT_V2_MARGIN_FACILITY,
   MULTICALL_ADDRESS,
   NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
   QUOTER_ADDRESSES,
@@ -29,11 +31,15 @@ import {
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
 } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
 
+import IDataProviderAbi from '../abis/IDataProvider.json'
+import IFacilityAbi from '../abis/IFacility.json'
+import IMarginFacilityAbi from '../abis/IMarginFacility.json'
 import BorrowManagerAbi from '../perpspotContracts/BorrowManager.json'
 import GlobalStorageAbi from '../perpspotContracts/GlobalStorage.json'
 import LeverageManagerAbi from '../perpspotContracts/LeverageManager.json'
@@ -51,6 +57,29 @@ const { abi: TickLensABI } = TickLensJson
 const { abi: MulticallABI } = UniswapInterfaceMulticallJson
 const { abi: NFTPositionManagerABI } = NonfungiblePositionManagerJson
 const { abi: V2MigratorABI } = V3MigratorJson
+
+// LMT V2
+export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
+  const { chainId } = useWeb3React()
+  return useContract(
+    LMT_V2_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA],
+    IMarginFacilityAbi.abi,
+    withSignerIfPossible
+  )
+}
+
+export function useFacilityContract(address: string, withSignerIfPossible?: boolean) {
+  return useContract(address, IFacilityAbi.abi, withSignerIfPossible)
+}
+
+export function useDataProviderContract(withSignerIfPossible?: boolean) {
+  const { chainId } = useWeb3React()
+  return useContract(
+    DATA_PROVIDER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
+    IDataProviderAbi.abi,
+    withSignerIfPossible
+  )
+}
 
 // returns null on errors
 export function useContract<T extends Contract = Contract>(

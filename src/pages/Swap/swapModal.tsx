@@ -74,6 +74,7 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
+
 const TRADE_STRING = 'SwapRouter'
 
 const Wrapper = styled.div`

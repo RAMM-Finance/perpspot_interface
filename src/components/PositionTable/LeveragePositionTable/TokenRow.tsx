@@ -745,7 +745,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   </DeltaText>
                   {/* <ArrowCell>
                     {arrow}
-                  </ArrowCell>            */}
+                  </ArrowCell>*/}
                 </RowBetween>
               </AutoRow>
             </FlexStartRow>
