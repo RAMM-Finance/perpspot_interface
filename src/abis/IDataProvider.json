@@ -1,0 +1,818 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        }
+      ],
+      "name": "getActiveMarginPositions",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "pool",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "underAuction",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "isToken0",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalDebtOutput",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalDebtInput",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "recentPremium",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "openTime",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "repayTime",
+                  "type": "uint32"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "int24",
+                      "name": "tick",
+                      "type": "int24"
+                    },
+                    {
+                      "internalType": "uint128",
+                      "name": "liquidity",
+                      "type": "uint128"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "premium",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "Urate",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "feeGrowthInside0LastX128",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "feeGrowthInside1LastX128",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "lastGrowth",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct LiquidityLoan[]",
+                  "name": "borrowInfo",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct Position",
+              "name": "base",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalPosition",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct MarginPosition[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "pool",
+          "type": "address"
+        }
+      ],
+      "name": "getManagedLiquidityPositions",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "totalFeeGrowthInside0LastX128",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalFeeGrowthInside1LastX128",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint128",
+              "name": "amount",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "tokensOwed0",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "tokensOwed1",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct UniswapPosition[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "getActiveMarginPositions(address)": "dd65c328",
+    "getManagedLiquidityPositions(address,address)": "be188102"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\"}],\"name\":\"getActiveMarginPositions\",\"outputs\":[{\"components\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"pool\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"underAuction\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isToken0\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalDebtOutput\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalDebtInput\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"recentPremium\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"openTime\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"repayTime\",\"type\":\"uint32\"},{\"components\":[{\"internalType\":\"int24\",\"name\":\"tick\",\"type\":\"int24\"},{\"internalType\":\"uint128\",\"name\":\"liquidity\",\"type\":\"uint128\"},{\"internalType\":\"uint256\",\"name\":\"premium\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Urate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"feeGrowthInside0LastX128\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"feeGrowthInside1LastX128\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastGrowth\",\"type\":\"uint256\"}],\"internalType\":\"struct LiquidityLoan[]\",\"name\":\"borrowInfo\",\"type\":\"tuple[]\"}],\"internalType\":\"struct Position\",\"name\":\"base\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"totalPosition\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"margin\",\"type\":\"uint256\"}],\"internalType\":\"struct MarginPosition[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"trader\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"pool\",\"type\":\"address\"}],\"name\":\"getManagedLiquidityPositions\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"totalFeeGrowthInside0LastX128\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalFeeGrowthInside1LastX128\",\"type\":\"uint256\"},{\"internalType\":\"uint128\",\"name\":\"amount\",\"type\":\"uint128\"},{\"internalType\":\"uint128\",\"name\":\"tokensOwed0\",\"type\":\"uint128\"},{\"internalType\":\"uint128\",\"name\":\"tokensOwed1\",\"type\":\"uint128\"}],\"internalType\":\"struct UniswapPosition[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"getActiveMarginPositions(address)\":{\"params\":{\"trader\":\"address of the trader\"}},\"getManagedLiquidityPositions(address,address)\":{\"params\":{\"pool\":\"address of the pool\",\"trader\":\"address of the trader\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getActiveMarginPositions(address)\":{\"notice\":\"returns a list of all active trading positions for a given user\"},\"getManagedLiquidityPositions(address,address)\":{\"notice\":\"returns a list of all managed liquidity positions for a given user\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IDataProvider.sol\":\"IDataProvider\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=lib/openzeppelin-contracts/\",\":@prb/test/=lib/prb-test/src/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\",\":prb-test/=lib/prb-test/src/\",\":solmate/=lib/solmate/\",\":universal-router/=lib/universal-router/contracts/\"]},\"sources\":{\"src/interfaces/IDataProvider.sol\":{\"keccak256\":\"0xdf54146967487d7840ad93c1b9c69edf95f99a1cbc9ebc45fab6d1c5a8ca12f1\",\"urls\":[\"bzz-raw://bef9fa6fb9d0c377ce25f611f9090990b0bc701a8bb39535b8df4a66d6be1b6f\",\"dweb:/ipfs/QmWB3DPKTGFTwrycWtgkNCEzKCw1aPCfnHeeRvwkFGcDta\"]},\"src/types.sol\":{\"keccak256\":\"0x749524dd7c8f80d2d2afda61929c7297c7a59e3f3219f5de548af2f132ca8fab\",\"urls\":[\"bzz-raw://905fb505bbed892789f10368ecee365afbb0991f450591e79fa9d45c987b1a09\",\"dweb:/ipfs/QmUkRiyPrPeSJGAr2Dr3yGrZzHTyAWqeWhTMbUzpxiZcnH\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.21+commit.d9974bed"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "trader",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getActiveMarginPositions",
+          "outputs": [
+            {
+              "internalType": "struct MarginPosition[]",
+              "name": "",
+              "type": "tuple[]",
+              "components": [
+                {
+                  "internalType": "struct Position",
+                  "name": "base",
+                  "type": "tuple",
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "pool",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "underAuction",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isToken0",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalDebtOutput",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalDebtInput",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "recentPremium",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint32",
+                      "name": "openTime",
+                      "type": "uint32"
+                    },
+                    {
+                      "internalType": "uint32",
+                      "name": "repayTime",
+                      "type": "uint32"
+                    },
+                    {
+                      "internalType": "struct LiquidityLoan[]",
+                      "name": "borrowInfo",
+                      "type": "tuple[]",
+                      "components": [
+                        {
+                          "internalType": "int24",
+                          "name": "tick",
+                          "type": "int24"
+                        },
+                        {
+                          "internalType": "uint128",
+                          "name": "liquidity",
+                          "type": "uint128"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "premium",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "Urate",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "feeGrowthInside0LastX128",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "feeGrowthInside1LastX128",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "lastGrowth",
+                          "type": "uint256"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalPosition",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "margin",
+                  "type": "uint256"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "trader",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "pool",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getManagedLiquidityPositions",
+          "outputs": [
+            {
+              "internalType": "struct UniswapPosition[]",
+              "name": "",
+              "type": "tuple[]",
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "totalFeeGrowthInside0LastX128",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalFeeGrowthInside1LastX128",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint128",
+                  "name": "amount",
+                  "type": "uint128"
+                },
+                {
+                  "internalType": "uint128",
+                  "name": "tokensOwed0",
+                  "type": "uint128"
+                },
+                {
+                  "internalType": "uint128",
+                  "name": "tokensOwed1",
+                  "type": "uint128"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "getActiveMarginPositions(address)": {
+            "params": {
+              "trader": "address of the trader"
+            }
+          },
+          "getManagedLiquidityPositions(address,address)": {
+            "params": {
+              "pool": "address of the pool",
+              "trader": "address of the trader"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "getActiveMarginPositions(address)": {
+            "notice": "returns a list of all active trading positions for a given user"
+          },
+          "getManagedLiquidityPositions(address,address)": {
+            "notice": "returns a list of all managed liquidity positions for a given user"
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@openzeppelin/=lib/openzeppelin-contracts/",
+        "@prb/test/=lib/prb-test/src/",
+        "ds-test/=lib/forge-std/lib/ds-test/src/",
+        "forge-std/=lib/forge-std/src/",
+        "prb-test/=lib/prb-test/src/",
+        "solmate/=lib/solmate/",
+        "universal-router/=lib/universal-router/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/interfaces/IDataProvider.sol": "IDataProvider"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/IDataProvider.sol": {
+        "keccak256": "0xdf54146967487d7840ad93c1b9c69edf95f99a1cbc9ebc45fab6d1c5a8ca12f1",
+        "urls": [
+          "bzz-raw://bef9fa6fb9d0c377ce25f611f9090990b0bc701a8bb39535b8df4a66d6be1b6f",
+          "dweb:/ipfs/QmWB3DPKTGFTwrycWtgkNCEzKCw1aPCfnHeeRvwkFGcDta"
+        ],
+        "license": null
+      },
+      "src/types.sol": {
+        "keccak256": "0x749524dd7c8f80d2d2afda61929c7297c7a59e3f3219f5de548af2f132ca8fab",
+        "urls": [
+          "bzz-raw://905fb505bbed892789f10368ecee365afbb0991f450591e79fa9d45c987b1a09",
+          "dweb:/ipfs/QmUkRiyPrPeSJGAr2Dr3yGrZzHTyAWqeWhTMbUzpxiZcnH"
+        ],
+        "license": null
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/interfaces/IDataProvider.sol",
+    "id": 59803,
+    "exportedSymbols": {
+      "AddParams": [
+        60378
+      ],
+      "AuctionParam": [
+        60336
+      ],
+      "BorrowPosition": [
+        60317
+      ],
+      "IDataProvider": [
+        59802
+      ],
+      "Interest": [
+        60261
+      ],
+      "LiquidityLoan": [
+        60276
+      ],
+      "MINIMUM_LIQUIDITY": [
+        60204
+      ],
+      "MarginPosition": [
+        60311
+      ],
+      "MatchMakerParameters": [
+        60224
+      ],
+      "OptionPosition": [
+        60302
+      ],
+      "Order": [
+        60430
+      ],
+      "PoolKey": [
+        60249
+      ],
+      "PoolParam": [
+        60331
+      ],
+      "Position": [
+        60298
+      ],
+      "REPAY_THRESHOLD": [
+        60207
+      ],
+      "ROUND": [
+        60201
+      ],
+      "Rebalance": [
+        60351
+      ],
+      "ReduceParam": [
+        60394
+      ],
+      "ReduceReturn": [
+        60410
+      ],
+      "URateParam": [
+        60362
+      ],
+      "UniswapPosition": [
+        60242
+      ],
+      "UniswapPositionKey": [
+        60231
+      ],
+      "UtilizationGrowth": [
+        60256
+      ],
+      "precision": [
+        60196
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "0:645:36",
+    "nodes": [
+      {
+        "id": 59778,
+        "nodeType": "PragmaDirective",
+        "src": "0:23:36",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 59779,
+        "nodeType": "ImportDirective",
+        "src": "25:22:36",
+        "nodes": [],
+        "absolutePath": "src/types.sol",
+        "file": "../types.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 59803,
+        "sourceUnit": 60431,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 59802,
+        "nodeType": "ContractDefinition",
+        "src": "49:595:36",
+        "nodes": [
+          {
+            "id": 59789,
+            "nodeType": "FunctionDefinition",
+            "src": "217:98:36",
+            "nodes": [],
+            "documentation": {
+              "id": 59780,
+              "nodeType": "StructuredDocumentation",
+              "src": "79:133:36",
+              "text": " @notice returns a list of all active trading positions for a given user\n @param trader address of the trader"
+            },
+            "functionSelector": "dd65c328",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getActiveMarginPositions",
+            "nameLocation": "226:24:36",
+            "parameters": {
+              "id": 59783,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59782,
+                  "mutability": "mutable",
+                  "name": "trader",
+                  "nameLocation": "259:6:36",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59789,
+                  "src": "251:14:36",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59781,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "251:7:36",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "250:16:36"
+            },
+            "returnParameters": {
+              "id": 59788,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59787,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59789,
+                  "src": "290:23:36",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_MarginPosition_$60311_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct MarginPosition[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 59785,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 59784,
+                        "name": "MarginPosition",
+                        "nameLocations": [
+                          "290:14:36"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 60311,
+                        "src": "290:14:36"
+                      },
+                      "referencedDeclaration": 60311,
+                      "src": "290:14:36",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_MarginPosition_$60311_storage_ptr",
+                        "typeString": "struct MarginPosition"
+                      }
+                    },
+                    "id": 59786,
+                    "nodeType": "ArrayTypeName",
+                    "src": "290:16:36",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_MarginPosition_$60311_storage_$dyn_storage_ptr",
+                      "typeString": "struct MarginPosition[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "289:25:36"
+            },
+            "scope": 59802,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 59801,
+            "nodeType": "FunctionDefinition",
+            "src": "501:141:36",
+            "nodes": [],
+            "documentation": {
+              "id": 59790,
+              "nodeType": "StructuredDocumentation",
+              "src": "321:175:36",
+              "text": " @notice returns a list of all managed liquidity positions for a given user\n @param trader address of the trader\n @param pool address of the pool"
+            },
+            "functionSelector": "be188102",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getManagedLiquidityPositions",
+            "nameLocation": "510:28:36",
+            "parameters": {
+              "id": 59795,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59792,
+                  "mutability": "mutable",
+                  "name": "trader",
+                  "nameLocation": "547:6:36",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59801,
+                  "src": "539:14:36",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59791,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "539:7:36",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 59794,
+                  "mutability": "mutable",
+                  "name": "pool",
+                  "nameLocation": "563:4:36",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59801,
+                  "src": "555:12:36",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 59793,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "555:7:36",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "538:30:36"
+            },
+            "returnParameters": {
+              "id": 59800,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 59799,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 59801,
+                  "src": "616:24:36",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_UniswapPosition_$60242_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct UniswapPosition[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 59797,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 59796,
+                        "name": "UniswapPosition",
+                        "nameLocations": [
+                          "616:15:36"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 60242,
+                        "src": "616:15:36"
+                      },
+                      "referencedDeclaration": 60242,
+                      "src": "616:15:36",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_UniswapPosition_$60242_storage_ptr",
+                        "typeString": "struct UniswapPosition"
+                      }
+                    },
+                    "id": 59798,
+                    "nodeType": "ArrayTypeName",
+                    "src": "616:17:36",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_UniswapPosition_$60242_storage_$dyn_storage_ptr",
+                      "typeString": "struct UniswapPosition[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "615:26:36"
+            },
+            "scope": 59802,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IDataProvider",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          59802
+        ],
+        "name": "IDataProvider",
+        "nameLocation": "59:13:36",
+        "scope": 59803,
+        "usedErrors": [],
+        "usedEvents": []
+      }
+    ]
+  },
+  "id": 36
+}

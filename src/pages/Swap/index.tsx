@@ -7,9 +7,7 @@ import { PoolDataSection } from 'components/ExchangeChart'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
-import BorrowPositionsTable from 'components/PositionTable/BorrowPositionTable/TokenTable'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
-import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TokenSelector } from 'components/swap/TokenSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
@@ -19,10 +17,10 @@ import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
+import { useBorrowLMTPositions, useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hooks/usePools'
-import { useLimitlessPositions } from 'hooks/useV3Positions'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -482,22 +480,9 @@ export default function Swap({ className }: { className?: string }) {
   //   }
   // }, [swapHeaderHeight, swapWrapperHeight])
 
-  const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
-
-  const leveragePositions = useMemo(() => {
-    return limitlessPositions && !limitlessPositionsLoading
-      ? limitlessPositions.filter((position) => {
-          return !position.isBorrow
-        })
-      : undefined
-  }, [limitlessPositionsLoading, limitlessPositions])
-  const borrowPositions = useMemo(() => {
-    return limitlessPositions && !limitlessPositionsLoading
-      ? limitlessPositions.filter((position) => {
-          return position.isBorrow
-        })
-      : undefined
-  }, [limitlessPositionsLoading, limitlessPositions])
+  // const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
+  const { loading: leveragePositionsLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  const { loading: borrowPositionsLoading, positions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
   const selectedTab = useSelector((state: any) => state.swap.tab)
@@ -532,22 +517,6 @@ export default function Swap({ className }: { className?: string }) {
               ) : (
                 <ThemedText.HeadlineSmall>Pair not found</ThemedText.HeadlineSmall>
               )}
-
-              {/* {inputApprovalState !== ApprovalState.APPROVED && (
-                  <SmallMaxButton onClick={() => inputApprove()} width="10%">
-                    <Trans>
-                      <WarningIcon size="1.25em" />
-                      Approve {inputCurrency?.symbol}
-                    </Trans>
-                  </SmallMaxButton>
-                )}
-                {outputApprovalState !== ApprovalState.APPROVED && (
-                  <SmallMaxButton onClick={() => outputApprove()} width="10%">
-                    <Trans>
-                      <WarningIcon size="1.25em" /> Approve {outputCurrency?.symbol}
-                    </Trans>
-                  </SmallMaxButton>
-                )} */}
             </TokenNameCell>
             <PoolDataSection
               chainId={chainId ?? 11155111}
@@ -581,12 +550,16 @@ export default function Swap({ className }: { className?: string }) {
                   {activePositionTable === 1 && <LeverageSearchBar />}
                   {activePositionTable === 2 && <BorrowSearchBar />}
                 </TableHeader>
+
                 <TabContent id={1} activeTab={activePositionTable}>
-                  <LeveragePositionsTable positions={leveragePositions} loading={limitlessPositionsLoading} />
+                  {/* TODO */}
+                  {/* <LeveragePositionsTable positions={leveragePositions} loading={leveragePositionsLoading} /> */}
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
-                  <BorrowPositionsTable positions={borrowPositions} loading={limitlessPositionsLoading} />
+                  {/* TODO */}
+                  {/* <BorrowPositionsTable positions={borrowPositions} loading={borrowPositionsLoading} /> */}
                 </TabContent>
+
                 <TabContent id={3} activeTab={activePositionTable}>
                   {!account ? (
                     <ActivityWrapper>

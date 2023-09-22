@@ -20,6 +20,7 @@ import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { AutoRow, RowBetween } from 'components/Row'
+import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal, { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import PriceImpactWarning from 'components/swap/PriceImpactWarning'
@@ -73,10 +74,6 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
-
-import Slider from '@mui/material/Slider';
-import Box from '@mui/material/Box';
-import DiscreteSliderMarks from 'components/Slider/MUISlider'
 
 const TRADE_STRING = 'SwapRouter'
 
@@ -724,67 +721,71 @@ const TradeTabContent = () => {
           </OutputSwapSection>
           {tab !== 'Swap' ? (
             <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)}>
-  <AutoColumn gap="md">
-    <RowBetween>
-    <div style={{ marginRight: '20px' }}>
-        <ThemedText.DeprecatedMain fontWeight={400}>
-          <Trans>Leverage</Trans>
-        </ThemedText.DeprecatedMain>
-      </div>
-      {leverage && (
-        <RowBetween style={{ flexWrap: 'nowrap' }}>
-          <LeverageInputSection>
-          <StyledNumericalInput
-            className="token-amount-input"
-            value={debouncedLeverageFactor ?? ''}
-            placeholder="1"
-            onUserInput={(str: string) => {
-              const isInteger = /^\d+$/.test(str);
-              if (str === '') {
-                onDebouncedLeverageFactor('')
-              } else if (isInteger) {
-                const intValue = parseInt(str, 10);
-                if (intValue >= 1 && intValue <= 500) {
-                  onDebouncedLeverageFactor(str);
-                }
-              }
-            }}
-            disabled={false}
-          />
-          <span style={{
-            position: 'absolute',
-            top: '57%',
-            right: '11.5px',
-            transform: 'translateY(-50%)',
-            fontSize: '20px',
-            opacity: '0.5',
-            color: '#999' 
-          }}>x</span>
-        </LeverageInputSection>
-          <AutoRow gap="4px" justify="flex-end">
-            <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
-              <Trans>10</Trans>
-            </SmallMaxButton>
-            <SmallMaxButton onClick={() => onLeverageFactorChange('100')} width="20%">
-              <Trans>100</Trans>
-            </SmallMaxButton>
-            <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
-              <Trans>500</Trans>
-            </SmallMaxButton>
-          </AutoRow>
-        </RowBetween>
-      )}
-    </RowBetween>
-    {leverage && (
-      <>
-      <DiscreteSliderMarks
-          initialValue={sliderLeverageFactor === '' ? 10 : parseInt(sliderLeverageFactor, 10)}
-          onChange={(val) => setSliderLeverageFactor(val.toString())}
-      />
-      </>
-    )}
-  </AutoColumn>
-</LeverageGaugeSection>
+              <AutoColumn gap="md">
+                <RowBetween>
+                  <div style={{ marginRight: '20px' }}>
+                    <ThemedText.DeprecatedMain fontWeight={400}>
+                      <Trans>Leverage</Trans>
+                    </ThemedText.DeprecatedMain>
+                  </div>
+                  {leverage && (
+                    <RowBetween style={{ flexWrap: 'nowrap' }}>
+                      <LeverageInputSection>
+                        <StyledNumericalInput
+                          className="token-amount-input"
+                          value={debouncedLeverageFactor ?? ''}
+                          placeholder="1"
+                          onUserInput={(str: string) => {
+                            const isInteger = /^\d+$/.test(str)
+                            if (str === '') {
+                              onDebouncedLeverageFactor('')
+                            } else if (isInteger) {
+                              const intValue = parseInt(str, 10)
+                              if (intValue >= 1 && intValue <= 500) {
+                                onDebouncedLeverageFactor(str)
+                              }
+                            }
+                          }}
+                          disabled={false}
+                        />
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '57%',
+                            right: '11.5px',
+                            transform: 'translateY(-50%)',
+                            fontSize: '20px',
+                            opacity: '0.5',
+                            color: '#999',
+                          }}
+                        >
+                          x
+                        </span>
+                      </LeverageInputSection>
+                      <AutoRow gap="4px" justify="flex-end">
+                        <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
+                          <Trans>10</Trans>
+                        </SmallMaxButton>
+                        <SmallMaxButton onClick={() => onLeverageFactorChange('100')} width="20%">
+                          <Trans>100</Trans>
+                        </SmallMaxButton>
+                        <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
+                          <Trans>500</Trans>
+                        </SmallMaxButton>
+                      </AutoRow>
+                    </RowBetween>
+                  )}
+                </RowBetween>
+                {leverage && (
+                  <>
+                    <DiscreteSliderMarks
+                      initialValue={sliderLeverageFactor === '' ? 10 : parseInt(sliderLeverageFactor, 10)}
+                      onChange={(val) => setSliderLeverageFactor(val.toString())}
+                    />
+                  </>
+                )}
+              </AutoColumn>
+            </LeverageGaugeSection>
           ) : null}
           <DetailsSwapSection>
             {!leverage ? (
