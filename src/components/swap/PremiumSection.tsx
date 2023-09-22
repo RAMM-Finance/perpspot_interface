@@ -3,17 +3,12 @@ import PremiumButtons from './PremiumButtons'
 import PremiumTokenDetails from './PremiumTokenDetails'
 import { Currency } from '@uniswap/sdk-core'
 
-
 interface ValueInterface{
   currency0: Currency | null,
 }
 
-
-
 const PremiumSection: React.FC<ValueInterface> = ({currency0}) => {
-
   const [value, setValue] = useState<number | string>('')
-
   return (
     <>
     <h4 style={{paddingLeft:'1vw'}}>Margin Station</h4>

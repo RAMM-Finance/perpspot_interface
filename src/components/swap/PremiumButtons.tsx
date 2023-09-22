@@ -6,7 +6,6 @@ interface ValueInterface{
   setValue: (value: number) => void,
 }
 
-
 const PremiumButtons: React.FC<ValueInterface> = ({value}) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-evenly', marginTop: '1vh'}}>
