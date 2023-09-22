@@ -78,6 +78,9 @@ import Slider from '@mui/material/Slider';
 import Box from '@mui/material/Box';
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 
+
+
+
 const TRADE_STRING = 'SwapRouter'
 
 const Wrapper = styled.div`
@@ -499,17 +502,6 @@ const TradeTabContent = () => {
     leverageFactor ?? '1',
     onLeverageFactorChange
   )
-
-  const [showDepositModal, setShowDepositModal] = useState(false);
-  const [depositValue, setDepositValue] = useState('');
-  const handleDepositPremium = () => {
-    console.log('Deposit Premium button clicked');
-    setShowDepositModal(true);
-  };
-  const handleSubmitDeposit = () => {
-    console.log('Submitting deposit with value:', depositValue);
-    setShowDepositModal(false); //close upon submit. Potentially can have a spinning circle instead. TODO: Discuss.
-  };
   
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
   const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
@@ -621,7 +613,7 @@ const TradeTabContent = () => {
                   ? CurrencyAmount.fromRawAmount(inputCurrency, new BN(premium).shiftedBy(18).toFixed(0))
                   : undefined
               }
-              label="Pay"
+              label="Collateral"
             />
           </Trace>
         </InputSection>
@@ -792,30 +784,8 @@ const TradeTabContent = () => {
           initialValue={sliderLeverageFactor === '' ? 10 : parseInt(sliderLeverageFactor, 10)}
           onChange={(val) => setSliderLeverageFactor(val.toString())}
       />
-          <button onClick={handleDepositPremium} style={{ backgroundColor: '#4080FF', color: 'white', padding: '10px 20px', borderRadius: '5px', fontSize: '16px', cursor: 'pointer' }}>
-            Deposit Premium
-          </button>
       </>
     )}
-
-{showDepositModal && (
-    <div style={{ backgroundColor: theme.navbarBackground, position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', padding: '20px', borderRadius: '8px', zIndex: '1000' }}>
-      <h3>Deposit Premium</h3>
-      <p>Enter the amount you'd like to deposit as a premium.</p>
-      <p>Even more description to help user</p>
-      <div>
-        <input
-          type="number"
-          value={depositValue}
-          onChange={(e) => setDepositValue(e.target.value)}
-          style={{ marginRight: '10px' }}
-        />
-        <button onClick={handleSubmitDeposit}>
-          Submit
-        </button>
-      </div>
-    </div>
-  )}
     
   </AutoColumn>
 </LeverageGaugeSection>

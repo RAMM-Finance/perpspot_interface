@@ -34,7 +34,7 @@ import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
+import { PageWrapper, SwapWrapper, PremiumWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
@@ -54,6 +54,7 @@ import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
 import {PoolSelector} from '../../components/swap/PoolSelector'
+import PremiumSection from 'components/swap/PremiumSection'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
@@ -604,15 +605,20 @@ export default function Swap({ className }: { className?: string }) {
                 </TabContent>
               </PositionsContainer>
             </LeftContainer>
-            <SwapWrapper chainId={chainId} className={className} id="swap-page">
-              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-              <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
-                <TradeTabContent />
-              </TabContent>
-              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-                <BorrowTabContent />
-              </TabContent>
-            </SwapWrapper>
+            <div>
+              <PremiumWrapper>
+                <PremiumSection currency0={inputCurrency as Currency}/>
+              </PremiumWrapper>
+              <SwapWrapper chainId={chainId} className={className} id="swap-page">
+                <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
+                <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
+                  <TradeTabContent />
+                </TabContent>
+                <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
+                  <BorrowTabContent />
+                </TabContent>
+              </SwapWrapper>
+            </div>
           </MainWrapper>
         </PageWrapper>
         {!swapIsUnsupported ? null : (

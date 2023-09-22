@@ -206,9 +206,9 @@ const TabElement = styled.button<{
   background: ${({ theme, isActive, selectedTab, tabValue }) => {
     if (!isActive && selectedTab === tabValue) {
       if (selectedTab === "Long") {
-        return "green";
+        return "#7fffd4";
       } else if (selectedTab === "Short") {
-        return "red";
+        return "#ff5f5f";
       } else {
         return theme.accentActive;
       }
@@ -216,7 +216,7 @@ const TabElement = styled.button<{
     return 'none';
   }};
   color: ${({ theme, isActive, selectedTab, tabValue }) =>
-  !isActive && selectedTab === tabValue ? theme.textSecondary : theme.textTertiary};
+  !isActive && selectedTab === tabValue ? selectedTab === 'Long' ? '#0e1724' : theme.textSecondary : theme.textTertiary};
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
   font-weight: 700;
   white-space: nowrap;

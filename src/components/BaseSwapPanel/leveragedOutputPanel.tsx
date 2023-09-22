@@ -210,7 +210,7 @@ export default function LeverageDebtInputPanel({
       <Container hideInput={hideInput}>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
         <div style={{ marginRight: '10px', fontSize: '15px' }}>
-          <Trans>Total Input</Trans>
+          <Trans>Position Size</Trans>
         </div>
           {!hideInput && (
             <StyledNumericalInput
