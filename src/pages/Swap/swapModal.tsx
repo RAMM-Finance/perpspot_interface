@@ -75,11 +75,7 @@ import {
   StyledNumericalInput,
 } from '.'
 
-
-import Slider from '@mui/material/Slider';
-import Box from '@mui/material/Box';
 const TRADE_STRING = 'SwapRouter'
-
 const Wrapper = styled.div`
   padding: 1rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
