@@ -68,8 +68,8 @@ export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   )
 }
 
-export function useFacilityContract(address: string, withSignerIfPossible?: boolean) {
-  return useContract(address, IFacilityAbi, withSignerIfPossible)
+export function useFacilityContract(facilityAddress: string, withSignerIfPossible?: boolean) {
+  return useContract(facilityAddress, IFacilityAbi, withSignerIfPossible)
 }
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
