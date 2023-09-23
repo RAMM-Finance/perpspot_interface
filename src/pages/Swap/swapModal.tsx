@@ -76,7 +76,6 @@ import {
 } from '.'
 
 const TRADE_STRING = 'SwapRouter'
-
 const Wrapper = styled.div`
   padding: 1rem;
   background-color: ${({ theme }) => theme.backgroundSurface};

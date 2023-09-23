@@ -580,7 +580,7 @@ export default function Swap({ className }: { className?: string }) {
             </LeftContainer>
             <div>
               <PremiumWrapper>
-                <PremiumSection currency0={inputCurrency as Currency}/>
+                <PremiumSection currency0={inputCurrency as Token}/>
               </PremiumWrapper>
               <SwapWrapper chainId={chainId} className={className} id="swap-page">
                 <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
