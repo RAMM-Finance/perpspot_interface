@@ -13,6 +13,7 @@ interface TokenValueInterface {
 }
 
 const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => {
+  console.log(value)
   const { account, chainId } = useWeb3React()
 
   const marginFacilityContract = useFacilityContract(LMT_V2_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA])
@@ -31,6 +32,20 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
     }
   }, [marginFacilityContract, account])
 
+  const handleRemoveMargin = useCallback(async () => {
+    if (!marginFacilityContract || !account) {
+      return
+    }
+    try {
+      const tokenAddress = currency0?.address
+      console.log('Token Address: ', tokenAddress)
+      const tx = await marginFacilityContract.withdrawPremium(tokenAddress, account, value, account)
+      console.log('Transaction: ', tx)
+    } catch (error) {
+      console.error(error)
+    }
+  }, [marginFacilityContract, account])
+
   if (!account) {
     return null
   }
@@ -38,7 +53,7 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
   return (
     <div style={{ display: 'flex', justifyContent: 'space-evenly', marginTop: '1vh' }}>
       <SmallButtonPrimary
-        onClick={handleAddMargin}
+        onClick={handleRemoveMargin}
         style={{
           background: '#7fffd4',
           color: '#030a13',
@@ -49,7 +64,7 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
         Add Margin
       </SmallButtonPrimary>
       <SmallButtonPrimary
-        onClick={() => console.log(value)}
+        onClick={handleAddMargin}
         style={{
           background: '#ff5f5f',
           color: '#030a13',
