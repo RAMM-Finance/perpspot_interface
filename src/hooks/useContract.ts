@@ -34,13 +34,13 @@ import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
 
-import { abi as BorrowManagerAbi } from '../perpspotContracts/BorrowManager.json'
-import { abi as GlobalStorageAbi } from '../perpspotContracts/GlobalStorage.json'
-import { abi as LeverageManagerAbi } from '../perpspotContracts/LeverageManager.json'
-import { abi as LiquidityManagerAbi } from '../perpspotContracts/LiquidityManager.json'
+import BorrowManagerAbi from '../perpspotContracts/BorrowManager.json'
+import GlobalStorageAbi from '../perpspotContracts/GlobalStorage.json'
+import LeverageManagerAbi from '../perpspotContracts/LeverageManager.json'
+import LiquidityManagerAbi from '../perpspotContracts/LiquidityManager.json'
 // import {abi as testTokenAbi} from "../perpspotContracts/testERC.json"
-import { abi as testTokenAbi } from '../perpspotContracts/TestToken.json'
-import { abi as PoolAbi } from '../perpspotContracts/UniswapV3Pool.json'
+import testTokenAbi from '../perpspotContracts/TestToken.json'
+import PoolAbi from '../perpspotContracts/UniswapV3Pool.json'
 import { getContract } from '../utils'
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
@@ -84,29 +84,29 @@ export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: b
 }
 
 export function useLeverageManagerContract(leverageManagerAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(leverageManagerAddress, LeverageManagerAbi, withSignerIfPossible)
+  return useContract(leverageManagerAddress, LeverageManagerAbi.abi, withSignerIfPossible)
 }
 
 export function useLiquidityManagerContract(liquidityManagerAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(liquidityManagerAddress, LiquidityManagerAbi, withSignerIfPossible)
+  return useContract(liquidityManagerAddress, LiquidityManagerAbi.abi, withSignerIfPossible)
 }
 
 export function useBorrowManagerContract(borrowManagerAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(borrowManagerAddress, BorrowManagerAbi, withSignerIfPossible)
+  return useContract(borrowManagerAddress, BorrowManagerAbi.abi, withSignerIfPossible)
 }
 
 export function usePoolContract(poolAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(poolAddress, PoolAbi, withSignerIfPossible)
+  return useContract(poolAddress, PoolAbi.abi, withSignerIfPossible)
 }
 
 export function useGlobalStorageContract(withSignerIfPossible?: boolean) {
-  return useContract(GLOBAL_STORAGE_ADDRESSES, GlobalStorageAbi, withSignerIfPossible)
+  return useContract(GLOBAL_STORAGE_ADDRESSES, GlobalStorageAbi.abi, withSignerIfPossible)
 }
 
 export function useTestTokenContract(testTokenAd?: string, withSignerIfPossible?: boolean) {
-  const contract = useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
+  const contract = useContract(testTokenAd, testTokenAbi.abi, withSignerIfPossible)
 
-  return useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
+  return useContract(testTokenAd, testTokenAbi.abi, withSignerIfPossible)
 }
 
 export function useWETHContract(withSignerIfPossible?: boolean) {
