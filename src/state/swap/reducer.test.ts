@@ -1,6 +1,6 @@
 import { createStore, Store } from 'redux'
 
-import { Field, selectCurrency } from './actions'
+import { ActiveSwapTab, Field, selectCurrency } from './actions'
 import reducer, { SwapState } from './reducer'
 
 describe('swap reducer', () => {
@@ -13,6 +13,17 @@ describe('swap reducer', () => {
       typedValue: '',
       independentField: Field.INPUT,
       recipient: null,
+      leverageFactor: null,
+      hideClosedLeveragePositions: false,
+      leverage: false,
+      leverageManagerAddress: null,
+      activeTab: ActiveSwapTab.BORROW,
+      ltv: null,
+      borrowManagerAddress: null,
+      premium: null,
+      tab: 'Long',
+      originInputId: null,
+      originOutputId: null,
     })
   })
 

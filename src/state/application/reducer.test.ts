@@ -17,6 +17,10 @@ describe('application reducer', () => {
       chainId: null,
       openModal: null,
       popupList: [],
+      fiatOnramp: {
+        available: false,
+        availabilityChecked: false,
+      },
     })
   })
 
