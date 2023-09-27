@@ -18,8 +18,8 @@
     "i18n:compile": "yarn i18n:extract && lingui compile",
     "i18n:pseudo": "lingui extract --locale pseudo && lingui compile",
     "prepare": "yarn contracts:compile && yarn graphql:fetch && yarn graphql:generate && yarn i18n:compile",
-    "start": "export NODE_OPTIONS=--openssl-legacy-provider && craco --max_old_space_size=4096 start",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && craco --max_old_space_size=4096 build",
+    "start": "craco --max_old_space_size=4096 start",
+    "build": "craco --max_old_space_size=4096 build",
     "serve": "serve build -l 3000",
     "deduplicate": "yarn-deduplicate --strategy=highest",
     "lint": "yarn eslint .",
@@ -66,8 +66,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@craco/craco": "^7.1.0",
+    "@craco/craco": "6.4.3",
     "@ethersproject/experimental": "^5.4.0",
     "@lingui/cli": "^3.9.0",
     "@testing-library/jest-dom": "^5.16.4",
@@ -107,9 +106,8 @@
     "jest-styled-components": "^7.0.8",
     "ms.macro": "^2.0.0",
     "patch-package": "^6.4.7",
-    "path-browserify": "^1.0.1",
     "postinstall-postinstall": "^2.1.0",
-    "react-scripts": "^5.0.1",
+    "react-scripts": "^4.0.3",
     "serve": "^11.3.2",
     "ts-transform-graphql-tag": "^0.2.1",
     "typechain": "^5.0.0",
@@ -252,7 +250,7 @@
   },
   "engines": {
     "npm": "please-use-yarn",
-    "node": "18",
+    "node": "16",
     "yarn": ">=1.22"
   }
 }
