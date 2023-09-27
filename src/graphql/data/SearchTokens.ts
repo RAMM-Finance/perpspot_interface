@@ -1,7 +1,10 @@
-import { useTokenSearchQuery } from 'graphql/limitlessGraph/poolPriceData'
+import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import gql from 'graphql-tag'
+import { useMemo } from 'react'
 
-import { Chain, SearchTokensQuery } from './__generated__/types-and-hooks'
+import { Chain, SearchTokensQuery, useSearchTokensQuery } from './__generated__/types-and-hooks'
+import { chainIdToBackendName } from './util'
+import { useTokenSearchQuery } from 'graphql/limitlessGraph/poolPriceData'
 
 gql`
   query SearchTokens($searchQuery: String!) {
@@ -78,8 +81,8 @@ export function useSearchTokens(searchQuery: string, chainId: number) {
   //   skip: !searchQuery,
   // })
 
-  const { data, loading, error } = useTokenSearchQuery(searchQuery)
-  // console.log('searchQuery', data)
+  const {data, loading, error} = useTokenSearchQuery(searchQuery)
+// console.log('searchQuery', data)
 
   // const sortedTokens = useMemo(() => {
   //   const searchChain = chainIdToBackendName(chainId)
@@ -95,6 +98,7 @@ export function useSearchTokens(searchQuery: string, chainId: number) {
   //     searchTokenSortFunction.bind(null, searchChain, WRAPPED_NATIVE_CURRENCY[chainId]?.address)
   //   )
   // }, [data, chainId])
+
 
   return {
     data: (data as any)?.tokenSearch,
