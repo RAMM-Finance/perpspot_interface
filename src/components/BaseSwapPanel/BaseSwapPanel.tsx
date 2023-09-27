@@ -348,7 +348,7 @@ export function BaseSwapPanel({
             <RowBetween>
               {premium && (
                 <RowFixed style={{ height: '17px' }}>
-                  <Text>Testing</Text>
+                  <Text>Testing {formatCurrencyAmount(premium, 4)}</Text>
                   <div style={{ fontSize: '12px' }}>
                     <Trans>
                       Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
