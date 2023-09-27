@@ -11,6 +11,7 @@ import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import { Lock } from 'react-feather'
+import { Text } from 'rebass'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
@@ -108,9 +109,9 @@ const CurrencySelect = styled(ButtonGray)<{
 
 const InputRow = styled.div`
   display: flex;
-  align-items: center;  // vertically align items in the middle
-  justify-content: space-between;  // maximize the space between items
-`;
+  align-items: center; // vertically align items in the middle
+  justify-content: space-between; // maximize the space between items
+`
 
 const LabelRow = styled.div`
   ${flexRowNoWrap};
@@ -291,9 +292,9 @@ export function BaseSwapPanel({
       )}
       <Container hideInput={hideInput}>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-        <div style={{ marginRight: '10px', fontSize: '15px' }}>
-          <Trans>{label}</Trans>
-        </div>
+          <div style={{ marginRight: '10px', fontSize: '15px' }}>
+            <Trans>{label}</Trans>
+          </div>
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
@@ -347,18 +348,12 @@ export function BaseSwapPanel({
             <RowBetween>
               {premium && (
                 <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
+                  <Text>Testing</Text>
                   <div style={{ fontSize: '12px' }}>
                     <Trans>
                       Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
                     </Trans>
                   </div>
-                  </ThemedText.DeprecatedBody>
                 </RowFixed>
               )}
               <LoadingOpacityContainer $loading={loading}>
