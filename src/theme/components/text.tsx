@@ -163,6 +163,12 @@ export const DeprecatedBody = styled(Text)`
   color: ${({ theme }) => theme.textPrimary};
 `
 
+export const SwapTextSecondary = styled(Text)`
+  font-weight: 400;
+  font-size: 14px;
+  color: ${({ theme }) => theme.textSecondary};
+`
+
 export const DeprecatedLargeHeader = styled(Text)`
   font-weight: 600;
   font-size: 24px;

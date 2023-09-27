@@ -11,14 +11,13 @@ import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import { Lock } from 'react-feather'
-import { Text } from 'rebass'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { useCurrencyBalance } from '../../state/connection/hooks'
-import { DeprecatedBody, ThemedText } from '../../theme'
+import { SwapTextSecondary, ThemedText } from '../../theme'
 import { ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
@@ -348,9 +347,9 @@ export function BaseSwapPanel({
             <RowBetween>
               {premium && (
                 <RowFixed style={{ height: '17px' }}>
-                  <Text>
+                  <SwapTextSecondary>
                     Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
-                  </Text>
+                  </SwapTextSecondary>
                 </RowFixed>
               )}
               <LoadingOpacityContainer $loading={loading}>
@@ -358,12 +357,7 @@ export function BaseSwapPanel({
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>
-                  <DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
+                  <SwapTextSecondary>
                     {!hideBalance && currency && selectedCurrencyBalance ? (
                       renderBalance ? (
                         renderBalance(selectedCurrencyBalance)
@@ -371,7 +365,7 @@ export function BaseSwapPanel({
                         <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
                       )
                     ) : null}
-                  </DeprecatedBody>
+                  </SwapTextSecondary>
                   {showMaxButton && selectedCurrencyBalance ? (
                     <TraceEvent
                       events={[BrowserEvent.onClick]}
