@@ -113,6 +113,10 @@ const InputRow = styled.div`
   justify-content: space-between; // maximize the space between items
 `
 
+const GreenText = styled(Text)`
+  color: green;
+`
+
 const LabelRow = styled.div`
   ${flexRowNoWrap};
   align-items: center;
@@ -348,9 +352,9 @@ export function BaseSwapPanel({
             <RowBetween>
               {premium && (
                 <RowFixed style={{ height: '17px' }}>
-                  <Text>
+                  <GreenText>
                     Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
-                  </Text>
+                  </GreenText>
                 </RowFixed>
               )}
               <LoadingOpacityContainer $loading={loading}>
