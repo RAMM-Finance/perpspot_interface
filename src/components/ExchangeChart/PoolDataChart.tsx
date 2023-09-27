@@ -1,6 +1,6 @@
 import { Interface } from '@ethersproject/abi'
 import { Token } from '@uniswap/sdk-core'
-import IUniswapV3PoolState from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES as LIMITLESS_FACTORIES } from 'constants/addresses'
@@ -19,7 +19,7 @@ import styled from 'styled-components/macro'
 import { defaultChartProps } from './constants'
 import useDatafeed from './useDataFeed'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolState.abi)
+const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const ChartContiner = styled.div`
   height: 550px;
