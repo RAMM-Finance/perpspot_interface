@@ -569,12 +569,10 @@ export function ValueLabel({
       </RowFixed>
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
-        <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-          <RowFixed>
-            <TruncatedText width={width}>{value ? `${value.toString()}` : '-'}</TruncatedText>
-            {value ? symbolAppend : null}
-          </RowFixed>
-        </ThemedText.DeprecatedBlack>
+        <RowFixed>
+          <TruncatedText width={width}>{value ? `${value.toString()}` : '-'}</TruncatedText>
+          {value ? symbolAppend : null}
+        </RowFixed>
       </TextWithLoadingPlaceholder>
     </RowBetween>
   )
