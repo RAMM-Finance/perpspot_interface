@@ -1,5 +1,4 @@
 import { t } from '@lingui/macro'
-import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
@@ -32,6 +31,7 @@ import {
   TransactionType,
   WrapTransactionInfo,
 } from 'state/transactions/types'
+import { formatCurrencyAmount, formatNumber, NumberType } from 'utils/formatter'
 
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
@@ -55,9 +55,13 @@ function buildCurrencyDescriptor(
   amtB: string,
   delimiter = t`for`
 ) {
-  const formattedA = currencyA ? formatCurrencyAmount(CurrencyAmount.fromRawAmount(currencyA, amtA)) : t`Unknown`
+  const formattedA = currencyA
+    ? formatCurrencyAmount({ amount: CurrencyAmount.fromRawAmount(currencyA, amtA) })
+    : t`Unknown`
   const symbolA = currencyA?.symbol ?? ''
-  const formattedB = currencyB ? formatCurrencyAmount(CurrencyAmount.fromRawAmount(currencyB, amtB)) : t`Unknown`
+  const formattedB = currencyB
+    ? formatCurrencyAmount({ amount: CurrencyAmount.fromRawAmount(currencyB, amtB) })
+    : t`Unknown`
   const symbolB = currencyB?.symbol ?? ''
   return [formattedA, symbolA, delimiter, formattedB, symbolB].filter(Boolean).join(' ')
 }
@@ -114,9 +118,9 @@ function parseReduceLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
+  const reduceAmount = formatNumber({ input: -info.reduceAmount, type: NumberType.SwapTradeAmount })
 
-  const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
+  const PnL = formatNumber({ input: info.pnl, type: NumberType.SwapTradeAmount })
 
   const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
 
@@ -154,8 +158,8 @@ function parseReduceBorrowDebt(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
-  const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
+  const reduceAmount = formatNumber({ input: -info.reduceAmount, type: NumberType.SwapTradeAmount })
+  const returnedAmount = formatNumber({ input: info.expectedReturnedAmount, type: NumberType.SwapTradeAmount })
   // console.log('stuff', info.newTotalPosition, newTotalPosition)
 
   const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenOut?.symbol}${
@@ -176,7 +180,7 @@ function parseReduceBorrowCollateral(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
+  const reduceAmount = formatNumber({ input: -info.reduceAmount, type: NumberType.SwapTradeAmount })
   // const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
 
   const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenIn?.symbol}${

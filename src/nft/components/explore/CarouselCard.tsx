@@ -1,4 +1,4 @@
-import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
+import { formatNumberOrString, NumberType } from 'utils/formatter'
 import { loadingAnimation } from 'components/Loader/styled'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { useNftGraphqlEnabled } from 'featureFlags/flags/nftlGraphql'
@@ -212,7 +212,7 @@ const MarketplaceRow = ({ marketplace, floorInEth, listings }: MarketplaceRowPro
       <TableElement>
         <ThemedText.BodySmall color="textSecondary">
           {Number(floorInEth) > 0
-            ? `${formatNumberOrString(floorInEth, NumberType.NFTTokenFloorPriceTrailingZeros)} ETH`
+            ? `${formatNumberOrString({input: floorInEth, type: NumberType.NFTTokenFloorPriceTrailingZeros})} ETH`
             : '-'}
         </ThemedText.BodySmall>
       </TableElement>

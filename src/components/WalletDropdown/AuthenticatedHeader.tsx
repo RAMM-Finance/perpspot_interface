@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent, TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName, SharedEventName } from '@uniswap/analytics-events'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonEmphasis, ButtonSize, LoadingButtonSpinner, ThemeButton } from 'components/Button'
@@ -17,13 +17,14 @@ import { useProfilePageState, useSellAsset, useWalletCollections } from 'nft/hoo
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
 import { ProfilePageStateType } from 'nft/types'
 import { useCallback, useState } from 'react'
-import { ArrowDownRight, ArrowUpRight, Copy, CreditCard, IconProps, Info, Power, Settings } from 'react-feather'
+import { ArrowDownRight, ArrowUpRight, Copy, IconProps, Info, Power, Settings } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import { useAppDispatch } from 'state/hooks'
 import { updateSelectedWallet } from 'state/user/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CopyHelper, ExternalLink, ThemedText } from 'theme'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import { shortenAddress } from '../../nft/utils/address'
 import { useCloseModal, useFiatOnrampAvailability, useOpenModal, useToggleModal } from '../../state/application/hooks'
@@ -266,16 +267,17 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
         {totalBalance !== undefined ? (
           <FadeInColumn gap="xs">
             <ThemedText.HeadlineLarge fontWeight={500}>
-              {formatNumber(totalBalance, NumberType.PortfolioBalance)}
+              {formatNumber({ input: totalBalance, type: NumberType.PortfolioBalance })}
             </ThemedText.HeadlineLarge>
             <AutoRow marginBottom="20px">
               {absoluteChange !== 0 && percentChange && (
                 <>
                   <PortfolioArrow change={absoluteChange as number} />
                   <ThemedText.BodySecondary>
-                    {`${formatNumber(Math.abs(absoluteChange as number), NumberType.PortfolioBalance)} (${formatDelta(
-                      percentChange
-                    )})`}
+                    {`${formatNumber({
+                      input: Math.abs(absoluteChange as number),
+                      type: NumberType.PortfolioBalance,
+                    })} (${formatDelta(percentChange)})`}
                   </ThemedText.BodySecondary>
                 </>
               )}

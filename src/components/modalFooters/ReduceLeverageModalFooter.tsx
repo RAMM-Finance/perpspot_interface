@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { InterfaceElementName } from '@uniswap/analytics-events'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 // import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -32,6 +31,8 @@ import { useTheme } from 'styled-components/macro'
 import { HideSmall, Separator, ThemedText } from 'theme'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 import { currencyId } from 'utils/currencyId'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import { ButtonError } from '../Button'
 import { AutoRow, RowBetween, RowFixed } from '../Row'
@@ -414,10 +415,10 @@ export function ReduceLeverageModalFooter({
                   Reduce Amount (
                   {`${
                     position?.totalPosition
-                      ? formatNumber(
-                          (Number(reduceAmount) / Number(position?.totalPosition)) * 100,
-                          NumberType.SwapTradeAmount
-                        )
+                      ? formatNumber({
+                          input: (Number(reduceAmount) / Number(position?.totalPosition)) * 100,
+                          type: NumberType.SwapTradeAmount,
+                        })
                       : '-'
                   }% Reduction`}
                   )
@@ -558,9 +559,10 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {`${formatNumber(Number(transactionInfo.unusedPremium), NumberType.SwapTradeAmount)}  ${
-                                inputIsToken0 ? token0?.symbol : token1?.symbol
-                              }`}
+                              {`${formatNumber({
+                                input: Number(transactionInfo.unusedPremium),
+                                type: NumberType.SwapTradeAmount,
+                              })}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
@@ -607,14 +609,14 @@ export function ReduceLeverageModalFooter({
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
                             <TruncatedText>
-                              {`${formatNumber(Number(transactionInfo.pnl), NumberType.SwapTradeAmount)}  ${
-                                inputIsToken0 ? token0?.symbol : token1?.symbol
-                              }`}
+                              {`${formatNumber({
+                                input: Number(transactionInfo.pnl),
+                                type: NumberType.SwapTradeAmount,
+                              })}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
                             </TruncatedText>
                             <DeltaText delta={Number(transactionInfo.pnl)}>
                               {formatBNToString(
-                                new BN(transactionInfo.pnl).div(position?.initialCollateral ?? 1).multipliedBy(100),
-                                NumberType.SwapTradeAmount
+                                new BN(transactionInfo.pnl).div(position?.initialCollateral ?? 1).multipliedBy(100)
                               )}{' '}
                               %
                             </DeltaText>

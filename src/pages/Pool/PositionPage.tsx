@@ -3,7 +3,6 @@ import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
-import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
 import { NonfungiblePositionManager, Pool, Position } from '@uniswap/v3-sdk'
 // import { SupportedChainId } from '@uniswap/widgets'
@@ -38,6 +37,7 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ExternalLink, HideExtraSmall, HideSmall, ThemedText } from 'theme'
 import { currencyId } from 'utils/currencyId'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
+import { formatPrice, NumberType } from 'utils/formatter'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
@@ -197,7 +197,7 @@ function CurrentPriceCard({
           <Trans>Current price</Trans>
         </ExtentsText>
         <ThemedText.DeprecatedMediumHeader textAlign="center">
-          {formatPrice(inverted ? pool.token1Price : pool.token0Price, NumberType.TokenTx)}
+          {formatPrice({ price: inverted ? pool.token1Price : pool.token0Price, type: NumberType.TokenTx })}
         </ThemedText.DeprecatedMediumHeader>
         <ExtentsText>
           <Trans>
@@ -733,8 +733,7 @@ export function PositionPage() {
                     <RowBetween style={{ alignItems: 'flex-start' }}>
                       <AutoColumn gap="md">
                         <Label>
-                          <Trans>Liquidity</Trans>    
-
+                          <Trans>Liquidity</Trans>
                         </Label>
 
                         {fiatValueOfLiquidity?.greaterThan(new Fraction(1, 100)) ? (
@@ -746,20 +745,19 @@ export function PositionPage() {
                             {/*<Trans>$-</Trans>*/}
                           </ThemedText.DeprecatedLargeHeader>
                         )}
-
                       </AutoColumn>
-                        {currency0 && currency1 && feeAmount && tokenId ? (
-                          <SmallButtonPrimary
-                            as={Link}
-                            to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
-                            padding="5px 8px"
-                            width="fit-content"
-                            $borderRadius="12px"
-                            style={{ marginRight: '8px' }}
-                          >
-                            <Trans>Increase Liquidity</Trans>
-                          </SmallButtonPrimary>
-                        ) : null}                
+                      {currency0 && currency1 && feeAmount && tokenId ? (
+                        <SmallButtonPrimary
+                          as={Link}
+                          to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
+                          padding="5px 8px"
+                          width="fit-content"
+                          $borderRadius="12px"
+                          style={{ marginRight: '8px' }}
+                        >
+                          <Trans>Increase Liquidity</Trans>
+                        </SmallButtonPrimary>
+                      ) : null}
                     </RowBetween>
 
                     <LightCard padding="12px 16px">
@@ -797,7 +795,7 @@ export function PositionPage() {
                       </AutoColumn>
                     </LightCard>
                   </AutoColumn>
-                </DarkCard> 
+                </DarkCard>
                 <DarkCard>
                   <AutoColumn gap="md" style={{ width: '100%' }}>
                     <AutoColumn gap="md">
@@ -805,14 +803,13 @@ export function PositionPage() {
                         <AutoColumn gap="md">
                           <Label>
                             <Trans>Maximum Withdrawable </Trans>
-                              <Badge style={{ marginLeft: '10px' }}>
-                                <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
-                                </ThemedText.DeprecatedLargeHeader>
-                              </Badge>                      
+                            <Badge style={{ marginLeft: '10px' }}>
+                              <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
+                                <Trans>{100}%</Trans>
+                              </ThemedText.DeprecatedLargeHeader>
+                            </Badge>
                             {/*<RangeBadge removed={removed} inRange={inRange} />
                             <span style={{ width: '8px' }} /> */}
-                                                 
                           </Label>
 
                           {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
@@ -833,18 +830,17 @@ export function PositionPage() {
                             </ThemedText.DeprecatedLargeHeader>
                           )}
                         </AutoColumn>
-                          {ownsNFT&&tokenId && !removed ? (
-                            <SmallButtonPrimary
-                              as={Link}
-                              to={`/remove/${tokenId}`}
-                              padding="8px 10px"
-                              width="fit-content"
-                              $borderRadius="12px"
-                            >
-                              <Trans>Remove Liquidity</Trans>
-                            </SmallButtonPrimary>
-                          ) : null}
-                        
+                        {ownsNFT && tokenId && !removed ? (
+                          <SmallButtonPrimary
+                            as={Link}
+                            to={`/remove/${tokenId}`}
+                            padding="8px 10px"
+                            width="fit-content"
+                            $borderRadius="12px"
+                          >
+                            <Trans>Remove Liquidity</Trans>
+                          </SmallButtonPrimary>
+                        ) : null}
                       </RowBetween>
                     </AutoColumn>
                     <LightCard padding="12px 16px">
@@ -897,7 +893,7 @@ export function PositionPage() {
                       </AutoColumn>
                     )}
                   </AutoColumn>
-                </DarkCard>   
+                </DarkCard>
 
                 <DarkCard>
                   <AutoColumn gap="md" style={{ width: '100%' }}>
@@ -1007,7 +1003,6 @@ export function PositionPage() {
                     )}
                   </AutoColumn>
                 </DarkCard>
-             
               </AutoColumn>
             </ResponsiveRow>
             <DarkCard>
@@ -1102,7 +1097,6 @@ export function PositionPage() {
               </AutoColumn>
             </DarkCard>
           </AutoColumn>
-
         </PageWrapper>
         {/*<SwitchLocaleLink /> */}
       </>

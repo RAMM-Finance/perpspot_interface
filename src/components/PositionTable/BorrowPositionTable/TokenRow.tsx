@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
@@ -24,6 +23,8 @@ import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -687,26 +688,25 @@ const RawLoadedRow = (props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) 
               <InputText>{inputCurrencySymbol}</InputText>
             </PositionInfo>
           }
-          ltv={<Trans>{formatNumber(Number(ltv) * 100, NumberType.SwapTradeAmount)}%</Trans>}
+          ltv={<Trans>{formatNumber({ input: Number(ltv) * 100, type: NumberType.SwapTradeAmount })}%</Trans>}
           borrowedAmount={
             <FlexStartRow>
-              <UnderlineText>
-                {`${formatBNToString(position.totalDebtInput, NumberType.SwapTradeAmount)} ${outputCurrencySymbol}`}
-              </UnderlineText>
+              <UnderlineText>{`${formatBNToString(position.totalDebtInput)} ${outputCurrencySymbol}`}</UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
           }
           collateral={
             <FlexStartRow>
-              <UnderlineText>
-                {`${formatBNToString(position.initialCollateral, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
-              </UnderlineText>
+              <UnderlineText>{`${formatBNToString(position.initialCollateral)} ${inputCurrencySymbol}`}</UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
           }
           repaymentTime={<Trans>{!isOverDue ? <GreenText>{timeLeft}</GreenText> : <RedText>{0}</RedText>}</Trans>}
           remainingPremium={
-            <Trans>{`${formatNumber(remainingPremium, NumberType.SwapTradeAmount)} ${outputCurrencySymbol}`}</Trans>
+            <Trans>{`${formatNumber({
+              input: remainingPremium,
+              type: NumberType.SwapTradeAmount,
+            })} ${outputCurrencySymbol}`}</Trans>
           }
           position={position}
         />

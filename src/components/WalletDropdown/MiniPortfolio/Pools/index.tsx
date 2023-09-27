@@ -1,7 +1,6 @@
 import { t } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import Row from 'components/Row'
@@ -12,6 +11,7 @@ import { useCallback, useMemo, useReducer } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { formatNumber, NumberType } from 'utils/formatter'
 import { switchChain } from 'utils/switchChain'
 import { hasURL } from 'utils/urlChecks'
 
@@ -141,15 +141,18 @@ function PositionListItem({ positionInfo }: { positionInfo: PositionInfo }) {
               placement="left"
               text={
                 <div style={{ padding: '4px 0px' }}>
-                  <ThemedText.Caption>{`${formatNumber(
-                    liquidityValue,
-                    NumberType.PortfolioBalance
-                  )} (liquidity) + ${formatNumber(feeValue, NumberType.PortfolioBalance)} (fees)`}</ThemedText.Caption>
+                  <ThemedText.Caption>{`${formatNumber({
+                    input: liquidityValue,
+                    type: NumberType.PortfolioBalance,
+                  })} (liquidity) + ${formatNumber({
+                    input: feeValue,
+                    type: NumberType.PortfolioBalance,
+                  })} (fees)`}</ThemedText.Caption>
                 </div>
               }
             >
               <ThemedText.SubHeader fontWeight={500}>
-                {formatNumber((liquidityValue ?? 0) + (feeValue ?? 0), NumberType.PortfolioBalance)}
+                {formatNumber({ input: (liquidityValue ?? 0) + (feeValue ?? 0), type: NumberType.PortfolioBalance })}
               </ThemedText.SubHeader>
             </MouseoverTooltip>
 

@@ -1,6 +1,5 @@
 import { sendAnalyticsEvent, user } from '@uniswap/analytics'
 import { CustomUserProperties, InterfaceEventName, WalletConnectionResult } from '@uniswap/analytics-events'
-import { getWalletMeta } from '@uniswap/conedison/provider/meta'
 import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import { AutoColumn } from 'components/Column'
@@ -20,6 +19,8 @@ import { useConnectedWallets } from 'state/wallets/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { flexColumnNoWrap } from 'theme/styles'
+// import { getWalletMeta } from '@uniswap/conedison/provider/meta'
+import { getWalletMeta } from 'utils/walletMeta'
 
 import ConnectionErrorView from './ConnectionErrorView'
 import Option from './Option'
@@ -193,7 +194,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
           <OptionGrid data-testid="option-grid">
             {connections.map((connection) =>
               // Hides Uniswap Wallet if mgtm is disabled
-              connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET ) ? (
+              connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET) ? (
                 <Option
                   key={connection.getName()}
                   connection={connection}

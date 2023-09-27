@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { SwapEventName, SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { getPriceUpdateBasisPoints } from 'lib/utils/analytics'
@@ -12,14 +11,16 @@ import { Text } from 'rebass'
 import { InterfaceTrade } from 'state/routing/types'
 import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import { ThemedText } from '../../theme'
 import { isAddress, shortenAddress } from '../../utils'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'
+import { FiatValue } from '../BaseSwapPanel/FiatValue'
 import { ButtonPrimary } from '../Button'
 import { LightCard } from '../Card'
 import { AutoColumn } from '../Column'
-import { FiatValue } from '../BaseSwapPanel/FiatValue'
 import CurrencyLogo from '../Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from '../Row'
 import TradePrice from '../swap/TradePrice'
@@ -501,7 +502,9 @@ export function LeverageModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
-                {displayValues.totalInput ? formatNumber(displayValues.totalInput, NumberType.SwapTradeAmount) : ''}
+                {displayValues.totalInput
+                  ? formatNumber({ input: displayValues.totalInput, type: NumberType.SwapTradeAmount })
+                  : ''}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">

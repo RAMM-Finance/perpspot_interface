@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { AutoRow } from 'components/Row'
 import { ArrowCell } from 'components/Tokens/TokenDetails/PriceChart'
 import { getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
@@ -11,6 +10,8 @@ import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 const UNSUPPORTED_METADATA_CHAINS = [SupportedChainId.BNB]
 
@@ -31,7 +32,7 @@ function Stat({
   description?: ReactNode
   baseQuoteSymbol?: string
 }) {
-  let _value = value ? formatNumber(value, NumberType.FiatTokenPrice).replace(/\$/g, '') : '-'
+  let _value = value ? formatNumber({ input: value, type: NumberType.FiatTokenPrice }).replace(/\$/g, '') : '-'
   if (value && baseQuoteSymbol) {
     _value = `${_value} ${baseQuoteSymbol}`
   }
@@ -89,7 +90,7 @@ export default function StatsSection(props: StatsSectionProps) {
           <AutoRow>
             <ArrowCell>{arrow}</ArrowCell>
             <DeltaText delta={Number(stats?.delta)}>
-              {stats?.delta ? formatNumber(stats.delta, NumberType.SwapTradeAmount) : '-'}%
+              {stats?.delta ? formatNumber({ input: stats.delta, type: NumberType.SwapTradeAmount }) : '-'}%
             </DeltaText>
           </AutoRow>
         </StatPrice>

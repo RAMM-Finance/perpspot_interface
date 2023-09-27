@@ -1,6 +1,6 @@
 import { Interface } from '@ethersproject/abi'
 import { Token } from '@uniswap/sdk-core'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import StatsSection from 'components/swap/StatsSection'
@@ -19,7 +19,7 @@ import styled from 'styled-components/macro'
 
 import useDatafeed from './useDataFeed'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
+const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi)
 
 const StatsContainer = styled.div`
   margin-left: 5px;
@@ -127,7 +127,6 @@ export const PoolDataSection = ({
     token1Reserve: number
     token0Reserve: number
   }>()
-
 
   const token0Contract = useTokenContract(token0?.address)
   const token1Contract = useTokenContract(token1?.address)

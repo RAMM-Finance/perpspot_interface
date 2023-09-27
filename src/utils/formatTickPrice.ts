@@ -1,5 +1,6 @@
-import { formatPrice, NumberType } from '@uniswap/conedison/format'
+// import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Price, Token } from '@uniswap/sdk-core'
+import { formatPrice, NumberType } from 'utils/formatter'
 
 import { Bound } from '../state/mint/v3/actions'
 
@@ -20,5 +21,5 @@ export function formatTickPrice({ price, atLimit, direction, placeholder, number
     return placeholder
   }
 
-  return formatPrice(price, numberType ?? NumberType.TokenNonTx)
+  return formatPrice({ price, type: numberType ?? NumberType.TokenNonTx })
 }

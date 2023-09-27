@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import Column from 'components/Column'
 import { ScrollBarStyles } from 'components/Common'
 import Row from 'components/Row'
@@ -13,6 +12,7 @@ import { useMemo } from 'react'
 import { Twitter, X } from 'react-feather'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { formatCurrencyAmount, NumberType } from 'utils/formatter'
 
 import { TitleRow } from '../shared'
 
@@ -108,7 +108,7 @@ export const SuccessScreen = ({ overlayClick }: { overlayClick: () => void }) =>
           <ThemedText.SubHeader lineHeight="24px">{formatEth(totalEthListingValue)} ETH</ThemedText.SubHeader>
           {usdcValue && (
             <ThemedText.BodySmall lineHeight="20px" color="textSecondary">
-              {formatCurrencyAmount(usdcValue, NumberType.FiatTokenPrice)}
+              {formatCurrencyAmount({ amount: usdcValue, type: NumberType.FiatTokenPrice })}
             </ThemedText.BodySmall>
           )}
         </ProceedsColumn>

@@ -1,6 +1,5 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import Row from 'components/Row'
 import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import { PortfolioBalancesQuery, usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
@@ -11,6 +10,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { EllipsisStyle, ThemedText } from 'theme'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import { useToggleWalletDrawer } from '..'
 import { PortfolioArrow } from '../AuthenticatedHeader'
@@ -115,7 +116,7 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
         title={<ThemedText.SubHeader fontWeight={500}>{token?.name}</ThemedText.SubHeader>}
         descriptor={
           <TokenBalanceText>
-            {formatNumber(quantity, NumberType.TokenNonTx)} {token?.symbol}
+            {formatNumber({ input: quantity, type: NumberType.TokenNonTx })} {token?.symbol}
           </TokenBalanceText>
         }
         onClick={navigateToTokenDetails}
@@ -123,7 +124,7 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
           denominatedValue && (
             <>
               <ThemedText.SubHeader fontWeight={500}>
-                {formatNumber(denominatedValue?.value, NumberType.PortfolioBalance)}
+                {formatNumber({ input: denominatedValue?.value, type: NumberType.PortfolioBalance })}
               </ThemedText.SubHeader>
               <Row justify="flex-end">
                 <PortfolioArrow change={percentChange} size={20} strokeWidth={1.75} />

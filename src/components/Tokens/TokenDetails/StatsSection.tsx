@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
@@ -7,6 +7,7 @@ import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import { UNSUPPORTED_METADATA_CHAINS } from '../constants'
 import { TokenSortMethod } from '../state'
@@ -62,7 +63,7 @@ function Stat({
   return (
     <StatWrapper data-cy={`${dataCy}`}>
       <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
-      <StatPrice>{formatNumber(value, NumberType.FiatTokenStats)}</StatPrice>
+      <StatPrice>{formatNumber({ input: value, type: NumberType.FiatTokenStats })}</StatPrice>
     </StatWrapper>
   )
 }

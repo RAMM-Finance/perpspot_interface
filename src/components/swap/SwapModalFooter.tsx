@@ -1,14 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
-import { formatNumber } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
+import CurrencyInputPanel from 'components/BaseSwapPanel'
 import Card, { DarkCard, OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import CurrencyInputPanel from 'components/BaseSwapPanel'
 import Loader from 'components/Icons/LoadingSpinner'
 import { LoadingRows } from 'components/Loader/styled'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
@@ -43,6 +42,8 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { HideSmall, Separator, ThemedText } from 'theme'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 import { currencyId } from 'utils/currencyId'
+// import { formatNumber } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 import { computeRealizedPriceImpact } from 'utils/prices'
 
 import { ButtonError, ButtonPrimary } from '../Button'
@@ -967,7 +968,11 @@ export function AddPremiumLeverageModalFooter({
                         </RowFixed>
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                            {`${tradeInfo ? formatNumber(tradeInfo.totalPremium) : '-'}` + inputCurrency?.symbol}
+                            {`${
+                              tradeInfo
+                                ? formatNumber({ input: tradeInfo.totalPremium, type: NumberType.SwapTradeAmount })
+                                : '-'
+                            }` + inputCurrency?.symbol}
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>
@@ -981,7 +986,11 @@ export function AddPremiumLeverageModalFooter({
                         </RowFixed>
                         <TextWithLoadingPlaceholder syncing={loading} width={65}>
                           <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                            {`${tradeInfo ? formatNumber(tradeInfo.remainingPremium) : '-'}` + inputCurrency?.symbol}
+                            {`${
+                              tradeInfo
+                                ? formatNumber({ input: tradeInfo.remainingPremium, type: NumberType.SwapTradeAmount })
+                                : '-'
+                            }` + inputCurrency?.symbol}
                           </ThemedText.DeprecatedBlack>
                         </TextWithLoadingPlaceholder>
                       </RowBetween>

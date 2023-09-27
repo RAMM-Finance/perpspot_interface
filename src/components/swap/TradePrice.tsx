@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Price } from '@uniswap/sdk-core'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -7,6 +6,8 @@ import { useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatTransactionAmount, priceToPreciseFloat } from 'utils/formatNumbers'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 interface TradePriceProps {
   price: Price<Currency, Currency>
@@ -61,7 +62,7 @@ export default function TradePrice({ price }: TradePriceProps) {
       <ThemedText.BodySmall>{text}</ThemedText.BodySmall>{' '}
       {usdPrice && (
         <ThemedText.DeprecatedDarkGray>
-          <Trans>({formatNumber(usdPrice, NumberType.FiatTokenPrice)})</Trans>
+          <Trans>({formatNumber({ input: usdPrice, type: NumberType.FiatTokenPrice })})</Trans>
         </ThemedText.DeprecatedDarkGray>
       )}
     </StyledPriceContainer>

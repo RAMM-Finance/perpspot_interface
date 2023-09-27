@@ -1,7 +1,7 @@
 import { ApolloClient, gql, NormalizedCacheObject } from '@apollo/client'
 import { Interface } from '@ethersproject/abi'
 import { Token } from '@uniswap/sdk-core'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { computePoolAddress, FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import {
@@ -21,7 +21,7 @@ import { useLimitlessSubgraph } from './limitlessClients'
 dayjs.extend(utc)
 dayjs.extend(weekOfYear)
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
+const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi)
 
 export type PriceChartEntry = {
   time: number // unix timestamp

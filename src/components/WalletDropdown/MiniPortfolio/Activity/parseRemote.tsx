@@ -1,5 +1,4 @@
 import { t } from '@lingui/macro'
-import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { SupportedChainId } from '@uniswap/sdk-core'
 import { NONFUNGIBLE_POSITION_MANAGER_ADDRESSES, UNI_ADDRESS } from 'constants/addresses'
 import { nativeOnChain } from 'constants/tokens'
@@ -17,6 +16,7 @@ import moment from 'moment'
 import ms from 'ms.macro'
 import { useEffect, useState } from 'react'
 import { isAddress } from 'utils'
+import { formatNumberOrString, NumberType } from 'utils/formatter'
 
 import { Activity } from './types'
 type TransactionChanges = {
@@ -120,8 +120,8 @@ function parseSwap(changes: TransactionChanges) {
     const sent = changes.TokenTransfer.find((t) => t?.__typename === 'TokenTransfer' && t.direction === 'OUT')
     const received = changes.TokenTransfer.find((t) => t?.__typename === 'TokenTransfer' && t.direction === 'IN')
     if (sent && received) {
-      const inputAmount = formatNumberOrString(sent.quantity, NumberType.TokenNonTx)
-      const outputAmount = formatNumberOrString(received.quantity, NumberType.TokenNonTx)
+      const inputAmount = formatNumberOrString({ input: sent.quantity, type: NumberType.TokenNonTx })
+      const outputAmount = formatNumberOrString({ input: received.quantity, type: NumberType.TokenNonTx })
       return {
         title: getSwapTitle(sent, received),
         descriptor: `${inputAmount} ${sent.asset.symbol} for ${outputAmount} ${received.asset.symbol}`,
@@ -144,8 +144,8 @@ function parseLPTransfers(changes: TransactionChanges) {
   const poolTokenA = changes.TokenTransfer[0]
   const poolTokenB = changes.TokenTransfer[1]
 
-  const tokenAQuanitity = formatNumberOrString(poolTokenA.quantity, NumberType.TokenNonTx)
-  const tokenBQuantity = formatNumberOrString(poolTokenB.quantity, NumberType.TokenNonTx)
+  const tokenAQuanitity = formatNumberOrString({ input: poolTokenA.quantity, type: NumberType.TokenNonTx })
+  const tokenBQuantity = formatNumberOrString({ input: poolTokenB.quantity, type: NumberType.TokenNonTx })
 
   return {
     descriptor: `${tokenAQuanitity} ${poolTokenA.asset.symbol} and ${tokenBQuantity} ${poolTokenB.asset.symbol}`,
@@ -171,7 +171,7 @@ function parseSendReceive(changes: TransactionChanges, assetActivity: AssetActiv
   } else if (changes.TokenTransfer.length === 1) {
     transfer = changes.TokenTransfer[0]
     assetName = transfer.asset.symbol
-    amount = formatNumberOrString(transfer.quantity, NumberType.TokenNonTx)
+    amount = formatNumberOrString({ input: transfer.quantity, type: NumberType.TokenNonTx })
   }
 
   if (transfer && assetName && amount) {

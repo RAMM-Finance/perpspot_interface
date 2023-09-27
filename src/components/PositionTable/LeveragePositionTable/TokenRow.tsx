@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
@@ -24,6 +23,8 @@ import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -722,16 +723,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           value={
             <FlexStartRow>
-              <UnderlineText>
-                {`${formatBNToString(position.totalPosition, NumberType.SwapTradeAmount)} ${outputCurrencySymbol}`}
-              </UnderlineText>
+              <UnderlineText>{`${formatBNToString(position.totalPosition)} ${outputCurrencySymbol}`}</UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
           }
           collateral={
-            <FlexStartRow>
-              {`${formatBNToString(position.initialCollateral, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
-            </FlexStartRow>
+            <FlexStartRow>{`${formatBNToString(position.initialCollateral)} ${inputCurrencySymbol}`}</FlexStartRow>
           }
           repaymentTime={
             <FlexStartRow>{!isOverDue ? <GreenText>{timeLeft}</GreenText> : <RedText>{0}</RedText>}</FlexStartRow>
@@ -741,7 +738,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <DeltaText delta={Number(pnl)}>
-                    {pnl ? `${formatNumber(Number(pnl), NumberType.SwapTradeAmount)} ${inputCurrencySymbol}` : '-'}
+                    {pnl
+                      ? `${formatNumber({
+                          input: Number(pnl),
+                          type: NumberType.SwapTradeAmount,
+                        })} ${inputCurrencySymbol}`
+                      : '-'}
                   </DeltaText>
                   {/* <ArrowCell>
                     {arrow}
@@ -761,10 +763,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   lineHeight: 1.5,
                 }}
               >
-                {`${formatNumber(Number(entryPrice), NumberType.SwapTradeAmount)}/${formatNumber(
-                  Number(currentPrice),
-                  NumberType.SwapTradeAmount
-                )} `}
+                {`${formatNumber({ input: Number(entryPrice), type: NumberType.SwapTradeAmount })}/${formatNumber({
+                  input: Number(currentPrice),
+                  type: NumberType.SwapTradeAmount,
+                })} `}
                 <AutoColumn>{quoteBaseSymbol}</AutoColumn>
               </AutoColumn>
             </FlexStartRow>

@@ -2,6 +2,8 @@
 const { VanillaExtractPlugin } = require('@vanilla-extract/webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const { DefinePlugin } = require('webpack')
+const path = require('path')
+const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 
 const commitHash = require('child_process').execSync('git rev-parse HEAD')
 
@@ -41,14 +43,23 @@ module.exports = {
       )
       if (instanceOfMiniCssExtractPlugin !== undefined) instanceOfMiniCssExtractPlugin.options.ignoreOrder = true
 
-      // We're currently on Webpack 4.x that doesn't support the `exports` field in package.json.
-      // See https://github.com/webpack/webpack/issues/9509.
-      //
-      // In case you need to add more modules, make sure to remap them to the correct path.
-      //
-      // Map @uniswap/conedison to its dist folder.
-      // This is required because conedison uses * to redirect all imports to its dist.
-      webpackConfig.resolve.alias['@uniswap/conedison'] = '@uniswap/conedison/dist'
+      webpackConfig.resolve = Object.assign(webpackConfig.resolve, {
+        plugins: webpackConfig.resolve.plugins.map((plugin) => {
+          // Allow vanilla-extract in production builds.
+          // This is necessary because create-react-app guards against external imports.
+          // See https://sandroroth.com/blog/vanilla-extract-cra#production-build.
+          if (plugin instanceof ModuleScopePlugin) {
+            plugin.allowedPaths.push(path.join(__dirname, 'node_modules/@vanilla-extract/webpack-plugin'))
+          }
+
+          return plugin
+        }),
+        // Webpack 5 does not resolve node modules, so we do so for those necessary:
+        fallback: {
+          // - react-markdown requires path
+          path: require.resolve('path-browserify'),
+        },
+      })
 
       return webpackConfig
     },

@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -10,6 +9,8 @@ import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+// import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, NumberType } from 'utils/formatter'
 
 const BalancesCard = styled.div`
   box-shadow: ${({ theme }) => theme.shallowShadow};
@@ -69,8 +70,11 @@ export default function BalanceSummary({ token }: { token: Currency }) {
   const theme = useTheme()
   const { label, color } = getChainInfo(isSupportedChain(chainId) ? chainId : SupportedChainId.MAINNET)
   const balance = useCurrencyBalance(account, token)
-  const formattedBalance = formatCurrencyAmount(balance, NumberType.TokenNonTx)
-  const formattedUsdValue = formatCurrencyAmount(useStablecoinValue(balance), NumberType.FiatTokenStats)
+  const formattedBalance = formatCurrencyAmount({ amount: balance, type: NumberType.TokenNonTx })
+  const formattedUsdValue = formatCurrencyAmount({
+    amount: useStablecoinValue(balance),
+    type: NumberType.FiatTokenStats,
+  })
 
   if (!account || !balance) {
     return null

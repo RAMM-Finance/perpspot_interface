@@ -1,4 +1,3 @@
-import { formatNumber, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
@@ -9,6 +8,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
 import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
+import { formatNumber, formatNumberOrString, NumberType } from 'utils/formatter'
 
 import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import LeverageManagerData from '../perpspotContracts/LeverageManager.json'
@@ -127,7 +127,10 @@ export function useAddLeveragePositionCallback(
           type: TransactionType.ADD_LEVERAGE,
           inputCurrencyId: currencyId(trade.inputAmount.currency),
           outputCurrencyId: currencyId(trade.outputAmount.currency),
-          inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
+          inputAmount: formatNumberOrString({
+            input: leverageTrade.inputAmount.toExact(),
+            type: NumberType.SwapTradeAmount,
+          }),
           expectedAddedPosition: formatBNToString(
             leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
           ),
@@ -201,12 +204,11 @@ export function useAddBorrowPositionCallback(
           console.log('borrowResponse', response)
           addTransaction(response, {
             type: TransactionType.ADD_BORROW,
-            collateralAmount: formatNumber(Number(parsedAmount?.toExact())),
+            collateralAmount: formatNumber({ input: Number(parsedAmount?.toExact()) }),
             inputCurrencyId: currencyId(inputCurrency),
             outputCurrencyId: currencyId(outputCurrency),
             borrowedAmount: formatBNToString(borrowTrade.borrowedAmount),
           })
-          return response.hash
         })
     }
   }, [

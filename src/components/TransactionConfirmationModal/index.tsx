@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import backgroundImage from 'assets/images/visualbg.png'
@@ -20,6 +20,7 @@ import { useIsTransactionConfirmed, useTransaction } from 'state/transactions/ho
 import { ReduceLeveragePositionTransactionInfo, TransactionDetails } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { isL2ChainId } from 'utils/chains'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import Circle from '../../assets/images/blue-loader.svg'
 import { ReactComponent as LogoGradient } from '../../assets/svg/full_logo_gradient.svg'
@@ -282,18 +283,18 @@ export function ReduceLeverageTransactionPopupContent({
         </CloseItem>
       </CenterRow>
       <AgencyB size={24} color="#ffffff">
-        {`${formatNumber(leverageFactor, NumberType.SwapTradeAmount)}x | Long ${outputCurrency?.symbol} / ${
-          inputCurrency?.symbol
-        }`}
+        {`${formatNumber({ input: leverageFactor, type: NumberType.SwapTradeAmount })}x | Long ${
+          outputCurrency?.symbol
+        } / ${inputCurrency?.symbol}`}
       </AgencyB>
       <AmboyText size={48} color={pnl > 0 ? '#00ff0c' : '#ff2a00'}>
-        {`${formatNumber((pnl / initialCollateral) * 100)}%`}
+        {`${formatNumber({ input: (pnl / initialCollateral) * 100 })}%`}
       </AmboyText>
       <AgencyB size={24} color="#ffffff">
         (
         {pnl > 0
-          ? `+ ${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`
-          : `${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`}
+          ? `+ ${formatNumber({ input: pnl, type: NumberType.SwapTradeAmount })} ${inputCurrency?.symbol}`
+          : `${formatNumber({ input: pnl, type: NumberType.SwapTradeAmount })} ${inputCurrency?.symbol}`}
         )
       </AgencyB>
       <CenterRow>
@@ -301,13 +302,13 @@ export function ReduceLeverageTransactionPopupContent({
           <AgencyB size={24} color="#ffffff">{`Entry Price: `}</AgencyB>
         </div>
 
-        <AgencyB size={24} color="#f600ff">{` ${formatNumber(entryPrice)} ${quoteBaseSymbol}`}</AgencyB>
+        <AgencyB size={24} color="#f600ff">{` ${formatNumber({ input: entryPrice })} ${quoteBaseSymbol}`}</AgencyB>
       </CenterRow>
       <CenterRow>
         <div style={{ margin: '3px' }}>
           <AgencyB size={24} color="#ffffff">{`Mark Price: `}</AgencyB>
         </div>
-        <AgencyB size={24} color="#f600ff">{` ${formatNumber(markPrice)} ${quoteBaseSymbol}`}</AgencyB>
+        <AgencyB size={24} color="#f600ff">{` ${formatNumber({ input: markPrice })} ${quoteBaseSymbol}`}</AgencyB>
       </CenterRow>
       <LogoGradient width={150} height={50} />
     </ReduceWrapper>

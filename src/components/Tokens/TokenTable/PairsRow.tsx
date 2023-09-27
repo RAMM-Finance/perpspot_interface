@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+// import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Token } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -22,6 +22,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
+import { formatNumber, NumberType } from 'utils/formatter'
 
 import { useCurrency } from '../../../hooks/Tokens'
 import { Field } from '../../../state/swap/actions'
@@ -731,7 +732,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               }
             }}
           >
-            {formatNumber(tvl_, NumberType.FiatTokenStats)}
+            {formatNumber({ input: tvl_, type: NumberType.FiatTokenStats })}
           </ClickableContent>
         }
         volume={
@@ -742,7 +743,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               }
             }}
           >
-            {formatNumber(volume_, NumberType.FiatTokenStats)}
+            {formatNumber({ input: volume_, type: NumberType.FiatTokenStats })}
           </ClickableContent>
         }
         APR={
@@ -754,7 +755,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             }}
             rate={estimatedapr_}
           >
-            {formatNumber(estimatedapr_) + '%'}
+            {formatNumber({ input: estimatedapr_ }) + '%'}
           </ClickableRate>
         }
         UtilRate={
@@ -766,7 +767,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             }}
             rate={urate_}
           >
-            {formatNumber(urate_) + '%'}
+            {formatNumber({ input: urate_ }) + '%'}
           </ClickableRate>
         }
         // sparkLine={

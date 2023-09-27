@@ -1,10 +1,7 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { InterfaceEventName } from '@uniswap/analytics-events'
-import { formatUSDPrice } from '@uniswap/conedison/format'
 import clsx from 'clsx'
 import QueryTokenLogo from 'components/Logo/QueryTokenLogo'
-import TokenSafetyIcon from 'components/TokenSafety/TokenSafetyIcon'
-import { checkSearchTokenWarning } from 'constants/tokenSafety'
 import { Chain, TokenStandard } from 'graphql/data/__generated__/types-and-hooks'
 import { SearchToken } from 'graphql/data/SearchTokens'
 import { getTokenDetailsURL } from 'graphql/data/util'
@@ -19,6 +16,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+// import { formatUSDPrice } from '@uniswap/conedison/format'
+import { formatUsdPrice } from 'utils/formatter'
 
 import { DeltaText, getDeltaArrow } from '../Tokens/TokenDetails/PriceChart'
 import { useAddRecentlySearchedAsset } from './RecentlySearchedAssets'
@@ -189,7 +188,7 @@ export const TokenRow = ({ token, isHovered, setHoveredIndex, toggleOpen, index,
         {!!token.market?.price?.value && (
           <>
             <Row gap="4">
-              <Box className={styles.primaryText}>{formatUSDPrice(token.market.price.value)}</Box>
+              <Box className={styles.primaryText}>{formatUsdPrice(token.market.price.value)}</Box>
             </Row>
             <PriceChangeContainer>
               <ArrowCell>{arrow}</ArrowCell>
