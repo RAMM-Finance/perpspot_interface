@@ -108,9 +108,9 @@ const CurrencySelect = styled(ButtonGray)<{
 
 const InputRow = styled.div`
   display: flex;
-  align-items: center; // vertically align items in the middle
-  justify-content: space-between; // maximize the space between items
-`
+  align-items: center;  // vertically align items in the middle
+  justify-content: space-between;  // maximize the space between items
+`;
 
 const LabelRow = styled.div`
   ${flexRowNoWrap};
@@ -291,9 +291,9 @@ export function BaseSwapPanel({
       )}
       <Container hideInput={hideInput}>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-          <div style={{ marginRight: '10px', fontSize: '15px' }}>
-            <Trans>{label}</Trans>
-          </div>
+        <div style={{ marginRight: '10px', fontSize: '15px' }}>
+          <Trans>{label}</Trans>
+        </div>
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
@@ -353,11 +353,11 @@ export function BaseSwapPanel({
                     fontSize={14}
                     style={{ display: 'inline' }}
                   >
-                    <div style={{ fontSize: '12px' }}>
-                      <Trans>
-                        Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
-                      </Trans>
-                    </div>
+                  <div style={{ fontSize: '12px' }}>
+                    <Trans>
+                      Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
+                    </Trans>
+                  </div>
                   </ThemedText.DeprecatedBody>
                 </RowFixed>
               )}

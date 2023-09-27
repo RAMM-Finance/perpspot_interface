@@ -10,7 +10,7 @@ import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPosit
 import BorrowPositionsTable from 'components/PositionTable/BorrowPositionTable/TokenTable'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
-import PremiumSection from 'components/swap/PremiumSection'
+import { TokenSelector } from 'components/swap/TokenSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -34,8 +34,7 @@ import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { PoolSelector } from '../../components/swap/PoolSelector'
-import { PageWrapper, PremiumWrapper, SwapWrapper } from '../../components/swap/styleds'
+import { PageWrapper, SwapWrapper, PremiumWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
@@ -54,6 +53,8 @@ import {
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
+import {PoolSelector} from '../../components/swap/PoolSelector'
+import PremiumSection from 'components/swap/PremiumSection'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
@@ -606,7 +607,7 @@ export default function Swap({ className }: { className?: string }) {
             </LeftContainer>
             <div>
               <PremiumWrapper>
-                <PremiumSection currency0={inputCurrency as Currency} />
+                <PremiumSection currency0={inputCurrency as Currency}/>
               </PremiumWrapper>
               <SwapWrapper chainId={chainId} className={className} id="swap-page">
                 <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
