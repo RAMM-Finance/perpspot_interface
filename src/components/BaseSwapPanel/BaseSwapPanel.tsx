@@ -18,7 +18,7 @@ import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { useCurrencyBalance } from '../../state/connection/hooks'
-import { ThemedText } from '../../theme'
+import { DeprecatedBody, ThemedText } from '../../theme'
 import { ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
@@ -111,10 +111,6 @@ const InputRow = styled.div`
   display: flex;
   align-items: center; // vertically align items in the middle
   justify-content: space-between; // maximize the space between items
-`
-
-const GreenText = styled(Text)`
-  color: green;
 `
 
 const LabelRow = styled.div`
@@ -352,9 +348,9 @@ export function BaseSwapPanel({
             <RowBetween>
               {premium && (
                 <RowFixed style={{ height: '17px' }}>
-                  <GreenText>
+                  <Text>
                     Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
-                  </GreenText>
+                  </Text>
                 </RowFixed>
               )}
               <LoadingOpacityContainer $loading={loading}>
@@ -362,7 +358,7 @@ export function BaseSwapPanel({
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
+                  <DeprecatedBody
                     color={theme.textSecondary}
                     fontWeight={400}
                     fontSize={14}
@@ -375,7 +371,7 @@ export function BaseSwapPanel({
                         <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
                       )
                     ) : null}
-                  </ThemedText.DeprecatedBody>
+                  </DeprecatedBody>
                   {showMaxButton && selectedCurrencyBalance ? (
                     <TraceEvent
                       events={[BrowserEvent.onClick]}

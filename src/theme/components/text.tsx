@@ -14,6 +14,207 @@ const TextWrapper = styled(Text).withConfig({
 type TextProps = Omit<TextPropsOriginal, 'css'>
 
 // todo: export each component individually
+
+export const BodyPrimary = styled(Text)`
+  font-weight: 400;
+  font-size: 16px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const BodySecondary = styled(Text)`
+  font-weight: 400;
+  font-size: 16px;
+  color: ${({ theme }) => theme.textSecondary};
+`
+
+export const Gold = styled(Text)`
+  font-weight: 800;
+  font-size: 16px;
+  color: gold;
+`
+
+export const BodySmall = styled(Text)`
+  font-weight: 400;
+  font-size: 14px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const TableText = styled(Text)`
+  font-weight: 400;
+  font-size: 12px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const Caption = styled(Text)`
+  font-weight: 400;
+  font-size: 12px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const HeadlineSmall = styled(Text)`
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 28px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const PriceSmall = styled(Text)`
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 28px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const HeadlineMedium = styled(Text)`
+  font-weight: 500;
+  font-size: 28px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const HeadlineLarge = styled(Text)`
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 44px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const LargeHeader = styled(Text)`
+  font-weight: 400;
+  font-size: 36px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const Hero = styled(Text)`
+  font-weight: 500;
+  font-size: 48px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const LabelSmall = styled(Text)`
+  font-weight: 600;
+  font-size: 14px;
+  color: ${({ theme }) => theme.textSecondary};
+`
+
+export const Link = styled(Text)`
+  font-weight: 600;
+  font-size: 14px;
+  color: ${({ theme }) => theme.accentAction};
+`
+
+export const MediumHeader = styled(Text)`
+  font-weight: 400;
+  font-size: 20px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const SubHeader = styled(Text)`
+  font-weight: 600;
+  font-size: 16px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const SubHeaderSmall = styled(Text)`
+  font-weight: 500;
+  font-size: 14px;
+  color: ${({ theme }) => theme.textSecondary};
+`
+
+export const UtilityBadge = styled(Text)`
+  font-weight: 600;
+  font-size: 8px;
+  line-height: 12px;
+`
+
+export const DeprecatedMain = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.textSecondary};
+`
+
+export const DeprecatedLink = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.accentAction};
+`
+
+export const DeprecatedLabel = styled(Text)`
+  font-weight: 600;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const DeprecatedBlack = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const DeprecatedWhite = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.white};
+`
+
+export const LmtWhite = styled(Text)`
+  font-weight: 1000;
+  font-size: 20px;
+  color: ${({ theme }) => theme.white};
+`
+
+export const DeprecatedBody = styled(Text)`
+  font-weight: 400;
+  font-size: 16px;
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+export const DeprecatedLargeHeader = styled(Text)`
+  font-weight: 600;
+  font-size: 24px;
+`
+
+export const DeprecatedMediumHeader = styled(Text)`
+  font-weight: 500;
+  font-size: 20px;
+`
+
+export const DeprecatedSubHeader = styled(Text)`
+  font-weight: 400;
+  font-size: 14px;
+`
+
+export const DeprecatedSmall = styled(Text)`
+  font-weight: 500;
+  font-size: 11px;
+`
+
+export const DeprecatedBlue = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.accentAction};
+`
+
+export const DeprecatedYellow = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.deprecated_yellow3};
+`
+
+export const DeprecatedDarkGray = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.textTertiary};
+`
+
+export const DeprecatedGray = styled(Text)`
+  font-weight: 500;
+  color: ${({ theme }) => theme.deprecated_bg3};
+`
+
+export const DeprecatedItalic = styled(Text)`
+  font-weight: 500;
+  font-size: 12px;
+  font-style: italic;
+  color: ${({ theme }) => theme.textSecondary};
+`
+
+export const DeprecatedError = styled(Text)<{ error: boolean }>`
+  font-weight: 500;
+  color: ${({ error, theme }) => (error ? theme.accentFailure : theme.textSecondary)};
+`
+
 export const ThemedText = {
   // todo: there should be just one `Body` with default color, no need to make all variations
   BodyPrimary(props: TextProps) {
