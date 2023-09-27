@@ -1,4 +1,4 @@
-import { BorrowLMTPositionDetails, LeverageLMTPositionDetails } from 'types/lmtv2position'
+import { BorrowLMTPositionDetails, LeverageLMTPositionDetails, RawPoolKey } from 'types/lmtv2position'
 
 // fetches all leveraged LMT positions for a given account
 export function useLeveragedLMTPositions(account: string | undefined): {

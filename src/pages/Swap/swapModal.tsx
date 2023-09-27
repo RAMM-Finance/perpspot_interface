@@ -78,7 +78,6 @@ import {
 
 import Slider from '@mui/material/Slider';
 import Box from '@mui/material/Box';
-import DiscreteSliderMarks from 'components/Slider/MUISlider'
 const TRADE_STRING = 'SwapRouter'
 
 const Wrapper = styled.div`
