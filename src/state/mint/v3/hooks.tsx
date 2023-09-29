@@ -1,3 +1,5 @@
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { keccak256 } from '@ethersproject/solidity'
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Price, Rounding, Token } from '@uniswap/sdk-core'
 import {
@@ -12,8 +14,10 @@ import {
   tickToPrice,
 } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import { useLmtPoolManagerContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -498,6 +502,39 @@ export function useV3DerivedMintInfo(
   }
 }
 
+function useTickDiscretization(
+  currencyA: Currency | undefined,
+  currencyB: Currency | undefined,
+  fee: FeeAmount | undefined
+): {
+  tickDiscretization: number | undefined
+  loading: boolean
+  error: boolean
+} {
+  const [token0, token1] = useMemo(
+    () =>
+      currencyA && currencyB
+        ? currencyA.wrapped.sortsBefore(currencyB.wrapped)
+          ? [currencyA.wrapped.address, currencyB.wrapped.address]
+          : [currencyB.wrapped.address, currencyA.wrapped.address]
+        : [undefined, undefined],
+    [currencyA, currencyB]
+  )
+  const poolManager = useLmtPoolManagerContract()
+  const hashedKey = keccak256(
+    ['bytes'],
+    [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, Number(fee)])]
+  )
+  const { result, error, loading } = useSingleCallResult(poolManager, 'tickDiscretizations', [hashedKey])
+  const tickDiscretization = result?.[0]?.toNumber()
+
+  return {
+    tickDiscretization,
+    loading,
+    error,
+  }
+}
+
 export function useRangeHopCallbacks(
   baseCurrency: Currency | undefined,
   quoteCurrency: Currency | undefined,
@@ -507,61 +544,62 @@ export function useRangeHopCallbacks(
   pool?: Pool | undefined | null
 ) {
   const dispatch = useAppDispatch()
+  const { tickDiscretization } = useTickDiscretization(baseCurrency, quoteCurrency, feeAmount)
 
   const baseToken = useMemo(() => baseCurrency?.wrapped, [baseCurrency])
   const quoteToken = useMemo(() => quoteCurrency?.wrapped, [quoteCurrency])
 
   const getDecrementLower = useCallback(() => {
-    if (baseToken && quoteToken && typeof tickLower === 'number' && feeAmount) {
-      const newPrice = tickToPrice(baseToken, quoteToken, tickLower - TICK_SPACINGS[feeAmount])
+    if (baseToken && quoteToken && typeof tickLower === 'number' && feeAmount && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, tickLower - tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     // use pool current tick as starting tick if we have pool but no tick input
-    if (!(typeof tickLower === 'number') && baseToken && quoteToken && feeAmount && pool) {
-      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent - TICK_SPACINGS[feeAmount])
+    if (!(typeof tickLower === 'number') && baseToken && quoteToken && feeAmount && pool && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent - tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     return ''
-  }, [baseToken, quoteToken, tickLower, feeAmount, pool])
+  }, [baseToken, quoteToken, tickLower, feeAmount, pool, tickDiscretization])
 
   const getIncrementLower = useCallback(() => {
-    if (baseToken && quoteToken && typeof tickLower === 'number' && feeAmount) {
-      const newPrice = tickToPrice(baseToken, quoteToken, tickLower + TICK_SPACINGS[feeAmount])
+    if (baseToken && quoteToken && typeof tickLower === 'number' && feeAmount && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, tickLower + tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     // use pool current tick as starting tick if we have pool but no tick input
-    if (!(typeof tickLower === 'number') && baseToken && quoteToken && feeAmount && pool) {
-      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent + TICK_SPACINGS[feeAmount])
+    if (!(typeof tickLower === 'number') && baseToken && quoteToken && feeAmount && pool && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent + tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     return ''
-  }, [baseToken, quoteToken, tickLower, feeAmount, pool])
+  }, [baseToken, quoteToken, tickLower, feeAmount, pool, tickDiscretization])
 
   const getDecrementUpper = useCallback(() => {
-    if (baseToken && quoteToken && typeof tickUpper === 'number' && feeAmount) {
-      const newPrice = tickToPrice(baseToken, quoteToken, tickUpper - TICK_SPACINGS[feeAmount])
+    if (baseToken && quoteToken && typeof tickUpper === 'number' && feeAmount && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, tickUpper - tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     // use pool current tick as starting tick if we have pool but no tick input
-    if (!(typeof tickUpper === 'number') && baseToken && quoteToken && feeAmount && pool) {
-      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent - TICK_SPACINGS[feeAmount])
+    if (!(typeof tickUpper === 'number') && baseToken && quoteToken && feeAmount && pool && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent - tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     return ''
-  }, [baseToken, quoteToken, tickUpper, feeAmount, pool])
+  }, [baseToken, quoteToken, tickUpper, feeAmount, pool, tickDiscretization])
 
   const getIncrementUpper = useCallback(() => {
-    if (baseToken && quoteToken && typeof tickUpper === 'number' && feeAmount) {
-      const newPrice = tickToPrice(baseToken, quoteToken, tickUpper + TICK_SPACINGS[feeAmount])
+    if (baseToken && quoteToken && typeof tickUpper === 'number' && feeAmount && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, tickUpper + tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     // use pool current tick as starting tick if we have pool but no tick input
-    if (!(typeof tickUpper === 'number') && baseToken && quoteToken && feeAmount && pool) {
-      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent + TICK_SPACINGS[feeAmount])
+    if (!(typeof tickUpper === 'number') && baseToken && quoteToken && feeAmount && pool && tickDiscretization) {
+      const newPrice = tickToPrice(baseToken, quoteToken, pool.tickCurrent + tickDiscretization)
       return newPrice.toSignificant(5, undefined, Rounding.ROUND_UP)
     }
     return ''
-  }, [baseToken, quoteToken, tickUpper, feeAmount, pool])
+  }, [baseToken, quoteToken, tickUpper, feeAmount, pool, tickDiscretization])
 
   const getSetFullRange = useCallback(() => {
     dispatch(setFullRange())

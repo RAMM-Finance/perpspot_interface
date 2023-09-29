@@ -4,13 +4,15 @@ import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { FeeAmount, NonfungiblePositionManager } from '@uniswap/v3-sdk'
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
+import FeeSelector from 'components/FeeSelector'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { useLmtNFTPositionManager } from 'hooks/useContract'
 import usePrevious from 'hooks/usePrevious'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -25,11 +27,12 @@ import {
 } from 'state/mint/v3/hooks'
 import { useTheme } from 'styled-components/macro'
 import { addressesAreEquivalent } from 'utils/addressesAreEquivalent'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtContracts/NFTPositionManager'
 
+import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary, ButtonText } from '../../components/Button'
 import { BlueCard, OutlineCard, YellowCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
-import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import HoverInlineText from '../../components/HoverInlineText'
 import { AddRemoveTabs } from '../../components/NavigationTabs'
 import { PositionPreview } from '../../components/PositionPreview'
@@ -38,18 +41,17 @@ import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import RateToggle from '../../components/RateToggle'
 import Row, { AutoRow, RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
+import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
 import { ZERO_PERCENT } from '../../constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import { useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
-import { useV3NFTPositionManagerContract } from '../../hooks/useContract'
 import { useDerivedPositionInfo } from '../../hooks/useDerivedPositionInfo'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { useStablecoinValue } from '../../hooks/useStablecoinPrice'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
-import { useV3PositionFromTokenId } from '../../hooks/useV3Positions'
+import { useLmtLpPositionFromTokenId } from '../../hooks/useV3Positions'
 import { Bound, Field } from '../../state/mint/v3/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { TransactionType } from '../../state/transactions/types'
@@ -91,12 +93,14 @@ export default function AddLiquidity() {
   const toggleWalletDrawer = useToggleWalletDrawer() // toggle wallet when disconnected
   const expertMode = useIsExpertMode()
   const addTransaction = useTransactionAdder()
-  const positionManager = useV3NFTPositionManagerContract()
+  // const positionManager = useV3NFTPositionManagerContract()
+  const lmtPositionManager = useLmtNFTPositionManager()
 
   // check for existing position if tokenId in url
-  const { position: existingPositionDetails, loading: positionLoading } = useV3PositionFromTokenId(
+  const { position: existingPositionDetails, loading: positionLoading } = useLmtLpPositionFromTokenId(
     tokenId ? BigNumber.from(tokenId) : undefined
   )
+
   const hasExistingPosition = !!existingPositionDetails && !positionLoading
   const { position: existingPosition } = useDerivedPositionInfo(existingPositionDetails)
 
@@ -212,7 +216,7 @@ export default function AddLiquidity() {
   async function onAdd() {
     if (!chainId || !provider || !account) return
 
-    if (!positionManager || !baseCurrency || !quoteCurrency) {
+    if (!lmtPositionManager || !baseCurrency || !quoteCurrency) {
       return
     }
 
@@ -221,13 +225,13 @@ export default function AddLiquidity() {
       const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
       const { calldata, value } =
         hasExistingPosition && tokenId
-          ? NonfungiblePositionManager.addCallParameters(position, {
+          ? LmtNFTPositionManager.addCallParameters(position, {
               tokenId,
               slippageTolerance: allowedSlippage,
               deadline: deadline.toString(),
               useNative,
             })
-          : NonfungiblePositionManager.addCallParameters(position, {
+          : LmtNFTPositionManager.addCallParameters(position, {
               slippageTolerance: allowedSlippage,
               recipient: account,
               deadline: deadline.toString(),
@@ -236,7 +240,7 @@ export default function AddLiquidity() {
             })
 
       let txn: { to: string; data: string; value: string } = {
-        to: NONFUNGIBLE_POSITION_MANAGER_ADDRESSES[chainId],
+        to: LMT_NFT_POSITION_MANAGER[chainId],
         data: calldata,
         value,
       }
@@ -625,28 +629,10 @@ export default function AddLiquidity() {
                     </ThemedText.DeprecatedWhite>
                   </ButtonText>
                 </MediumOnly>
-                {/*baseCurrency && quoteCurrency ? (
-                  <RateToggle
-                    currencyA={baseCurrency}
-                    currencyB={quoteCurrency}
-                    handleRateToggle={() => {
-                      if (!ticksAtLimit[Bound.LOWER] && !ticksAtLimit[Bound.UPPER]) {
-                        onLeftRangeInput((invertPrice ? priceLower : priceUpper?.invert())?.toSignificant(6) ?? '')
-                        onRightRangeInput((invertPrice ? priceUpper : priceLower?.invert())?.toSignificant(6) ?? '')
-                        onFieldAInput(formattedAmounts[Field.CURRENCY_B] ?? '')
-                      }
-                      navigate(
-                        `/add/${currencyIdB as string}/${currencyIdA as string}${feeAmount ? '/' + feeAmount : ''}`
-                      )
-                    }}
-                  />
-                ) : null*/}
               </Row>
             )}
           </AddRemoveTabs>
           <Wrapper>
-            {/*<ResponsiveTwoColumns wide={!hasExistingPosition}>*/}
-
             <AutoColumn gap="lg">
               {!hasExistingPosition && (
                 <>
@@ -670,9 +656,7 @@ export default function AddLiquidity() {
                         id="add-liquidity-input-tokena"
                         showCommonBases
                       />
-
                       <div style={{ width: '12px' }} />
-
                       <CurrencyDropdown
                         value={formattedAmounts[Field.CURRENCY_B]}
                         hideInput={true}
@@ -687,14 +671,13 @@ export default function AddLiquidity() {
                         showCommonBases
                       />
                     </RowBetween>
-
-                    {/*<FeeSelector
-                        disabled={!quoteCurrency || !baseCurrency}
-                        feeAmount={feeAmount}
-                        handleFeePoolSelect={handleFeePoolSelect}
-                        currencyA={baseCurrency ?? undefined}
-                        currencyB={quoteCurrency ?? undefined}
-                      />*/}
+                    <FeeSelector
+                      disabled={!quoteCurrency || !baseCurrency}
+                      feeAmount={feeAmount}
+                      handleFeePoolSelect={handleFeePoolSelect}
+                      currencyA={baseCurrency ?? undefined}
+                      currencyB={quoteCurrency ?? undefined}
+                    />
                   </AutoColumn>{' '}
                 </>
               )}
@@ -707,11 +690,6 @@ export default function AddLiquidity() {
                 />
               )}
             </AutoColumn>
-            {!hasExistingPosition && (
-              <>
-                <AutoColumn gap="md"></AutoColumn>{' '}
-              </>
-            )}
             <div>
               {hasExistingPosition && (
                 <AutoColumn gap="md">

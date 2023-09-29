@@ -1,18 +1,25 @@
 import { Interface } from '@ethersproject/abi'
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { getCreate2Address } from '@ethersproject/address'
+import { keccak256 } from '@ethersproject/solidity'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
 import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import JSBI from 'jsbi'
-import { useMultipleContractSingleData } from 'lib/hooks/multicall'
+import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
-import { defaultAbiCoder } from '@ethersproject/abi'
-import { getCreate2Address } from '@ethersproject/address'
-import { keccak256 } from '@ethersproject/solidity'
 
-import { BORROW_INIT_CODE_HASH, LEVERAGE_INIT_CODE_HASH, LIQUITITY_INIT_CODE_HASH, POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
+import {
+  BORROW_INIT_CODE_HASH,
+  LEVERAGE_INIT_CODE_HASH,
+  LIQUITITY_INIT_CODE_HASH,
+  POOL_INIT_CODE_HASH,
+  V3_CORE_FACTORY_ADDRESSES,
+} from '../constants/addresses'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
+import { useLmtPoolManagerContract } from './useContract'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -43,7 +50,7 @@ class PoolCache {
         factoryAddress,
         tokenA,
         tokenB,
-        fee
+        fee,
       }),
     }
     this.addresses.unshift(address)
@@ -84,12 +91,14 @@ export enum PoolState {
   NOT_EXISTS,
   EXISTS,
   INVALID,
+  NOT_ADDED,
 }
 
 export function usePools(
   poolKeys: [Currency | undefined, Currency | undefined, FeeAmount | undefined][]
 ): [PoolState, Pool | null][] {
   const { chainId } = useWeb3React()
+  const poolManager = useLmtPoolManagerContract()
 
   const poolTokens: ([Token, Token, FeeAmount] | undefined)[] = useMemo(() => {
     if (!chainId) return new Array(poolKeys.length)
@@ -119,6 +128,11 @@ export function usePools(
 
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
+  const poolParams = useSingleContractMultipleData(
+    poolManager,
+    'PoolParams',
+    poolAddresses.map((address) => [address])
+  )
 
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
@@ -132,8 +146,14 @@ export function usePools(
       if (!liquidities[index]) return [PoolState.INVALID, null]
       const { result: liquidity, loading: liquidityLoading, valid: liquidityValid } = liquidities[index]
 
-      if (!tokens || !slot0Valid || !liquidityValid) return [PoolState.INVALID, null]
-      if (slot0Loading || liquidityLoading) return [PoolState.LOADING, null]
+      if (!poolParams[index]) return [PoolState.INVALID, null]
+
+      const { result: poolParam, loading: addedPoolLoading, valid: addedPoolValid } = poolParams[index]
+
+      if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid) return [PoolState.INVALID, null]
+      if (!poolParam) return [PoolState.NOT_ADDED, null]
+      if (!poolParam[4] || poolParam[4].eq(0)) return [PoolState.NOT_ADDED, null]
+      if (slot0Loading || liquidityLoading || addedPoolLoading) return [PoolState.LOADING, null]
       if (!slot0 || !liquidity) return [PoolState.NOT_EXISTS, null]
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null]
 
@@ -145,7 +165,7 @@ export function usePools(
         return [PoolState.NOT_EXISTS, null]
       }
     })
-  }, [liquidities, poolKeys, slot0s, poolTokens])
+  }, [liquidities, poolKeys, slot0s, poolTokens, poolParams])
 }
 
 export function usePool(
@@ -157,17 +177,15 @@ export function usePool(
     () => [[currencyA, currencyB, feeAmount]],
     [currencyA, currencyB, feeAmount]
   )
-
   return usePools(poolKeys)[0]
 }
-
 
 export function computePoolAddress({
   factoryAddress,
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: Token
@@ -191,7 +209,7 @@ export function computeBorrowManagerAddress({
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: string
@@ -202,10 +220,7 @@ export function computeBorrowManagerAddress({
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]
-    ),
+    keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? BORROW_INIT_CODE_HASH
   )
 }
@@ -215,7 +230,7 @@ export function computeLeverageManagerAddress({
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: string
@@ -226,10 +241,7 @@ export function computeLeverageManagerAddress({
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]
-    ),
+    keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? LEVERAGE_INIT_CODE_HASH
   )
 }
@@ -239,7 +251,7 @@ export function computeLiquidityManagerAddress({
   tokenA,
   tokenB,
   fee,
-  initCodeHashManualOverride
+  initCodeHashManualOverride,
 }: {
   factoryAddress: string
   tokenA: string
@@ -250,10 +262,7 @@ export function computeLiquidityManagerAddress({
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]
-    ),
+    keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? LIQUITITY_INIT_CODE_HASH
   )
 }

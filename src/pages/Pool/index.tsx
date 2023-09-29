@@ -9,6 +9,7 @@ import PositionList from 'components/PositionList'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { V2_FACTORY_ADDRESSES } from 'constants/addresses'
 import { isSupportedChain } from 'constants/chains'
 import { useV3Positions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
@@ -19,7 +20,6 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
 
-import { V2_FACTORY_ADDRESSES } from '../../constants/addresses'
 import { LoadingRows } from './styleds'
 
 const PageWrapper = styled(AutoColumn)`
@@ -206,9 +206,10 @@ export default function Pool() {
   const theme = useTheme()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
-  const { positions, loading: positionsLoading } = useV3Positions(account)
+  // const { positions, loading: positionsLoading } = useV3Positions(account)
+  const { positions: lmtPositions, loading: lmtPositionsLoading } = useV3Positions(account)
 
-  const [openPositions, closedPositions] = positions?.reduce<[PositionDetails[], PositionDetails[]]>(
+  const [openPositions, closedPositions] = lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
     (acc, p) => {
       acc[p.liquidity?.isZero() ? 1 : 0].push(p)
       return acc
@@ -271,7 +272,7 @@ export default function Pool() {
                 <Trans>Liquidity Positions</Trans>
               </ThemedText.LargeHeader>*/}
               <ButtonRow>
-                {false && (
+                {showV2Features && (
                   <PoolMenu
                     menuItems={menuItems}
                     flyoutAlignment={FlyoutAlignment.LEFT}
@@ -292,7 +293,7 @@ export default function Pool() {
             </TitleRow>
 
             <MainContentWrapper>
-              {positionsLoading ? (
+              {lmtPositionsLoading ? (
                 <PositionsLoadingPlaceholder />
               ) : filteredPositions && closedPositions && filteredPositions.length > 0 ? (
                 <PositionList

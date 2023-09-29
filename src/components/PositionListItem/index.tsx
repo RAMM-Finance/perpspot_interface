@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { Percent, Price, Token } from '@uniswap/sdk-core'
+import { Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -222,80 +222,70 @@ export default function PositionListItem({
             <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>
           </FeeTierText> */}
         </PrimaryPositionIdData>
-      {priceLower && priceUpper ? (
-        <RangeLineItem>
-          <RangeText>
-            {/*<ExtentsText>
+        {priceLower && priceUpper ? (
+          <RangeLineItem>
+            <RangeText>
+              {/*<ExtentsText>
               <Trans>Min: </Trans>
             </ExtentsText> */}
-            <Trans>
-              <span>
-                {formatTickPrice({
-                  price: priceLower,
-                  atLimit: tickAtLimit,
-                  direction: Bound.LOWER,
-                })}{' '}
-              </span>
-              <HoverInlineText text={currencyBase?.symbol} /> per <HoverInlineText text={currencyQuote?.symbol ?? ''} />
-            </Trans>
-          </RangeText>{' '}
-          <HideSmall>
-
-            <DoubleArrow>↔</DoubleArrow>{' '}
-          </HideSmall>
-          <SmallOnly>
-            <DoubleArrow>↔</DoubleArrow>{' '}
-          </SmallOnly>
-          <RangeText>
-            {/*<ExtentsText>
+              <Trans>
+                <span>
+                  {formatTickPrice({
+                    price: priceLower,
+                    atLimit: tickAtLimit,
+                    direction: Bound.LOWER,
+                  })}{' '}
+                </span>
+                <HoverInlineText text={currencyBase?.symbol} /> per{' '}
+                <HoverInlineText text={currencyQuote?.symbol ?? ''} />
+              </Trans>
+            </RangeText>{' '}
+            <HideSmall>
+              <DoubleArrow>↔</DoubleArrow>{' '}
+            </HideSmall>
+            <SmallOnly>
+              <DoubleArrow>↔</DoubleArrow>{' '}
+            </SmallOnly>
+            <RangeText>
+              {/*<ExtentsText>
               <Trans>Max:</Trans>
             </ExtentsText> */}
-            <Trans>
-              <span>
-                {formatTickPrice({
-                  price: priceUpper,
-                  atLimit: tickAtLimit,
-                  direction: Bound.UPPER,
-                })}{' '}
-              </span>
-              <HoverInlineText text={currencyBase?.symbol} /> per{' '}
-              <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} />
-            </Trans>
-          </RangeText>
-        </RangeLineItem>
-      ) : (
-        <Loader />
-      )}        
+              <Trans>
+                <span>
+                  {formatTickPrice({
+                    price: priceUpper,
+                    atLimit: tickAtLimit,
+                    direction: Bound.UPPER,
+                  })}{' '}
+                </span>
+                <HoverInlineText text={currencyBase?.symbol} /> per{' '}
+                <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} />
+              </Trans>
+            </RangeText>
+          </RangeLineItem>
+        ) : (
+          <Loader />
+        )}
         <RangeBadge removed={removed} inRange={!outOfRange} />
-
       </RowBetween>
       {priceLower && priceUpper ? (
         <RangeLineItem>
-          Accumulated Fees: 
-
+          Accumulated Fees:
           <RangeText>
             {/*<ExtentsText>
               <Trans>Min: </Trans>
             </ExtentsText> */}
             <Trans>
-              <span>
-              -
-                
-              </span>
-              <HoverInlineText text={currencyQuote?.symbol} /> + 
+              <span>-</span>
+              <HoverInlineText text={currencyQuote?.symbol} /> +
             </Trans>
             <Trans>
-              <span>
-              -
-                
-              </span>
-              <HoverInlineText text={currencyBase?.symbol} /> 
+              <span>-</span>
+              <HoverInlineText text={currencyBase?.symbol} />
             </Trans>
-
-          </RangeText>{'    '}
-          <HideSmall>
-          Estimated APR: 
-          </HideSmall>
+          </RangeText>
+          {'    '}
+          <HideSmall>Estimated APR:</HideSmall>
           <SmallOnly>
             <DoubleArrow>↔</DoubleArrow>{' '}
           </SmallOnly>
@@ -304,10 +294,7 @@ export default function PositionListItem({
               <Trans>Max:</Trans>
             </ExtentsText> */}
             <Trans>
-              <span>
-              -%
-                
-              </span>
+              <span>-%</span>
               {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
               <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
             </Trans>
@@ -316,8 +303,6 @@ export default function PositionListItem({
       ) : (
         <Loader />
       )}
-
-
     </LinkRow>
   )
 }
