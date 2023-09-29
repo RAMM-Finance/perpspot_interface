@@ -102,17 +102,24 @@ function useTicksFromTickLens(
   const [lastSyncedBlock, setLastSyncedBlock] = useState<number>()
 
   const fetchTicks = useCallback(async () => {
-    console.log('multicall1', tickLensArgs.length, tickLens, provider, !loading, tickDataLatestSynced.length === 0)
+    console.log(
+      'multicall1',
+      tickLensArgs.length,
+      tickLens?.address,
+      provider,
+      !loading,
+      tickDataLatestSynced.length === 0
+    )
     if (tickLens && provider && !loading && tickDataLatestSynced.length === 0 && tickLensArgs.length > 0) {
       const currentBlock = await provider?.getBlockNumber()
 
-      console.log('multicall2', loading, currentBlock, lastSyncedBlock)
+      // console.log('multicall2', loading, currentBlock, lastSyncedBlock)
       if (!lastSyncedBlock || currentBlock > lastSyncedBlock) {
         setLoading(true)
         try {
           const promises = tickLensArgs.map((args) => tickLens.callStatic.getPopulatedTicksInWord(args[0], args[1]))
           const callResults = await Promise.all(promises)
-          console.log('multicall3', tickLensArgs, promises, callResults)
+          // console.log('multicall3', tickLensArgs, promises, callResults)
 
           const latestTickData = callResults
             .flatMap((result) =>
@@ -287,7 +294,7 @@ function useAllV3Ticks(
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
 
-  // console.log('useAllV3Ticks', currencyA, currencyB, feeAmount, tickLensTickData)
+  console.log('useAllV3Ticks', currencyA, currencyB, feeAmount, tickLensTickData)
 
   useEffect(() => {
     if (data?.ticks.length) {

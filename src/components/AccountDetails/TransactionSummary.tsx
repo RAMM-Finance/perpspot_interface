@@ -9,6 +9,7 @@ import { VoteOption } from '../../state/governance/types'
 import {
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
+  AddLmtLiquidityTransactionInfo,
   ApproveTransactionInfo,
   ClaimTransactionInfo,
   CollectFeesTransactionInfo,
@@ -252,6 +253,21 @@ function AddLiquidityV3PoolSummary({
   )
 }
 
+function AddLmtLiquiditySummary({
+  info: { quoteCurrencyId, baseCurrencyId },
+}: {
+  info: AddLmtLiquidityTransactionInfo
+}) {
+  const baseCurrency = useCurrency(baseCurrencyId)
+  const quoteCurrency = useCurrency(quoteCurrencyId)
+
+  return (
+    <Trans>
+      Add {baseCurrency?.symbol}/{quoteCurrency?.symbol} LMT liquidity
+    </Trans>
+  )
+}
+
 function AddLiquidityV2PoolSummary({
   info: { quoteCurrencyId, expectedAmountBaseRaw, expectedAmountQuoteRaw, baseCurrencyId },
 }: {
@@ -359,28 +375,18 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
     case TransactionType.ADD_BORROW:
       return <Trans>Borrow Info Summary</Trans>
     case TransactionType.REDUCE_LEVERAGE:
-      return <Trans>
-        Reduce Leverage Summary
-      </Trans>
+      return <Trans>Reduce Leverage Summary</Trans>
     case TransactionType.PREMIUM_BORROW:
-      return <Trans>
-        Pay Borrow Position Summary
-      </Trans>
+      return <Trans>Pay Borrow Position Summary</Trans>
     case TransactionType.PREMIUM_LEVERAGE:
-      return <Trans>
-        Pay Leverage Position Summary
-      </Trans>
+      return <Trans>Pay Leverage Position Summary</Trans>
     case TransactionType.REDUCE_BORROW_COLLATERAL:
-      return <Trans>
-        Reduce Borrow Collateral Summary
-      </Trans>
+      return <Trans>Reduce Borrow Collateral Summary</Trans>
     case TransactionType.REDUCE_BORROW_DEBT:
-      return <Trans>
-        Reduce Borrow Debt Summary
-      </Trans>
+      return <Trans>Reduce Borrow Debt Summary</Trans>
     case TransactionType.ADD_LEVERAGE:
-      return <Trans>
-        Add Leverage Summary
-      </Trans>
+      return <Trans>Add Leverage Summary</Trans>
+    case TransactionType.ADD_LMT_LIQUIDITY:
+      return <AddLmtLiquiditySummary info={info} />
   }
 }

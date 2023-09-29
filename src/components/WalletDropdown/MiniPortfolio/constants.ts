@@ -171,6 +171,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Increased Leverage Position`,
     [TransactionStatus.Failed]: t`Leverage Creation Failed`,
   },
+  [TransactionType.ADD_LMT_LIQUIDITY]: {
+    [TransactionStatus.Pending]: t`Adding LMT Liquidity`,
+    [TransactionStatus.Confirmed]: t`Added LMT Liquidity`,
+    [TransactionStatus.Failed]: t`Add LMT Liquidity failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

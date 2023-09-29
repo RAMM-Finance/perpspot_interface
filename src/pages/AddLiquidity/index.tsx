@@ -20,8 +20,8 @@ import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Text } from 'rebass'
 import {
+  useDerivedLmtMintInfo,
   useRangeHopCallbacks,
-  useV3DerivedMintInfo,
   useV3MintActionHandlers,
   useV3MintState,
 } from 'state/mint/v3/hooks'
@@ -41,7 +41,11 @@ import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import RateToggle from '../../components/RateToggle'
 import Row, { AutoRow, RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
+import {
+  LMT_NFT_POSITION_MANAGER,
+  LMT_POOL_MANAGER,
+  NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
+} from '../../constants/addresses'
 import { ZERO_PERCENT } from '../../constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import { useCurrency } from '../../hooks/Tokens'
@@ -139,13 +143,14 @@ export default function AddLiquidity() {
     depositBDisabled,
     invertPrice,
     ticksAtLimit,
-  } = useV3DerivedMintInfo(
+  } = useDerivedLmtMintInfo(
     baseCurrency ?? undefined,
     quoteCurrency ?? undefined,
     feeAmount,
     baseCurrency ?? undefined,
     existingPosition
   )
+
   // console.log("baseCurrency: ", baseCurrency)
   // console.log("quoteCurrency: ", quoteCurrency)
   // console.log("pool1: ", usePool(baseCurrency?? undefined , quoteCurrency ?? undefined, feeAmount))
@@ -202,11 +207,12 @@ export default function AddLiquidity() {
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(
     argentWalletContract ? undefined : parsedAmounts[Field.CURRENCY_A],
-    chainId ? NONFUNGIBLE_POSITION_MANAGER_ADDRESSES[chainId] : undefined
+    chainId ? LMT_POOL_MANAGER[chainId] : undefined
   )
+
   const [approvalB, approveBCallback] = useApproveCallback(
     argentWalletContract ? undefined : parsedAmounts[Field.CURRENCY_B],
-    chainId ? NONFUNGIBLE_POSITION_MANAGER_ADDRESSES[chainId] : undefined
+    chainId ? LMT_POOL_MANAGER[chainId] : undefined
   )
 
   const allowedSlippage = useUserSlippageToleranceWithDefault(
@@ -221,7 +227,6 @@ export default function AddLiquidity() {
     }
 
     if (position && account && deadline) {
-      console.log('on add')
       const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
       const { calldata, value } =
         hasExistingPosition && tokenId
@@ -286,13 +291,11 @@ export default function AddLiquidity() {
             .then((response: TransactionResponse) => {
               setAttemptingTxn(false)
               addTransaction(response, {
-                type: TransactionType.ADD_LIQUIDITY_V3_POOL,
+                type: TransactionType.ADD_LMT_LIQUIDITY,
                 baseCurrencyId: currencyId(baseCurrency),
                 quoteCurrencyId: currencyId(quoteCurrency),
-                createPool: Boolean(noLiquidity),
                 expectedAmountBaseRaw: parsedAmounts[Field.CURRENCY_A]?.quotient?.toString() ?? '0',
                 expectedAmountQuoteRaw: parsedAmounts[Field.CURRENCY_B]?.quotient?.toString() ?? '0',
-                feeAmount: position.pool.fee,
               })
               setTxHash(response.hash)
               sendEvent({
@@ -416,6 +419,7 @@ export default function AddLiquidity() {
   }`
 
   const [searchParams, setSearchParams] = useSearchParams()
+
   const handleSetRecommendedRange = useCallback(() => {
     getSetFullRange()
 
@@ -464,6 +468,7 @@ export default function AddLiquidity() {
     // input state -> url updates are handled in the input handlers
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
+
   useEffect(() => {
     const maxPrice = searchParams.get('maxPrice')
     const oldMaxPrice = oldSearchParams?.get('maxPrice')
@@ -573,7 +578,7 @@ export default function AddLiquidity() {
     [usdcValueCurrencyB]
   )
 
-  const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
+  const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const ownsNFT =
     addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
   const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)

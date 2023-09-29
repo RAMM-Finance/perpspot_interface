@@ -53,6 +53,7 @@ export enum TransactionType {
   PREMIUM_BORROW,
   REDUCE_BORROW_COLLATERAL,
   REDUCE_BORROW_DEBT,
+  ADD_LMT_LIQUIDITY,
 }
 
 interface BaseTransactionInfo {
@@ -147,6 +148,14 @@ export interface AddLiquidityV3PoolTransactionInfo {
   baseCurrencyId: string
   quoteCurrencyId: string
   feeAmount: number
+  expectedAmountBaseRaw: string
+  expectedAmountQuoteRaw: string
+}
+
+export interface AddLmtLiquidityTransactionInfo {
+  type: TransactionType.ADD_LMT_LIQUIDITY
+  baseCurrencyId: string
+  quoteCurrencyId: string
   expectedAmountBaseRaw: string
   expectedAmountQuoteRaw: string
 }
@@ -288,6 +297,7 @@ export type TransactionInfo =
   | ReduceBorrowCollateralTransactionInfo
   | ReduceBorrowDebtTransactionInfo
   | AddLeverageTransactionInfo
+  | AddLmtLiquidityTransactionInfo
 
 export interface TransactionDetails {
   hash: string

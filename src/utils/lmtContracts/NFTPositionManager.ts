@@ -30,7 +30,6 @@ export abstract class NonfungiblePositionManager {
     // mint
     if (isMint(options)) {
       const recipient: string = validateAndParseAddress(options.recipient)
-
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('mint', [
         {
           token0: position.pool.token0.address,
