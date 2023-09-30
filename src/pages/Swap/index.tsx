@@ -555,7 +555,7 @@ export default function Swap({ className }: { className?: string }) {
                 </TableHeader>
 
                 <TabContent id={1} activeTab={activePositionTable}>
-                  {/* TODO */}
+                  {/* TODO  */}
                   {/* <LeveragePositionsTable positions={leveragePositions} loading={leveragePositionsLoading} /> */}
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
