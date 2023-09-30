@@ -11,7 +11,7 @@ import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { V2_FACTORY_ADDRESSES } from 'constants/addresses'
 import { isSupportedChain } from 'constants/chains'
-import { useV3Positions } from 'hooks/useV3Positions'
+import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
 import { AlertTriangle, BookOpen, ChevronDown, ChevronsRight, Inbox, Layers } from 'react-feather'
 import { Link } from 'react-router-dom'
@@ -207,7 +207,7 @@ export default function Pool() {
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
   // const { positions, loading: positionsLoading } = useV3Positions(account)
-  const { positions: lmtPositions, loading: lmtPositionsLoading } = useV3Positions(account)
+  const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
 
   const [openPositions, closedPositions] = lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
     (acc, p) => {

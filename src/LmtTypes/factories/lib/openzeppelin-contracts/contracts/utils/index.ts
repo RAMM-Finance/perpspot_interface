@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as introspection from "./introspection";
+export { Multicall__factory } from "./Multicall__factory";

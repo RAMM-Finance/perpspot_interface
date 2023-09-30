@@ -22,6 +22,8 @@ export type { ERC165 } from "./lib/openzeppelin-contracts/contracts/utils/intros
 export { ERC165__factory } from "./factories/lib/openzeppelin-contracts/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./lib/openzeppelin-contracts/contracts/utils/introspection/IERC165";
 export { IERC165__factory } from "./factories/lib/openzeppelin-contracts/contracts/utils/introspection/IERC165__factory";
+export type { Multicall } from "./lib/openzeppelin-contracts/contracts/utils/Multicall";
+export { Multicall__factory } from "./factories/lib/openzeppelin-contracts/contracts/utils/Multicall__factory";
 export type { BorrowFacility } from "./src/BorrowFacility";
 export { BorrowFacility__factory } from "./factories/src/BorrowFacility__factory";
 export type { ERC20 } from "./src/ERC20";

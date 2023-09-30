@@ -365,6 +365,7 @@ export function useLmtLpPositions(account: string | null | undefined): UseV3Posi
   }, [account, accountBalance])
 
   const tokenIdResults = useSingleContractMultipleData(positionManager, 'tokenOfOwnerByIndex', tokenIdsArgs)
+
   const someTokenIdsLoading = useMemo(() => tokenIdResults.some(({ loading }) => loading), [tokenIdResults])
 
   const tokenIds = useMemo(() => {
@@ -376,7 +377,6 @@ export function useLmtLpPositions(account: string | null | undefined): UseV3Posi
     }
     return []
   }, [account, tokenIdResults])
-
   const { positions, loading: positionsLoading } = useLmtLpPositionsFromTokenIds(tokenIds)
 
   return {

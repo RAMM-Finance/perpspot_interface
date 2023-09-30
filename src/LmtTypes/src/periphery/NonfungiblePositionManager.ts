@@ -138,6 +138,7 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))": FunctionFragment;
+    "multicall(bytes[])": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "positions(uint256)": FunctionFragment;
@@ -165,6 +166,7 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
       | "increaseLiquidity"
       | "isApprovedForAll"
       | "mint"
+      | "multicall"
       | "name"
       | "ownerOf"
       | "positions"
@@ -216,6 +218,10 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "mint",
     values: [INonfungiblePositionManager.MintParamsStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "multicall",
+    values: [PromiseOrValue<BytesLike>[]]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -302,6 +308,7 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "positions", data: BytesLike): Result;
@@ -468,6 +475,11 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     name(overrides?: CallOverrides): Promise<[string]>;
 
     ownerOf(
@@ -611,6 +623,11 @@ export interface NonfungiblePositionManager extends BaseContract {
 
   mint(
     params: INonfungiblePositionManager.MintParamsStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  multicall(
+    data: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -776,6 +793,11 @@ export interface NonfungiblePositionManager extends BaseContract {
         liquidity: BigNumber;
       }
     >;
+
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
+      overrides?: CallOverrides
+    ): Promise<string[]>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -954,6 +976,11 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
     ownerOf(
@@ -1067,6 +1094,11 @@ export interface NonfungiblePositionManager extends BaseContract {
 
     mint(
       params: INonfungiblePositionManager.MintParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
