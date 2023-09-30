@@ -1,14 +1,21 @@
 import {BigNumber as BN} from 'bignumber.js'
+import { FeeAmount } from '@uniswap/v3-sdk'
+
 
 export interface LMTPositionDetails {
+  leverageManagerAddress: string | undefined
+  borrowManagerAddress: string | undefined
+  liquidityManagerAddress: string | undefined
+  tokenId: string
   token0Address: string
   token1Address: string
-  fee: number
+  poolFee: FeeAmount | undefined
   isToken0: boolean
   owner: string
   totalDebtOutput: BN
   totalDebtInput: BN
   recentPremium: BN
+  unusedPremium: BN
   openTime: BN
   repayTime: BN
   isBorrow: boolean

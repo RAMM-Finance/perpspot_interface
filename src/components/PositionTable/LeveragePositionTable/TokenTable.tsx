@@ -7,7 +7,7 @@ import moment from 'moment'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { LimitlessPositionDetails } from 'types/leveragePosition'
+import { LeverageLMTPositionDetails } from 'types/lmtv2position'
 
 import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
@@ -72,7 +72,7 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-function useSortedPositions(positions: LimitlessPositionDetails[] | undefined) {
+function useSortedPositions(positions: LeverageLMTPositionDetails[] | undefined) {
   const sortMethod = useAtomValue(sortMethodAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
 
@@ -81,7 +81,7 @@ function useSortedPositions(positions: LimitlessPositionDetails[] | undefined) {
     let returnedPositions = positions
     switch (sortMethod) {
       case PositionSortMethod.REPAYTIME:
-        returnedPositions = positions.sort((a, b) => b.repayTime - a.repayTime)
+        returnedPositions = positions.sort((a, b) => Number(b.repayTime) - Number(a.repayTime))
         break
       case PositionSortMethod.REMAINING:
         returnedPositions = positions.sort((a, b) => {
@@ -113,7 +113,7 @@ function findCurrency(address: string | undefined, tokens: { [address: string]: 
   return tokens[address]
 }
 
-function useFilteredPositions(positions: LimitlessPositionDetails[] | undefined) {
+function useFilteredPositions(positions: LeverageLMTPositionDetails[] | undefined) {
   const filterString = useAtomValue(filterStringAtom)
   const lowercaseFilterString = useMemo(() => filterString.toLowerCase(), [filterString])
   const tokens = useDefaultActiveTokens()
@@ -143,7 +143,7 @@ function useFilteredPositions(positions: LimitlessPositionDetails[] | undefined)
   }, [positions, lowercaseFilterString, tokens])
 }
 
-function useSelectPositions(positions?: LimitlessPositionDetails[]) {
+function useSelectPositions(positions?: LeverageLMTPositionDetails[]) {
   const sortedPositions = useSortedPositions(positions)
 
   const filteredPositions = useFilteredPositions(sortedPositions)
@@ -153,9 +153,11 @@ function useSelectPositions(positions?: LimitlessPositionDetails[]) {
 export default function PositionsTable({
   positions,
   loading,
+  error,
 }: {
-  positions?: LimitlessPositionDetails[]
+  positions?: LeverageLMTPositionDetails[]
   loading: boolean
+  error: any
 }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
 
@@ -172,6 +174,8 @@ export default function PositionsTable({
   /* loading and error state */
   if (loading) {
     return <LoadingTokenTable rowCount={1} />
+  } else if (error) {
+    return <NoTokensState message={<Trans>Error</Trans>} />
   } else if (!filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {

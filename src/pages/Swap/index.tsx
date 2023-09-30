@@ -8,6 +8,7 @@ import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
+import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TokenSelector } from 'components/swap/TokenSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
@@ -483,7 +484,20 @@ export default function Swap({ className }: { className?: string }) {
   // }, [swapHeaderHeight, swapWrapperHeight])
 
   // const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
-  const { loading: leveragePositionsLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  const {
+    loading: leveragePositionsLoading,
+    positions: leveragePositions,
+    error: leverageError,
+  } = useLeveragedLMTPositions(account)
+
+  const leveragePositionsIn = useMemo(() => {
+    return leveragePositions && !leveragePositionsLoading
+      ? leveragePositions.filter((position) => {
+          return !position.isBorrow
+        })
+      : undefined
+  }, [leveragePositionsLoading, leveragePositions])
+
   const { loading: borrowPositionsLoading, positions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
@@ -556,7 +570,11 @@ export default function Swap({ className }: { className?: string }) {
 
                 <TabContent id={1} activeTab={activePositionTable}>
                   {/* TODO  */}
-                  {/* <LeveragePositionsTable positions={leveragePositions} loading={leveragePositionsLoading} /> */}
+                  <LeveragePositionsTable
+                    positions={leveragePositionsIn}
+                    loading={leveragePositionsLoading}
+                    error={leverageError}
+                  />
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
                   {/* TODO */}

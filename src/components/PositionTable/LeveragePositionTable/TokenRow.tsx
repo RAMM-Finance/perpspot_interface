@@ -24,6 +24,7 @@ import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
+import { LeverageLMTPositionDetails } from 'types/lmtv2position'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -62,7 +63,7 @@ const StyledTokenRow = styled.div<{
       transition: { duration, timing },
     },
   }) => css`background-color ${duration.medium} ${timing.ease}`};
-  width: 100%;
+  width: 95%;
   transition-duration: ${({ theme }) => theme.transition.duration.fast};
 
   &:hover {
@@ -124,6 +125,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   line-height: 16px;
   width: 100%;
   justify-content: center;
+  padding-right: 5vw;
 
   &:hover {
     background-color: transparent;
@@ -240,6 +242,7 @@ const StyledLink = styled(Link)`
 
 const StyledLoadedRow = styled.div`
   text-decoration: none;
+  width: 95%;
 `
 
 const TokenInfoCell = styled(Cell)`
@@ -328,6 +331,7 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 `
 
 const ActionsContainer = styled(AutoColumn)`
+  display: flex;
   align-items: center;
 `
 
@@ -419,7 +423,7 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
-  position?: LimitlessPositionDetails
+  position?: LimitlessPositionDetails | LeverageLMTPositionDetails
   last?: boolean
   style?: CSSProperties
 }) {
@@ -441,6 +445,9 @@ function PositionRow({
       </ReduceButton>
       <ReduceButton width="auto" onClick={() => setShowAddPremium(!showAddPremium)}>
         <Trans>pay</Trans>
+      </ReduceButton>
+      <ReduceButton width="auto" onClick={() => console.log('Close Position')}>
+        <Trans>close</Trans>
       </ReduceButton>
     </ActionsContainer>
   ) : (
@@ -569,7 +576,7 @@ const FlexStartRow = styled(Row)`
 `
 
 interface LoadedRowProps {
-  position: LimitlessPositionDetails
+  position: LimitlessPositionDetails | LeverageLMTPositionDetails
 }
 
 /* Loaded State: row component with token information */
