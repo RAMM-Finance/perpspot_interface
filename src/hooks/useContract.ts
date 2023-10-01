@@ -53,6 +53,8 @@ import { abi as LiquidityManagerAbi } from '../perpspotContracts/LiquidityManage
 import { abi as testTokenAbi } from '../perpspotContracts/TestToken.json'
 import { abi as PoolAbi } from '../perpspotContracts/UniswapV3Pool.json'
 import { getContract } from '../utils'
+import { MarginFacility } from 'LmtTypes'
+
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
 const { abi: IUniswapV2Router02ABI } = IUniswapV2Router02Json
@@ -78,7 +80,7 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   const { chainId } = useWeb3React()
-  return useContract(
+  return useContract<MarginFacility>(
     LMT_V2_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA],
     IMarginFacilityAbi,
     withSignerIfPossible
