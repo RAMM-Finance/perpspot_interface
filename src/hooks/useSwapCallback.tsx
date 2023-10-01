@@ -17,6 +17,10 @@ import { TransactionType } from '../state/transactions/types'
 import { currencyId } from '../utils/currencyId'
 import useTransactionDeadline from './useTransactionDeadline'
 import { useUniversalRouterSwapCallback } from './useUniversalRouter'
+import { useMarginFacilityContract } from './useContract'
+import { Token } from 'graphql'
+import { estimateSlippage } from 'state/swap/hooks'
+import { AddParamsStruct } from 'LmtTypes/src/MarginFacility'
 
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
@@ -92,12 +96,13 @@ export function useAddLeveragePositionCallback(
 
   const addTransaction = useTransactionAdder()
 
+  const marginFacilityContract = useMarginFacilityContract();
   const callback = useMemo(() => {
     return () => {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
       if (!provider) throw new Error('missing provider')
-      if (!leverageManagerAddress) throw new Error('missing leverage manager address')
+      // if (!leverageManagerAddress) throw new Error('missing leverage manager address')
       if (!trade) throw new Error('missing trade')
       if (!leverageTrade) throw new Error('missing leverage trade')
 
@@ -114,15 +119,34 @@ export function useAddLeveragePositionCallback(
         .multipliedBy(Number(leverageFactor) - 1 ?? '0')
         .shiftedBy(decimals)
         .toFixed(0)
-      const leverageManagerContract = new Contract(
-        leverageManagerAddress,
-        LeverageManagerData.abi,
-        provider.getSigner()
-      )
       const slippage = new BN(1 + Number(allowedSlippage.toFixed(6)) / 100).shiftedBy(decimals).toFixed(0)
 
-      return leverageManagerContract.addPosition(input, slippage, borrowedAmount, isLong).then((response: any) => {
-        // console.log('leverageResponse', response.hash, response)
+      const tokenAddress0 = currencyId(trade.inputAmount.currency)
+      const tokenAddress1 = currencyId(trade.outputAmount.currency)
+
+      const poolKeyParam  = {
+        token0 : tokenAddress0,
+        token1 : tokenAddress1,
+        fee: 500
+      }
+      const minEstimatedSlippage = estimateSlippage(trade.inputAmount.currency, trade.outputAmount.currency, new BN(borrowedAmount), new BN(trade.inputAmount.decimalScale.toString()));
+      if (minEstimatedSlippage == null) {
+        return
+      }
+      const maxSlippage = new BN(1).plus(0.05).shiftedBy(18).toFixed(0)
+      const addParams : AddParamsStruct = {
+        margin: input,
+        maxSlippage: maxSlippage,
+        // @ts-ignore
+        minEstimatedSlippage: minEstimatedSlippage,
+        borrowAmount: borrowedAmount,
+        positionIsToken0: isLong, //double check
+        executionOption: 1,
+        trader: account
+      }
+      
+      return marginFacilityContract?.addPosition(poolKeyParam, addParams, []).then ((response: any) => {
+        console.log('leverageResponse', response.hash, response)
         addTransaction(response, {
           type: TransactionType.ADD_LEVERAGE,
           inputCurrencyId: currencyId(trade.inputAmount.currency),
@@ -134,6 +158,20 @@ export function useAddLeveragePositionCallback(
         })
         return response.hash
       })
+
+      // return leverageManagerContract.addPosition(input, slippage, borrowedAmount, isLong).then((response: any) => {
+      //   // console.log('leverageResponse', response.hash, response)
+      //   addTransaction(response, {
+      //     type: TransactionType.ADD_LEVERAGE,
+      //     inputCurrencyId: currencyId(trade.inputAmount.currency),
+      //     outputCurrencyId: currencyId(trade.outputAmount.currency),
+      //     inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
+      //     expectedAddedPosition: formatBNToString(
+      //       leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
+      //     ),
+      //   })
+      //   return response.hash
+      // })
     }
   }, [
     account,
@@ -148,6 +186,7 @@ export function useAddLeveragePositionCallback(
   ])
 
   return {
+    // @ts-ignore
     callback,
   }
 }

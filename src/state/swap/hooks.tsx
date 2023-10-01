@@ -47,6 +47,9 @@ import {
   typeInput,
 } from './actions'
 import { SwapState } from './reducer'
+import { useMarginFacilityContract } from '../../hooks/useContract'
+import { usePoolContract } from '../../hooks/useContract'
+import { AddParamsStruct } from 'LmtTypes/src/MarginFacility'
 
 // import { useLeveragePosition } from 'hooks/useV3Positions'
 
@@ -244,6 +247,7 @@ export function useBestPoolAddress(
   })
 }
 
+// deprecated
 export function useBestPool(
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined
@@ -378,6 +382,7 @@ export function useDerivedBorrowCreationInfo({
           const _ltv = new BN(ltv).shiftedBy(16).toFixed(0)
 
           const trade = await borrowManager.callStatic.addBorrowPosition(borrowBelow, collateralAmount, _ltv, [])
+          //keep borrowInfo param as an empty array. key is just token 0, token1, fee. token0 needs to be < token1 if u compare. addParams is in type. hardcode maxslippage at first to test. minestimatedslippage is for tick matching engine. 
           setTradeState(TradeState.VALID)
 
           setContractResult(trade)
@@ -563,7 +568,7 @@ export function useDerivedLeverageCreationInfo(): {
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
     leverage,
     leverageFactor,
-    leverageManagerAddress,
+    leverageManagerAddress, //remove this bc we don't need to compute borrow manager address or this.
     premium,
     activeTab,
   } = useSwapState()
@@ -618,7 +623,9 @@ export function useDerivedLeverageCreationInfo(): {
 
   const [_, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, 500)
 
-  const leverageManager = useLeverageManagerContract(leverageManagerAddress ?? undefined, true)
+  // const leverageManager = useLeverageManagerContract(leverageManagerAddress ?? undefined, true)
+  const marginManager = useMarginFacilityContract();
+
   const inputIsToken0 = useMemo(() => {
     return outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
   }, [outputCurrency, inputCurrency]) //inputCurrency?.wrapped.address === pool?.token0.address
@@ -640,21 +647,13 @@ export function useDerivedLeverageCreationInfo(): {
   // TODO calculate slippage from the pool
   const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), [])
 
-  const globalStorageAddress = useSingleCallResult(leverageManager, 'globalStorage')
-
-  useEffect(() => {
-    if (!globalStorageAddress) {
-      setTradeState(LeverageTradeState.NO_ROUTE_FOUND)
-    }
-  }, [globalStorageAddress])
-
   // retrieves the trade object
   useEffect(() => {
     const lagged = async () => {
       // checks if the leverageManager exists
       // simulate the trade
       if (
-        leverageManager &&
+        marginManager &&
         debouncedAmount &&
         leverage &&
         Number(leverageFactor) > 1 &&
@@ -670,14 +669,37 @@ export function useDerivedLeverageCreationInfo(): {
 
           // console.log("input: ", input.toFixed(), borrowAmount.toFixed(0))
 
-          const trade = await leverageManager.callStatic.addPosition(
-            input.shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0),
-            new BN(allowedSlippage.toFixed(4)).plus(1).shiftedBy(18).toFixed(0),
-            borrowAmount.shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0),
-            !inputIsToken0
-          )
-          setTradeState(LeverageTradeState.VALID)
+          const token0Address = inputCurrencyId
+          const token1Address = outputCurrencyId
+          if (!token0Address || !token1Address || !input) {
+            return
+          }
+          const poolKeyParam = {
+            token0: token0Address,
+            token1: token1Address,
+            fee: 500
+          }
 
+          //function to get the minEstimatedSlippage 
+          const minEstimatedSlippage = await estimateSlippage(currencies.INPUT, currencies.OUTPUT, borrowAmount, input);
+          if (!minEstimatedSlippage || !inputIsToken0 || !account) {
+            setTradeState(LeverageTradeState.INVALID)
+            return
+          }
+          const maxSlippage = new BN(1).plus(0.05).shiftedBy(18).toFixed(0)
+          const addParams : AddParamsStruct = {
+            margin: input.toFixed(0),
+            maxSlippage: maxSlippage,
+            minEstimatedSlippage:  minEstimatedSlippage,
+            borrowAmount: borrowAmount.toFixed(0),
+            positionIsToken0: inputIsToken0,
+            executionOption: 1,
+            trader: account
+          }
+
+          const trade = await marginManager.callStatic.addPosition(poolKeyParam, addParams, [])
+          setTradeState(LeverageTradeState.VALID)
+          // @ts-ignore
           setContractResult(trade)
           setError(undefined)
         } catch (err) {
@@ -700,7 +722,7 @@ export function useDerivedLeverageCreationInfo(): {
     outputCurrency,
     leverage,
     inputIsToken0,
-    leverageManager,
+    marginManager,
   ])
   // [allowedSlippage, inputIsToken0, inputCurrency, outputCurrency, leverageManager, leverage, leverageFactor, debouncedAmount, allowance]
 
@@ -1084,4 +1106,21 @@ export function useDefaultsFromURLSearch(): SwapState {
   }, [dispatch, chainId, parsedSwapState])
 
   return parsedSwapState
+}
+
+export async function estimateSlippage(token0: Currency | undefined | null, token1: Currency | undefined | null, borrowAmount: BN, margin: BN) {
+  // margin, borrowamount. margin + borrow that swaps for some levered output. callstatic swap simulation of the pool you're using.
+  if (!token0 || !token1) {
+    return null
+  }
+  const poolToUse = useBestPool(token0, token1)
+  if (!poolToUse || !poolToUse.token0 || !poolToUse?.token1) {
+    return null
+  }
+  const poolAddress = Pool.getAddress(poolToUse?.token0, poolToUse?.token1, poolToUse?.fee);
+  
+  //discussion around getting estimation from simulation without approval
+  //use the equation
+
+  return new BN(1).plus(0.03).shiftedBy(18).toFixed(0)
 }

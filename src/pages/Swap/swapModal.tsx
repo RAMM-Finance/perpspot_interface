@@ -94,12 +94,7 @@ function largerPercentValue(a?: Percent, b?: Percent) {
 
 const TradeTabContent = () => {
   const theme = useTheme()
-  // const navigate = useNavigate()
   const { account, chainId } = useWeb3React()
-  // const loadedUrlParams = useDefaultsFromURLSearch()
-  // const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
-  // const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
-  // const swapWidgetEnabled = useSwapWidgetEnabled()
   const tab = useSelector((state: any) => state.swap.tab)
 
   const {
@@ -114,22 +109,6 @@ const TradeTabContent = () => {
   } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
-
-  // token warning stuff
-  // const [loadedInputCurrency, loadedOutputCurrency] = [
-  //   useCurrency(loadedUrlParams?.[Field.INPUT]?.currencyId),
-  //   useCurrency(loadedUrlParams?.[Field.OUTPUT]?.currencyId),
-  // ]
-
-  // const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
-  // const urlLoadedTokens: Token[] = useMemo(
-  //   () => [loadedInputCurrency, loadedOutputCurrency]?.filter((c): c is Token => c?.isToken ?? false) ?? [],
-  //   [loadedInputCurrency, loadedOutputCurrency]
-  // )
-
-  // const handleConfirmTokenWarning = useCallback(() => {
-  //   setDismissTokenWarning(true)
-  // }, [])
 
   const {
     trade: { state: tradeState, trade },
@@ -224,7 +203,7 @@ const TradeTabContent = () => {
   )
 
   const { callback: swapCallback } = useSwapCallback(
-    trade,
+    trade, // simulated swap trade
     swapFiatValues,
     allowedSlippage,
     allowance.state === AllowanceState.ALLOWED ? allowance.permitSignature : undefined
@@ -520,6 +499,7 @@ const TradeTabContent = () => {
     }
   }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
+  
   const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   const [leverageApproveAmount] = useMemo(() => {
     if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
@@ -546,7 +526,7 @@ const TradeTabContent = () => {
     }
   }, [approveLeverageManager])
 
-  console.log('swapModal logging:', leverageTrade, showLeverageConfirm)
+  console.log('swapmodal log', leverageTrade, showLeverageConfirm)
 
   return (
     <Wrapper>
@@ -982,6 +962,7 @@ const TradeTabContent = () => {
                     txHash: undefined,
                     showLeverageConfirm: true,
                   })
+                  //console.log(trade)
                 }}
                 id="leverage-button"
                 disabled={!!inputError || !!contractError || priceImpactTooHigh || !lmtIsValid || lmtRouteIsLoading}
