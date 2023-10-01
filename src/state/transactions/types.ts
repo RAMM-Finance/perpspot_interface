@@ -54,6 +54,7 @@ export enum TransactionType {
   REDUCE_BORROW_COLLATERAL,
   REDUCE_BORROW_DEBT,
   ADD_LMT_LIQUIDITY,
+  REMOVE_LMT_LIQUIDITY,
 }
 
 interface BaseTransactionInfo {
@@ -191,6 +192,14 @@ export interface RemoveLiquidityV3TransactionInfo {
   expectedAmountQuoteRaw: string
 }
 
+export interface RemoveLmtLiquidityTransactionInfo {
+  type: TransactionType.REMOVE_LMT_LIQUIDITY
+  baseCurrencyId: string
+  quoteCurrencyId: string
+  expectedAmountBaseRaw: string
+  expectedAmountQuoteRaw: string
+}
+
 interface SubmitProposalTransactionInfo {
   type: TransactionType.SUBMIT_PROPOSAL
 }
@@ -289,6 +298,7 @@ export type TransactionInfo =
   | MigrateV2LiquidityToV3TransactionInfo
   | CollectFeesTransactionInfo
   | RemoveLiquidityV3TransactionInfo
+  | RemoveLmtLiquidityTransactionInfo
   | SubmitProposalTransactionInfo
   | AddBorrowPositionTransactionInfo
   | ReduceLeveragePositionTransactionInfo

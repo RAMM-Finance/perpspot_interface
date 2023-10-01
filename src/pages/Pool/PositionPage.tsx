@@ -27,7 +27,7 @@ import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { PoolState, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import { useV3PositionFees } from 'hooks/useV3PositionFees'
-import { useV3PositionFromTokenId } from 'hooks/useV3Positions'
+import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -350,7 +350,8 @@ export function PositionPage() {
   const theme = useTheme()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
-  const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
+  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
+  const { loading, position: lmtPositionDetails } = useLmtLpPositionFromTokenId(parsedTokenId)
 
   const {
     token0: token0Address,
@@ -360,7 +361,7 @@ export function PositionPage() {
     tickLower,
     tickUpper,
     tokenId,
-  } = positionDetails || {}
+  } = lmtPositionDetails || {}
 
   const removed = liquidity?.eq(0)
 
@@ -415,7 +416,7 @@ export function PositionPage() {
   }, [inverted, pool, priceLower, priceUpper])
 
   // fees
-  const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, positionDetails?.tokenId, receiveWETH)
+  const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
 
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
@@ -531,7 +532,7 @@ export function PositionPage() {
   ])
 
   const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
-  const ownsNFT = owner === account || positionDetails?.operator === account
+  const ownsNFT = owner === account || lmtPositionDetails?.operator === account
 
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
@@ -585,7 +586,7 @@ export function PositionPage() {
       !collectMigrationHash
   )
 
-  if (!positionDetails && !loading) {
+  if (!lmtPositionDetails && !loading) {
     return (
       <PageWrapper>
         <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
@@ -733,8 +734,7 @@ export function PositionPage() {
                     <RowBetween style={{ alignItems: 'flex-start' }}>
                       <AutoColumn gap="md">
                         <Label>
-                          <Trans>Liquidity</Trans>    
-
+                          <Trans>Liquidity</Trans>
                         </Label>
 
                         {fiatValueOfLiquidity?.greaterThan(new Fraction(1, 100)) ? (
@@ -746,20 +746,19 @@ export function PositionPage() {
                             {/*<Trans>$-</Trans>*/}
                           </ThemedText.DeprecatedLargeHeader>
                         )}
-
                       </AutoColumn>
-                        {currency0 && currency1 && feeAmount && tokenId ? (
-                          <SmallButtonPrimary
-                            as={Link}
-                            to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
-                            padding="5px 8px"
-                            width="fit-content"
-                            $borderRadius="12px"
-                            style={{ marginRight: '8px' }}
-                          >
-                            <Trans>Increase Liquidity</Trans>
-                          </SmallButtonPrimary>
-                        ) : null}                
+                      {currency0 && currency1 && feeAmount && tokenId ? (
+                        <SmallButtonPrimary
+                          as={Link}
+                          to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
+                          padding="5px 8px"
+                          width="fit-content"
+                          $borderRadius="12px"
+                          style={{ marginRight: '8px' }}
+                        >
+                          <Trans>Increase Liquidity</Trans>
+                        </SmallButtonPrimary>
+                      ) : null}
                     </RowBetween>
 
                     <LightCard padding="12px 16px">
@@ -797,7 +796,7 @@ export function PositionPage() {
                       </AutoColumn>
                     </LightCard>
                   </AutoColumn>
-                </DarkCard> 
+                </DarkCard>
                 <DarkCard>
                   <AutoColumn gap="md" style={{ width: '100%' }}>
                     <AutoColumn gap="md">
@@ -805,14 +804,13 @@ export function PositionPage() {
                         <AutoColumn gap="md">
                           <Label>
                             <Trans>Maximum Withdrawable </Trans>
-                              <Badge style={{ marginLeft: '10px' }}>
-                                <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
-                                </ThemedText.DeprecatedLargeHeader>
-                              </Badge>                      
+                            <Badge style={{ marginLeft: '10px' }}>
+                              <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
+                                <Trans>{100}%</Trans>
+                              </ThemedText.DeprecatedLargeHeader>
+                            </Badge>
                             {/*<RangeBadge removed={removed} inRange={inRange} />
                             <span style={{ width: '8px' }} /> */}
-                                                 
                           </Label>
 
                           {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
@@ -833,18 +831,17 @@ export function PositionPage() {
                             </ThemedText.DeprecatedLargeHeader>
                           )}
                         </AutoColumn>
-                          {ownsNFT&&tokenId && !removed ? (
-                            <SmallButtonPrimary
-                              as={Link}
-                              to={`/remove/${tokenId}`}
-                              padding="8px 10px"
-                              width="fit-content"
-                              $borderRadius="12px"
-                            >
-                              <Trans>Remove Liquidity</Trans>
-                            </SmallButtonPrimary>
-                          ) : null}
-                        
+                        {ownsNFT && tokenId && !removed ? (
+                          <SmallButtonPrimary
+                            as={Link}
+                            to={`/remove/${tokenId}`}
+                            padding="8px 10px"
+                            width="fit-content"
+                            $borderRadius="12px"
+                          >
+                            <Trans>Remove Liquidity</Trans>
+                          </SmallButtonPrimary>
+                        ) : null}
                       </RowBetween>
                     </AutoColumn>
                     <LightCard padding="12px 16px">
@@ -897,7 +894,7 @@ export function PositionPage() {
                       </AutoColumn>
                     )}
                   </AutoColumn>
-                </DarkCard>   
+                </DarkCard>
 
                 <DarkCard>
                   <AutoColumn gap="md" style={{ width: '100%' }}>
@@ -1007,7 +1004,6 @@ export function PositionPage() {
                     )}
                   </AutoColumn>
                 </DarkCard>
-             
               </AutoColumn>
             </ResponsiveRow>
             <DarkCard>
@@ -1102,7 +1098,6 @@ export function PositionPage() {
               </AutoColumn>
             </DarkCard>
           </AutoColumn>
-
         </PageWrapper>
         {/*<SwitchLocaleLink /> */}
       </>

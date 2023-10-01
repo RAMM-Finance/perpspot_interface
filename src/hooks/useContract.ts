@@ -35,7 +35,11 @@ import {
 } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import { NonfungiblePositionManager as LmtNonfungiblePositionManager, PoolManager as LmtPoolManager } from 'LmtTypes'
+import {
+  MarginFacility,
+  NonfungiblePositionManager as LmtNonfungiblePositionManager,
+  PoolManager as LmtPoolManager,
+} from 'LmtTypes'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
@@ -78,7 +82,7 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   const { chainId } = useWeb3React()
-  return useContract(
+  return useContract<MarginFacility>(
     LMT_V2_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA],
     IMarginFacilityAbi,
     withSignerIfPossible

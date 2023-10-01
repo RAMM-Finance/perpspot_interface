@@ -21,6 +21,7 @@ import {
   MigrateV2LiquidityToV3TransactionInfo,
   QueueTransactionInfo,
   RemoveLiquidityV3TransactionInfo,
+  RemoveLmtLiquidityTransactionInfo,
   TransactionInfo,
   TransactionType,
   VoteTransactionInfo,
@@ -234,6 +235,20 @@ function RemoveLiquidityV3Summary({
   )
 }
 
+function RemoveLmtLiquiditySummary({
+  info: { baseCurrencyId, quoteCurrencyId, expectedAmountBaseRaw, expectedAmountQuoteRaw },
+}: {
+  info: RemoveLmtLiquidityTransactionInfo
+}) {
+  return (
+    <Trans>
+      Remove{' '}
+      <FormattedCurrencyAmountManaged rawAmount={expectedAmountBaseRaw} currencyId={baseCurrencyId} sigFigs={3} /> and{' '}
+      <FormattedCurrencyAmountManaged rawAmount={expectedAmountQuoteRaw} currencyId={quoteCurrencyId} sigFigs={3} />
+    </Trans>
+  )
+}
+
 function AddLiquidityV3PoolSummary({
   info: { createPool, quoteCurrencyId, baseCurrencyId },
 }: {
@@ -363,13 +378,12 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.REMOVE_LIQUIDITY_V3:
       return <RemoveLiquidityV3Summary info={info} />
-
+    case TransactionType.REMOVE_LMT_LIQUIDITY:
+      return <RemoveLmtLiquiditySummary info={info} />
     case TransactionType.QUEUE:
       return <QueueSummary info={info} />
-
     case TransactionType.EXECUTE:
       return <ExecuteSummary info={info} />
-
     case TransactionType.SUBMIT_PROPOSAL:
       return <SubmitProposalTransactionSummary />
     case TransactionType.ADD_BORROW:

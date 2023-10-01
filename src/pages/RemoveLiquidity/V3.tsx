@@ -2,7 +2,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { NonfungiblePositionManager } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -18,19 +17,21 @@ import { AddRemoveTabs } from 'components/NavigationTabs'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
+import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
 import { useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useV3PositionFromTokenId } from 'hooks/useV3Positions'
+import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { Text } from 'rebass'
-import { useBurnV3ActionHandlers, useBurnV3State, useDerivedV3BurnInfo } from 'state/burn/v3/hooks'
+import { useBurnV3ActionHandlers, useBurnV3State, useDerivedLmtBurnInfo } from 'state/burn/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtContracts/NFTPositionManager'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
@@ -62,7 +63,8 @@ export default function RemoveLiquidityV3() {
 }
 
 function Remove({ tokenId }: { tokenId: BigNumber }) {
-  const { position } = useV3PositionFromTokenId(tokenId)
+  // const { position } = useV3PositionFromTokenId(tokenId)
+  const { position: lmtPosition } = useLmtLpPositionFromTokenId(tokenId)
   const theme = useTheme()
   const { account, chainId, provider } = useWeb3React()
 
@@ -82,10 +84,10 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     feeValue1,
     outOfRange,
     error,
-  } = useDerivedV3BurnInfo(position, receiveWETH)
+  } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH)
   const { onPercentSelect } = useBurnV3ActionHandlers()
 
-  const removed = position?.liquidity?.eq(0)
+  const removed = lmtPosition?.liquidity?.eq(0)
 
   // boilerplate for the slider
   const [percentForSlider, onPercentSelectForSlider] = useDebouncedChangeHandler(percent, onPercentSelect)
@@ -98,6 +100,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const [txnHash, setTxnHash] = useState<string | undefined>()
   const addTransaction = useTransactionAdder()
   const positionManager = useV3NFTPositionManagerContract()
+
   const burn = useCallback(async () => {
     setAttemptingTxn(true)
     if (
@@ -116,7 +119,19 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
     // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
     // vast majority of cases
-    const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK, {
+    // const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK, {
+    //   tokenId: tokenId.toString(),
+    //   liquidityPercentage,
+    //   slippageTolerance: allowedSlippage,
+    //   deadline: deadline.toString(),
+    //   collectOptions: {
+    //     expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(liquidityValue0.currency, 0),
+    //     expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(liquidityValue1.currency, 0),
+    //     recipient: account,
+    //   },
+    // })
+
+    const { calldata, value } = LmtNFTPositionManager.removeCallParameters(positionSDK, {
       tokenId: tokenId.toString(),
       liquidityPercentage,
       slippageTolerance: allowedSlippage,
@@ -129,7 +144,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     })
 
     const txn = {
-      to: positionManager.address,
+      to: LMT_NFT_POSITION_MANAGER[chainId], // positionManager.address,
       data: calldata,
       value,
     }
@@ -155,7 +170,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
             setTxnHash(response.hash)
             setAttemptingTxn(false)
             addTransaction(response, {
-              type: TransactionType.REMOVE_LIQUIDITY_V3,
+              type: TransactionType.REMOVE_LMT_LIQUIDITY,
               baseCurrencyId: currencyId(liquidityValue0.currency),
               quoteCurrencyId: currencyId(liquidityValue1.currency),
               expectedAmountBaseRaw: liquidityValue0.quotient.toString(),
@@ -294,7 +309,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
           defaultSlippage={DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE}
         />
         <Wrapper>
-          {position ? (
+          {lmtPosition ? (
             <AutoColumn gap="lg">
               <RowBetween>
                 <RowFixed>

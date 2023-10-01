@@ -172,6 +172,7 @@ export interface PoolManagerInterface extends utils.Interface {
     "marginFacility()": FunctionFragment;
     "mintToRepay((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[],uint256,address)": FunctionFragment;
     "mintToRepay((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[],address)": FunctionFragment;
+    "multicall(bytes[])": FunctionFragment;
     "orderFacility()": FunctionFragment;
     "owner()": FunctionFragment;
     "payInterest((address,address,uint24),address,(int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,uint256)": FunctionFragment;
@@ -215,6 +216,7 @@ export interface PoolManagerInterface extends utils.Interface {
       | "marginFacility"
       | "mintToRepay((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[],uint256,address)"
       | "mintToRepay((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[],address)"
+      | "multicall"
       | "orderFacility"
       | "owner"
       | "payInterest"
@@ -382,6 +384,10 @@ export interface PoolManagerInterface extends utils.Interface {
     values: [PoolKeyStruct, LiquidityLoanStruct[], PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "multicall",
+    values: [PromiseOrValue<BytesLike>[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "orderFacility",
     values?: undefined
   ): string;
@@ -540,6 +546,7 @@ export interface PoolManagerInterface extends utils.Interface {
     functionFragment: "mintToRepay((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[],address)",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "orderFacility",
     data: BytesLike
@@ -812,6 +819,11 @@ export interface PoolManager extends BaseContract {
       key: PoolKeyStruct,
       repayInfo: LiquidityLoanStruct[],
       who: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1090,6 +1102,11 @@ export interface PoolManager extends BaseContract {
     key: PoolKeyStruct,
     repayInfo: LiquidityLoanStruct[],
     who: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  multicall(
+    data: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1392,6 +1409,11 @@ export interface PoolManager extends BaseContract {
       }
     >;
 
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
+      overrides?: CallOverrides
+    ): Promise<string[]>;
+
     orderFacility(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
@@ -1643,6 +1665,11 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     orderFacility(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1879,6 +1906,11 @@ export interface PoolManager extends BaseContract {
       key: PoolKeyStruct,
       repayInfo: LiquidityLoanStruct[],
       who: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    multicall(
+      data: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
