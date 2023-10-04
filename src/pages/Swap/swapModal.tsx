@@ -499,7 +499,6 @@ const TradeTabContent = () => {
     }
   }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
-  
   const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   const [leverageApproveAmount] = useMemo(() => {
     if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {

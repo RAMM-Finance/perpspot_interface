@@ -1,32 +1,25 @@
-import {BigNumber as BN} from 'bignumber.js'
+import {BigNumber} from 'ethers'
 
-export interface LMTPositionDetails {
-  token0Address: string
-  token1Address: string
-  fee: number
+export interface BaseFacilityPositionDetails {
+  poolKey: RawPoolKey
   isToken0: boolean
   owner: string
-  totalDebtOutput: BN
-  totalDebtInput: BN
-  recentPremium: BN
-  openTime: BN
-  repayTime: BN
+  totalDebtOutput: BigNumber
+  totalDebtInput: BigNumber
+  recentPremium: BigNumber
+  openTime: number
+  repayTime: number
   isBorrow: boolean
   poolAddress: string
-  // TODO show borrow info
 }
 
-export interface LeverageLMTPositionDetails extends LMTPositionDetails {
-  totalPosition: BN
-  initialCollateral: BN // margin
-}
-
-export interface BorrowLMTPositionDetails extends LMTPositionDetails {
-  initalCollateral: BN
+export interface MarginPositionDetails extends LMTPositionDetails {
+  totalPosition: BigNumber
+  margin: BigNumber // margin
 }
 
 export interface RawPoolKey {
-  token0: string
-  token1: string
+  token0Address: string
+  token1Address: string
   fee: number
 }

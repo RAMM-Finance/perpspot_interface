@@ -23,9 +23,9 @@ import {
   DATA_PROVIDER_ADDRESSES,
   ENS_REGISTRAR_ADDRESSES,
   GLOBAL_STORAGE_ADDRESSES,
+  LMT_MARGIN_FACILITY,
   LMT_NFT_POSITION_MANAGER,
   LMT_POOL_MANAGER,
-  LMT_V2_MARGIN_FACILITY,
   MULTICALL_ADDRESS,
   NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
   QUOTER_ADDRESSES,
@@ -35,11 +35,6 @@ import {
 } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import {
-  MarginFacility,
-  NonfungiblePositionManager as LmtNonfungiblePositionManager,
-  PoolManager as LmtPoolManager,
-} from 'LmtTypes'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
@@ -50,6 +45,12 @@ import { abi as IMarginFacilityAbi } from '../abis_v2/IMarginFacility.json'
 // import {abi as testTokenAbi} from "../perpspotContracts/testERC.json"
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
 import LmtPoolManagerJson from '../abis_v2/PoolManager.json'
+import {
+  DataProvider,
+  MarginFacility,
+  NonfungiblePositionManager as LmtNonfungiblePositionManager,
+  PoolManager as LmtPoolManager,
+} from '../LmtTypes'
 import { abi as BorrowManagerAbi } from '../perpspotContracts/BorrowManager.json'
 import { abi as GlobalStorageAbi } from '../perpspotContracts/GlobalStorage.json'
 import { abi as LeverageManagerAbi } from '../perpspotContracts/LeverageManager.json'
@@ -57,8 +58,6 @@ import { abi as LiquidityManagerAbi } from '../perpspotContracts/LiquidityManage
 import { abi as testTokenAbi } from '../perpspotContracts/TestToken.json'
 import { abi as PoolAbi } from '../perpspotContracts/UniswapV3Pool.json'
 import { getContract } from '../utils'
-import { MarginFacility } from 'LmtTypes'
-
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
 const { abi: IUniswapV2Router02ABI } = IUniswapV2Router02Json
@@ -85,7 +84,7 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   const { chainId } = useWeb3React()
   return useContract<MarginFacility>(
-    LMT_V2_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA],
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA],
     IMarginFacilityAbi,
     withSignerIfPossible
   )
@@ -97,7 +96,7 @@ export function useFacilityContract(facilityAddress: string, withSignerIfPossibl
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
   const { chainId } = useWeb3React()
-  return useContract(
+  return useContract<DataProvider>(
     DATA_PROVIDER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
     IDataProviderAbi,
     withSignerIfPossible

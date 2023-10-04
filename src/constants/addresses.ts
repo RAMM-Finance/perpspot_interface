@@ -30,7 +30,7 @@ export const DATA_PROVIDER_ADDRESSES: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x9338AdC8bae36F2A85E3Df8dae16BfEbBd605B4A',
 }
 
-export const LMT_V2_MARGIN_FACILITY: AddressMap = {
+export const LMT_MARGIN_FACILITY: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x6cae5Cdf926B738308C3b1e054ea34216186DE17',
 }
 

@@ -150,7 +150,7 @@ function useSelectPositions(positions?: LimitlessPositionDetails[]) {
   return { filteredPositions }
 }
 
-export default function PositionsTable({
+export default function LeveragePositionsTable({
   positions,
   loading,
 }: {

@@ -162,7 +162,7 @@ const FilterWrapper = styled.div`
   margin: 8px 0;
 `
 
-export default function PositionsTable({
+export default function BorrowPositionsTable({
   positions,
   loading,
 }: {

@@ -1,7 +1,7 @@
 import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
-import { LMT_V2_MARGIN_FACILITY } from 'constants/addresses'
+import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { useFacilityContract } from 'hooks/useContract'
 import React, { useCallback } from 'react'
@@ -16,7 +16,7 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
   console.log(value)
   const { account, chainId } = useWeb3React()
 
-  const marginFacilityContract = useFacilityContract(LMT_V2_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA])
+  const marginFacilityContract = useFacilityContract(LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA])
 
   const handleAddMargin = useCallback(async () => {
     if (!marginFacilityContract || !account) {

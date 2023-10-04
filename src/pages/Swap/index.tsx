@@ -8,7 +8,7 @@ import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
-import { TokenSelector } from 'components/swap/TokenSelector'
+import PremiumSection from 'components/swap/PremiumSection'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -17,7 +17,7 @@ import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
-import { useBorrowLMTPositions, useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
+import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hooks/usePools'
@@ -32,7 +32,8 @@ import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { PageWrapper, SwapWrapper, PremiumWrapper } from '../../components/swap/styleds'
+import { PoolSelector } from '../../components/swap/PoolSelector'
+import { PageWrapper, PremiumWrapper, SwapWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
@@ -51,8 +52,6 @@ import {
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
-import {PoolSelector} from '../../components/swap/PoolSelector'
-import PremiumSection from 'components/swap/PremiumSection'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
@@ -484,7 +483,7 @@ export default function Swap({ className }: { className?: string }) {
 
   // const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
   const { loading: leveragePositionsLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
-  const { loading: borrowPositionsLoading, positions: borrowPositions } = useBorrowLMTPositions(account)
+  // const { loading: borrowPositionsLoading, positions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
   const selectedTab = useSelector((state: any) => state.swap.tab)
@@ -556,7 +555,7 @@ export default function Swap({ className }: { className?: string }) {
 
                 <TabContent id={1} activeTab={activePositionTable}>
                   {/* TODO */}
-                  {/* <LeveragePositionsTable positions={leveragePositions} loading={leveragePositionsLoading} /> */}
+                  {/* <LeveragePositionsTable positions={leveragePositions} loading={false} /> */}
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
                   {/* TODO */}
@@ -580,7 +579,7 @@ export default function Swap({ className }: { className?: string }) {
             </LeftContainer>
             <div>
               <PremiumWrapper>
-                <PremiumSection currency0={inputCurrency as Token}/>
+                <PremiumSection currency0={inputCurrency as Token} />
               </PremiumWrapper>
               <SwapWrapper chainId={chainId} className={className} id="swap-page">
                 <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
