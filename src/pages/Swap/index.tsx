@@ -52,6 +52,7 @@ import {
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
+import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 
 const TradeTabContent = React.lazy(() => import('./swapModal'))
 
@@ -481,9 +482,8 @@ export default function Swap({ className }: { className?: string }) {
   //   }
   // }, [swapHeaderHeight, swapWrapperHeight])
 
-  // const { loading: limitlessPositionsLoading, positions: limitlessPositions } = useLimitlessPositions(account)
-  const { loading: leveragePositionsLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
-  // const { loading: borrowPositionsLoading, positions: borrowPositions } = useBorrowLMTPositions(account)
+  const { leverageLoading: leverageLoading, leveragePositions: leveragePositions } = useLeveragedLMTPositions(account)
+  // const { borrowLoading: borrowPositionsLoading, borrowPositions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
   const selectedTab = useSelector((state: any) => state.swap.tab)
@@ -555,7 +555,7 @@ export default function Swap({ className }: { className?: string }) {
 
                 <TabContent id={1} activeTab={activePositionTable}>
                   {/* TODO */}
-                  {/* <LeveragePositionsTable positions={leveragePositions} loading={false} /> */}
+                  {<LeveragePositionsTable positions={leveragePositions} loading={false} />}
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
                   {/* TODO */}

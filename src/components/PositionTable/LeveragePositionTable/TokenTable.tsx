@@ -13,6 +13,9 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
+import { MarginPositionDetails } from 'types/lmtv2position'
+import JSBI from 'jsbi'
+
 
 const GridContainer = styled.div`
   display: flex;
@@ -72,7 +75,7 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-function useSortedPositions(positions: LimitlessPositionDetails[] | undefined) {
+function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
   const sortMethod = useAtomValue(sortMethodAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
 
@@ -89,15 +92,15 @@ function useSortedPositions(positions: LimitlessPositionDetails[] | undefined) {
           const timeLeftB = moment.duration(moment.unix(Number(b.repayTime)).add(1, 'days').diff(now))
 
           const premiumB =
-            b.unusedPremium.multipliedBy(timeLeftB.asSeconds() / 86400).toNumber() < 0
+            b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber() < 0
               ? 0
-              : b.unusedPremium.multipliedBy(timeLeftB.asSeconds() / 86400).toNumber()
+              : b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber()
 
           const timeLeftA = moment.duration(moment.unix(Number(a.repayTime)).add(1, 'days').diff(now))
           const premiumA =
-            a.unusedPremium.multipliedBy(timeLeftA.asSeconds() / 86400).toNumber() < 0
+            a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber() < 0
               ? 0
-              : a.unusedPremium.multipliedBy(timeLeftA.asSeconds() / 86400).toNumber()
+              : a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber()
 
           return premiumB - premiumA
         })
@@ -113,7 +116,7 @@ function findCurrency(address: string | undefined, tokens: { [address: string]: 
   return tokens[address]
 }
 
-function useFilteredPositions(positions: LimitlessPositionDetails[] | undefined) {
+function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
   const filterString = useAtomValue(filterStringAtom)
   const lowercaseFilterString = useMemo(() => filterString.toLowerCase(), [filterString])
   const tokens = useDefaultActiveTokens()
@@ -123,9 +126,9 @@ function useFilteredPositions(positions: LimitlessPositionDetails[] | undefined)
     let returnPositions = positions
     if (lowercaseFilterString) {
       returnPositions = returnPositions?.filter((position) => {
-        const token0 = findCurrency(position?.token0Address, tokens)
-        const token1 = findCurrency(position?.token1Address, tokens)
-        const addressIncludesFilterString = position?.token0Address?.toLowerCase().includes(lowercaseFilterString)
+        const token0 = findCurrency(position?.poolKey.token0Address, tokens)
+        const token1 = findCurrency(position?.poolKey.token1Address, tokens)
+        const addressIncludesFilterString = position?.poolKey.token0Address?.toLowerCase().includes(lowercaseFilterString)
         const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
         const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
         const name1IncludesFilterString = token1?.name?.toLowerCase().includes(lowercaseFilterString)
@@ -143,7 +146,7 @@ function useFilteredPositions(positions: LimitlessPositionDetails[] | undefined)
   }, [positions, lowercaseFilterString, tokens])
 }
 
-function useSelectPositions(positions?: LimitlessPositionDetails[]) {
+function useSelectPositions(positions?: MarginPositionDetails[]) {
   const sortedPositions = useSortedPositions(positions)
 
   const filteredPositions = useFilteredPositions(sortedPositions)
@@ -154,7 +157,7 @@ export default function LeveragePositionsTable({
   positions,
   loading,
 }: {
-  positions?: LimitlessPositionDetails[]
+  positions?: MarginPositionDetails[]
   loading: boolean
 }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
@@ -162,7 +165,9 @@ export default function LeveragePositionsTable({
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
 
+  console.log('before filtering: ', positions)
   const { filteredPositions } = useSelectPositions(positions)
+  console.log('after filtering: ', filteredPositions)
 
   useEffect(() => {
     resetFilterString()
@@ -179,11 +184,9 @@ export default function LeveragePositionsTable({
       <GridContainer>
         <HeaderRow />
         <TokenDataContainer>
-          {filteredPositions?.map(
-            (position, index) => position?.tokenId && <LoadedRow key={position.tokenId} position={position} />
-          )}
+          {filteredPositions?.map((position) => position?.positionId && <LoadedRow key={position.positionId} position={position} />)}
         </TokenDataContainer>
-      </GridContainer>
+        </GridContainer>
     )
   }
 }

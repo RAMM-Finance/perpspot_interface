@@ -33,6 +33,7 @@ import {
 } from './constants'
 import { LoadingBubble } from './loading'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 const Cell = styled.div`
   display: flex;
@@ -419,7 +420,7 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
-  position?: LimitlessPositionDetails
+  position?: MarginPositionDetails
   last?: boolean
   style?: CSSProperties
 }) {
@@ -454,7 +455,7 @@ function PositionRow({
   const rowCells = (
     <>
       {/* <ListNumberCell header={header}>{listNumber}</ListNumberCell> */}
-      {!header && showReduce && (
+      {/* {!header && showReduce && (
         <ReducePositionModal
           isOpen={showReduce}
           trader={account}
@@ -464,8 +465,8 @@ function PositionRow({
           onAcceptChanges={() => {}}
           onConfirm={() => {}}
         />
-      )}
-      {!header && showAddPremium && (
+      )} */}
+      {/* {!header && showAddPremium && (
         <AddLeveragePremiumModal
           trader={account}
           isOpen={showAddPremium}
@@ -475,7 +476,7 @@ function PositionRow({
           onAcceptChanges={() => {}}
           onConfirm={() => {}}
         />
-      )}
+      )} */}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
@@ -569,7 +570,7 @@ const FlexStartRow = styled(Row)`
 `
 
 interface LoadedRowProps {
-  position: LimitlessPositionDetails
+  position: MarginPositionDetails
 }
 
 /* Loaded State: row component with token information */
@@ -578,15 +579,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { position } = props
 
-  const { isToken0, token0Address, token1Address, initialCollateral, totalDebtInput } = position
+  const { isToken0, margin, totalDebtInput } = position
+  const token0Address = position.poolKey.token0Address
+  const token1Address = position.poolKey.token1Address
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolFee)
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolKey.fee)
 
   const leverageFactor = useMemo(
-    () => (Number(initialCollateral) + Number(totalDebtInput)) / Number(initialCollateral),
-    [initialCollateral, totalDebtInput]
+    () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
+    [margin, totalDebtInput]
   )
 
   const now = moment()
@@ -623,7 +626,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
         : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
 
       // entryPrice if isToken0, output is in token0. so entry price would be in input token / output token
-      const _entryPrice = position.initialCollateral.plus(position.totalDebtInput).dividedBy(position.totalPosition)
+      const _entryPrice = position.margin.plus(position.totalDebtInput).dividedBy(position.totalPosition)
 
       // token0Price => token1 / token0, token1Price => token0 / token1.
       // total position is in output token
@@ -689,9 +692,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     if (position) {
       const timeLeft = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now))
 
-      return position.unusedPremium.multipliedBy(timeLeft.asSeconds() / 86400).toNumber() < 0
+      return position.premiumLeft.multipliedBy(timeLeft.asSeconds() / 86400).toNumber() < 0
         ? '0'
-        : formatBNToString(position.unusedPremium.multipliedBy(timeLeft.asSeconds() / 86400))
+        : formatBNToString(position.premiumLeft.multipliedBy(timeLeft.asSeconds() / 86400))
     }
     return '0'
   }, [position, now])
@@ -707,7 +710,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
-    <div ref={ref} data-testid={`token-table-row-${position.tokenId}`}>
+    <div ref={ref} data-testid={`token-table-row-${position.positionId}`}>
       <StyledLoadedRow>
         <PositionRow
           header={false}
@@ -730,7 +733,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow>
-              {`${formatBNToString(position.initialCollateral, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
+              {`${formatBNToString(position.margin, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
             </FlexStartRow>
           }
           repaymentTime={
@@ -772,7 +775,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               {`${remainingPremium ? remainingPremium : 0}/${formatBNToString(
-                position.unusedPremium
+                position.premiumLeft
               )} ${inputCurrencySymbol}`}
             </FlexStartRow>
           }
