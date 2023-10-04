@@ -227,40 +227,7 @@ export default function Pool() {
   }
 
   const showConnectAWallet = Boolean(!account)
-  const showV2Features = Boolean(V2_FACTORY_ADDRESSES[chainId])
-
-  const menuItems = [
-    {
-      content: (
-        <PoolMenuItem>
-          <Trans>Migrate</Trans>
-          <ChevronsRight size={16} />
-        </PoolMenuItem>
-      ),
-      link: '/migrate/v2',
-      external: false,
-    },
-    {
-      content: (
-        <PoolMenuItem>
-          <Trans>V2 liquidity</Trans>
-          <Layers size={16} />
-        </PoolMenuItem>
-      ),
-      link: '/pools/v2',
-      external: false,
-    },
-    {
-      content: (
-        <PoolMenuItem>
-          <Trans>Learn</Trans>
-          <BookOpen size={16} />
-        </PoolMenuItem>
-      ),
-      link: 'https://support.uniswap.org/hc/en-us/categories/8122334631437-Providing-Liquidity-',
-      external: true,
-    },
-  ]
+  // const showV2Features = Boolean(V2_FACTORY_ADDRESSES[chainId]) //Potentially needed later
 
   return (
     <Trace page={InterfacePageName.POOL_PAGE} shouldLogImpression>
@@ -272,20 +239,6 @@ export default function Pool() {
                 <Trans>Liquidity Positions</Trans>
               </ThemedText.LargeHeader>*/}
               <ButtonRow>
-                {showV2Features && (
-                  <PoolMenu
-                    menuItems={menuItems}
-                    flyoutAlignment={FlyoutAlignment.LEFT}
-                    ToggleUI={(props: any) => (
-                      <MoreOptionsButton {...props}>
-                        <MoreOptionsText>
-                          <Trans>More</Trans>
-                          <ChevronDown size={15} />
-                        </MoreOptionsText>
-                      </MoreOptionsButton>
-                    )}
-                  />
-                )}
                 <ResponsiveButtonPrimary data-cy="join-pool-button" id="join-pool-button" as={Link} to="/add/ETH">
                   <Trans>Add New Position</Trans>
                 </ResponsiveButtonPrimary>
