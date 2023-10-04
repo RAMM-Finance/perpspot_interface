@@ -242,6 +242,9 @@ export default function Pool() {
                 <ResponsiveButtonPrimary data-cy="join-pool-button" id="join-pool-button" as={Link} to="/add/ETH">
                   <Trans>Add New Position</Trans>
                 </ResponsiveButtonPrimary>
+                <ResponsiveButtonPrimary>
+                  <Trans>Import Uniswap Position</Trans>
+                </ResponsiveButtonPrimary>
               </ButtonRow>
             </TitleRow>
 
