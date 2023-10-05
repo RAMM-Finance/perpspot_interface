@@ -94,7 +94,8 @@ export const menuItem = style([
 export const activeMenuItem = style([
   baseMenuItem,
   sprinkles({
-    background: 'accentActive',
+    background: 'transparent',
+    fontWeight: 'bold',
     color: 'textPrimary',
   }),
 ])

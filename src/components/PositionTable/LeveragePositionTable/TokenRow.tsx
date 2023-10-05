@@ -3,27 +3,29 @@ import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
+import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
-import ReducePositionModal, { AddLeveragePremiumModal } from 'components/swap/LMTModals'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
+import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { formatSymbol } from 'lib/utils/formatSymbol'
 import moment from 'moment'
+import { useIsMobile } from 'nft/hooks'
 import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
-import { CSSProperties, ReactNode } from 'react'
+import { CSSProperties, ReactNode, useRef } from 'react'
 import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { LimitlessPositionDetails } from 'types/leveragePosition'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -32,6 +34,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
 import { LoadingBubble } from './loading'
+import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
 const Cell = styled.div`
@@ -48,7 +51,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 1fr 0.5fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr 1.2fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -113,6 +116,14 @@ const ClickableName = styled(ClickableContent)`
   gap: 8px;
   max-width: 100%;
 `
+
+const StyledMore = styled(More)`
+  fill: ${({ theme }) => theme.textSecondary};
+  &:hover {
+    cursor: pointer;
+  }
+`
+
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
   border-color: ${({ theme }) => theme.backgroundOutline};
@@ -311,6 +322,7 @@ const InfoIconContainer = styled.div`
   display: flex;
   align-items: center;
   cursor: help;
+  padding-right: 1vw;
 `
 const PositionInfo = styled(AutoColumn)`
   margin-left: 8px;
@@ -329,6 +341,8 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 
 const ActionsContainer = styled(AutoColumn)`
   align-items: center;
+  display: flex;
+  justify-content: center;
 `
 
 export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
@@ -419,12 +433,13 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
-  position?: LimitlessPositionDetails
+  position?: MarginPositionDetails
   last?: boolean
   style?: CSSProperties
 }) {
   const [showReduce, setShowReduce] = useState(false)
   const [showAddPremium, setShowAddPremium] = useState(false)
+  const [showActionDropdown, setShowActionDropdown] = useState<boolean>(false)
   const { account } = useWeb3React()
 
   // const collateral = (totalLiquidity - totalDebt)
@@ -434,14 +449,33 @@ function PositionRow({
   const handlePremiumConfirmDismiss = () => {
     setShowAddPremium(false)
   }
-  const actions = !header ? (
-    <ActionsContainer>
+
+  const isMobile = useIsMobile()
+
+  const ref = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useOnClickOutside(ref, () => setShowActionDropdown(false), [modalRef])
+
+  const dropdown = (
+    <NavDropdown ref={modalRef} style={{ height: '100px', display: 'flex', flexDirection: 'column' }}>
       <ReduceButton width="auto" onClick={() => setShowReduce(!showReduce)}>
         <Trans>reduce</Trans>
       </ReduceButton>
+      <ReduceButton width="auto" onClick={() => console.log('Close Position')}>
+        <Trans>close</Trans>
+      </ReduceButton>
+    </NavDropdown>
+  )
+
+  const actions = !header ? (
+    <ActionsContainer>
       <ReduceButton width="auto" onClick={() => setShowAddPremium(!showAddPremium)}>
         <Trans>pay</Trans>
       </ReduceButton>
+      <div style={{ display: 'flex' }}>
+        <StyledMore onClick={() => setShowActionDropdown(!showActionDropdown)}></StyledMore>
+        {showActionDropdown && dropdown}
+      </div>
     </ActionsContainer>
   ) : (
     <MouseoverTooltip text="(reduce): reduce position, (pay): pay premium" placement="right">
@@ -454,7 +488,7 @@ function PositionRow({
   const rowCells = (
     <>
       {/* <ListNumberCell header={header}>{listNumber}</ListNumberCell> */}
-      {!header && showReduce && (
+      {/* {!header && showReduce && (
         <ReducePositionModal
           isOpen={showReduce}
           trader={account}
@@ -464,8 +498,8 @@ function PositionRow({
           onAcceptChanges={() => {}}
           onConfirm={() => {}}
         />
-      )}
-      {!header && showAddPremium && (
+      )} */}
+      {/* {!header && showAddPremium && (
         <AddLeveragePremiumModal
           trader={account}
           isOpen={showAddPremium}
@@ -475,7 +509,7 @@ function PositionRow({
           onAcceptChanges={() => {}}
           onConfirm={() => {}}
         />
-      )}
+      )} */}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
@@ -569,7 +603,7 @@ const FlexStartRow = styled(Row)`
 `
 
 interface LoadedRowProps {
-  position: LimitlessPositionDetails
+  position: MarginPositionDetails
 }
 
 /* Loaded State: row component with token information */
@@ -578,15 +612,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { position } = props
 
-  const { isToken0, token0Address, token1Address, initialCollateral, totalDebtInput } = position
+  const { isToken0, margin, totalDebtInput } = position
+  const token0Address = position.poolKey.token0Address
+  const token1Address = position.poolKey.token1Address
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolFee)
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolKey.fee)
 
   const leverageFactor = useMemo(
-    () => (Number(initialCollateral) + Number(totalDebtInput)) / Number(initialCollateral),
-    [initialCollateral, totalDebtInput]
+    () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
+    [margin, totalDebtInput]
   )
 
   const now = moment()
@@ -623,7 +659,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
         : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
 
       // entryPrice if isToken0, output is in token0. so entry price would be in input token / output token
-      const _entryPrice = position.initialCollateral.plus(position.totalDebtInput).dividedBy(position.totalPosition)
+      const _entryPrice = position.margin.plus(position.totalDebtInput).dividedBy(position.totalPosition)
 
       // token0Price => token1 / token0, token1Price => token0 / token1.
       // total position is in output token
@@ -689,9 +725,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     if (position) {
       const timeLeft = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now))
 
-      return position.unusedPremium.multipliedBy(timeLeft.asSeconds() / 86400).toNumber() < 0
+      return position.premiumLeft.multipliedBy(timeLeft.asSeconds() / 86400).toNumber() < 0
         ? '0'
-        : formatBNToString(position.unusedPremium.multipliedBy(timeLeft.asSeconds() / 86400))
+        : formatBNToString(position.premiumLeft.multipliedBy(timeLeft.asSeconds() / 86400))
     }
     return '0'
   }, [position, now])
@@ -707,7 +743,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
-    <div ref={ref} data-testid={`token-table-row-${position.tokenId}`}>
+    <div ref={ref} data-testid={`token-table-row-${position.positionId}`}>
       <StyledLoadedRow>
         <PositionRow
           header={false}
@@ -730,7 +766,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow>
-              {`${formatBNToString(position.initialCollateral, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
+              {`${formatBNToString(position.margin, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
             </FlexStartRow>
           }
           repaymentTime={
@@ -772,7 +808,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               {`${remainingPremium ? remainingPremium : 0}/${formatBNToString(
-                position.unusedPremium
+                position.premiumLeft
               )} ${inputCurrencySymbol}`}
             </FlexStartRow>
           }
