@@ -7,15 +7,12 @@ import moment from 'moment'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { LimitlessPositionDetails } from 'types/leveragePosition'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
-import { MarginPositionDetails } from 'types/lmtv2position'
-import JSBI from 'jsbi'
-
 
 const GridContainer = styled.div`
   display: flex;
@@ -128,7 +125,9 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
       returnPositions = returnPositions?.filter((position) => {
         const token0 = findCurrency(position?.poolKey.token0Address, tokens)
         const token1 = findCurrency(position?.poolKey.token1Address, tokens)
-        const addressIncludesFilterString = position?.poolKey.token0Address?.toLowerCase().includes(lowercaseFilterString)
+        const addressIncludesFilterString = position?.poolKey.token0Address
+          ?.toLowerCase()
+          .includes(lowercaseFilterString)
         const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
         const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
         const name1IncludesFilterString = token1?.name?.toLowerCase().includes(lowercaseFilterString)
@@ -184,9 +183,11 @@ export default function LeveragePositionsTable({
       <GridContainer>
         <HeaderRow />
         <TokenDataContainer>
-          {filteredPositions?.map((position) => position?.positionId && <LoadedRow key={position.positionId} position={position} />)}
+          {filteredPositions?.map(
+            (position) => position?.positionId && <LoadedRow key={position.positionId} position={position} />
+          )}
         </TokenDataContainer>
-        </GridContainer>
+      </GridContainer>
     )
   }
 }

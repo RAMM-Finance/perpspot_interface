@@ -17,6 +17,7 @@ export default function SwapHeader({ activeTab, allowedSlippage }: SwapHeaderPro
   const handleTabChange = useCallback(() => {
     onActiveTabChange(activeTab === ActiveSwapTab.TRADE ? ActiveSwapTab.BORROW : ActiveSwapTab.TRADE)
   }, [activeTab])
+  console.log(activeTab)
   return (
     <>
       <StyledSwapHeader>

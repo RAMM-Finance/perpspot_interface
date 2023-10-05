@@ -205,23 +205,29 @@ const TabElement = styled.button<{
   border: none;
   background: ${({ theme, isActive, selectedTab, tabValue }) => {
     if (!isActive && selectedTab === tabValue) {
-      if (selectedTab === "Long") {
-        return "#7fffd4";
-      } else if (selectedTab === "Short") {
-        return "#ff5f5f";
+      if (selectedTab === 'Long') {
+        return '#7fffd4'
+      } else if (selectedTab === 'Short') {
+        return '#ff5f5f'
       } else {
-        return theme.accentActive;
+        return theme.accentActive
       }
     }
-    return 'none';
+    return 'none'
   }};
   color: ${({ theme, isActive, selectedTab, tabValue }) =>
-  !isActive && selectedTab === tabValue ? selectedTab === 'Long' ? '#0e1724' : theme.textSecondary : theme.textTertiary};
+    !isActive && selectedTab === tabValue
+      ? selectedTab === 'Long'
+        ? '#0e1724'
+        : theme.textSecondary
+      : theme.textTertiary};
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  ${({ first, theme }) => first && `
+  ${({ first, theme }) =>
+    first &&
+    `
     border-left: 1px solid ${theme.backgroundOutline};
   `}
   border-right: 1px solid ${({ theme }) => theme.backgroundOutline};

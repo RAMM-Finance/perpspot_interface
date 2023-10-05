@@ -6,6 +6,7 @@ import { DEFAULT_DEADLINE_FROM_NOW } from 'constants/misc'
 import ms from 'ms.macro'
 import { darken } from 'polished'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useUserSlippageTolerance, useUserTransactionTTL } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
@@ -19,6 +20,10 @@ enum SlippageError {
 }
 
 enum DeadlineError {
+  InvalidInput = 'InvalidInput',
+}
+
+enum PremiumError {
   InvalidInput = 'InvalidInput',
 }
 
@@ -119,6 +124,16 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
   const [deadlineInput, setDeadlineInput] = useState('')
   const [deadlineError, setDeadlineError] = useState<DeadlineError | false>(false)
 
+  //TODO: Configure Premium Tolerance
+  // const [premiumInput, setPremiumInput] = useState('')
+  // const [premiumError, setPremiumError] = useState<PremiumError | false>(false)
+
+  // function parsePremiumInput(value: string){
+  //   //populate what the user typed and clear the error
+  //   setPremiumInput(value)
+  //   setPremiumError(false)
+  // }
+
   function parseSlippageInput(value: string) {
     // populate what the user typed and clear the error
     setSlippageInput(value)
@@ -167,8 +182,81 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
 
   const showCustomDeadlineRow = Boolean(chainId && !L2_CHAIN_IDS.includes(chainId))
 
+  const selectedTab = useSelector((state: any) => state.swap.tab)
+
   return (
     <AutoColumn gap="md">
+      {selectedTab === 'Swap' ? null : (
+        <AutoColumn gap="sm">
+          <RowFixed>
+            <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
+              <Trans>Premium Tolerance</Trans>
+            </ThemedText.DeprecatedBlack>
+            <QuestionHelper
+              text={
+                <Trans>
+                  Your transaction will revert if the price changes unfavorably by more than this percentage.
+                </Trans>
+              }
+            />
+          </RowFixed>
+          <RowBetween>
+            <Option
+              onClick={() => {
+                parseSlippageInput('')
+              }}
+              active={userSlippageTolerance === 'auto'}
+            >
+              <Trans>Auto</Trans>
+            </Option>
+            <OptionCustom active={userSlippageTolerance !== 'auto'} warning={!!slippageError} tabIndex={-1}>
+              <RowBetween>
+                {tooLow || tooHigh ? (
+                  <SlippageEmojiContainer>
+                    <span role="img" aria-label="warning">
+                      ⚠️
+                    </span>
+                  </SlippageEmojiContainer>
+                ) : null}
+                <Input
+                  placeholder={placeholderSlippage.toFixed(2)}
+                  value={
+                    slippageInput.length > 0
+                      ? slippageInput
+                      : userSlippageTolerance === 'auto'
+                      ? ''
+                      : userSlippageTolerance.toFixed(2)
+                  }
+                  onChange={(e) => parseSlippageInput(e.target.value)}
+                  onBlur={() => {
+                    setSlippageInput('')
+                    setSlippageError(false)
+                  }}
+                  color={slippageError ? 'red' : ''}
+                />
+                %
+              </RowBetween>
+            </OptionCustom>
+          </RowBetween>
+          {slippageError || tooLow || tooHigh ? (
+            <RowBetween
+              style={{
+                fontSize: '14px',
+                paddingTop: '7px',
+                color: slippageError ? 'red' : '#F3841E',
+              }}
+            >
+              {slippageError ? (
+                <Trans>Enter a valid slippage percentage</Trans>
+              ) : tooLow ? (
+                <Trans>Your transaction may fail</Trans>
+              ) : (
+                <Trans>Your transaction may be frontrun</Trans>
+              )}
+            </RowBetween>
+          ) : null}
+        </AutoColumn>
+      )}
       <AutoColumn gap="sm">
         <RowFixed>
           <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>

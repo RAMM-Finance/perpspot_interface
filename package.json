@@ -225,6 +225,7 @@
     "react-router-dom": "^6.3.0",
     "react-spring": "^9.5.5",
     "react-table": "^7.8.0",
+    "react-tabs": "^6.0.2",
     "react-use-gesture": "^6.0.14",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",

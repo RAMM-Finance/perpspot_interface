@@ -9,6 +9,7 @@ import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
+import LimitContent from 'components/swap/LimitContent'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -34,6 +35,7 @@ import { ThemedText } from 'theme'
 
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
+import { LimitWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
@@ -576,20 +578,18 @@ export default function Swap({ className }: { className?: string }) {
                 </TabContent>
               </PositionsContainer>
             </LeftContainer>
-            <div>
-              {/* <PremiumWrapper>
-                <PremiumSection currency0={inputCurrency as Token} />
-              </PremiumWrapper> */}
-              <SwapWrapper chainId={chainId} className={className} id="swap-page">
-                <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-                <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
-                  <TradeTabContent />
-                </TabContent>
-                <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-                  <BorrowTabContent />
-                </TabContent>
-              </SwapWrapper>
-            </div>
+            <SwapWrapper chainId={chainId} className={className} id="swap-page">
+              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
+              <LimitWrapper>
+                <LimitContent tab={selectedTab} currency0={inputCurrency as Token} />
+              </LimitWrapper>
+              <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
+                <TradeTabContent />
+              </TabContent>
+              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
+                <BorrowTabContent />
+              </TabContent>
+            </SwapWrapper>
           </MainWrapper>
         </PageWrapper>
         {!swapIsUnsupported ? null : (
