@@ -26,6 +26,9 @@ const Nav = styled.nav`
   height: ${({ theme }) => theme.navHeight}px;
   z-index: 2;
   background-color: ${({ theme }) => theme.navbarBackground}; // Use theme value
+  &:hover {
+    font-weight: bold;
+  }
 `
 
 interface MenuItemProps {

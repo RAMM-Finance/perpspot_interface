@@ -85,8 +85,10 @@ export const menuItem = style([
   }),
   {
     ':hover': {
-      color: 'textPrimary',
+      color: 'white',
       background: 'accentActiveSoft',
+      fontWeight: 'bold',
+      transform: 'scale(1.1,1.1)',
     },
   },
 ])
