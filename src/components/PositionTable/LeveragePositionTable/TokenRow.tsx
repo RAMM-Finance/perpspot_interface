@@ -3,27 +3,29 @@ import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
+import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
-import ReducePositionModal, { AddLeveragePremiumModal } from 'components/swap/LMTModals'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
+import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { formatSymbol } from 'lib/utils/formatSymbol'
 import moment from 'moment'
+import { useIsMobile } from 'nft/hooks'
 import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
-import { CSSProperties, ReactNode } from 'react'
+import { CSSProperties, ReactNode, useRef } from 'react'
 import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { LimitlessPositionDetails } from 'types/leveragePosition'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -32,8 +34,8 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
 import { LoadingBubble } from './loading'
+import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
-import { MarginPositionDetails } from 'types/lmtv2position'
 
 const Cell = styled.div`
   display: flex;
@@ -49,7 +51,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 1fr 0.5fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr 1.2fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -114,6 +116,14 @@ const ClickableName = styled(ClickableContent)`
   gap: 8px;
   max-width: 100%;
 `
+
+const StyledMore = styled(More)`
+  fill: ${({ theme }) => theme.textSecondary};
+  &:hover {
+    cursor: pointer;
+  }
+`
+
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
   border-color: ${({ theme }) => theme.backgroundOutline};
@@ -312,6 +322,7 @@ const InfoIconContainer = styled.div`
   display: flex;
   align-items: center;
   cursor: help;
+  padding-right: 1vw;
 `
 const PositionInfo = styled(AutoColumn)`
   margin-left: 8px;
@@ -330,6 +341,8 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 
 const ActionsContainer = styled(AutoColumn)`
   align-items: center;
+  display: flex;
+  justify-content: center;
 `
 
 export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
@@ -426,6 +439,7 @@ function PositionRow({
 }) {
   const [showReduce, setShowReduce] = useState(false)
   const [showAddPremium, setShowAddPremium] = useState(false)
+  const [showActionDropdown, setShowActionDropdown] = useState<boolean>(false)
   const { account } = useWeb3React()
 
   // const collateral = (totalLiquidity - totalDebt)
@@ -435,14 +449,33 @@ function PositionRow({
   const handlePremiumConfirmDismiss = () => {
     setShowAddPremium(false)
   }
-  const actions = !header ? (
-    <ActionsContainer>
+
+  const isMobile = useIsMobile()
+
+  const ref = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useOnClickOutside(ref, () => setShowActionDropdown(false), [modalRef])
+
+  const dropdown = (
+    <NavDropdown ref={modalRef} style={{ height: '100px', display: 'flex', flexDirection: 'column' }}>
       <ReduceButton width="auto" onClick={() => setShowReduce(!showReduce)}>
         <Trans>reduce</Trans>
       </ReduceButton>
+      <ReduceButton width="auto" onClick={() => console.log('Close Position')}>
+        <Trans>close</Trans>
+      </ReduceButton>
+    </NavDropdown>
+  )
+
+  const actions = !header ? (
+    <ActionsContainer>
       <ReduceButton width="auto" onClick={() => setShowAddPremium(!showAddPremium)}>
         <Trans>pay</Trans>
       </ReduceButton>
+      <div style={{ display: 'flex' }}>
+        <StyledMore onClick={() => setShowActionDropdown(!showActionDropdown)}></StyledMore>
+        {showActionDropdown && dropdown}
+      </div>
     </ActionsContainer>
   ) : (
     <MouseoverTooltip text="(reduce): reduce position, (pay): pay premium" placement="right">
