@@ -43,6 +43,8 @@ export type AddParamsStruct = {
   positionIsToken0: PromiseOrValue<boolean>;
   executionOption: PromiseOrValue<BigNumberish>;
   trader: PromiseOrValue<string>;
+  minOutput: PromiseOrValue<BigNumberish>;
+  deadline: PromiseOrValue<BigNumberish>;
 };
 
 export type AddParamsStructOutput = [
@@ -52,7 +54,9 @@ export type AddParamsStructOutput = [
   BigNumber,
   boolean,
   BigNumber,
-  string
+  string,
+  BigNumber,
+  BigNumber
 ] & {
   margin: BigNumber;
   maxSlippage: BigNumber;
@@ -61,6 +65,8 @@ export type AddParamsStructOutput = [
   positionIsToken0: boolean;
   executionOption: BigNumber;
   trader: string;
+  minOutput: BigNumber;
+  deadline: BigNumber;
 };
 
 export type LiquidityLoanStruct = {
@@ -146,6 +152,7 @@ export type ReduceParamStruct = {
   executionOption: PromiseOrValue<BigNumberish>;
   executionData: PromiseOrValue<BytesLike>;
   slippedPrice: PromiseOrValue<BigNumberish>;
+  deadline: PromiseOrValue<BigNumberish>;
 };
 
 export type ReduceParamStructOutput = [
@@ -156,6 +163,7 @@ export type ReduceParamStructOutput = [
   string,
   BigNumber,
   string,
+  BigNumber,
   BigNumber
 ] & {
   positionIsToken0: boolean;
@@ -166,6 +174,7 @@ export type ReduceParamStructOutput = [
   executionOption: BigNumber;
   executionData: string;
   slippedPrice: BigNumber;
+  deadline: BigNumber;
 };
 
 export type ReduceReturnStruct = {
@@ -198,9 +207,9 @@ export type ReduceReturnStructOutput = [
 
 export interface IMarginFacilityInterface extends utils.Interface {
   functions: {
-    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
-    "reducePosition((address,address,uint24),(bool,uint256,uint256,uint256,address,uint256,bytes32,uint160))": FunctionFragment;
+    "reducePosition((address,address,uint24),(bool,uint256,uint256,uint256,address,uint256,bytes32,uint160,uint256))": FunctionFragment;
   };
 
   getFunction(

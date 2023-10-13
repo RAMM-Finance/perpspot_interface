@@ -133,14 +133,36 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "token0",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token1",
+            type: "address",
+          },
+          {
+            internalType: "uint24",
+            name: "fee",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct PoolKey",
+        name: "key",
+        type: "tuple",
       },
       {
         internalType: "address",
         name: "trader",
         type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "isToken0",
+        type: "bool",
       },
       {
         internalType: "uint256",
@@ -156,14 +178,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "trader",
-        type: "address",
+        internalType: "PositionId",
+        name: "positionId",
+        type: "bytes32",
       },
     ],
     name: "maxWithdrawablePremium",
@@ -226,24 +243,36 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "token",
-        type: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "token0",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token1",
+            type: "address",
+          },
+          {
+            internalType: "uint24",
+            name: "fee",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct PoolKey",
+        name: "key",
+        type: "tuple",
       },
       {
-        internalType: "address",
-        name: "trader",
-        type: "address",
+        internalType: "bool",
+        name: "isToken0",
+        type: "bool",
       },
       {
         internalType: "uint256",
         name: "amount",
         type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "reciever",
-        type: "address",
       },
     ],
     name: "withdrawPremium",

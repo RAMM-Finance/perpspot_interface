@@ -164,9 +164,7 @@ export default function LeveragePositionsTable({
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
 
-  console.log('before filtering: ', positions)
   const { filteredPositions } = useSelectPositions(positions)
-  console.log('after filtering: ', filteredPositions)
 
   useEffect(() => {
     resetFilterString()
@@ -183,9 +181,20 @@ export default function LeveragePositionsTable({
       <GridContainer>
         <HeaderRow />
         <TokenDataContainer>
-          {filteredPositions?.map(
-            (position) => position?.positionId && <LoadedRow key={position.positionId} position={position} />
-          )}
+          {filteredPositions?.map((position) => (
+            <LoadedRow
+              key={
+                position.poolKey.token0Address +
+                '-' +
+                position.poolKey.token1Address +
+                '-' +
+                position.poolKey.fee.toString() +
+                '-' +
+                position.isToken0
+              }
+              position={position}
+            />
+          ))}
         </TokenDataContainer>
       </GridContainer>
     )

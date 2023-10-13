@@ -483,7 +483,7 @@ export default function Swap({ className }: { className?: string }) {
   //   }
   // }, [swapHeaderHeight, swapWrapperHeight])
 
-  const { leverageLoading: leverageLoading, leveragePositions: leveragePositions } = useLeveragedLMTPositions(account)
+  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
   // const { borrowLoading: borrowPositionsLoading, borrowPositions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)

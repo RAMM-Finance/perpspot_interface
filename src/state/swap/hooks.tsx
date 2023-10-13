@@ -890,23 +890,6 @@ export function useDerivedLeverageCreationInfo(): {
   )
 }
 
-export function useDerivedAddPositionInfo() {
-  const { account } = useWeb3React()
-  const [tradeState, setTradeState] = useState<TradeState>(TradeState.INVALID)
-  const [contractResult, setContractResult] = useState()
-  const [error, setError] = useState()
-
-  const {
-    typedValue,
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    leverage,
-    leverageFactor,
-    // premium,
-    activeTab,
-  } = useSwapState()
-}
-
 // from the current swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(): {
   currencies: { [field in Field]?: Currency | null }

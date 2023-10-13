@@ -71,6 +71,16 @@ const _abi = [
             name: "trader",
             type: "address",
           },
+          {
+            internalType: "uint256",
+            name: "minOutput",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "deadline",
+            type: "uint256",
+          },
         ],
         internalType: "struct AddParams",
         name: "param",
@@ -431,6 +441,11 @@ const _abi = [
             internalType: "uint160",
             name: "slippedPrice",
             type: "uint160",
+          },
+          {
+            internalType: "uint256",
+            name: "deadline",
+            type: "uint256",
           },
         ],
         internalType: "struct ReduceParam",

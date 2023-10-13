@@ -73,7 +73,7 @@ export interface ExecutionerInterface extends utils.Interface {
   functions: {
     "executeAggregator(address)": FunctionFragment;
     "executeFiller(address,bool,uint256,uint256,address,address,bytes32)": FunctionFragment;
-    "executeUniswap(address,bool,uint256,uint160,address,address)": FunctionFragment;
+    "executeUniswap(address,bool,int256,uint160,address,address)": FunctionFragment;
     "getOrder(bytes32)": FunctionFragment;
     "getRequiredOutput(((address,address,uint24),bool,uint32,uint32,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "orders(bytes32)": FunctionFragment;

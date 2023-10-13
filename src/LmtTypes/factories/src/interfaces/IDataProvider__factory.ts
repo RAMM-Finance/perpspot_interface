@@ -139,57 +139,6 @@ const _abi = [
       },
       {
         internalType: "address",
-        name: "pool",
-        type: "address",
-      },
-    ],
-    name: "getManagedLiquidityPositions",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "totalFeeGrowthInside0LastX128",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "totalFeeGrowthInside1LastX128",
-            type: "uint256",
-          },
-          {
-            internalType: "uint128",
-            name: "amount",
-            type: "uint128",
-          },
-          {
-            internalType: "uint128",
-            name: "tokensOwed0",
-            type: "uint128",
-          },
-          {
-            internalType: "uint128",
-            name: "tokensOwed1",
-            type: "uint128",
-          },
-        ],
-        internalType: "struct UniswapPosition[]",
-        name: "",
-        type: "tuple[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "trader",
-        type: "address",
-      },
-      {
-        internalType: "address",
         name: "facility",
         type: "address",
       },

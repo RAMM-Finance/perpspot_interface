@@ -9,15 +9,9 @@ import {
 import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
-import { MarginPositionDetails } from 'types/lmtv2position'
 import { PositionDetails } from 'types/position'
 
-import {
-  useDataProviderContract,
-  useGlobalStorageContract,
-  useLmtNFTPositionManager,
-  useV3NFTPositionManagerContract,
-} from './useContract'
+import { useGlobalStorageContract, useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
 import { computeBorrowManagerAddress, computeLeverageManagerAddress, computeLiquidityManagerAddress } from './usePools'
 
 interface UseV3PositionsResults {
@@ -428,18 +422,4 @@ export function useLmtLpPositionsFromTokenIds(tokenIds: BigNumber[] | undefined)
     loading,
     positions: positions?.map((position, i) => ({ ...position, tokenId: inputs[i][0] })),
   }
-}
-
-// V2
-interface UseLmtPositionsResults {
-  loading: boolean
-  positions: MarginPositionDetails[] | undefined
-}
-
-export function useLmtMarginPositions(trader: string): UseLmtPositionsResults {
-  const dataProvider = useDataProviderContract()
-
-  const { loading, result, error } = useSingleCallResult(dataProvider, 'getActiveMarginPositions', [trader])
-
-  return { loading: true, positions: undefined }
 }

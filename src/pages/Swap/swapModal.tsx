@@ -46,7 +46,6 @@ import { Text } from 'rebass'
 import { LeverageTradeState, TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import {
-  useBestPool,
   useDerivedLeverageCreationInfo,
   useDerivedSwapInfo,
   useSwapActionHandlers,
@@ -499,7 +498,6 @@ const TradeTabContent = () => {
     }
   }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
-  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   const [leverageApproveAmount] = useMemo(() => {
     if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
       return [
@@ -525,7 +523,7 @@ const TradeTabContent = () => {
     }
   }, [approveLeverageManager])
 
-  console.log('swapmodal log', leverageTrade, showLeverageConfirm)
+  // console.log('swapmodal log', leverageTrade, showLeverageConfirm)
 
   return (
     <Wrapper>
