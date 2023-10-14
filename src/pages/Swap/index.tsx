@@ -9,7 +9,6 @@ import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
-import LimitContent from 'components/swap/LimitContent'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -17,16 +16,13 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
-import { BORROW_MANAGER_FACTORY_ADDRESSES, LEVERAGE_MANAGER_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
-import { computeBorrowManagerAddress, computeLeverageManagerAddress } from 'hooks/usePools'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactNode } from 'react'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
@@ -35,7 +31,6 @@ import { ThemedText } from 'theme'
 
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
-import { LimitWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
@@ -45,7 +40,6 @@ import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
 import { ActiveSwapTab, Field } from '../../state/swap/actions'
 import {
   useBestPool,
-  useBestPoolAddress,
   useDefaultsFromURLSearch,
   useDerivedSwapInfo,
   useSwapActionHandlers,
@@ -55,7 +49,8 @@ import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import BorrowTabContent from './borrowModal'
 
-const TradeTabContent = React.lazy(() => import('./swapModal'))
+const TradeTabContent = React.lazy(() => import('./tradeModal'))
+const SwapTabContent = React.lazy(() => import('./swapModal'))
 
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
 
@@ -355,14 +350,9 @@ export default function Swap({ className }: { className?: string }) {
   const {
     independentField,
     typedValue,
-    // recipient,
+    recipient,
     // leverageFactor,
-    leverage,
-    leverageManagerAddress,
     activeTab,
-    // ltv,
-    borrowManagerAddress,
-    premium,
   } = useSwapState()
 
   const isBorrowTab = ActiveSwapTab.BORROW == activeTab
@@ -402,41 +392,41 @@ export default function Swap({ className }: { className?: string }) {
     navigate('/swap/')
   }, [navigate])
 
-  const poolAddress = useBestPoolAddress(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
+  // const poolAddress = useBestPoolAddress(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
 
-  useEffect(() => {
-    // declare the data fetching function
-    if (pool && account && provider && inputCurrency && outputCurrency) {
-      onLeverageManagerAddress(
-        computeLeverageManagerAddress({
-          factoryAddress: LEVERAGE_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
-          tokenA: inputCurrency?.wrapped.address ?? '',
-          tokenB: outputCurrency?.wrapped.address ?? '',
-          fee: pool.fee,
-        })
-      )
-      onBorrowManagerAddress(
-        computeBorrowManagerAddress({
-          factoryAddress: BORROW_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
-          tokenA: inputCurrency?.wrapped.address ?? '',
-          tokenB: outputCurrency?.wrapped.address ?? '',
-          fee: pool.fee,
-        })
-      )
-    }
-  }, [
-    poolAddress,
-    account,
-    trade,
-    currencies,
-    provider,
-    onBorrowManagerAddress,
-    onLeverageManagerAddress,
-    inputCurrency,
-    outputCurrency,
-    chainId,
-    pool,
-  ])
+  // useEffect(() => {
+  //   // declare the data fetching function
+  //   if (pool && account && provider && inputCurrency && outputCurrency) {
+  //     onLeverageManagerAddress(
+  //       computeLeverageManagerAddress({
+  //         factoryAddress: LEVERAGE_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
+  //         tokenA: inputCurrency?.wrapped.address ?? '',
+  //         tokenB: outputCurrency?.wrapped.address ?? '',
+  //         fee: pool.fee,
+  //       })
+  //     )
+  //     onBorrowManagerAddress(
+  //       computeBorrowManagerAddress({
+  //         factoryAddress: BORROW_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
+  //         tokenA: inputCurrency?.wrapped.address ?? '',
+  //         tokenB: outputCurrency?.wrapped.address ?? '',
+  //         fee: pool.fee,
+  //       })
+  //     )
+  //   }
+  // }, [
+  //   poolAddress,
+  //   account,
+  //   trade,
+  //   currencies,
+  //   provider,
+  //   onBorrowManagerAddress,
+  //   onLeverageManagerAddress,
+  //   inputCurrency,
+  //   outputCurrency,
+  //   chainId,
+  //   pool,
+  // ])
 
   // errors
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
@@ -487,7 +477,7 @@ export default function Swap({ className }: { className?: string }) {
   // const { borrowLoading: borrowPositionsLoading, borrowPositions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
-  const selectedTab = useSelector((state: any) => state.swap.tab)
+  // const selectedTab = useSelector((state: any) => state.swap.tab)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -580,14 +570,17 @@ export default function Swap({ className }: { className?: string }) {
             </LeftContainer>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
               <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-              <LimitWrapper>
+              {/* <LimitWrapper>
                 <LimitContent tab={selectedTab} currency0={inputCurrency as Token} />
-              </LimitWrapper>
+              </LimitWrapper> */}
               <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
                 <TradeTabContent />
               </TabContent>
               <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
                 <BorrowTabContent />
+              </TabContent>
+              <TabContent id={ActiveSwapTab.SWAP} activeTab={activeTab}>
+                <SwapTabContent />
               </TabContent>
             </SwapWrapper>
           </MainWrapper>

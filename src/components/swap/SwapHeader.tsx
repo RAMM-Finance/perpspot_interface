@@ -1,9 +1,9 @@
 import { Percent } from '@uniswap/sdk-core'
 import { SmallButtonPrimary } from 'components/Button'
 import SwapTabHeader from 'components/Tabs'
-import { useCallback } from 'react'
+// import { useCallback } from 'react'
 import { ActiveSwapTab } from 'state/swap/actions'
-import { useSwapActionHandlers } from 'state/swap/hooks'
+// import { useSwapActionHandlers } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
 
 type SwapHeaderProps = {
@@ -11,17 +11,12 @@ type SwapHeaderProps = {
   allowedSlippage: Percent
 }
 
-export default function SwapHeader({ activeTab, allowedSlippage }: SwapHeaderProps) {
-  const { onActiveTabChange } = useSwapActionHandlers()
-
-  const handleTabChange = useCallback(() => {
-    onActiveTabChange(activeTab === ActiveSwapTab.TRADE ? ActiveSwapTab.BORROW : ActiveSwapTab.TRADE)
-  }, [activeTab])
-  console.log(activeTab)
+export default function SwapHeader({ allowedSlippage }: SwapHeaderProps) {
+  // console.log(activeTab)
   return (
     <>
       <StyledSwapHeader>
-        <SwapTabHeader activeTab={activeTab} handleSetTab={handleTabChange} allowedSlippage={allowedSlippage} />
+        <SwapTabHeader allowedSlippage={allowedSlippage} />
       </StyledSwapHeader>
     </>
   )

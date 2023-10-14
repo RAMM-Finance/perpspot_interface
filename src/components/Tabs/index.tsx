@@ -33,15 +33,7 @@ const SettingWrapper = styled.div`
 
 // the order of displayed base currencies from left to right is always in sort order
 // currencyA is treated as the preferred base currency
-export default function SwapTabHeader({
-  activeTab,
-  handleSetTab,
-  allowedSlippage,
-}: {
-  activeTab: number
-  handleSetTab: () => void
-  allowedSlippage: Percent
-}) {
+export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
   // const isTrade = activeTab == ActiveSwapTab.TRADE
   const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
   const { leverage } = useSwapState()
@@ -65,7 +57,7 @@ export default function SwapTabHeader({
     }
 
     if (eventTarget.innerText === 'Swap') {
-      setIsTrade(ActiveSwapTab.TRADE)
+      setIsTrade(ActiveSwapTab.SWAP)
       onSwitchSwapModalTab(eventTarget.innerText)
       onSwitchTokens(leverage)
       onLeverageChange(false)
@@ -117,8 +109,6 @@ export default function SwapTabHeader({
           <Trans>Borrow</Trans>
         </TabElement>
         <TabElement
-          // onClick={() =>
-          //   onLeverageChange(!leverage)}
           onClick={onChangeSwapModeHandler}
           isActive={isTrade}
           selectedTab={selectedTab}

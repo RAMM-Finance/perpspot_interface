@@ -38,7 +38,7 @@ export interface WithdrawPremiumOptions {
   amount: JSBI
 }
 
-export abstract class MarginFacility {
+export abstract class MarginFacilitySDK {
   private constructor() {}
 
   public static INTERFACE: Interface = new Interface(MarginFacilityJson.abi)
@@ -49,7 +49,7 @@ export abstract class MarginFacility {
     if (param.depositPremium) {
       // depositPremium(PoolKey calldata key, address trader, bool isToken0, uint256 amount)
       calldatas.push(
-        MarginFacility.INTERFACE.encodeFunctionData('depositPremium', [
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
           {
             token0: param.positionKey.poolKey.token0Address,
             token1: param.positionKey.poolKey.token1Address,
@@ -63,7 +63,7 @@ export abstract class MarginFacility {
     }
 
     calldatas.push(
-      MarginFacility.INTERFACE.encodeFunctionData('addPosition', [
+      MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {
           token0: param.positionKey.poolKey.token0Address,
           token1: param.positionKey.poolKey.token1Address,
@@ -93,7 +93,7 @@ export abstract class MarginFacility {
     const calldatas: string[] = []
 
     calldatas.push(
-      MarginFacility.INTERFACE.encodeFunctionData('reducePosition', [
+      MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
         {
           token0: param.positionKey.poolKey.token0Address,
           token1: param.positionKey.poolKey.token1Address,
@@ -120,7 +120,7 @@ export abstract class MarginFacility {
   }
 
   public static depositPremiumParameters(param: DepositPremiumOptions): MethodParameters {
-    const calldata: string = MarginFacility.INTERFACE.encodeFunctionData('depositPremium', [
+    const calldata: string = MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
       // PoolKey calldata key, address trader, bool isToken0, uint256 amount
 
       {
@@ -140,7 +140,7 @@ export abstract class MarginFacility {
   }
 
   public static withdrawPremiumParameters(param: WithdrawPremiumOptions): MethodParameters {
-    const calldata: string = MarginFacility.INTERFACE.encodeFunctionData('withdrawPremium', [
+    const calldata: string = MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
       {
         token0: param.positionKey.poolKey.token0Address,
         token1: param.positionKey.poolKey.token1Address,

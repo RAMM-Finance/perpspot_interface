@@ -1,13 +1,12 @@
 import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { Pool, Route, toHex } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { BigNumber as BN } from 'bignumber.js'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
+import { LMT_MARGIN_FACILITY } from 'constants/addresses'
+import { BigNumber } from 'ethers'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { computePoolAddress, usePoolParams } from 'hooks/usePools'
+import { usePoolParams } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -15,15 +14,20 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { LeverageTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useBestPool } from 'state/swap/hooks'
+import { useBestPool, useSwapState } from 'state/swap/hooks'
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionType } from 'state/transactions/types'
 import { MarginPositionDetails, RawPoolKey } from 'types/lmtv2position'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { currencyId } from 'utils/currencyId'
+import isZero from 'utils/isZero'
+import { MarginFacilitySDK } from 'utils/lmtContracts/MarginFacility'
 
 import { useCurrency } from '../../hooks/Tokens'
-import { useLmtPoolManagerContract, usePoolContract } from '../../hooks/useContract'
 import { useMarginFacilityContract } from '../../hooks/useContract'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
-import { MarginField, selectCurrency, setLocked, setRecipient, switchCurrencies, typeInput } from './actions'
+import { MarginField, setLocked, typeInput } from './actions'
 import { getOutputQuote } from './getOutputQuote'
 
 // import { useLeveragePosition } from 'hooks/useV3Positions'
@@ -33,31 +37,31 @@ export function useMarginTradingState(): AppState['margin'] {
 }
 
 export function useMarginTradingActionHandlers(): {
-  onCurrencySelection: (field: Field, currency: Currency) => void
-  onSwitchTokens: () => void
+  // onCurrencySelection: (field: Field, currency: Currency) => void
+  // onSwitchTokens: () => void
   onUserInput: (field: MarginField, typedValue: string) => void
-  onChangeRecipient: (recipient: string | null) => void
+  // onChangeRecipient: (recipient: string | null) => void
   onLeverageFactorChange: (leverage: string) => void
   onMarginChange: (margin: string) => void
   onBorrowChange: (borrow: string) => void
   onLockChange: (locked: MarginField | null) => void
 } {
   const dispatch = useAppDispatch()
-  const onCurrencySelection = useCallback(
-    (field: Field, currency: Currency) => {
-      dispatch(
-        selectCurrency({
-          field,
-          currencyId: currency.isToken ? currency.address : currency.isNative ? 'ETH' : '',
-        })
-      )
-    },
-    [dispatch]
-  )
+  // const onCurrencySelection = useCallback(
+  //   (field: Field, currency: Currency) => {
+  //     dispatch(
+  //       selectCurrency({
+  //         field,
+  //         currencyId: currency.isToken ? currency.address : currency.isNative ? 'ETH' : '',
+  //       })
+  //     )
+  //   },
+  //   [dispatch]
+  // )
 
-  const onSwitchTokens = useCallback(() => {
-    dispatch(switchCurrencies())
-  }, [dispatch])
+  // const onSwitchTokens = useCallback(() => {
+  //   dispatch(switchCurrencies())
+  // }, [dispatch])
 
   const onUserInput = useCallback(
     (field: MarginField, typedValue: string) => {
@@ -66,12 +70,12 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
-  const onChangeRecipient = useCallback(
-    (recipient: string | null) => {
-      dispatch(setRecipient({ recipient }))
-    },
-    [dispatch]
-  )
+  // const onChangeRecipient = useCallback(
+  //   (recipient: string | null) => {
+  //     dispatch(setRecipient({ recipient }))
+  //   },
+  //   [dispatch]
+  // )
 
   const onLeverageFactorChange = useCallback(
     (leverageFactor: string) => {
@@ -102,10 +106,10 @@ export function useMarginTradingActionHandlers(): {
   )
 
   return {
-    onSwitchTokens,
-    onCurrencySelection,
+    // onSwitchTokens,
+    // onCurrencySelection,
     onUserInput,
-    onChangeRecipient,
+    // onChangeRecipient,
     onLeverageFactorChange,
     onMarginChange,
     onBorrowChange,
@@ -116,17 +120,20 @@ export function useMarginTradingActionHandlers(): {
 export interface MarginTrade {
   marginAmount: CurrencyAmount<Currency>
   borrowAmount: CurrencyAmount<Currency>
-  outputAmount: CurrencyAmount<Currency>
+  outputAmount: CurrencyAmount<Currency> // additional output amount
   existingPosition: boolean
   existingTotalDebtInput: CurrencyAmount<Currency> | undefined
   existingTotalPosition: CurrencyAmount<Currency> | undefined
-  allowedSlippage: Percent
+  allowedSlippage: JSBI // should be Percent
   poolKey: RawPoolKey
-  premiumDeposit: CurrencyAmount<Currency> | undefined
-  premiumNecessary: CurrencyAmount<Currency> | undefined
+  positionIsToken0: boolean
+  deadline: number
+  executionOption: number
+  minimumEstimatedSlippage: JSBI
+  executionPrice: Price<Currency, Currency>
 }
 
-function useDerivedAddPositionInfo(): {
+export function useDerivedAddPositionInfo(): {
   currencies: { [field in Field]?: Currency | null }
   currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
   parsedMarginAmount: CurrencyAmount<Currency> | undefined
@@ -135,6 +142,10 @@ function useDerivedAddPositionInfo(): {
   inputError?: ReactNode
   trade: MarginTrade | undefined
   state: LeverageTradeState
+  premiumDeposit: CurrencyAmount<Currency> | undefined
+  premiumNecessary: CurrencyAmount<Currency> | undefined
+  additionalPremium: CurrencyAmount<Currency> | undefined
+  approvalAmount: CurrencyAmount<Currency> | undefined
   allowedSlippage: Percent
 } {
   const { account, chainId } = useWeb3React()
@@ -143,9 +154,12 @@ function useDerivedAddPositionInfo(): {
     [MarginField.MARGIN]: margin,
     [MarginField.BORROW]: borrow,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-    inputCurrencyId,
-    outputCurrencyId,
   } = useMarginTradingState()
+
+  const {
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+  } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -205,74 +219,57 @@ function useDerivedAddPositionInfo(): {
   )
 
   // const leverageManager = useLeverageManagerContract(leverageManagerAddress ?? undefined, true)
-  const poolAddress = useMemo(() => {
-    if (pool && inputCurrency && outputCurrency && chainId) {
-      computePoolAddress({
-        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
-        tokenA: inputCurrency?.wrapped,
-        tokenB: outputCurrency?.wrapped,
-        fee: pool.fee,
-      })
-    } else {
-      return undefined
-    }
-  }, [pool, inputCurrency, outputCurrency, chainId])
-  const marginManager = useMarginFacilityContract()
-  const poolManager = useLmtPoolManagerContract()
-  const poolContract = usePoolContract(poolAddress)
+  // const poolAddress = useMemo(() => {
+  //   if (pool && inputCurrency && outputCurrency && chainId) {
+  //     computePoolAddress({
+  //       factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
+  //       tokenA: inputCurrency?.wrapped,
+  //       tokenB: outputCurrency?.wrapped,
+  //       fee: pool.fee,
+  //     })
+  //   } else {
+  //     return undefined
+  //   }
+  // }, [pool, inputCurrency, outputCurrency, chainId])
+  // const marginManager = useMarginFacilityContract()
+  // const poolManager = useLmtPoolManagerContract()
+  // const poolContract = usePoolContract(poolAddress)
 
   const inputIsToken0 = useMemo(() => {
     return outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
   }, [outputCurrency, inputCurrency])
 
-  const initialPrice = useMemo(
-    () => (pool ? (inputIsToken0 ? pool.token0Price : pool.token1Price) : undefined),
-    [inputIsToken0, pool]
-  )
+  // const initialPrice = useMemo(
+  //   () => (pool ? (inputIsToken0 ? pool.token0Price : pool.token1Price) : undefined),
+  //   [inputIsToken0, pool]
+  // )
 
   const poolParams = usePoolParams(pool)
 
-  const necessaryPremium = useMemo(() => {
-    if (!existingPosition || !borrowAmount || !poolParams || !inputCurrency) return undefined
+  const [premiumDeposit, premiumNecessary, additionalPremium, approvalAmount] = useMemo(() => {
+    if (
+      !existingPosition ||
+      !account ||
+      !inputCurrency ||
+      !outputCurrency ||
+      !borrowAmount ||
+      !poolParams ||
+      !marginAmount
+    )
+      return [undefined, undefined, undefined, undefined]
 
-    const positionThreshold = new BN(borrowAmount.toExact())
-      .multipliedBy(poolParams.minimumPremiumDeposit)
-      .plus(existingPosition.premiumOwed)
-    return CurrencyAmount.fromRawAmount(inputCurrency, positionThreshold.shiftedBy(18).toFixed(0))
-  }, [existingPosition, borrowAmount, poolParams, inputCurrency])
+    const _premiumDeposit = BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
+    const _premiumNecessary = BnToCurrencyAmount(
+      new BN(borrowAmount.toExact()).multipliedBy(poolParams.minimumPremiumDeposit).plus(existingPosition.premiumOwed),
+      inputCurrency
+    )
+    const _additionalPremium = _premiumNecessary.greaterThan(_premiumDeposit)
+      ? _premiumNecessary.subtract(_premiumDeposit)
+      : undefined
+    const _approvalAmount = _additionalPremium ? _additionalPremium.add(marginAmount) : marginAmount
 
-  // const additionalPremiumDeposit = useMemo(() => {
-  //   if (!existingPosition || !borrowAmount || !poolParams || !inputCurrency) return undefined
-
-  //   const positionThreshold = new BN(borrowAmount.toExact()).multipliedBy(poolParams.minimumPremiumDeposit)
-  //   if (existingPosition.openTime > 0) {
-  //     // premiumOwed > 0
-  //     if (existingPosition.premiumLeft.lte(0)) {
-  //       return CurrencyAmount.fromRawAmount(inputCurrency, 0)
-  //     } else if (existingPosition.premiumLeft.lt(positionThreshold)) {
-  //       return CurrencyAmount.fromRawAmount(
-  //         inputCurrency,
-  //         positionThreshold.minus(existingPosition.premiumLeft).toFixed(18)
-  //       )
-  //     }
-  //   } else {
-  //     if (new BN(existingPosition.premiumDeposit).isGreaterThan(positionThreshold)) {
-  //       return CurrencyAmount.fromRawAmount(inputCurrency, 0)
-  //     } else {
-  //       return CurrencyAmount.fromRawAmount(
-  //         inputCurrency,
-  //         positionThreshold.minus(existingPosition.premiumDeposit).toFixed(18)
-  //       )
-  //     }
-  //   }
-  // }, [existingPosition, borrowAmount, poolParams, inputCurrency])
-
-  // const approvalAmount = useMemo(() => {
-  //   if (!additionalPremiumDeposit || !marginAmount) return undefined
-  //   return additionalPremiumDeposit.add(marginAmount)
-  // }, [additionalPremiumDeposit, marginAmount])
-
-  // const [approvalState] = useApproveCallback(approvalAmount, LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA])
+    return [_premiumDeposit, _premiumNecessary, _additionalPremium, _approvalAmount]
+  }, [existingPosition, marginAmount, account, inputCurrency, outputCurrency, borrowAmount, poolParams])
 
   // TODO calculate slippage from the pool
   const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), [])
@@ -315,7 +312,7 @@ function useDerivedAddPositionInfo(): {
     return inputError
   }, [account, currencies, borrowAmount, marginAmount, currencyBalances])
 
-  const { state, trade } = useMarginTradeState(
+  const { state, trade } = useSimulateMarginTrade(
     pool,
     inputIsToken0,
     marginAmount,
@@ -324,7 +321,7 @@ function useDerivedAddPositionInfo(): {
     existingPosition,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
-    necessaryPremium
+    premiumNecessary ?? undefined
   )
 
   return useMemo(
@@ -336,8 +333,13 @@ function useDerivedAddPositionInfo(): {
       parsedLeverageFactor: leverageFactor ?? undefined,
       inputError,
       trade,
-      state,
+      // hack
+      state: poolParams && poolParams.minimumPremiumDeposit.eq(0) ? LeverageTradeState.NO_ROUTE_FOUND : state,
       allowedSlippage,
+      premiumDeposit,
+      premiumNecessary,
+      additionalPremium,
+      approvalAmount,
     }),
     [
       currencies,
@@ -349,6 +351,11 @@ function useDerivedAddPositionInfo(): {
       trade,
       state,
       allowedSlippage,
+      premiumDeposit,
+      premiumNecessary,
+      additionalPremium,
+      approvalAmount,
+      poolParams,
     ]
   )
 }
@@ -369,7 +376,7 @@ const useMinEstimatedSlippage = (
   useEffect(() => {
     const lagged = async () => {
       if (!marginAmount || !borrowAmount || !pool || !provider || !chainId || !blockNumber) return null
-      if (lastBlock == blockNumber) return null
+      if (lastBlock && (lastBlock == blockNumber || lastBlock + 2 > blockNumber)) return null
       try {
         setLoading(true)
         const swapRoute = new Route(
@@ -394,6 +401,7 @@ const useMinEstimatedSlippage = (
         setLoading(false)
         setError(err)
       }
+      return
     }
 
     lagged()
@@ -409,7 +417,7 @@ const BnToCurrencyAmount = (x: BN, currency: Currency): CurrencyAmount<Currency>
   return CurrencyAmount.fromRawAmount(currency, x.shiftedBy(18).toFixed(0))
 }
 
-const useMarginTradeState = (
+const useSimulateMarginTrade = (
   pool?: Pool,
   inputIsToken0?: boolean,
   margin?: CurrencyAmount<Currency>,
@@ -428,7 +436,7 @@ const useMarginTradeState = (
   const blockNumber = useBlockNumber()
 
   const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
-  const [result, setResult] = useState<any>()
+  const [result, setResult] = useState<MarginTrade>()
   const [lastBlock, setLastBlock] = useState<any>()
 
   useEffect(() => {
@@ -470,21 +478,36 @@ const useMarginTradeState = (
           []
         )
 
+        // const value = currencyBAmount.divide(currencyAAmount)
+        // return new Price(currencyAAmount.currency, currencyBAmount.currency, value.denominator, value.numerator)
+
+        const outputAmount = BnToCurrencyAmount(
+          // new position - existing position
+          new BN(trade[0].totalPosition.toString()).shiftedBy(-18).minus(existingPosition.totalPosition),
+          outputCurrency
+        )
+        const priceValue = margin.add(borrowAmount).divide(outputAmount)
+        const executionPrice = new Price(inputCurrency, outputCurrency, priceValue.denominator, priceValue.numerator)
         const marginTrade: MarginTrade = {
           marginAmount: margin,
           borrowAmount,
           existingPosition: existingPosition.openTime > 0,
-          premiumDeposit: BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency),
+          // premiumDeposit: BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency),
           existingTotalDebtInput: BnToCurrencyAmount(existingPosition.totalDebtInput, inputCurrency),
           existingTotalPosition: BnToCurrencyAmount(existingPosition.totalPosition, outputCurrency),
-          allowedSlippage: new Percent(3, 100),
+          allowedSlippage: JSBI.BigInt(new BN(101).shiftedBy(16).toFixed(0)),
           poolKey: {
             token0Address: pool.token0.address,
             token1Address: pool.token1.address,
             fee: pool.fee,
           },
-          premiumNecessary,
-          outputAmount: BnToCurrencyAmount(new BN(trade[0].totalPosition.toString(), 18), outputCurrency),
+          positionIsToken0: !inputIsToken0,
+          // premiumNecessary,
+          outputAmount,
+          deadline: new Date().getTime() / 1000 + 30 * 60,
+          executionOption: 1,
+          minimumEstimatedSlippage,
+          executionPrice,
         }
         setResult(marginTrade)
         setTradeState(LeverageTradeState.VALID)
@@ -492,6 +515,7 @@ const useMarginTradeState = (
       } catch (err) {
         setTradeState(LeverageTradeState.INVALID)
       }
+      return
     }
 
     lagged()
@@ -517,4 +541,80 @@ const useMarginTradeState = (
       state: tradeState,
     }
   }, [result, tradeState])
+}
+
+export function useAddMarginPositionCallback(trade: MarginTrade | undefined): {
+  callback: null | (() => Promise<string>)
+} {
+  const addTransaction = useTransactionAdder()
+  const { account, chainId, provider } = useWeb3React()
+  const addPositionCallback = useCallback(async () => {
+    try {
+      if (!account) throw new Error('missing account')
+      if (!chainId) throw new Error('missing chainId')
+      if (!provider) throw new Error('missing provider')
+      if (!trade) throw new Error('missing trade')
+
+      const { calldata: data, value } = MarginFacilitySDK.addPositionParameters({
+        positionKey: {
+          poolKey: trade.poolKey,
+          isToken0: trade.positionIsToken0,
+          isBorrow: false,
+          trader: account,
+        },
+        margin: trade.marginAmount.quotient,
+        borrowAmount: trade.borrowAmount.quotient,
+        minimumOutput: JSBI.BigInt(0),
+        deadline: trade.deadline,
+        executionOption: trade.executionOption,
+        maxSlippage: trade.allowedSlippage,
+        minEstimatedSlippage: trade.minimumEstimatedSlippage,
+      })
+
+      const tx = {
+        from: account,
+        to: LMT_MARGIN_FACILITY[chainId],
+        data,
+        ...(value && !isZero(value) ? { value: toHex(value) } : {}),
+      }
+
+      let gasEstimate: BigNumber
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        console.warn(gasError)
+        throw new Error('Unable to estimate gas')
+      }
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          return response
+        })
+      return response
+    } catch (err) {
+      console.log(err)
+      throw new Error('Unable to send transaction')
+    }
+  }, [trade, account, chainId, provider])
+
+  const callback = useMemo(() => {
+    if (!trade || !addPositionCallback) return null
+
+    return () =>
+      addPositionCallback().then((response) => {
+        addTransaction(response, {
+          type: TransactionType.ADD_LEVERAGE,
+          inputAmount: trade.marginAmount.toFixed(18),
+          inputCurrencyId: currencyId(trade.marginAmount.currency),
+          outputCurrencyId: currencyId(trade.outputAmount.currency),
+          expectedAddedPosition: trade.outputAmount.toFixed(18),
+        })
+        return response.hash
+      })
+  }, [addTransaction, trade, addPositionCallback])
+  return {
+    callback,
+  }
 }

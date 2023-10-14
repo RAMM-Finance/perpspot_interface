@@ -14,7 +14,6 @@ import { useLimitlessPositionFromKeys } from 'hooks/useV3Positions'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
-import { AddParamsStruct } from 'LmtTypes/src/MarginFacility'
 import { ParsedQs } from 'qs'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
@@ -697,22 +696,24 @@ export function useDerivedLeverageCreationInfo(): {
             setTradeState(LeverageTradeState.INVALID)
             return
           }
-          const maxSlippage = new BN(1).plus(0.05).shiftedBy(18).toFixed(0)
-          const addParams: AddParamsStruct = {
-            margin: input.toFixed(0),
-            maxSlippage,
-            minEstimatedSlippage,
-            borrowAmount: borrowAmount.toFixed(0),
-            positionIsToken0: inputIsToken0,
-            executionOption: 1,
-            trader: account,
-          }
+          // const maxSlippage = new BN(1).plus(0.05).shiftedBy(18).toFixed(0)
+          // const addParams: AddParamsStruct = {
+          //   margin: input.toFixed(0),
+          //   maxSlippage,
+          //   minEstimatedSlippage,
+          //   borrowAmount: borrowAmount.toFixed(0),
+          //   positionIsToken0: inputIsToken0,
+          //   executionOption: 1,
+          //   trader: account,
+          //   minOutput: 0,
+          //   deadline:
+          // }
 
-          const trade = await marginManager.callStatic.addPosition(poolKeyParam, addParams, [])
-          setTradeState(LeverageTradeState.VALID)
-          // @ts-ignore
-          setContractResult(trade)
-          setError(undefined)
+          // const trade = await marginManager.callStatic.addPosition(poolKeyParam, addParams, [])
+          // setTradeState(LeverageTradeState.VALID)
+          // // @ts-ignore
+          // setContractResult(trade)
+          // setError(undefined)
         } catch (err) {
           console.log('simulation error: ', err.reason)
           // setContractError(err)

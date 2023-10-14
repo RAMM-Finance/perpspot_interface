@@ -4,7 +4,7 @@ import { ROUTER_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 
-async function getOutputQuote(
+export async function getOutputQuote(
   amount: CurrencyAmount<Currency>,
   route: Route<Currency, Currency>,
   provider: ethers.providers.Provider,
