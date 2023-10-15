@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatPrice } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -18,8 +18,8 @@ import { Field } from 'state/swap/actions'
 import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
+// import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
 import { computeRealizedPriceImpact } from '../../utils/prices'
 import { AutoColumn } from '../Column'
@@ -824,40 +824,42 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={trade?.existingPosition ? 'Added Position' : 'Exp. Output'}
-          value={formatCurrencyAmount(trade?.outputAmount, 18)}
+          value={formatCurrencyAmount(trade?.outputAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={outputCurrency?.symbol}
+          symbolAppend={trade ? outputCurrency?.symbol : ''}
         />
         <ValueLabel
           description="Amount In / Amount Out"
           label="Execution Price"
           value={formatPrice(trade?.executionPrice)}
           syncing={syncing}
-          symbolAppend={trade?.executionPrice.baseCurrency.symbol + '/' + trade?.executionPrice.quoteCurrency.symbol}
+          symbolAppend={
+            trade ? trade?.executionPrice.baseCurrency.symbol + '/' + trade?.executionPrice.quoteCurrency.symbol : ''
+          }
         />
         <ValueLabel
           description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
           label="Quoted Premium"
-          value={formatCurrencyAmount(premiumNecessary, 18)}
+          value={formatCurrencyAmount(premiumNecessary, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={inputCurrency?.symbol}
+          symbolAppend={premiumNecessary ? inputCurrency?.symbol : ''}
         />
         {trade?.existingPosition && (
           <ValueLabel
             description="Current premium deposit for this position"
             label="Existing Premium Deposit"
-            value={formatCurrencyAmount(premiumDeposit, 18)}
+            value={formatCurrencyAmount(premiumDeposit, NumberType.SwapTradeAmount)}
             syncing={syncing}
-            symbolAppend={inputCurrency?.symbol}
+            symbolAppend={premiumDeposit ? inputCurrency?.symbol : ''}
           />
         )}
         <ValueLabel
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
           The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."
           label="Maximum Loss"
-          value={formatCurrencyAmount(trade?.marginAmount, 18)}
+          value={formatCurrencyAmount(trade?.marginAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={inputCurrency?.symbol}
+          symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         {/* <ValueLabel
           description="Fees paid for trade "
@@ -887,7 +889,9 @@ export function AdvancedMarginTradeDetails({
           <TextWithLoadingPlaceholder syncing={syncing} width={70}>
             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
               <TruncatedText>
-                {`${formatCurrencyAmount(trade?.outputAmount)}  ${trade?.outputAmount.currency.symbol}`}
+                {`${formatCurrencyAmount(trade?.outputAmount, NumberType.SwapTradeAmount)}  ${
+                  trade ? trade?.outputAmount.currency.symbol : ''
+                }`}
               </TruncatedText>
             </ThemedText.DeprecatedBlack>
           </TextWithLoadingPlaceholder>

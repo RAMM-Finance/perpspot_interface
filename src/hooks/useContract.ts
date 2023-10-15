@@ -33,13 +33,12 @@ import {
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
 } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
 
-import { abi as IDataProviderAbi } from '../abis_v2/IDataProvider.json'
+import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
 import { abi as IFacilityAbi } from '../abis_v2/IFacility.json'
 import { abi as IMarginFacilityAbi } from '../abis_v2/IMarginFacility.json'
 // import {abi as testTokenAbi} from "../perpspotContracts/testERC.json"
@@ -82,12 +81,7 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 }
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
-  const { chainId } = useWeb3React()
-  return useContract<MarginFacility>(
-    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA],
-    IMarginFacilityAbi,
-    withSignerIfPossible
-  )
+  return useContract<MarginFacility>(LMT_MARGIN_FACILITY, IMarginFacilityAbi, withSignerIfPossible)
 }
 
 export function useFacilityContract(facilityAddress: string, withSignerIfPossible?: boolean) {
@@ -95,12 +89,7 @@ export function useFacilityContract(facilityAddress: string, withSignerIfPossibl
 }
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
-  const { chainId } = useWeb3React()
-  return useContract<DataProvider>(
-    DATA_PROVIDER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
-    IDataProviderAbi,
-    withSignerIfPossible
-  )
+  return useContract<DataProvider>(DATA_PROVIDER_ADDRESSES, DataProviderABI, withSignerIfPossible)
 }
 
 // returns null on errors

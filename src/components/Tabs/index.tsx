@@ -1,8 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
-import React, { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useCallback } from 'react'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
@@ -35,38 +34,19 @@ const SettingWrapper = styled.div`
 // currencyA is treated as the preferred base currency
 export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
   // const isTrade = activeTab == ActiveSwapTab.TRADE
-  const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
-  const { leverage } = useSwapState()
+  // const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
+  const { leverage, activeTab } = useSwapState()
   const { onSwitchTokens } = useSwapActionHandlers()
   const { onActiveTabChange, onLeverageChange, onSwitchSwapModalTab } = useSwapActionHandlers()
-  const selectedTab = useSelector((state: any) => state.swap.tab)
+  // const selectedTab = useSelector((state: any) => state.swap.tab)
   // const handleTabChange = onActiveTabChange(isTrade)
 
-  const onChangeSwapModeHandler = (e: React.MouseEvent<HTMLSpanElement>) => {
-    const eventTarget = e.target as HTMLElement
-
-    if (eventTarget.innerText === selectedTab) {
-      return
-    }
-
-    if (eventTarget.innerText === 'Long' || eventTarget.innerText === 'Short') {
-      setIsTrade(ActiveSwapTab.TRADE)
-      onSwitchSwapModalTab(eventTarget.innerText)
-      onSwitchTokens(leverage)
-      onLeverageChange(true)
-    }
-
-    if (eventTarget.innerText === 'Swap') {
-      setIsTrade(ActiveSwapTab.SWAP)
-      onSwitchSwapModalTab(eventTarget.innerText)
-      onSwitchTokens(leverage)
-      onLeverageChange(false)
-    }
-  }
-
-  useEffect(() => {
-    onActiveTabChange(isTrade)
-  }, [onActiveTabChange, isTrade])
+  const handleTabChange = useCallback(
+    (active: ActiveSwapTab) => {
+      onActiveTabChange(active)
+    },
+    [onActiveTabChange]
+  )
 
   return (
     <div
@@ -80,9 +60,9 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
     >
       <TapWrapper>
         <TabElement
-          onClick={onChangeSwapModeHandler}
-          isActive={isTrade}
-          selectedTab={selectedTab}
+          onClick={() => handleTabChange(ActiveSwapTab.LONG)}
+          isActive={activeTab === ActiveSwapTab.LONG}
+          // selectedTab={selectedTab}
           tabValue="Long"
           fontSize="18px"
           first={true}
@@ -90,9 +70,9 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
           <Trans>Long</Trans>
         </TabElement>
         <TabElement
-          onClick={onChangeSwapModeHandler}
-          isActive={isTrade}
-          selectedTab={selectedTab}
+          onClick={() => handleTabChange(ActiveSwapTab.SHORT)}
+          isActive={activeTab === ActiveSwapTab.SHORT}
+          // selectedTab={selectedTab}
           tabValue="Short"
           fontSize="18px"
         >
@@ -100,18 +80,17 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
         </TabElement>
         <TabElement
           onClick={() => {
-            setIsTrade(ActiveSwapTab.BORROW)
-            onSwitchSwapModalTab('notthing')
+            handleTabChange(ActiveSwapTab.BORROW)
           }}
-          isActive={!isTrade}
+          isActive={activeTab === ActiveSwapTab.BORROW}
           fontSize="18px"
         >
           <Trans>Borrow</Trans>
         </TabElement>
         <TabElement
-          onClick={onChangeSwapModeHandler}
-          isActive={isTrade}
-          selectedTab={selectedTab}
+          onClick={() => handleTabChange(ActiveSwapTab.SWAP)}
+          isActive={activeTab === ActiveSwapTab.SWAP}
+          // selectedTab={selectedTab}
           tabValue="Swap"
           fontSize="18px"
           last={true}
@@ -180,7 +159,6 @@ const TapWrapper = styled.button`
 const TabElement = styled.button<{
   isActive?: number | boolean
   fontSize?: string
-  selectedTab?: string
   tabValue?: string
   isTrade?: number
   first?: boolean
@@ -193,24 +171,16 @@ const TabElement = styled.button<{
   justify-content: center;
   height: 100%;
   border: none;
-  background: ${({ theme, isActive, selectedTab, tabValue }) => {
-    if (!isActive && selectedTab === tabValue) {
-      if (selectedTab === 'Long') {
-        return '#7fffd4'
-      } else if (selectedTab === 'Short') {
-        return '#ff5f5f'
-      } else {
-        return theme.accentActive
-      }
+  background: ${({ theme, isActive }) => {
+    if (isActive) {
+      return theme.accentActive
     }
     return 'none'
   }};
-  color: ${({ theme, isActive, selectedTab, tabValue }) =>
-    !isActive && selectedTab === tabValue
-      ? selectedTab === 'Long'
-        ? '#0e1724'
-        : theme.textSecondary
-      : theme.textTertiary};
+  color: ${({ theme, isActive }) => {
+    if (isActive) return theme.textSecondary
+    return theme.textPrimary
+  }};
   font-size: ${({ fontSize }) => fontSize ?? '1rem'};
   font-weight: 700;
   white-space: nowrap;

@@ -208,7 +208,7 @@ export function LeverageDetailsDropdown({
   premiumNecessary: CurrencyAmount<Currency> | undefined
 }) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
+  // const { chainId } = useWeb3React()
   const [showDetails, setShowDetails] = useState(true)
 
   return (

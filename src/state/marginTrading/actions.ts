@@ -2,7 +2,7 @@ import { createAction } from '@reduxjs/toolkit'
 
 export enum MarginField {
   MARGIN = 'MARGIN',
-  BORROW = 'BORROW',
+  // BORROW = 'BORROW',
   LEVERAGE_FACTOR = 'LEVERAGE FACTOR',
 }
 
@@ -16,7 +16,7 @@ export const replaceMarginTradeState = createAction<{
   recipient: string | null
   leverageFactor: string
   margin?: string
-  borrow?: string
+  // borrow?: string
   premium?: string
 }>('margin/replaceMarginState')
 export const setRecipient = createAction<{ recipient: string | null }>('margin/setRecipient')

@@ -43,10 +43,11 @@ export function useMarginTradingActionHandlers(): {
   // onChangeRecipient: (recipient: string | null) => void
   onLeverageFactorChange: (leverage: string) => void
   onMarginChange: (margin: string) => void
-  onBorrowChange: (borrow: string) => void
+  // onBorrowChange: (borrow: string) => void
   onLockChange: (locked: MarginField | null) => void
 } {
   const dispatch = useAppDispatch()
+
   // const onCurrencySelection = useCallback(
   //   (field: Field, currency: Currency) => {
   //     dispatch(
@@ -91,12 +92,12 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
-  const onBorrowChange = useCallback(
-    (borrow: string) => {
-      dispatch(typeInput({ field: MarginField.BORROW, typedValue: borrow }))
-    },
-    [dispatch]
-  )
+  // const onBorrowChange = useCallback(
+  //   (borrow: string) => {
+  //     dispatch(typeInput({ field: MarginField.BORROW, typedValue: borrow }))
+  //   },
+  //   [dispatch]
+  // )
 
   const onLockChange = useCallback(
     (locked: MarginField | null) => {
@@ -112,7 +113,7 @@ export function useMarginTradingActionHandlers(): {
     // onChangeRecipient,
     onLeverageFactorChange,
     onMarginChange,
-    onBorrowChange,
+    // onBorrowChange,
     onLockChange,
   }
 }
@@ -148,11 +149,11 @@ export function useDerivedAddPositionInfo(): {
   approvalAmount: CurrencyAmount<Currency> | undefined
   allowedSlippage: Percent
 } {
-  const { account, chainId } = useWeb3React()
+  const { account } = useWeb3React()
 
   const {
     [MarginField.MARGIN]: margin,
-    [MarginField.BORROW]: borrow,
+    // [MarginField.BORROW]: borrow,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
   } = useMarginTradingState()
 
@@ -172,10 +173,10 @@ export function useDerivedAddPositionInfo(): {
     [inputCurrency, margin]
   )
 
-  const borrowAmount = useMemo(
-    () => tryParseCurrencyAmount(borrow ?? undefined, inputCurrency ?? undefined),
-    [inputCurrency, borrow]
-  )
+  const borrowAmount = useMemo(() => {
+    if (!marginAmount || !leverageFactor || Number(leverageFactor) < 1) return undefined
+    return marginAmount?.multiply(JSBI.BigInt(leverageFactor)).subtract(marginAmount)
+  }, [leverageFactor, marginAmount])
 
   const positionKey = useMemo(() => {
     const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
@@ -263,11 +264,13 @@ export function useDerivedAddPositionInfo(): {
       new BN(borrowAmount.toExact()).multipliedBy(poolParams.minimumPremiumDeposit).plus(existingPosition.premiumOwed),
       inputCurrency
     )
+
     const _additionalPremium = _premiumNecessary.greaterThan(_premiumDeposit)
       ? _premiumNecessary.subtract(_premiumDeposit)
       : undefined
-    const _approvalAmount = _additionalPremium ? _additionalPremium.add(marginAmount) : marginAmount
 
+    const _approvalAmount = _additionalPremium ? _additionalPremium.add(marginAmount) : marginAmount
+    console.log('stuff', _approvalAmount?.toExact())
     return [_premiumDeposit, _premiumNecessary, _additionalPremium, _approvalAmount]
   }, [existingPosition, marginAmount, account, inputCurrency, outputCurrency, borrowAmount, poolParams])
 
@@ -297,8 +300,12 @@ export function useDerivedAddPositionInfo(): {
       inputError = inputError ?? <Trans>Enter a margin amount</Trans>
     }
 
-    if (!borrowAmount) {
-      inputError = inputError ?? <Trans>Enter a borrow amount</Trans>
+    if (!leverageFactor) {
+      inputError = inputError ?? <Trans>Enter a leverage factor</Trans>
+    }
+
+    if (Number(leverageFactor) <= 1) {
+      inputError = inputError ?? <Trans>Leverage must be greater than 1</Trans>
     }
 
     // compare input balance to max input based on version
@@ -310,7 +317,7 @@ export function useDerivedAddPositionInfo(): {
     }
 
     return inputError
-  }, [account, currencies, borrowAmount, marginAmount, currencyBalances])
+  }, [account, currencies, marginAmount, currencyBalances, leverageFactor])
 
   const { state, trade } = useSimulateMarginTrade(
     pool,

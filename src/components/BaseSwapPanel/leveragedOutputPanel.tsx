@@ -212,15 +212,15 @@ export default function LeverageDebtInputPanel({
           <div style={{ marginRight: '10px', fontSize: '15px' }}>
             <Trans>Position Size</Trans>
           </div>
-          {/* {!hideInput && (
+          {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
               value={value}
-              onUserInput={onUserInput}
+              onUserInput={() => 0}
               disabled={true}
               $loading={loading}
             />
-          )} */}
+          )}
           <CurrencyLogo style={{ marginRight: '2px' }} currency={currency} size="24px" />
         </InputRow>
         <FiatRow>

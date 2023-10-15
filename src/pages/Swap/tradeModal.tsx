@@ -25,7 +25,6 @@ import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
-import { useSelector } from 'react-redux'
 import { Text } from 'rebass'
 import { MarginField } from 'state/marginTrading/actions'
 import {
@@ -37,7 +36,7 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -76,9 +75,9 @@ function largerPercentValue(a?: Percent, b?: Percent) {
 const TradeTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  const tab = useSelector((state: any) => state.swap.tab)
+  // const tab = useSelector((state: any) => state.swap.tab)
 
-  const { onSwitchTokens, onCurrencySelection, onUserInput, onSwitchSwapModalTab } = useSwapActionHandlers()
+  const { onSwitchTokens, onCurrencySelection, onUserInput } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -122,7 +121,7 @@ const TradeTabContent = () => {
   const {
     [MarginField.MARGIN]: margin,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-    [MarginField.BORROW]: borrowAmount,
+    // [MarginField.BORROW]: borrowAmount,
     // lockedField: lockedMarginField,
   } = useMarginTradingState()
 
@@ -133,7 +132,7 @@ const TradeTabContent = () => {
     // onChangeRecipient,
     onLeverageFactorChange,
     onMarginChange,
-    onBorrowChange,
+    // onBorrowChange,
     // onLockChange,
   } = useMarginTradingActionHandlers()
 
@@ -143,7 +142,7 @@ const TradeTabContent = () => {
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
-  const { leverage } = useSwapState()
+  // const { activeTab } = useSwapState()
 
   const toggleWalletDrawer = useToggleWalletDrawer()
   const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
@@ -159,13 +158,15 @@ const TradeTabContent = () => {
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.marginAmount?.equalTo(maxInputAmount))
 
-  const [formattedMargin, formattedBorrow, formattedLeverageFactor] = useMemo(() => {
+  const [formattedMargin, formattedPosition, formattedLeverageFactor] = useMemo(() => {
     return [
-      margin ? formatNumberOrString(margin, NumberType.SwapTradeAmount) : '',
-      borrowAmount ? formatNumberOrString(borrowAmount, NumberType.SwapTradeAmount) : '',
+      margin ? margin : '',
+      margin && leverageFactor && Number(leverageFactor) > 1
+        ? (Number(margin) * Number(leverageFactor)).toString()
+        : '',
       leverageFactor ? formatNumberOrString(leverageFactor, NumberType.SwapTradeAmount) : '',
     ]
-  }, [margin, borrowAmount, leverageFactor])
+  }, [margin, leverageFactor])
 
   const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
     () => [!trade, LeverageTradeState.LOADING === tradeState, tradeState === LeverageTradeState.NO_ROUTE_FOUND],
@@ -178,11 +179,11 @@ const TradeTabContent = () => {
     setTradeState((currentState) => ({ ...currentState, showConfirm: false }))
     if (txHash) {
       onUserInput(Field.INPUT, '')
-      onBorrowChange('')
+      // onBorrowChange('')
       onMarginChange('')
       onLeverageFactorChange('')
     }
-  }, [onUserInput, onBorrowChange, onMarginChange, onLeverageFactorChange, txHash])
+  }, [onUserInput, onMarginChange, onLeverageFactorChange, txHash])
 
   const handleAcceptChanges = useCallback(() => {
     setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
@@ -214,13 +215,13 @@ const TradeTabContent = () => {
     [onMarginChange]
   )
 
-  const handleLeverageInput = useCallback(
-    (value: string) => {
-      onLeverageFactorChange(value)
-      margin && onBorrowChange(String((Number(value) - 1) * Number(margin)))
-    },
-    [onLeverageFactorChange, onBorrowChange, margin]
-  )
+  // const handleLeverageInput = useCallback(
+  //   (value: string) => {
+  //     onLeverageFactorChange(value)
+  //     margin && onBorrowChange(String((Number(value) - 1) * Number(margin)))
+  //   },
+  //   [onLeverageFactorChange, onBorrowChange, margin]
+  // )
 
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
@@ -246,15 +247,15 @@ const TradeTabContent = () => {
     [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade]
   )
 
-  const showDetailsDropdown = Boolean(trade || tradeIsLoading)
+  // const showDetailsDropdown = Boolean(trade || tradeIsLoading)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
-    leverageFactor ?? '1',
+    leverageFactor ?? '',
     onLeverageFactorChange
   )
 
   const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(
-    leverageFactor ?? '1',
+    leverageFactor ?? '',
     onLeverageFactorChange
   )
 
@@ -269,6 +270,8 @@ const TradeTabContent = () => {
       console.log('approveLeverageManager err: ', err)
     }
   }, [approveMarginFacility])
+
+  // console.log('trade', premiumDeposit?.toFixed(), premiumNecessary?.toFixed(), approvalAmount?.toFixed(), trade)
 
   return (
     <Wrapper>
@@ -305,6 +308,7 @@ const TradeTabContent = () => {
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
               premium={premiumNecessary}
+              showPremium={true}
               label="Collateral"
             />
           </Trace>
@@ -313,7 +317,7 @@ const TradeTabContent = () => {
         <InputSection>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <LeverageDebtInputPanel
-              value={formattedBorrow}
+              value={formattedPosition}
               currency={currencies[Field.INPUT] ?? null}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
@@ -330,16 +334,7 @@ const TradeTabContent = () => {
           >
             <ArrowContainer
               onClick={() => {
-                if (tab === 'Swap') {
-                  onSwitchSwapModalTab('Swap')
-                  onSwitchTokens(leverage)
-                } else if (tab === 'Long') {
-                  onSwitchSwapModalTab('Short')
-                  onSwitchTokens(leverage)
-                } else {
-                  onSwitchSwapModalTab('Long')
-                  onSwitchTokens(leverage)
-                }
+                onSwitchTokens(true)
               }}
               color={theme.textPrimary}
             >
@@ -391,7 +386,7 @@ const TradeTabContent = () => {
               </>
             ) : null} */}
           </OutputSwapSection>
-          <LeverageGaugeSection showDetailsDropdown={(!inputError && leverage) || (!leverage && showDetailsDropdown)}>
+          <LeverageGaugeSection>
             <AutoColumn gap="md">
               <RowBetween>
                 <div style={{ marginRight: '20px' }}>
@@ -503,7 +498,7 @@ const TradeTabContent = () => {
                           ? `Allowance of ${formatCurrencyAmount(
                               trade?.marginAmount?.add(additionalPremium),
                               NumberType.SwapTradeAmount
-                            )} ${currencies[Field.INPUT].symbol} required.`
+                            )} ${currencies[Field.INPUT]?.symbol} required.`
                           : null}
                       </Trans>
                     }

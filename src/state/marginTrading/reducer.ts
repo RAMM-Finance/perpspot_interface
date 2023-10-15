@@ -8,7 +8,7 @@ export interface MarginTradeState {
   // readonly inputCurrencyId: string | undefined | null
   // readonly outputCurrencyId: string | undefined | null
   readonly [MarginField.MARGIN]: string | undefined | null
-  readonly [MarginField.BORROW]: string | undefined | null
+  // readonly [MarginField.BORROW]: string | undefined | null
   readonly [MarginField.LEVERAGE_FACTOR]: string | null
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
@@ -18,12 +18,12 @@ export interface MarginTradeState {
 // const initialState: MarginTradeState = queryParametersToSwapState(parsedQueryString())
 // const tabReducerInit = { tab: 'long' }
 const initialState: MarginTradeState = {
-  lockedField: null,
+  lockedField: MarginField.MARGIN,
   // typedValue: '',
   // inputCurrencyId: null,
   // outputCurrencyId: null,
   [MarginField.MARGIN]: null,
-  [MarginField.BORROW]: null,
+  // [MarginField.BORROW]: null,
   [MarginField.LEVERAGE_FACTOR]: null,
   recipient: null,
   // premium: null,
@@ -47,7 +47,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             recipient,
             leverageFactor,
             margin,
-            borrow,
+            // borrow,
             premium,
           },
         }
@@ -58,7 +58,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
           // inputCurrencyId,
           // outputCurrencyId,
           [MarginField.MARGIN]: margin,
-          [MarginField.BORROW]: borrow,
+          // [MarginField.BORROW]: borrow,
           [MarginField.LEVERAGE_FACTOR]: leverageFactor,
           recipient,
           // premium: premium ?? null,

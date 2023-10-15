@@ -161,7 +161,7 @@ export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: bool
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
-export const LeverageGaugeSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
+export const LeverageGaugeSection = styled(SwapSection)`
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
   border-top-right-radius: 0;
   border-top-left-radius: 0;
@@ -573,9 +573,7 @@ export default function Swap({ className }: { className?: string }) {
               {/* <LimitWrapper>
                 <LimitContent tab={selectedTab} currency0={inputCurrency as Token} />
               </LimitWrapper> */}
-              <TabContent id={ActiveSwapTab.TRADE} activeTab={activeTab}>
-                <TradeTabContent />
-              </TabContent>
+              {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
               <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
                 <BorrowTabContent />
               </TabContent>

@@ -213,11 +213,11 @@ export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
   const { loading, error, result } = useSingleCallResult(poolManager, 'PoolParams', [poolAddress])
 
   return useMemo(() => {
-    if (!result?.[0] || loading || error) {
+    if (!result || loading || error) {
       return undefined
     } else {
       return {
-        minimumPremiumDeposit: convertToBN(result[0][5], 18),
+        minimumPremiumDeposit: convertToBN(result.MIN_PREMIUM_DEPOSIT, 18),
       }
     }
   }, [result, loading, error])

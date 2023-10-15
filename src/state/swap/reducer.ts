@@ -133,34 +133,16 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {
-      if (state.tab === 'Long') {
-        return {
-          ...state,
-          independentField: Field.INPUT,
-          typedValue: '',
-          [Field.INPUT]: { currencyId: state.originInputId },
-          [Field.OUTPUT]: { currencyId: state.originOutputId },
-        }
-      } else if (state.tab === 'Short') {
-        return {
-          ...state,
-          independentField: Field.OUTPUT,
-          typedValue: '',
-          [Field.INPUT]: { currencyId: state.originOutputId },
-          [Field.OUTPUT]: { currencyId: state.originInputId },
-        }
-      } else {
-        return {
-          ...state,
-          independentField: !leverage
-            ? state.independentField === Field.INPUT
-              ? Field.OUTPUT
-              : Field.INPUT
-            : Field.INPUT,
-          typedValue: '',
-          [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
-          [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
-        }
+      return {
+        ...state,
+        independentField: !leverage
+          ? state.independentField === Field.INPUT
+            ? Field.OUTPUT
+            : Field.INPUT
+          : Field.INPUT,
+        typedValue: '',
+        [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
+        [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
       }
     })
     .addCase(typeInput, (state, { payload: { field, typedValue } }) => {
@@ -195,10 +177,26 @@ export default createReducer<SwapState>(initialState, (builder) =>
     .addCase(setRecipient, (state, { payload: { recipient } }) => {
       state.recipient = recipient
     })
-    .addCase(setActiveTab, (state, { payload: { activeTab } }) => ({
-      ...state,
-      activeTab,
-    }))
+    .addCase(setActiveTab, (state, { payload: { activeTab } }) => {
+      if (state.activeTab === ActiveSwapTab.LONG || state.activeTab === ActiveSwapTab.SHORT) {
+        if (activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) {
+          if (activeTab != state.activeTab) {
+            return {
+              ...state,
+              activeTab,
+              typedValue: '',
+              independentField: Field.INPUT,
+              [Field.INPUT]: { currencyId: state[Field.OUTPUT].currencyId },
+              [Field.OUTPUT]: { currencyId: state[Field.INPUT].currencyId },
+            }
+          }
+        }
+      }
+      return {
+        ...state,
+        activeTab,
+      }
+    })
     .addCase(setLTV, (state, { payload: { ltv } }) => ({
       ...state,
       ltv,

@@ -7,7 +7,8 @@ export enum Field {
 }
 
 export enum ActiveSwapTab {
-  TRADE,
+  LONG,
+  SHORT,
   BORROW,
   SWAP,
 }

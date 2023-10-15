@@ -238,6 +238,7 @@ interface BaseSwapPanelProps {
   locked?: boolean
   loading?: boolean
   label?: string
+  showPremium?: boolean
   premium?: CurrencyAmount<Currency>
 }
 
@@ -264,6 +265,7 @@ export function BaseSwapPanel({
   loading = false,
   label,
   premium,
+  showPremium,
   ...rest
 }: BaseSwapPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -345,7 +347,7 @@ export function BaseSwapPanel({
         {Boolean(!hideInput && !hideBalance) && (
           <FiatRow>
             <RowBetween>
-              {premium && (
+              {showPremium && (
                 <RowFixed style={{ height: '17px' }}>
                   <ThemedText.DeprecatedBody
                     color={theme.textSecondary}
@@ -355,7 +357,8 @@ export function BaseSwapPanel({
                   >
                     <div style={{ fontSize: '12px' }}>
                       <Trans>
-                        Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
+                        Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
+                        {premium?.currency.symbol ?? ''}
                       </Trans>
                     </div>
                   </ThemedText.DeprecatedBody>

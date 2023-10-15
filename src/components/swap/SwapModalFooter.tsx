@@ -1317,6 +1317,7 @@ export function LeverageModalFooter({
   onConfirm,
   // swapErrorMessage,
   disabledConfirm,
+  tradeErrorMessage,
 }: // swapQuoteReceivedDate,
 // fiatValueInput,
 // fiatValueOutput,
@@ -1351,7 +1352,7 @@ export function LeverageModalFooter({
             <Trans>Confirm Position</Trans>
           </Text>
         </ButtonError>
-        {swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+        {tradeErrorMessage ? <SwapCallbackError error={tradeErrorMessage} /> : null}
       </AutoRow>
     </>
   )

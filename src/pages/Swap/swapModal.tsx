@@ -37,14 +37,9 @@ import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { useSelector } from 'react-redux'
 import { Text } from 'rebass'
-import { LeverageTradeState, TradeState } from 'state/routing/types'
+import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import {
-  useDerivedLeverageCreationInfo,
-  useDerivedSwapInfo,
-  useSwapActionHandlers,
-  useSwapState,
-} from 'state/swap/hooks'
+import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { useExpertModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
@@ -295,13 +290,13 @@ const SwapTabContent = () => {
     return { priceImpactSeverity: warningSeverity(largerPriceImpact), largerPriceImpact }
   }, [stablecoinPriceImpact, trade])
 
-  const {
-    trade: leverageTrade,
-    state: leverageState,
-    inputError,
-    allowedSlippage: leverageAllowedSlippage,
-    contractError,
-  } = useDerivedLeverageCreationInfo()
+  // const {
+  //   trade: leverageTrade,
+  //   state: leverageState,
+  //   inputError,
+  //   allowedSlippage: leverageAllowedSlippage,
+  //   contractError,
+  // } = useDerivedLeverageCreationInfo()
 
   const [inputCurrency, outputCurrency] = useMemo(() => {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
@@ -442,7 +437,7 @@ const SwapTabContent = () => {
   const [isExpertMode] = useExpertModeManager()
 
   const isValid = !swapInputError
-  const lmtIsValid = !inputError
+  // const lmtIsValid = !inputError
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
@@ -459,10 +454,10 @@ const SwapTabContent = () => {
   // )
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
-  const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
-    () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING],
-    [leverageState]
-  )
+  // const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
+  //   () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING],
+  //   [leverageState]
+  // )
   const isApprovalLoading = allowance.state === AllowanceState.REQUIRED && allowance.isApprovalLoading
   const [isAllowancePending, setIsAllowancePending] = useState(false)
   const updateAllowance = useCallback(async () => {
@@ -556,16 +551,7 @@ const SwapTabContent = () => {
           >
             <ArrowContainer
               onClick={() => {
-                if (tab === 'Swap') {
-                  onSwitchSwapModalTab('Swap')
-                  // onSwitchTokens(leverage)
-                } else if (tab === 'Long') {
-                  onSwitchSwapModalTab('Short')
-                  // onSwitchTokens(leverage)
-                } else {
-                  onSwitchSwapModalTab('Long')
-                  // onSwitchTokens(leverage)
-                }
+                onSwitchTokens(false)
               }}
               color={theme.textPrimary}
             >
@@ -623,109 +609,109 @@ const SwapTabContent = () => {
         </div>
         {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}
         <div>
-          (swapIsUnsupported ? (
-          <ButtonPrimary disabled={true}>
-            <ThemedText.DeprecatedMain mb="4px">
-              <Trans>Unsupported Asset</Trans>
-            </ThemedText.DeprecatedMain>
-          </ButtonPrimary>
+          {swapIsUnsupported ? (
+            <ButtonPrimary disabled={true}>
+              <ThemedText.DeprecatedMain mb="4px">
+                <Trans>Unsupported Asset</Trans>
+              </ThemedText.DeprecatedMain>
+            </ButtonPrimary>
           ) : !account ? (
-          <TraceEvent
-            events={[BrowserEvent.onClick]}
-            name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-            properties={{
-              received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError),
-            }}
-            element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-          >
-            <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
-              <Trans>Connect Wallet</Trans>
-            </ButtonLight>
-          </TraceEvent>
+            <TraceEvent
+              events={[BrowserEvent.onClick]}
+              name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+              properties={{
+                received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError),
+              }}
+              element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+            >
+              <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+                <Trans>Connect Wallet</Trans>
+              </ButtonLight>
+            </TraceEvent>
           ) : showWrap ? (
-          <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap} fontWeight={600}>
-            {wrapInputError ? (
-              <WrapErrorText wrapInputError={wrapInputError} />
-            ) : wrapType === WrapType.WRAP ? (
-              <Trans>Wrap</Trans>
-            ) : wrapType === WrapType.UNWRAP ? (
-              <Trans>Unwrap</Trans>
-            ) : null}
-          </ButtonPrimary>
+            <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap} fontWeight={600}>
+              {wrapInputError ? (
+                <WrapErrorText wrapInputError={wrapInputError} />
+              ) : wrapType === WrapType.WRAP ? (
+                <Trans>Wrap</Trans>
+              ) : wrapType === WrapType.UNWRAP ? (
+                <Trans>Unwrap</Trans>
+              ) : null}
+            </ButtonPrimary>
           ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
-          <GrayCard style={{ textAlign: 'center' }}>
-            <ThemedText.DeprecatedMain mb="4px">
-              <Trans>Insufficient liquidity for this trade.</Trans>
-            </ThemedText.DeprecatedMain>
-          </GrayCard>
+            <GrayCard style={{ textAlign: 'center' }}>
+              <ThemedText.DeprecatedMain mb="4px">
+                <Trans>Insufficient liquidity for this trade.</Trans>
+              </ThemedText.DeprecatedMain>
+            </GrayCard>
           ) : isValid && allowance.state === AllowanceState.REQUIRED ? (
-          <ButtonPrimary
-            onClick={updateAllowance}
-            disabled={isAllowancePending || isApprovalLoading}
-            style={{ gap: 14 }}
-          >
-            {isAllowancePending ? (
-              <>
-                <Loader size="20px" />
-                <Trans>Approve in your wallet</Trans>
-              </>
-            ) : isApprovalLoading ? (
-              <>
-                <Loader size="20px" />
-                <Trans>Approval pending</Trans>
-              </>
-            ) : (
-              <>
-                <div style={{ height: 20 }}>
-                  <MouseoverTooltip text={<Trans>Permission is required for Limitless to trade each token.</Trans>}>
-                    <Info size={20} />
-                  </MouseoverTooltip>
-                </div>
-                <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
-              </>
-            )}
-          </ButtonPrimary>
-          ) : (
-          <ButtonError
-            onClick={() => {
-              if (isExpertMode) {
-                handleSwap()
-              } else {
-                setSwapState({
-                  tradeToConfirm: trade,
-                  attemptingTxn: false,
-                  swapErrorMessage: undefined,
-                  showConfirm: true,
-                  txHash: undefined,
-                  showLeverageConfirm: false,
-                })
-              }
-            }}
-            id="swap-button"
-            disabled={
-              !isValid ||
-              routeIsSyncing ||
-              routeIsLoading ||
-              priceImpactTooHigh ||
-              allowance.state !== AllowanceState.ALLOWED
-            }
-            error={isValid && priceImpactSeverity > 2 && allowance.state === AllowanceState.ALLOWED}
-          >
-            <Text fontSize={20} fontWeight={600}>
-              {swapInputError ? (
-                swapInputError
-              ) : routeIsSyncing || routeIsLoading ? (
-                <Trans>Swap</Trans>
-              ) : priceImpactTooHigh ? (
-                <Trans>Price Impact Too High</Trans>
-              ) : priceImpactSeverity > 2 ? (
-                <Trans>Swap Anyway</Trans>
+            <ButtonPrimary
+              onClick={updateAllowance}
+              disabled={isAllowancePending || isApprovalLoading}
+              style={{ gap: 14 }}
+            >
+              {isAllowancePending ? (
+                <>
+                  <Loader size="20px" />
+                  <Trans>Approve in your wallet</Trans>
+                </>
+              ) : isApprovalLoading ? (
+                <>
+                  <Loader size="20px" />
+                  <Trans>Approval pending</Trans>
+                </>
               ) : (
-                <Trans>Swap</Trans>
+                <>
+                  <div style={{ height: 20 }}>
+                    <MouseoverTooltip text={<Trans>Permission is required for Limitless to trade each token.</Trans>}>
+                      <Info size={20} />
+                    </MouseoverTooltip>
+                  </div>
+                  <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                </>
               )}
-            </Text>
-          </ButtonError>
-          ))
+            </ButtonPrimary>
+          ) : (
+            <ButtonError
+              onClick={() => {
+                if (isExpertMode) {
+                  handleSwap()
+                } else {
+                  setSwapState({
+                    tradeToConfirm: trade,
+                    attemptingTxn: false,
+                    swapErrorMessage: undefined,
+                    showConfirm: true,
+                    txHash: undefined,
+                    showLeverageConfirm: false,
+                  })
+                }
+              }}
+              id="swap-button"
+              disabled={
+                !isValid ||
+                routeIsSyncing ||
+                routeIsLoading ||
+                priceImpactTooHigh ||
+                allowance.state !== AllowanceState.ALLOWED
+              }
+              error={isValid && priceImpactSeverity > 2 && allowance.state === AllowanceState.ALLOWED}
+            >
+              <Text fontSize={20} fontWeight={600}>
+                {swapInputError ? (
+                  swapInputError
+                ) : routeIsSyncing || routeIsLoading ? (
+                  <Trans>Swap</Trans>
+                ) : priceImpactTooHigh ? (
+                  <Trans>Price Impact Too High</Trans>
+                ) : priceImpactSeverity > 2 ? (
+                  <Trans>Swap Anyway</Trans>
+                ) : (
+                  <Trans>Swap</Trans>
+                )}
+              </Text>
+            </ButtonError>
+          )}
           {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
         </div>
       </div>

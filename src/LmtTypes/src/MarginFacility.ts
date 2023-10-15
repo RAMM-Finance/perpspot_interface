@@ -211,14 +211,13 @@ export interface MarginFacilityInterface extends utils.Interface {
     "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "approveTokens(address,address)": FunctionFragment;
     "canForceClose(((address,bool,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
-    "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
     "maxWithdrawablePremium(bytes32)": FunctionFragment;
+    "modifyPremium((address,address,uint24),address,bool,uint256,bool)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "payPremium((address,address,uint24),address,bool)": FunctionFragment;
     "positions(bytes32)": FunctionFragment;
     "reducePosition((address,address,uint24),(bool,uint256,uint256,uint256,address,uint256,bytes32,uint160,uint256))": FunctionFragment;
-    "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -227,14 +226,13 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "addPosition"
       | "approveTokens"
       | "canForceClose"
-      | "depositPremium"
       | "getPosition"
       | "maxWithdrawablePremium"
+      | "modifyPremium"
       | "multicall"
       | "payPremium"
       | "positions"
       | "reducePosition"
-      | "withdrawPremium"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -254,15 +252,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     values: [MarginPositionStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "depositPremium",
-    values: [
-      PoolKeyStruct,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getPosition",
     values: [
       PromiseOrValue<string>,
@@ -273,6 +262,16 @@ export interface MarginFacilityInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "maxWithdrawablePremium",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "modifyPremium",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "multicall",
@@ -289,14 +288,6 @@ export interface MarginFacilityInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "reducePosition",
     values: [PoolKeyStruct, ReduceParamStruct]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawPremium",
-    values: [
-      PoolKeyStruct,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
-    ]
   ): string;
 
   decodeFunctionResult(
@@ -316,10 +307,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "depositPremium",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getPosition",
     data: BytesLike
   ): Result;
@@ -327,15 +314,15 @@ export interface MarginFacilityInterface extends utils.Interface {
     functionFragment: "maxWithdrawablePremium",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "modifyPremium",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "payPremium", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "positions", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "reducePosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawPremium",
     data: BytesLike
   ): Result;
 
@@ -392,14 +379,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    depositPremium(
-      key: PoolKeyStruct,
-      trader: PromiseOrValue<string>,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     getPosition(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -411,6 +390,15 @@ export interface MarginFacility extends BaseContract {
       id: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    modifyPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
+      amount: PromiseOrValue<BigNumberish>,
+      isDeposit: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -440,13 +428,6 @@ export interface MarginFacility extends BaseContract {
       param: ReduceParamStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    withdrawPremium(
-      key: PoolKeyStruct,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   PremiumDeposit(
@@ -472,14 +453,6 @@ export interface MarginFacility extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  depositPremium(
-    key: PoolKeyStruct,
-    trader: PromiseOrValue<string>,
-    isToken0: PromiseOrValue<boolean>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   getPosition(
     pool: PromiseOrValue<string>,
     trader: PromiseOrValue<string>,
@@ -491,6 +464,15 @@ export interface MarginFacility extends BaseContract {
     id: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  modifyPremium(
+    key: PoolKeyStruct,
+    trader: PromiseOrValue<string>,
+    isToken0: PromiseOrValue<boolean>,
+    amount: PromiseOrValue<BigNumberish>,
+    isDeposit: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   multicall(
     data: PromiseOrValue<BytesLike>[],
@@ -521,13 +503,6 @@ export interface MarginFacility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawPremium(
-    key: PoolKeyStruct,
-    isToken0: PromiseOrValue<boolean>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     PremiumDeposit(
       arg0: PromiseOrValue<BytesLike>,
@@ -552,14 +527,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    depositPremium(
-      key: PoolKeyStruct,
-      trader: PromiseOrValue<string>,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     getPosition(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -571,6 +538,15 @@ export interface MarginFacility extends BaseContract {
       id: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    modifyPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
+      amount: PromiseOrValue<BigNumberish>,
+      isDeposit: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -600,13 +576,6 @@ export interface MarginFacility extends BaseContract {
       param: ReduceParamStruct,
       overrides?: CallOverrides
     ): Promise<ReduceReturnStructOutput>;
-
-    withdrawPremium(
-      key: PoolKeyStruct,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {};
@@ -635,14 +604,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    depositPremium(
-      key: PoolKeyStruct,
-      trader: PromiseOrValue<string>,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     getPosition(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -653,6 +614,15 @@ export interface MarginFacility extends BaseContract {
     maxWithdrawablePremium(
       id: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    modifyPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
+      amount: PromiseOrValue<BigNumberish>,
+      isDeposit: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     multicall(
@@ -675,13 +645,6 @@ export interface MarginFacility extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    withdrawPremium(
-      key: PoolKeyStruct,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -710,14 +673,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    depositPremium(
-      key: PoolKeyStruct,
-      trader: PromiseOrValue<string>,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     getPosition(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -728,6 +683,15 @@ export interface MarginFacility extends BaseContract {
     maxWithdrawablePremium(
       id: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    modifyPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
+      amount: PromiseOrValue<BigNumberish>,
+      isDeposit: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     multicall(
@@ -750,13 +714,6 @@ export interface MarginFacility extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    withdrawPremium(
-      key: PoolKeyStruct,
-      isToken0: PromiseOrValue<boolean>,
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

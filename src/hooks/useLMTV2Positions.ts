@@ -1,4 +1,3 @@
-import { Contract } from '@ethersproject/contracts'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -71,6 +70,11 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   const dataProvider = useDataProviderContract()
   const token0 = useToken(key?.poolKey.token0Address)
   const token1 = useToken(key?.poolKey.token1Address)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+  const [result, setResult] = useState<any>()
+  const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+  const blockNumber = useBlockNumber()
 
   const params = useMemo(() => {
     if (token0 && token1 && chainId && key) {
@@ -85,11 +89,31 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         key.isToken0,
       ]
     } else {
-      return ['', '', false]
+      return undefined
     }
   }, [token0, token1, chainId, key])
 
-  const { loading, error, result } = useSingleViewCall(dataProvider, 'getMarginPosition', params)
+  useEffect(() => {
+    if (!params || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+
+    const call = async () => {
+      try {
+        setLoading(true)
+        const result = await dataProvider?.callStatic.getMarginPosition(
+          params[0] as string,
+          params[1] as string,
+          params[2] as boolean
+        )
+        setResult(result)
+        setLoading(false)
+        setBlockNumber(blockNumber)
+      } catch (error) {
+        setError(error)
+        setLoading(false)
+      }
+    }
+    call()
+  }, [dataProvider, params, blockNumber, lastBlockNumber, loading])
 
   return useMemo(() => {
     if (!result) {
@@ -129,36 +153,32 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
 
 type ContractArg = string | number | boolean
 
-export function useSingleViewCall(
-  contract: Contract | null,
-  method: string | undefined,
-  params: ContractArg[] | undefined
-) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
-  const [result, setResult] = useState<any>()
-  const blockNumber = useBlockNumber()
-  const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>(undefined)
+// export function useSingleViewCall(callback: () => Promise<any>) {
+//   const [loading, setLoading] = useState(false)
+//   const [error, setError] = useState<any>()
+//   const [result, setResult] = useState<any>()
+//   const blockNumber = useBlockNumber()
+//   const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>(undefined)
 
-  useEffect(() => {
-    if (loading || !contract || !method || lastBlockNumber == blockNumber || !params) return
-    const call = async () => {
-      try {
-        setLoading(true)
-        const result = await contract.callStatic[method](...params)
-        setResult(result)
-        setLoading(false)
-        setLastBlockNumber(blockNumber)
-      } catch (error) {
-        setError(error)
-        setLoading(false)
-      }
-    }
-    call()
-  }, [contract, method, params, blockNumber, lastBlockNumber, loading])
+//   useEffect(() => {
+//     if (loading || lastBlockNumber == blockNumber) return
+//     const call = async () => {
+//       try {
+//         setLoading(true)
+//         const result = await callback()
+//         setResult(result)
+//         setLoading(false)
+//         setLastBlockNumber(blockNumber)
+//       } catch (error) {
+//         setError(error)
+//         setLoading(false)
+//       }
+//     }
+//     call()
+//   }, [blockNumber, lastBlockNumber, loading])
 
-  return { loading, error, result }
-}
+//   return { loading, error, result }
+// }
 
 // fetches all borrow LMT positions for a given account
 // export function useBorrowLMTPositions(account: string | undefined): {

@@ -167,6 +167,25 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "PositionId",
+        name: "positionId",
+        type: "bytes32",
+      },
+    ],
+    name: "maxWithdrawablePremium",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "address",
@@ -203,29 +222,15 @@ const _abi = [
         name: "amount",
         type: "uint256",
       },
+      {
+        internalType: "bool",
+        name: "isDeposit",
+        type: "bool",
+      },
     ],
-    name: "depositPremium",
+    name: "modifyPremium",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "PositionId",
-        name: "positionId",
-        type: "bytes32",
-      },
-    ],
-    name: "maxWithdrawablePremium",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -385,46 +390,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "token0",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "token1",
-            type: "address",
-          },
-          {
-            internalType: "uint24",
-            name: "fee",
-            type: "uint24",
-          },
-        ],
-        internalType: "struct PoolKey",
-        name: "key",
-        type: "tuple",
-      },
-      {
-        internalType: "bool",
-        name: "isToken0",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "withdrawPremium",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;
