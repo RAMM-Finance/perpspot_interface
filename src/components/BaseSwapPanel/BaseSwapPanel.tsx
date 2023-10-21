@@ -347,54 +347,56 @@ export function BaseSwapPanel({
         {Boolean(!hideInput && !hideBalance) && (
           <FiatRow>
             <RowBetween>
-              {showPremium && (
-                <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
-                    <div style={{ fontSize: '12px' }}>
-                      <Trans>
-                        Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
-                        {premium?.currency.symbol ?? ''}
-                      </Trans>
-                    </div>
-                  </ThemedText.DeprecatedBody>
-                </RowFixed>
-              )}
               <LoadingOpacityContainer $loading={loading}>
                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
               </LoadingOpacityContainer>
               {account ? (
-                <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
-                    {!hideBalance && currency && selectedCurrencyBalance ? (
-                      renderBalance ? (
-                        renderBalance(selectedCurrencyBalance)
-                      ) : (
-                        <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                      )
-                    ) : null}
-                  </ThemedText.DeprecatedBody>
-                  {showMaxButton && selectedCurrencyBalance ? (
-                    <TraceEvent
-                      events={[BrowserEvent.onClick]}
-                      name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                      element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                <AutoColumn>
+                  <RowFixed style={{ height: '17px' }}>
+                    <ThemedText.DeprecatedBody
+                      color={theme.textSecondary}
+                      fontWeight={400}
+                      fontSize={14}
+                      style={{ display: 'inline' }}
                     >
-                      <StyledBalanceMax onClick={onMax}>
-                        <Trans>Max</Trans>
-                      </StyledBalanceMax>
-                    </TraceEvent>
-                  ) : null}
-                </RowFixed>
+                      {!hideBalance && currency && selectedCurrencyBalance ? (
+                        renderBalance ? (
+                          renderBalance(selectedCurrencyBalance)
+                        ) : (
+                          <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                        )
+                      ) : null}
+                    </ThemedText.DeprecatedBody>
+                    {showMaxButton && selectedCurrencyBalance ? (
+                      <TraceEvent
+                        events={[BrowserEvent.onClick]}
+                        name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+                        element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                      >
+                        <StyledBalanceMax onClick={onMax}>
+                          <Trans>Max</Trans>
+                        </StyledBalanceMax>
+                      </TraceEvent>
+                    ) : null}
+                  </RowFixed>
+                  {showPremium && (
+                    <RowFixed style={{ height: '17px' }}>
+                      <ThemedText.DeprecatedBody
+                        color={theme.textSecondary}
+                        fontWeight={400}
+                        fontSize={14}
+                        style={{ display: 'inline' }}
+                      >
+                        <div style={{ fontSize: '14px' }}>
+                          <Trans>
+                            Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
+                            {premium?.currency.symbol ?? ''}
+                          </Trans>
+                        </div>
+                      </ThemedText.DeprecatedBody>
+                    </RowFixed>
+                  )}
+                </AutoColumn>
               ) : (
                 <span />
               )}

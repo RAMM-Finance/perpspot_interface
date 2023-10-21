@@ -40,7 +40,7 @@ import { V3Migrator } from 'types/v3/V3Migrator'
 
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
 import { abi as IFacilityAbi } from '../abis_v2/IFacility.json'
-import { abi as IMarginFacilityAbi } from '../abis_v2/IMarginFacility.json'
+import { abi as MarginFacilityAbi } from '../abis_v2/MarginFacility.json'
 // import {abi as testTokenAbi} from "../perpspotContracts/testERC.json"
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
 import LmtPoolManagerJson from '../abis_v2/PoolManager.json'
@@ -81,7 +81,7 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 }
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
-  return useContract<MarginFacility>(LMT_MARGIN_FACILITY, IMarginFacilityAbi, withSignerIfPossible)
+  return useContract<MarginFacility>(LMT_MARGIN_FACILITY, MarginFacilityAbi, withSignerIfPossible)
 }
 
 export function useFacilityContract(facilityAddress: string, withSignerIfPossible?: boolean) {

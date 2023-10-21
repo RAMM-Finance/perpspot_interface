@@ -12,10 +12,10 @@ export interface AddPositionOptions {
   margin: JSBI
   borrowAmount: JSBI
   minimumOutput: JSBI
-  deadline: BigintIsh
+  deadline: string
   minEstimatedSlippage: JSBI
   executionOption: number
-  maxSlippage: JSBI
+  maxSlippage: string
   depositPremium?: JSBI
 }
 
@@ -43,13 +43,12 @@ export abstract class MarginFacilitySDK {
 
   public static INTERFACE: Interface = new Interface(MarginFacilityJson.abi)
 
-  public static addPositionParameters(param: AddPositionOptions): MethodParameters {
+  public static addPositionParameters(param: AddPositionOptions) {
     const calldatas: string[] = []
 
     if (param.depositPremium) {
-      // depositPremium(PoolKey calldata key, address trader, bool isToken0, uint256 amount)
       calldatas.push(
-        MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('modifyPremium', [
           {
             token0: param.positionKey.poolKey.token0Address,
             token1: param.positionKey.poolKey.token1Address,
@@ -58,16 +57,29 @@ export abstract class MarginFacilitySDK {
           param.positionKey.trader,
           param.positionKey.isToken0,
           toHex(param.depositPremium),
+          true,
         ])
       )
     }
+
+    console.log('params', {
+      margin: param.margin.toString(),
+      maxSlippage: param.maxSlippage.toString(),
+      minEstimatedSlippage: param.minEstimatedSlippage.toString(),
+      borrowAmount: param.borrowAmount.toString(),
+      positionIsToken0: param.positionKey.isToken0,
+      executionOption: param.executionOption,
+      trader: param.positionKey.trader,
+      minOutput: param.minimumOutput.toString(),
+      deadline: param.deadline,
+    })
 
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {
           token0: param.positionKey.poolKey.token0Address,
           token1: param.positionKey.poolKey.token1Address,
-          fee: param.positionKey.poolKey.fee,
+          fee: param.positionKey.poolKey.fee.toString(),
         },
         {
           margin: toHex(param.margin),
@@ -80,13 +92,15 @@ export abstract class MarginFacilitySDK {
           minOutput: toHex(param.minimumOutput),
           deadline: param.deadline,
         },
+        [],
       ])
     )
 
-    return {
-      calldata: Multicall.encodeMulticall(calldatas),
-      value: toHex(0),
-    }
+    // return {
+    //   calldata: Multicall.encodeMulticall(calldatas),
+    //   value: toHex(0),
+    // }
+    return calldatas
   }
 
   public static reducePositionParameters(param: ReducePositionOptions): MethodParameters {

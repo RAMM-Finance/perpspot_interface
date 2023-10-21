@@ -1,6 +1,6 @@
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { Route, SwapQuoter } from '@uniswap/v3-sdk'
-import { ROUTER_ADDRESSES } from 'constants/addresses'
+import { QUOTER_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 
@@ -19,7 +19,7 @@ export async function getOutputQuote(
   })
 
   const quoteCallReturnData = await provider.call({
-    to: ROUTER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
+    to: QUOTER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
     data: calldata,
   })
 

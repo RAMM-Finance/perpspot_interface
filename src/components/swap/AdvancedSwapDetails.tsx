@@ -559,24 +559,19 @@ export function ValueLabel({
   hideInfoTooltips?: boolean
   width?: string
 }) {
-  const theme = useTheme()
+  // const theme = useTheme()
 
   return (
     <RowBetween>
       <RowFixed>
         <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
-          <TruncatedText color={theme.textSecondary}>
-            <Trans>{label}</Trans>
-          </TruncatedText>
+          <ThemedText.BodySecondary fontSize={13}>{label}</ThemedText.BodySecondary>
         </MouseoverTooltip>
       </RowFixed>
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
         <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-          <RowFixed>
-            <TruncatedText width={width}>{value ? `${value.toString()}` : '-'}</TruncatedText>
-            {value ? symbolAppend : null}
-          </RowFixed>
+          {value ? `${value.toString()} ${symbolAppend}` : '-'}
         </ThemedText.DeprecatedBlack>
       </TextWithLoadingPlaceholder>
     </RowBetween>
@@ -822,6 +817,21 @@ export function AdvancedMarginTradeDetails({
     <StyledCard>
       <AutoColumn gap="sm">
         <ValueLabel
+          description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
+          label="Quoted Premium"
+          value={formatCurrencyAmount(premiumNecessary, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={premiumNecessary ? inputCurrency?.symbol : ''}
+        />
+        <ValueLabel
+          description="Current premium deposit for this position"
+          label="Existing Premium Deposit"
+          value={formatCurrencyAmount(premiumDeposit, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={premiumDeposit ? inputCurrency?.symbol : ''}
+        />
+
+        <ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={trade?.existingPosition ? 'Added Position' : 'Exp. Output'}
           value={formatCurrencyAmount(trade?.outputAmount, NumberType.SwapTradeAmount)}
@@ -837,22 +847,6 @@ export function AdvancedMarginTradeDetails({
             trade ? trade?.executionPrice.baseCurrency.symbol + '/' + trade?.executionPrice.quoteCurrency.symbol : ''
           }
         />
-        <ValueLabel
-          description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
-          label="Quoted Premium"
-          value={formatCurrencyAmount(premiumNecessary, NumberType.SwapTradeAmount)}
-          syncing={syncing}
-          symbolAppend={premiumNecessary ? inputCurrency?.symbol : ''}
-        />
-        {trade?.existingPosition && (
-          <ValueLabel
-            description="Current premium deposit for this position"
-            label="Existing Premium Deposit"
-            value={formatCurrencyAmount(premiumDeposit, NumberType.SwapTradeAmount)}
-            syncing={syncing}
-            symbolAppend={premiumDeposit ? inputCurrency?.symbol : ''}
-          />
-        )}
         <ValueLabel
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
           The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."

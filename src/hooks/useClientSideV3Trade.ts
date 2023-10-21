@@ -10,7 +10,7 @@ import { InterfaceTrade, TradeState } from 'state/routing/types'
 import { useAllV3Routes } from './useAllV3Routes'
 import { useQuoter } from './useContract'
 
-const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
+export const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
   [SupportedChainId.ARBITRUM_ONE]: 25_000_000,
   [SupportedChainId.ARBITRUM_GOERLI]: 25_000_000,
   [SupportedChainId.CELO]: 50_000_000,
@@ -20,7 +20,7 @@ const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
   [SupportedChainId.BNB]: 50_000_000,
 }
 
-const DEFAULT_GAS_QUOTE = 2_000_000
+export const DEFAULT_GAS_QUOTE = 2_000_000
 
 /**
  * Returns the best v3 trade for a desired swap

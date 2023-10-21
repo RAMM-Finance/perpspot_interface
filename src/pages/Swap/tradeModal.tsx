@@ -29,7 +29,6 @@ import { Text } from 'rebass'
 import { MarginField } from 'state/marginTrading/actions'
 import {
   MarginTrade,
-  useAddMarginPositionCallback,
   useDerivedAddPositionInfo,
   useMarginTradingActionHandlers,
   useMarginTradingState,
@@ -116,7 +115,7 @@ const TradeTabContent = () => {
     additionalPremium,
   } = useDerivedAddPositionInfo()
 
-  const { callback: marginTradeCallback } = useAddMarginPositionCallback(trade)
+  // const { callback: marginTradeCallback } = useAddMarginPositionCallback(trade)
 
   const {
     [MarginField.MARGIN]: margin,
@@ -169,8 +168,12 @@ const TradeTabContent = () => {
   }, [margin, leverageFactor])
 
   const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
-    () => [!trade, LeverageTradeState.LOADING === tradeState, tradeState === LeverageTradeState.NO_ROUTE_FOUND],
-    [trade, tradeState]
+    () => [
+      tradeState === LeverageTradeState.INVALID,
+      LeverageTradeState.LOADING === tradeState,
+      tradeState === LeverageTradeState.NO_ROUTE_FOUND,
+    ],
+    [tradeState]
   )
 
   const lmtIsValid = useMemo(() => !inputError, [inputError])
@@ -189,24 +192,24 @@ const TradeTabContent = () => {
     setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
   }, [trade])
 
-  const handleTrade = useCallback(() => {
-    if (!marginTradeCallback) {
-      return
-    }
-    setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
-    marginTradeCallback()
-      .then((hash) => {
-        setTradeState((currentState) => ({ ...currentState, attemptingTxn: false, txHash: hash }))
-      })
-      .catch((error) => {
-        setTradeState((currentState) => ({
-          ...currentState,
-          attemptingTxn: false,
-          txHash: undefined,
-          tradeErrorMessage: error.message,
-        }))
-      })
-  }, [marginTradeCallback])
+  // const handleTrade = useCallback(() => {
+  //   if (!marginTradeCallback) {
+  //     return
+  //   }
+  //   setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
+  //   marginTradeCallback()
+  //     .then((hash) => {
+  //       setTradeState((currentState) => ({ ...currentState, attemptingTxn: false, txHash: hash }))
+  //     })
+  //     .catch((error) => {
+  //       setTradeState((currentState) => ({
+  //         ...currentState,
+  //         attemptingTxn: false,
+  //         txHash: undefined,
+  //         tradeErrorMessage: error.message,
+  //       }))
+  //     })
+  // }, [marginTradeCallback])
 
   const handleMarginInput = useCallback(
     (value: string) => {
@@ -279,7 +282,7 @@ const TradeTabContent = () => {
         isOpen={showConfirm}
         originalTrade={tradeToConfirm}
         trade={trade}
-        onConfirm={handleTrade}
+        onConfirm={() => 0}
         onDismiss={handleConfirmDismiss}
         onAcceptChanges={() => {
           return
@@ -308,7 +311,7 @@ const TradeTabContent = () => {
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
               premium={premiumNecessary}
-              showPremium={true}
+              showPremium={false}
               label="Collateral"
             />
           </Trace>
@@ -517,10 +520,18 @@ const TradeTabContent = () => {
                 setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
               }}
               id="leverage-button"
-              disabled={!!inputError || !lmtIsValid || tradeIsLoading}
+              disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
             >
               <Text fontSize={20} fontWeight={600}>
-                {inputError ? inputError : tradeIsLoading ? <Trans>Leverage</Trans> : <Trans>Leverage</Trans>}
+                {inputError ? (
+                  inputError
+                ) : invalidTrade ? (
+                  <Trans>Invalid Trade</Trans>
+                ) : tradeIsLoading ? (
+                  <Trans>Leverage</Trans>
+                ) : (
+                  <Trans>Leverage</Trans>
+                )}
               </Text>
             </ButtonError>
           )}
