@@ -84,6 +84,7 @@ export const menuItem = style([
     color: 'textSecondary',
   }),
   {
+    fontSize: '1.1em',
     ':hover': {
       color: 'white',
       background: 'accentActiveSoft',
@@ -100,4 +101,7 @@ export const activeMenuItem = style([
     fontWeight: 'bold',
     color: 'textPrimary',
   }),
+  {
+    fontSize: '1.1em',
+  },
 ])

@@ -15,7 +15,7 @@ import { NavLink, NavLinkProps, useLocation, useNavigate } from 'react-router-do
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
 
-import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
+import { ReactComponent as Logo } from '../../assets/svg/full_logo_black.svg'
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
@@ -55,9 +55,12 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItem
 }
 
 const LogoSection = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 1px 0 0;
-  margin-right: 6px;
+  padding-left: 1vw;
+  margin-right: 2vw;
+`
+const Tabs = styled.div`
+  display: flex;
+  align-items: center;
 `
 
 export const PageTabs = () => {
@@ -73,24 +76,26 @@ export const PageTabs = () => {
 
   return (
     <>
-      <LogoSection>
-        <MenuItem href="/swap">
-          <Logo fill="#fff" width="28px" />
+      <Tabs>
+        <LogoSection>
+          <NavLink to="/swap">
+            <Logo fill="#fff" width="200px" />
+          </NavLink>
+        </LogoSection>
+        <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
+          <Trans>Trade</Trans>
         </MenuItem>
-      </LogoSection>
-      <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
-        <Trans>Pairs</Trans>
-      </MenuItem>
-      <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
-        <Trans>Trade</Trans>
-      </MenuItem>
-      <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
-        <Trans>Pools</Trans>
-      </MenuItem>
+        <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
+          <Trans>Pairs</Trans>
+        </MenuItem>
+        <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
+          <Trans>Pools</Trans>
+        </MenuItem>
 
-      <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
-        <Trans>Faucets</Trans>
-      </MenuItem>
+        <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
+          <Trans>Faucets</Trans>
+        </MenuItem>
+      </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
       {micrositeEnabled && (
         <Box display={{ sm: 'none', xxxl: 'flex' }}>

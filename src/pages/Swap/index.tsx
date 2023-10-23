@@ -2,13 +2,13 @@ import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
 import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolDataSection } from 'components/ExchangeChart'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
+import LimitContent from 'components/swap/LimitContent'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -31,6 +31,7 @@ import { ThemedText } from 'theme'
 
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
+import { LimitWrapper } from '../../components/swap/styleds'
 import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
@@ -201,9 +202,6 @@ const LeftContainer = styled.div`
   margin-right: 5px;
   width: 80%;
   min-width: 540px;
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px 1px 1px 0;
-  border-radius: 10px;
 `
 
 const ActivityWrapper = styled.section`
@@ -477,7 +475,6 @@ export default function Swap({ className }: { className?: string }) {
   // const { borrowLoading: borrowPositionsLoading, borrowPositions: borrowPositions } = useBorrowLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
-  // const selectedTab = useSelector((state: any) => state.swap.tab)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -493,18 +490,8 @@ export default function Swap({ className }: { className?: string }) {
         <PageWrapper>
           <SwapHeaderWrapper>
             <TokenNameCell>
-              {inputCurrency && outputCurrency && (
-                <DoubleCurrencyLogo
-                  currency0={inputCurrency as Currency}
-                  currency1={outputCurrency as Currency}
-                  size={30}
-                  margin
-                />
-              )}
               {inputCurrency && outputCurrency ? (
                 <Row>
-                  {/* <TokenSelector isInput={true} />
-                  <TokenSelector isInput={false} /> */}
                   <PoolSelector />
                 </Row>
               ) : (
@@ -519,6 +506,19 @@ export default function Swap({ className }: { className?: string }) {
             />
           </SwapHeaderWrapper>
           <MainWrapper>
+            <SwapWrapper chainId={chainId} className={className} id="swap-page">
+              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
+              <LimitWrapper>
+                <LimitContent tab={activeTab} currency0={inputCurrency as Token} />
+              </LimitWrapper>
+              {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
+              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
+                <BorrowTabContent />
+              </TabContent>
+              <TabContent id={ActiveSwapTab.SWAP} activeTab={activeTab}>
+                <SwapTabContent />
+              </TabContent>
+            </SwapWrapper>
             <LeftContainer>
               <PoolDataChart
                 chainId={chainId ?? 11155111}
@@ -568,19 +568,6 @@ export default function Swap({ className }: { className?: string }) {
                 </TabContent>
               </PositionsContainer>
             </LeftContainer>
-            <SwapWrapper chainId={chainId} className={className} id="swap-page">
-              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-              {/* <LimitWrapper>
-                <LimitContent tab={selectedTab} currency0={inputCurrency as Token} />
-              </LimitWrapper> */}
-              {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
-              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-                <BorrowTabContent />
-              </TabContent>
-              <TabContent id={ActiveSwapTab.SWAP} activeTab={activeTab}>
-                <SwapTabContent />
-              </TabContent>
-            </SwapWrapper>
           </MainWrapper>
         </PageWrapper>
         {!swapIsUnsupported ? null : (

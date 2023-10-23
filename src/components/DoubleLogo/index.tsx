@@ -17,8 +17,7 @@ interface DoubleCurrencyLogoProps {
   currency1?: Currency | null
 }
 
-const HigherLogoWrapper = styled.div`
-`
+const HigherLogoWrapper = styled.div``
 const CoveredLogoWapper = styled.div<{ sizeraw: number }>`
   z-index: 1;
   position: absolute;

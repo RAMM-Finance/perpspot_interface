@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components/macro'
 
 const StyledInput = styled.input`
-  background: #0e1724;
+  background: #0a0f19;
   border: none;
   color: #b8c0dc;
   width: 10vw;

@@ -1,4 +1,4 @@
-import './react-tabs-style.css'
+import './limit-react-tabs-style.css'
 
 import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
@@ -24,20 +24,20 @@ const Outline = styled.div`
 
 interface TabInterface {
   currency0: Token | null
-  tab: string
+  tab: number
 }
 
 const LimitContent: React.FC<TabInterface> = ({ currency0, tab }) => {
   const [value, setValue] = useState<number | string>('')
-
+  const [selectedTab, setSelectedTab] = useState<string>('market')
   const header = (
     <div style={{ display: 'flex', gap: '.5vw' }}>
       <Tabs>
         <TabList>
-          <Tab>
+          <Tab onClick={() => setSelectedTab('market')}>
             <Trans>Market</Trans>
           </Tab>
-          <Tab>
+          <Tab onClick={() => setSelectedTab('limit')}>
             <Trans>Limit</Trans>
           </Tab>
         </TabList>
@@ -47,12 +47,14 @@ const LimitContent: React.FC<TabInterface> = ({ currency0, tab }) => {
 
   return (
     <>
-      {tab === 'Swap' ? null : (
+      {tab === 3 ? null : (
         <Wrapper>
           {header}
-          <Outline>
-            <LimitInput currency0={currency0} value={value} setValue={setValue} />
-          </Outline>
+          {selectedTab === 'market' ? null : (
+            <Outline>
+              <LimitInput currency0={currency0} value={value} setValue={setValue} />
+            </Outline>
+          )}
         </Wrapper>
       )}
     </>

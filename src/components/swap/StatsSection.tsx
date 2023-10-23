@@ -1,3 +1,5 @@
+import './chart-react-tabs-style.css'
+
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { AutoRow } from 'components/Row'
@@ -8,6 +10,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import { ReactNode } from 'react'
+import { Tab, TabList, Tabs } from 'react-tabs'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
@@ -113,6 +116,18 @@ export default function StatsSection(props: StatsSectionProps) {
         baseQuoteSymbol={token0Symbol}
         title={<Trans>Liquidity Above</Trans>}
       />
+      <ChartButtons>
+        <Tabs>
+          <TabList>
+            <Tab>
+              <Trans>TVL</Trans>
+            </Tab>
+            <Tab>
+              <Trans>Price</Trans>
+            </Tab>
+          </TabList>
+        </Tabs>
+      </ChartButtons>
     </StatsWrapper>
   )
 }
@@ -124,8 +139,15 @@ const StatWrapper = styled.div`
   width: max-content;
   font-weight: 900;
 
+  border-left: 2px solid ${({ theme }) => theme.backgroundOutline};
+`
+const ChartButtons = styled.div`
+  display: flex;
+  padding: 0 0.5rem;
+  gap: 0.25vw;
   border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
+
 const TokenStatsSection = styled.div`
   display: flex;
   /* flex-wrap: wrap; */
@@ -151,10 +173,11 @@ const NoData = styled.div`
 const StatsWrapper = styled.div`
   /* display: flex;
   gap: 16px; */
+  gap: 3vw;
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
-  justify-content: space-around;
+  justify-content: left;
   width: 100%;
   ${textFadeIn}
 `
