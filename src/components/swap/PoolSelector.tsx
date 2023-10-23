@@ -29,6 +29,8 @@ import PoolSelectorRow from './PoolSelectorRow'
 
 const PoolListHeader = styled.h4`
   font-size: 0.9rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 `
 const PoolListContainer = styled.div`
   display: grid;
@@ -185,7 +187,7 @@ export const PoolSelector = () => {
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
   const dropdown = (
-    <NavDropdown top="56" ref={modalRef} style={{ overflowY: 'scroll', height: '600px', zIndex: '3' }}>
+    <NavDropdown top="40" ref={modalRef} style={{ overflowY: 'scroll', height: '600px', zIndex: '3' }}>
       <Row style={{ flexDirection: 'column' }}>
         <SearchInput
           type="text"
@@ -227,12 +229,12 @@ export const PoolSelector = () => {
   }
 
   return (
-    <Box position="relative" ref={ref}>
+    <Box position="relative" style={{ paddingRight: '1vw' }} ref={ref}>
       <Row
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={isOpen ? 'accentActive' : 'none'}
+        background={isOpen ? 'accentActiveSoft' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
         style={{ width: '17rem' }}
       >

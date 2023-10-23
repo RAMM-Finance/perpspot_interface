@@ -19,8 +19,9 @@ import { RowBetween } from '../Row'
 import TransactionSettings from '../TransactionSettings'
 
 const StyledMenuIcon = styled(Settings)`
-  height: 18px;
-  width: 18px;
+  display: flex;
+  height: 13px;
+  width: 13px;
 
   > * {
     stroke: ${({ theme }) => theme.textSecondary};

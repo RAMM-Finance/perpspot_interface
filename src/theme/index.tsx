@@ -82,7 +82,7 @@ function getSettings(darkMode: boolean) {
     // media queries
     deprecated_mediaWidth: deprecated_mediaWidthTemplates,
 
-    navHeight: 65,
+    navHeight: 40,
     mobileBottomBarHeight: 52,
 
     // deprecated - please use hardcoded exported values instead of

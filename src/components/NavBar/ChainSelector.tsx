@@ -88,8 +88,8 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   )
 
   const chevronProps = {
-    height: 20,
-    width: 20,
+    height: 14,
+    width: 14,
     color: theme.textSecondary,
   }
 
@@ -101,24 +101,25 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
           gap="8"
           className={styles.ChainSelector}
           background={isOpen ? 'accentActiveSoft' : 'none'}
-          onClick={() => 
+          onClick={() =>
             //setIsOpen(!isOpen)
             onSelectChain(11155111)
           }
         >
-
-        {(chainId == 11155111 ? "": "Connect to Sepolia")}
+          {chainId == 11155111 ? '' : 'Connect to Sepolia'}
 
           {!isSupported ? (
-            <AlertTriangle size={20} color={theme.textSecondary} />
+            <AlertTriangle size={18} color={theme.textSecondary} />
           ) : (
             <img src={info.logoUrl} alt={info.label} className={styles.Image} data-testid="chain-selector-logo" />
           )}
           {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
         </Row>
       </MouseoverTooltip>
-      {//isOpen
-      false && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
+      {
+        //isOpen
+        false && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)
+      }
     </Box>
   )
 }

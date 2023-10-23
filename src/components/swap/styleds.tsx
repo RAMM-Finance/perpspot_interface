@@ -32,12 +32,20 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  min-width: 375px;
+  min-width: 325px;
   flex-flow: row nowrap;
   align-items: space-evenly;
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
 
   background-color: ${({ theme }) => theme.backgroundSurface};
   transition: transform 250ms ease;
+
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 export const LimitWrapper = styled.div`
   position: relative;
@@ -45,11 +53,11 @@ export const LimitWrapper = styled.div`
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
   border-radius: 999px;
-  height: 50px;
-  width: 50px;
+  height: 30px;
+  width: 30px;
   position: relative;
-  margin-top: -35px;
-  margin-bottom: -18px;
+  margin-top: -20px;
+  margin-bottom: -15px;
   margin-left: auto;
   margin-right: auto;
   background-color: ${({ theme }) => theme.backgroundInteractive};

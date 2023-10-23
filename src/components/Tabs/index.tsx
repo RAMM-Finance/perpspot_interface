@@ -47,7 +47,6 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
     },
     [onActiveTabChange]
   )
-
   return (
     <div
       style={{
@@ -64,8 +63,9 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
           isActive={activeTab === ActiveSwapTab.LONG}
           // selectedTab={selectedTab}
           tabValue="Long"
-          fontSize="18px"
+          fontSize="1rem"
           first={true}
+          activeTab={activeTab}
         >
           <Trans>Long</Trans>
         </TabElement>
@@ -74,7 +74,8 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
           isActive={activeTab === ActiveSwapTab.SHORT}
           // selectedTab={selectedTab}
           tabValue="Short"
-          fontSize="18px"
+          fontSize="1rem"
+          activeTab={activeTab}
         >
           <Trans>Short</Trans>
         </TabElement>
@@ -83,7 +84,8 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
             handleTabChange(ActiveSwapTab.BORROW)
           }}
           isActive={activeTab === ActiveSwapTab.BORROW}
-          fontSize="18px"
+          fontSize="1rem"
+          activeTab={activeTab}
         >
           <Trans>Borrow</Trans>
         </TabElement>
@@ -92,8 +94,9 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
           isActive={activeTab === ActiveSwapTab.SWAP}
           // selectedTab={selectedTab}
           tabValue="Swap"
-          fontSize="18px"
+          fontSize="1rem"
           last={true}
+          activeTab={activeTab}
         >
           <Trans>Swap</Trans>
         </TabElement>
@@ -163,40 +166,35 @@ const TabElement = styled.button<{
   isTrade?: number
   first?: boolean
   last?: boolean
+  activeTab?: number
 }>`
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.4rem;
   justify-content: center;
   height: 100%;
   border: none;
-  background: ${({ theme, isActive }) => {
+  border-radius: 10px;
+  background: ${({ activeTab, theme, isActive }) => {
     if (isActive) {
-      return theme.accentActive
+      if (activeTab === 0) {
+        return theme.accentSuccessSoft
+      } else if (activeTab === 1) {
+        return theme.accentFailureSoft
+      } else {
+        return theme.accentActiveSoft
+      }
     }
     return 'none'
   }};
-  color: ${({ theme, isActive }) => {
-    if (isActive) return theme.textSecondary
-    return theme.textPrimary
+  color: ${({ theme }) => {
+    return theme.textSecondary
   }};
-  font-size: ${({ fontSize }) => fontSize ?? '1rem'};
+  font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  ${({ first, theme }) =>
-    first &&
-    `
-    border-left: 1px solid ${theme.backgroundOutline};
-  `}
-  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  border-bottom-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
-  border-bottom-left-radius: ${({ first }) => (first ? '8px' : '0')};
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
   margin-left: ${({ first }) => (first ? '17px' : '0')};
   margin-right: ${({ last }) => (last ? '8px' : '0')};
   margin-top: 15px;

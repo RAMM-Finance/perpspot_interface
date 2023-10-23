@@ -3,7 +3,6 @@
 }
 
 .react-tabs__tab-list {
-  margin: 0 0 10px;
   padding: 0;
   color: #505a75;
 }
@@ -13,7 +12,6 @@
   border: 1px solid transparent;
   border-bottom: none;
   position: relative;
-  padding: 6px 6px;
   cursor: pointer;
 }
 

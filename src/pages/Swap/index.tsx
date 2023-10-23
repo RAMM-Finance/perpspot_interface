@@ -66,11 +66,12 @@ const TableHeader = styled.div`
 `
 
 export const StyledNumericalInput = styled(NumericalInput)`
-  width: 100px;
+  width: 45px;
   text-align: left;
   padding: 10px;
-  height: 40px;
-  line-height: 40px;
+  height: 20px;
+  line-height: 12px;
+  font-size: 12px;
 `
 
 export const StyledBorrowNumericalInput = styled(NumericalInput)`
@@ -96,6 +97,7 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
   align-items: center;
   justify-content: space-around;
   position: relative;
+  font-size: 12px;
 `
 
 const SwapSection = styled.div`
@@ -146,7 +148,7 @@ export const InputLeverageSection = styled(SwapSection)`
 // margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
 //     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
 export const InputSection = styled(SwapSection)`
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  background-color: #0d1421;
   margin-bottom: 10px;
 
   /* ::after {
@@ -160,7 +162,7 @@ export const InputSection = styled(SwapSection)`
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  background-color: #0d1421;
 `
 export const LeverageGaugeSection = styled(SwapSection)`
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
@@ -172,16 +174,23 @@ export const LeverageGaugeSection = styled(SwapSection)`
 
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
+  padding: 0px;
   margin-bottom: 20px;
+  width: 100%;
+  background-color: #0d1421;
 `
 
 const PositionsContainer = styled.div`
-  width: 100%;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px 0 0 1px;
-  margin-left: auto;
-  height: 100%;
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 const StatsContainer = styled.div`
@@ -196,12 +205,10 @@ const StatsContainer = styled.div`
 
 const LeftContainer = styled.div`
   display: flex;
+  width: 100%;
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;
-  margin-right: 5px;
-  width: 80%;
-  min-width: 540px;
 `
 
 const ActivityWrapper = styled.section`
@@ -230,14 +237,24 @@ const ActivityInnerWarpper = styled.div`
 
 const SwapHeaderWrapper = styled.div`
   display: flex;
-  flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
   grid-column: span 2;
-  margin: 0.25rem 0;
-  padding: 8px 10px;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+
   border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 1px 0;
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+`
+
+const MainWrapper = styled.article`
+  width: 100%;
+  height: 100%;
+  display: flex;
 `
 
 const TabsWrapper = styled.div`
@@ -580,9 +597,3 @@ export default function Swap({ className }: { className?: string }) {
     </Trace>
   )
 }
-
-const MainWrapper = styled.article`
-  width: 100%;
-  height: 100%;
-  display: flex;
-`

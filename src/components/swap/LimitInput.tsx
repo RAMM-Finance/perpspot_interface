@@ -6,11 +6,11 @@ import React from 'react'
 import styled from 'styled-components/macro'
 
 const StyledInput = styled.input`
-  background: #0a0f19;
+  background: #0d1421;
   border: none;
   color: #b8c0dc;
   width: 10vw;
-  font-size: 28px;
+  font-size: 15px;
   &:focus {
     outline: none;
   }
@@ -27,28 +27,28 @@ interface ValueInterface {
 
 const PremiumTokenDetails: React.FC<ValueInterface> = ({ value, setValue, currency0 }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        margin: '1rem',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-        <label style={{ color: '#e6e7ed' }}>
-          <Trans>Price</Trans>
-        </label>
+    <div style={{ padding: '1rem', fontWeight: 'bold', color: '#fff' }}>
+      <Trans>Limit</Trans>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '1rem',
+        }}
+      >
         <StyledInput
           type="number"
           onChange={(e) => setValue(parseFloat(e.target.value))}
           value={value}
           placeholder="0"
         />
-      </div>
-      <div style={{ display: 'flex', paddingRight: '1vw' }}>
-        <CurrencyLogo hideL2Icon currency={currency0} />
-        <StyledTokenName className="pair-name-container">{currency0?.symbol}</StyledTokenName>
+        <div style={{ display: 'flex', paddingRight: '1vw', alignItems: 'center', gap: '5px' }}>
+          <CurrencyLogo size="18px" hideL2Icon currency={currency0} />
+          <StyledTokenName style={{ fontSize: '12px' }} className="pair-name-container">
+            {currency0?.symbol}
+          </StyledTokenName>
+        </div>
       </div>
     </div>
   )

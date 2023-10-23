@@ -23,7 +23,6 @@ import * as styles from './style.css'
 const Nav = styled.nav`
   /* padding: 10px 12px; */
   width: 100%;
-  height: ${({ theme }) => theme.navHeight}px;
   z-index: 2;
   background-color: ${({ theme }) => theme.navbarBackground}; // Use theme value
   &:hover {
@@ -57,6 +56,7 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItem
 const LogoSection = styled.div`
   padding-left: 1vw;
   margin-right: 2vw;
+  padding-top: 0.75vh;
 `
 const Tabs = styled.div`
   display: flex;
@@ -79,7 +79,7 @@ export const PageTabs = () => {
       <Tabs>
         <LogoSection>
           <NavLink to="/swap">
-            <Logo fill="#fff" width="200px" />
+            <Logo fill="#fff" width="150px" />
           </NavLink>
         </LogoSection>
         <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
@@ -121,7 +121,7 @@ const Navbar = ({ blur }: { blur: boolean }) => {
     <>
       {/* {blur && <Blur />} */}
       <Nav>
-        <Box display="flex" height="full" flexWrap="nowrap">
+        <Box display="flex" height="2" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>
             {/*<Box className={styles.logoContainer}>
               <UniIcon

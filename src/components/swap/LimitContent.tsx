@@ -1,4 +1,4 @@
-import './limit-react-tabs-style.css'
+import './react-tabs-style.css'
 
 import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
@@ -12,14 +12,17 @@ const Wrapper = styled.div`
   padding: 1rem;
   padding-bottom: 0px;
   background-color: ${({ theme }) => theme.backgroundSurface};
+  font-size: 0.9rem;
 `
 
 const Outline = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 12px;
+  border-radius: 10px;
   align-items: center;
   justify-content: space-around;
   position: relative;
+  background-color: #0d1421;
+  margin-bottom: 0.5rem;
 `
 
 interface TabInterface {

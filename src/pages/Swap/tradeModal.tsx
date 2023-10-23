@@ -5,12 +5,11 @@ import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
-import LeverageDebtInputPanel from 'components/BaseSwapPanel/leveragedOutputPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
-import { AutoRow, RowBetween } from 'components/Row'
+import { RowBetween } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
@@ -43,7 +42,6 @@ import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { ArrowWrapper } from '../../components/swap/styleds'
-import { SmallMaxButton } from '../RemoveLiquidity/styled'
 import {
   ArrowContainer,
   DetailsSwapSection,
@@ -57,6 +55,7 @@ import {
 const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
   padding: 1rem;
+  padding-top: 0rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
@@ -297,6 +296,9 @@ const TradeTabContent = () => {
 
       <div style={{ display: 'relative' }}>
         <InputSection>
+          <div style={{ fontWeight: 'bold' }}>
+            <Trans>Deposit Collateral</Trans>
+          </div>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <BaseSwapPanel
               value={formattedMargin}
@@ -312,12 +314,10 @@ const TradeTabContent = () => {
               loading={false}
               premium={premiumNecessary}
               showPremium={false}
-              label="Collateral"
             />
           </Trace>
         </InputSection>
-
-        <InputSection>
+        {/* <InputSection>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <LeverageDebtInputPanel
               value={formattedPosition}
@@ -327,7 +327,7 @@ const TradeTabContent = () => {
               parsedAmount={formattedMargin}
             />
           </Trace>
-        </InputSection>
+        </InputSection> */}
 
         <ArrowWrapper clickable={isSupportedChain(chainId)}>
           <TraceEvent
@@ -342,7 +342,7 @@ const TradeTabContent = () => {
               color={theme.textPrimary}
             >
               <Maximize2
-                size="16"
+                size="10"
                 color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />
             </ArrowContainer>
@@ -352,6 +352,7 @@ const TradeTabContent = () => {
       <div>
         <div>
           <OutputSwapSection showDetailsDropdown={false}>
+            <Trans>Position Size</Trans>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
               <BaseSwapPanel
                 value={
@@ -370,7 +371,6 @@ const TradeTabContent = () => {
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                 loading={tradeIsLoading}
-                label="Recieve"
                 disabled={true}
               />
             </Trace>
@@ -397,7 +397,7 @@ const TradeTabContent = () => {
                     <Trans>Leverage</Trans>
                   </ThemedText.DeprecatedMain>
                 </div>
-                <RowBetween style={{ flexWrap: 'nowrap' }}>
+                <RowBetween style={{ flexWrap: 'nowrap', justifyContent: 'end' }}>
                   <LeverageInputSection>
                     <StyledNumericalInput
                       className="token-amount-input"
@@ -418,11 +418,11 @@ const TradeTabContent = () => {
                     />
                     <span
                       style={{
-                        position: 'absolute',
+                        position: 'relative',
                         top: '57%',
                         right: '11.5px',
                         transform: 'translateY(-50%)',
-                        fontSize: '20px',
+                        fontSize: '12px',
                         opacity: '0.5',
                         color: '#999',
                       }}
@@ -430,7 +430,7 @@ const TradeTabContent = () => {
                       x
                     </span>
                   </LeverageInputSection>
-                  <AutoRow gap="4px" justify="flex-end">
+                  {/* <AutoRow gap="4px" justify="flex-end">
                     <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
                       <Trans>10</Trans>
                     </SmallMaxButton>
@@ -440,7 +440,7 @@ const TradeTabContent = () => {
                     <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
                       <Trans>500</Trans>
                     </SmallMaxButton>
-                  </AutoRow>
+                  </AutoRow> */}
                 </RowBetween>
               </RowBetween>
 
