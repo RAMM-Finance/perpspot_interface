@@ -14,11 +14,11 @@ export const darkTheme: Theme = {
     violet: vars.color.violet200,
 
     backgroundFloating: '0000000C',
-    backgroundInteractive: "#181926",// vars.color.gray700,
+    backgroundInteractive: '#181926', // vars.color.gray700,
     backgroundModule: vars.color.gray800,
     backgroundOutline: vars.color.backgroundInteractive,
     // backgroundSurface: vars.color.gray900,
-    backgroundSurface: "#0e1724",
+    backgroundSurface: '#0a0f19',
     backgroundBackdrop: vars.color.gray950,
 
     modalBackdrop: 'linear-gradient(0deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7))',

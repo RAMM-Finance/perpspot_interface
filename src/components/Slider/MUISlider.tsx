@@ -1,10 +1,10 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Slider from '@mui/material/Slider';
+import Box from '@mui/material/Box'
+import Slider from '@mui/material/Slider'
+import * as React from 'react'
 
 interface DiscreteSliderMarksProps {
-  initialValue: number;
-  onChange: (val: number) => void;
+  initialValue: number
+  onChange: (val: number) => void
 }
 
 const marks = [
@@ -20,15 +20,15 @@ const marks = [
     value: 500,
     label: '500x',
   },
-];
+]
 
 export default function DiscreteSliderMarks({ initialValue, onChange }: DiscreteSliderMarksProps) {
   const handleChange = (event: Event, newValue: number | number[]) => {
-    onChange(newValue as number);
-  };
+    onChange(newValue as number)
+  }
 
   return (
-    <Box sx={{ width: 350 }}>
+    <Box sx={{ width: 250 }}>
       <Slider
         aria-label="Custom marks"
         value={initialValue}
@@ -40,10 +40,10 @@ export default function DiscreteSliderMarks({ initialValue, onChange }: Discrete
         max={500}
         sx={{
           '& .MuiSlider-markLabel': {
-            color: 'white'
-          }
+            color: 'white',
+          },
         }}
       />
     </Box>
-  );
+  )
 }

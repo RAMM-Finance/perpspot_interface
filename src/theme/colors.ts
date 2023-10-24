@@ -162,7 +162,7 @@ export const darkTheme = {
 
   // backgroundSurface: limitlessColors.darkPurple,
   // backgroundSurface: colors.gray900, //"#030216", //"#0d0517", //colors.black,// colors.gray900
-  backgroundSurface: '#0e1724',
+  backgroundSurface: '#0a0f19',
   backgroundModule: opacify(8, colors.gray300), // #293249', // "#181926", // colors.gray800
   backgroundInteractive: colors.gray700,
   backgroundFloating: opacify(12, colors.black),

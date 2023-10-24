@@ -2,14 +2,16 @@ import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceModalName } from '@uniswap/analytics-events'
 import { Trade } from '@uniswap/router-sdk'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useCurrency } from 'hooks/Tokens'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { MarginTrade } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
-import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
+import { BorrowCreationDetails, useSwapState } from 'state/swap/hooks'
+import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
+import { marginTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
@@ -143,43 +145,41 @@ export default function ConfirmSwapModal({
 export function LeverageConfirmModal({
   trade,
   originalTrade,
+  premiumDeposit,
+  premiumNecessary,
   onAcceptChanges,
   allowedSlippage,
   onConfirm,
   onDismiss,
-  recipient,
-  swapErrorMessage,
+  tradeErrorMessage,
   isOpen,
   attemptingTxn,
   txHash,
-  swapQuoteReceivedDate,
-  fiatValueInput,
-  fiatValueOutput,
-  leverageFactor,
-  leverageTrade,
-}: {
+}: // swapQuoteReceivedDate,
+// fiatValueInput,
+// fiatValueOutput,
+{
   isOpen: boolean
-  trade: InterfaceTrade<Currency, Currency, TradeType> | undefined
-  originalTrade: Trade<Currency, Currency, TradeType> | undefined
+  trade: MarginTrade | undefined
+  originalTrade: MarginTrade | undefined
+  premiumDeposit: CurrencyAmount<Currency> | undefined
+  premiumNecessary: CurrencyAmount<Currency> | undefined
   attemptingTxn: boolean
   txHash: string | undefined
-  recipient: string | null
   allowedSlippage: Percent
   onAcceptChanges: () => void
   onConfirm: () => void
-  swapErrorMessage: ReactNode | undefined
+  tradeErrorMessage: ReactNode | undefined
   onDismiss: () => void
-  swapQuoteReceivedDate: Date | undefined
-  fiatValueInput: { data?: number; isLoading: boolean }
-  fiatValueOutput: { data?: number; isLoading: boolean }
-  leverageFactor: string | undefined
-  leverageTrade: LeverageTrade | undefined
+  // swapQuoteReceivedDate: Date | undefined
+  // fiatValueInput: { data?: number; isLoading: boolean }
+  // fiatValueOutput: { data?: number; isLoading: boolean }
 }) {
   // shouldLogModalCloseEvent lets the child SwapModalHeader component know when modal has been closed
   // and an event triggered by modal closing should be logged.
   const [shouldLogModalCloseEvent, setShouldLogModalCloseEvent] = useState(false)
   const showAcceptChanges = useMemo(
-    () => Boolean(trade && originalTrade && tradeMeaningfullyDiffers(trade, originalTrade)),
+    () => Boolean(trade && originalTrade && marginTradeMeaningfullyDiffers(trade, originalTrade)),
     [originalTrade, trade]
   )
 
@@ -189,77 +189,61 @@ export function LeverageConfirmModal({
   }, [isOpen, onDismiss])
 
   const modalHeader = useCallback(() => {
-    return leverageTrade && trade ? (
+    return trade && premiumNecessary && premiumDeposit ? (
       <LeverageModalHeader
         trade={trade}
-        leverageTrade={leverageTrade}
-        shouldLogModalCloseEvent={shouldLogModalCloseEvent}
-        setShouldLogModalCloseEvent={setShouldLogModalCloseEvent}
+        premiumDeposit={premiumDeposit}
+        recipient={null}
+        premiumNecessary={premiumNecessary}
         allowedSlippage={allowedSlippage}
-        recipient={recipient}
-        showAcceptChanges={showAcceptChanges}
+        showAcceptChanges={false}
         onAcceptChanges={onAcceptChanges}
-        leverageFactor={Number(leverageFactor)}
       />
     ) : null
-  }, [
-    leverageTrade,
-    leverageFactor,
-    allowedSlippage,
-    onAcceptChanges,
-    recipient,
-    showAcceptChanges,
-    trade,
-    shouldLogModalCloseEvent,
-  ])
+  }, [allowedSlippage, onAcceptChanges, premiumDeposit, premiumNecessary, trade])
 
   const modalBottom = useCallback(() => {
     return trade ? (
       <LeverageModalFooter
         onConfirm={onConfirm}
+        tradeErrorMessage={tradeErrorMessage}
         trade={trade}
         hash={txHash}
         allowedSlippage={allowedSlippage}
-        disabledConfirm={showAcceptChanges}
-        swapErrorMessage={swapErrorMessage}
-        swapQuoteReceivedDate={swapQuoteReceivedDate}
-        fiatValueInput={fiatValueInput}
-        fiatValueOutput={fiatValueOutput}
+        disabledConfirm={false}
       />
     ) : null
-  }, [
-    onConfirm,
-    showAcceptChanges,
-    swapErrorMessage,
-    trade,
-    allowedSlippage,
-    txHash,
-    swapQuoteReceivedDate,
-    fiatValueInput,
-    fiatValueOutput,
-  ])
+  }, [allowedSlippage, onConfirm, trade, txHash, tradeErrorMessage])
 
   // text to show while loading
   const pendingText = (
     <Trans>
-      Borrowing {leverageTrade?.borrowedAmount?.toExact()} {leverageTrade?.inputAmount?.currency?.symbol} and Recieving{' '}
-      {formatBNToString(leverageTrade?.expectedTotalPosition)} {trade?.outputAmount?.currency?.symbol}
+      Borrowing {trade?.borrowAmount?.toExact()} {trade?.marginAmount?.currency?.symbol} and Recieving{' '}
+      {formatCurrencyAmount(trade?.outputAmount, 18)} {trade?.outputAmount?.currency?.symbol}
     </Trans>
   )
 
   const confirmationContent = useCallback(
     () =>
-      swapErrorMessage ? (
-        <TransactionErrorContent onDismiss={onModalDismiss} message={swapErrorMessage} />
+      tradeErrorMessage ? (
+        <TransactionErrorContent onDismiss={onModalDismiss} message={tradeErrorMessage} />
       ) : (
         <ConfirmationModalContent
-          title={<Trans>Confirm x{leverageFactor} Leverage Position</Trans>}
+          title={
+            <Trans>
+              Confirm x
+              {trade
+                ? formatCurrencyAmount(trade.marginAmount.add(trade?.borrowAmount).divide(trade.marginAmount), 4)
+                : '-'}{' '}
+              Leverage Position
+            </Trans>
+          }
           onDismiss={onModalDismiss}
           topContent={modalHeader}
           bottomContent={modalBottom}
         />
       ),
-    [onModalDismiss, modalBottom, modalHeader, swapErrorMessage]
+    [onModalDismiss, modalBottom, modalHeader, trade, tradeErrorMessage]
   )
 
   return (

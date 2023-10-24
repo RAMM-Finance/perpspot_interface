@@ -1,3 +1,5 @@
+import './chart-react-tabs-style.css'
+
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { AutoRow } from 'components/Row'
@@ -120,12 +122,15 @@ export default function StatsSection(props: StatsSectionProps) {
 const StatWrapper = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
-  padding: 0 0.5rem;
-  width: max-content;
+  padding: 0 1rem;
+  width: 100%;
   font-weight: 900;
-
+  border-rounded: 10px;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
   border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
+
 const TokenStatsSection = styled.div`
   display: flex;
   /* flex-wrap: wrap; */
@@ -154,7 +159,7 @@ const StatsWrapper = styled.div`
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
-  justify-content: space-around;
+  justify-content: left;
   width: 100%;
   ${textFadeIn}
 `

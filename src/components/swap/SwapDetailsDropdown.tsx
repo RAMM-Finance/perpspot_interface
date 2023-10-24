@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { OutlineCard } from 'components/Card'
@@ -11,12 +11,13 @@ import Row, { RowBetween, RowFixed } from 'components/Row'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useEffect, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
+import { MarginTrade } from 'state/marginTrading/hooks'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
-import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
+import { BorrowCreationDetails } from 'state/swap/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { AdvancedBorrowSwapDetails, AdvancedLeverageSwapDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
+import { AdvancedBorrowSwapDetails, AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
 // import { useCurrency } from 'hooks/Tokens'
 // import { Field } from 'state/swap/actions'
 import GasEstimateTooltip from './GasEstimateTooltip'
@@ -197,13 +198,17 @@ export function LeverageDetailsDropdown({
   trade,
   loading,
   allowedSlippage,
+  premiumDeposit,
+  premiumNecessary,
 }: {
-  trade: LeverageTrade | undefined
+  trade: MarginTrade | undefined
   loading: boolean
   allowedSlippage: Percent
+  premiumDeposit: CurrencyAmount<Currency> | undefined
+  premiumNecessary: CurrencyAmount<Currency> | undefined
 }) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
+  // const { chainId } = useWeb3React()
   const [showDetails, setShowDetails] = useState(true)
 
   return (
@@ -256,11 +261,15 @@ export function LeverageDetailsDropdown({
         </TraceEvent>
         <AnimatedDropdown open={showDetails}>
           <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-            {/* {trade && ( */}
             <StyledCard>
-              <AdvancedLeverageSwapDetails leverageTrade={trade} allowedSlippage={allowedSlippage} syncing={loading} />
+              <AdvancedMarginTradeDetails
+                trade={trade}
+                premiumNecessary={premiumNecessary}
+                premiumDeposit={premiumDeposit}
+                syncing={loading}
+                allowedSlippage={allowedSlippage}
+              />
             </StyledCard>
-            {/* )} */}
           </AutoColumn>
         </AnimatedDropdown>
       </AutoColumn>

@@ -32,7 +32,7 @@ export const SearchInput = styled.input`
   display: flex;
   padding: 16px;
   padding-left: 40px;
-  height: 40px;
+  height: 25px;
   align-items: center;
   width: 90%;
   white-space: nowrap;
@@ -45,7 +45,7 @@ export const SearchInput = styled.input`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   -webkit-appearance: none;
 
-  font-size: 16px;
+  font-size: 0.9rem;
 
   ::placeholder {
     color: ${({ theme }) => theme.textTertiary};

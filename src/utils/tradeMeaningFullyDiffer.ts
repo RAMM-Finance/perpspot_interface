@@ -1,5 +1,6 @@
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
+import { MarginTrade } from 'state/marginTrading/hooks'
 
 /**
  * Returns true if the trade requires a confirmation of details before we can submit it
@@ -16,4 +17,8 @@ export function tradeMeaningfullyDiffers(
     !tradeA.outputAmount.currency.equals(tradeB.outputAmount.currency) ||
     !tradeA.outputAmount.equalTo(tradeB.outputAmount)
   )
+}
+
+export function marginTradeMeaningfullyDiffers(tradeA: MarginTrade, tradeB: MarginTrade): boolean {
+  return false
 }

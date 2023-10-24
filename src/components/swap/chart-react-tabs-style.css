@@ -1,0 +1,27 @@
+.react-tabs {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.react-tabs__tab-list {
+  margin: 0 0 10px;
+  padding: 0;
+  color: #505a75;
+}
+
+.react-tabs__tab {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-bottom: none;
+  position: relative;
+  padding: 6px 6px;
+  cursor: pointer;
+}
+
+.react-tabs__tab--selected {
+  color: 'red';
+  font-weight: bold;
+}
+
+.react-tabs__tab:focus {
+  outline: none;
+}

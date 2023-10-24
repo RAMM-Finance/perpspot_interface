@@ -394,6 +394,7 @@ const BorrowTabContent = () => {
                   ? CurrencyAmount.fromRawAmount(outputCurrency, new BN(premium).shiftedBy(18).toFixed(0))
                   : undefined
               }
+              showPremium={true}
               label="Collateral"
             />
           </Trace>
@@ -464,7 +465,7 @@ const BorrowTabContent = () => {
               </>
             ) : null}
           </OutputSwapSection>
-          <LeverageGaugeSection showDetailsDropdown={!borrowInputError}>
+          <LeverageGaugeSection>
             <AutoColumn gap="md">
               <RowBetween>
                 <MouseoverTooltip text="Loan-to-Value">

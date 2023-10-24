@@ -6,6 +6,7 @@ import burnV3 from './burn/v3/reducer'
 import connection from './connection/reducer'
 import lists from './lists/reducer'
 import logs from './logs/slice'
+import margin from './marginTrading/reducer'
 import mint from './mint/reducer'
 import mintV3 from './mint/v3/reducer'
 import { routingApi } from './routing/slice'
@@ -28,5 +29,6 @@ export default {
   multicall: multicall.reducer,
   lists,
   logs,
+  margin,
   [routingApi.reducerPath]: routingApi.reducer,
 }

@@ -7,11 +7,12 @@ export const ChainSelector = style([
   lightGrayOverlayOnHover,
   sprinkles({
     borderRadius: '8',
-    height: '40',
+    height: '28',
     cursor: 'pointer',
     border: 'none',
     color: 'textPrimary',
     background: 'none',
+    width: 'full',
   }),
 ])
 

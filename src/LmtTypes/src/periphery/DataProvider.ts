@@ -21,128 +21,71 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export type LiquidityLoanStruct = {
-  tick: PromiseOrValue<BigNumberish>;
-  liquidity: PromiseOrValue<BigNumberish>;
-  premium: PromiseOrValue<BigNumberish>;
-  Urate: PromiseOrValue<BigNumberish>;
-  feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
-  feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
-  lastGrowth: PromiseOrValue<BigNumberish>;
+export type PoolKeyStruct = {
+  token0: PromiseOrValue<string>;
+  token1: PromiseOrValue<string>;
+  fee: PromiseOrValue<BigNumberish>;
 };
 
-export type LiquidityLoanStructOutput = [
-  number,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber
-] & {
-  tick: number;
-  liquidity: BigNumber;
-  premium: BigNumber;
-  Urate: BigNumber;
-  feeGrowthInside0LastX128: BigNumber;
-  feeGrowthInside1LastX128: BigNumber;
-  lastGrowth: BigNumber;
+export type PoolKeyStructOutput = [string, string, number] & {
+  token0: string;
+  token1: string;
+  fee: number;
 };
 
-export type PositionStruct = {
-  pool: PromiseOrValue<string>;
-  underAuction: PromiseOrValue<boolean>;
-  isToken0: PromiseOrValue<boolean>;
-  totalDebtOutput: PromiseOrValue<BigNumberish>;
-  totalDebtInput: PromiseOrValue<BigNumberish>;
-  recentPremium: PromiseOrValue<BigNumberish>;
-  openTime: PromiseOrValue<BigNumberish>;
-  repayTime: PromiseOrValue<BigNumberish>;
-  borrowInfo: LiquidityLoanStruct[];
-};
-
-export type PositionStructOutput = [
-  string,
-  boolean,
-  boolean,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  number,
-  number,
-  LiquidityLoanStructOutput[]
-] & {
-  pool: string;
-  underAuction: boolean;
-  isToken0: boolean;
-  totalDebtOutput: BigNumber;
-  totalDebtInput: BigNumber;
-  recentPremium: BigNumber;
-  openTime: number;
-  repayTime: number;
-  borrowInfo: LiquidityLoanStructOutput[];
-};
-
-export type MarginPositionStruct = {
-  base: PositionStruct;
-  totalPosition: PromiseOrValue<BigNumberish>;
-  margin: PromiseOrValue<BigNumberish>;
-};
-
-export type MarginPositionStructOutput = [
-  PositionStructOutput,
-  BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
-
-export type UniswapPositionStruct = {
-  totalFeeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
-  totalFeeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
-  amount: PromiseOrValue<BigNumberish>;
-  tokensOwed0: PromiseOrValue<BigNumberish>;
-  tokensOwed1: PromiseOrValue<BigNumberish>;
-};
-
-export type UniswapPositionStructOutput = [
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber
-] & {
-  totalFeeGrowthInside0LastX128: BigNumber;
-  totalFeeGrowthInside1LastX128: BigNumber;
-  amount: BigNumber;
-  tokensOwed0: BigNumber;
-  tokensOwed1: BigNumber;
-};
-
-export declare namespace IDataProvider {
-  export type PremiumDepositStruct = {
-    token: PromiseOrValue<string>;
-    amount: PromiseOrValue<BigNumberish>;
+export declare namespace DataProvider {
+  export type MarginPositionInfoStruct = {
+    poolKey: PoolKeyStruct;
+    isToken0: PromiseOrValue<boolean>;
+    totalDebtOutput: PromiseOrValue<BigNumberish>;
+    totalDebtInput: PromiseOrValue<BigNumberish>;
+    openTime: PromiseOrValue<BigNumberish>;
+    repayTime: PromiseOrValue<BigNumberish>;
+    premiumDeposit: PromiseOrValue<BigNumberish>;
+    totalPosition: PromiseOrValue<BigNumberish>;
+    margin: PromiseOrValue<BigNumberish>;
+    premiumOwed: PromiseOrValue<BigNumberish>;
   };
 
-  export type PremiumDepositStructOutput = [string, BigNumber] & {
-    token: string;
-    amount: BigNumber;
+  export type MarginPositionInfoStructOutput = [
+    PoolKeyStructOutput,
+    boolean,
+    BigNumber,
+    BigNumber,
+    number,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    poolKey: PoolKeyStructOutput;
+    isToken0: boolean;
+    totalDebtOutput: BigNumber;
+    totalDebtInput: BigNumber;
+    openTime: number;
+    repayTime: number;
+    premiumDeposit: BigNumber;
+    totalPosition: BigNumber;
+    margin: BigNumber;
+    premiumOwed: BigNumber;
   };
 }
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
     "getActiveMarginPositions(address)": FunctionFragment;
-    "getManagedLiquidityPositions(address,address)": FunctionFragment;
+    "getMarginPosition(address,address,bool)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
-    "getPremiumDeposits(address,address)": FunctionFragment;
+    "premiumOwed((address,address,uint24),address,bool)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "getActiveMarginPositions"
-      | "getManagedLiquidityPositions"
+      | "getMarginPosition"
       | "getPoolkeys"
-      | "getPremiumDeposits"
+      | "premiumOwed"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -150,16 +93,20 @@ export interface DataProviderInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getManagedLiquidityPositions",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    functionFragment: "getMarginPosition",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "getPoolkeys",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getPremiumDeposits",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    functionFragment: "premiumOwed",
+    values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
 
   decodeFunctionResult(
@@ -167,7 +114,7 @@ export interface DataProviderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getManagedLiquidityPositions",
+    functionFragment: "getMarginPosition",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -175,7 +122,7 @@ export interface DataProviderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPremiumDeposits",
+    functionFragment: "premiumOwed",
     data: BytesLike
   ): Result;
 
@@ -212,13 +159,14 @@ export interface DataProvider extends BaseContract {
     getActiveMarginPositions(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[MarginPositionStructOutput[]]>;
+    ): Promise<[DataProvider.MarginPositionInfoStructOutput[]]>;
 
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
+    getMarginPosition(
       pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      isToken: PromiseOrValue<boolean>,
       overrides?: CallOverrides
-    ): Promise<[UniswapPositionStructOutput[]]>;
+    ): Promise<[DataProvider.MarginPositionInfoStructOutput]>;
 
     getPoolkeys(
       pool: PromiseOrValue<string>,
@@ -227,23 +175,25 @@ export interface DataProvider extends BaseContract {
       [string, string, number] & { token0: string; token1: string; fee: number }
     >;
 
-    getPremiumDeposits(
+    premiumOwed(
+      poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
-      facility: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
       overrides?: CallOverrides
-    ): Promise<[IDataProvider.PremiumDepositStructOutput[]]>;
+    ): Promise<[BigNumber]>;
   };
 
   getActiveMarginPositions(
     trader: PromiseOrValue<string>,
     overrides?: CallOverrides
-  ): Promise<MarginPositionStructOutput[]>;
+  ): Promise<DataProvider.MarginPositionInfoStructOutput[]>;
 
-  getManagedLiquidityPositions(
-    trader: PromiseOrValue<string>,
+  getMarginPosition(
     pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    isToken: PromiseOrValue<boolean>,
     overrides?: CallOverrides
-  ): Promise<UniswapPositionStructOutput[]>;
+  ): Promise<DataProvider.MarginPositionInfoStructOutput>;
 
   getPoolkeys(
     pool: PromiseOrValue<string>,
@@ -252,23 +202,25 @@ export interface DataProvider extends BaseContract {
     [string, string, number] & { token0: string; token1: string; fee: number }
   >;
 
-  getPremiumDeposits(
+  premiumOwed(
+    poolKey: PoolKeyStruct,
     trader: PromiseOrValue<string>,
-    facility: PromiseOrValue<string>,
+    isToken0: PromiseOrValue<boolean>,
     overrides?: CallOverrides
-  ): Promise<IDataProvider.PremiumDepositStructOutput[]>;
+  ): Promise<BigNumber>;
 
   callStatic: {
     getActiveMarginPositions(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<MarginPositionStructOutput[]>;
+    ): Promise<DataProvider.MarginPositionInfoStructOutput[]>;
 
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
+    getMarginPosition(
       pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      isToken: PromiseOrValue<boolean>,
       overrides?: CallOverrides
-    ): Promise<UniswapPositionStructOutput[]>;
+    ): Promise<DataProvider.MarginPositionInfoStructOutput>;
 
     getPoolkeys(
       pool: PromiseOrValue<string>,
@@ -277,11 +229,12 @@ export interface DataProvider extends BaseContract {
       [string, string, number] & { token0: string; token1: string; fee: number }
     >;
 
-    getPremiumDeposits(
+    premiumOwed(
+      poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
-      facility: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
       overrides?: CallOverrides
-    ): Promise<IDataProvider.PremiumDepositStructOutput[]>;
+    ): Promise<BigNumber>;
   };
 
   filters: {};
@@ -292,9 +245,10 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
+    getMarginPosition(
       pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      isToken: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -303,9 +257,10 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPremiumDeposits(
+    premiumOwed(
+      poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
-      facility: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
@@ -316,9 +271,10 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
+    getMarginPosition(
       pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      isToken: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -327,9 +283,10 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getPremiumDeposits(
+    premiumOwed(
+      poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
-      facility: PromiseOrValue<string>,
+      isToken0: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

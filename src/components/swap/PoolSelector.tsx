@@ -1,5 +1,6 @@
 import { t } from '@lingui/macro'
 import { Currency, Token } from '@uniswap/sdk-core'
+import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { SearchInput } from 'components/SearchModal/styleds'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
@@ -12,28 +13,29 @@ import { Box } from 'nft/components/Box'
 import { Portal } from 'nft/components/common/Portal'
 import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
-import { ChangeEvent, KeyboardEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChangeEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { FixedSizeList } from 'react-window'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import styled,{ useTheme } from 'styled-components/macro'
+import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
-import { isAddress } from 'utils'
 import { currencyId } from 'utils/currencyId'
 
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
 
 const PoolListHeader = styled.h4`
-font-size: .9rem;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 `
 const PoolListContainer = styled.div`
-display:grid; 
-grid-template-columns:5fr 1fr 2fr; 
-width: 400px;
+  display: grid;
+  grid-template-columns: 5fr 1fr 2fr;
+  width: 400px;
 `
 export const PoolSelector = () => {
   const onlyShowCurrenciesWithBalance = false
@@ -135,7 +137,9 @@ export const PoolSelector = () => {
     [inputCurrencyId, outputCurrencyId]
   )
 
-  const filteredSearchCurrencies = searchCurrencies.filter((currency : any) =>  currency.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredSearchCurrencies = searchCurrencies.filter((currency: any) =>
+    currency.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const inputRef = useRef<HTMLInputElement>()
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -153,7 +157,6 @@ export const PoolSelector = () => {
   //   setSearchQuery(checksummedInput || input)
   //   fixedList.current?.scrollTo(0)
   // }, [])
-
 
   // const handleEnter = useCallback(
   //   (e: KeyboardEvent<HTMLInputElement>) => {
@@ -184,8 +187,8 @@ export const PoolSelector = () => {
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
   const dropdown = (
-    <NavDropdown top="56" ref={modalRef} style={{ overflowY: 'scroll', height: '600px'}}>
-      <Row style={{flexDirection:'column'}}>
+    <NavDropdown top="40" ref={modalRef} style={{ overflowY: 'scroll', height: '600px', zIndex: '3' }}>
+      <Row style={{ flexDirection: 'column' }}>
         <SearchInput
           type="text"
           id="token-search-input"
@@ -201,35 +204,50 @@ export const PoolSelector = () => {
           <PoolListHeader>24h Vol</PoolListHeader>
         </PoolListContainer>
       </Row>
-      <Column paddingX="8">
-        {filteredSearchCurrencies.flatMap((currencyIn: Currency, i) => searchCurrencies.slice(i + 1).map((currencyOut: Currency) =>
-          <PoolSelectorRow
-            currencyId={[currencyId(currencyIn), currencyId(currencyOut)]}
-            onCurrencySelect={handleCurrencySelect}
-            key={`${currencyId(currencyIn)}-${currencyId(currencyOut)}`}
-          />
-        ))}
-      </Column>
+      <Row>
+        <Column paddingX="8">
+          {filteredSearchCurrencies.flatMap((currencyIn: Currency, i) =>
+            searchCurrencies
+              .slice(i + 1)
+              .map((currencyOut: Currency) => (
+                <PoolSelectorRow
+                  currencyId={[currencyId(currencyIn), currencyId(currencyOut)]}
+                  onCurrencySelect={handleCurrencySelect}
+                  key={`${currencyId(currencyIn)}-${currencyId(currencyOut)}`}
+                />
+              ))
+          )}
+        </Column>
+      </Row>
     </NavDropdown>
   )
 
   const chevronProps = {
-    height: 20,
-    width: 20,
+    height: 15,
+    width: 15,
     color: theme.textSecondary,
   }
 
   return (
-    <Box position="relative" ref={ref}>
+    <Box position="relative" style={{ paddingRight: '1vw' }} ref={ref}>
       <Row
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={isOpen ? 'accentActive' : 'none'}
+        background={isOpen ? 'accentActiveSoft' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
-        style={{ width:'11rem'}}
+        style={{ width: '17rem' }}
       >
-        <ThemedText.LmtWhite style={{fontSize:'1.3rem'}}>{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.LmtWhite>
+        <DoubleCurrencyLogo
+          currency0={inputCurrency as Currency}
+          currency1={outputCurrency as Currency}
+          size={24}
+          margin
+        />
+        <ThemedText.LmtWhite
+          style={{ fontSize: '.9rem', marginRight: '2vw' }}
+        >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.LmtWhite>
+        <ThemedText.LmtWhite style={{ color: 'gray', fontSize: '.8rem' }}>All Markets</ThemedText.LmtWhite>
         {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
       </Row>
       {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}

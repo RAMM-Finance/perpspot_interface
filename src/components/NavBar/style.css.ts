@@ -84,9 +84,12 @@ export const menuItem = style([
     color: 'textSecondary',
   }),
   {
+    fontSize: '1em',
     ':hover': {
-      color: 'textPrimary',
+      color: 'white',
       background: 'accentActiveSoft',
+      fontWeight: 'bold',
+      transform: 'scale(1.1,1.1)',
     },
   },
 ])
@@ -98,4 +101,7 @@ export const activeMenuItem = style([
     fontWeight: 'bold',
     color: 'textPrimary',
   }),
+  {
+    fontSize: '1em',
+  },
 ])

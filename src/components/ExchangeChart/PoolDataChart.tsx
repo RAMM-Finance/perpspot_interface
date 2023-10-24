@@ -22,10 +22,18 @@ import useDatafeed from './useDataFeed'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const ChartContiner = styled.div`
-  height: 550px;
+  height: 450px;
   margin-bottom: 5px;
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 // interface ChartContainerProps {
@@ -303,9 +311,9 @@ export const PoolDataChart = ({
     <ChartContiner>
       <div
         style={{
-          height: '550px',
+          height: '400px',
           border: 'solid #98A1C03d',
-          borderWidth: '0 0 1px 0',
+          borderWidth: '0 0 0 0',
         }}
         ref={chartContainerRef}
         className="TVChartContainer"

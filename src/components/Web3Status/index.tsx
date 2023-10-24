@@ -120,7 +120,7 @@ const Text = styled.p`
   text-overflow: ellipsis;
   white-space: nowrap;
   margin: 0 0.5rem 0 0.25rem;
-  font-size: 1rem;
+  font-size: 0.8rem;
   width: fit-content;
   font-weight: 500;
 `
@@ -138,19 +138,19 @@ function newTransactionsFirst(a: TransactionDetails, b: TransactionDetails) {
 }
 
 const StyledConnectButton = styled.button`
-  background-color: #4C82FB;
+  background-color: #4c82fb;
   border: none;
   border-top-left-radius: ${FULL_BORDER_RADIUS}px;
   border-bottom-left-radius: ${FULL_BORDER_RADIUS}px;
   border-radius: 16px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 0.8rem;
   padding: 10px 12px;
   color: white;
 `
 
-function  Web3StatusInner() {
+function Web3StatusInner() {
   const { account, connector, chainId, ENSName } = useWeb3React()
   const getConnection = useGetConnection()
   const connection = getConnection(connector)
@@ -167,8 +167,7 @@ function  Web3StatusInner() {
   const isClaimAvailable = useIsNftClaimAvailable((state) => state.isClaimAvailable)
   const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
 
-  const allTransactions = useAllTransactions()  
-
+  const allTransactions = useAllTransactions()
 
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)
@@ -203,7 +202,7 @@ function  Web3StatusInner() {
           pending={hasPendingTransactions}
           isClaimAvailable={isClaimAvailable}
         >
-          {!hasPendingTransactions && <StatusIcon size={24} connection={connection} showMiniIcons={false} />}
+          {!hasPendingTransactions && <StatusIcon size={18} connection={connection} showMiniIcons={false} />}
           {hasPendingTransactions ? (
             <RowBetween>
               <Text>

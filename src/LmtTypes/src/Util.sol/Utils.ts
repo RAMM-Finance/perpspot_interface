@@ -52,7 +52,7 @@ export type LiquidityLoanStructOutput = [
 export interface UtilsInterface extends utils.Interface {
   functions: {
     "applySlippageX96(uint160,uint256,bool)": FunctionFragment;
-    "getAmountsRequired((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],uint256,int24,int24)": FunctionFragment;
+    "getAmountsRequired((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],uint256,int24,int24,uint160)": FunctionFragment;
     "getFeeGrowthInside(IUniswapV3Pool,int24,int24)": FunctionFragment;
     "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)": FunctionFragment;
     "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)": FunctionFragment;
@@ -87,6 +87,7 @@ export interface UtilsInterface extends utils.Interface {
     functionFragment: "getAmountsRequired",
     values: [
       LiquidityLoanStruct[],
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
@@ -214,6 +215,7 @@ export interface Utils extends BaseContract {
       percentageClosed: PromiseOrValue<BigNumberish>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       tick: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -286,6 +288,7 @@ export interface Utils extends BaseContract {
     percentageClosed: PromiseOrValue<BigNumberish>,
     tickDiscretization: PromiseOrValue<BigNumberish>,
     tick: PromiseOrValue<BigNumberish>,
+    sqrtPriceX96: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber] & {
@@ -358,6 +361,7 @@ export interface Utils extends BaseContract {
       percentageClosed: PromiseOrValue<BigNumberish>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       tick: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -433,6 +437,7 @@ export interface Utils extends BaseContract {
       percentageClosed: PromiseOrValue<BigNumberish>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       tick: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -496,6 +501,7 @@ export interface Utils extends BaseContract {
       percentageClosed: PromiseOrValue<BigNumberish>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       tick: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

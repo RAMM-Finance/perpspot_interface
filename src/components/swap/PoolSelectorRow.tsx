@@ -1,10 +1,10 @@
 import { Currency } from '@uniswap/sdk-core'
+import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Field } from 'state/swap/actions'
 import { useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import DoubleCurrencyLogo from 'components/DoubleLogo'
 
 const LOGO_SIZE = 20
 
@@ -16,11 +16,10 @@ const Container = styled.button<{ disabled: boolean }>`
   color: ${({ theme }) => theme.textPrimary};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns:  1fr 4fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 4fr 1fr 1fr 1fr;
   justify-content: space-between;
   line-height: 24px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
-  padding: 10px 8px;
   text-align: left;
   transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
     background-color;
@@ -48,7 +47,6 @@ const Status = styled.div`
 const CaptionText = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
-
 `
 const Logo = styled.img`
   height: ${LOGO_SIZE}px;
@@ -73,7 +71,7 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolS
   const labelIn = currencyIn?.symbol as string
   const currencyOut = useCurrency(currencyId[1])
   const labelOut = currencyOut?.symbol as string
-  
+
   const theme = useTheme()
 
   return (
@@ -83,12 +81,7 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolS
         currencyIn && currencyOut && onCurrencySelect(currencyIn, currencyOut)
       }}
     >
-      <DoubleCurrencyLogo
-          currency0={currencyIn as Currency}
-          currency1={currencyOut as Currency}
-          size={30}
-          margin
-          />
+      <DoubleCurrencyLogo currency0={currencyIn as Currency} currency1={currencyOut as Currency} size={24} margin />
       <Label>{`${labelIn} - ${labelOut} (fee)`}</Label>
       <p>Test</p>
       <p>Test</p>

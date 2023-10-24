@@ -1,8 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
-import React, { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useCallback } from 'react'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
@@ -33,49 +32,21 @@ const SettingWrapper = styled.div`
 
 // the order of displayed base currencies from left to right is always in sort order
 // currencyA is treated as the preferred base currency
-export default function SwapTabHeader({
-  activeTab,
-  handleSetTab,
-  allowedSlippage,
-}: {
-  activeTab: number
-  handleSetTab: () => void
-  allowedSlippage: Percent
-}) {
+export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
   // const isTrade = activeTab == ActiveSwapTab.TRADE
-  const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
-  const { leverage } = useSwapState()
+  // const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
+  const { leverage, activeTab } = useSwapState()
   const { onSwitchTokens } = useSwapActionHandlers()
   const { onActiveTabChange, onLeverageChange, onSwitchSwapModalTab } = useSwapActionHandlers()
-  const selectedTab = useSelector((state: any) => state.swap.tab)
+  // const selectedTab = useSelector((state: any) => state.swap.tab)
   // const handleTabChange = onActiveTabChange(isTrade)
 
-  const onChangeSwapModeHandler = (e: React.MouseEvent<HTMLSpanElement>) => {
-    const eventTarget = e.target as HTMLElement
-
-    if (eventTarget.innerText === selectedTab) {
-      return
-    }
-
-    if (eventTarget.innerText === 'Long' || eventTarget.innerText === 'Short') {
-      setIsTrade(ActiveSwapTab.TRADE)
-      onSwitchSwapModalTab(eventTarget.innerText)
-      onSwitchTokens(leverage)
-      onLeverageChange(true)
-    }
-
-    if (eventTarget.innerText === 'Swap') {
-      setIsTrade(ActiveSwapTab.TRADE)
-      onSwitchSwapModalTab(eventTarget.innerText)
-      onSwitchTokens(leverage)
-      onLeverageChange(false)
-    }
-  }
-
-  useEffect(() => {
-    onActiveTabChange(isTrade)
-  }, [onActiveTabChange, isTrade])
-
+  const handleTabChange = useCallback(
+    (active: ActiveSwapTab) => {
+      onActiveTabChange(active)
+    },
+    [onActiveTabChange]
+  )
   return (
     <div
       style={{
@@ -88,43 +59,44 @@ export default function SwapTabHeader({
     >
       <TapWrapper>
         <TabElement
-          onClick={onChangeSwapModeHandler}
-          isActive={isTrade}
-          selectedTab={selectedTab}
+          onClick={() => handleTabChange(ActiveSwapTab.LONG)}
+          isActive={activeTab === ActiveSwapTab.LONG}
+          // selectedTab={selectedTab}
           tabValue="Long"
-          fontSize="18px"
+          fontSize="1rem"
           first={true}
+          activeTab={activeTab}
         >
           <Trans>Long</Trans>
         </TabElement>
         <TabElement
-          onClick={onChangeSwapModeHandler}
-          isActive={isTrade}
-          selectedTab={selectedTab}
+          onClick={() => handleTabChange(ActiveSwapTab.SHORT)}
+          isActive={activeTab === ActiveSwapTab.SHORT}
+          // selectedTab={selectedTab}
           tabValue="Short"
-          fontSize="18px"
+          fontSize="1rem"
+          activeTab={activeTab}
         >
           <Trans>Short</Trans>
         </TabElement>
         <TabElement
           onClick={() => {
-            setIsTrade(ActiveSwapTab.BORROW)
-            onSwitchSwapModalTab('notthing')
+            handleTabChange(ActiveSwapTab.BORROW)
           }}
-          isActive={!isTrade}
-          fontSize="18px"
+          isActive={activeTab === ActiveSwapTab.BORROW}
+          fontSize="1rem"
+          activeTab={activeTab}
         >
           <Trans>Borrow</Trans>
         </TabElement>
         <TabElement
-          // onClick={() =>
-          //   onLeverageChange(!leverage)}
-          onClick={onChangeSwapModeHandler}
-          isActive={isTrade}
-          selectedTab={selectedTab}
+          onClick={() => handleTabChange(ActiveSwapTab.SWAP)}
+          isActive={activeTab === ActiveSwapTab.SWAP}
+          // selectedTab={selectedTab}
           tabValue="Swap"
-          fontSize="18px"
+          fontSize="1rem"
           last={true}
+          activeTab={activeTab}
         >
           <Trans>Swap</Trans>
         </TabElement>
@@ -190,47 +162,39 @@ const TapWrapper = styled.button`
 const TabElement = styled.button<{
   isActive?: number | boolean
   fontSize?: string
-  selectedTab?: string
   tabValue?: string
   isTrade?: number
   first?: boolean
   last?: boolean
+  activeTab?: number
 }>`
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.4rem;
   justify-content: center;
   height: 100%;
   border: none;
-  background: ${({ theme, isActive, selectedTab, tabValue }) => {
-    if (!isActive && selectedTab === tabValue) {
-      if (selectedTab === "Long") {
-        return "#7fffd4";
-      } else if (selectedTab === "Short") {
-        return "#ff5f5f";
+  border-radius: 10px;
+  background: ${({ activeTab, theme, isActive }) => {
+    if (isActive) {
+      if (activeTab === 0) {
+        return theme.accentSuccessSoft
+      } else if (activeTab === 1) {
+        return theme.accentFailureSoft
       } else {
-        return theme.accentActive;
+        return theme.accentActiveSoft
       }
     }
-    return 'none';
+    return 'none'
   }};
-  color: ${({ theme, isActive, selectedTab, tabValue }) =>
-  !isActive && selectedTab === tabValue ? selectedTab === 'Long' ? '#0e1724' : theme.textSecondary : theme.textTertiary};
-  font-size: ${({ fontSize }) => fontSize ?? '1rem'};
+  color: ${({ theme }) => {
+    return theme.textSecondary
+  }};
+  font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  ${({ first, theme }) => first && `
-    border-left: 1px solid ${theme.backgroundOutline};
-  `}
-  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  border-bottom-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
-  border-bottom-left-radius: ${({ first }) => (first ? '8px' : '0')};
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
   margin-left: ${({ first }) => (first ? '17px' : '0')};
   margin-right: ${({ last }) => (last ? '8px' : '0')};
   margin-top: 15px;

@@ -34,6 +34,7 @@ import { Checkbox } from 'nft/components/layout/Checkbox'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { Text } from 'rebass'
+import { MarginTrade } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { BorrowCreationDetails } from 'state/swap/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -1310,64 +1311,48 @@ export function AddPremiumBorrowModalFooter({
 }
 
 export function LeverageModalFooter({
-  trade,
-  allowedSlippage,
-  hash,
+  // trade,
+  // allowedSlippage,
+  // hash,
   onConfirm,
-  swapErrorMessage,
+  // swapErrorMessage,
   disabledConfirm,
-  swapQuoteReceivedDate,
-  fiatValueInput,
-  fiatValueOutput,
-}: {
-  trade: InterfaceTrade<Currency, Currency, TradeType>
+  tradeErrorMessage,
+}: // swapQuoteReceivedDate,
+// fiatValueInput,
+// fiatValueOutput,
+{
+  // trade: InterfaceTrade<Currency, Currency, TradeType>
+  trade: MarginTrade
   hash: string | undefined
   allowedSlippage: Percent
   onConfirm: () => void
-  swapErrorMessage: ReactNode | undefined
+  // swapErrorMessage: ReactNode | undefined
+  tradeErrorMessage: ReactNode | undefined
   disabledConfirm: boolean
-  swapQuoteReceivedDate: Date | undefined
-  fiatValueInput: { data?: number; isLoading: boolean }
-  fiatValueOutput: { data?: number; isLoading: boolean }
+  // swapQuoteReceivedDate: Date | undefined
+  // fiatValueInput: { data?: number; isLoading: boolean }
+  // fiatValueOutput: { data?: number; isLoading: boolean }
 }) {
-  const transactionDeadlineSecondsSinceEpoch = useTransactionDeadline()?.toNumber() // in seconds since epoch
-  const isAutoSlippage = useUserSlippageTolerance()[0] === 'auto'
-  const [clientSideRouter] = useClientSideRouter()
-  const routes = getTokenPath(trade)
+  // const transactionDeadlineSecondsSinceEpoch = useTransactionDeadline()?.toNumber() // in seconds since epoch
+  // const isAutoSlippage = useUserSlippageTolerance()[0] === 'auto'
+  // const [clientSideRouter] = useClientSideRouter()
+  // const routes = getTokenPath(trade)
   // console.log("disabledConfirm", disabledConfirm)
   return (
     <>
       <AutoRow>
-        <TraceEvent
-          events={[BrowserEvent.onClick]}
-          element={InterfaceElementName.CONFIRM_SWAP_BUTTON}
-          name={SwapEventName.SWAP_SUBMITTED_BUTTON_CLICKED}
-          properties={formatAnalyticsEventProperties({
-            trade,
-            hash,
-            allowedSlippage,
-            transactionDeadlineSecondsSinceEpoch,
-            isAutoSlippage,
-            isAutoRouterApi: !clientSideRouter,
-            swapQuoteReceivedDate,
-            routes,
-            fiatValueInput: fiatValueInput.data,
-            fiatValueOutput: fiatValueOutput.data,
-          })}
+        <ButtonError
+          onClick={onConfirm}
+          disabled={disabledConfirm}
+          style={{ margin: '10px 0 0 0' }}
+          id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
         >
-          <ButtonError
-            onClick={onConfirm}
-            disabled={disabledConfirm}
-            style={{ margin: '10px 0 0 0' }}
-            id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
-          >
-            <Text fontSize={20} fontWeight={500}>
-              <Trans>Confirm Position</Trans>
-            </Text>
-          </ButtonError>
-        </TraceEvent>
-
-        {swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+          <Text fontSize={20} fontWeight={500}>
+            <Trans>Confirm Position</Trans>
+          </Text>
+        </ButtonError>
+        {tradeErrorMessage ? <SwapCallbackError error={tradeErrorMessage} /> : null}
       </AutoRow>
     </>
   )

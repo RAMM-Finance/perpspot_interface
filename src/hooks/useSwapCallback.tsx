@@ -1,4 +1,4 @@
-import { formatNumber, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
+import { formatNumber } from '@uniswap/conedison/format'
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
@@ -6,17 +6,14 @@ import { BigNumber as BN } from 'bignumber.js'
 import { Contract } from 'ethers'
 import { PermitSignature } from 'hooks/usePermitAllowance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { AddParamsStruct } from 'LmtTypes/src/MarginFacility'
 import { useMemo } from 'react'
 import { TradeState } from 'state/routing/types'
-import { BorrowCreationDetails, LeverageTrade } from 'state/swap/hooks'
-import { estimateSlippage } from 'state/swap/hooks'
+import { BorrowCreationDetails } from 'state/swap/hooks'
 
 import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { TransactionType } from '../state/transactions/types'
 import { currencyId } from '../utils/currencyId'
-import { useMarginFacilityContract } from './useContract'
 import useTransactionDeadline from './useTransactionDeadline'
 import { useUniversalRouterSwapCallback } from './useUniversalRouter'
 
@@ -82,117 +79,117 @@ export function useSwapCallback(
 //   bool isLong // if long borrow token1 to buy token 0
 // )
 
-export function useAddLeveragePositionCallback(
-  leverageManagerAddress: string | undefined,
-  trade: Trade<Currency, Currency, TradeType> | undefined,
-  leverageTrade: LeverageTrade | undefined,
-  allowedSlippage: Percent,
-  leverageFactor: string | undefined
-): { callback: null | (() => Promise<string>) } {
-  // const deadline = useTransactionDeadline()
-  const { account, chainId, provider } = useWeb3React()
+// export function useAddLeveragePositionCallback(
+//   leverageManagerAddress: string | undefined,
+//   trade: Trade<Currency, Currency, TradeType> | undefined,
+//   leverageTrade: LeverageTrade | undefined,
+//   allowedSlippage: Percent,
+//   leverageFactor: string | undefined
+// ): { callback: null | (() => Promise<string>) } {
+//   // const deadline = useTransactionDeadline()
+//   const { account, chainId, provider } = useWeb3React()
 
-  const addTransaction = useTransactionAdder()
+//   const addTransaction = useTransactionAdder()
 
-  const marginFacilityContract = useMarginFacilityContract()
-  const callback = useMemo(() => {
-    return () => {
-      if (!account) throw new Error('missing account')
-      if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
-      // if (!leverageManagerAddress) throw new Error('missing leverage manager address')
-      if (!trade) throw new Error('missing trade')
-      if (!leverageTrade) throw new Error('missing leverage trade')
+//   const marginFacilityContract = useMarginFacilityContract()
+//   const callback = useMemo(() => {
+//     return () => {
+//       if (!account) throw new Error('missing account')
+//       if (!chainId) throw new Error('missing chainId')
+//       if (!provider) throw new Error('missing provider')
+//       // if (!leverageManagerAddress) throw new Error('missing leverage manager address')
+//       if (!trade) throw new Error('missing trade')
+//       if (!leverageTrade) throw new Error('missing leverage trade')
 
-      let isLong = true
-      const decimals = trade?.inputAmount.currency.decimals ?? 18
-      if (trade?.inputAmount.currency.isToken && trade?.outputAmount.currency.isToken) {
-        if (trade.inputAmount.currency.sortsBefore(trade.outputAmount.currency)) {
-          isLong = false
-        }
-      }
+//       let isLong = true
+//       const decimals = trade?.inputAmount.currency.decimals ?? 18
+//       if (trade?.inputAmount.currency.isToken && trade?.outputAmount.currency.isToken) {
+//         if (trade.inputAmount.currency.sortsBefore(trade.outputAmount.currency)) {
+//           isLong = false
+//         }
+//       }
 
-      const input = new BN(leverageTrade.inputAmount.toExact()).shiftedBy(decimals).toFixed(0)
-      const borrowedAmount = new BN(leverageTrade.inputAmount.toExact())
-        .multipliedBy(Number(leverageFactor) - 1 ?? '0')
-        .shiftedBy(decimals)
-        .toFixed(0)
-      const slippage = new BN(1 + Number(allowedSlippage.toFixed(6)) / 100).shiftedBy(decimals).toFixed(0)
+//       const input = new BN(leverageTrade.inputAmount.toExact()).shiftedBy(decimals).toFixed(0)
+//       const borrowedAmount = new BN(leverageTrade.inputAmount.toExact())
+//         .multipliedBy(Number(leverageFactor) - 1 ?? '0')
+//         .shiftedBy(decimals)
+//         .toFixed(0)
+//       const slippage = new BN(1 + Number(allowedSlippage.toFixed(6)) / 100).shiftedBy(decimals).toFixed(0)
 
-      const tokenAddress0 = currencyId(trade.inputAmount.currency)
-      const tokenAddress1 = currencyId(trade.outputAmount.currency)
+//       const tokenAddress0 = currencyId(trade.inputAmount.currency)
+//       const tokenAddress1 = currencyId(trade.outputAmount.currency)
 
-      const poolKeyParam = {
-        token0: tokenAddress0,
-        token1: tokenAddress1,
-        fee: 500,
-      }
-      const minEstimatedSlippage = estimateSlippage(
-        trade.inputAmount.currency,
-        trade.outputAmount.currency,
-        new BN(borrowedAmount),
-        new BN(trade.inputAmount.decimalScale.toString())
-      )
-      if (minEstimatedSlippage == null) {
-        return
-      }
-      const maxSlippage = new BN(1).plus(0.05).shiftedBy(18).toFixed(0)
-      const addParams: AddParamsStruct = {
-        margin: input,
-        maxSlippage,
-        // @ts-ignore
-        minEstimatedSlippage,
-        borrowAmount: borrowedAmount,
-        positionIsToken0: isLong, //double check
-        executionOption: 1,
-        trader: account,
-      }
+//       const poolKeyParam = {
+//         token0: tokenAddress0,
+//         token1: tokenAddress1,
+//         fee: 500,
+//       }
+//       const minEstimatedSlippage = estimateSlippage(
+//         trade.inputAmount.currency,
+//         trade.outputAmount.currency,
+//         new BN(borrowedAmount),
+//         new BN(trade.inputAmount.decimalScale.toString())
+//       )
+//       if (minEstimatedSlippage == null) {
+//         return
+//       }
+//       const maxSlippage = new BN(1).plus(0.05).shiftedBy(18).toFixed(0)
+//       const addParams: AddParamsStruct = {
+//         margin: input,
+//         maxSlippage,
+//         // @ts-ignore
+//         minEstimatedSlippage,
+//         borrowAmount: borrowedAmount,
+//         positionIsToken0: isLong, //double check
+//         executionOption: 1,
+//         trader: account,
+//       }
 
-      return marginFacilityContract?.addPosition(poolKeyParam, addParams, []).then((response: any) => {
-        console.log('leverageResponse', response.hash, response)
-        addTransaction(response, {
-          type: TransactionType.ADD_LEVERAGE,
-          inputCurrencyId: currencyId(trade.inputAmount.currency),
-          outputCurrencyId: currencyId(trade.outputAmount.currency),
-          inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
-          expectedAddedPosition: formatBNToString(
-            leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
-          ),
-        })
-        return response.hash
-      })
+//       return marginFacilityContract?.addPosition(poolKeyParam, addParams, []).then((response: any) => {
+//         console.log('leverageResponse', response.hash, response)
+//         addTransaction(response, {
+//           type: TransactionType.ADD_LEVERAGE,
+//           inputCurrencyId: currencyId(trade.inputAmount.currency),
+//           outputCurrencyId: currencyId(trade.outputAmount.currency),
+//           inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
+//           expectedAddedPosition: formatBNToString(
+//             leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
+//           ),
+//         })
+//         return response.hash
+//       })
 
-      // return leverageManagerContract.addPosition(input, slippage, borrowedAmount, isLong).then((response: any) => {
-      //   // console.log('leverageResponse', response.hash, response)
-      //   addTransaction(response, {
-      //     type: TransactionType.ADD_LEVERAGE,
-      //     inputCurrencyId: currencyId(trade.inputAmount.currency),
-      //     outputCurrencyId: currencyId(trade.outputAmount.currency),
-      //     inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
-      //     expectedAddedPosition: formatBNToString(
-      //       leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
-      //     ),
-      //   })
-      //   return response.hash
-      // })
-    }
-  }, [
-    account,
-    addTransaction,
-    allowedSlippage,
-    chainId,
-    leverageFactor,
-    leverageManagerAddress,
-    leverageTrade,
-    provider,
-    trade,
-  ])
+//       // return leverageManagerContract.addPosition(input, slippage, borrowedAmount, isLong).then((response: any) => {
+//       //   // console.log('leverageResponse', response.hash, response)
+//       //   addTransaction(response, {
+//       //     type: TransactionType.ADD_LEVERAGE,
+//       //     inputCurrencyId: currencyId(trade.inputAmount.currency),
+//       //     outputCurrencyId: currencyId(trade.outputAmount.currency),
+//       //     inputAmount: formatNumberOrString(leverageTrade.inputAmount.toExact(), NumberType.SwapTradeAmount),
+//       //     expectedAddedPosition: formatBNToString(
+//       //       leverageTrade.expectedTotalPosition.minus(leverageTrade.existingTotalPosition)
+//       //     ),
+//       //   })
+//       //   return response.hash
+//       // })
+//     }
+//   }, [
+//     account,
+//     addTransaction,
+//     allowedSlippage,
+//     chainId,
+//     leverageFactor,
+//     leverageManagerAddress,
+//     leverageTrade,
+//     provider,
+//     trade,
+//   ])
 
-  return {
-    // @ts-ignore
-    callback,
-  }
-}
+//   return {
+//     // @ts-ignore
+//     callback,
+//   }
+// }
 
 export function useAddBorrowPositionCallback(
   borrowManagerAddress: string | undefined,

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
+import { Currency } from '@uniswap/sdk-core'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -173,18 +173,18 @@ const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
 // }
 interface LeverageDebtInputPanelProps {
   value: string
-  onUserInput: (value: string) => void
+  // onUserInput: (value: string) => void
   currency?: Currency | null
   id: string
   locked?: boolean
   loading?: boolean
-  parsedAmount?: CurrencyAmount<Currency>
+  parsedAmount?: string
   hideInput?: boolean
 }
 
 export default function LeverageDebtInputPanel({
   value,
-  onUserInput,
+  // onUserInput,
   currency,
   id,
   locked = false,
@@ -193,7 +193,7 @@ export default function LeverageDebtInputPanel({
   parsedAmount,
   ...rest
 }: LeverageDebtInputPanelProps) {
-  const userInputAmount: string | undefined = parsedAmount?.toExact() ?? undefined
+  const userInputAmount: string | undefined = parsedAmount ?? undefined
 
   return (
     <InputPanel id={id} hideInput={hideInput} {...rest}>
@@ -209,14 +209,12 @@ export default function LeverageDebtInputPanel({
       )}
       <Container hideInput={hideInput}>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-        <div style={{ marginRight: '10px', fontSize: '15px' }}>
-          <Trans>Position Size</Trans>
-        </div>
+          <div style={{ marginRight: '10px', fontSize: '15px' }}></div>
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"
               value={value}
-              onUserInput={onUserInput}
+              onUserInput={() => 0}
               disabled={true}
               $loading={loading}
             />

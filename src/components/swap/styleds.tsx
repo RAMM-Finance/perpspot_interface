@@ -4,7 +4,6 @@ import { ReactNode } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { css } from 'styled-components/macro'
-import { Z_INDEX } from 'theme/zIndex'
 
 import { AutoColumn } from '../Column'
 
@@ -33,48 +32,32 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  right: 3px;
-  min-width: 430px;
-  width: 22%;
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 0 1px;
-  border-radius: 10px;
-  box-shadow: '0px 40px 120px 0px #f0b90b29';
+  min-width: 325px;
   flex-flow: row nowrap;
   align-items: space-evenly;
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px 1px 1px 1px;
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+
   background-color: ${({ theme }) => theme.backgroundSurface};
-  z-index: ${Z_INDEX.deprecated_content};
   transition: transform 250ms ease;
+
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
-export const PremiumWrapper = styled.div`
+export const LimitWrapper = styled.div`
   position: relative;
-  right: 3px;
-  min-width: 430px;
-  width: 22%;
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 0 1px;
-  border-radius: 10px;
-  box-shadow: '0px 40px 120px 0px #f0b90b29';
-  flex-flow: row nowrap;
-  align-items: space-evenly;
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px 1px 1px 1px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  z-index: ${Z_INDEX.deprecated_content};
-  transition: transform 250ms ease;
-  padding-bottom: 1vh;
-  margin-bottom: .4vh;
 `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
   border-radius: 999px;
-  height: 50px;
-  width: 50px;
+  height: 30px;
+  width: 30px;
   position: relative;
-  margin-top: -35px;
-  margin-bottom: -18px;
+  margin-top: -20px;
+  margin-bottom: -15px;
   margin-left: auto;
   margin-right: auto;
   background-color: ${({ theme }) => theme.backgroundInteractive};

@@ -7,11 +7,10 @@ import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
 
-import { isCelo } from '../constants/tokens'
 import { useAllV3Routes } from './useAllV3Routes'
 import { useQuoter } from './useContract'
 
-const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
+export const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
   [SupportedChainId.ARBITRUM_ONE]: 25_000_000,
   [SupportedChainId.ARBITRUM_GOERLI]: 25_000_000,
   [SupportedChainId.CELO]: 50_000_000,
@@ -21,7 +20,7 @@ const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
   [SupportedChainId.BNB]: 50_000_000,
 }
 
-const DEFAULT_GAS_QUOTE = 2_000_000
+export const DEFAULT_GAS_QUOTE = 2_000_000
 
 /**
  * Returns the best v3 trade for a desired swap
@@ -42,7 +41,7 @@ export function useClientSideV3Trade<TTradeType extends TradeType>(
 
   const { chainId } = useWeb3React()
   // Chains deployed using the deploy-v3 script only deploy QuoterV2.
-  const useQuoterV2 = true// useMemo(() => Boolean(chainId && isCelo(chainId)), [chainId])
+  const useQuoterV2 = true // useMemo(() => Boolean(chainId && isCelo(chainId)), [chainId])
   const quoter = useQuoter(useQuoterV2)
   const callData = useMemo(
     () =>
@@ -53,7 +52,7 @@ export function useClientSideV3Trade<TTradeType extends TradeType>(
         : [],
     [amountSpecified, routes, tradeType, useQuoterV2]
   )
-// console.log('calldata', callData); 
+
   const quotesResults = useSingleContractWithCallData(quoter, callData, {
     gasRequired: chainId ? QUOTE_GAS_OVERRIDES[chainId] ?? DEFAULT_GAS_QUOTE : undefined,
   })

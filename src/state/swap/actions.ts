@@ -7,8 +7,10 @@ export enum Field {
 }
 
 export enum ActiveSwapTab {
-  TRADE,
+  LONG,
+  SHORT,
   BORROW,
+  SWAP,
 }
 
 export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')

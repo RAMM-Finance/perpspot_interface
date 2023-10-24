@@ -95,28 +95,6 @@ export type MarginPositionStructOutput = [
   BigNumber
 ] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
 
-export type UniswapPositionStruct = {
-  totalFeeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
-  totalFeeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
-  amount: PromiseOrValue<BigNumberish>;
-  tokensOwed0: PromiseOrValue<BigNumberish>;
-  tokensOwed1: PromiseOrValue<BigNumberish>;
-};
-
-export type UniswapPositionStructOutput = [
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber
-] & {
-  totalFeeGrowthInside0LastX128: BigNumber;
-  totalFeeGrowthInside1LastX128: BigNumber;
-  amount: BigNumber;
-  tokensOwed0: BigNumber;
-  tokensOwed1: BigNumber;
-};
-
 export declare namespace IDataProvider {
   export type PremiumDepositStruct = {
     token: PromiseOrValue<string>;
@@ -132,24 +110,16 @@ export declare namespace IDataProvider {
 export interface IDataProviderInterface extends utils.Interface {
   functions: {
     "getActiveMarginPositions(address)": FunctionFragment;
-    "getManagedLiquidityPositions(address,address)": FunctionFragment;
     "getPremiumDeposits(address,address)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic:
-      | "getActiveMarginPositions"
-      | "getManagedLiquidityPositions"
-      | "getPremiumDeposits"
+    nameOrSignatureOrTopic: "getActiveMarginPositions" | "getPremiumDeposits"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "getActiveMarginPositions",
     values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getManagedLiquidityPositions",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "getPremiumDeposits",
@@ -158,10 +128,6 @@ export interface IDataProviderInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "getActiveMarginPositions",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getManagedLiquidityPositions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -204,12 +170,6 @@ export interface IDataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[MarginPositionStructOutput[]]>;
 
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
-      pool: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[UniswapPositionStructOutput[]]>;
-
     getPremiumDeposits(
       trader: PromiseOrValue<string>,
       facility: PromiseOrValue<string>,
@@ -222,12 +182,6 @@ export interface IDataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<MarginPositionStructOutput[]>;
 
-  getManagedLiquidityPositions(
-    trader: PromiseOrValue<string>,
-    pool: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<UniswapPositionStructOutput[]>;
-
   getPremiumDeposits(
     trader: PromiseOrValue<string>,
     facility: PromiseOrValue<string>,
@@ -239,12 +193,6 @@ export interface IDataProvider extends BaseContract {
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<MarginPositionStructOutput[]>;
-
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
-      pool: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<UniswapPositionStructOutput[]>;
 
     getPremiumDeposits(
       trader: PromiseOrValue<string>,
@@ -261,12 +209,6 @@ export interface IDataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
-      pool: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getPremiumDeposits(
       trader: PromiseOrValue<string>,
       facility: PromiseOrValue<string>,
@@ -277,12 +219,6 @@ export interface IDataProvider extends BaseContract {
   populateTransaction: {
     getActiveMarginPositions(
       trader: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getManagedLiquidityPositions(
-      trader: PromiseOrValue<string>,
-      pool: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -80,10 +80,7 @@ export const TokenInfoContainer = styled.div`
 `
 
 export const TokenNameCell = styled.div`
-  display: flex;
-  gap: 8px;
-  font-size: 20px;
-  line-height: 28px;
+  line-height: 20px;
   align-items: center;
   padding-left: 1rem;
 `

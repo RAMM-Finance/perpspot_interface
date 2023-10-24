@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
+import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import Card from 'components/Card'
@@ -11,12 +12,14 @@ import { usePool } from 'hooks/usePools'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
+import { MarginTrade } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
 
+// import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
 import { computeRealizedPriceImpact } from '../../utils/prices'
 import { AutoColumn } from '../Column'
@@ -556,24 +559,19 @@ export function ValueLabel({
   hideInfoTooltips?: boolean
   width?: string
 }) {
-  const theme = useTheme()
+  // const theme = useTheme()
 
   return (
     <RowBetween>
       <RowFixed>
         <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
-          <TruncatedText color={theme.textSecondary}>
-            <Trans>{label}</Trans>
-          </TruncatedText>
+          <ThemedText.BodySecondary fontSize={13}>{label}</ThemedText.BodySecondary>
         </MouseoverTooltip>
       </RowFixed>
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
         <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-          <RowFixed>
-            <TruncatedText width={width}>{value ? `${value.toString()}` : '-'}</TruncatedText>
-            {value ? symbolAppend : null}
-          </RowFixed>
+          {value ? `${value.toString()} ${symbolAppend}` : '-'}
         </ThemedText.DeprecatedBlack>
       </TextWithLoadingPlaceholder>
     </RowBetween>
@@ -750,6 +748,148 @@ export function AdvancedLeverageSwapDetails({
             </TextWithLoadingPlaceholder>
           </RowBetween>
         )} */}
+      </AutoColumn>
+    </StyledCard>
+  )
+}
+
+export function AdvancedMarginTradeDetails({
+  allowedSlippage,
+  syncing = false,
+  trade,
+  premiumNecessary,
+  premiumDeposit,
+}: // hideInfoTooltips = false,
+{
+  trade?: MarginTrade
+  premiumNecessary?: CurrencyAmount<Currency>
+  premiumDeposit?: CurrencyAmount<Currency>
+  syncing?: boolean
+  allowedSlippage?: Percent
+}) {
+  const theme = useTheme()
+
+  const {
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+  } = useSwapState()
+
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
+  // const {
+  //   existingTotalPosition,
+  //   existingPosition,
+  //   existingTotalDebtInput,
+  //   existingCollateral,
+  //   expectedOutput,
+  //   borrowedAmount,
+  //   inputAmount
+  // } = leverageTrade;
+  // const [price, fees, addedOutput] = useMemo(() => {
+  //   let _price
+  //   let _fees
+  //   let _addedOutput
+  //   if (leverageTrade) {
+  //     if (leverageTrade.existingPosition) {
+  //       _price = leverageTrade?.expectedTotalPosition
+  //         .minus(leverageTrade?.existingTotalPosition)
+  //         .div(leverageTrade?.borrowedAmount?.toExact())
+  //       _fees = new BN(leverageTrade?.borrowedAmount?.toExact())
+  //         .minus(leverageTrade?.existingTotalDebtInput)
+  //         .plus(leverageTrade?.inputAmount?.toExact())
+  //         .times(0.0005)
+  //       _addedOutput = leverageTrade?.expectedTotalPosition.minus(leverageTrade?.existingTotalPosition)
+  //     } else {
+  //       _price = leverageTrade?.expectedTotalPosition.div(
+  //         new BN(leverageTrade?.borrowedAmount?.toExact()).plus(leverageTrade?.inputAmount?.toExact())
+  //       )
+  //       _fees = new BN(leverageTrade?.borrowedAmount?.toExact())
+  //         .plus(leverageTrade?.inputAmount?.toExact())
+  //         .times(0.0005)
+  //       _addedOutput = leverageTrade?.expectedTotalPosition
+  //     }
+  //   }
+
+  //   return [_price, _fees, _addedOutput]
+  // }, [leverageTrade])
+
+  return (
+    <StyledCard>
+      <AutoColumn gap="sm">
+        <ValueLabel
+          description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
+          label="Quoted Premium"
+          value={formatCurrencyAmount(premiumNecessary, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={premiumNecessary ? inputCurrency?.symbol : ''}
+        />
+        <ValueLabel
+          description="Current premium deposit for this position"
+          label="Existing Premium Deposit"
+          value={formatCurrencyAmount(premiumDeposit, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={premiumDeposit ? inputCurrency?.symbol : ''}
+        />
+
+        <ValueLabel
+          description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
+          label={trade?.existingPosition ? 'Added Position' : 'Exp. Output'}
+          value={formatCurrencyAmount(trade?.outputAmount, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={trade ? outputCurrency?.symbol : ''}
+        />
+        <ValueLabel
+          description="Amount In / Amount Out"
+          label="Execution Price"
+          value={formatPrice(trade?.executionPrice)}
+          syncing={syncing}
+          symbolAppend={
+            trade ? trade?.executionPrice.baseCurrency.symbol + '/' + trade?.executionPrice.quoteCurrency.symbol : ''
+          }
+        />
+        <ValueLabel
+          description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
+          The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."
+          label="Maximum Loss"
+          value={formatCurrencyAmount(trade?.marginAmount, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={trade ? inputCurrency?.symbol : ''}
+        />
+        {/* <ValueLabel
+          description="Fees paid for trade "
+          label="Fees"
+          value={formatBNToString(fees)}
+          syncing={syncing}
+          symbolAppend={inputCurrency?.symbol}
+        /> */}
+
+        <Separator />
+        <RowBetween>
+          <RowFixed style={{ marginRight: '20px' }}>
+            <MouseoverTooltip
+              text={
+                <Trans>
+                  The minimum amount you are guaranteed to receive. If the price slips any further, your transaction
+                  will revert.
+                </Trans>
+              }
+              disableHover={false}
+            >
+              <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
+                <Trans>Minimum output</Trans> <Trans>after slippage</Trans> ({allowedSlippage?.toFixed(2)}%)
+              </ThemedText.DeprecatedSubHeader>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={syncing} width={70}>
+            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
+              <TruncatedText>
+                {`${formatCurrencyAmount(trade?.outputAmount, NumberType.SwapTradeAmount)}  ${
+                  trade ? trade?.outputAmount.currency.symbol : ''
+                }`}
+              </TruncatedText>
+            </ThemedText.DeprecatedBlack>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
       </AutoColumn>
     </StyledCard>
   )

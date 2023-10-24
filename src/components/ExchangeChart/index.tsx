@@ -128,7 +128,6 @@ export const PoolDataSection = ({
     token0Reserve: number
   }>()
 
-
   const token0Contract = useTokenContract(token0?.address)
   const token1Contract = useTokenContract(token1?.address)
 

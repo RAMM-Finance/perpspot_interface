@@ -33,6 +33,7 @@ const InputPanel = styled.div<{ hideInput?: boolean }>`
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   transition: height 1s ease;
   will-change: height;
+  padding-top: 1vh;
 `
 
 const FixedContainer = styled.div`
@@ -47,9 +48,11 @@ const FixedContainer = styled.div`
 `
 
 const Container = styled.div<{ hideInput: boolean }>`
-  min-height: 44px;
   border-radius: ${({ hideInput }) => (hideInput ? '16px' : '20px')};
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
 `
 
 const CurrencySelect = styled(ButtonGray)<{
@@ -59,7 +62,6 @@ const CurrencySelect = styled(ButtonGray)<{
   disabled?: boolean
 }>`
   align-items: center;
-  background-color: ${({ selected, theme }) => (selected ? theme.backgroundInteractive : theme.accentAction)};
   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
   box-shadow: ${({ selected }) => (selected ? 'none' : '0px 6px 10px rgba(0, 0, 0, 0.075)')};
   color: ${({ selected, theme }) => (selected ? theme.textPrimary : theme.white)};
@@ -75,7 +77,6 @@ const CurrencySelect = styled(ButtonGray)<{
   padding: ${({ selected }) => (selected ? '4px 8px 4px 4px' : '6px 6px 6px 8px')};
   gap: 12px;
   justify-content: space-between;
-  margin-left: ${({ hideInput }) => (hideInput ? '0' : '12px')};
 
   &:hover,
   &:active {
@@ -108,9 +109,9 @@ const CurrencySelect = styled(ButtonGray)<{
 
 const InputRow = styled.div`
   display: flex;
-  align-items: center;  // vertically align items in the middle
-  justify-content: space-between;  // maximize the space between items
-`;
+  align-items: center; // vertically align items in the middle
+  justify-content: space-around; // maximize the space between items
+`
 
 const LabelRow = styled.div`
   ${flexRowNoWrap};
@@ -128,7 +129,7 @@ const LabelRow = styled.div`
 const FiatRow = styled(LabelRow)`
   justify-content: flex-end;
   min-height: 20px;
-  padding: 8px 0px 0px 0px;
+  padding-top: 1vh;
 `
 
 const Aligner = styled.span`
@@ -178,8 +179,8 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
 const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   ${loadingOpacityMixin};
   text-align: left;
-  font-size: 36px;
-  line-height: 44px;
+  font-size: 18px;
+  line-height: 25px;
   font-variant: small-caps;
 `
 
@@ -238,6 +239,7 @@ interface BaseSwapPanelProps {
   locked?: boolean
   loading?: boolean
   label?: string
+  showPremium?: boolean
   premium?: CurrencyAmount<Currency>
 }
 
@@ -264,6 +266,7 @@ export function BaseSwapPanel({
   loading = false,
   label,
   premium,
+  showPremium,
   ...rest
 }: BaseSwapPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -291,18 +294,9 @@ export function BaseSwapPanel({
       )}
       <Container hideInput={hideInput}>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
-        <div style={{ marginRight: '10px', fontSize: '15px' }}>
-          <Trans>{label}</Trans>
-        </div>
-          {!hideInput && (
-            <StyledNumericalInput
-              className="token-amount-input"
-              value={value}
-              onUserInput={onUserInput}
-              disabled={!chainAllowed || disabled}
-              $loading={loading}
-            />
-          )}
+          {/* <div style={{ marginRight: '10px', fontSize: '15px' }}>
+            <Trans>{label}</Trans>
+          </div> */}
           <CurrencySelect
             disabled={!chainAllowed}
             visible={currency !== undefined}
@@ -315,88 +309,108 @@ export function BaseSwapPanel({
               }
             }}
           >
-            <Aligner>
-              <RowFixed>
-                {pair ? (
-                  <span style={{ marginRight: '0.5rem' }}>
-                    <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
-                  </span>
-                ) : currency ? (
-                  <CurrencyLogo style={{ marginRight: '2px' }} currency={currency} size="24px" />
-                ) : null}
-                {pair ? (
-                  <StyledTokenName className="pair-name-container">
-                    {pair?.token0.symbol}:{pair?.token1.symbol}
-                  </StyledTokenName>
-                ) : (
-                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
-                    {(currency && currency.symbol && currency.symbol.length > 20
-                      ? currency.symbol.slice(0, 4) +
-                        '...' +
-                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                      : currency?.symbol) || <Trans>Select token</Trans>}
-                  </StyledTokenName>
-                )}
-              </RowFixed>
-              {onCurrencySelect && <StyledDropDown selected={!!currency} />}
-            </Aligner>
+            <RowFixed>
+              {pair ? (
+                <span style={{ marginRight: '0.5rem' }}>
+                  <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
+                </span>
+              ) : currency ? (
+                <CurrencyLogo style={{ marginRight: '2px' }} currency={currency} size="18px" />
+              ) : null}
+              {pair ? (
+                <StyledTokenName style={{ fontSize: '12px' }} className="pair-name-container">
+                  {pair?.token0.symbol}:{pair?.token1.symbol}
+                </StyledTokenName>
+              ) : (
+                <StyledTokenName
+                  style={{ fontSize: '12px' }}
+                  className="token-symbol-container"
+                  active={Boolean(currency && currency.symbol)}
+                >
+                  {(currency && currency.symbol && currency.symbol.length > 20
+                    ? currency.symbol.slice(0, 4) +
+                      '...' +
+                      currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                    : currency?.symbol) || <Trans>Select token</Trans>}
+                </StyledTokenName>
+              )}
+            </RowFixed>
+            {/* {onCurrencySelect && <StyledDropDown selected={!!currency} />} */}
           </CurrencySelect>
         </InputRow>
         {Boolean(!hideInput && !hideBalance) && (
           <FiatRow>
             <RowBetween>
-              {premium && (
-                <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
-                  <div style={{ fontSize: '12px' }}>
-                    <Trans>
-                      Est. Premium: {formatCurrencyAmount(premium, 4)} {premium.currency.symbol}
-                    </Trans>
-                  </div>
-                  </ThemedText.DeprecatedBody>
-                </RowFixed>
-              )}
               <LoadingOpacityContainer $loading={loading}>
                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
               </LoadingOpacityContainer>
               {account ? (
-                <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
-                    color={theme.textSecondary}
-                    fontWeight={400}
-                    fontSize={14}
-                    style={{ display: 'inline' }}
-                  >
-                    {!hideBalance && currency && selectedCurrencyBalance ? (
-                      renderBalance ? (
-                        renderBalance(selectedCurrencyBalance)
-                      ) : (
-                        <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                      )
-                    ) : null}
-                  </ThemedText.DeprecatedBody>
-                  {showMaxButton && selectedCurrencyBalance ? (
-                    <TraceEvent
-                      events={[BrowserEvent.onClick]}
-                      name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                      element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                    >
-                      <StyledBalanceMax onClick={onMax}>
-                        <Trans>Max</Trans>
-                      </StyledBalanceMax>
-                    </TraceEvent>
-                  ) : null}
-                </RowFixed>
+                <AutoColumn>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                    <RowFixed style={{ height: '17px' }}>
+                      <ThemedText.DeprecatedBody
+                        color={theme.textSecondary}
+                        fontWeight={400}
+                        fontSize={12}
+                        style={{ display: 'inline' }}
+                      >
+                        {!hideBalance && currency && selectedCurrencyBalance ? (
+                          renderBalance ? (
+                            renderBalance(selectedCurrencyBalance)
+                          ) : (
+                            <Trans>Wallet-Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                          )
+                        ) : null}
+                      </ThemedText.DeprecatedBody>
+                      {showMaxButton && selectedCurrencyBalance ? (
+                        <TraceEvent
+                          events={[BrowserEvent.onClick]}
+                          name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+                          element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                        >
+                          <StyledBalanceMax style={{ fontSize: '12px' }} onClick={onMax}>
+                            <Trans>Max</Trans>
+                          </StyledBalanceMax>
+                        </TraceEvent>
+                      ) : null}
+                    </RowFixed>
+                    {showPremium && (
+                      <RowFixed style={{ height: '17px' }}>
+                        <ThemedText.DeprecatedBody
+                          color={theme.textSecondary}
+                          fontWeight={400}
+                          fontSize={12}
+                          style={{ display: 'inline' }}
+                        >
+                          <div style={{ fontSize: '14px' }}>
+                            <Trans>
+                              Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
+                              {premium?.currency.symbol ?? ''}
+                            </Trans>
+                          </div>
+                        </ThemedText.DeprecatedBody>
+                      </RowFixed>
+                    )}
+                  </div>
+                </AutoColumn>
               ) : (
                 <span />
               )}
             </RowBetween>
           </FiatRow>
+        )}
+      </Container>
+      <Container hideInput={hideInput}>
+        {!hideInput && (
+          <StyledNumericalInput
+            style={{ paddingTop: '1vh', paddingLeft: '.5vw' }}
+            className="token-amount-input"
+            value={value}
+            onUserInput={onUserInput}
+            disabled={!chainAllowed || disabled}
+            $loading={loading}
+            label="label"
+          />
         )}
       </Container>
       {onCurrencySelect && (

@@ -1,19 +1,17 @@
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 
 export interface BaseFacilityPositionDetails {
-  positionId: number // id of the position
   poolKey: RawPoolKey
   isToken0: boolean
-  owner: string
   totalDebtOutput: BN
   totalDebtInput: BN
-  recentPremium: BN
   openTime: number
   repayTime: number
   isBorrow: boolean
-  poolAddress: string
   premiumOwed: BN // how much premium is owed since last repayment
-  premiumLeft: BN // how much premium is left in the deposit
+  premiumDeposit: BN
+  premiumLeft: BN
 }
 
 export interface MarginPositionDetails extends BaseFacilityPositionDetails {
@@ -24,5 +22,12 @@ export interface MarginPositionDetails extends BaseFacilityPositionDetails {
 export interface RawPoolKey {
   token0Address: string
   token1Address: string
-  fee: number
+  fee: FeeAmount
+}
+
+export interface TraderPositionKey {
+  poolKey: RawPoolKey
+  isToken0: boolean
+  isBorrow: boolean
+  trader: string
 }
