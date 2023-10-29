@@ -148,7 +148,7 @@ function useTicksFromTickLens(
 
   // console.log('tickData', loading, error, activeTick, tickLensArgs, tickLens, provider, tickDataLatestSynced)
 
-  console.log('tickLensArgs', activeTick, minIndex, maxIndex, poolAddress, tickLensArgs)
+  // console.log('tickLensArgs', activeTick, minIndex, maxIndex, poolAddress, tickLensArgs)
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>()
 
   useEffect(() => {
@@ -294,7 +294,7 @@ function useAllV3Ticks(
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
 
-  console.log('useAllV3Ticks', currencyA, currencyB, feeAmount, tickLensTickData)
+  // console.log('useAllV3Ticks', currencyA, currencyB, feeAmount, tickLensTickData)
 
   useEffect(() => {
     if (data?.ticks.length) {

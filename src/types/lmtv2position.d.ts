@@ -1,5 +1,7 @@
+import { CurrencyAmount } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
+import JSBI from 'jsbi'
 
 export interface BaseFacilityPositionDetails {
   poolKey: RawPoolKey

@@ -47,7 +47,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           onResolveErrorCallback: any,
           extension: any
         ) => {
-          console.log('[resolveSymbol]: Method call', symbolName)
+          // console.log('[resolveSymbol]: Method call', symbolName)
           if (symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }

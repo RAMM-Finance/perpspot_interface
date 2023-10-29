@@ -13,7 +13,7 @@ export interface AddPositionOptions {
   borrowAmount: JSBI
   minimumOutput: JSBI
   deadline: string
-  minEstimatedSlippage: JSBI
+  simulatedOutput: JSBI
   executionOption: number
   maxSlippage: string
   depositPremium?: JSBI
@@ -62,18 +62,6 @@ export abstract class MarginFacilitySDK {
       )
     }
 
-    console.log('params', {
-      margin: param.margin.toString(),
-      maxSlippage: param.maxSlippage.toString(),
-      minEstimatedSlippage: param.minEstimatedSlippage.toString(),
-      borrowAmount: param.borrowAmount.toString(),
-      positionIsToken0: param.positionKey.isToken0,
-      executionOption: param.executionOption,
-      trader: param.positionKey.trader,
-      minOutput: param.minimumOutput.toString(),
-      deadline: param.deadline,
-    })
-
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {
@@ -84,7 +72,7 @@ export abstract class MarginFacilitySDK {
         {
           margin: toHex(param.margin),
           maxSlippage: toHex(param.maxSlippage),
-          minEstimatedSlippage: toHex(param.minEstimatedSlippage),
+          simulatedOutput: toHex(param.simulatedOutput),
           borrowAmount: toHex(param.borrowAmount),
           positionIsToken0: param.positionKey.isToken0,
           executionOption: param.executionOption,
@@ -168,6 +156,22 @@ export abstract class MarginFacilitySDK {
     return {
       calldata,
       value: toHex(0),
+    }
+  }
+
+  public static decodeAddPositionResult(rawBytes: string): {
+    totalPosition: JSBI
+    totalInputDebt: JSBI
+    totalOutputDebt: JSBI
+    margin: JSBI
+  } {
+    const result = MarginFacilitySDK.INTERFACE.decodeFunctionResult('addPosition', rawBytes)[0]
+
+    return {
+      totalPosition: JSBI.BigInt(result.totalPosition.toString()),
+      totalInputDebt: JSBI.BigInt(result.base.totalDebtInput.toString()),
+      totalOutputDebt: JSBI.BigInt(result.base.totalDebtOutput.toString()),
+      margin: JSBI.BigInt(result.margin.toString()),
     }
   }
 }

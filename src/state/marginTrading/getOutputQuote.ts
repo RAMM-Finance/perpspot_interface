@@ -1,18 +1,18 @@
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { Provider } from '@ethersproject/providers'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { Route, SwapQuoter } from '@uniswap/v3-sdk'
 import { QUOTER_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
-import { ethers } from 'ethers'
+import JSBI from 'jsbi'
 
 export async function getOutputQuote(
-  amount: CurrencyAmount<Currency>,
-  route: Route<Currency, Currency>,
-  provider: ethers.providers.Provider,
-  chainId: number
-) {
-  if (!provider) {
-    throw new Error('Provider required to get pool state')
-  }
+  amount?: CurrencyAmount<Currency>,
+  route?: Route<Currency, Currency>,
+  provider?: Provider,
+  chainId?: number
+): Promise<JSBI | undefined> {
+  if (!amount || !route || !provider || !chainId) return undefined
 
   const { calldata } = await SwapQuoter.quoteCallParameters(route, amount, TradeType.EXACT_INPUT, {
     useQuoterV2: true,
@@ -23,5 +23,5 @@ export async function getOutputQuote(
     data: calldata,
   })
 
-  return ethers.utils.defaultAbiCoder.decode(['uint256'], quoteCallReturnData)
+  return JSBI.BigInt(defaultAbiCoder.decode(['uint256'], quoteCallReturnData))
 }

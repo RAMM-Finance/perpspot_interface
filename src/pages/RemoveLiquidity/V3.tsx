@@ -31,7 +31,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtContracts/NFTPositionManager'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'

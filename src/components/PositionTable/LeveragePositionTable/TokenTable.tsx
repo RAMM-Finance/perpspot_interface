@@ -3,7 +3,6 @@ import { Token } from '@uniswap/sdk-core'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useAtomValue, useResetAtom } from 'jotai/utils'
-import moment from 'moment'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
@@ -11,7 +10,7 @@ import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
-import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
+import { filterStringAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
 
 const GridContainer = styled.div`
@@ -72,41 +71,40 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
-  const sortMethod = useAtomValue(sortMethodAtom)
-  const sortAscending = useAtomValue(sortAscendingAtom)
+// function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
+//   const sortMethod = useAtomValue(sortMethodAtom)
+//   const sortAscending = useAtomValue(sortAscendingAtom)
 
-  return useMemo(() => {
-    if (!positions) return undefined
-    let returnedPositions = positions
-    switch (sortMethod) {
-      case PositionSortMethod.REPAYTIME:
-        returnedPositions = positions.sort((a, b) => b.repayTime - a.repayTime)
-        break
-      case PositionSortMethod.REMAINING:
-        returnedPositions = positions.sort((a, b) => {
-          const now = moment()
-          const timeLeftB = moment.duration(moment.unix(Number(b.repayTime)).add(1, 'days').diff(now))
+//   return useMemo(() => {
+//     if (!positions) return undefined
+//     let returnedPositions = positions
+//     switch (sortMethod) {
+//       case PositionSortMethod.REPAYTIME:
+//         returnedPositions = positions.sort((a, b) => b.repayTime - a.repayTime)
+//         break
+//       case PositionSortMethod.REMAINING:
+//         returnedPositions = positions.sort((a, b) => {
+//           const now = moment()
+//           const timeLeftB = moment.duration(moment.unix(Number(b.repayTime)).add(1, 'days').diff(now))
 
-          const premiumB =
-            b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber() < 0
-              ? 0
-              : b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber()
+//           const premiumB =
+//             b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber() < 0
+//               ? 0
+//               : b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber()
 
-          const timeLeftA = moment.duration(moment.unix(Number(a.repayTime)).add(1, 'days').diff(now))
-          const premiumA =
-            a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber() < 0
-              ? 0
-              : a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber()
+//           const timeLeftA = moment.duration(moment.unix(Number(a.repayTime)).add(1, 'days').diff(now))
+//           const premiumA =
+//             a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber() < 0
+//               ? 0
+//               : a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber()
 
-          return premiumB - premiumA
-        })
-        break
-    }
+//           return premiumB - premiumA
+//         })
+//     }
 
-    return sortAscending ? returnedPositions : returnedPositions.reverse()
-  }, [positions, sortMethod, sortAscending])
-}
+//     return sortAscending ? returnedPositions : returnedPositions.reverse()
+//   }, [positions, sortMethod, sortAscending])
+// }
 
 function findCurrency(address: string | undefined, tokens: { [address: string]: Token } | undefined) {
   if (!address || !tokens) return undefined
@@ -146,10 +144,10 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
 }
 
 function useSelectPositions(positions?: MarginPositionDetails[]) {
-  const sortedPositions = useSortedPositions(positions)
+  // const sortedPositions = useSortedPositions(positions)
 
-  const filteredPositions = useFilteredPositions(sortedPositions)
-  return { filteredPositions }
+  // const filteredPositions = useFilteredPositions(sortedPositions)
+  return { filteredPositions: positions }
 }
 
 export default function LeveragePositionsTable({

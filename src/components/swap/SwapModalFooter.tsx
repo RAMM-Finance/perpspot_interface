@@ -34,7 +34,7 @@ import { Checkbox } from 'nft/components/layout/Checkbox'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { Text } from 'rebass'
-import { MarginTrade } from 'state/marginTrading/hooks'
+import { AddMarginTrade } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { BorrowCreationDetails } from 'state/swap/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -1323,7 +1323,7 @@ export function LeverageModalFooter({
 // fiatValueOutput,
 {
   // trade: InterfaceTrade<Currency, Currency, TradeType>
-  trade: MarginTrade
+  trade: AddMarginTrade
   hash: string | undefined
   allowedSlippage: Percent
   onConfirm: () => void

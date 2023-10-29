@@ -27,7 +27,7 @@ import {
 } from 'state/mint/v3/hooks'
 import { useTheme } from 'styled-components/macro'
 import { addressesAreEquivalent } from 'utils/addressesAreEquivalent'
-import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtContracts/NFTPositionManager'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 
 import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary, ButtonText } from '../../components/Button'
@@ -233,15 +233,15 @@ export default function AddLiquidity() {
           ? LmtNFTPositionManager.addCallParameters(position, {
               tokenId,
               slippageTolerance: allowedSlippage,
-              deadline: deadline.toString(),
+              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
               useNative,
             })
           : LmtNFTPositionManager.addCallParameters(position, {
               slippageTolerance: allowedSlippage,
               recipient: account,
-              deadline: deadline.toString(),
-              useNative,
-              createPool: noLiquidity,
+              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+              // useNative,
+              // createPool: noLiquidity,
             })
 
       let txn: { to: string; data: string; value: string } = {

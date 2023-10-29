@@ -1,21 +1,16 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { formatSymbol } from 'lib/utils/formatSymbol'
-import moment from 'moment'
 import { useIsMobile } from 'nft/hooks'
 import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
@@ -26,6 +21,7 @@ import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -418,7 +414,6 @@ function PositionRow({
   PnL,
   entryPrice,
   remainingPremium,
-  position,
   ...rest
 }: {
   first?: boolean
@@ -433,7 +428,6 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
-  position?: MarginPositionDetails
   last?: boolean
   style?: CSSProperties
 }) {
@@ -610,29 +604,41 @@ interface LoadedRowProps {
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
-  const { position } = props
+  const { position: details } = props
 
-  const { isToken0, margin, totalDebtInput } = position
-  const token0Address = position.poolKey.token0Address
-  const token1Address = position.poolKey.token1Address
+  const { isToken0, margin, totalDebtInput } = details
+  const [token0Address, token1Address] = useMemo(() => {
+    if (details) {
+      return [details.poolKey.token0Address, details.poolKey.token1Address]
+    }
+    return [undefined, undefined]
+  }, [details])
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolKey.fee)
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
   const leverageFactor = useMemo(
     () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
     [margin, totalDebtInput]
   )
 
-  const now = moment()
-  const [timeLeft, isOverDue] = useMemo(() => {
-    const duration = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now))
-    const hours = duration.hours()
-    const isNegative = hours < 0
-    const minutes = duration.minutes()
-    return [`${Math.abs(hours)}h ${Math.abs(minutes)}m`, isNegative]
-  }, [position, now])
+  const [entryPrice, currentPrice, position] = useMemo(() => {
+    if (pool) {
+      const _position = new MarginPosition(pool, details)
+      // token1 quote
+      const _entryPrice = _position.entryPrice()
+      const _currentPrice = pool.token0Price
+
+      if (Number(pool.token0Price.toFixed(18)) < 1) {
+        return [_entryPrice.invert(), _currentPrice.invert(), _position]
+      } else {
+        return [_entryPrice, _currentPrice, _position]
+      }
+    } else {
+      return [undefined, undefined, undefined]
+    }
+  }, [pool, details])
 
   // /**
   //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
@@ -643,102 +649,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //  */
   // get token1Price(): Price<Token, Token>;
 
-  // pnl in input token.
-  // entry price in quote token / base token
-  const [pnl, entryPrice, currentPrice] = useMemo(() => {
-    if (
-      pool?.token0Price &&
-      pool?.token1Price &&
-      // position.creationPrice &&
-      position.totalPosition &&
-      token0 &&
-      token1
-    ) {
-      const curPrice = position.isToken0
-        ? new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
-        : new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
-
-      // entryPrice if isToken0, output is in token0. so entry price would be in input token / output token
-      const _entryPrice = position.margin.plus(position.totalDebtInput).dividedBy(position.totalPosition)
-
-      // token0Price => token1 / token0, token1Price => token0 / token1.
-      // total position is in output token
-      const _pnl = position.isToken0
-        ? // token0Price => input / output, token1Price => output / input
-          // entry price => input / output -> token1 / token0.
-          // total position -> output -> token0
-          new BN(pool.token0Price.toFixed(DEFAULT_ERC20_DECIMALS))
-            .minus(_entryPrice)
-            .multipliedBy(position.totalPosition)
-            .toNumber() // pnl in token1
-        : // token1Price -> token0 / token1
-          // entry price -> input / output -> token0 / token1
-          // total position -> output -> token1
-          new BN(pool.token1Price.toFixed(DEFAULT_ERC20_DECIMALS))
-            .minus(_entryPrice)
-            .multipliedBy(position.totalPosition)
-            .toNumber() // pnl in token0
-
-      // use token0 as quote, token1 as base
-      // pnl will be in output token
-      // entry price will be in quote token.
-
-      if (pool.token0Price.greaterThan(1)) {
-        // entry price = token1 / token0
-        return [
-          _pnl,
-          position.isToken0 ? _entryPrice.toNumber() : new BN(1).dividedBy(_entryPrice).toNumber(),
-          position.isToken0 ? new BN(1).dividedBy(curPrice).toNumber() : curPrice.toNumber(),
-        ]
-      } else {
-        // entry price = token0 / token1
-        return [
-          _pnl,
-          position.isToken0 ? new BN(1).dividedBy(_entryPrice).toNumber() : _entryPrice.toNumber(),
-          new BN(1).dividedBy(curPrice).toNumber(),
-        ]
-      }
-    }
-    return [0, 0, 0]
-  }, [position, pool?.token0Price, pool?.token1Price, token0, token1])
-  // console.log('tokens', token0, token1,quoteBaseSymbol )
-  const quoteBaseSymbol = useMemo(() => {
-    if (token0 && token1 && pool?.token0Price) {
-      if (pool.token0Price.greaterThan(1)) {
-        return `${token0.symbol}/${token1.symbol}`
-      } else {
-        return `${token1.symbol}/${token0.symbol}`
-      }
-    }
-    return '-/-'
-  }, [pool, token1, token0])
-
-  const [inputCurrencySymbol, outputCurrencySymbol] = useMemo(() => {
-    if (position.isToken0) {
-      return [formatSymbol(token1?.symbol), formatSymbol(token0?.symbol)]
-    } else {
-      return [formatSymbol(token0?.symbol), formatSymbol(token1?.symbol)]
-    }
-  }, [token0, token1, position])
-
-  const remainingPremium = useMemo(() => {
-    if (position) {
-      const timeLeft = moment.duration(moment.unix(Number(position.repayTime)).add(1, 'days').diff(now))
-
-      return position.premiumLeft.multipliedBy(timeLeft.asSeconds() / 86400).toNumber() < 0
-        ? '0'
-        : formatBNToString(position.premiumLeft.multipliedBy(timeLeft.asSeconds() / 86400))
-    }
-    return '0'
-  }, [position, now])
-
-  // const token0Quote = useMemo(() => {
-  //   return pool?.token0Price?.greaterThan(1)
-  // },[pool?.token0Price])
-
   // console.log("position: ", position)
 
-  const arrow = getDeltaArrow(pnl, 18)
+  const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
+
   // console.log('leverageFactor', leverageFactor, initialCollateral, totalDebtInput)
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
@@ -751,7 +665,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <ClickableContent>
               <RowBetween>
                 <PositionInfo>
-                  <GreenText> x{`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrencySymbol}`}</GreenText>
+                  <GreenText>
+                    {' '}
+                    x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.totalPosition.currency?.symbol}`}
+                  </GreenText>
                 </PositionInfo>
               </RowBetween>
             </ClickableContent>
@@ -759,29 +676,34 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow>
               <UnderlineText>
-                {`${formatBNToString(position.totalPosition, NumberType.SwapTradeAmount)} ${outputCurrencySymbol}`}
+                {`${formatCurrencyAmount(position?.totalPosition, NumberType.SwapTradeAmount)} ${
+                  position?.totalPosition.currency?.symbol
+                }`}
               </UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
           }
           collateral={
             <FlexStartRow>
-              {`${formatBNToString(position.margin, NumberType.SwapTradeAmount)} ${inputCurrencySymbol}`}
+              {`${formatCurrencyAmount(position?.margin, NumberType.SwapTradeAmount)} ${
+                position?.margin.currency?.symbol
+              }`}
             </FlexStartRow>
           }
           repaymentTime={
-            <FlexStartRow>{!isOverDue ? <GreenText>{timeLeft}</GreenText> : <RedText>{0}</RedText>}</FlexStartRow>
+            <FlexStartRow>
+              {position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>}
+            </FlexStartRow>
           }
           PnL={
             <FlexStartRow>
               <AutoRow>
                 <RowBetween>
-                  <DeltaText delta={Number(pnl)}>
-                    {pnl ? `${formatNumber(Number(pnl), NumberType.SwapTradeAmount)} ${inputCurrencySymbol}` : '-'}
+                  <DeltaText delta={Number(position?.PnL().toExact())}>
+                    {`${formatCurrencyAmount(position?.PnL(), NumberType.SwapTradeAmount)} ${
+                      position?.margin.currency?.symbol
+                    }`}
                   </DeltaText>
-                  {/* <ArrowCell>
-                    {arrow}
-                  </ArrowCell>*/}
                 </RowBetween>
               </AutoRow>
             </FlexStartRow>
@@ -797,22 +719,16 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   lineHeight: 1.5,
                 }}
               >
-                {`${formatNumber(Number(entryPrice), NumberType.SwapTradeAmount)}/${formatNumber(
-                  Number(currentPrice),
-                  NumberType.SwapTradeAmount
-                )} `}
-                <AutoColumn>{quoteBaseSymbol}</AutoColumn>
+                {`${formatPrice(entryPrice)}/${formatPrice(currentPrice)} `}
+                <AutoColumn>{`${entryPrice?.baseCurrency.symbol}/${entryPrice?.quoteCurrency.symbol}`}</AutoColumn>
               </AutoColumn>
             </FlexStartRow>
           }
           remainingPremium={
-            <FlexStartRow>
-              {`${remainingPremium ? remainingPremium : 0}/${formatBNToString(
-                position.premiumLeft
-              )} ${inputCurrencySymbol}`}
-            </FlexStartRow>
+            <FlexStartRow>{`${formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)} ${
+              position?.margin.currency?.symbol
+            }`}</FlexStartRow>
           }
-          position={position}
         />
       </StyledLoadedRow>
     </div>

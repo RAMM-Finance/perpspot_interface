@@ -1,18 +1,19 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { SwapEventName, SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
-import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
+import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
+import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { getPriceUpdateBasisPoints } from 'lib/utils/analytics'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useState } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import { Text } from 'rebass'
-import { MarginTrade } from 'state/marginTrading/hooks'
+import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { BorrowCreationDetails } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { ThemedText } from '../../theme'
 import { isAddress, shortenAddress } from '../../utils'
@@ -386,16 +387,16 @@ export function LeverageCloseModalHeader({
 // }
 export function LeverageModalHeader({
   trade,
-  premiumNecessary,
   allowedSlippage,
   recipient,
   showAcceptChanges,
   onAcceptChanges,
-  premiumDeposit,
+  preTradeInfo,
+  existingPosition,
 }: {
-  trade: MarginTrade // InterfaceTrade<Currency, Currency, TradeType>
-  premiumNecessary: CurrencyAmount<Currency>
-  premiumDeposit: CurrencyAmount<Currency>
+  trade: AddMarginTrade // InterfaceTrade<Currency, Currency, TradeType>
+  preTradeInfo: PreTradeInfo
+  existingPosition: MarginPositionDetails
   allowedSlippage: Percent
   recipient: string | null
   showAcceptChanges: boolean
@@ -406,9 +407,13 @@ export function LeverageModalHeader({
   const [lastExecutionPrice, setLastExecutionPrice] = useState(trade.executionPrice)
   // const [priceUpdate, setPriceUpdate] = useState<number | undefined>()
 
-  const fiatValueInput = useUSDPrice(trade.marginAmount.add(premiumNecessary))
-  const fiatValueTotalInput = useUSDPrice(trade.marginAmount.add(trade.borrowAmount))
-  const fiatValueTotalOutput = useUSDPrice(trade.outputAmount)
+  const fiatValueInput = useUSDPrice(
+    trade?.margin && preTradeInfo?.premiumNecessary ? trade?.margin?.add(preTradeInfo?.premiumNecessary) : undefined
+  )
+  const fiatValueTotalInput = useUSDPrice(
+    trade?.margin && trade?.borrowAmount ? trade?.margin?.add(trade?.borrowAmount) : undefined
+  )
+  const fiatValueTotalOutput = useUSDPrice(trade?.swapOutput)
   // const fiatValueOutput = useUSDPrice(trade.outputAmount)
 
   // const displayValues = useMemo(() => {
@@ -442,16 +447,17 @@ export function LeverageModalHeader({
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
-                {formatCurrencyAmount(trade.marginAmount, 18)} (+ {formatCurrencyAmount(premiumNecessary, 18)})
+                {formatCurrencyAmount(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
+                {formatCurrencyAmount(preTradeInfo.premiumNecessary, NumberType.SwapTradeAmount)})
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
               <Text fontSize={12} fontWeight={300} marginRight="2px">
                 Payment
               </Text>
-              <CurrencyLogo currency={trade.marginAmount.currency} size="20px" style={{ marginRight: '12px' }} />
+              <CurrencyLogo currency={trade?.margin?.currency} size="20px" style={{ marginRight: '12px' }} />
               <Text fontSize={20} fontWeight={500}>
-                {trade.marginAmount.currency.symbol}
+                {trade?.margin?.currency.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
@@ -468,16 +474,19 @@ export function LeverageModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
-                {formatCurrencyAmount(trade.borrowAmount.add(trade.marginAmount), 18)}
+                {formatCurrencyAmount(
+                  trade?.borrowAmount && trade?.margin ? trade.borrowAmount.add(trade.margin) : null,
+                  NumberType.SwapTradeAmount
+                )}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
               <Text fontSize={12} fontWeight={300} marginRight="2px">
                 Total Input
               </Text>
-              <CurrencyLogo currency={trade.marginAmount.currency} size="20px" style={{ marginRight: '12px' }} />
+              <CurrencyLogo currency={trade.margin?.currency} size="20px" style={{ marginRight: '12px' }} />
               <Text fontSize={20} fontWeight={500}>
-                {trade.marginAmount.currency.symbol}
+                {trade.margin?.currency.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
@@ -494,16 +503,16 @@ export function LeverageModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
-                {formatCurrencyAmount(trade.outputAmount, 18)}
+                {formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
               <Text fontSize={12} fontWeight={300} marginRight="2px">
                 Total Output
               </Text>
-              <CurrencyLogo currency={trade.outputAmount.currency} size="20px" style={{ marginRight: '12px' }} />
+              <CurrencyLogo currency={trade.swapOutput?.currency} size="20px" style={{ marginRight: '12px' }} />
               <Text fontSize={20} fontWeight={500}>
-                {trade.outputAmount.currency.symbol}
+                {trade.swapOutput?.currency.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
@@ -518,14 +527,14 @@ export function LeverageModalHeader({
         </AutoColumn>
       </LightCard>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
-        <TradePrice price={trade.executionPrice} />
+        <TradePrice price={trade?.executionPrice} />
       </RowBetween>
       <LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
         <AdvancedMarginTradeDetails
           trade={trade}
-          premiumDeposit={premiumDeposit}
-          premiumNecessary={premiumNecessary}
           allowedSlippage={allowedSlippage}
+          existingPosition={existingPosition}
+          preTradeInfo={preTradeInfo}
         />
       </LightCard>
       {showAcceptChanges ? (
@@ -552,7 +561,7 @@ export function LeverageModalHeader({
           <Trans>
             Output is estimated. You will receive at least{' '}
             <b>
-              {formatCurrencyAmount(trade.outputAmount, 18)} {trade.outputAmount.currency.symbol}
+              {formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)} {trade.swapOutput.currency.symbol}
             </b>{' '}
             or the transaction will revert.
           </Trans>

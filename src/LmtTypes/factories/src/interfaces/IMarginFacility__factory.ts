@@ -48,7 +48,7 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "minEstimatedSlippage",
+            name: "simulatedOutput",
             type: "uint256",
           },
           {

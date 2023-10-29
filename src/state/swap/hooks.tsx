@@ -19,7 +19,6 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
-import { RawPoolKey } from 'types/lmtv2position'
 
 import { DEFAULT_ERC20_DECIMALS, TOKEN_SHORTHANDS } from '../../constants/tokens'
 import { useCurrency } from '../../hooks/Tokens'
@@ -206,17 +205,6 @@ export interface LeverageTrade {
   existingTotalPosition: BN
   existingCollateral: BN
   tokenId?: number // if not existing position then this will be undefined
-}
-
-export interface MarginFacilityTrade {
-  margin: CurrencyAmount<Currency>
-  borrowAmount: CurrencyAmount<Currency>
-  premiumOwed: CurrencyAmount<Currency>
-  leverageFactor: number
-  totalPosition: CurrencyAmount<Currency>
-  existingPosition: boolean
-  positionIsToken0: boolean
-  poolKey: RawPoolKey
 }
 
 export interface BorrowCreationDetails {

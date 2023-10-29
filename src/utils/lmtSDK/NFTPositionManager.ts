@@ -132,14 +132,27 @@ export abstract class NonfungiblePositionManager {
 
     // adjust for slippage
     const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
-    const amount0Min = toHex(minimumAmounts.amount0)
-    const amount1Min = toHex(minimumAmounts.amount1)
+    const amount0Min = minimumAmounts.amount0.toString()
+    const amount1Min = minimumAmounts.amount1.toString()
 
     const deadline = toHex(options.deadline)
     let calldata: string
     // mint
     if (isMint(options)) {
       const recipient: string = validateAndParseAddress(options.recipient)
+      // console.log('params', {
+      //   token0: position.pool.token0.address,
+      //   token1: position.pool.token1.address,
+      //   fee: position.pool.fee,
+      //   tickLower: position.tickLower,
+      //   tickUpper: position.tickUpper,
+      //   amount0Desired: amount0Desired.toString(),
+      //   amount1Desired: amount1Desired.toString(),
+      //   amount0Min,
+      //   amount1Min,
+      //   recipient,
+      //   deadline,
+      // })
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('mint', [
         {
           token0: position.pool.token0.address,

@@ -38,7 +38,7 @@ export type PoolKeyStructOutput = [string, string, number] & {
 export type AddParamsStruct = {
   margin: PromiseOrValue<BigNumberish>;
   maxSlippage: PromiseOrValue<BigNumberish>;
-  minEstimatedSlippage: PromiseOrValue<BigNumberish>;
+  simulatedOutput: PromiseOrValue<BigNumberish>;
   borrowAmount: PromiseOrValue<BigNumberish>;
   positionIsToken0: PromiseOrValue<boolean>;
   executionOption: PromiseOrValue<BigNumberish>;
@@ -60,7 +60,7 @@ export type AddParamsStructOutput = [
 ] & {
   margin: BigNumber;
   maxSlippage: BigNumber;
-  minEstimatedSlippage: BigNumber;
+  simulatedOutput: BigNumber;
   borrowAmount: BigNumber;
   positionIsToken0: boolean;
   executionOption: BigNumber;

@@ -27,7 +27,7 @@ import { Info, Maximize2 } from 'react-feather'
 import { Text } from 'rebass'
 import { MarginField } from 'state/marginTrading/actions'
 import {
-  MarginTrade,
+  AddMarginTrade,
   useDerivedAddPositionInfo,
   useMarginTradingActionHandlers,
   useMarginTradingState,
@@ -93,7 +93,7 @@ const TradeTabContent = () => {
     attemptingTxn: boolean
     txHash: string | undefined
     showConfirm: boolean
-    tradeToConfirm: MarginTrade | undefined
+    tradeToConfirm: AddMarginTrade | undefined
     tradeErrorMessage: string | undefined
   }>({
     showConfirm: false,
@@ -103,16 +103,7 @@ const TradeTabContent = () => {
     tradeErrorMessage: undefined,
   })
 
-  const {
-    trade: trade,
-    state: tradeState,
-    inputError,
-    approvalAmount,
-    premiumDeposit,
-    premiumNecessary,
-    allowedSlippage,
-    additionalPremium,
-  } = useDerivedAddPositionInfo()
+  const { trade, preTradeInfo, state: tradeState, inputError, existingPosition } = useDerivedAddPositionInfo()
 
   // const { callback: marginTradeCallback } = useAddMarginPositionCallback(trade)
 
@@ -136,7 +127,7 @@ const TradeTabContent = () => {
 
   // allowance / approval
   const [facilityApprovalState, approveMarginFacility] = useApproveCallback(
-    approvalAmount,
+    preTradeInfo?.approvalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
@@ -150,11 +141,11 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
-  const fiatValueTradeMargin = useUSDPrice(trade?.marginAmount)
-  const fiatValueTradeInput = useUSDPrice(trade?.marginAmount.add(trade?.borrowAmount))
-  const fiatValueTradeOutput = useUSDPrice(trade?.outputAmount)
+  const fiatValueTradeMargin = useUSDPrice(trade?.margin)
+  const fiatValueTradeInput = useUSDPrice(trade?.swapInput)
+  const fiatValueTradeOutput = useUSDPrice(trade?.swapOutput)
 
-  const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.marginAmount?.equalTo(maxInputAmount))
+  const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.equalTo(maxInputAmount))
 
   const [formattedMargin, formattedPosition, formattedLeverageFactor] = useMemo(() => {
     return [
@@ -262,7 +253,7 @@ const TradeTabContent = () => {
   )
 
   const userHasSpecifiedInputOutput = Boolean(
-    currencies[Field.INPUT] && currencies[Field.OUTPUT] && trade?.marginAmount.greaterThan(JSBI.BigInt(0))
+    currencies[Field.INPUT] && currencies[Field.OUTPUT] && trade?.margin.greaterThan(JSBI.BigInt(0))
   )
 
   const updateLeverageAllowance = useCallback(async () => {
@@ -273,7 +264,7 @@ const TradeTabContent = () => {
     }
   }, [approveMarginFacility])
 
-  // console.log('trade', premiumDeposit?.toFixed(), premiumNecessary?.toFixed(), approvalAmount?.toFixed(), trade)
+  // console.log('trade', trade)
 
   return (
     <Wrapper>
@@ -281,16 +272,16 @@ const TradeTabContent = () => {
         isOpen={showConfirm}
         originalTrade={tradeToConfirm}
         trade={trade}
+        preTradeInfo={preTradeInfo}
         onConfirm={() => 0}
         onDismiss={handleConfirmDismiss}
         onAcceptChanges={() => {
           return
         }}
+        existingPosition={existingPosition}
         attemptingTxn={attemptingTxn}
         txHash={txHash}
-        premiumDeposit={premiumDeposit}
-        premiumNecessary={premiumNecessary}
-        allowedSlippage={allowedSlippage}
+        allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage}
       />
 
@@ -312,7 +303,7 @@ const TradeTabContent = () => {
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
-              premium={premiumNecessary}
+              premium={preTradeInfo?.premiumNecessary}
               showPremium={false}
             />
           </Trace>
@@ -358,7 +349,7 @@ const TradeTabContent = () => {
                 value={
                   tradeState !== LeverageTradeState.VALID || !trade
                     ? '-'
-                    : formatCurrencyAmount(trade.outputAmount, NumberType.SwapTradeAmount)
+                    : formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)
                 }
                 onUserInput={() => 0}
                 showMaxButton={false}
@@ -455,10 +446,10 @@ const TradeTabContent = () => {
           <DetailsSwapSection>
             <LeverageDetailsDropdown
               trade={trade}
-              premiumDeposit={premiumDeposit}
-              premiumNecessary={premiumNecessary}
+              preTradeInfo={preTradeInfo}
+              existingPosition={existingPosition}
               loading={tradeIsLoading}
-              allowedSlippage={allowedSlippage}
+              allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
             />
           </DetailsSwapSection>
         </div>
@@ -497,9 +488,9 @@ const TradeTabContent = () => {
                     text={
                       <Trans>
                         Permission is required for Limitless to use each token.{' '}
-                        {additionalPremium && trade?.marginAmount
-                          ? `Allowance of ${formatCurrencyAmount(
-                              trade?.marginAmount?.add(additionalPremium),
+                        {preTradeInfo && formattedMargin
+                          ? `Allowance of ${formatNumberOrString(
+                              Number(preTradeInfo.additionalPremium.toExact()) + Number(formattedMargin),
                               NumberType.SwapTradeAmount
                             )} ${currencies[Field.INPUT]?.symbol} required.`
                           : null}

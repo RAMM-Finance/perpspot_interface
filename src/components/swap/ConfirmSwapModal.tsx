@@ -2,14 +2,15 @@ import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceModalName } from '@uniswap/analytics-events'
 import { Trade } from '@uniswap/router-sdk'
-import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
+import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useCurrency } from 'hooks/Tokens'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
-import { MarginTrade } from 'state/marginTrading/hooks'
+import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { BorrowCreationDetails, useSwapState } from 'state/swap/hooks'
+import { MarginPositionDetails } from 'types/lmtv2position'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { marginTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
@@ -145,8 +146,6 @@ export default function ConfirmSwapModal({
 export function LeverageConfirmModal({
   trade,
   originalTrade,
-  premiumDeposit,
-  premiumNecessary,
   onAcceptChanges,
   allowedSlippage,
   onConfirm,
@@ -155,15 +154,16 @@ export function LeverageConfirmModal({
   isOpen,
   attemptingTxn,
   txHash,
+  preTradeInfo,
+  existingPosition,
 }: // swapQuoteReceivedDate,
 // fiatValueInput,
 // fiatValueOutput,
 {
   isOpen: boolean
-  trade: MarginTrade | undefined
-  originalTrade: MarginTrade | undefined
-  premiumDeposit: CurrencyAmount<Currency> | undefined
-  premiumNecessary: CurrencyAmount<Currency> | undefined
+  trade: AddMarginTrade | undefined
+  originalTrade: AddMarginTrade | undefined
+  preTradeInfo: PreTradeInfo | undefined
   attemptingTxn: boolean
   txHash: string | undefined
   allowedSlippage: Percent
@@ -171,6 +171,8 @@ export function LeverageConfirmModal({
   onConfirm: () => void
   tradeErrorMessage: ReactNode | undefined
   onDismiss: () => void
+  existingPosition: MarginPositionDetails | undefined
+
   // swapQuoteReceivedDate: Date | undefined
   // fiatValueInput: { data?: number; isLoading: boolean }
   // fiatValueOutput: { data?: number; isLoading: boolean }
@@ -189,18 +191,18 @@ export function LeverageConfirmModal({
   }, [isOpen, onDismiss])
 
   const modalHeader = useCallback(() => {
-    return trade && premiumNecessary && premiumDeposit ? (
+    return trade && preTradeInfo && existingPosition ? (
       <LeverageModalHeader
         trade={trade}
-        premiumDeposit={premiumDeposit}
+        preTradeInfo={preTradeInfo}
+        existingPosition={existingPosition}
         recipient={null}
-        premiumNecessary={premiumNecessary}
         allowedSlippage={allowedSlippage}
         showAcceptChanges={false}
         onAcceptChanges={onAcceptChanges}
       />
     ) : null
-  }, [allowedSlippage, onAcceptChanges, premiumDeposit, premiumNecessary, trade])
+  }, [allowedSlippage, onAcceptChanges, trade, preTradeInfo, existingPosition])
 
   const modalBottom = useCallback(() => {
     return trade ? (
@@ -218,8 +220,8 @@ export function LeverageConfirmModal({
   // text to show while loading
   const pendingText = (
     <Trans>
-      Borrowing {trade?.borrowAmount?.toExact()} {trade?.marginAmount?.currency?.symbol} and Recieving{' '}
-      {formatCurrencyAmount(trade?.outputAmount, 18)} {trade?.outputAmount?.currency?.symbol}
+      Borrowing {trade?.borrowAmount?.toExact()} {trade?.margin?.currency?.symbol} and Recieving{' '}
+      {formatCurrencyAmount(trade?.swapOutput, 18)} {trade?.swapOutput?.currency?.symbol}
     </Trans>
   )
 
@@ -232,8 +234,8 @@ export function LeverageConfirmModal({
           title={
             <Trans>
               Confirm x
-              {trade
-                ? formatCurrencyAmount(trade.marginAmount.add(trade?.borrowAmount).divide(trade.marginAmount), 4)
+              {trade?.margin && trade?.borrowAmount
+                ? formatCurrencyAmount(trade.margin.add(trade?.borrowAmount).divide(trade.margin), 4)
                 : '-'}{' '}
               Leverage Position
             </Trans>
@@ -255,7 +257,7 @@ export function LeverageConfirmModal({
         hash={txHash}
         content={confirmationContent}
         pendingText={pendingText}
-        currencyToAdd={trade?.outputAmount.currency}
+        currencyToAdd={trade?.swapOutput?.currency}
       />
     </Trace>
   )

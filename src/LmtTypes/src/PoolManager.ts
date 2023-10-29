@@ -167,7 +167,7 @@ export interface PoolManagerInterface extends utils.Interface {
     "borrowedLiquidities(bytes32,int24)": FunctionFragment;
     "collectFees((address,address,uint24),int24,int24)": FunctionFragment;
     "feeAmountTickSpacing(uint24)": FunctionFragment;
-    "findAndWithdraw((address,address,uint24),uint256,uint256,bool,uint256)": FunctionFragment;
+    "findAndWithdraw((address,address,uint24),bool,uint256,uint256,uint256)": FunctionFragment;
     "findNearestInitializedBin(bytes32,int24,int24,int24,bool,uint256)": FunctionFragment;
     "getGrowth(address,int24,(uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "getInterestGrowthInside(address,int24,int24,int24)": FunctionFragment;
@@ -301,9 +301,9 @@ export interface PoolManagerInterface extends utils.Interface {
     functionFragment: "findAndWithdraw",
     values: [
       PoolKeyStruct,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
@@ -730,10 +730,10 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
+      borrowBelow: PromiseOrValue<boolean>,
       margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
-      borrowBelow: PromiseOrValue<boolean>,
-      estimatedMinimumSlippage: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1012,10 +1012,10 @@ export interface PoolManager extends BaseContract {
 
   findAndWithdraw(
     key: PoolKeyStruct,
+    borrowBelow: PromiseOrValue<boolean>,
     margin: PromiseOrValue<BigNumberish>,
     borrowAmount: PromiseOrValue<BigNumberish>,
-    borrowBelow: PromiseOrValue<boolean>,
-    estimatedMinimumSlippage: PromiseOrValue<BigNumberish>,
+    simulatedOutput: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1299,10 +1299,10 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
+      borrowBelow: PromiseOrValue<boolean>,
       margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
-      borrowBelow: PromiseOrValue<boolean>,
-      estimatedMinimumSlippage: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [
@@ -1581,10 +1581,10 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
+      borrowBelow: PromiseOrValue<boolean>,
       margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
-      borrowBelow: PromiseOrValue<boolean>,
-      estimatedMinimumSlippage: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1824,10 +1824,10 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
+      borrowBelow: PromiseOrValue<boolean>,
       margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
-      borrowBelow: PromiseOrValue<boolean>,
-      estimatedMinimumSlippage: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

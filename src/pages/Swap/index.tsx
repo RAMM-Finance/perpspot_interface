@@ -16,7 +16,6 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
-import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -28,6 +27,7 @@ import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
@@ -488,8 +488,47 @@ export default function Swap({ className }: { className?: string }) {
   //   }
   // }, [swapHeaderHeight, swapWrapperHeight])
 
-  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
   // const { borrowLoading: borrowPositionsLoading, borrowPositions: borrowPositions } = useBorrowLMTPositions(account)
+  // export interface BaseFacilityPositionDetails {
+  //   poolKey: RawPoolKey
+  //   isToken0: boolean
+  //   totalDebtOutput: BN
+  //   totalDebtInput: BN
+  //   openTime: number
+  //   repayTime: number
+  //   isBorrow: boolean
+  //   premiumOwed: BN // how much premium is owed since last repayment
+  //   premiumDeposit: BN
+  //   premiumLeft: BN
+  // }
+
+  // export interface MarginPositionDetails extends BaseFacilityPositionDetails {
+  //   totalPosition: BN
+  //   margin: BN
+  // }
+  const leveragePositions: MarginPositionDetails[] = useMemo(() => {
+    return [
+      // {
+      //   poolKey: {
+      //     token0Address: fusdc_s,
+      //     token1Address: feth_s,
+      //     fee: FeeAmount.MEDIUM,
+      //   },
+      //   isToken0: true,
+      //   totalDebtOutput: new BN(99),
+      //   totalDebtInput: new BN(99),
+      //   openTime: new Date().getMilliseconds() / 1000,
+      //   repayTime: new Date().getMilliseconds() / 1000,
+      //   margin: new BN(1),
+      //   premiumOwed: new BN(2.5),
+      //   premiumDeposit: new BN(3),
+      //   premiumLeft: new BN(4),
+      //   isBorrow: false,
+      //   totalPosition: new BN(240),
+      // },
+    ]
+  }, [])
 
   const [activePositionTable, setActiveTable] = useState(1)
 

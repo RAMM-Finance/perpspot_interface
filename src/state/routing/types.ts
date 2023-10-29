@@ -16,7 +16,7 @@ export enum LeverageTradeState {
   INVALID,
   NO_ROUTE_FOUND,
   VALID,
-  SYNCING,
+  SYNCING, // when same parameters are used, but newer block number
 }
 
 // from https://github.com/Uniswap/routing-api/blob/main/lib/handlers/schema.ts
