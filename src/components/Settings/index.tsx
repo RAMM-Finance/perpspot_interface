@@ -91,7 +91,7 @@ const MenuFlyout = styled.span`
   font-size: 1rem;
   position: absolute;
   top: 2rem;
-  right: 0rem;
+  right: -1.25rem;
   z-index: 100;
   color: ${({ theme }) => theme.textPrimary};
 

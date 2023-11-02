@@ -33,6 +33,8 @@ const LinkRow = styled(Link)`
   padding: 16px;
   text-decoration: none;
   font-weight: 500;
+  background-color: #0d1421;
+  border-top: solid 1px ${({ theme }) => theme.backgroundOutline};
 
   & > div:not(:first-child) {
     text-align: center;
@@ -214,9 +216,9 @@ export default function PositionListItem({
       <RowBetween>
         <PrimaryPositionIdData>
           <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
-          <ThemedText.SubHeader>
+          <ThemedText.SubHeaderSmall>
             &nbsp;{currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
-          </ThemedText.SubHeader>
+          </ThemedText.SubHeaderSmall>
 
           {/*<FeeTierText>
             <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>

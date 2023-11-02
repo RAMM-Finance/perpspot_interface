@@ -4,16 +4,15 @@ import { BrowserEvent, InterfaceElementName, InterfaceEventName, InterfacePageNa
 import { useWeb3React } from '@web3-react/core'
 import { ButtonGray, ButtonPrimary, ButtonText } from 'components/Button'
 import { AutoColumn } from 'components/Column'
-import { FlyoutAlignment, Menu } from 'components/Menu'
+import { Menu } from 'components/Menu'
 import PositionList from 'components/PositionList'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { V2_FACTORY_ADDRESSES } from 'constants/addresses'
 import { isSupportedChain } from 'constants/chains'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
-import { AlertTriangle, BookOpen, ChevronDown, ChevronsRight, Inbox, Layers } from 'react-feather'
+import { AlertTriangle, Inbox } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
@@ -134,14 +133,12 @@ const ResponsiveButtonPrimary = styled(ButtonPrimary)`
 `
 
 const MainContentWrapper = styled.main`
-  margin-right: 10px;
-  margin-left: 10px;
-
-  /* background-color: ${({ theme }) => theme.searchBackground}; */
-  background-color: #0d111c;
-  border: 2px solid ${({ theme }) => theme.searchBackground};
-  padding: 10px;
-  border-radius: 32px;
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
@@ -239,12 +236,36 @@ export default function Pool() {
                 <Trans>Liquidity Positions</Trans>
               </ThemedText.LargeHeader>*/}
               <ButtonRow>
-                <ResponsiveButtonPrimary data-cy="join-pool-button" id="join-pool-button" as={Link} to="/add/ETH">
+                <ButtonPrimary
+                  style={{
+                    marginLeft: '20px',
+                    padding: '.5rem',
+                    width: 'fit-content',
+                    fontSize: '0.8rem',
+                    borderRadius: '10px',
+                    height: '30px',
+                    lineHeight: '1',
+                  }}
+                  data-cy="join-pool-button"
+                  id="join-pool-button"
+                  as={Link}
+                  to="/add/ETH"
+                >
                   <Trans>Add New Position</Trans>
-                </ResponsiveButtonPrimary>
-                <ResponsiveButtonPrimary>
+                </ButtonPrimary>
+                <ButtonPrimary
+                  style={{
+                    marginLeft: '20px',
+                    padding: '.5rem',
+                    width: 'fit-content',
+                    fontSize: '0.8rem',
+                    borderRadius: '10px',
+                    height: '30px',
+                    lineHeight: '1',
+                  }}
+                >
                   <Trans>Import Uniswap Position</Trans>
-                </ResponsiveButtonPrimary>
+                </ButtonPrimary>
               </ButtonRow>
             </TitleRow>
 

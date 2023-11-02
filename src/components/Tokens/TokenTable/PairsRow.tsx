@@ -49,17 +49,18 @@ const StyledTokenRow = styled.div<{
   last?: boolean
   loading?: boolean
 }>`
-  background-color: transparent;
+  background-color: #0d1421;
   display: grid;
-  font-size: 14px;
-  grid-template-columns: 5fr 5fr 5fr 5fr 6fr 6fr 4fr;
-  line-height: 24px;
+  font-size: 0.75rem;
+  grid-template-columns: 2.5fr 2.5fr 2.5fr 2fr 3fr 4fr 8fr;
+  padding-left: 1rem;
+  padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  max-width: 1480px;
+  // max-width: 1480px;
   min-width: 390px;
 
   ${({ first, last }) => css`
-    height: ${first || last ? '72px' : '64px'};
+    height: 4.5rem;
     padding-top: ${first ? '14px' : '0px'};
     padding-bottom: ${last ? '14px' : '0px'};
   `}
@@ -88,8 +89,8 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     //grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-    grid-template-columns: 5fr 5fr 5fr 5fr 6fr 6fr 4fr;
-    font-size: 13px;
+    grid-template-columns: 5fr 5fr 4fr 3fr 6fr 6fr 6fr;
+    font-size: 0.75rem;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
@@ -114,7 +115,7 @@ const StyledTokenRow = styled.div<{
 const ClickableContent = styled.div<{ rate?: number }>`
   display: flex;
   text-decoration: none;
-  color: ${({ theme, rate }) => (!rate ? theme.textPrimary : rate > 0 ? '#10CC83' : '#FA3C58')};
+  color: ${({ theme, rate }) => (!rate ? theme.textSecondary : rate > 0 ? '#10CC83' : '#FA3C58')};
   align-items: center;
   cursor: pointer;
 
@@ -131,16 +132,18 @@ const ClickableRate = styled(ClickableContent)`
 `
 
 const StyledHeaderRow = styled(StyledTokenRow)`
-  border-bottom: 1px solid;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   border-color: ${({ theme }) => theme.backgroundOutline};
   border-radius: 8px 8px 0px 0px;
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 16px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 0.8rem;
   font-weight: 900;
-  height: 64px;
+  height: 2rem;
   line-height: 16px;
-  margin-bottom: 15px;
-  /* padding: 0px 12px; */
+  /* margin-bottom: 15px;
+  padding: 0px 12px;
+  height: 64px;
+   */
   width: 100%;
   justify-content: center;
 
@@ -149,7 +152,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    font-size: 13px;
+    font-size: 0.8rem;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -158,9 +161,8 @@ const StyledHeaderRow = styled(StyledTokenRow)`
 `
 
 const ListNumberCell = styled(Cell)<{ header: boolean }>`
-  color: ${({ theme }) => theme.textSecondary};
+  color: ${({ theme }) => theme.textPrimary};
   min-width: 32px;
-  font-size: 14px;
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: none;
@@ -184,7 +186,6 @@ const TvlCell = styled(DataCell)`
 `
 const NameCell = styled(Cell)`
   justify-content: flex-start;
-  min-width: 240px;
   /* gap: 8px; */
 `
 const PriceCell = styled(DataCell)`
@@ -202,8 +203,7 @@ const PercentChangeInfoCell = styled(Cell)`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: flex;
     justify-content: flex-end;
-    color: ${({ theme }) => theme.textSecondary};
-    font-size: 12px;
+    color: ${({ theme }) => theme.textPrimary};
     line-height: 16px;
   }
 `
@@ -250,7 +250,6 @@ const StyledLink = styled(Link)`
 const TokenInfoCell = styled(Cell)`
   gap: 10px;
   line-height: 24px;
-  font-size: 16px;
   max-width: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -264,18 +263,22 @@ const TokenInfoCell = styled(Cell)`
   }
 `
 const TokenName = styled.div`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-  font-weight: 900;
+  justify-content: flex-start;
+  display: flex;
+  line-height: 18px;
+  flex-direction: column;
+  align-items: flex-start;
+  /* margin-left: 16px; */
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `
 const TokenSymbol = styled(Cell)`
   color: ${({ theme }) => theme.textTertiary};
   text-transform: uppercase;
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    font-size: 12px;
     height: 16px;
     justify-content: flex-start;
     width: 100%;
@@ -287,6 +290,15 @@ const VolumeCell = styled(DataCell)`
     display: none;
   }
 `
+const ButtonCell = styled(DataCell)`
+  /* padding-right: 8px; */
+  display: flex;
+  justify-content: end;
+  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`
+
 const SmallLoadingBubble = styled(LoadingBubble)`
   width: 25%;
 `
@@ -315,8 +327,8 @@ enum TokenSortMethod {
   PERCENT_CHANGE = 'Change',
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
-  APR = 'Estimated APR',
-  URate = 'Utilization Rate',
+  APR = 'Est APR',
+  URate = 'Util Rate',
 }
 
 export const filterStringAtom = atomWithReset<string>('')
@@ -382,9 +394,9 @@ function HeaderCell({
       {sortMethod === category && (
         <>
           {sortAscending ? (
-            <ArrowUp size={15} strokeWidth={1.8} color={theme.accentActive} />
+            <ArrowUp size={12} strokeWidth={1.8} color={theme.accentActive} />
           ) : (
-            <ArrowDown size={15} strokeWidth={1.8} color={theme.accentActive} />
+            <ArrowDown size={12} strokeWidth={1.8} color={theme.accentActive} />
           )}
         </>
       )}
@@ -447,28 +459,27 @@ function TokenRow({
       {/*<PercentChangeCell data-testid="percent-change-cell" sortable={header}>
         {percentChange}
       </PercentChangeCell> */}
+      <VolumeCell data-testid="volume-cell" sortable={header}>
+        {APR}
+      </VolumeCell>
       <TvlCell data-testid="tvl-cell" sortable={header}>
         {tvl}
       </TvlCell>
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {volume}
       </VolumeCell>
-
-      <VolumeCell data-testid="volume-cell" sortable={header}>
-        {APR}
-      </VolumeCell>
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {UtilRate}
       </VolumeCell>
       {!header && (
-        <VolumeCell data-testid="volume-cell" sortable={header}>
+        <ButtonCell data-testid="volume-cell" sortable={header}>
           <ButtonPrimary
             style={{
               marginLeft: '20px',
               padding: '.5rem',
               width: 'fit-content',
-              fontSize: '0.825rem',
-              borderRadius: '32px',
+              fontSize: '0.7rem',
+              borderRadius: '10px',
               height: '30px',
               lineHeight: '1',
             }}
@@ -480,9 +491,29 @@ function TokenRow({
               }
             }}
           >
-            <Trans>Provide Liquidity</Trans>
+            <Trans>Provide</Trans>
           </ButtonPrimary>
-        </VolumeCell>
+          <ButtonPrimary
+            style={{
+              marginLeft: '20px',
+              padding: '.5rem',
+              width: 'fit-content',
+              fontSize: '0.7rem',
+              borderRadius: '10px',
+              height: '30px',
+              lineHeight: '1',
+            }}
+            onClick={() => {
+              if (currency1 && currency0) {
+                navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
+                  state: { currency0, currency1 },
+                })
+              }
+            }}
+          >
+            <Trans>Withdraw</Trans>
+          </ButtonPrimary>
+        </ButtonCell>
       )}
       {/*
         !header && 
@@ -658,7 +689,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     urate_ = 56.3
   }
   return (
-    <div ref={ref} data-testid={`token-table-row-${token0.symbol}`}>
+    <RowWrapper ref={ref} data-testid={`token-table-row-${token0.symbol}`}>
       {/*<ClickableContent
         // to={'/swap'}
         // onClick={() =>{if(currency1&&currency0){
@@ -684,9 +715,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           >
             {/* <QueryTokenLogo token={token} /> */}
             <TokenInfoCell>
-              <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={30} margin={true} />
+              <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={20} margin={true} />
               <TokenName data-cy="token-name">
-                {token1.symbol}/{token0.symbol}
+                <span>{token0.symbol}</span>
+                <span>{token1.symbol}</span>
               </TokenName>
               {/* <TokenSymbol>{token0.symbol}</TokenSymbol> */}
             </TokenInfoCell>
@@ -732,6 +764,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             }}
           >
             {formatNumber(tvl_, NumberType.FiatTokenStats)}
+            <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
         volume={
@@ -742,7 +775,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               }
             }}
           >
-            {formatNumber(volume_, NumberType.FiatTokenStats)}
+            {formatNumber(volume_, NumberType.FiatTokenStats)}{' '}
+            <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
         APR={
@@ -795,7 +829,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       />
 
       {/*</ClickableContent> */}
-    </div>
+    </RowWrapper>
   )
 })
 
@@ -807,4 +841,8 @@ const Price = styled.span`
 
 const Symbol = styled.span`
   color: ;
+`
+const RowWrapper = styled.div`
+  border-top: 1px solid;
+  border-color: ${({ theme }) => theme.backgroundOutline};
 `
