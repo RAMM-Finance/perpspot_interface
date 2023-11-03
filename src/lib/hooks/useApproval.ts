@@ -4,13 +4,13 @@ import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { InterfaceEventName } from '@uniswap/analytics-events'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { useTokenContract, useTestTokenContract} from 'hooks/useContract'
+import { BigNumber as BN } from 'bignumber.js'
+import { useTestTokenContract, useTokenContract } from 'hooks/useContract'
 // import { useTokenContract } from 'hooks/useContract'
 import { useTokenAllowance } from 'hooks/useTokenAllowance'
 import { getTokenAddress } from 'lib/utils/analytics'
 import { useCallback, useMemo } from 'react'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { BigNumber as BN } from "bignumber.js";
 
 export enum ApprovalState {
   UNKNOWN = 'UNKNOWN',
@@ -186,25 +186,21 @@ export function useMaxApproval(
 }
 
 export function useFaucet(
-  token: Token |undefined, 
+  token: Token | undefined,
   // amountToApprove: CurrencyAmount<Currency> | undefined,
-  spender: string|undefined,
+  spender: string | undefined
   // useIsPendingApproval: (token?: Token, spender?: string) => boolean
-) : 
-  () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined>
-{
+): () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined> {
   // const { chainId } = useWeb3React()
   // const token = amountToApprove?.currency?.isToken ? amountToApprove.currency : undefined
 
   // check the current approval status
   // const approvalState = useApprovalStateForSpender(amountToApprove, spender, useIsPendingApproval)
   const { chainId } = useWeb3React()
-  // console.log('token', token); 
+  // console.log('token', token);
   const tokenContract = useTestTokenContract(token?.address)
 
   const faucet = useCallback(async () => {
-
-
     // let useExact = false
     // const estimatedGas = await tokenContract?.estimateGas.approve(spender, MaxUint256).catch(() => {
     //   // general fallback for tokens which restrict approval amounts
@@ -212,10 +208,12 @@ export function useFaucet(
     //   return tokenContract.estimateGas?.faucet(spender, "10000000000000000000000")
     // })
     // console.log('here', tokenContract)
-    // await tokenContract?.faucet(spender, "10000000000000000000000"); 
+    // await tokenContract?.faucet(spender, "10000000000000000000000");
     // console.log('hello?')
-    const amount = new BN("100").shiftedBy(18).toFixed(0)
-    return tokenContract?.faucet(spender, amount).then((response: any) => {
+    const amount = new BN('100').shiftedBy(18).toFixed(0)
+    return tokenContract
+      ?.faucet(spender, amount)
+      .then((response: any) => {
         // console.log('here')
         // const eventProperties = {
         //   chain_id: chainId,
@@ -236,4 +234,3 @@ export function useFaucet(
 
   return faucet
 }
-

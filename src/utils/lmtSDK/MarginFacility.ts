@@ -48,7 +48,7 @@ export abstract class MarginFacilitySDK {
 
     if (param.depositPremium) {
       calldatas.push(
-        MarginFacilitySDK.INTERFACE.encodeFunctionData('modifyPremium', [
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
           {
             token0: param.positionKey.poolKey.token0Address,
             token1: param.positionKey.poolKey.token1Address,
@@ -57,11 +57,19 @@ export abstract class MarginFacilitySDK {
           param.positionKey.trader,
           param.positionKey.isToken0,
           toHex(param.depositPremium),
-          true,
         ])
       )
     }
-
+    // uint256 margin;
+    // uint256 minOutput;
+    // uint256 simulatedOutput;
+    // uint256 borrowAmount;
+    // bool positionIsToken0;
+    // uint256 executionOption;
+    // address trader;
+    // bytes executionData;
+    // int24 slippedTickMin;
+    // int24 slippedTickMax;
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {
@@ -79,6 +87,9 @@ export abstract class MarginFacilitySDK {
           trader: param.positionKey.trader,
           minOutput: toHex(param.minimumOutput),
           deadline: param.deadline,
+          executionData: [],
+          slippedTickMin: 0,
+          slippedTickMax: 0,
         },
         [],
       ])

@@ -32,14 +32,17 @@ const SettingWrapper = styled.div`
 
 // the order of displayed base currencies from left to right is always in sort order
 // currencyA is treated as the preferred base currency
-export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
-  // const isTrade = activeTab == ActiveSwapTab.TRADE
-  // const [isTrade, setIsTrade] = useState(ActiveSwapTab.TRADE)
-  const { leverage, activeTab } = useSwapState()
-  const { onSwitchTokens } = useSwapActionHandlers()
-  const { onActiveTabChange, onLeverageChange, onSwitchSwapModalTab } = useSwapActionHandlers()
-  // const selectedTab = useSelector((state: any) => state.swap.tab)
-  // const handleTabChange = onActiveTabChange(isTrade)
+export default function SwapTabHeader({
+  autoSlippage,
+  autoSlippedTick,
+  autoPremiumTolerance,
+}: {
+  autoSlippage?: Percent
+  autoSlippedTick?: Percent
+  autoPremiumTolerance?: Percent
+}) {
+  const { activeTab } = useSwapState()
+  const { onActiveTabChange } = useSwapActionHandlers()
 
   const handleTabChange = useCallback(
     (active: ActiveSwapTab) => {
@@ -79,7 +82,7 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
         >
           <Trans>Short</Trans>
         </TabElement>
-        <TabElement
+        {/* <TabElement
           onClick={() => {
             handleTabChange(ActiveSwapTab.BORROW)
           }}
@@ -88,7 +91,7 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
           activeTab={activeTab}
         >
           <Trans>Borrow</Trans>
-        </TabElement>
+        </TabElement> */}
         <TabElement
           onClick={() => handleTabChange(ActiveSwapTab.SWAP)}
           isActive={activeTab === ActiveSwapTab.SWAP}
@@ -102,7 +105,11 @@ export default function SwapTabHeader({ allowedSlippage }: { allowedSlippage: Pe
         </TabElement>
       </TapWrapper>
       <SettingWrapper>
-        <SettingsTab placeholderSlippage={allowedSlippage} />
+        <SettingsTab
+          allowedSlippage={autoSlippage}
+          autoSlippedTick={autoSlippedTick}
+          autoPremiumTolerance={autoPremiumTolerance}
+        />
       </SettingWrapper>
     </div>
   )

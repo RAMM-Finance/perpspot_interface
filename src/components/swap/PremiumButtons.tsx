@@ -1,11 +1,9 @@
 import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
-import { LMT_MARGIN_FACILITY } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
-import { useFacilityContract } from 'hooks/useContract'
+import { useMarginFacilityContract } from 'hooks/useContract'
+// import { useFacilityContract } from 'hooks/useContract'
 import React, { useCallback } from 'react'
-
 interface TokenValueInterface {
   value: number | string
   setValue: (value: number) => void
@@ -16,7 +14,7 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
   console.log(value)
   const { account, chainId } = useWeb3React()
 
-  const marginFacilityContract = useFacilityContract(LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA])
+  const marginFacilityContract = useMarginFacilityContract()
 
   const handleAddMargin = useCallback(async () => {
     if (!marginFacilityContract || !account) {
@@ -25,8 +23,8 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
     try {
       const tokenAddress = currency0?.address
       console.log('Token Address: ', tokenAddress)
-      const tx = await marginFacilityContract.depositPremium(tokenAddress, account, value)
-      console.log('Transaction: ', tx)
+      // const tx = await marginFacilityContract.depositPremium(tokenAddress, account, value)
+      // console.log('Transaction: ', tx)
     } catch (error) {
       console.error(error)
     }
@@ -39,8 +37,8 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
     try {
       const tokenAddress = currency0?.address
       console.log('Token Address: ', tokenAddress)
-      const tx = await marginFacilityContract.withdrawPremium(tokenAddress, account, value, account)
-      console.log('Transaction: ', tx)
+      // const tx = await marginFacilityContract.withdrawPremium(tokenAddress, account, value, account)
+      // console.log('Transaction: ', tx)
     } catch (error) {
       console.error(error)
     }

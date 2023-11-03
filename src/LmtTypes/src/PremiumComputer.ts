@@ -47,7 +47,6 @@ export type LiquidityLoanStruct = {
   tick: PromiseOrValue<BigNumberish>;
   liquidity: PromiseOrValue<BigNumberish>;
   premium: PromiseOrValue<BigNumberish>;
-  Urate: PromiseOrValue<BigNumberish>;
   feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
   feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
   lastGrowth: PromiseOrValue<BigNumberish>;
@@ -59,13 +58,11 @@ export type LiquidityLoanStructOutput = [
   BigNumber,
   BigNumber,
   BigNumber,
-  BigNumber,
   BigNumber
 ] & {
   tick: number;
   liquidity: BigNumber;
   premium: BigNumber;
-  Urate: BigNumber;
   feeGrowthInside0LastX128: BigNumber;
   feeGrowthInside1LastX128: BigNumber;
   lastGrowth: BigNumber;
@@ -73,8 +70,8 @@ export type LiquidityLoanStructOutput = [
 
 export interface PremiumComputerInterface extends utils.Interface {
   functions: {
-    "computePremium(address,address,bool,int24,(uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
-    "getInitFeeGrowthInside(address,int24,(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "computePremium(address,address,bool,int24,(uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "getInitFeeGrowthInside(address,address,int24,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "getInterestRate((uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
   };
 
@@ -100,8 +97,10 @@ export interface PremiumComputerInterface extends utils.Interface {
     functionFragment: "getInitFeeGrowthInside",
     values: [
       PromiseOrValue<string>,
+      PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
-      LiquidityLoanStruct[]
+      LiquidityLoanStruct[],
+      URateParamStruct
     ]
   ): string;
   encodeFunctionData(
@@ -164,8 +163,10 @@ export interface PremiumComputer extends BaseContract {
 
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       borrowInfo: LiquidityLoanStruct[],
+      param: URateParamStruct,
       overrides?: CallOverrides
     ): Promise<[LiquidityLoanStructOutput[]]>;
 
@@ -188,8 +189,10 @@ export interface PremiumComputer extends BaseContract {
 
   getInitFeeGrowthInside(
     pool: PromiseOrValue<string>,
+    poolManager: PromiseOrValue<string>,
     tickDiscretization: PromiseOrValue<BigNumberish>,
     borrowInfo: LiquidityLoanStruct[],
+    param: URateParamStruct,
     overrides?: CallOverrides
   ): Promise<LiquidityLoanStructOutput[]>;
 
@@ -212,8 +215,10 @@ export interface PremiumComputer extends BaseContract {
 
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       borrowInfo: LiquidityLoanStruct[],
+      param: URateParamStruct,
       overrides?: CallOverrides
     ): Promise<LiquidityLoanStructOutput[]>;
 
@@ -239,8 +244,10 @@ export interface PremiumComputer extends BaseContract {
 
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       borrowInfo: LiquidityLoanStruct[],
+      param: URateParamStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -264,8 +271,10 @@ export interface PremiumComputer extends BaseContract {
 
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
       borrowInfo: LiquidityLoanStruct[],
+      param: URateParamStruct,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -76,6 +76,7 @@ export interface DataProviderInterface extends utils.Interface {
   functions: {
     "getActiveMarginPositions(address)": FunctionFragment;
     "getMarginPosition(address,address,bool)": FunctionFragment;
+    "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
     "premiumOwed((address,address,uint24),address,bool)": FunctionFragment;
   };
@@ -84,6 +85,7 @@ export interface DataProviderInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "getActiveMarginPositions"
       | "getMarginPosition"
+      | "getMaxWithdrawable"
       | "getPoolkeys"
       | "premiumOwed"
   ): FunctionFragment;
@@ -101,6 +103,14 @@ export interface DataProviderInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "getMaxWithdrawable",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getPoolkeys",
     values: [PromiseOrValue<string>]
   ): string;
@@ -115,6 +125,10 @@ export interface DataProviderInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getMarginPosition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMaxWithdrawable",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -168,6 +182,13 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[DataProvider.MarginPositionInfoStructOutput]>;
 
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { maxWithdrawable: BigNumber }>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -195,6 +216,13 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<DataProvider.MarginPositionInfoStructOutput>;
 
+  getMaxWithdrawable(
+    key: PoolKeyStruct,
+    tickLower: PromiseOrValue<BigNumberish>,
+    tickUpper: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getPoolkeys(
     pool: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -221,6 +249,13 @@ export interface DataProvider extends BaseContract {
       isToken: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<DataProvider.MarginPositionInfoStructOutput>;
+
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getPoolkeys(
       pool: PromiseOrValue<string>,
@@ -252,6 +287,13 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -275,6 +317,13 @@ export interface DataProvider extends BaseContract {
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
       isToken: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

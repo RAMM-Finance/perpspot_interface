@@ -25,7 +25,6 @@ export type LiquidityLoanStruct = {
   tick: PromiseOrValue<BigNumberish>;
   liquidity: PromiseOrValue<BigNumberish>;
   premium: PromiseOrValue<BigNumberish>;
-  Urate: PromiseOrValue<BigNumberish>;
   feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
   feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
   lastGrowth: PromiseOrValue<BigNumberish>;
@@ -37,13 +36,11 @@ export type LiquidityLoanStructOutput = [
   BigNumber,
   BigNumber,
   BigNumber,
-  BigNumber,
   BigNumber
 ] & {
   tick: number;
   liquidity: BigNumber;
   premium: BigNumber;
-  Urate: BigNumber;
   feeGrowthInside0LastX128: BigNumber;
   feeGrowthInside1LastX128: BigNumber;
   lastGrowth: BigNumber;
@@ -52,13 +49,13 @@ export type LiquidityLoanStructOutput = [
 export interface UtilsInterface extends utils.Interface {
   functions: {
     "applySlippageX96(uint160,uint256,bool)": FunctionFragment;
-    "getAmountsRequired((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],uint256,int24,int24,uint160)": FunctionFragment;
+    "getAmountsRequired((int24,uint128,uint256,uint256,uint256,uint256)[],uint256,int24,int24,uint160)": FunctionFragment;
     "getFeeGrowthInside(IUniswapV3Pool,int24,int24)": FunctionFragment;
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)": FunctionFragment;
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)": FunctionFragment;
-    "getMinMaxTicks((int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
-    "getRepayInfo((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],uint256)": FunctionFragment;
-    "mergeSortedArrays((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)": FunctionFragment;
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)": FunctionFragment;
+    "getMinMaxTicks((int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "getRepayInfo((int24,uint128,uint256,uint256,uint256,uint256)[],uint256)": FunctionFragment;
+    "mergeSortedArrays((int24,uint128,uint256,uint256,uint256,uint256)[],(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "roundTick(int24,bool,int24)": FunctionFragment;
   };
 
@@ -67,8 +64,8 @@ export interface UtilsInterface extends utils.Interface {
       | "applySlippageX96"
       | "getAmountsRequired"
       | "getFeeGrowthInside"
-      | "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)"
-      | "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"
+      | "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)"
+      | "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"
       | "getMinMaxTicks"
       | "getRepayInfo"
       | "mergeSortedArrays"
@@ -102,7 +99,7 @@ export interface UtilsInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)",
+    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)",
     values: [
       LiquidityLoanStruct[],
       PromiseOrValue<boolean>,
@@ -110,7 +107,7 @@ export interface UtilsInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)",
+    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)",
     values: [
       LiquidityLoanStruct[],
       PromiseOrValue<boolean>,
@@ -152,11 +149,11 @@ export interface UtilsInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)",
+    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)",
+    functionFragment: "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -236,14 +233,14 @@ export interface Utils extends BaseContract {
       }
     >;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { filledAmount: BigNumber }>;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
@@ -309,14 +306,14 @@ export interface Utils extends BaseContract {
     }
   >;
 
-  "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)"(
+  "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)"(
     borrowInfo: LiquidityLoanStruct[],
     getToken0: PromiseOrValue<boolean>,
     tickSpacing: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
+  "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
     borrowInfo: LiquidityLoanStruct[],
     getToken0: PromiseOrValue<boolean>,
     tickSpacing: PromiseOrValue<BigNumberish>,
@@ -382,14 +379,14 @@ export interface Utils extends BaseContract {
       }
     >;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
@@ -448,14 +445,14 @@ export interface Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
@@ -512,14 +509,14 @@ export interface Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
+    "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,uint256)"(
       borrowInfo: LiquidityLoanStruct[],
       getToken0: PromiseOrValue<boolean>,
       tickSpacing: PromiseOrValue<BigNumberish>,

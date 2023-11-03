@@ -37,14 +37,15 @@ export type PoolKeyStructOutput = [string, string, number] & {
 
 export type AddParamsStruct = {
   margin: PromiseOrValue<BigNumberish>;
-  maxSlippage: PromiseOrValue<BigNumberish>;
+  minOutput: PromiseOrValue<BigNumberish>;
   simulatedOutput: PromiseOrValue<BigNumberish>;
   borrowAmount: PromiseOrValue<BigNumberish>;
   positionIsToken0: PromiseOrValue<boolean>;
   executionOption: PromiseOrValue<BigNumberish>;
   trader: PromiseOrValue<string>;
-  minOutput: PromiseOrValue<BigNumberish>;
-  deadline: PromiseOrValue<BigNumberish>;
+  executionData: PromiseOrValue<BytesLike>;
+  slippedTickMin: PromiseOrValue<BigNumberish>;
+  slippedTickMax: PromiseOrValue<BigNumberish>;
 };
 
 export type AddParamsStructOutput = [
@@ -55,25 +56,26 @@ export type AddParamsStructOutput = [
   boolean,
   BigNumber,
   string,
-  BigNumber,
-  BigNumber
+  string,
+  number,
+  number
 ] & {
   margin: BigNumber;
-  maxSlippage: BigNumber;
+  minOutput: BigNumber;
   simulatedOutput: BigNumber;
   borrowAmount: BigNumber;
   positionIsToken0: boolean;
   executionOption: BigNumber;
   trader: string;
-  minOutput: BigNumber;
-  deadline: BigNumber;
+  executionData: string;
+  slippedTickMin: number;
+  slippedTickMax: number;
 };
 
 export type LiquidityLoanStruct = {
   tick: PromiseOrValue<BigNumberish>;
   liquidity: PromiseOrValue<BigNumberish>;
   premium: PromiseOrValue<BigNumberish>;
-  Urate: PromiseOrValue<BigNumberish>;
   feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
   feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
   lastGrowth: PromiseOrValue<BigNumberish>;
@@ -85,13 +87,11 @@ export type LiquidityLoanStructOutput = [
   BigNumber,
   BigNumber,
   BigNumber,
-  BigNumber,
   BigNumber
 ] & {
   tick: number;
   liquidity: BigNumber;
   premium: BigNumber;
-  Urate: BigNumber;
   feeGrowthInside0LastX128: BigNumber;
   feeGrowthInside1LastX128: BigNumber;
   lastGrowth: BigNumber;
@@ -99,7 +99,6 @@ export type LiquidityLoanStructOutput = [
 
 export type PositionStruct = {
   pool: PromiseOrValue<string>;
-  underAuction: PromiseOrValue<boolean>;
   isToken0: PromiseOrValue<boolean>;
   totalDebtOutput: PromiseOrValue<BigNumberish>;
   totalDebtInput: PromiseOrValue<BigNumberish>;
@@ -112,7 +111,6 @@ export type PositionStruct = {
 export type PositionStructOutput = [
   string,
   boolean,
-  boolean,
   BigNumber,
   BigNumber,
   BigNumber,
@@ -121,7 +119,6 @@ export type PositionStructOutput = [
   LiquidityLoanStructOutput[]
 ] & {
   pool: string;
-  underAuction: boolean;
   isToken0: boolean;
   totalDebtOutput: BigNumber;
   totalDebtInput: BigNumber;
@@ -146,35 +143,35 @@ export type MarginPositionStructOutput = [
 export type ReduceParamStruct = {
   positionIsToken0: PromiseOrValue<boolean>;
   reducePercentage: PromiseOrValue<BigNumberish>;
-  reduceAmount: PromiseOrValue<BigNumberish>;
-  maxSlippage: PromiseOrValue<BigNumberish>;
+  minOutput: PromiseOrValue<BigNumberish>;
   trader: PromiseOrValue<string>;
   executionOption: PromiseOrValue<BigNumberish>;
   executionData: PromiseOrValue<BytesLike>;
-  slippedPrice: PromiseOrValue<BigNumberish>;
-  deadline: PromiseOrValue<BigNumberish>;
+  slippedTickMin: PromiseOrValue<BigNumberish>;
+  slippedTickMax: PromiseOrValue<BigNumberish>;
+  reduceAmount: PromiseOrValue<BigNumberish>;
 };
 
 export type ReduceParamStructOutput = [
   boolean,
   BigNumber,
   BigNumber,
-  BigNumber,
   string,
   BigNumber,
   string,
-  BigNumber,
+  number,
+  number,
   BigNumber
 ] & {
   positionIsToken0: boolean;
   reducePercentage: BigNumber;
-  reduceAmount: BigNumber;
-  maxSlippage: BigNumber;
+  minOutput: BigNumber;
   trader: string;
   executionOption: BigNumber;
   executionData: string;
-  slippedPrice: BigNumber;
-  deadline: BigNumber;
+  slippedTickMin: number;
+  slippedTickMax: number;
+  reduceAmount: BigNumber;
 };
 
 export type ReduceReturnStruct = {
@@ -185,9 +182,11 @@ export type ReduceReturnStruct = {
   repaidDebt0: PromiseOrValue<BigNumberish>;
   repaidDebt1: PromiseOrValue<BigNumberish>;
   premium: PromiseOrValue<BigNumberish>;
+  profitFee: PromiseOrValue<BigNumberish>;
 };
 
 export type ReduceReturnStructOutput = [
+  BigNumber,
   BigNumber,
   BigNumber,
   BigNumber,
@@ -203,13 +202,14 @@ export type ReduceReturnStructOutput = [
   repaidDebt0: BigNumber;
   repaidDebt1: BigNumber;
   premium: BigNumber;
+  profitFee: BigNumber;
 };
 
 export interface IMarginFacilityInterface extends utils.Interface {
   functions: {
-    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
-    "reducePosition((address,address,uint24),(bool,uint256,uint256,uint256,address,uint256,bytes32,uint160,uint256))": FunctionFragment;
+    "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes32,int24,int24,uint256))": FunctionFragment;
   };
 
   getFunction(
@@ -324,9 +324,10 @@ export interface IMarginFacility extends BaseContract {
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
     ): Promise<
-      [MarginPositionStructOutput, BigNumber] & {
+      [MarginPositionStructOutput, BigNumber, BigNumber] & {
         marginPosition: MarginPositionStructOutput;
         premiumPaid: BigNumber;
+        feePaid: BigNumber;
       }
     >;
 

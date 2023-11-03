@@ -22,6 +22,7 @@ import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWith
 import ConfirmSwapModal from 'components/swap/ConfirmSwapModal'
 import PriceImpactWarning from 'components/swap/PriceImpactWarning'
 import SwapDetailsDropdown from 'components/swap/SwapDetailsDropdown'
+import SwapHeader from 'components/swap/SwapHeader'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
@@ -506,6 +507,7 @@ const SwapTabContent = () => {
 
   return (
     <Wrapper>
+      <SwapHeader allowedSlippage={allowedSlippage} />
       <ConfirmSwapModal
         isOpen={showConfirm}
         trade={trade}

@@ -22,7 +22,6 @@ import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
   DATA_PROVIDER_ADDRESSES,
   ENS_REGISTRAR_ADDRESSES,
-  GLOBAL_STORAGE_ADDRESSES,
   LMT_MARGIN_FACILITY,
   LMT_NFT_POSITION_MANAGER,
   LMT_POOL_MANAGER,
@@ -39,23 +38,17 @@ import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfac
 import { V3Migrator } from 'types/v3/V3Migrator'
 
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
-import { abi as IFacilityAbi } from '../abis_v2/IFacility.json'
 import { abi as MarginFacilityAbi } from '../abis_v2/MarginFacility.json'
-// import {abi as testTokenAbi} from "../perpspotContracts/testERC.json"
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
 import LmtPoolManagerJson from '../abis_v2/PoolManager.json'
+import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
+import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
 import {
   DataProvider,
   MarginFacility,
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
   PoolManager as LmtPoolManager,
 } from '../LmtTypes'
-import { abi as BorrowManagerAbi } from '../perpspotContracts/BorrowManager.json'
-import { abi as GlobalStorageAbi } from '../perpspotContracts/GlobalStorage.json'
-import { abi as LeverageManagerAbi } from '../perpspotContracts/LeverageManager.json'
-import { abi as LiquidityManagerAbi } from '../perpspotContracts/LiquidityManager.json'
-import { abi as testTokenAbi } from '../perpspotContracts/TestToken.json'
-import { abi as PoolAbi } from '../perpspotContracts/UniswapV3Pool.json'
 import { getContract } from '../utils'
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
@@ -82,10 +75,6 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   return useContract<MarginFacility>(LMT_MARGIN_FACILITY, MarginFacilityAbi, withSignerIfPossible)
-}
-
-export function useFacilityContract(facilityAddress: string, withSignerIfPossible?: boolean) {
-  return useContract(facilityAddress, IFacilityAbi, withSignerIfPossible)
 }
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
@@ -124,23 +113,19 @@ export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: b
 }
 
 export function useLeverageManagerContract(leverageManagerAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(leverageManagerAddress, LeverageManagerAbi, withSignerIfPossible)
+  return useContract(leverageManagerAddress, ERC20_ABI, withSignerIfPossible)
 }
 
 export function useLiquidityManagerContract(liquidityManagerAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(liquidityManagerAddress, LiquidityManagerAbi, withSignerIfPossible)
+  return useContract('', ERC20_ABI, withSignerIfPossible)
 }
 
 export function useBorrowManagerContract(borrowManagerAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(borrowManagerAddress, BorrowManagerAbi, withSignerIfPossible)
+  return useContract('', ERC20_ABI, withSignerIfPossible)
 }
 
 export function usePoolContract(poolAddress?: string, withSignerIfPossible?: boolean) {
   return useContract(poolAddress, PoolAbi, withSignerIfPossible)
-}
-
-export function useGlobalStorageContract(withSignerIfPossible?: boolean) {
-  return useContract(GLOBAL_STORAGE_ADDRESSES, GlobalStorageAbi, withSignerIfPossible)
 }
 
 export function useTestTokenContract(testTokenAd?: string, withSignerIfPossible?: boolean) {

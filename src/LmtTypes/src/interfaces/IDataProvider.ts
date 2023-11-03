@@ -25,7 +25,6 @@ export type LiquidityLoanStruct = {
   tick: PromiseOrValue<BigNumberish>;
   liquidity: PromiseOrValue<BigNumberish>;
   premium: PromiseOrValue<BigNumberish>;
-  Urate: PromiseOrValue<BigNumberish>;
   feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
   feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
   lastGrowth: PromiseOrValue<BigNumberish>;
@@ -37,13 +36,11 @@ export type LiquidityLoanStructOutput = [
   BigNumber,
   BigNumber,
   BigNumber,
-  BigNumber,
   BigNumber
 ] & {
   tick: number;
   liquidity: BigNumber;
   premium: BigNumber;
-  Urate: BigNumber;
   feeGrowthInside0LastX128: BigNumber;
   feeGrowthInside1LastX128: BigNumber;
   lastGrowth: BigNumber;
@@ -51,7 +48,6 @@ export type LiquidityLoanStructOutput = [
 
 export type PositionStruct = {
   pool: PromiseOrValue<string>;
-  underAuction: PromiseOrValue<boolean>;
   isToken0: PromiseOrValue<boolean>;
   totalDebtOutput: PromiseOrValue<BigNumberish>;
   totalDebtInput: PromiseOrValue<BigNumberish>;
@@ -64,7 +60,6 @@ export type PositionStruct = {
 export type PositionStructOutput = [
   string,
   boolean,
-  boolean,
   BigNumber,
   BigNumber,
   BigNumber,
@@ -73,7 +68,6 @@ export type PositionStructOutput = [
   LiquidityLoanStructOutput[]
 ] & {
   pool: string;
-  underAuction: boolean;
   isToken0: boolean;
   totalDebtOutput: BigNumber;
   totalDebtInput: BigNumber;

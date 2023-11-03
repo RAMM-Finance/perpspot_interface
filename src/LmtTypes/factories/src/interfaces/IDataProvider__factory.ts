@@ -31,11 +31,6 @@ const _abi = [
               },
               {
                 internalType: "bool",
-                name: "underAuction",
-                type: "bool",
-              },
-              {
-                internalType: "bool",
                 name: "isToken0",
                 type: "bool",
               },
@@ -79,11 +74,6 @@ const _abi = [
                   {
                     internalType: "uint256",
                     name: "premium",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "Urate",
                     type: "uint256",
                   },
                   {

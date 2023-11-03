@@ -22,7 +22,9 @@ import {
   updateUserDeadline,
   updateUserExpertMode,
   updateUserLocale,
+  updateUserPremiumTolerance,
   updateUserSlippageTolerance,
+  updateUserSlippedTickTolerance,
 } from './reducer'
 import { SerializedPair, SerializedToken } from './types'
 
@@ -131,6 +133,73 @@ export function useUserSlippageTolerance(): [Percent | 'auto', (slippageToleranc
   )
 }
 
+export function useUserSlippedTickTolerance(): [Percent | 'auto', (slippageTolerance: Percent | 'auto') => void] {
+  const userSlippedTickToleranceRaw = useAppSelector((state) => {
+    return state.user.userSlippedTickTolerance
+  })
+
+  const userSlippedTickTolerance = useMemo(
+    () => (userSlippedTickToleranceRaw === 'auto' ? 'auto' : new Percent(userSlippedTickToleranceRaw, 10_000)),
+    [userSlippedTickToleranceRaw]
+  )
+
+  const dispatch = useAppDispatch()
+  const setUserSlippedTickTolerance = useCallback(
+    (userSlippedTickTolerance: Percent | 'auto') => {
+      let value: 'auto' | number
+      try {
+        value =
+          userSlippedTickTolerance === 'auto'
+            ? 'auto'
+            : JSBI.toNumber(userSlippedTickTolerance.multiply(10_000).quotient)
+      } catch (error) {
+        value = 'auto'
+      }
+      dispatch(
+        updateUserSlippedTickTolerance({
+          userSlippedTickTolerance: value,
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  return useMemo(
+    () => [userSlippedTickTolerance, setUserSlippedTickTolerance],
+    [setUserSlippedTickTolerance, userSlippedTickTolerance]
+  )
+}
+
+export function useUserPremiumTolerance(): [Percent | 'auto', (premiumTolerance: Percent | 'auto') => void] {
+  const userPremiumToleranceRaw = useAppSelector((state) => {
+    return state.user.userPremiumTolerance
+  })
+  const userPremiumTolerance = useMemo(
+    () => (userPremiumToleranceRaw === 'auto' ? 'auto' : new Percent(userPremiumToleranceRaw, 10_000)),
+    [userPremiumToleranceRaw]
+  )
+
+  const dispatch = useAppDispatch()
+  const setUserPremiumTolerance = useCallback(
+    (userPremiumTolerance: Percent | 'auto') => {
+      let value: 'auto' | number
+      try {
+        value = userPremiumTolerance === 'auto' ? 'auto' : JSBI.toNumber(userPremiumTolerance.multiply(10_000).quotient)
+      } catch (error) {
+        value = 'auto'
+      }
+      dispatch(
+        updateUserPremiumTolerance({
+          userPremiumTolerance: value,
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  return useMemo(() => [userPremiumTolerance, setUserPremiumTolerance], [setUserPremiumTolerance, userPremiumTolerance])
+}
+
 export function useUserHideClosedPositions(): [boolean, (newHideClosedPositions: boolean) => void] {
   const dispatch = useAppDispatch()
 
@@ -179,7 +248,7 @@ export function useAddUserToken(): (token: Token) => void {
   const dispatch = useAppDispatch()
   return useCallback(
     (token: Token) => {
-      console.log("dispatching...")
+      console.log('dispatching...')
       dispatch(addSerializedToken({ serializedToken: serializeToken(token) }))
     },
     [dispatch]

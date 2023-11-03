@@ -2,28 +2,32 @@ import { Percent } from '@uniswap/sdk-core'
 import { SmallButtonPrimary } from 'components/Button'
 import SwapTabHeader from 'components/Tabs'
 // import { useCallback } from 'react'
-import { ActiveSwapTab } from 'state/swap/actions'
 // import { useSwapActionHandlers } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
 
 type SwapHeaderProps = {
-  activeTab: ActiveSwapTab
-  allowedSlippage: Percent
+  allowedSlippage?: Percent
+  autoSlippedTick?: Percent
+  autoPremiumTolerance?: Percent
 }
 
-export default function SwapHeader({ allowedSlippage }: SwapHeaderProps) {
+export default function SwapHeader({ allowedSlippage, autoSlippedTick, autoPremiumTolerance }: SwapHeaderProps) {
   // console.log(activeTab)
   return (
     <>
       <StyledSwapHeader>
-        <SwapTabHeader allowedSlippage={allowedSlippage} />
+        <SwapTabHeader
+          autoSlippage={allowedSlippage}
+          autoPremiumTolerance={autoPremiumTolerance}
+          autoSlippedTick={autoSlippedTick}
+        />
       </StyledSwapHeader>
     </>
   )
 }
 
 const StyledSwapHeader = styled.div`
-  /* margin-bottom: 20px; */
+  margin-bottom: 20px;
   width: 100%;
   color: ${({ theme }) => theme.textSecondary};
 `

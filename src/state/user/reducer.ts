@@ -27,6 +27,12 @@ export interface UserState {
   userSlippageTolerance: number | 'auto'
   userSlippageToleranceHasBeenMigratedToAuto: boolean // temporary flag for migration status
 
+  // user defined slipped tick tolerance in bips, used in all txns
+  userSlippedTickTolerance: number | 'auto'
+
+  // user defined premium tolerance in percentage of the margin/principal, used in all txns
+  userPremiumTolerance: number | 'auto'
+
   // deadline set by user in minutes, used in all txns
   userDeadline: number
 
@@ -61,6 +67,8 @@ export const initialState: UserState = {
   userClientSideRouter: false,
   userHideClosedPositions: false,
   userSlippageTolerance: 'auto',
+  userSlippedTickTolerance: 'auto',
+  userPremiumTolerance: 'auto',
   userSlippageToleranceHasBeenMigratedToAuto: true,
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
@@ -88,6 +96,14 @@ const userSlice = createSlice({
     },
     updateUserSlippageTolerance(state, action) {
       state.userSlippageTolerance = action.payload.userSlippageTolerance
+      state.timestamp = currentTimestamp()
+    },
+    updateUserSlippedTickTolerance(state, action) {
+      state.userSlippedTickTolerance = action.payload.userSlippedTickTolerance
+      state.timestamp = currentTimestamp()
+    },
+    updateUserPremiumTolerance(state, action) {
+      state.userPremiumTolerance = action.payload.userPremiumTolerance
       state.timestamp = currentTimestamp()
     },
     updateUserDeadline(state, action) {
@@ -145,6 +161,14 @@ const userSlice = createSlice({
         }
       }
 
+      if (!state.userSlippedTickTolerance) {
+        state.userSlippedTickTolerance = 'auto'
+      }
+
+      if (!state.userPremiumTolerance) {
+        state.userPremiumTolerance = 'auto'
+      }
+
       // deadline isnt being tracked in local storage, reset to default
       // noinspection SuspiciousTypeOfGuard
       if (
@@ -172,5 +196,7 @@ export const {
   updateUserLocale,
   updateUserSlippageTolerance,
   updateHideUniswapWalletBanner,
+  updateUserPremiumTolerance,
+  updateUserSlippedTickTolerance,
 } = userSlice.actions
 export default userSlice.reducer

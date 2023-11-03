@@ -8,6 +8,120 @@ import type { Facility, FacilityInterface } from "../../src/Facility";
 
 const _abi = [
   {
+    inputs: [],
+    name: "exceedMaxWithdrawablePremium",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "insufficientPremiumDeposit",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "noPosition",
+    type: "error",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "payer",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "isToken1",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "PremiumDeposited",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "payer",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "token0Amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "token1Amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "swappedAmount",
+        type: "uint256",
+      },
+    ],
+    name: "PremiumPaid",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "withdrawer",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "isToken1",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "PremiumWithdrawn",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "PositionId",
@@ -57,11 +171,6 @@ const _abi = [
               },
               {
                 internalType: "bool",
-                name: "underAuction",
-                type: "bool",
-              },
-              {
-                internalType: "bool",
                 name: "isToken0",
                 type: "bool",
               },
@@ -105,11 +214,6 @@ const _abi = [
                   {
                     internalType: "uint256",
                     name: "premium",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "Urate",
                     type: "uint256",
                   },
                   {
@@ -167,6 +271,175 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowedToken1",
+        type: "bool",
+      },
+    ],
+    name: "checkPositionExists",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowedToken1",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "minPremiumDepositPercentage",
+        type: "uint256",
+      },
+    ],
+    name: "checkPremiumCondition",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "token0",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token1",
+            type: "address",
+          },
+          {
+            internalType: "uint24",
+            name: "fee",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct PoolKey",
+        name: "key",
+        type: "tuple",
+      },
+      {
+        internalType: "address",
+        name: "trader",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowToken1",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "depositPremium",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowedToken1",
+        type: "bool",
+      },
+    ],
+    name: "getBorrowInfo",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "int24",
+            name: "tick",
+            type: "int24",
+          },
+          {
+            internalType: "uint128",
+            name: "liquidity",
+            type: "uint128",
+          },
+          {
+            internalType: "uint256",
+            name: "premium",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "feeGrowthInside0LastX128",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "feeGrowthInside1LastX128",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "lastGrowth",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct LiquidityLoan[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "PositionId",
         name: "positionId",
         type: "bytes32",
@@ -208,28 +481,24 @@ const _abi = [
         type: "tuple",
       },
       {
-        internalType: "address",
-        name: "trader",
-        type: "address",
-      },
-      {
         internalType: "bool",
-        name: "isToken0",
+        name: "payToken1",
         type: "bool",
       },
       {
         internalType: "uint256",
-        name: "amount",
+        name: "depositAmount",
         type: "uint256",
       },
+    ],
+    name: "payPremium",
+    outputs: [
       {
-        internalType: "bool",
-        name: "isDeposit",
-        type: "bool",
+        internalType: "uint256",
+        name: "premiumOwed",
+        type: "uint256",
       },
     ],
-    name: "modifyPremium",
-    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -258,138 +527,19 @@ const _abi = [
         type: "tuple",
       },
       {
-        internalType: "address",
-        name: "trader",
-        type: "address",
-      },
-      {
         internalType: "bool",
-        name: "positionIsToken0",
+        name: "borrowToken1",
         type: "bool",
       },
-    ],
-    name: "payPremium",
-    outputs: [
       {
         internalType: "uint256",
-        name: "premiumOwed",
+        name: "amount",
         type: "uint256",
       },
     ],
+    name: "withdrawPremium",
+    outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "PositionId",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    name: "positions",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "pool",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "underAuction",
-            type: "bool",
-          },
-          {
-            internalType: "bool",
-            name: "isToken0",
-            type: "bool",
-          },
-          {
-            internalType: "uint256",
-            name: "totalDebtOutput",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "totalDebtInput",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "recentPremium",
-            type: "uint256",
-          },
-          {
-            internalType: "uint32",
-            name: "openTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "repayTime",
-            type: "uint32",
-          },
-          {
-            components: [
-              {
-                internalType: "int24",
-                name: "tick",
-                type: "int24",
-              },
-              {
-                internalType: "uint128",
-                name: "liquidity",
-                type: "uint128",
-              },
-              {
-                internalType: "uint256",
-                name: "premium",
-                type: "uint256",
-              },
-              {
-                internalType: "uint256",
-                name: "Urate",
-                type: "uint256",
-              },
-              {
-                internalType: "uint256",
-                name: "feeGrowthInside0LastX128",
-                type: "uint256",
-              },
-              {
-                internalType: "uint256",
-                name: "feeGrowthInside1LastX128",
-                type: "uint256",
-              },
-              {
-                internalType: "uint256",
-                name: "lastGrowth",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct LiquidityLoan[]",
-            name: "borrowInfo",
-            type: "tuple[]",
-          },
-        ],
-        internalType: "struct Position",
-        name: "base",
-        type: "tuple",
-      },
-      {
-        internalType: "uint256",
-        name: "totalPosition",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "margin",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
 ] as const;

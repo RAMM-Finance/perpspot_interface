@@ -13,6 +13,7 @@ import { RowBetween } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
+import SwapHeader from 'components/swap/SwapHeader'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
@@ -284,6 +285,7 @@ const TradeTabContent = () => {
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage}
       />
+      <SwapHeader />
 
       <div style={{ display: 'relative' }}>
         <InputSection>

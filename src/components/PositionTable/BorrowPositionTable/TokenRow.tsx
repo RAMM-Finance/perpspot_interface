@@ -5,7 +5,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { RowBetween } from 'components/Row'
 import Row from 'components/Row'
-import { AddBorrowPremiumModal, ReduceBorrowCollateralModal, ReduceBorrowDebtModal } from 'components/swap/LMTModals'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
@@ -467,7 +466,7 @@ function PositionRow({
 
   const rowCells = (
     <>
-      {!header && showReduceCollateral && (
+      {/* {!header && showReduceCollateral && (
         <ReduceBorrowCollateralModal
           trader={account}
           isOpen={showReduceCollateral}
@@ -476,8 +475,8 @@ function PositionRow({
           onAcceptChanges={() => {}}
           onConfirm={() => {}}
         />
-      )}
-      {showReduceBorrowed && (
+      )} */}
+      {/* {showReduceBorrowed && (
         <ReduceBorrowDebtModal
           trader={account}
           isOpen={showReduceBorrowed}
@@ -496,7 +495,7 @@ function PositionRow({
           onAcceptChanges={() => {}}
           onConfirm={() => {}}
         />
-      )}
+      )} */}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell

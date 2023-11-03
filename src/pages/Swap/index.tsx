@@ -8,7 +8,6 @@ import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
-import LimitContent from 'components/swap/LimitContent'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -31,24 +30,15 @@ import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
-import { LimitWrapper } from '../../components/swap/styleds'
-import SwapHeader from '../../components/swap/SwapHeader'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
 import { useCurrency, useDefaultActiveTokens } from '../../hooks/Tokens'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
-import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
+import useWrapCallback from '../../hooks/useWrapCallback'
 import { ActiveSwapTab, Field } from '../../state/swap/actions'
-import {
-  useBestPool,
-  useDefaultsFromURLSearch,
-  useDerivedSwapInfo,
-  useSwapActionHandlers,
-  useSwapState,
-} from '../../state/swap/hooks'
+import { useBestPool, useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapState } from '../../state/swap/hooks'
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
-import BorrowTabContent from './borrowModal'
 
 const TradeTabContent = React.lazy(() => import('./tradeModal'))
 const SwapTabContent = React.lazy(() => import('./swapModal'))
@@ -301,7 +291,7 @@ export default function Swap({ className }: { className?: string }) {
 
   // const swapWidgetEnabled = useSwapWidgetEnabled()
 
-  const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
+  // const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -342,9 +332,9 @@ export default function Swap({ className }: { className?: string }) {
 
   const {
     trade: { state: tradeState, trade },
-    allowedSlippage,
+    // allowedSlippage,
     // currencyBalances,
-    parsedAmount,
+    // parsedAmount,
     currencies,
   } = useDerivedSwapInfo()
 
@@ -363,36 +353,36 @@ export default function Swap({ className }: { className?: string }) {
 
   // swap state
   const {
-    independentField,
+    // independentField,
     typedValue,
-    recipient,
+    // recipient,
     // leverageFactor,
     activeTab,
   } = useSwapState()
 
-  const isBorrowTab = ActiveSwapTab.BORROW == activeTab
+  // const isBorrowTab = ActiveSwapTab.BORROW == activeTab
 
   const {
     wrapType,
-    execute: onWrap,
-    inputError: wrapInputError,
+    // execute: onWrap,
+    // inputError: wrapInputError,
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
-  const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
+  // const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   // const { address: recipientAddress } = useENSAddress(recipient)
 
-  const parsedAmounts = useMemo(
-    () =>
-      showWrap
-        ? {
-            [Field.INPUT]: parsedAmount,
-            [Field.OUTPUT]: parsedAmount,
-          }
-        : {
-            [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
-            [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
-          },
-    [independentField, parsedAmount, showWrap, trade]
-  )
+  // const parsedAmounts = useMemo(
+  //   () =>
+  //     showWrap
+  //       ? {
+  //           [Field.INPUT]: parsedAmount,
+  //           [Field.OUTPUT]: parsedAmount,
+  //         }
+  //       : {
+  //           [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
+  //           [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
+  //         },
+  //   [independentField, parsedAmount, showWrap, trade]
+  // )
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
@@ -563,14 +553,7 @@ export default function Swap({ className }: { className?: string }) {
           </SwapHeaderWrapper>
           <MainWrapper>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
-              <SwapHeader allowedSlippage={allowedSlippage} activeTab={activeTab} />
-              <LimitWrapper>
-                <LimitContent tab={activeTab} currency0={inputCurrency as Token} />
-              </LimitWrapper>
               {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
-              <TabContent id={ActiveSwapTab.BORROW} activeTab={activeTab}>
-                <BorrowTabContent />
-              </TabContent>
               <TabContent id={ActiveSwapTab.SWAP} activeTab={activeTab}>
                 <SwapTabContent />
               </TabContent>
@@ -588,9 +571,9 @@ export default function Swap({ className }: { className?: string }) {
                     <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
                       Leverage Positions
                     </TabNavItem>
-                    <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+                    {/* <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
                       Borrow Positions
-                    </TabNavItem>
+                    </TabNavItem> */}
                     <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
                       History
                     </TabNavItem>

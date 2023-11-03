@@ -6,8 +6,12 @@ import { DEFAULT_DEADLINE_FROM_NOW } from 'constants/misc'
 import ms from 'ms.macro'
 import { darken } from 'polished'
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { useUserSlippageTolerance, useUserTransactionTTL } from 'state/user/hooks'
+import {
+  useUserPremiumTolerance,
+  useUserSlippageTolerance,
+  useUserSlippedTickTolerance,
+  useUserTransactionTTL,
+} from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { ThemedText } from '../../theme'
@@ -24,6 +28,10 @@ enum DeadlineError {
 }
 
 enum PremiumError {
+  InvalidInput = 'InvalidInput',
+}
+
+enum SlippedTickError {
   InvalidInput = 'InvalidInput',
 }
 
@@ -105,16 +113,28 @@ const SlippageEmojiContainer = styled.span`
 `
 
 interface TransactionSettingsProps {
-  placeholderSlippage: Percent // varies according to the context in which the settings dialog is placed
+  placeholderSlippage?: Percent // varies according to the context in which the settings dialog is placed
+  placeholderSlippedTick?: Percent
+  placeholderPremium?: Percent
 }
 
 const THREE_DAYS_IN_SECONDS = ms`3 days` / 1000
 
-export default function TransactionSettings({ placeholderSlippage }: TransactionSettingsProps) {
+const DEFAULT_AUTO_SLIPPAGE = new Percent(5, 1000) // 0.5%
+const DEFAULT_PREMIUM_TOLERANCE = new Percent(5, 1000) // 0.5%
+const DEFAULT_SLIPPED_TICK_TOLERANCE = new Percent(5, 1000) // 0.5%
+
+export default function TransactionSettings({
+  placeholderSlippage,
+  placeholderSlippedTick,
+  placeholderPremium,
+}: TransactionSettingsProps) {
   const { chainId } = useWeb3React()
   const theme = useTheme()
 
   const [userSlippageTolerance, setUserSlippageTolerance] = useUserSlippageTolerance()
+  const [userSlippedTickTolerance, setUserSlippedTickTolerance] = useUserSlippedTickTolerance()
+  const [userPremiumTolerance, setUserPremiumTolerance] = useUserPremiumTolerance()
 
   const [deadline, setDeadline] = useUserTransactionTTL()
 
@@ -124,15 +144,11 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
   const [deadlineInput, setDeadlineInput] = useState('')
   const [deadlineError, setDeadlineError] = useState<DeadlineError | false>(false)
 
-  //TODO: Configure Premium Tolerance
-  // const [premiumInput, setPremiumInput] = useState('')
-  // const [premiumError, setPremiumError] = useState<PremiumError | false>(false)
+  const [premiumInput, setPremiumInput] = useState('')
+  const [premiumError, setPremiumError] = useState<PremiumError | false>(false)
 
-  // function parsePremiumInput(value: string){
-  //   //populate what the user typed and clear the error
-  //   setPremiumInput(value)
-  //   setPremiumError(false)
-  // }
+  const [slippedTickInput, setSlippedTickInput] = useState('')
+  const [slippedTickError, setSlippedTickError] = useState<SlippedTickError | false>(false)
 
   function parseSlippageInput(value: string) {
     // populate what the user typed and clear the error
@@ -155,8 +171,8 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
     }
   }
 
-  const tooLow = userSlippageTolerance !== 'auto' && userSlippageTolerance.lessThan(new Percent(5, 10_000))
-  const tooHigh = userSlippageTolerance !== 'auto' && userSlippageTolerance.greaterThan(new Percent(1, 100))
+  const slippageTooLow = userSlippageTolerance !== 'auto' && userSlippageTolerance.lessThan(new Percent(5, 10_000))
+  const slippageTooHigh = userSlippageTolerance !== 'auto' && userSlippageTolerance.greaterThan(new Percent(1, 100))
 
   function parseCustomDeadline(value: string) {
     // populate what the user typed and clear the error
@@ -180,17 +196,184 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
     }
   }
 
+  function parseSlippedTickInput(value: string) {
+    // populate what the user typed and clear the error
+    setSlippedTickInput(value)
+    setSlippedTickError(false)
+
+    if (value.length === 0) {
+      setUserSlippedTickTolerance('auto')
+    } else {
+      const parsed = Math.floor(Number.parseFloat(value) * 100)
+
+      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
+        setUserSlippedTickTolerance('auto')
+        if (value !== '.') {
+          setSlippedTickError(SlippedTickError.InvalidInput)
+        }
+      } else {
+        setUserSlippedTickTolerance(new Percent(parsed, 10_000))
+      }
+    }
+  }
+
+  function parsePremiumInput(value: string) {
+    // populate what the user typed and clear the error
+    setPremiumInput(value)
+    setPremiumError(false)
+
+    if (value.length === 0) {
+      setUserPremiumTolerance('auto')
+    } else {
+      const parsed = Math.floor(Number.parseFloat(value) * 100)
+
+      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
+        setUserPremiumTolerance('auto')
+        if (value !== '.') {
+          setPremiumError(PremiumError.InvalidInput)
+        }
+      } else {
+        setUserPremiumTolerance(new Percent(parsed, 10_000))
+      }
+    }
+  }
+
+  const premiumTooLow = userPremiumTolerance !== 'auto' && userPremiumTolerance.lessThan(new Percent(5, 10_000))
+
   const showCustomDeadlineRow = Boolean(chainId && !L2_CHAIN_IDS.includes(chainId))
 
-  const selectedTab = useSelector((state: any) => state.swap.tab)
+  // const selectedTab = useSelector((state: any) => state.swap.tab)
 
   return (
     <AutoColumn gap="md">
-      {selectedTab === 'Swap' ? null : (
+      {placeholderPremium && (
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Premium Tolerance</Trans>
+              <Trans>Premium tolerance</Trans>
+            </ThemedText.DeprecatedBlack>
+            <QuestionHelper
+              text={<Trans>Your transaction will revert if the premium exceeds this percentage.</Trans>}
+            />
+          </RowFixed>
+          <RowBetween>
+            <Option
+              onClick={() => {
+                parsePremiumInput('')
+              }}
+              active={userPremiumTolerance === 'auto'}
+            >
+              <Trans>Auto</Trans>
+            </Option>
+            <OptionCustom active={userPremiumTolerance !== 'auto'} warning={!!premiumError} tabIndex={-1}>
+              <RowBetween>
+                {premiumTooLow ? (
+                  <SlippageEmojiContainer>
+                    <span role="img" aria-label="warning">
+                      ⚠️
+                    </span>
+                  </SlippageEmojiContainer>
+                ) : null}
+                <Input
+                  placeholder={placeholderPremium?.toFixed(2)}
+                  value={
+                    premiumInput.length > 0
+                      ? premiumInput
+                      : userPremiumTolerance === 'auto'
+                      ? ''
+                      : userPremiumTolerance.toFixed(2)
+                  }
+                  onChange={(e) => parsePremiumInput(e.target.value)}
+                  onBlur={() => {
+                    setPremiumInput('')
+                    setPremiumError(false)
+                  }}
+                  color={premiumError ? 'red' : ''}
+                />
+                %
+              </RowBetween>
+            </OptionCustom>
+          </RowBetween>
+          {premiumError || premiumTooLow ? (
+            <RowBetween
+              style={{
+                fontSize: '14px',
+                paddingTop: '7px',
+                color: premiumError ? 'red' : '#F3841E',
+              }}
+            >
+              {premiumError ? (
+                <Trans>Enter a valid slippage percentage</Trans>
+              ) : premiumTooLow ? (
+                <Trans>Your transaction may fail</Trans>
+              ) : null}
+            </RowBetween>
+          ) : null}
+        </AutoColumn>
+      )}
+      {placeholderSlippedTick && (
+        <AutoColumn gap="sm">
+          <RowFixed>
+            <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
+              <Trans>Slipped Tick tolerance</Trans>
+            </ThemedText.DeprecatedBlack>
+            <QuestionHelper
+              text={
+                <Trans>
+                  Your transaction will revert if the price changes unfavorably by more than this percentage.
+                </Trans>
+              }
+            />
+          </RowFixed>
+          <RowBetween>
+            <Option
+              onClick={() => {
+                parseSlippedTickInput('')
+              }}
+              active={userSlippedTickTolerance === 'auto'}
+            >
+              <Trans>Auto</Trans>
+            </Option>
+            <OptionCustom active={userSlippedTickTolerance !== 'auto'} warning={!!slippedTickError} tabIndex={-1}>
+              <RowBetween>
+                <Input
+                  placeholder={placeholderSlippedTick?.toFixed(2)}
+                  value={
+                    slippedTickInput.length > 0
+                      ? slippedTickInput
+                      : userSlippedTickTolerance === 'auto'
+                      ? ''
+                      : userSlippedTickTolerance.toFixed(2)
+                  }
+                  onChange={(e) => parseSlippageInput(e.target.value)}
+                  onBlur={() => {
+                    setSlippageInput('')
+                    setSlippageError(false)
+                  }}
+                  color={slippageError ? 'red' : ''}
+                />
+                %
+              </RowBetween>
+            </OptionCustom>
+          </RowBetween>
+          {slippedTickError ? (
+            <RowBetween
+              style={{
+                fontSize: '14px',
+                paddingTop: '7px',
+                color: slippageError ? 'red' : '#F3841E',
+              }}
+            >
+              <Trans>Enter a valid slipped tick percentage</Trans>
+            </RowBetween>
+          ) : null}
+        </AutoColumn>
+      )}
+      {placeholderSlippage && (
+        <AutoColumn gap="sm">
+          <RowFixed>
+            <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
+              <Trans>Slippage tolerance</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={
@@ -211,7 +394,7 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
             </Option>
             <OptionCustom active={userSlippageTolerance !== 'auto'} warning={!!slippageError} tabIndex={-1}>
               <RowBetween>
-                {tooLow || tooHigh ? (
+                {slippageTooLow || slippageTooHigh ? (
                   <SlippageEmojiContainer>
                     <span role="img" aria-label="warning">
                       ⚠️
@@ -238,7 +421,7 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
               </RowBetween>
             </OptionCustom>
           </RowBetween>
-          {slippageError || tooLow || tooHigh ? (
+          {slippageError || slippageTooLow || slippageTooHigh ? (
             <RowBetween
               style={{
                 fontSize: '14px',
@@ -248,7 +431,7 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
             >
               {slippageError ? (
                 <Trans>Enter a valid slippage percentage</Trans>
-              ) : tooLow ? (
+              ) : slippageTooLow ? (
                 <Trans>Your transaction may fail</Trans>
               ) : (
                 <Trans>Your transaction may be frontrun</Trans>
@@ -257,74 +440,6 @@ export default function TransactionSettings({ placeholderSlippage }: Transaction
           ) : null}
         </AutoColumn>
       )}
-      <AutoColumn gap="sm">
-        <RowFixed>
-          <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-            <Trans>Slippage tolerance</Trans>
-          </ThemedText.DeprecatedBlack>
-          <QuestionHelper
-            text={
-              <Trans>Your transaction will revert if the price changes unfavorably by more than this percentage.</Trans>
-            }
-          />
-        </RowFixed>
-        <RowBetween>
-          <Option
-            onClick={() => {
-              parseSlippageInput('')
-            }}
-            active={userSlippageTolerance === 'auto'}
-          >
-            <Trans>Auto</Trans>
-          </Option>
-          <OptionCustom active={userSlippageTolerance !== 'auto'} warning={!!slippageError} tabIndex={-1}>
-            <RowBetween>
-              {tooLow || tooHigh ? (
-                <SlippageEmojiContainer>
-                  <span role="img" aria-label="warning">
-                    ⚠️
-                  </span>
-                </SlippageEmojiContainer>
-              ) : null}
-              <Input
-                placeholder={placeholderSlippage.toFixed(2)}
-                value={
-                  slippageInput.length > 0
-                    ? slippageInput
-                    : userSlippageTolerance === 'auto'
-                    ? ''
-                    : userSlippageTolerance.toFixed(2)
-                }
-                onChange={(e) => parseSlippageInput(e.target.value)}
-                onBlur={() => {
-                  setSlippageInput('')
-                  setSlippageError(false)
-                }}
-                color={slippageError ? 'red' : ''}
-              />
-              %
-            </RowBetween>
-          </OptionCustom>
-        </RowBetween>
-        {slippageError || tooLow || tooHigh ? (
-          <RowBetween
-            style={{
-              fontSize: '14px',
-              paddingTop: '7px',
-              color: slippageError ? 'red' : '#F3841E',
-            }}
-          >
-            {slippageError ? (
-              <Trans>Enter a valid slippage percentage</Trans>
-            ) : tooLow ? (
-              <Trans>Your transaction may fail</Trans>
-            ) : (
-              <Trans>Your transaction may be frontrun</Trans>
-            )}
-          </RowBetween>
-        ) : null}
-      </AutoColumn>
-
       {showCustomDeadlineRow && (
         <AutoColumn gap="sm">
           <RowFixed>

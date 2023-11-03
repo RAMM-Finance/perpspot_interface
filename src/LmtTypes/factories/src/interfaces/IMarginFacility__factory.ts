@@ -43,7 +43,7 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "maxSlippage",
+            name: "minOutput",
             type: "uint256",
           },
           {
@@ -72,14 +72,19 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "uint256",
-            name: "minOutput",
-            type: "uint256",
+            internalType: "bytes",
+            name: "executionData",
+            type: "bytes",
           },
           {
-            internalType: "uint256",
-            name: "deadline",
-            type: "uint256",
+            internalType: "int24",
+            name: "slippedTickMin",
+            type: "int24",
+          },
+          {
+            internalType: "int24",
+            name: "slippedTickMax",
+            type: "int24",
           },
         ],
         internalType: "struct AddParams",
@@ -101,11 +106,6 @@ const _abi = [
           {
             internalType: "uint256",
             name: "premium",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "Urate",
             type: "uint256",
           },
           {
@@ -139,11 +139,6 @@ const _abi = [
                 internalType: "address",
                 name: "pool",
                 type: "address",
-              },
-              {
-                internalType: "bool",
-                name: "underAuction",
-                type: "bool",
               },
               {
                 internalType: "bool",
@@ -190,11 +185,6 @@ const _abi = [
                   {
                     internalType: "uint256",
                     name: "premium",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "Urate",
                     type: "uint256",
                   },
                   {
@@ -242,6 +232,11 @@ const _abi = [
         name: "premiumPaid",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "feePaid",
+        type: "uint256",
+      },
     ],
     stateMutability: "nonpayable",
     type: "function",
@@ -274,11 +269,6 @@ const _abi = [
                 internalType: "address",
                 name: "pool",
                 type: "address",
-              },
-              {
-                internalType: "bool",
-                name: "underAuction",
-                type: "bool",
               },
               {
                 internalType: "bool",
@@ -325,11 +315,6 @@ const _abi = [
                   {
                     internalType: "uint256",
                     name: "premium",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "Urate",
                     type: "uint256",
                   },
                   {
@@ -414,12 +399,7 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "reduceAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "maxSlippage",
+            name: "minOutput",
             type: "uint256",
           },
           {
@@ -438,13 +418,18 @@ const _abi = [
             type: "bytes32",
           },
           {
-            internalType: "uint160",
-            name: "slippedPrice",
-            type: "uint160",
+            internalType: "int24",
+            name: "slippedTickMin",
+            type: "int24",
+          },
+          {
+            internalType: "int24",
+            name: "slippedTickMax",
+            type: "int24",
           },
           {
             internalType: "uint256",
-            name: "deadline",
+            name: "reduceAmount",
             type: "uint256",
           },
         ],
@@ -490,6 +475,11 @@ const _abi = [
           {
             internalType: "uint256",
             name: "premium",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "profitFee",
             type: "uint256",
           },
         ],

@@ -144,28 +144,6 @@ export type MarginPositionStructOutput = [
   BigNumber
 ] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
 
-export type ForceCloseParamsStruct = {
-  trader: PromiseOrValue<string>;
-  positionIsToken0: PromiseOrValue<boolean>;
-  fillerPayAmount: PromiseOrValue<BigNumberish>;
-  slippedTickMin: PromiseOrValue<BigNumberish>;
-  slippedTickMax: PromiseOrValue<BigNumberish>;
-};
-
-export type ForceCloseParamsStructOutput = [
-  string,
-  boolean,
-  BigNumber,
-  number,
-  number
-] & {
-  trader: string;
-  positionIsToken0: boolean;
-  fillerPayAmount: BigNumber;
-  slippedTickMin: number;
-  slippedTickMax: number;
-};
-
 export type ReduceParamStruct = {
   positionIsToken0: PromiseOrValue<boolean>;
   reducePercentage: PromiseOrValue<BigNumberish>;
@@ -231,18 +209,16 @@ export type ReduceReturnStructOutput = [
   profitFee: BigNumber;
 };
 
-export interface MarginFacilityInterface extends utils.Interface {
+export interface MarginFacilityBaseInterface extends utils.Interface {
   functions: {
     "PremiumDeposit(bytes32)": FunctionFragment;
     "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "approveTokens(address,address)": FunctionFragment;
     "canForceClose(((address,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
-    "cancelOrder(address,bool,bool)": FunctionFragment;
     "checkPositionExists(address,address,bool)": FunctionFragment;
     "checkPremiumCondition(address,address,bool,uint256)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
-    "forceClose((address,address,uint24),(address,bool,uint256,int24,int24))": FunctionFragment;
     "getBorrowInfo(address,address,bool)": FunctionFragment;
     "getOrderId(address,address,bool,bool)": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
@@ -254,7 +230,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     "positions(bytes32)": FunctionFragment;
     "rangeConditions(bool,int24,int24,int24,int24)": FunctionFragment;
     "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes32,int24,int24,uint256))": FunctionFragment;
-    "submitOrder(address,bool,bool,uint256,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
   };
 
@@ -265,11 +240,9 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "approveTokens"
       | "canForceClose(((address,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))"
       | "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))"
-      | "cancelOrder"
       | "checkPositionExists"
       | "checkPremiumCondition"
       | "depositPremium"
-      | "forceClose"
       | "getBorrowInfo"
       | "getOrderId"
       | "getPosition"
@@ -281,7 +254,6 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "positions"
       | "rangeConditions"
       | "reducePosition"
-      | "submitOrder"
       | "withdrawPremium"
   ): FunctionFragment;
 
@@ -304,14 +276,6 @@ export interface MarginFacilityInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))",
     values: [PoolKeyStruct, MarginPositionStruct]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "cancelOrder",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>
-    ]
   ): string;
   encodeFunctionData(
     functionFragment: "checkPositionExists",
@@ -338,10 +302,6 @@ export interface MarginFacilityInterface extends utils.Interface {
       PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "forceClose",
-    values: [PoolKeyStruct, ForceCloseParamsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "getBorrowInfo",
@@ -415,20 +375,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     values: [PoolKeyStruct, ReduceParamStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "submitOrder",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "withdrawPremium",
     values: [
       PoolKeyStruct,
@@ -458,10 +404,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelOrder",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "checkPositionExists",
     data: BytesLike
   ): Result;
@@ -473,7 +415,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     functionFragment: "depositPremium",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "forceClose", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getBorrowInfo",
     data: BytesLike
@@ -501,10 +442,6 @@ export interface MarginFacilityInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "reducePosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "submitOrder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -679,12 +616,12 @@ export type PremiumWithdrawnEvent = TypedEvent<
 export type PremiumWithdrawnEventFilter =
   TypedEventFilter<PremiumWithdrawnEvent>;
 
-export interface MarginFacility extends BaseContract {
+export interface MarginFacilityBase extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: MarginFacilityInterface;
+  interface: MarginFacilityBaseInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -735,13 +672,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -762,12 +692,6 @@ export interface MarginFacility extends BaseContract {
       trader: PromiseOrValue<string>,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    forceClose(
-      key: PoolKeyStruct,
-      param: ForceCloseParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -870,19 +794,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     withdrawPremium(
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
@@ -920,13 +831,6 @@ export interface MarginFacility extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  cancelOrder(
-    pool: PromiseOrValue<string>,
-    positionIsToken0: PromiseOrValue<boolean>,
-    isAdd: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   checkPositionExists(
     pool: PromiseOrValue<string>,
     borrower: PromiseOrValue<string>,
@@ -947,12 +851,6 @@ export interface MarginFacility extends BaseContract {
     trader: PromiseOrValue<string>,
     borrowToken1: PromiseOrValue<boolean>,
     amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  forceClose(
-    key: PoolKeyStruct,
-    param: ForceCloseParamsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1055,19 +953,6 @@ export interface MarginFacility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  submitOrder(
-    pool: PromiseOrValue<string>,
-    positionIsToken0: PromiseOrValue<boolean>,
-    isAdd: PromiseOrValue<boolean>,
-    deadline: PromiseOrValue<BigNumberish>,
-    startOutput: PromiseOrValue<BigNumberish>,
-    minOutput: PromiseOrValue<BigNumberish>,
-    inputAmount: PromiseOrValue<BigNumberish>,
-    decayRate: PromiseOrValue<BigNumberish>,
-    margin: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   withdrawPremium(
     key: PoolKeyStruct,
     borrowToken1: PromiseOrValue<boolean>,
@@ -1088,9 +973,9 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [MarginPositionStructOutput, BigNumber, BigNumber] & {
-        position: MarginPositionStructOutput;
-        premiumOwed: BigNumber;
-        fee: BigNumber;
+        marginPosition: MarginPositionStructOutput;
+        premiumPaid: BigNumber;
+        feePaid: BigNumber;
       }
     >;
 
@@ -1110,13 +995,6 @@ export interface MarginFacility extends BaseContract {
       position: MarginPositionStruct,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     checkPositionExists(
       pool: PromiseOrValue<string>,
@@ -1138,12 +1016,6 @@ export interface MarginFacility extends BaseContract {
       trader: PromiseOrValue<string>,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    forceClose(
-      key: PoolKeyStruct,
-      param: ForceCloseParamsStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1245,19 +1117,6 @@ export interface MarginFacility extends BaseContract {
       param: ReduceParamStruct,
       overrides?: CallOverrides
     ): Promise<ReduceReturnStructOutput>;
-
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     withdrawPremium(
       key: PoolKeyStruct,
@@ -1437,13 +1296,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -1464,12 +1316,6 @@ export interface MarginFacility extends BaseContract {
       trader: PromiseOrValue<string>,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    forceClose(
-      key: PoolKeyStruct,
-      param: ForceCloseParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1541,19 +1387,6 @@ export interface MarginFacility extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1595,13 +1428,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -1622,12 +1448,6 @@ export interface MarginFacility extends BaseContract {
       trader: PromiseOrValue<string>,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    forceClose(
-      key: PoolKeyStruct,
-      param: ForceCloseParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1699,19 +1519,6 @@ export interface MarginFacility extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

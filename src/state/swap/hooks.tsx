@@ -5,24 +5,18 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useAllV3Routes } from 'hooks/useAllV3Routes'
-import { ApprovalState } from 'hooks/useApproveCallback'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
 import { useBestTrade } from 'hooks/useBestTrade'
-import useDebounce from 'hooks/useDebounce'
-import { usePool } from 'hooks/usePools'
-import { useLimitlessPositionFromKeys } from 'hooks/useV3Positions'
-import JSBI from 'jsbi'
-import { useSingleCallResult } from 'lib/hooks/multicall'
+// import { useLimitlessPositionFromKeys } from 'hooks/useV3Positions'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ParsedQs } from 'qs'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 
-import { DEFAULT_ERC20_DECIMALS, TOKEN_SHORTHANDS } from '../../constants/tokens'
+import { TOKEN_SHORTHANDS } from '../../constants/tokens'
 import { useCurrency } from '../../hooks/Tokens'
-import { useBorrowManagerContract } from '../../hooks/useContract'
 import useENS from '../../hooks/useENS'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'
@@ -260,289 +254,289 @@ export function useBestPool(
   return pool
 }
 
-export function useDerivedBorrowCreationInfo({
-  allowance: { input: inputAllowance, output: outputAllowance },
-}: {
-  allowance: { input: ApprovalState; output: ApprovalState }
-}): {
-  currencies: { [field in Field]?: Currency | null }
-  currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
-  parsedAmount: CurrencyAmount<Currency> | undefined
-  inputError?: ReactNode
-  trade?: BorrowCreationDetails
-  state: TradeState
-  allowedSlippage: Percent
-  contractError?: ReactNode
-} {
-  const { account } = useWeb3React()
-  const [tradeState, setTradeState] = useState<TradeState>(TradeState.INVALID)
-  const [contractResult, setContractResult] = useState()
-  const [error, setError] = useState()
+// export function useDerivedBorrowCreationInfo({
+//   allowance: { input: inputAllowance, output: outputAllowance },
+// }: {
+//   allowance: { input: ApprovalState; output: ApprovalState }
+// }): {
+//   currencies: { [field in Field]?: Currency | null }
+//   currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
+//   parsedAmount: CurrencyAmount<Currency> | undefined
+//   inputError?: ReactNode
+//   trade?: BorrowCreationDetails
+//   state: TradeState
+//   allowedSlippage: Percent
+//   contractError?: ReactNode
+// } {
+//   const { account } = useWeb3React()
+//   const [tradeState, setTradeState] = useState<TradeState>(TradeState.INVALID)
+//   const [contractResult, setContractResult] = useState()
+//   const [error, setError] = useState()
 
-  const {
-    typedValue,
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    ltv,
-    borrowManagerAddress,
-    activeTab,
-  } = useSwapState()
+//   const {
+//     typedValue,
+//     [Field.INPUT]: { currencyId: inputCurrencyId },
+//     [Field.OUTPUT]: { currencyId: outputCurrencyId },
+//     ltv,
+//     borrowManagerAddress,
+//     activeTab,
+//   } = useSwapState()
 
-  const { onPremiumChange } = useSwapActionHandlers()
+//   const { onPremiumChange } = useSwapActionHandlers()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
+//   const inputCurrency = useCurrency(inputCurrencyId)
+//   const outputCurrency = useCurrency(outputCurrencyId)
 
-  // TODO: need to algoritmically calculate the best pool for the user
-  // let poolAddress = useBestPoolAddress(inputCurrency ?? undefined, outputCurrency ?? undefined)
-  // user fund amount
+//   // TODO: need to algoritmically calculate the best pool for the user
+//   // let poolAddress = useBestPoolAddress(inputCurrency ?? undefined, outputCurrency ?? undefined)
+//   // user fund amount
 
-  const parsedAmount = useMemo(
-    () => tryParseCurrencyAmount(typedValue, inputCurrency ?? undefined),
-    [inputCurrency, typedValue]
-  )
+//   const parsedAmount = useMemo(
+//     () => tryParseCurrencyAmount(typedValue, inputCurrency ?? undefined),
+//     [inputCurrency, typedValue]
+//   )
 
-  const relevantTokenBalances = useCurrencyBalances(
-    account ?? undefined,
-    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
-  )
+//   const relevantTokenBalances = useCurrencyBalances(
+//     account ?? undefined,
+//     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
+//   )
 
-  const currencyBalances = useMemo(
-    () => ({
-      [Field.INPUT]: relevantTokenBalances[0],
-      [Field.OUTPUT]: relevantTokenBalances[1],
-    }),
-    [relevantTokenBalances]
-  )
+//   const currencyBalances = useMemo(
+//     () => ({
+//       [Field.INPUT]: relevantTokenBalances[0],
+//       [Field.OUTPUT]: relevantTokenBalances[1],
+//     }),
+//     [relevantTokenBalances]
+//   )
 
-  const currencies: { [field in Field]?: Currency | null } = useMemo(
-    () => ({
-      [Field.INPUT]: inputCurrency,
-      [Field.OUTPUT]: outputCurrency,
-    }),
-    [inputCurrency, outputCurrency]
-  )
+//   const currencies: { [field in Field]?: Currency | null } = useMemo(
+//     () => ({
+//       [Field.INPUT]: inputCurrency,
+//       [Field.OUTPUT]: outputCurrency,
+//     }),
+//     [inputCurrency, outputCurrency]
+//   )
 
-  const [_, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, 500)
-  // console.log("pool: ", pool, inputCurrency, outputCurrency)
+//   const [_, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, 500)
+//   // console.log("pool: ", pool, inputCurrency, outputCurrency)
 
-  // const leverageManager = useLeverageManagerContract(leverageManagerAddress ?? undefined, true)
-  const borrowManager = useBorrowManagerContract(borrowManagerAddress ?? undefined, true)
-  const inputIsToken0 = useMemo(
-    () => (outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false),
-    [inputCurrency, outputCurrency]
-  ) //inputCurrency?.wrapped.address === pool?.token0.address
-  const initialPrice = pool ? (inputIsToken0 ? pool.token1Price : pool.token0Price) : undefined
-  const debouncedAmount = useDebounce(
-    useMemo(() => parsedAmount, [parsedAmount]),
-    200
-  )
+//   // const leverageManager = useLeverageManagerContract(leverageManagerAddress ?? undefined, true)
+//   const borrowManager = useBorrowManagerContract(borrowManagerAddress ?? undefined, true)
+//   const inputIsToken0 = useMemo(
+//     () => (outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false),
+//     [inputCurrency, outputCurrency]
+//   ) //inputCurrency?.wrapped.address === pool?.token0.address
+//   const initialPrice = pool ? (inputIsToken0 ? pool.token1Price : pool.token0Price) : undefined
+//   const debouncedAmount = useDebounce(
+//     useMemo(() => parsedAmount, [parsedAmount]),
+//     200
+//   )
 
-  const globalStorageAddress = useSingleCallResult(borrowManager, 'globalStorage')
+//   const globalStorageAddress = useSingleCallResult(borrowManager, 'globalStorage')
 
-  useEffect(() => {
-    if (!globalStorageAddress) {
-      setTradeState(TradeState.NO_ROUTE_FOUND)
-    }
-  }, [globalStorageAddress])
+//   useEffect(() => {
+//     if (!globalStorageAddress) {
+//       setTradeState(TradeState.NO_ROUTE_FOUND)
+//     }
+//   }, [globalStorageAddress])
 
-  const { loading, position: existingPosition } = useLimitlessPositionFromKeys(
-    account,
-    borrowManagerAddress ?? undefined,
-    inputIsToken0,
-    true
-  )
+//   const { loading, position: existingPosition } = useLimitlessPositionFromKeys(
+//     account,
+//     borrowManagerAddress ?? undefined,
+//     inputIsToken0,
+//     true
+//   )
 
-  // TODO calculate slippage from the pool
-  const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), []) // new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
+//   // TODO calculate slippage from the pool
+//   const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), []) // new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
 
-  // retrieves the trade object
-  useEffect(() => {
-    const lagged = async () => {
-      // simulate the trade
-      if (
-        borrowManager &&
-        debouncedAmount &&
-        ltv &&
-        Number(ltv) > 0 &&
-        outputCurrency?.wrapped &&
-        inputCurrency?.wrapped &&
-        inputAllowance === ApprovalState.APPROVED &&
-        outputAllowance === ApprovalState.APPROVED
-      ) {
-        try {
-          const borrowBelow = inputIsToken0 // borrowing token1 to buy token0
-          setTradeState(TradeState.LOADING)
-          const collateralAmount = new BN(debouncedAmount.toFixed(DEFAULT_ERC20_DECIMALS))
-            .shiftedBy(DEFAULT_ERC20_DECIMALS)
-            .toFixed(0)
-          const _ltv = new BN(ltv).shiftedBy(16).toFixed(0)
+//   // retrieves the trade object
+//   useEffect(() => {
+//     const lagged = async () => {
+//       // simulate the trade
+//       if (
+//         borrowManager &&
+//         debouncedAmount &&
+//         ltv &&
+//         Number(ltv) > 0 &&
+//         outputCurrency?.wrapped &&
+//         inputCurrency?.wrapped &&
+//         inputAllowance === ApprovalState.APPROVED &&
+//         outputAllowance === ApprovalState.APPROVED
+//       ) {
+//         try {
+//           const borrowBelow = inputIsToken0 // borrowing token1 to buy token0
+//           setTradeState(TradeState.LOADING)
+//           const collateralAmount = new BN(debouncedAmount.toFixed(DEFAULT_ERC20_DECIMALS))
+//             .shiftedBy(DEFAULT_ERC20_DECIMALS)
+//             .toFixed(0)
+//           const _ltv = new BN(ltv).shiftedBy(16).toFixed(0)
 
-          const trade = await borrowManager.callStatic.addBorrowPosition(borrowBelow, collateralAmount, _ltv, [])
-          //keep borrowInfo param as an empty array. key is just token 0, token1, fee. token0 needs to be < token1 if u compare. addParams is in type. hardcode maxslippage at first to test. minestimatedslippage is for tick matching engine.
-          setTradeState(TradeState.VALID)
+//           const trade = await borrowManager.callStatic.addBorrowPosition(borrowBelow, collateralAmount, _ltv, [])
+//           //keep borrowInfo param as an empty array. key is just token 0, token1, fee. token0 needs to be < token1 if u compare. addParams is in type. hardcode maxslippage at first to test. minestimatedslippage is for tick matching engine.
+//           setTradeState(TradeState.VALID)
 
-          setContractResult(trade)
-          setError(undefined)
-        } catch (err) {
-          console.log('addBorrowPosition simulation error: ', err)
-          setError(err.reason)
-          setTradeState(TradeState.INVALID)
-        }
-      } else {
-        setTradeState(TradeState.INVALID)
-      }
-    }
-    lagged()
-  }, [
-    inputIsToken0,
-    inputAllowance,
-    outputAllowance,
-    borrowManager,
-    ltv,
-    debouncedAmount,
-    inputCurrency,
-    outputCurrency,
-  ])
-  //console.log("contractResultPost/tradestate", contractResult, tradeState)
+//           setContractResult(trade)
+//           setError(undefined)
+//         } catch (err) {
+//           console.log('addBorrowPosition simulation error: ', err)
+//           setError(err.reason)
+//           setTradeState(TradeState.INVALID)
+//         }
+//       } else {
+//         setTradeState(TradeState.INVALID)
+//       }
+//     }
+//     lagged()
+//   }, [
+//     inputIsToken0,
+//     inputAllowance,
+//     outputAllowance,
+//     borrowManager,
+//     ltv,
+//     debouncedAmount,
+//     inputCurrency,
+//     outputCurrency,
+//   ])
+//   //console.log("contractResultPost/tradestate", contractResult, tradeState)
 
-  const inputError = useMemo(() => {
-    let inputError: ReactNode | undefined
+//   const inputError = useMemo(() => {
+//     let inputError: ReactNode | undefined
 
-    if (!account) {
-      inputError = <Trans>Connect Wallet</Trans>
-    }
+//     if (!account) {
+//       inputError = <Trans>Connect Wallet</Trans>
+//     }
 
-    if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
-      inputError = inputError ?? <Trans>Select a token</Trans>
-    }
+//     if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
+//       inputError = inputError ?? <Trans>Select a token</Trans>
+//     }
 
-    if (!parsedAmount) {
-      inputError = inputError ?? <Trans>Enter an amount</Trans>
-    }
+//     if (!parsedAmount) {
+//       inputError = inputError ?? <Trans>Enter an amount</Trans>
+//     }
 
-    if (!ltv || Number(ltv) >= 100 || Number(ltv) === 0 || ltv === '') {
-      inputError = inputError ?? <Trans>Invalid LTV</Trans>
-    }
+//     if (!ltv || Number(ltv) >= 100 || Number(ltv) === 0 || ltv === '') {
+//       inputError = inputError ?? <Trans>Invalid LTV</Trans>
+//     }
 
-    // compare input balance to max input based on version
-    // const [balanceIn, amountIn] = [currencyBalances[Field.INPUT], parsedAmount?.toExact()]
-    // const price = inputIsToken0 ? pool.token0Price.toFixed(18) : pool.token1Price.toFixed(18)
-    // new BN(parsedAmount?.toExact() ?? 0).times(ltv ?? "0").times(price).shiftedBy(18).toFixed(0)
-    // const [balanceOut, premiumAmount] = [currencyBalances[Field.INPUT], parsedAmount?.toExact()]
+//     // compare input balance to max input based on version
+//     // const [balanceIn, amountIn] = [currencyBalances[Field.INPUT], parsedAmount?.toExact()]
+//     // const price = inputIsToken0 ? pool.token0Price.toFixed(18) : pool.token1Price.toFixed(18)
+//     // new BN(parsedAmount?.toExact() ?? 0).times(ltv ?? "0").times(price).shiftedBy(18).toFixed(0)
+//     // const [balanceOut, premiumAmount] = [currencyBalances[Field.INPUT], parsedAmount?.toExact()]
 
-    // // TODO add slippage to all the simulations
-    // if (balanceIn && amountIn && Number(balanceIn.toExact()) < Number(amountIn)) {
-    //   inputError = <Trans>Insufficient {inputCurrency?.symbol} balance</Trans>
-    // }
+//     // // TODO add slippage to all the simulations
+//     // if (balanceIn && amountIn && Number(balanceIn.toExact()) < Number(amountIn)) {
+//     //   inputError = <Trans>Insufficient {inputCurrency?.symbol} balance</Trans>
+//     // }
 
-    // if (balanceOut && premiumAmount && Number(balanceOut.toExact()) < Number(premium)) {
-    //   inputError = inputError ?? <Trans>Insufficient {outputCurrency?.symbol} balance</Trans>
-    // }
+//     // if (balanceOut && premiumAmount && Number(balanceOut.toExact()) < Number(premium)) {
+//     //   inputError = inputError ?? <Trans>Insufficient {outputCurrency?.symbol} balance</Trans>
+//     // }
 
-    if (tradeState === TradeState.NO_ROUTE_FOUND) {
-      inputError = inputError ?? <Trans>Insufficient Liquidity</Trans>
-    }
+//     if (tradeState === TradeState.NO_ROUTE_FOUND) {
+//       inputError = inputError ?? <Trans>Insufficient Liquidity</Trans>
+//     }
 
-    return inputError
-  }, [tradeState, account, currencies, parsedAmount, ltv])
+//     return inputError
+//   }, [tradeState, account, currencies, parsedAmount, ltv])
 
-  const trade = useMemo(() => {
-    if (
-      tradeState === TradeState.VALID &&
-      initialPrice &&
-      contractResult &&
-      outputCurrency?.wrapped &&
-      inputCurrency?.wrapped &&
-      debouncedAmount
-    ) {
-      const position: any = contractResult[0]
-      // const expectedOutput = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
+//   const trade = useMemo(() => {
+//     if (
+//       tradeState === TradeState.VALID &&
+//       initialPrice &&
+//       contractResult &&
+//       outputCurrency?.wrapped &&
+//       inputCurrency?.wrapped &&
+//       debouncedAmount
+//     ) {
+//       const position: any = contractResult[0]
+//       // const expectedOutput = new BN(position.totalPosition.toString()).shiftedBy(-outputCurrency?.wrapped.decimals).toNumber()
 
-      const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
-      const unusedPremium = new BN((contractResult[1] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
-      const strikePrice = new BN(borrowedAmount).div(debouncedAmount.toExact())
-      const quotedPremium = new BN((contractResult[2] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
-      const t = strikePrice
-        .minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
-        .abs()
-        .dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
-        .multipliedBy(1000)
-        .toFixed(0)
-      const priceImpact = new Percent(t, 1000)
+//       const borrowedAmount = new BN(position.totalDebtInput.toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+//       const unusedPremium = new BN((contractResult[1] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+//       const strikePrice = new BN(borrowedAmount).div(debouncedAmount.toExact())
+//       const quotedPremium = new BN((contractResult[2] as any).toString()).shiftedBy(-inputCurrency?.wrapped.decimals)
+//       const t = strikePrice
+//         .minus(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
+//         .abs()
+//         .dividedBy(initialPrice.toFixed(DEFAULT_ERC20_DECIMALS))
+//         .multipliedBy(1000)
+//         .toFixed(0)
+//       const priceImpact = new Percent(t, 1000)
 
-      // existing position
-      const _existingPosition = !!existingPosition
-      const existingTotalDebtInput = existingPosition?.totalDebtInput ?? new BN(0)
-      const existingCollateral = existingPosition?.initialCollateral ?? new BN(0)
-      // if (existingPosition) {
-      //   _existingPosition = true
-      //   existingTotalDebtInput =
-      //   existingCollateral = existingPosition.initialCollateral
-      // }
+//       // existing position
+//       const _existingPosition = !!existingPosition
+//       const existingTotalDebtInput = existingPosition?.totalDebtInput ?? new BN(0)
+//       const existingCollateral = existingPosition?.initialCollateral ?? new BN(0)
+//       // if (existingPosition) {
+//       //   _existingPosition = true
+//       //   existingTotalDebtInput =
+//       //   existingCollateral = existingPosition.initialCollateral
+//       // }
 
-      return {
-        collateralAmount: new BN(debouncedAmount.toExact()),
-        borrowedAmount, // CurrencyAmount.fromRawAmount(inputCurrency?.wrapped, new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)),
-        state: tradeState,
-        unusedPremium,
-        strikePrice,
-        quotedPremium, // quotedPremium - unusedPremium,
-        priceImpact,
-        existingPosition: _existingPosition,
-        existingTotalDebtInput,
-        existingCollateral,
-      }
-    } else {
-      return undefined
-    }
-  }, [existingPosition, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
+//       return {
+//         collateralAmount: new BN(debouncedAmount.toExact()),
+//         borrowedAmount, // CurrencyAmount.fromRawAmount(inputCurrency?.wrapped, new BN(borrowedAmount).shiftedBy(inputCurrency?.wrapped.decimals).toFixed(0)),
+//         state: tradeState,
+//         unusedPremium,
+//         strikePrice,
+//         quotedPremium, // quotedPremium - unusedPremium,
+//         priceImpact,
+//         existingPosition: _existingPosition,
+//         existingTotalDebtInput,
+//         existingCollateral,
+//       }
+//     } else {
+//       return undefined
+//     }
+//   }, [existingPosition, initialPrice, tradeState, contractResult, debouncedAmount, inputCurrency, outputCurrency])
 
-  // console.log('trade', existingPosition, trade)
+//   // console.log('trade', existingPosition, trade)
 
-  useEffect(() => {
-    if (activeTab === ActiveSwapTab.BORROW) {
-      const amount = Number(typedValue)
-      const price = inputIsToken0 ? pool?.token0Price.toFixed(18) : pool?.token1Price.toFixed(18)
-      const _ltv = Number(ltv) / 100
-      // console.log("premiumBorrow", price, amount, _ltv)
-      if (tradeState === TradeState.VALID && trade) {
-        onPremiumChange(trade.quotedPremium)
-      } else if (existingPosition && amount && Number(_ltv) > 0) {
-        const addedDebt = new BN(Number(amount) * Number(price))
-        onPremiumChange(addedDebt.plus(existingPosition?.totalDebtInput).times(0.002))
-      } else if (Number(_ltv) > 0 && amount) {
-        onPremiumChange(new BN(Number(amount) * Number(price) * 0.002))
-      } else {
-        onPremiumChange(new BN(0))
-      }
-    }
-  }, [activeTab, tradeState, trade, typedValue, pool, ltv, existingPosition, onPremiumChange, inputIsToken0])
+//   useEffect(() => {
+//     if (activeTab === ActiveSwapTab.BORROW) {
+//       const amount = Number(typedValue)
+//       const price = inputIsToken0 ? pool?.token0Price.toFixed(18) : pool?.token1Price.toFixed(18)
+//       const _ltv = Number(ltv) / 100
+//       // console.log("premiumBorrow", price, amount, _ltv)
+//       if (tradeState === TradeState.VALID && trade) {
+//         onPremiumChange(trade.quotedPremium)
+//       } else if (existingPosition && amount && Number(_ltv) > 0) {
+//         const addedDebt = new BN(Number(amount) * Number(price))
+//         onPremiumChange(addedDebt.plus(existingPosition?.totalDebtInput).times(0.002))
+//       } else if (Number(_ltv) > 0 && amount) {
+//         onPremiumChange(new BN(Number(amount) * Number(price) * 0.002))
+//       } else {
+//         onPremiumChange(new BN(0))
+//       }
+//     }
+//   }, [activeTab, tradeState, trade, typedValue, pool, ltv, existingPosition, onPremiumChange, inputIsToken0])
 
-  const contractError = useMemo(() => {
-    let _contractError
+//   const contractError = useMemo(() => {
+//     let _contractError
 
-    if (error === '!liq') {
-      _contractError = <Trans>Insufficient liquidity for trade</Trans>
-    }
+//     if (error === '!liq') {
+//       _contractError = <Trans>Insufficient liquidity for trade</Trans>
+//     }
 
-    if (tradeState === TradeState.INVALID) {
-      _contractError = _contractError ?? <Trans>Invalid Trade</Trans>
-    }
-    return _contractError
-  }, [error, tradeState])
+//     if (tradeState === TradeState.INVALID) {
+//       _contractError = _contractError ?? <Trans>Invalid Trade</Trans>
+//     }
+//     return _contractError
+//   }, [error, tradeState])
 
-  return {
-    trade,
-    state: tradeState,
-    currencies,
-    currencyBalances,
-    parsedAmount,
-    inputError,
-    allowedSlippage,
-    contractError,
-  }
-}
+//   return {
+//     trade,
+//     state: tradeState,
+//     currencies,
+//     currencyBalances,
+//     parsedAmount,
+//     inputError,
+//     allowedSlippage,
+//     contractError,
+//   }
+// }
 
 // export function useDerivedLeverageCreationInfo(): {
 //   currencies: { [field in Field]?: Currency | null }

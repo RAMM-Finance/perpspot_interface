@@ -117,7 +117,15 @@ const ModalContentWrapper = styled.div`
   border-radius: 20px;
 `
 
-export default function SettingsTab({ placeholderSlippage }: { placeholderSlippage: Percent }) {
+export default function SettingsTab({
+  allowedSlippage,
+  autoSlippedTick,
+  autoPremiumTolerance,
+}: {
+  allowedSlippage?: Percent
+  autoSlippedTick?: Percent
+  autoPremiumTolerance?: Percent
+}) {
   const { chainId } = useWeb3React()
 
   const node = useRef<HTMLDivElement | null>(null)
@@ -198,61 +206,32 @@ export default function SettingsTab({ placeholderSlippage }: { placeholderSlippa
             <Text fontWeight={600} fontSize={14}>
               <Trans>Settings</Trans>
             </Text>
-            <TransactionSettings placeholderSlippage={placeholderSlippage} />
-            {/*<Text fontWeight={600} fontSize={14}>
-              <Trans>Interface Settings</Trans>
-            </Text>*/}
-            {/*isSupportedChainId(chainId) && (
-              <RowBetween>
-                <RowFixed>
-                  <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-                    <Trans>Auto Router API</Trans>
-                  </ThemedText.DeprecatedBlack>
-                  <QuestionHelper text={<Trans>Use the Uniswap Labs API to get faster quotes.</Trans>} />
-                </RowFixed>
-                <Toggle
-                  id="toggle-optimized-router-button"
-                  isActive={!clientSideRouter}
-                  toggle={() => {
-                    sendEvent({
-                      category: 'Routing',
-                      action: clientSideRouter ? 'enable routing API' : 'disable routing API',
-                    })
-                    setClientSideRouter(!clientSideRouter)
-                  }}
-                />
-              </RowBetween>
-            )*/}
-            {/*<RowBetween>
-              <RowFixed>
-                <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-                  <Trans>Expert Mode</Trans>
-                </ThemedText.DeprecatedBlack>
-                <QuestionHelper
-                  text={
-                    <Trans>Allow high price impact trades and skip the confirm screen. Use at your own risk.</Trans>
-                  }
-                />
-              </RowFixed>
-              <Toggle
-                id="toggle-expert-mode-button"
-                isActive={expertMode}
-                toggle={
-                  expertMode
-                    ? () => {
-                        toggleExpertMode()
-                        setShowConfirmation(false)
-                      }
-                    : () => {
-                        toggle()
-                        setShowConfirmation(true)
-                      }
-                }
-              />
-            </RowBetween>*/}
+            <TransactionSettings
+              placeholderSlippage={allowedSlippage}
+              placeholderPremium={autoPremiumTolerance}
+              placeholderSlippedTick={autoSlippedTick}
+            />
           </AutoColumn>
         </MenuFlyout>
       )}
     </StyledMenu>
   )
 }
+
+/**
+ *
+ * transaction settings
+ * for add:
+ * need slippage + premium + slippedTick
+ * for reduce:
+ * need slippage + slippedTick
+ *
+ * for swap:
+ * need slippage
+ *
+ * for addingLiq:
+ * need slippage
+ *
+ * for removingLiq:
+ * need slippage
+ */

@@ -116,7 +116,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   }, [dataProvider, params, blockNumber, lastBlockNumber, loading])
 
   return useMemo(() => {
-    if (!result) {
+    if (!result || !key) {
       return {
         loading,
         error,
@@ -128,11 +128,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         loading,
         error,
         position: {
-          poolKey: {
-            token0Address: position.poolKey.token0Address,
-            token1Address: position.poolKey.token1Address,
-            fee: getFee(position.poolKey.fee),
-          },
+          poolKey: key.poolKey,
           positionId: new BN(0),
           isToken0: position.isToken0,
           totalDebtOutput: convertToBN(position.totalDebtOutput, 18),

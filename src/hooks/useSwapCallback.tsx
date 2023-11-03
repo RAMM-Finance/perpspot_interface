@@ -1,16 +1,9 @@
-import { formatNumber } from '@uniswap/conedison/format'
 import { Trade } from '@uniswap/router-sdk'
-import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from 'bignumber.js'
-import { Contract } from 'ethers'
+import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { PermitSignature } from 'hooks/usePermitAllowance'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
-import { TradeState } from 'state/routing/types'
-import { BorrowCreationDetails } from 'state/swap/hooks'
 
-import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
+// import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import { TransactionType } from '../state/transactions/types'
 import { currencyId } from '../utils/currencyId'
@@ -191,95 +184,95 @@ export function useSwapCallback(
 //   }
 // }
 
-export function useAddBorrowPositionCallback(
-  borrowManagerAddress: string | undefined,
-  allowedSlippage: Percent, // in bfips
-  ltv: string | undefined,
-  parsedAmount: CurrencyAmount<Currency> | undefined,
-  inputCurrency: Currency | undefined,
-  outputCurrency: Currency | undefined,
-  borrowState: TradeState,
-  borrowTrade?: BorrowCreationDetails
-): { callback: null | (() => Promise<string>) } {
-  // const deadline = useTransactionDeadline()
-  const { account, chainId, provider } = useWeb3React()
+// export function useAddBorrowPositionCallback(
+//   borrowManagerAddress: string | undefined,
+//   allowedSlippage: Percent, // in bfips
+//   ltv: string | undefined,
+//   parsedAmount: CurrencyAmount<Currency> | undefined,
+//   inputCurrency: Currency | undefined,
+//   outputCurrency: Currency | undefined,
+//   borrowState: TradeState,
+//   borrowTrade?: BorrowCreationDetails
+// ): { callback: null | (() => Promise<string>) } {
+//   // const deadline = useTransactionDeadline()
+//   const { account, chainId, provider } = useWeb3React()
 
-  const addTransaction = useTransactionAdder()
+//   const addTransaction = useTransactionAdder()
 
-  const callback = useMemo(() => {
-    return () => {
-      if (
-        !borrowManagerAddress ||
-        !borrowTrade ||
-        borrowState !== TradeState.VALID ||
-        !inputCurrency ||
-        !outputCurrency ||
-        !ltv
-      )
-        return null
-      if (!account) throw new Error('missing account')
-      if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+//   const callback = useMemo(() => {
+//     return () => {
+//       if (
+//         !borrowManagerAddress ||
+//         !borrowTrade ||
+//         borrowState !== TradeState.VALID ||
+//         !inputCurrency ||
+//         !outputCurrency ||
+//         !ltv
+//       )
+//         return null
+//       if (!account) throw new Error('missing account')
+//       if (!chainId) throw new Error('missing chainId')
+//       if (!provider) throw new Error('missing provider')
 
-      const decimals = inputCurrency?.decimals ?? 18
+//       const decimals = inputCurrency?.decimals ?? 18
 
-      // borrowBelow is true if input currency is token0.
-      let borrowBelow = true
-      if (inputCurrency?.isToken && outputCurrency?.isToken && inputCurrency?.wrapped && outputCurrency?.wrapped) {
-        borrowBelow = inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped)
-      }
+//       // borrowBelow is true if input currency is token0.
+//       let borrowBelow = true
+//       if (inputCurrency?.isToken && outputCurrency?.isToken && inputCurrency?.wrapped && outputCurrency?.wrapped) {
+//         borrowBelow = inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped)
+//       }
 
-      const collateralAmount = new BN(parsedAmount?.toExact() ?? 0).shiftedBy(decimals).toFixed(0)
-      const borrowManagerContract = new Contract(borrowManagerAddress, BorrowManagerData.abi, provider.getSigner())
+//       const collateralAmount = new BN(parsedAmount?.toExact() ?? 0).shiftedBy(decimals).toFixed(0)
+//       const borrowManagerContract = new Contract(borrowManagerAddress, BorrowManagerData.abi, provider.getSigner())
 
-      const formattedLTV = new BN(ltv).shiftedBy(16).toFixed(0)
+//       const formattedLTV = new BN(ltv).shiftedBy(16).toFixed(0)
 
-      return borrowManagerContract
-        .addBorrowPosition(borrowBelow, collateralAmount, formattedLTV, [])
-        .then((response: any) => {
-          console.log('borrowResponse', response)
-          addTransaction(response, {
-            type: TransactionType.ADD_BORROW,
-            collateralAmount: formatNumber(Number(parsedAmount?.toExact())),
-            inputCurrencyId: currencyId(inputCurrency),
-            outputCurrencyId: currencyId(outputCurrency),
-            borrowedAmount: formatBNToString(borrowTrade.borrowedAmount),
-          })
-          return response.hash
-        })
-    }
-  }, [
-    account,
-    addTransaction,
-    borrowManagerAddress,
-    borrowState,
-    borrowTrade,
-    chainId,
-    inputCurrency,
-    outputCurrency,
-    ltv,
-    parsedAmount,
-    provider,
-  ])
+//       return borrowManagerContract
+//         .addBorrowPosition(borrowBelow, collateralAmount, formattedLTV, [])
+//         .then((response: any) => {
+//           console.log('borrowResponse', response)
+//           addTransaction(response, {
+//             type: TransactionType.ADD_BORROW,
+//             collateralAmount: formatNumber(Number(parsedAmount?.toExact())),
+//             inputCurrencyId: currencyId(inputCurrency),
+//             outputCurrencyId: currencyId(outputCurrency),
+//             borrowedAmount: formatBNToString(borrowTrade.borrowedAmount),
+//           })
+//           return response.hash
+//         })
+//     }
+//   }, [
+//     account,
+//     addTransaction,
+//     borrowManagerAddress,
+//     borrowState,
+//     borrowTrade,
+//     chainId,
+//     inputCurrency,
+//     outputCurrency,
+//     ltv,
+//     parsedAmount,
+//     provider,
+//   ])
 
-  return {
-    callback,
-  }
+//   return {
+//     callback,
+//   }
 
-  // return {
-  //   callback: (): any => {
-  //     return borrowManagerContract
-  //       .addBorrowPosition(borrowBelow, collateralAmount, formattedLTV, [])
-  //       .then((response: any) => {
-  //         console.log('borrowResponse', response)
-  //         addTransaction(response, {
-  //           type: TransactionType.ADD_BORROW,
-  //           collateralAmount,
-  //           inputCurrencyId: currencyId(inputCurrency),
-  //           outputCurrencyId: currencyId(outputCurrency),
-  //         })
-  //         return response.hash
-  //       })
-  //   },
-  // }
-}
+//   // return {
+//   //   callback: (): any => {
+//   //     return borrowManagerContract
+//   //       .addBorrowPosition(borrowBelow, collateralAmount, formattedLTV, [])
+//   //       .then((response: any) => {
+//   //         console.log('borrowResponse', response)
+//   //         addTransaction(response, {
+//   //           type: TransactionType.ADD_BORROW,
+//   //           collateralAmount,
+//   //           inputCurrencyId: currencyId(inputCurrency),
+//   //           outputCurrencyId: currencyId(outputCurrency),
+//   //         })
+//   //         return response.hash
+//   //       })
+//   //   },
+//   // }
+// }

@@ -72,8 +72,10 @@ export type OrderStructOutput = [
 export interface ExecutionerInterface extends utils.Interface {
   functions: {
     "executeAggregator(address)": FunctionFragment;
+    "executeFiller(address,bool,uint256,uint256,address,address)": FunctionFragment;
     "executeFiller(address,bool,uint256,uint256,address,address,bytes32)": FunctionFragment;
     "executeUniswap(address,bool,int256,uint160,address,address)": FunctionFragment;
+    "executeUniswapWithMinOutput(address,bool,int256,address,address,uint256)": FunctionFragment;
     "getOrder(bytes32)": FunctionFragment;
     "getRequiredOutput(((address,address,uint24),bool,uint32,uint32,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "orders(bytes32)": FunctionFragment;
@@ -84,8 +86,10 @@ export interface ExecutionerInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "executeAggregator"
-      | "executeFiller"
+      | "executeFiller(address,bool,uint256,uint256,address,address)"
+      | "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"
       | "executeUniswap"
+      | "executeUniswapWithMinOutput"
       | "getOrder"
       | "getRequiredOutput"
       | "orders"
@@ -98,7 +102,18 @@ export interface ExecutionerInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "executeFiller",
+    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address)",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address,bytes32)",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<boolean>,
@@ -118,6 +133,17 @@ export interface ExecutionerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "executeUniswapWithMinOutput",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
@@ -160,11 +186,19 @@ export interface ExecutionerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "executeFiller",
+    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address,bytes32)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "executeUniswap",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "executeUniswapWithMinOutput",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOrder", data: BytesLike): Result;
@@ -217,7 +251,17 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    executeFiller(
+    "executeFiller(address,bool,uint256,uint256,address,address)"(
+      filler: PromiseOrValue<string>,
+      outIsToken0: PromiseOrValue<boolean>,
+      outputAmount: PromiseOrValue<BigNumberish>,
+      inputAmount: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
@@ -235,6 +279,16 @@ export interface Executioner extends BaseContract {
       limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    executeUniswapWithMinOutput(
+      pool: PromiseOrValue<string>,
+      down: PromiseOrValue<boolean>,
+      swapIn: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -301,7 +355,17 @@ export interface Executioner extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  executeFiller(
+  "executeFiller(address,bool,uint256,uint256,address,address)"(
+    filler: PromiseOrValue<string>,
+    outIsToken0: PromiseOrValue<boolean>,
+    outputAmount: PromiseOrValue<BigNumberish>,
+    inputAmount: PromiseOrValue<BigNumberish>,
+    token0: PromiseOrValue<string>,
+    token1: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
     filler: PromiseOrValue<string>,
     outIsToken0: PromiseOrValue<boolean>,
     outputAmount: PromiseOrValue<BigNumberish>,
@@ -319,6 +383,16 @@ export interface Executioner extends BaseContract {
     limit: PromiseOrValue<BigNumberish>,
     token0: PromiseOrValue<string>,
     token1: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  executeUniswapWithMinOutput(
+    pool: PromiseOrValue<string>,
+    down: PromiseOrValue<boolean>,
+    swapIn: PromiseOrValue<BigNumberish>,
+    token0: PromiseOrValue<string>,
+    token1: PromiseOrValue<string>,
+    minOutput: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -387,7 +461,19 @@ export interface Executioner extends BaseContract {
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
     >;
 
-    executeFiller(
+    "executeFiller(address,bool,uint256,uint256,address,address)"(
+      filler: PromiseOrValue<string>,
+      outIsToken0: PromiseOrValue<boolean>,
+      outputAmount: PromiseOrValue<BigNumberish>,
+      inputAmount: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+    >;
+
+    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
@@ -407,6 +493,18 @@ export interface Executioner extends BaseContract {
       limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+    >;
+
+    executeUniswapWithMinOutput(
+      pool: PromiseOrValue<string>,
+      down: PromiseOrValue<boolean>,
+      swapIn: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
@@ -478,7 +576,17 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    executeFiller(
+    "executeFiller(address,bool,uint256,uint256,address,address)"(
+      filler: PromiseOrValue<string>,
+      outIsToken0: PromiseOrValue<boolean>,
+      outputAmount: PromiseOrValue<BigNumberish>,
+      inputAmount: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
@@ -496,6 +604,16 @@ export interface Executioner extends BaseContract {
       limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    executeUniswapWithMinOutput(
+      pool: PromiseOrValue<string>,
+      down: PromiseOrValue<boolean>,
+      swapIn: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -541,7 +659,17 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    executeFiller(
+    "executeFiller(address,bool,uint256,uint256,address,address)"(
+      filler: PromiseOrValue<string>,
+      outIsToken0: PromiseOrValue<boolean>,
+      outputAmount: PromiseOrValue<BigNumberish>,
+      inputAmount: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
@@ -559,6 +687,16 @@ export interface Executioner extends BaseContract {
       limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    executeUniswapWithMinOutput(
+      pool: PromiseOrValue<string>,
+      down: PromiseOrValue<boolean>,
+      swapIn: PromiseOrValue<BigNumberish>,
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

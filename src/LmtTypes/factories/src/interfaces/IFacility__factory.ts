@@ -23,11 +23,6 @@ const _abi = [
               },
               {
                 internalType: "bool",
-                name: "underAuction",
-                type: "bool",
-              },
-              {
-                internalType: "bool",
                 name: "isToken0",
                 type: "bool",
               },
@@ -71,11 +66,6 @@ const _abi = [
                   {
                     internalType: "uint256",
                     name: "premium",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "Urate",
                     type: "uint256",
                   },
                   {
@@ -219,14 +209,14 @@ const _abi = [
         type: "tuple",
       },
       {
-        internalType: "address",
-        name: "trader",
-        type: "address",
+        internalType: "bool",
+        name: "payToken1",
+        type: "bool",
       },
       {
-        internalType: "bool",
-        name: "positionIsToken0",
-        type: "bool",
+        internalType: "uint256",
+        name: "depositAmount",
+        type: "uint256",
       },
     ],
     name: "payPremium",

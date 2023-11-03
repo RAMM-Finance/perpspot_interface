@@ -102,6 +102,9 @@ interface DerivedAddPositionResult {
   parsedBorrowAmount: CurrencyAmount<Currency> | undefined
   parsedLeverageFactor: string | undefined
   positionKey?: TraderPositionKey
+  allowedSlippage?: Percent
+  allowedSlippedTick?: Percent
+  allowedPremiumTolerance?: Percent
   inputError?: ReactNode
   trade?: AddMarginTrade
   preTradeInfo?: PreTradeInfo
@@ -152,6 +155,9 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
       return undefined
     }
   }, [account, pool, outputCurrency])
+
+  const allowedSlippedTick = useMemo(() => new Percent(1, 100), [])
+  const allowedPremiumTolerance = useMemo(() => new Percent(1, 100), [])
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
 
@@ -279,6 +285,8 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
       existingPosition,
       state,
       allowedSlippage,
+      allowedSlippedTick,
+      allowedPremiumTolerance,
     }),
     [
       currencies,
@@ -293,6 +301,8 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
       state,
       allowedSlippage,
       positionKey,
+      allowedSlippedTick,
+      allowedPremiumTolerance,
     ]
   )
 }
@@ -408,65 +418,6 @@ const useSimulateMarginTrade = (
 
   const { provider, chainId } = useWeb3React()
 
-  // const [outputLoading, actualOutput] = useEstimatedOutputAmount(pool, inputIsToken0, amount)
-
-  // const callDatas = useMemo(() => {
-  //   if (
-  //     !account ||
-  //     !pool ||
-  //     !margin ||
-  //     !borrowAmount ||
-  //     !actualOutput ||
-  //     !account ||
-  //     !blockNumber ||
-  //     !existingPosition ||
-  //     !inputCurrency ||
-  //     !outputCurrency ||
-  //     !additionalPremium ||
-  //     !!inputError ||
-  //     outputLoading
-  //   ) {
-  //     return []
-  //   }
-
-  //   return MarginFacilitySDK.addPositionParameters({
-  //     positionKey: {
-  //       poolKey: {
-  //         token0Address: pool.token0.address,
-  //         token1Address: pool.token1.address,
-  //         fee: pool.fee,
-  //       },
-  //       isToken0: !inputIsToken0,
-  //       isBorrow: false,
-  //       trader: account,
-  //     },
-  //     margin: margin.quotient,
-  //     borrowAmount: borrowAmount.quotient,
-  //     minimumOutput: JSBI.BigInt(0),
-  //     deadline: Math.floor(new Date().getTime() / 1000 + 30 * 60).toString(),
-  //     simulatedOutput: actualOutput,
-  //     executionOption: 1,
-  //     maxSlippage: new BN(103).shiftedBy(16).toFixed(0),
-  //     depositPremium: additionalPremium?.quotient,
-  //   })
-  // }, [
-  //   account,
-  //   pool,
-  //   margin,
-  //   borrowAmount,
-  //   actualOutput,
-  //   blockNumber,
-  //   existingPosition,
-  //   inputCurrency,
-  //   outputCurrency,
-  //   additionalPremium,
-  //   inputIsToken0,
-  //   inputError,
-  //   outputLoading,
-  // ])
-
-  // console.log('useSimulateMarginTrade', outputLoading, actualOutput)
-
   useEffect(() => {
     const lagged = async () => {
       if (
@@ -496,6 +447,7 @@ const useSimulateMarginTrade = (
       )
       const amountOut = await getOutputQuote(margin.add(borrowAmount), swapRoute, provider, chainId)
       if (!amountOut) return
+
       const calldata = MarginFacilitySDK.addPositionParameters({
         positionKey: {
           poolKey: {
