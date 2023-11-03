@@ -311,7 +311,8 @@ export const PoolDataChart = ({
     <ChartContiner>
       <div
         style={{
-          height: '400px',
+          padding: '5px',
+          height: '435px',
           border: 'solid #98A1C03d',
           borderWidth: '0 0 0 0',
         }}

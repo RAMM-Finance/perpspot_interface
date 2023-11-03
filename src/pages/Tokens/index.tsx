@@ -1,20 +1,17 @@
-import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { MAX_WIDTH_MEDIA_BREAKPOINT, MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { filterStringAtom } from 'components/Tokens/state'
 import TokenTable from 'components/Tokens/TokenTable/TokenTable'
-import { MouseoverTooltip } from 'components/Tooltip'
 import { useResetAtom } from 'jotai/utils'
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
 const ExploreContainer = styled.div`
-  width: 100%;
+  width: 85%;
   min-width: 320px;
-  padding: 68px 12px 0px;
+  padding-top: 15px;
   flex-flow: column nowrap;
   max-width: 1480px;
 
@@ -28,7 +25,7 @@ const ExploreContainer = styled.div`
 `
 const TitleContainer = styled.div`
   margin-bottom: 32px;
-  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  // max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
   margin-left: auto;
   margin-right: auto;
   display: flex;
@@ -76,16 +73,6 @@ const Tokens = () => {
   return (
     <Trace page={InterfacePageName.TOKENS_PAGE} shouldLogImpression>
       <ExploreContainer>
-        <TitleContainer>
-          <MouseoverTooltip
-            text={<Trans>This table contains the top pairs by volume, sorted based on your input.</Trans>}
-            placement="bottom"
-          >
-            <ThemedText.HeadlineLarge>
-              <Trans>Pairs</Trans>
-            </ThemedText.HeadlineLarge>
-          </MouseoverTooltip>
-        </TitleContainer>
         <TokenTable />
       </ExploreContainer>
     </Trace>

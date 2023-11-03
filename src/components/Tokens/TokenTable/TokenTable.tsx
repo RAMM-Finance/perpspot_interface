@@ -7,6 +7,7 @@ import { ReactNode } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 // import {useToken} from 'hooks/Tokens'
 import { useToken } from '../../../hooks/Tokens'
@@ -18,17 +19,15 @@ import { HeaderRow, LoadingRow } from './TokenRow'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
-  max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  // max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
   /* max-width: 1480px; */
   /* background-color: ${({ theme }) => theme.background}; */
-  background-color: #0d111c;
-  border: 1px solid #98a1c03d;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
     0px 24px 32px rgba(0, 0, 0, 0.01);
-  padding: 40px;
   margin-left: auto;
   margin-right: auto;
-  border-radius: 36px;
+  border-radius: 10px;
   justify-content: center;
   align-items: center;
 `
@@ -36,7 +35,6 @@ const GridContainer = styled.div`
 const TokenDataContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
   height: 100%;
   width: 100%;
 `
@@ -195,26 +193,84 @@ export default function TokenTable() {
     return <NoTokensState message={<Trans>No tokens found</Trans>} />
   } else {
     return (
-      <GridContainer>
-        <PHeaderRow />
-        <TokenDataContainer>
-          {_tokens.map(
-            ({ token0, token1 }) =>
-              token0?.address &&
-              token1?.address && (
-                <PLoadedRow
-                  key={token0?.address}
-                  tokenListIndex={1}
-                  tokenListLength={1}
-                  token0={token0}
-                  token1={token1}
-                  sparklineMap={sparklines}
-                  sortRank={tokenSortRank[token0.address]}
-                />
-              )
-          )}
-        </TokenDataContainer>
-      </GridContainer>
+      <>
+        <PairInfoContainer>
+          <TVLInfoContainer />
+          <HowToDetails />
+        </PairInfoContainer>
+        <GridContainer>
+          <PHeaderRow />
+          <TokenDataContainer>
+            {_tokens.map(
+              ({ token0, token1 }) =>
+                token0?.address &&
+                token1?.address && (
+                  <PLoadedRow
+                    key={token0?.address}
+                    tokenListIndex={1}
+                    tokenListLength={1}
+                    token0={token0}
+                    token1={token1}
+                    sparklineMap={sparklines}
+                    sortRank={tokenSortRank[token0.address]}
+                  />
+                )
+            )}
+          </TokenDataContainer>
+        </GridContainer>
+      </>
     )
   }
+}
+
+const PairInfoContainer = styled.div`
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  // max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
+  padding-bottom: 2rem;
+  justify-content: space-between;
+`
+
+const TVLInfo = styled.div`
+  width: 15rem;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  padding: 0.75rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  height: 2.5rem;
+`
+const HowTo = styled.div`
+  width: 35rem;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  padding: 0.75rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  height: 8rem;
+`
+
+function TVLInfoContainer() {
+  return (
+    <div style={{ display: 'flex', gap: '1rem', paddingTop: '1rem' }}>
+      <TVLInfo>
+        <ThemedText.SubHeaderSmall>Total CL TVL:</ThemedText.SubHeaderSmall>
+      </TVLInfo>
+      <TVLInfo>
+        <ThemedText.SubHeaderSmall>Limitless TV:</ThemedText.SubHeaderSmall>
+      </TVLInfo>
+    </div>
+  )
+}
+
+function HowToDetails() {
+  return (
+    <HowTo>
+      <ThemedText.HeadlineSmall>How It Works</ThemedText.HeadlineSmall>
+      <p>
+        Liquidity Providers (LPs) earn spot-trading fees while capital is lent out. They also earn fees in the form of
+        premiums when capital is being utlized.
+      </p>
+      <p>LPs can deposit their existing Non-Fungible Token Position (NFT) or create a new LP Position</p>
+    </HowTo>
+  )
 }
