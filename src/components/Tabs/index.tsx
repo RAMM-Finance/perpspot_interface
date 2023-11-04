@@ -82,16 +82,6 @@ export default function SwapTabHeader({
         >
           <Trans>Short</Trans>
         </TabElement>
-        {/* <TabElement
-          onClick={() => {
-            handleTabChange(ActiveSwapTab.BORROW)
-          }}
-          isActive={activeTab === ActiveSwapTab.BORROW}
-          fontSize="1rem"
-          activeTab={activeTab}
-        >
-          <Trans>Borrow</Trans>
-        </TabElement> */}
         <TabElement
           onClick={() => handleTabChange(ActiveSwapTab.SWAP)}
           isActive={activeTab === ActiveSwapTab.SWAP}
@@ -153,7 +143,7 @@ export const TabNavItem = ({
   )
 }
 
-const TapWrapper = styled.button`
+const TapWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100%;

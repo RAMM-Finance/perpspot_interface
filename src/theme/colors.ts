@@ -173,6 +173,7 @@ export const darkTheme = {
   textSecondary: colors.gray50,
   textTertiary: colors.gray500,
   accentAction: colors.gray700,
+  surface1: '#0d1421',
   // accentActive: colors.gray400,
   accentActive: '#4C82FB',
   accentSuccess: colors.green200,
@@ -210,6 +211,7 @@ export const darkTheme = {
 
 export const lightTheme = {
   ...commonTheme,
+  surface1: '#1c212d',
   userThemeColor: colors.magentaVibrant,
   background: colors.gray800,
   backgroundBackdrop: colors.gray950,

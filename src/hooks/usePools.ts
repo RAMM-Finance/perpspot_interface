@@ -9,6 +9,7 @@ import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
+import { utils } from 'ethers'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
@@ -231,21 +232,42 @@ export function computePoolAddress({
   initCodeHashManualOverride,
 }: {
   factoryAddress: string
-  tokenA: Token
-  tokenB: Token
+  tokenA: Token | string
+  tokenB: Token | string
   fee: FeeAmount
   initCodeHashManualOverride?: string
 }): string {
-  const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
-  return getCreate2Address(
-    factoryAddress,
-    keccak256(
-      ['bytes'],
-      [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0.address, token1.address, fee])]
-    ),
-    initCodeHashManualOverride ?? POOL_INIT_CODE_HASH
-  )
+  if (typeof tokenA === 'string' && typeof tokenB === 'string') {
+    const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA]
+    return getCreate2Address(
+      factoryAddress,
+      keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [tokenA, tokenB, fee])]),
+      initCodeHashManualOverride ?? POOL_INIT_CODE_HASH
+    )
+  } else if (tokenA instanceof Token && tokenB instanceof Token) {
+    const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+    return getCreate2Address(
+      factoryAddress,
+      keccak256(
+        ['bytes'],
+        [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0.address, token1.address, fee])]
+      ),
+      initCodeHashManualOverride ?? POOL_INIT_CODE_HASH
+    )
+  }
+  return ''
 }
+
+export function computeOrderId(poolAddress: string, trader: string, isToken0: boolean, isAdd: boolean): string {
+  return utils.solidityKeccak256(['address', 'address', 'bool', 'bool'], [poolAddress, trader, isToken0, isAdd])
+}
+
+// function getOrderId(address pool, address trader, bool positionIsToken0, bool isAdd)
+// public
+// pure
+// returns (bytes32)
+// {
+// return keccak256(abi.encodePacked(pool, trader, positionIsToken0, isAdd));
 
 export function computeBorrowManagerAddress({
   factoryAddress,

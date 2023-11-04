@@ -6,11 +6,11 @@ import { SupportedChainId } from 'constants/chains'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useMemo, useState } from 'react'
-import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 import { useToken } from './Tokens'
-import { useDataProviderContract } from './useContract'
-import { computePoolAddress } from './usePools'
+import { useDataProviderContract, useMarginFacilityContract } from './useContract'
+import { computeOrderId, computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
 
 // fetches all leveraged LMT positions for a given account
@@ -145,6 +145,43 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       }
     }
   }, [loading, error, result])
+}
+
+export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): MarginLimitOrder | undefined {
+  // address pool, address trader, bool positionIsToken0, bool isAdd
+  const MarginFacility = useMarginFacilityContract()
+  const { chainId } = useWeb3React()
+  const orderId = useMemo(() => {
+    if (key && chainId) {
+      const pool = computePoolAddress({
+        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+        tokenA: key.poolKey.token0Address,
+        tokenB: key.poolKey.token1Address,
+        fee: key.poolKey.fee,
+      }) as string
+      return computeOrderId(pool, key.trader, key.isToken0, key.isAdd)
+    }
+    return undefined
+  }, [key, chainId])
+
+  const { loading, error, result } = useSingleCallResult(MarginFacility, 'orders', [orderId])
+
+  return useMemo(() => {
+    if (loading || error || !result || !key) {
+      return undefined
+    }
+    return {
+      key: key.poolKey,
+      positionIsToken0: key.isToken0,
+      auctionDeadline: result.auctionDeadline,
+      auctionStartTime: result.auctionStartTime,
+      startOutput: convertToBN(result.startOutput, 18),
+      minOutput: convertToBN(result.minOutput, 18),
+      inputAmount: convertToBN(result.inputAmount, 18),
+      decayRate: convertToBN(result.decayRate, 18),
+      margin: convertToBN(result.margin, 18),
+    }
+  }, [result, loading, error, key])
 }
 
 type ContractArg = string | number | boolean

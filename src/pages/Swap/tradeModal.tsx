@@ -36,7 +36,7 @@ import {
 import { LeverageTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
-import styled from 'styled-components/macro'
+import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
@@ -53,11 +53,47 @@ import {
   StyledNumericalInput,
 } from '.'
 
-const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
   padding: 1rem;
   padding-top: 0rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
+`
+
+const Filter = styled.div`
+  display: flex;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 16px;
+  padding: 4px;
+  width: fit-content;
+  margin-bottom: 1rem;
+`
+export const OpacityHoverState = css`
+  &:hover {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+
+  &:active {
+    opacity: ${({ theme }) => theme.opacity.click};
+  }
+
+  transition: ${({
+    theme: {
+      transition: { duration, timing },
+    },
+  }) => `opacity ${duration.medium} ${timing.ease}`};
+`
+
+const StyledSelectorText = styled(ThemedText.SubHeader)<{ active: boolean }>`
+  color: ${({ theme, active }) => (active ? theme.textPrimary : theme.textTertiary)};
+`
+
+const Selector = styled.div<{ active: boolean }>`
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: ${({ active, theme }) => (active ? theme.background : 'none')};
+  cursor: pointer;
+
+  ${OpacityHoverState}
 `
 
 function largerPercentValue(a?: Percent, b?: Percent) {
@@ -106,25 +142,13 @@ const TradeTabContent = () => {
 
   const { trade, preTradeInfo, state: tradeState, inputError, existingPosition } = useDerivedAddPositionInfo()
 
-  // const { callback: marginTradeCallback } = useAddMarginPositionCallback(trade)
-
   const {
     [MarginField.MARGIN]: margin,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-    // [MarginField.BORROW]: borrowAmount,
-    // lockedField: lockedMarginField,
+    isLimitOrder,
   } = useMarginTradingState()
 
-  const {
-    // onCurrencySelection,
-    // onSwitchTokens,
-    // onUserInput,
-    // onChangeRecipient,
-    onLeverageFactorChange,
-    onMarginChange,
-    // onBorrowChange,
-    // onLockChange,
-  } = useMarginTradingActionHandlers()
+  const { onLeverageFactorChange, onMarginChange, onChangeTradeType } = useMarginTradingActionHandlers()
 
   // allowance / approval
   const [facilityApprovalState, approveMarginFacility] = useApproveCallback(
@@ -221,6 +245,13 @@ const TradeTabContent = () => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
 
+  const handleChangeLimit = useCallback(
+    (isLimit: boolean) => {
+      onChangeTradeType(isLimit)
+    },
+    [onChangeTradeType]
+  )
+
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
       onCurrencySelection(Field.INPUT, inputCurrency)
@@ -288,6 +319,18 @@ const TradeTabContent = () => {
       <SwapHeader />
 
       <div style={{ display: 'relative' }}>
+        <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
+          <Selector active={!isLimitOrder}>
+            <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
+              MARKET
+            </StyledSelectorText>
+          </Selector>
+          <Selector active={isLimitOrder}>
+            <StyledSelectorText lineHeight="20px" active={isLimitOrder}>
+              LIMIT
+            </StyledSelectorText>
+          </Selector>
+        </Filter>
         <InputSection>
           <div style={{ fontWeight: 'bold' }}>
             <Trans>Deposit Collateral</Trans>

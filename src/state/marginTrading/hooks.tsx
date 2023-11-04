@@ -1,9 +1,9 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, Price, Token } from '@uniswap/sdk-core'
-import { Pool, Route } from '@uniswap/v3-sdk'
+import { Pool, priceToClosestTick, Route } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
+import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePoolParams } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -20,7 +20,7 @@ import { useCurrency } from '../../hooks/Tokens'
 import { useMarginFacilityContract } from '../../hooks/useContract'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
-import { MarginField, setLocked, typeInput } from './actions'
+import { MarginField, setLimit, setLocked, typeInput } from './actions'
 import { getOutputQuote } from './getOutputQuote'
 
 export function useMarginTradingState(): AppState['margin'] {
@@ -36,6 +36,7 @@ export function useMarginTradingActionHandlers(): {
   onMarginChange: (margin: string) => void
   // onBorrowChange: (borrow: string) => void
   onLockChange: (locked: MarginField | null) => void
+  onChangeTradeType: (isLimit: boolean) => void
 } {
   const dispatch = useAppDispatch()
 
@@ -67,6 +68,13 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onChangeTradeType = useCallback(
+    (isLimit: boolean) => {
+      dispatch(setLimit({ isLimit }))
+    },
+    [dispatch]
+  )
+
   return {
     // onSwitchTokens,
     // onCurrencySelection,
@@ -76,6 +84,7 @@ export function useMarginTradingActionHandlers(): {
     onMarginChange,
     // onBorrowChange,
     onLockChange,
+    onChangeTradeType,
   }
 }
 
@@ -115,7 +124,11 @@ interface DerivedAddPositionResult {
 export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
   const { account } = useWeb3React()
 
-  const { [MarginField.MARGIN]: margin, [MarginField.LEVERAGE_FACTOR]: leverageFactor } = useMarginTradingState()
+  const {
+    [MarginField.MARGIN]: margin,
+    [MarginField.LEVERAGE_FACTOR]: leverageFactor,
+    isLimitOrder,
+  } = useMarginTradingState()
 
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -138,10 +151,10 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
     return marginAmount?.multiply(JSBI.BigInt(leverageFactor)).subtract(marginAmount)
   }, [leverageFactor, marginAmount])
 
-  const positionKey = useMemo(() => {
+  const [positionKey, orderPositionKey] = useMemo(() => {
     const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
     if (pool && account) {
-      return {
+      const _positionKey = {
         poolKey: {
           token0Address: pool.token0.address,
           token1Address: pool.token1.address,
@@ -151,8 +164,19 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
         isBorrow: false,
         trader: account,
       }
+      const _order = {
+        poolKey: {
+          token0Address: pool.token0.address,
+          token1Address: pool.token1.address,
+          fee: pool.fee,
+        },
+        isToken0,
+        trader: account,
+        isAdd: true,
+      }
+      return [_positionKey, _order]
     } else {
-      return undefined
+      return [undefined, undefined]
     }
   }, [account, pool, outputCurrency])
 
@@ -160,7 +184,7 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
   const allowedPremiumTolerance = useMemo(() => new Percent(1, 100), [])
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
-
+  const existingLimitPosition = useMarginOrderPositionFromPositionId(orderPositionKey)
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
@@ -221,6 +245,7 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
 
   // TODO calculate slippage from the pool
   const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), [])
+  const slippedTickTolerance = useMemo(() => new Percent(JSBI.BigInt(5), JSBI.BigInt(100)), [])
 
   const inputError = useMemo(() => {
     let inputError: ReactNode | undefined
@@ -266,10 +291,9 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
     preTradeInfo?.additionalPremium ?? undefined,
-    inputError
+    inputError,
+    slippedTickTolerance
   )
-  // const state = LeverageTradeState.VALID
-  // const trade = undefined
 
   return useMemo(
     () => ({
@@ -385,7 +409,8 @@ const useSimulateMarginTrade = (
   inputCurrency?: Currency,
   outputCurrency?: Currency,
   additionalPremium?: CurrencyAmount<Currency>,
-  inputError?: ReactNode
+  inputError?: ReactNode,
+  slippedTickTolerance?: Percent
 ): {
   state: LeverageTradeState
   result?: {
@@ -411,11 +436,6 @@ const useSimulateMarginTrade = (
     allowedSlippage: Percent
   }>()
 
-  const amount = useMemo(() => {
-    if (!margin || !borrowAmount) return undefined
-    return margin.add(borrowAmount)
-  }, [margin, borrowAmount])
-
   const { provider, chainId } = useWeb3React()
 
   useEffect(() => {
@@ -436,7 +456,8 @@ const useSimulateMarginTrade = (
         !existingPosition ||
         !inputCurrency ||
         !outputCurrency ||
-        !allowedSlippage
+        !allowedSlippage ||
+        !slippedTickTolerance
       ) {
         return
       }
@@ -447,6 +468,30 @@ const useSimulateMarginTrade = (
       )
       const amountOut = await getOutputQuote(margin.add(borrowAmount), swapRoute, provider, chainId)
       if (!amountOut) return
+
+      console.log('amountOut', amountOut.toString())
+
+      const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(slippedTickTolerance.toFixed(18)) * 100))
+
+      const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(slippedTickTolerance.toFixed(18)) * 100))
+
+      const minPrice = new Price(
+        pool.token0,
+        pool.token1,
+        JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
+        JSBI.multiply(pool.token0Price.numerator, pullDown)
+      )
+
+      const maxPrice = new Price(
+        pool.token0,
+        pool.token1,
+        JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
+        JSBI.multiply(pool.token0Price.numerator, pullUp)
+      )
+
+      // get slipped min/max tick
+      const slippedTickMax = priceToClosestTick(maxPrice)
+      const slippedTickMin = priceToClosestTick(minPrice)
 
       const calldata = MarginFacilitySDK.addPositionParameters({
         positionKey: {
@@ -467,6 +512,8 @@ const useSimulateMarginTrade = (
         executionOption: 1,
         maxSlippage: new BN(103).shiftedBy(16).toFixed(0),
         depositPremium: additionalPremium?.quotient,
+        slippedTickMin,
+        slippedTickMax,
       })
 
       try {
@@ -512,7 +559,6 @@ const useSimulateMarginTrade = (
         setResult(undefined)
         console.log('useSimulateMarginTrade error', err)
       }
-
       return
     }
 
@@ -533,9 +579,8 @@ const useSimulateMarginTrade = (
     margin,
     provider,
     chainId,
+    slippedTickTolerance,
   ])
-
-  // console.log('useSimulateMarginTrade', result, tradeState)
 
   return useMemo(() => {
     return {

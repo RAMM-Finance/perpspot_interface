@@ -16,6 +16,8 @@ export interface AddPositionOptions {
   simulatedOutput: JSBI
   executionOption: number
   maxSlippage: string
+  slippedTickMin: number
+  slippedTickMax: number
   depositPremium?: JSBI
 }
 
@@ -88,8 +90,8 @@ export abstract class MarginFacilitySDK {
           minOutput: toHex(param.minimumOutput),
           deadline: param.deadline,
           executionData: [],
-          slippedTickMin: 0,
-          slippedTickMax: 0,
+          slippedTickMin: param.slippedTickMin,
+          slippedTickMax: param.slippedTickMax,
         },
         [],
       ])

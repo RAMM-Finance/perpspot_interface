@@ -21,6 +21,18 @@ export interface MarginPositionDetails extends BaseFacilityPositionDetails {
   margin: BN
 }
 
+export interface MarginLimitOrder {
+  key: RawPoolKey,
+  positionIsToken0: boolean,
+  auctionDeadline: number,
+  auctionStartTime: number,
+  startOutput: BN,
+  minOutput: BN,
+  inputAmount: BN,
+  decayRate: BN,
+  margin: BN
+}
+
 export interface RawPoolKey {
   token0Address: string
   token1Address: string
@@ -32,4 +44,11 @@ export interface TraderPositionKey {
   isToken0: boolean
   isBorrow: boolean
   trader: string
+}
+
+export interface OrderPositionKey {
+  poolKey: RawPoolKey
+  trader: string
+  isToken0: boolean
+  isAdd: boolean
 }

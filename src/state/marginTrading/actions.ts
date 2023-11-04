@@ -18,6 +18,7 @@ export const replaceMarginTradeState = createAction<{
   margin?: string
   // borrow?: string
   premium?: string
+  isLimitOrder: boolean
 }>('margin/replaceMarginState')
 export const setRecipient = createAction<{ recipient: string | null }>('margin/setRecipient')
 export const setHideClosedLeveragePositions = createAction<{ hideClosedLeveragePositions: boolean }>(
@@ -25,3 +26,5 @@ export const setHideClosedLeveragePositions = createAction<{ hideClosedLeverageP
 )
 export const setLocked = createAction<{ locked: MarginField | null }>('margin/setLocked')
 // export const setPremium = createAction<{ premium: string }>('margin/setPremium')
+
+export const setLimit = createAction<{ isLimit: boolean }>('margin/setLimit')
