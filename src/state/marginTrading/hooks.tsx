@@ -17,7 +17,7 @@ import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
 import { useCurrency } from '../../hooks/Tokens'
-import { useMarginFacilityContract } from '../../hooks/useContract'
+import { useLmtPoolManagerContract, useMarginFacilityContract } from '../../hooks/useContract'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
 import { MarginField, setLimit, setLocked, typeInput } from './actions'
@@ -247,6 +247,8 @@ export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
   const allowedSlippage = useMemo(() => new Percent(JSBI.BigInt(3), JSBI.BigInt(100)), [])
   const slippedTickTolerance = useMemo(() => new Percent(JSBI.BigInt(5), JSBI.BigInt(100)), [])
 
+  // get fee params
+
   const inputError = useMemo(() => {
     let inputError: ReactNode | undefined
 
@@ -425,6 +427,7 @@ const useSimulateMarginTrade = (
   const { account } = useWeb3React()
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
+  const poolManager = useLmtPoolManagerContract()
 
   const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
   const [result, setResult] = useState<{
@@ -435,7 +438,6 @@ const useSimulateMarginTrade = (
     borrowAmount: CurrencyAmount<Currency>
     allowedSlippage: Percent
   }>()
-
   const { provider, chainId } = useWeb3React()
 
   useEffect(() => {
@@ -457,7 +459,8 @@ const useSimulateMarginTrade = (
         !inputCurrency ||
         !outputCurrency ||
         !allowedSlippage ||
-        !slippedTickTolerance
+        !slippedTickTolerance ||
+        !poolManager
       ) {
         return
       }
@@ -466,10 +469,23 @@ const useSimulateMarginTrade = (
         inputIsToken0 ? pool.token0 : pool.token1,
         inputIsToken0 ? pool.token1 : pool.token0
       )
-      const amountOut = await getOutputQuote(margin.add(borrowAmount), swapRoute, provider, chainId)
-      if (!amountOut) return
 
-      console.log('amountOut', amountOut.toString())
+      const rawFeesResult = await poolManager.callStatic.getFeeParams({
+        token0: pool.token0.address,
+        token1: pool.token1.address,
+        fee: pool.fee,
+      })
+
+      const feePercent = CurrencyAmount.fromFractionalAmount(
+        inputCurrency,
+        JSBI.BigInt(rawFeesResult[0].toString()),
+        JSBI.BigInt(1e18)
+      )
+
+      const amountIn = margin.add(borrowAmount).subtract(margin.add(borrowAmount).multiply(feePercent))
+
+      const amountOut = await getOutputQuote(amountIn, swapRoute, provider, chainId)
+      if (!amountOut) return
 
       const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(slippedTickTolerance.toFixed(18)) * 100))
 
@@ -580,6 +596,7 @@ const useSimulateMarginTrade = (
     provider,
     chainId,
     slippedTickTolerance,
+    poolManager,
   ])
 
   return useMemo(() => {
