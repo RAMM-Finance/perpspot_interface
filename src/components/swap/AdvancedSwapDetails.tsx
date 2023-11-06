@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
+import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import Card from 'components/Card'
@@ -572,7 +572,7 @@ export function ValueLabel({
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
         <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-          {value ? `${value.toString()} ${symbolAppend}` : '-'}
+          {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
         </ThemedText.DeprecatedBlack>
       </TextWithLoadingPlaceholder>
     </RowBetween>
@@ -754,6 +754,20 @@ export function ValueLabel({
 //   )
 // }
 
+function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
+  if (price) {
+    if (price.greaterThan(1)) {
+      const symbol = price.baseCurrency.symbol + '/' + price.quoteCurrency.symbol
+      return `${formatNumber(Number(price.toFixed(18)), NumberType.SwapTradeAmount)} ${symbol} `
+    } else {
+      const symbol = price?.quoteCurrency.symbol + '/' + price?.baseCurrency.symbol
+      return `${formatNumber(Number(price.invert().toFixed(18)), NumberType.SwapTradeAmount)} ${symbol}`
+    }
+  } else {
+    return placeholder
+  }
+}
+
 export function AdvancedMarginTradeDetails({
   allowedSlippage,
   syncing = false,
@@ -806,11 +820,8 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Amount In / Amount Out"
           label="Execution Price"
-          value={formatPrice(trade?.executionPrice)}
+          value={lmtFormatPrice(trade?.executionPrice)}
           syncing={syncing}
-          symbolAppend={
-            trade ? trade?.executionPrice?.baseCurrency.symbol + '/' + trade?.executionPrice?.quoteCurrency.symbol : ''
-          }
         />
         <ValueLabel
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  

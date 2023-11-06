@@ -84,7 +84,7 @@ export const OpacityHoverState = css`
 `
 
 const StyledSelectorText = styled(ThemedText.SubHeader)<{ active: boolean }>`
-  color: ${({ theme, active }) => (active ? theme.textPrimary : theme.textTertiary)};
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
 `
 
 const Selector = styled.div<{ active: boolean }>`

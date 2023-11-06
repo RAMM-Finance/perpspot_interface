@@ -214,7 +214,7 @@ export function LeverageDetailsDropdown({
 
   return (
     <Wrapper style={{ marginTop: '0' }}>
-      <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
+      <AutoColumn gap="sm">
         <TraceEvent
           events={[BrowserEvent.onClick]}
           name={SwapEventName.SWAP_DETAILS_EXPANDED}
