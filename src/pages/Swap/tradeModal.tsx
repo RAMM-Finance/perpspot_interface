@@ -207,26 +207,26 @@ const TradeTabContent = () => {
     setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
   }, [trade])
 
-  const marginTradeCallback = useMarginTradingActionHandlers
+  // const marginTradeCallback = useMarginTradingActionHandlers
 
-  const handleTrade = useCallback(() => {
-    if (!marginTradeCallback) {
-      return
-    }
-    setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
-    marginTradeCallback()
-      .then((hash) => {
-        setTradeState((currentState) => ({ ...currentState, attemptingTxn: false, txHash: hash }))
-      })
-      .catch((error) => {
-        setTradeState((currentState) => ({
-          ...currentState,
-          attemptingTxn: false,
-          txHash: undefined,
-          tradeErrorMessage: error.message,
-        }))
-      })
-  }, [marginTradeCallback])
+  // const handleTrade = useCallback(() => {
+  //   if (!marginTradeCallback) {
+  //     return
+  //   }
+  //   setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
+  //   marginTradeCallback()
+  //     .then((hash) => {
+  //       setTradeState((currentState) => ({ ...currentState, attemptingTxn: false, txHash: hash }))
+  //     })
+  //     .catch((error) => {
+  //       setTradeState((currentState) => ({
+  //         ...currentState,
+  //         attemptingTxn: false,
+  //         txHash: undefined,
+  //         tradeErrorMessage: error.message,
+  //       }))
+  //     })
+  // }, [marginTradeCallback])
 
   const handleMarginInput = useCallback(
     (value: string) => {
