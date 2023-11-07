@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { LeverageTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useBestPool, useSwapState } from 'state/swap/hooks'
-import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { MarginLimitOrder, MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
 import { useCurrency } from '../../hooks/Tokens'
@@ -119,6 +119,7 @@ interface DerivedAddPositionResult {
   preTradeInfo?: PreTradeInfo
   existingPosition?: MarginPositionDetails
   state: LeverageTradeState
+  existingLimitPosition?: MarginLimitOrder
 }
 
 export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
@@ -509,6 +510,7 @@ const useSimulateMarginTrade = (
       const slippedTickMax = priceToClosestTick(maxPrice)
       const slippedTickMin = priceToClosestTick(minPrice)
 
+      // calldata
       const calldata = MarginFacilitySDK.addPositionParameters({
         positionKey: {
           poolKey: {
@@ -610,57 +612,3 @@ const useSimulateMarginTrade = (
 export const BnToJSBI = (x: BN, currency: Currency): JSBI => {
   return JSBI.BigInt(x.shiftedBy(currency.decimals).toFixed(0))
 }
-
-// type AddPositionSimulationResult = {
-//   margin: CurrencyAmount<Currency>
-//   borrowAmount: CurrencyAmount<Currency>
-//   swapInput: CurrencyAmount<Currency>
-//   swapOutput: CurrencyAmount<Currency>
-//   executionPrice: Price<Currency, Currency>
-//   allowedSlippage: Percent
-// }
-
-// const simulateAddPosition = async (
-//   marginFacility?: Contract,
-//   callDatas?: string[],
-//   existingPosition?: MarginPositionDetails,
-//   inputCurrency?: Currency,
-//   outputCurrency?: Currency,
-//   allowedSlippage?: Percent
-// ): Promise<AddPositionSimulationResult | undefined> => {
-//   if (!marginFacility || !callDatas || !existingPosition || !inputCurrency || !outputCurrency || !allowedSlippage)
-//     return undefined
-//   const multicallResult = await marginFacility.callStatic.multicall(callDatas)
-//   const { totalPosition, totalInputDebt, margin } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
-
-//   // compute the added output amount + the execution price. (margin + borrowAmount - fees) / outputAmount
-//   let swapInput: JSBI
-//   let swapOutput: JSBI
-//   let _margin: JSBI
-//   let _borrowAmount: JSBI
-//   if (existingPosition.openTime > 0) {
-//     swapOutput = JSBI.subtract(totalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
-
-//     _margin = JSBI.subtract(margin, BnToJSBI(existingPosition.margin, inputCurrency))
-
-//     // margin + borrowAmount - fees
-//     const borrowAmount = JSBI.subtract(totalInputDebt, BnToJSBI(existingPosition.totalDebtInput, inputCurrency))
-//     swapInput = JSBI.add(margin, borrowAmount)
-//     _borrowAmount = borrowAmount
-//   } else {
-//     swapOutput = totalPosition
-//     _margin = margin
-//     swapInput = JSBI.add(margin, totalInputDebt)
-//     _borrowAmount = totalInputDebt
-//   }
-
-//   const executionPrice = new Price<Currency, Currency>(inputCurrency, outputCurrency, swapInput, swapOutput)
-//   return {
-//     margin: CurrencyAmount.fromRawAmount(inputCurrency, _margin),
-//     borrowAmount: CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount),
-//     swapInput: CurrencyAmount.fromRawAmount(inputCurrency, swapInput),
-//     swapOutput: CurrencyAmount.fromRawAmount(outputCurrency, swapOutput),
-//     executionPrice,
-//     allowedSlippage,
-//   }
-// }

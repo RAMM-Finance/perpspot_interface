@@ -207,24 +207,26 @@ const TradeTabContent = () => {
     setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
   }, [trade])
 
-  // const handleTrade = useCallback(() => {
-  //   if (!marginTradeCallback) {
-  //     return
-  //   }
-  //   setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
-  //   marginTradeCallback()
-  //     .then((hash) => {
-  //       setTradeState((currentState) => ({ ...currentState, attemptingTxn: false, txHash: hash }))
-  //     })
-  //     .catch((error) => {
-  //       setTradeState((currentState) => ({
-  //         ...currentState,
-  //         attemptingTxn: false,
-  //         txHash: undefined,
-  //         tradeErrorMessage: error.message,
-  //       }))
-  //     })
-  // }, [marginTradeCallback])
+  const marginTradeCallback = useMarginTradingActionHandlers
+
+  const handleTrade = useCallback(() => {
+    if (!marginTradeCallback) {
+      return
+    }
+    setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
+    marginTradeCallback()
+      .then((hash) => {
+        setTradeState((currentState) => ({ ...currentState, attemptingTxn: false, txHash: hash }))
+      })
+      .catch((error) => {
+        setTradeState((currentState) => ({
+          ...currentState,
+          attemptingTxn: false,
+          txHash: undefined,
+          tradeErrorMessage: error.message,
+        }))
+      })
+  }, [marginTradeCallback])
 
   const handleMarginInput = useCallback(
     (value: string) => {
@@ -233,24 +235,16 @@ const TradeTabContent = () => {
     [onMarginChange]
   )
 
-  // const handleLeverageInput = useCallback(
-  //   (value: string) => {
-  //     onLeverageFactorChange(value)
-  //     margin && onBorrowChange(String((Number(value) - 1) * Number(margin)))
-  //   },
-  //   [onLeverageFactorChange, onBorrowChange, margin]
-  // )
-
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
 
-  const handleChangeLimit = useCallback(
-    (isLimit: boolean) => {
-      onChangeTradeType(isLimit)
-    },
-    [onChangeTradeType]
-  )
+  // const handleChangeLimit = useCallback(
+  //   (isLimit: boolean) => {
+  //     onChangeTradeType(isLimit)
+  //   },
+  //   [onChangeTradeType]
+  // )
 
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
@@ -271,8 +265,6 @@ const TradeTabContent = () => {
         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
     [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade]
   )
-
-  // const showDetailsDropdown = Boolean(trade || tradeIsLoading)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
@@ -295,8 +287,6 @@ const TradeTabContent = () => {
       console.log('approveLeverageManager err: ', err)
     }
   }, [approveMarginFacility])
-
-  // console.log('trade', trade)
 
   return (
     <Wrapper>
@@ -353,18 +343,6 @@ const TradeTabContent = () => {
             />
           </Trace>
         </InputSection>
-        {/* <InputSection>
-          <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
-            <LeverageDebtInputPanel
-              value={formattedPosition}
-              currency={currencies[Field.INPUT] ?? null}
-              id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
-              loading={false}
-              parsedAmount={formattedMargin}
-            />
-          </Trace>
-        </InputSection> */}
-
         <ArrowWrapper clickable={isSupportedChain(chainId)}>
           <TraceEvent
             events={[BrowserEvent.onClick]}
@@ -410,20 +388,6 @@ const TradeTabContent = () => {
                 disabled={true}
               />
             </Trace>
-
-            {/* {recipient !== null && !showWrap ? (
-              <>
-                <AutoRow justify="space-between" style={{ padding: '0 1rem' }}>
-                  <ArrowWrapper clickable={false}>
-                    <ArrowDown size="16" color={theme.textSecondary} />
-                  </ArrowWrapper>
-                  <LinkStyledButton id="remove-recipient-button" onClick={() => onChangeRecipient(null)}>
-                    <Trans>- Remove recipient</Trans>
-                  </LinkStyledButton>
-                </AutoRow>
-                <AddressInputPanel id="recipient" value={recipient} onChange={onChangeRecipient} />
-              </>
-            ) : null} */}
           </OutputSwapSection>
           <LeverageGaugeSection>
             <AutoColumn gap="md">
@@ -466,17 +430,6 @@ const TradeTabContent = () => {
                       x
                     </span>
                   </LeverageInputSection>
-                  {/* <AutoRow gap="4px" justify="flex-end">
-                    <SmallMaxButton onClick={() => onLeverageFactorChange('10')} width="20%">
-                      <Trans>10</Trans>
-                    </SmallMaxButton>
-                    <SmallMaxButton onClick={() => onLeverageFactorChange('100')} width="20%">
-                      <Trans>100</Trans>
-                    </SmallMaxButton>
-                    <SmallMaxButton onClick={() => onLeverageFactorChange('500')} width="20%">
-                      <Trans>500</Trans>
-                    </SmallMaxButton>
-                  </AutoRow> */}
                 </RowBetween>
               </RowBetween>
 

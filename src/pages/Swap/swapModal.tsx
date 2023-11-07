@@ -57,6 +57,7 @@ import { ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, 
 const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
   padding: 1rem;
+  padding-top: 0rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
