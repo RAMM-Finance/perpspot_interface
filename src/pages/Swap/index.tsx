@@ -165,7 +165,6 @@ export const LeverageGaugeSection = styled(SwapSection)`
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
   padding: 0px;
-  margin-bottom: 20px;
   width: 100%;
 `
 

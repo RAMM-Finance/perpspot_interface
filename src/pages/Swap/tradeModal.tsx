@@ -25,7 +25,6 @@ import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
-import { Text } from 'rebass'
 import { MarginField } from 'state/marginTrading/actions'
 import {
   AddMarginTrade,
@@ -464,7 +463,7 @@ const TradeTabContent = () => {
           </DetailsSwapSection>
         </div>
         {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />} */}
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           {swapIsUnsupported ? (
             <ButtonPrimary disabled={true}>
               <ThemedText.DeprecatedMain mb="4px">
@@ -472,7 +471,13 @@ const TradeTabContent = () => {
               </ThemedText.DeprecatedMain>
             </ButtonPrimary>
           ) : !account ? (
-            <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+            <ButtonLight
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="14"
+              padding=".5rem"
+              onClick={toggleWalletDrawer}
+              fontWeight={600}
+            >
               <Trans>Connect Wallet</Trans>
             </ButtonLight>
           ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
@@ -517,13 +522,16 @@ const TradeTabContent = () => {
             </ButtonPrimary>
           ) : (
             <ButtonError
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="14"
+              padding=".25rem"
               onClick={() => {
                 setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
               }}
               id="leverage-button"
               disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
             >
-              <Text fontSize={20} fontWeight={600}>
+              <ThemedText.BodyPrimary fontWeight={600}>
                 {inputError ? (
                   inputError
                 ) : invalidTrade ? (
@@ -533,7 +541,7 @@ const TradeTabContent = () => {
                 ) : (
                   <Trans>Leverage</Trans>
                 )}
-              </Text>
+              </ThemedText.BodyPrimary>
             </ButtonError>
           )}
           {/* {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null} */}
