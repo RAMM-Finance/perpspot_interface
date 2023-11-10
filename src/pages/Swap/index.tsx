@@ -132,11 +132,12 @@ export const InputLeverageSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 20px;
 `
+
 // border-bottom-left-radius: ${({ leverage }) => leverage && '0'};
 // border-bottom-right-radius: ${({ leverage }) => leverage && '0'};
 // border-bottom: ${({ leverage }) => leverage && 'none'};
 // margin-bottom: ${({ leverage }) => (leverage ? '0' : '20px')};
-//     display: ${({ leverage }) => (leverage ? 'block' : 'none')};
+// display: ${({ leverage }) => (leverage ? 'block' : 'none')};
 export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
@@ -154,6 +155,7 @@ export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: bool
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
   background-color: #0d1421;
 `
+
 export const LeverageGaugeSection = styled(SwapSection)`
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
   border-top-right-radius: 0;

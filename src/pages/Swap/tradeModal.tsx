@@ -18,6 +18,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { isSupportedChain, SupportedChainId } from 'constants/chains'
+import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
@@ -114,7 +115,7 @@ const TradeTabContent = () => {
 
   const { onSwitchTokens, onCurrencySelection, onUserInput } = useSwapActionHandlers()
 
-  const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
+  // const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
 
   const {
     // trade: { state: tradeState, trade },
@@ -140,7 +141,16 @@ const TradeTabContent = () => {
     tradeErrorMessage: undefined,
   })
 
-  const { trade, preTradeInfo, state: tradeState, inputError, existingPosition } = useDerivedAddPositionInfo()
+  const {
+    trade,
+    preTradeInfo,
+    state: tradeState,
+    inputError,
+    existingPosition,
+    allowedSlippage,
+    allowedSlippedTick,
+    contractError,
+  } = useDerivedAddPositionInfo()
 
   const {
     [MarginField.MARGIN]: margin,
@@ -203,9 +213,9 @@ const TradeTabContent = () => {
     }
   }, [onUserInput, onMarginChange, onLeverageFactorChange, txHash])
 
-  const handleAcceptChanges = useCallback(() => {
-    setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
-  }, [trade])
+  // const handleAcceptChanges = useCallback(() => {
+  //   setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
+  // }, [trade])
 
   // const marginTradeCallback = useMarginTradingActionHandlers
 
@@ -280,6 +290,28 @@ const TradeTabContent = () => {
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && trade?.margin.greaterThan(JSBI.BigInt(0))
   )
 
+  const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage, allowedSlippedTick)
+
+  const handleAddPosition = useCallback(() => {
+    if (!addPositionCallback) {
+      return
+    }
+    setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
+
+    addPositionCallback()
+      .then((hash) => {
+        setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
+      })
+      .catch((error) => {
+        setTradeState((currentState) => ({
+          ...currentState,
+          attemptingTxn: false,
+          txHash: undefined,
+          tradeErrorMessage: error.message,
+        }))
+      })
+  }, [addPositionCallback])
+
   const updateLeverageAllowance = useCallback(async () => {
     try {
       await approveMarginFacility()
@@ -295,7 +327,7 @@ const TradeTabContent = () => {
         originalTrade={tradeToConfirm}
         trade={trade}
         preTradeInfo={preTradeInfo}
-        onConfirm={() => 0}
+        onConfirm={handleAddPosition}
         onDismiss={handleConfirmDismiss}
         onAcceptChanges={() => {
           return
@@ -306,7 +338,7 @@ const TradeTabContent = () => {
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage}
       />
-      <SwapHeader />
+      <SwapHeader allowedSlippage={allowedSlippage} autoSlippedTick={allowedSlippedTick} />
 
       <div style={{ display: 'relative' }}>
         <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
@@ -514,12 +546,14 @@ const TradeTabContent = () => {
               <Text fontSize={20} fontWeight={600}>
                 {inputError ? (
                   inputError
+                ) : contractError ? (
+                  contractError
                 ) : invalidTrade ? (
                   <Trans>Invalid Trade</Trans>
                 ) : tradeIsLoading ? (
-                  <Trans>Leverage</Trans>
+                  <Trans>Execute</Trans>
                 ) : (
-                  <Trans>Leverage</Trans>
+                  <Trans>Execute</Trans>
                 )}
               </Text>
             </ButtonError>

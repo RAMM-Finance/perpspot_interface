@@ -36,7 +36,6 @@ import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
-import { useSelector } from 'react-redux'
 import { Text } from 'rebass'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -75,7 +74,7 @@ function largerPercentValue(a?: Percent, b?: Percent) {
 const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  const tab = useSelector((state: any) => state.swap.tab)
+  // const tab = useSelector((state: any) => state.swap.tab)
 
   const {
     onSwitchTokens,
@@ -300,9 +299,9 @@ const SwapTabContent = () => {
   //   contractError,
   // } = useDerivedLeverageCreationInfo()
 
-  const [inputCurrency, outputCurrency] = useMemo(() => {
-    return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
-  }, [currencies])
+  // const [inputCurrency, outputCurrency] = useMemo(() => {
+  //   return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
+  // }, [currencies])
 
   // const { callback: leverageCallback } = useAddLeveragePositionCallback(
   //   leverageManagerAddress ?? undefined,

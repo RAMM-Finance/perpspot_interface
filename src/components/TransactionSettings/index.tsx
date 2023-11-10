@@ -6,12 +6,7 @@ import { DEFAULT_DEADLINE_FROM_NOW } from 'constants/misc'
 import ms from 'ms.macro'
 import { darken } from 'polished'
 import { useState } from 'react'
-import {
-  useUserPremiumTolerance,
-  useUserSlippageTolerance,
-  useUserSlippedTickTolerance,
-  useUserTransactionTTL,
-} from 'state/user/hooks'
+import { useUserSlippageTolerance, useUserSlippedTickTolerance, useUserTransactionTTL } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { ThemedText } from '../../theme'
@@ -127,14 +122,14 @@ const DEFAULT_SLIPPED_TICK_TOLERANCE = new Percent(5, 1000) // 0.5%
 export default function TransactionSettings({
   placeholderSlippage,
   placeholderSlippedTick,
-  placeholderPremium,
-}: TransactionSettingsProps) {
+}: // placeholderPremium,
+TransactionSettingsProps) {
   const { chainId } = useWeb3React()
   const theme = useTheme()
 
   const [userSlippageTolerance, setUserSlippageTolerance] = useUserSlippageTolerance()
   const [userSlippedTickTolerance, setUserSlippedTickTolerance] = useUserSlippedTickTolerance()
-  const [userPremiumTolerance, setUserPremiumTolerance] = useUserPremiumTolerance()
+  // const [userPremiumTolerance, setUserPremiumTolerance] = useUserPremiumTolerance()
 
   const [deadline, setDeadline] = useUserTransactionTTL()
 
@@ -144,8 +139,8 @@ export default function TransactionSettings({
   const [deadlineInput, setDeadlineInput] = useState('')
   const [deadlineError, setDeadlineError] = useState<DeadlineError | false>(false)
 
-  const [premiumInput, setPremiumInput] = useState('')
-  const [premiumError, setPremiumError] = useState<PremiumError | false>(false)
+  // const [premiumInput, setPremiumInput] = useState('')
+  // const [premiumError, setPremiumError] = useState<PremiumError | false>(false)
 
   const [slippedTickInput, setSlippedTickInput] = useState('')
   const [slippedTickError, setSlippedTickError] = useState<SlippedTickError | false>(false)
@@ -217,28 +212,28 @@ export default function TransactionSettings({
     }
   }
 
-  function parsePremiumInput(value: string) {
-    // populate what the user typed and clear the error
-    setPremiumInput(value)
-    setPremiumError(false)
+  // function parsePremiumInput(value: string) {
+  //   // populate what the user typed and clear the error
+  //   setPremiumInput(value)
+  //   setPremiumError(false)
 
-    if (value.length === 0) {
-      setUserPremiumTolerance('auto')
-    } else {
-      const parsed = Math.floor(Number.parseFloat(value) * 100)
+  //   if (value.length === 0) {
+  //     setUserPremiumTolerance('auto')
+  //   } else {
+  //     const parsed = Math.floor(Number.parseFloat(value) * 100)
 
-      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
-        setUserPremiumTolerance('auto')
-        if (value !== '.') {
-          setPremiumError(PremiumError.InvalidInput)
-        }
-      } else {
-        setUserPremiumTolerance(new Percent(parsed, 10_000))
-      }
-    }
-  }
+  //     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
+  //       setUserPremiumTolerance('auto')
+  //       if (value !== '.') {
+  //         setPremiumError(PremiumError.InvalidInput)
+  //       }
+  //     } else {
+  //       setUserPremiumTolerance(new Percent(parsed, 10_000))
+  //     }
+  //   }
+  // }
 
-  const premiumTooLow = userPremiumTolerance !== 'auto' && userPremiumTolerance.lessThan(new Percent(5, 10_000))
+  // const premiumTooLow = userPremiumTolerance !== 'auto' && userPremiumTolerance.lessThan(new Percent(5, 10_000))
 
   const showCustomDeadlineRow = Boolean(chainId && !L2_CHAIN_IDS.includes(chainId))
 
@@ -246,7 +241,7 @@ export default function TransactionSettings({
 
   return (
     <AutoColumn gap="md">
-      {placeholderPremium && (
+      {/* {placeholderPremium && (
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
@@ -310,7 +305,7 @@ export default function TransactionSettings({
             </RowBetween>
           ) : null}
         </AutoColumn>
-      )}
+      )} */}
       {placeholderSlippedTick && (
         <AutoColumn gap="sm">
           <RowFixed>

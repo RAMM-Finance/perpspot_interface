@@ -231,21 +231,13 @@ export function LeverageConfirmModal({
         <TransactionErrorContent onDismiss={onModalDismiss} message={tradeErrorMessage} />
       ) : (
         <ConfirmationModalContent
-          title={
-            <Trans>
-              Confirm x
-              {trade?.margin && trade?.borrowAmount
-                ? formatCurrencyAmount(trade.margin.add(trade?.borrowAmount).divide(trade.margin), 4)
-                : '-'}{' '}
-              Leverage Position
-            </Trans>
-          }
+          title={<Trans>Confirm Leverage Position</Trans>}
           onDismiss={onModalDismiss}
           topContent={modalHeader}
           bottomContent={modalBottom}
         />
       ),
-    [onModalDismiss, modalBottom, modalHeader, trade, tradeErrorMessage]
+    [onModalDismiss, modalBottom, modalHeader, tradeErrorMessage]
   )
 
   return (
