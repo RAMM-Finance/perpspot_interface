@@ -45,6 +45,7 @@ const StyledInfoIcon = styled(Info)`
 const StyledCard = styled(OutlineCard)`
   padding: 12px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.surface1};
 `
 
 const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`

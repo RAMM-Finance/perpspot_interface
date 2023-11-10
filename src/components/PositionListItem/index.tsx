@@ -33,7 +33,7 @@ const LinkRow = styled(Link)`
   padding: 16px;
   text-decoration: none;
   font-weight: 500;
-  background-color: #0d1421;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   border-top: solid 1px ${({ theme }) => theme.backgroundOutline};
 
   & > div:not(:first-child) {

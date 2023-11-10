@@ -239,6 +239,7 @@ const TVLInfo = styled.div`
   border-radius: 10px;
   font-size: 0.8rem;
   height: 2.5rem;
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
 `
 const HowTo = styled.div`
   width: 35rem;
@@ -247,6 +248,7 @@ const HowTo = styled.div`
   border-radius: 10px;
   font-size: 0.8rem;
   height: 8rem;
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
 `
 
 function TVLInfoContainer() {

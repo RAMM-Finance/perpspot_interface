@@ -16,14 +16,13 @@ const Container = styled.button<{ disabled: boolean }>`
   color: ${({ theme }) => theme.textPrimary};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns: 1fr 4fr 1fr 1fr 1fr;
-  justify-content: space-between;
+  grid-template-columns: 0.5fr 3fr 1fr 1fr;
   line-height: 24px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
   text-align: left;
   transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
     background-color;
-  width: 450px;
+  width: 375px;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     width: 100%;
@@ -34,7 +33,7 @@ const Container = styled.button<{ disabled: boolean }>`
   }
 `
 const Label = styled.div`
-  font-size: 16px;
+  font-size: 12px;
   margin-left: 5px;
   width: 10rem;
   padding-left: 1rem;
@@ -81,11 +80,14 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolS
         currencyIn && currencyOut && onCurrencySelect(currencyIn, currencyOut)
       }}
     >
-      <DoubleCurrencyLogo currency0={currencyIn as Currency} currency1={currencyOut as Currency} size={24} margin />
-      <Label>{`${labelIn} - ${labelOut} (fee)`}</Label>
-      <p>Test</p>
-      <p>Test</p>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
+      <div style={{ display: 'flex' }}>
+        <DoubleCurrencyLogo currency0={currencyIn as Currency} currency1={currencyOut as Currency} size={22} margin />
+        <Label>{`${labelIn} - ${labelOut} (fee)`}</Label>
+      </div>
+
+      <p>Test</p>
+      <p>Test</p>
     </Container>
   )
 }

@@ -22,6 +22,7 @@ import * as styles from './style.css'
 
 const Nav = styled.nav`
   /* padding: 10px 12px; */
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   width: 100%;
   z-index: 2;
   background-color: ${({ theme }) => theme.navbarBackground}; // Use theme value
@@ -45,7 +46,7 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItem
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none', marginRight: '4px' }}
+      style={{ textDecoration: 'none', marginRight: '4px', fontSize: '16px' }}
       data-testid={dataTestId}
     >
       {children}
@@ -56,7 +57,7 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItem
 const LogoSection = styled.div`
   padding-left: 1vw;
   margin-right: 2vw;
-  padding-top: 0.75vh;
+  padding-top: 0.65vh;
 `
 const Tabs = styled.div`
   display: flex;

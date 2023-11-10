@@ -29,7 +29,7 @@ const ChartContiner = styled.div`
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
-
+  width: 100%;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px;
   border-radius: 10px;

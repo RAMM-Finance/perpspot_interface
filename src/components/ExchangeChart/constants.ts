@@ -18,7 +18,7 @@ const chartStyleOverrides = ['candleStyle', 'hollowCandleStyle', 'haStyle'].redu
 }, {})
 // darkTheme;
 const chartOverrides = {
-  'paneProperties.background': '#0a0f19',
+  'paneProperties.background': '#040609',
   'paneProperties.backgroundGradientStartColor': '#000',
   'paneProperties.backgroundGradientEndColor': '#16182e',
   'paneProperties.backgroundType': 'solid',
@@ -88,7 +88,7 @@ export const defaultChartProps = {
   enabled_features: enabledFeatures,
   disabled_features: disabledFeatures,
   custom_css_url: '../tradingview-chart.css',
-  loading_screen: { backgroundColor: '#0d111c', foregroundColor: '#0d111c' },
+  loading_screen: { backgroundColor: '#040609', foregroundColor: '#040609' },
   favorites: {
     intervals: ['5', '15', '60', '240', '1D'],
   },

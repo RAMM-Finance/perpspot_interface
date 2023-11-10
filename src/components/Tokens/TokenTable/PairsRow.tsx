@@ -49,7 +49,7 @@ const StyledTokenRow = styled.div<{
   last?: boolean
   loading?: boolean
 }>`
-  background-color: #0d1421;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
   font-size: 0.75rem;
   grid-template-columns: 2.5fr 2.5fr 2.5fr 2fr 3fr 4fr 8fr;

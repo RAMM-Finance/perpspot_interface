@@ -17,16 +17,16 @@ type TextProps = Omit<TextPropsOriginal, 'css'>
 export const ThemedText = {
   // todo: there should be just one `Body` with default color, no need to make all variations
   BodyPrimary(props: TextProps) {
-    return <TextWrapper fontWeight={400} fontSize={16} color="textPrimary" {...props} />
+    return <TextWrapper fontWeight={400} fontSize={14} color="textPrimary" {...props} />
   },
   BodySecondary(props: TextProps) {
-    return <TextWrapper fontWeight={400} fontSize={16} color="textSecondary" {...props} />
+    return <TextWrapper fontWeight={400} fontSize={14} color="textSecondary" {...props} />
   },
   Gold(props: TextProps) {
     return <TextWrapper fontWeight={800} fontSize={16} color="gold" {...props} />
   },
   BodySmall(props: TextProps) {
-    return <TextWrapper fontWeight={400} fontSize={14} color="textPrimary" {...props} />
+    return <TextWrapper fontWeight={400} fontSize={12} color="textPrimary" {...props} />
   },
   TableText(props: TextProps) {
     return <TextWrapper fontWeight={400} fontSize={12} color="textPrimary" {...props} />
