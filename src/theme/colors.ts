@@ -162,18 +162,18 @@ export const darkTheme = {
 
   // backgroundSurface: limitlessColors.darkPurple,
   // backgroundSurface: colors.gray900, //"#030216", //"#0d0517", //colors.black,// colors.gray900
-  backgroundSurface: '#0a0f19',
+  backgroundSurface: '#040609',
   backgroundModule: opacify(8, colors.gray300), // #293249', // "#181926", // colors.gray800
   backgroundInteractive: colors.gray700,
   backgroundFloating: opacify(12, colors.black),
-  backgroundOutline: opacify(24, colors.gray300),
+  backgroundOutline: opacify(16, colors.blue300),
   backgroundScrim: opacify(72, colors.gray900),
   backgroundScrolledSurface: opacify(72, colors.gray900),
   textPrimary: colors.gray200,
   textSecondary: colors.gray50,
   textTertiary: colors.gray500,
   accentAction: colors.gray700,
-  surface1: '#0d1421',
+  surface1: '#0a0f19',
   // accentActive: colors.gray400,
   accentActive: '#4C82FB',
   accentSuccess: colors.green200,
@@ -211,7 +211,7 @@ export const darkTheme = {
 
 export const lightTheme = {
   ...commonTheme,
-  surface1: '#1c212d',
+  surface1: '#0a0f19',
   userThemeColor: colors.magentaVibrant,
   background: colors.gray800,
   backgroundBackdrop: colors.gray950,

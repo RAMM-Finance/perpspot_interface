@@ -8,6 +8,7 @@ import { Input as NumericalInput } from 'components/NumericalInput'
 import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
+import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -46,8 +47,7 @@ const SwapTabContent = React.lazy(() => import('./swapModal'))
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
 
 const TableHeader = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 1px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
@@ -82,7 +82,7 @@ export const ArrowContainer = styled.div`
 
 export const LeverageInputSection = styled(ResponsiveHeaderText)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 12px;
+  border-radius: 10px;
   padding-right: 14px;
   align-items: center;
   justify-content: space-around;
@@ -153,7 +153,7 @@ export const InputSection = styled(SwapSection)`
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
   /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
-  background-color: #0d1421;
+  background-color: ${({ theme }) => theme.surface1};
 `
 
 export const LeverageGaugeSection = styled(SwapSection)`
@@ -167,9 +167,7 @@ export const LeverageGaugeSection = styled(SwapSection)`
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
   padding: 0px;
-  margin-bottom: 20px;
   width: 100%;
-  background-color: #0d1421;
 `
 
 const PositionsContainer = styled.div`
@@ -178,16 +176,13 @@ const PositionsContainer = styled.div`
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
-
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px;
+  height: calc(100vh - 582px);
   border-radius: 10px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 const StatsContainer = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 32px;
+  border-radius: 10px;
   /* max-width: 1200px; */
   padding: 18px;
   width: 100%;
@@ -201,6 +196,28 @@ const LeftContainer = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;
+`
+
+const MiddleContainer = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-content: center;
+`
+
+const LiquidityDistibutionWrapper = styled.div`
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  border-radius: 10px;
+  width: 475px;
+  padding: 1rem;
+  height: 450px;
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 `
 
 const ActivityWrapper = styled.section`
@@ -523,6 +540,7 @@ export default function Swap({ className }: { className?: string }) {
   }, [])
 
   const [activePositionTable, setActiveTable] = useState(1)
+  console.log(inputCurrency)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -543,7 +561,7 @@ export default function Swap({ className }: { className?: string }) {
                   <PoolSelector />
                 </Row>
               ) : (
-                <ThemedText.HeadlineSmall>Pair not found</ThemedText.HeadlineSmall>
+                <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
               )}
             </TokenNameCell>
             <PoolDataSection
@@ -561,12 +579,17 @@ export default function Swap({ className }: { className?: string }) {
               </TabContent>
             </SwapWrapper>
             <LeftContainer>
-              <PoolDataChart
-                chainId={chainId ?? 11155111}
-                token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                fee={pool?.fee}
-              />
+              <MiddleContainer>
+                <PoolDataChart
+                  chainId={chainId ?? 11155111}
+                  token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+                  token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+                  fee={pool?.fee}
+                />
+                <LiquidityDistibutionWrapper>
+                  <LiquidityDistributionTable />
+                </LiquidityDistibutionWrapper>
+              </MiddleContainer>
               <PositionsContainer>
                 <TableHeader>
                   <TabsWrapper>

@@ -77,7 +77,7 @@ function getSettings(darkMode: boolean) {
     fonts,
 
     // shadows
-    shadow1: darkMode ? '#0a0f19' : '#2F80ED',
+    shadow1: darkMode ? '#040609' : '#2F80ED',
 
     // media queries
     deprecated_mediaWidth: deprecated_mediaWidthTemplates,
@@ -92,7 +92,7 @@ function getSettings(darkMode: boolean) {
     opacity: opacities,
 
     //background handling
-    navbarBackground: '#0a0f19',
+    navbarBackground: '#040609',
   }
 }
 

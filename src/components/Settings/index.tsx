@@ -24,7 +24,7 @@ const StyledMenuIcon = styled(Settings)`
   width: 13px;
 
   > * {
-    stroke: ${({ theme }) => theme.textSecondary};
+    stroke: ${({ theme }) => theme.textPrimary};
   }
 `
 
@@ -80,7 +80,7 @@ const StyledMenu = styled.div`
 `
 
 const MenuFlyout = styled.span`
-  min-width: 20.125rem;
+  min-width: 14.125rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.01), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04),
@@ -91,8 +91,8 @@ const MenuFlyout = styled.span`
   font-size: 1rem;
   position: absolute;
   top: 2rem;
-  right: -1.25rem;
-  z-index: 100;
+  right: -2rem;
+  z-index: 3;
   color: ${({ theme }) => theme.textPrimary};
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`

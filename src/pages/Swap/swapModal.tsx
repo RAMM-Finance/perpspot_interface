@@ -58,6 +58,8 @@ const Wrapper = styled.div`
   padding: 1rem;
   padding-top: 0rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
 `
 
 function largerPercentValue(a?: Percent, b?: Percent) {

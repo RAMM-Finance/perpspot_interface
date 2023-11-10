@@ -26,7 +26,6 @@ import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
-import { Text } from 'rebass'
 import { MarginField } from 'state/marginTrading/actions'
 import {
   AddMarginTrade,
@@ -58,15 +57,25 @@ const Wrapper = styled.div`
   padding: 1rem;
   padding-top: 0rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  height: calc(100vh - 125px);
+
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  ::-webkit-scrollbar-track {
+    margin-top: 5px;
+  }
 `
 
 const Filter = styled.div`
   display: flex;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 16px;
-  padding: 4px;
+  border-radius: 10px;
   width: fit-content;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 `
 export const OpacityHoverState = css`
   &:hover {
@@ -84,13 +93,13 @@ export const OpacityHoverState = css`
   }) => `opacity ${duration.medium} ${timing.ease}`};
 `
 
-const StyledSelectorText = styled(ThemedText.SubHeader)<{ active: boolean }>`
+const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
 `
 
 const Selector = styled.div<{ active: boolean }>`
-  padding: 8px 12px;
-  border-radius: 12px;
+  padding: 6px 8px;
+  border-radius: 10px;
   background: ${({ active, theme }) => (active ? theme.background : 'none')};
   cursor: pointer;
 
@@ -339,20 +348,22 @@ const TradeTabContent = () => {
         tradeErrorMessage={tradeErrorMessage}
       />
       <SwapHeader allowedSlippage={allowedSlippage} autoSlippedTick={allowedSlippedTick} />
-
-      <div style={{ display: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
           <Selector active={!isLimitOrder}>
             <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
-              MARKET
+              Market
             </StyledSelectorText>
           </Selector>
           <Selector active={isLimitOrder}>
             <StyledSelectorText lineHeight="20px" active={isLimitOrder}>
-              LIMIT
+              Limit
             </StyledSelectorText>
           </Selector>
         </Filter>
+      </div>
+
+      <div style={{ display: 'relative' }}>
         <InputSection>
           <div style={{ fontWeight: 'bold' }}>
             <Trans>Deposit Collateral</Trans>
@@ -484,7 +495,7 @@ const TradeTabContent = () => {
           </DetailsSwapSection>
         </div>
         {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />} */}
-        <div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           {swapIsUnsupported ? (
             <ButtonPrimary disabled={true}>
               <ThemedText.DeprecatedMain mb="4px">
@@ -492,7 +503,13 @@ const TradeTabContent = () => {
               </ThemedText.DeprecatedMain>
             </ButtonPrimary>
           ) : !account ? (
-            <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+            <ButtonLight
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="14"
+              padding=".5rem"
+              onClick={toggleWalletDrawer}
+              fontWeight={600}
+            >
               <Trans>Connect Wallet</Trans>
             </ButtonLight>
           ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
@@ -537,13 +554,16 @@ const TradeTabContent = () => {
             </ButtonPrimary>
           ) : (
             <ButtonError
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="14"
+              padding=".25rem"
               onClick={() => {
                 setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
               }}
               id="leverage-button"
               disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
             >
-              <Text fontSize={20} fontWeight={600}>
+              <ThemedText.BodyPrimary fontWeight={600}>
                 {inputError ? (
                   inputError
                 ) : contractError ? (
@@ -555,7 +575,7 @@ const TradeTabContent = () => {
                 ) : (
                   <Trans>Execute</Trans>
                 )}
-              </Text>
+              </ThemedText.BodyPrimary>
             </ButtonError>
           )}
           {/* {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null} */}

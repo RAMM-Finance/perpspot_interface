@@ -40,7 +40,9 @@ function Stat({
   return (
     <StatWrapper data-cy={`${dataCy}`}>
       <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
-      <StatPrice>{_value}</StatPrice>
+      <StatPrice>
+        <ThemedText.BodySmall color="textSecondary">{_value}</ThemedText.BodySmall>
+      </StatPrice>
     </StatWrapper>
   )
 }
@@ -83,10 +85,16 @@ export default function StatsSection(props: StatsSectionProps) {
         dataCy="current-price"
         value={stats?.price}
         baseQuoteSymbol={baseQuoteSymbol}
-        title={<Trans>Oracle Price</Trans>}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Oracle Price</Trans>
+          </ThemedText.BodySmall>
+        }
       />
       <StatWrapper data-cy="delta-24h">
-        <Trans>24h Change</Trans>
+        <ThemedText.BodySmall>
+          <Trans>24h Change</Trans>
+        </ThemedText.BodySmall>
         <StatPrice>
           <AutoRow>
             <ArrowCell>{arrow}</ArrowCell>
@@ -96,24 +104,45 @@ export default function StatsSection(props: StatsSectionProps) {
           </AutoRow>
         </StatPrice>
       </StatWrapper>
-      <Stat dataCy="24h-low" value={stats?.low24h} baseQuoteSymbol={baseQuoteSymbol} title={<Trans>24h low</Trans>} />
+      <Stat
+        dataCy="24h-low"
+        value={stats?.low24h}
+        baseQuoteSymbol={baseQuoteSymbol}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h low</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
       <Stat
         dataCy="24h-high"
         value={stats?.high24h}
         baseQuoteSymbol={baseQuoteSymbol}
-        title={<Trans>24h high</Trans>}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h high</Trans>
+          </ThemedText.BodySmall>
+        }
       />
       <Stat
         dataCy="liq-below"
         value={stats?.token1Reserve}
         baseQuoteSymbol={token1Symbol}
-        title={<Trans>Liquidity Below</Trans>}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Liquidity Below</Trans>
+          </ThemedText.BodySmall>
+        }
       />
       <Stat
         dataCy="liq-above"
         value={stats?.token0Reserve}
         baseQuoteSymbol={token0Symbol}
-        title={<Trans>Liquidity Above</Trans>}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Liquidity Above</Trans>
+          </ThemedText.BodySmall>
+        }
       />
     </StatsWrapper>
   )

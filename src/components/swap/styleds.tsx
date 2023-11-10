@@ -38,18 +38,12 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
-
-  background-color: ${({ theme }) => theme.backgroundSurface};
   transition: transform 250ms ease;
-
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px;
-  border-radius: 10px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  // background-color: ${({ theme }) => theme.backgroundSurface};
 `
-export const LimitWrapper = styled.div`
-  position: relative;
-`
+// export const LimitWrapper = styled.div`
+//   position: relative;
+// `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
   border-radius: 999px;

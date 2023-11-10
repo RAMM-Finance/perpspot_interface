@@ -1,4 +1,3 @@
-import { t } from '@lingui/macro'
 import { Currency, Token } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
@@ -28,14 +27,14 @@ import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
 
 const PoolListHeader = styled.h4`
-  font-size: 0.9rem;
+  font-size: 12px;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 `
 const PoolListContainer = styled.div`
   display: grid;
-  grid-template-columns: 5fr 1fr 2fr;
-  width: 400px;
+  grid-template-columns: 0.5fr 3fr 1fr 1fr;
+  width: 375px;
 `
 export const PoolSelector = () => {
   const onlyShowCurrenciesWithBalance = false
@@ -187,18 +186,19 @@ export const PoolSelector = () => {
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
   const dropdown = (
-    <NavDropdown top="40" ref={modalRef} style={{ overflowY: 'scroll', height: '600px', zIndex: '3' }}>
-      <Row style={{ flexDirection: 'column' }}>
+    <NavDropdown ref={modalRef} style={{ height: '600px', overflowY: 'scroll', zIndex: '3' }}>
+      <Row flexDirection="column">
         <SearchInput
           type="text"
           id="token-search-input"
-          placeholder={t`Search name or paste address`}
+          placeholder="Search name or paste address"
           autoComplete="off"
           value={searchQuery}
           ref={inputRef as RefObject<HTMLInputElement>}
           onChange={handleInput}
         />
         <PoolListContainer>
+          <PoolListHeader></PoolListHeader>
           <PoolListHeader>Pool</PoolListHeader>
           <PoolListHeader>TVL</PoolListHeader>
           <PoolListHeader>24h Vol</PoolListHeader>
@@ -229,25 +229,18 @@ export const PoolSelector = () => {
   }
 
   return (
-    <Box position="relative" style={{ paddingRight: '1vw' }} ref={ref}>
+    <Box position="relative" padding="6" ref={ref}>
       <Row
         as="button"
         gap="8"
         className={styles.ChainSelector}
         background={isOpen ? 'accentActiveSoft' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
-        style={{ width: '17rem' }}
+        style={{ width: '225px' }}
       >
-        <DoubleCurrencyLogo
-          currency0={inputCurrency as Currency}
-          currency1={outputCurrency as Currency}
-          size={24}
-          margin
-        />
-        <ThemedText.LmtWhite
-          style={{ fontSize: '.9rem', marginRight: '2vw' }}
-        >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.LmtWhite>
-        <ThemedText.LmtWhite style={{ color: 'gray', fontSize: '.8rem' }}>All Markets</ThemedText.LmtWhite>
+        <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={22} />
+        <ThemedText.BodySmall color="secondary">{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+        <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
         {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
       </Row>
       {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}

@@ -33,11 +33,9 @@ const Web3StatusGeneric = styled(ButtonSecondary)`
   ${flexRowNoWrap};
   width: 100%;
   align-items: center;
-  padding: 0.5rem;
-  border-radius: ${FULL_BORDER_RADIUS}px;
+  border-radius: 10px;
   cursor: pointer;
   user-select: none;
-  height: 36px;
   margin-right: 2px;
   margin-left: 2px;
   :focus {
@@ -58,12 +56,9 @@ const Web3StatusError = styled(Web3StatusGeneric)`
 const Web3StatusConnectWrapper = styled.div<{ faded?: boolean }>`
   ${flexRowNoWrap};
   align-items: center;
-  background-color: ${({ theme }) => theme.accentActionSoft};
-  border-radius: ${FULL_BORDER_RADIUS}px;
+  // background-color: ${({ theme }) => theme.accentActionSoft};
+  border-radius: 10px;
   border: none;
-  padding: 0;
-  height: 40px;
-
   color: ${({ theme }) => theme.accentAction};
   :hover {
     color: ${({ theme }) => theme.accentActionSoft};
@@ -85,6 +80,7 @@ const Web3StatusConnected = styled(Web3StatusGeneric)<{
   border: 1px solid ${({ pending, theme }) => (pending ? theme.accentActive : theme.deprecated_bg1)};
   color: ${({ pending, theme }) => (pending ? theme.white : theme.textPrimary)};
   font-weight: 500;
+  padding: 6px 6px;
   border: ${({ isClaimAvailable }) => isClaimAvailable && `1px solid ${colors.purple300}`};
   :hover,
   :focus {
@@ -120,7 +116,7 @@ const Text = styled.p`
   text-overflow: ellipsis;
   white-space: nowrap;
   margin: 0 0.5rem 0 0.25rem;
-  font-size: 0.8rem;
+  font-size: 12px;
   width: fit-content;
   font-weight: 500;
 `
@@ -142,11 +138,11 @@ const StyledConnectButton = styled.button`
   border: none;
   border-top-left-radius: ${FULL_BORDER_RADIUS}px;
   border-bottom-left-radius: ${FULL_BORDER_RADIUS}px;
-  border-radius: 16px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.8rem;
-  padding: 10px 12px;
+  font-size: 14px;
+  padding: 7.25px 7px;
   color: white;
 `
 

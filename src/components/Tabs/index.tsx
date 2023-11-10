@@ -60,13 +60,13 @@ export default function SwapTabHeader({
         alignItems: 'center',
       }}
     >
-      <TapWrapper>
+      <TabWrapper>
         <TabElement
           onClick={() => handleTabChange(ActiveSwapTab.LONG)}
           isActive={activeTab === ActiveSwapTab.LONG}
           // selectedTab={selectedTab}
           tabValue="Long"
-          fontSize="1rem"
+          fontSize="14px"
           first={true}
           activeTab={activeTab}
         >
@@ -77,7 +77,7 @@ export default function SwapTabHeader({
           isActive={activeTab === ActiveSwapTab.SHORT}
           // selectedTab={selectedTab}
           tabValue="Short"
-          fontSize="1rem"
+          fontSize="14px"
           activeTab={activeTab}
         >
           <Trans>Short</Trans>
@@ -87,13 +87,13 @@ export default function SwapTabHeader({
           isActive={activeTab === ActiveSwapTab.SWAP}
           // selectedTab={selectedTab}
           tabValue="Swap"
-          fontSize="1rem"
+          fontSize="14px"
           last={true}
           activeTab={activeTab}
         >
           <Trans>Swap</Trans>
         </TabElement>
-      </TapWrapper>
+      </TabWrapper>
       <SettingWrapper>
         <SettingsTab
           allowedSlippage={autoSlippage}
@@ -143,7 +143,7 @@ export const TabNavItem = ({
   )
 }
 
-const TapWrapper = styled.div`
+const TabWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
@@ -168,7 +168,7 @@ const TabElement = styled.button<{
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.4rem;
+  padding: 6px 8px;
   justify-content: center;
   height: 100%;
   border: none;
@@ -192,7 +192,6 @@ const TabElement = styled.button<{
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  margin-left: ${({ first }) => (first ? '17px' : '0')};
   margin-right: ${({ last }) => (last ? '8px' : '0')};
   margin-top: 15px;
 
