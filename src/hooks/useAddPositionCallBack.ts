@@ -3,18 +3,23 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Percent, Price } from '@uniswap/sdk-core'
 import { priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from 'bignumber.js'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import JSBI from 'jsbi'
+import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useCallback, useMemo } from 'react'
+import { MarginField } from 'state/marginTrading/actions'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
-import { AddMarginTrade } from 'state/marginTrading/hooks'
+import { AddMarginTrade, useMarginTradingState } from 'state/marginTrading/hooks'
+import { Field } from 'state/swap/actions'
+import { useSwapState } from 'state/swap/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { Multicall as MulticallSDK } from 'utils/lmtSDK/multicall'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
+import { useCurrency } from './Tokens'
 import useTransactionDeadline from './useTransactionDeadline'
 
 export function useAddPositionCallback(
@@ -25,6 +30,30 @@ export function useAddPositionCallback(
   const deadline = useTransactionDeadline()
   const { account, chainId, provider } = useWeb3React()
 
+  const {
+    [MarginField.MARGIN]: margin,
+    [MarginField.LEVERAGE_FACTOR]: leverageFactor,
+    isLimitOrder,
+  } = useMarginTradingState()
+
+  const {
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+  } = useSwapState()
+
+  const inputCurrency = useCurrency(inputCurrencyId)
+  // const outputCurrency = useCurrency(outputCurrencyId)
+
+  const marginAmount = useMemo(
+    () => tryParseCurrencyAmount(margin ?? undefined, inputCurrency ?? undefined),
+    [inputCurrency, margin]
+  )
+
+  const borrowAmount = useMemo(() => {
+    if (!marginAmount || !leverageFactor || Number(leverageFactor) < 1) return undefined
+    return marginAmount?.multiply(JSBI.BigInt(leverageFactor)).subtract(marginAmount)
+  }, [leverageFactor, marginAmount])
+
   const addTransaction = useTransactionAdder()
   // console.log("allowedSlippage", allowedSlippage)
   const addPositionCallback = useCallback(async (): Promise<TransactionResponse> => {
@@ -34,8 +63,9 @@ export function useAddPositionCallback(
       if (!provider) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
+      if (!marginAmount || !borrowAmount) throw new Error('missing parameters')
 
-      const { pool, swapInput, swapRoute, margin, borrowAmount, positionKey, premium } = trade
+      const { pool, swapInput, swapRoute, positionKey, premium } = trade
 
       const amountOut = await getOutputQuote(swapInput, swapRoute, provider, chainId)
 
@@ -62,15 +92,14 @@ export function useAddPositionCallback(
       const slippedTickMax = priceToClosestTick(maxPrice)
       const slippedTickMin = priceToClosestTick(minPrice)
 
-      const calldata = MarginFacilitySDK.addPositionParameters({
+      const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
-        margin: margin.quotient,
+        margin: marginAmount.quotient,
         borrowAmount: borrowAmount.quotient,
         minimumOutput: JSBI.BigInt(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut,
         executionOption: 1,
-        maxSlippage: new BN(allowedSlippage.toFixed(18)).shiftedBy(18).toFixed(0),
         depositPremium: premium.quotient,
         slippedTickMin,
         slippedTickMax,
@@ -79,7 +108,7 @@ export function useAddPositionCallback(
       const tx = {
         from: account,
         to: LMT_MARGIN_FACILITY[chainId],
-        data: calldata[0],
+        data: MulticallSDK.encodeMulticall(calldatas),
       }
 
       let gasEstimate: BigNumber
@@ -100,9 +129,8 @@ export function useAddPositionCallback(
           return response
         })
       return response
-    } catch (swapError: unknown) {
-      console.log('swapError', swapError)
-      throw new Error('swapError')
+    } catch (error: any) {
+      throw new Error('Contract Error')
     }
   }, [allowedSlippage, allowedSlippedTick, deadline, account, chainId, provider, trade])
 

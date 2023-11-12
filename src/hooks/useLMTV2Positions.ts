@@ -1,4 +1,3 @@
-import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -17,6 +16,7 @@ import { convertToBN } from './useV3Positions'
 export function useLeveragedLMTPositions(account: string | undefined): UseLmtMarginPositionsResults {
   const dataProvider = useDataProviderContract()
 
+  // make sure to have dataProvider provide the decimals for each token
   const { loading, error, result } = useSingleCallResult(dataProvider, 'getActiveMarginPositions', [account])
 
   return useMemo(() => {
@@ -24,41 +24,52 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
       loading,
       error,
       positions: result?.[0]?.map((position: any) => {
+        const inputDecimals = position.isToken0
+          ? Number(position.token1Decimals.toString())
+          : Number(position.token0Decimals.toString())
+        const outputDecimals = position.isToken0
+          ? Number(position.token0Decimals.toString())
+          : Number(position.token1Decimals.toString())
         return {
           poolKey: {
-            token0Address: position.poolKey.token0Address,
-            token1Address: position.poolKey.token1Address,
-            fee: getFee(position.poolKey.fee),
+            token0Address: position.poolKey.token0,
+            token1Address: position.poolKey.token1,
+            fee: position.poolKey.fee,
           },
           isToken0: position.isToken0,
-          totalDebtOutput: convertToBN(position.totalDebtOutput, 18),
-          totalDebtInput: convertToBN(position.totalDebtInput, 18),
+          totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
+          totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
           openTime: position.openTime,
           repayTime: position.repayTime,
-          premiumDeposit: convertToBN(position.premiumDeposit, 18),
-          totalPosition: convertToBN(position.totalPosition, 18),
-          margin: convertToBN(position.margin, 18),
-          premiumOwed: convertToBN(position.premiumOwed, 18),
+          premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
+          totalPosition: convertToBN(position.totalPosition, outputDecimals),
+          margin: convertToBN(position.margin, inputDecimals),
+          premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
           isBorrow: false,
-          premiumLeft: convertToBN(position.premiumDeposit, 18).minus(convertToBN(position.premiumOwed, 18)),
+          premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
+            convertToBN(position.premiumOwed, inputDecimals)
+          ),
+          token0Decimals: Number(position.token0Decimals.toString()),
+          token1Decimals: Number(position.token1Decimals.toString()),
+          trader: account,
         }
       }),
     }
   }, [loading, error, result])
 }
 
-function getFee(fee: number): FeeAmount {
-  switch (fee) {
-    case FeeAmount.LOWEST:
-      return FeeAmount.LOWEST
-    case FeeAmount.MEDIUM:
-      return FeeAmount.MEDIUM
-    case FeeAmount.HIGH:
-      return FeeAmount.HIGH
-    default:
-      return FeeAmount.MEDIUM
-  }
-}
+// function getFee(fee: number): FeeAmount {
+//   switch (fee) {
+//     case FeeAmount.LOWEST:
+//       return FeeAmount.LOWEST
+//     case FeeAmount.MEDIUM:
+//       return FeeAmount.MEDIUM
+//     case FeeAmount.HIGH:
+//       return FeeAmount.HIGH
+//     default:
+//       return FeeAmount.MEDIUM
+//   }
+// }
 
 // fetches corresponding LMT position, if it exists then openTime > 0
 export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | undefined): {
@@ -75,6 +86,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   const [result, setResult] = useState<any>()
   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
   const blockNumber = useBlockNumber()
+  const { account } = useWeb3React()
 
   const params = useMemo(() => {
     if (token0 && token1 && chainId && key) {
@@ -116,7 +128,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   }, [dataProvider, params, blockNumber, lastBlockNumber, loading])
 
   return useMemo(() => {
-    if (!result || !key) {
+    if (!result || !key || !account) {
       return {
         loading,
         error,
@@ -124,6 +136,12 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       }
     } else {
       const position = result
+      const inputDecimals = position.isToken0
+        ? Number(position.token1Decimals.toString())
+        : Number(position.token0Decimals.toString())
+      const outputDecimals = position.isToken0
+        ? Number(position.token0Decimals.toString())
+        : Number(position.token1Decimals.toString())
       return {
         loading,
         error,
@@ -131,20 +149,25 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
           poolKey: key.poolKey,
           positionId: new BN(0),
           isToken0: position.isToken0,
-          totalDebtOutput: convertToBN(position.totalDebtOutput, 18),
-          totalDebtInput: convertToBN(position.totalDebtInput, 18),
+          totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
+          totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
           openTime: position.openTime,
           repayTime: position.repayTime,
-          premiumDeposit: convertToBN(position.premiumDeposit, 18),
-          totalPosition: convertToBN(position.totalPosition, 18),
-          margin: convertToBN(position.margin, 18),
-          premiumOwed: convertToBN(position.premiumOwed, 18),
+          premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
+          totalPosition: convertToBN(position.totalPosition, outputDecimals),
+          margin: convertToBN(position.margin, inputDecimals),
+          premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
           isBorrow: false,
-          premiumLeft: convertToBN(position.premiumDeposit, 18).minus(convertToBN(position.premiumOwed, 18)),
+          premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
+            convertToBN(position.premiumOwed, inputDecimals)
+          ),
+          trader: account,
+          token0Decimals: Number(position.token0Decimals.toString()),
+          token1Decimals: Number(position.token1Decimals.toString()),
         },
       }
     }
-  }, [loading, error, result])
+  }, [loading, error, result, account, key])
 }
 
 export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): MarginLimitOrder | undefined {
@@ -183,52 +206,6 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     }
   }, [result, loading, error, key])
 }
-
-type ContractArg = string | number | boolean
-
-// export function useSingleViewCall(callback: () => Promise<any>) {
-//   const [loading, setLoading] = useState(false)
-//   const [error, setError] = useState<any>()
-//   const [result, setResult] = useState<any>()
-//   const blockNumber = useBlockNumber()
-//   const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>(undefined)
-
-//   useEffect(() => {
-//     if (loading || lastBlockNumber == blockNumber) return
-//     const call = async () => {
-//       try {
-//         setLoading(true)
-//         const result = await callback()
-//         setResult(result)
-//         setLoading(false)
-//         setLastBlockNumber(blockNumber)
-//       } catch (error) {
-//         setError(error)
-//         setLoading(false)
-//       }
-//     }
-//     call()
-//   }, [blockNumber, lastBlockNumber, loading])
-
-//   return { loading, error, result }
-// }
-
-// fetches all borrow LMT positions for a given account
-// export function useBorrowLMTPositions(account: string | undefined): {
-//   loading: boolean
-//   error: any
-//   positions: BorrowLMTPositionDetails[] | undefined
-// } {
-//   return [] as any
-// }
-
-// export function useBorrowLMTPositionFromKeys(
-//   account: string | undefined,
-//   isToken0: boolean | undefined,
-//   key: RawPoolKey | undefined
-// ): { loading: boolean; error: any; position: BorrowLMTPositionDetails | undefined } {
-//   return [] as any
-// }
 
 interface UseLmtMarginPositionsResults {
   loading: boolean

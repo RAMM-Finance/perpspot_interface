@@ -392,7 +392,7 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Reduce Leverage Summary</Trans>
     case TransactionType.PREMIUM_BORROW:
       return <Trans>Pay Borrow Position Summary</Trans>
-    case TransactionType.PREMIUM_LEVERAGE:
+    case TransactionType.PREMIUM_LEVERAGE_DEPOSIT:
       return <Trans>Pay Leverage Position Summary</Trans>
     case TransactionType.REDUCE_BORROW_COLLATERAL:
       return <Trans>Reduce Borrow Collateral Summary</Trans>

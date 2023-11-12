@@ -102,14 +102,14 @@ function useTicksFromTickLens(
   const [lastSyncedBlock, setLastSyncedBlock] = useState<number>()
 
   const fetchTicks = useCallback(async () => {
-    console.log(
-      'multicall1',
-      tickLensArgs.length,
-      tickLens?.address,
-      provider,
-      !loading,
-      tickDataLatestSynced.length === 0
-    )
+    // console.log(
+    //   'multicall1',
+    //   tickLensArgs.length,
+    //   tickLens?.address,
+    //   provider,
+    //   !loading,
+    //   tickDataLatestSynced.length === 0
+    // )
     if (tickLens && provider && !loading && tickDataLatestSynced.length === 0 && tickLensArgs.length > 0) {
       const currentBlock = await provider?.getBlockNumber()
 

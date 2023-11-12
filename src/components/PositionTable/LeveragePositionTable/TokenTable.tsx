@@ -39,7 +39,6 @@ const NoTokenDisplay = styled.div`
 function NoTokensState({ message }: { message: ReactNode }) {
   return (
     <GridContainer>
-      <HeaderRow />
       <NoTokenDisplay>{message}</NoTokenDisplay>
     </GridContainer>
   )

@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import backgroundImage from 'assets/images/visualbg.png'
@@ -22,7 +21,6 @@ import styled, { useTheme } from 'styled-components/macro'
 import { isL2ChainId } from 'utils/chains'
 
 import Circle from '../../assets/images/blue-loader.svg'
-import { ReactComponent as LogoGradient } from '../../assets/svg/full_logo_gradient.svg'
 import { ExternalLink, ThemedText } from '../../theme'
 import { CloseIcon, CustomLightSpinner } from '../../theme'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
@@ -251,13 +249,13 @@ export function ReduceLeverageTransactionPopupContent({
 
   const {
     pnl,
-    initialCollateral,
+    // initialCollateral,
     inputCurrencyId,
     outputCurrencyId,
-    entryPrice,
-    markPrice,
-    leverageFactor,
-    quoteBaseSymbol,
+    // entryPrice,
+    // markPrice,
+    // leverageFactor,
+    // quoteBaseSymbol,
   } = tx.info as ReduceLeveragePositionTransactionInfo
 
   const success = tx.receipt?.status === 1
@@ -273,7 +271,8 @@ export function ReduceLeverageTransactionPopupContent({
 
   return success ? (
     <ReduceWrapper>
-      <CenterRow>
+      TODO
+      {/* <CenterRow>
         <AmboyText size={36} color="#ffffff">
           Closed Position
         </AmboyText>
@@ -309,7 +308,7 @@ export function ReduceLeverageTransactionPopupContent({
         </div>
         <AgencyB size={24} color="#f600ff">{` ${formatNumber(markPrice)} ${quoteBaseSymbol}`}</AgencyB>
       </CenterRow>
-      <LogoGradient width={150} height={50} />
+      <LogoGradient width={150} height={50} /> */}
     </ReduceWrapper>
   ) : (
     <PortfolioRow

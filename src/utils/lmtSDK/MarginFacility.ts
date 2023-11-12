@@ -15,7 +15,7 @@ export interface AddPositionOptions {
   deadline: string
   simulatedOutput: JSBI
   executionOption: number
-  maxSlippage: string
+  // maxSlippage: string
   slippedTickMin: number
   slippedTickMax: number
   depositPremium?: JSBI
@@ -62,16 +62,7 @@ export abstract class MarginFacilitySDK {
         ])
       )
     }
-    // uint256 margin;
-    // uint256 minOutput;
-    // uint256 simulatedOutput;
-    // uint256 borrowAmount;
-    // bool positionIsToken0;
-    // uint256 executionOption;
-    // address trader;
-    // bytes executionData;
-    // int24 slippedTickMin;
-    // int24 slippedTickMax;
+
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {
@@ -81,7 +72,6 @@ export abstract class MarginFacilitySDK {
         },
         {
           margin: toHex(param.margin),
-          maxSlippage: toHex(param.maxSlippage),
           simulatedOutput: toHex(param.simulatedOutput),
           borrowAmount: toHex(param.borrowAmount),
           positionIsToken0: param.positionKey.isToken0,

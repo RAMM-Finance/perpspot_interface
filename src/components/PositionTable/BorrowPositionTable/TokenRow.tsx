@@ -612,15 +612,13 @@ const RawLoadedRow = (props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) 
   const filterString = useAtomValue(filterStringAtom)
   const { position } = props
 
+  const { account } = useWeb3React()
+
   const { isToken0, token0Address, token1Address, initialCollateral, totalDebtInput } = position
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolFee)
-
-  // const leverageFactor = useMemo(() => (
-  //   (Number(initialCollateral) + Number(totalDebtInput)) / Number(initialCollateral)
-  // ), [initialCollateral, totalDebtInput]);
 
   const now = moment()
   const [timeLeft, isOverDue] = useMemo(() => {

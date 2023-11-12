@@ -142,7 +142,6 @@ export default function ConfirmSwapModal({
     </Trace>
   )
 }
-
 export function LeverageConfirmModal({
   trade,
   originalTrade,

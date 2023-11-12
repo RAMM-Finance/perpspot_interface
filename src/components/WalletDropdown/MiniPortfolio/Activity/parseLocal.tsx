@@ -344,7 +344,7 @@ export function parseLocalActivity(
     additionalFields = parseReduceBorrowCollateral(info, chainId, tokens)
   } else if (info.type === TransactionType.PREMIUM_BORROW) {
     additionalFields = parsePremiumBorrow(info, chainId, tokens)
-  } else if (info.type === TransactionType.PREMIUM_LEVERAGE) {
+  } else if (info.type === TransactionType.PREMIUM_LEVERAGE_DEPOSIT) {
     additionalFields = parsePremiumLeverage(info, chainId, tokens)
   }
 

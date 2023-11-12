@@ -151,7 +151,7 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Paid Borrower Premium`,
     [TransactionStatus.Failed]: t`Payment failed`,
   },
-  [TransactionType.PREMIUM_LEVERAGE]: {
+  [TransactionType.PREMIUM_LEVERAGE_DEPOSIT]: {
     [TransactionStatus.Pending]: t`Paying Premium`,
     [TransactionStatus.Confirmed]: t`Paid Trader Premium`,
     [TransactionStatus.Failed]: t`Payment failed`,

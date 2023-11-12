@@ -1,26 +1,22 @@
 import { Trans } from '@lingui/macro'
 import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
-import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
-import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
-import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { useIsMobile } from 'nft/hooks'
-import { ReduceButton, SmallMaxButton } from 'pages/RemoveLiquidity/styled'
-import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
-import { CSSProperties, ReactNode, useRef } from 'react'
+import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
+import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
+import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { MarginPositionDetails } from 'types/lmtv2position'
+import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
 
 import {
@@ -29,6 +25,7 @@ import {
   MEDIUM_MEDIA_BREAKPOINT,
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
+import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
@@ -47,7 +44,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr 1.2fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -78,15 +75,15 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr 0.5fr;
+    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr 0.5fr;
+    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr 0.5fr;
+    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -335,11 +332,11 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
   `};
 `
 
-const ActionsContainer = styled(AutoColumn)`
-  align-items: center;
-  display: flex;
-  justify-content: center;
-`
+// const ActionsContainer = styled(AutoColumn)`
+//   align-items: center;
+//   display: flex;
+//   justify-content: center;
+// `
 
 export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.VALUE]: <Trans>Position Value</Trans>,
@@ -348,7 +345,7 @@ export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefin
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
   [PositionSortMethod.REMAINING]: <Trans>Remaining Premium</Trans>,
-  [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
+  // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
   // [PositionSortMethod.RECENT_PREMIUM]: (
   //   <Trans>Recent Premium (Total Premium Paid)</Trans>
   // ),
@@ -364,7 +361,7 @@ const SortingEnabled = {
   [PositionSortMethod.ENTRYPRICE]: false,
   [PositionSortMethod.PNL]: false,
   [PositionSortMethod.REMAINING]: true,
-  [PositionSortMethod.ACTIONS]: false,
+  // [PositionSortMethod.ACTIONS]: false,
 }
 
 /* Get singular header cell for header row */
@@ -413,6 +410,7 @@ function PositionRow({
   repaymentTime,
   PnL,
   entryPrice,
+  positionKey,
   remainingPremium,
   ...rest
 }: {
@@ -423,6 +421,7 @@ function PositionRow({
   collateral: ReactNode
   repaymentTime: ReactNode
   positionInfo: ReactNode
+  positionKey?: TraderPositionKey
   // recentPremium: ReactNode
   // unusedPremium: ReactNode
   PnL: ReactNode
@@ -432,83 +431,32 @@ function PositionRow({
   style?: CSSProperties
 }) {
   const [showReduce, setShowReduce] = useState(false)
-  const [showAddPremium, setShowAddPremium] = useState(false)
-  const [showActionDropdown, setShowActionDropdown] = useState<boolean>(false)
-  const { account } = useWeb3React()
+  const [selectedTab, setSelectedTab] = useState<TradeModalActiveTab>()
+  const [showModal, setShowModal] = useState(false)
 
   // const collateral = (totalLiquidity - totalDebt)
   const handleConfirmDismiss = () => {
     setShowReduce(false)
   }
-  const handlePremiumConfirmDismiss = () => {
-    setShowAddPremium(false)
-  }
 
-  const isMobile = useIsMobile()
-
-  const ref = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(ref, () => setShowActionDropdown(false), [modalRef])
-
-  const dropdown = (
-    <NavDropdown ref={modalRef} style={{ height: '100px', display: 'flex', flexDirection: 'column' }}>
-      <ReduceButton width="auto" onClick={() => setShowReduce(!showReduce)}>
-        <Trans>reduce</Trans>
-      </ReduceButton>
-      <ReduceButton width="auto" onClick={() => console.log('Close Position')}>
-        <Trans>close</Trans>
-      </ReduceButton>
-    </NavDropdown>
-  )
-
-  const actions = !header ? (
-    <ActionsContainer>
-      <ReduceButton width="auto" onClick={() => setShowAddPremium(!showAddPremium)}>
-        <Trans>pay</Trans>
-      </ReduceButton>
-      <div style={{ display: 'flex' }}>
-        <StyledMore onClick={() => setShowActionDropdown(!showActionDropdown)}></StyledMore>
-        {showActionDropdown && dropdown}
-      </div>
-    </ActionsContainer>
-  ) : (
-    <MouseoverTooltip text="(reduce): reduce position, (pay): pay premium" placement="right">
-      <InfoIconContainer>
-        <Info size={14} />
-      </InfoIconContainer>
-    </MouseoverTooltip>
-  )
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
 
   const rowCells = (
     <>
-      {/* <ListNumberCell header={header}>{listNumber}</ListNumberCell> */}
-      {/* {!header && showReduce && (
-        <ReducePositionModal
-          isOpen={showReduce}
-          trader={account}
-          leverageManagerAddress={position?.leverageManagerAddress ?? undefined}
-          tokenId={position?.tokenId ?? undefined}
-          onDismiss={handleConfirmDismiss}
-          onAcceptChanges={() => {}}
-          onConfirm={() => {}}
-        />
-      )} */}
-      {/* {!header && showAddPremium && (
-        <AddLeveragePremiumModal
-          trader={account}
-          isOpen={showAddPremium}
-          tokenId={position?.tokenId ?? undefined}
-          leverageManagerAddress={position?.leverageManagerAddress ?? undefined}
-          onDismiss={handlePremiumConfirmDismiss}
-          onAcceptChanges={() => {}}
-          onConfirm={() => {}}
-        />
-      )} */}
+      <LeveragePositionModal
+        positionKey={positionKey}
+        selectedTab={selectedTab}
+        isOpen={showModal}
+        onClose={handleCloseModal}
+      />
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
           onClick={() => {
-            setShowReduce(!showReduce)
+            setShowModal(!showModal)
+            setSelectedTab(TradeModalActiveTab.INCREASE_POSITION)
           }}
           disabled={false}
         >
@@ -522,7 +470,15 @@ function PositionRow({
         {repaymentTime}
       </PriceCell>
       <PriceCell data-testid="premium-cell" sortable={header}>
-        {remainingPremium}
+        <EditCell
+          onClick={() => {
+            setShowModal(!showModal)
+            setSelectedTab(TradeModalActiveTab.DEPOSIT_PREMIUM)
+          }}
+          disabled={true}
+        >
+          {remainingPremium}
+        </EditCell>
       </PriceCell>
       <PriceCell data-testid="premium-cell" sortable={header}>
         {entryPrice}
@@ -530,9 +486,9 @@ function PositionRow({
       <PriceCell data-testid="premium-cell" sortable={header}>
         {PnL}
       </PriceCell>
-      <ActionCell data-testid="action-cell" sortable={header}>
+      {/* <ActionCell data-testid="action-cell" sortable={header}>
         {actions}
-      </ActionCell>
+      </ActionCell> */}
       {/* <SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
   )
@@ -606,6 +562,15 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
 
+  const positionKey: TraderPositionKey = useMemo(() => {
+    return {
+      trader: details.trader,
+      poolKey: details.poolKey,
+      isBorrow: false,
+      isToken0: details.isToken0,
+    }
+  }, [details])
+
   const { isToken0, margin, totalDebtInput } = details
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
@@ -661,6 +626,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       <StyledLoadedRow>
         <PositionRow
           header={false}
+          positionKey={positionKey}
           positionInfo={
             <ClickableContent>
               <RowBetween>
@@ -725,9 +691,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </FlexStartRow>
           }
           remainingPremium={
-            <FlexStartRow>{`${formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)} ${
-              position?.margin.currency?.symbol
-            }`}</FlexStartRow>
+            <FlexStartRow>
+              <UnderlineText>
+                {`${formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)} ${
+                  position?.margin.currency?.symbol
+                }`}
+              </UnderlineText>
+              <Edit3 size={14} />
+            </FlexStartRow>
           }
         />
       </StyledLoadedRow>

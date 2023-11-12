@@ -24,6 +24,7 @@ export interface LimitlessPositionDetails {
   openTime: number
   repayTime: number
   totalPositionRaw?:string;
+  trader: string
   // borrowInfo: TickLiquidity[]
 }
 // open price == ( totalDebtInput + initialCollateral ) / totalPosition

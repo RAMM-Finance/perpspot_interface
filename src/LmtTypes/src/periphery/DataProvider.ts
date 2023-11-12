@@ -33,6 +33,31 @@ export type PoolKeyStructOutput = [string, string, number] & {
   fee: number;
 };
 
+export type LiquidityLoanStruct = {
+  tick: PromiseOrValue<BigNumberish>;
+  liquidity: PromiseOrValue<BigNumberish>;
+  premium: PromiseOrValue<BigNumberish>;
+  feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
+  feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
+  lastGrowth: PromiseOrValue<BigNumberish>;
+};
+
+export type LiquidityLoanStructOutput = [
+  number,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
+  tick: number;
+  liquidity: BigNumber;
+  premium: BigNumber;
+  feeGrowthInside0LastX128: BigNumber;
+  feeGrowthInside1LastX128: BigNumber;
+  lastGrowth: BigNumber;
+};
+
 export declare namespace DataProvider {
   export type MarginPositionInfoStruct = {
     poolKey: PoolKeyStruct;
@@ -45,6 +70,8 @@ export declare namespace DataProvider {
     totalPosition: PromiseOrValue<BigNumberish>;
     margin: PromiseOrValue<BigNumberish>;
     premiumOwed: PromiseOrValue<BigNumberish>;
+    token0Decimals: PromiseOrValue<BigNumberish>;
+    token1Decimals: PromiseOrValue<BigNumberish>;
   };
 
   export type MarginPositionInfoStructOutput = [
@@ -54,6 +81,8 @@ export declare namespace DataProvider {
     BigNumber,
     number,
     number,
+    BigNumber,
+    BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -69,12 +98,15 @@ export declare namespace DataProvider {
     totalPosition: BigNumber;
     margin: BigNumber;
     premiumOwed: BigNumber;
+    token0Decimals: BigNumber;
+    token1Decimals: BigNumber;
   };
 }
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
     "getActiveMarginPositions(address)": FunctionFragment;
+    "getIsBorrowable((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getMarginPosition(address,address,bool)": FunctionFragment;
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
@@ -84,6 +116,7 @@ export interface DataProviderInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "getActiveMarginPositions"
+      | "getIsBorrowable"
       | "getMarginPosition"
       | "getMaxWithdrawable"
       | "getPoolkeys"
@@ -93,6 +126,10 @@ export interface DataProviderInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getActiveMarginPositions",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getIsBorrowable",
+    values: [PoolKeyStruct, LiquidityLoanStruct[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getMarginPosition",
@@ -121,6 +158,10 @@ export interface DataProviderInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "getActiveMarginPositions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getIsBorrowable",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -175,6 +216,12 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[DataProvider.MarginPositionInfoStructOutput[]]>;
 
+    getIsBorrowable(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     getMarginPosition(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -209,6 +256,12 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<DataProvider.MarginPositionInfoStructOutput[]>;
 
+  getIsBorrowable(
+    key: PoolKeyStruct,
+    borrowInfo: LiquidityLoanStruct[],
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   getMarginPosition(
     pool: PromiseOrValue<string>,
     trader: PromiseOrValue<string>,
@@ -242,6 +295,12 @@ export interface DataProvider extends BaseContract {
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<DataProvider.MarginPositionInfoStructOutput[]>;
+
+    getIsBorrowable(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     getMarginPosition(
       pool: PromiseOrValue<string>,
@@ -280,6 +339,12 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getIsBorrowable(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getMarginPosition(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -310,6 +375,12 @@ export interface DataProvider extends BaseContract {
   populateTransaction: {
     getActiveMarginPositions(
       trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getIsBorrowable(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

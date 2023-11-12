@@ -13,7 +13,6 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { LeverageTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useBestPool, useSwapState } from 'state/swap/hooks'
 import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
 import { MarginLimitOrder, MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
@@ -129,25 +128,28 @@ interface DerivedAddPositionResult {
   existingLimitPosition?: MarginLimitOrder
 }
 
-export function useDerivedAddPositionInfo(): DerivedAddPositionResult {
+export function useDerivedAddPositionInfo(
+  margin?: string,
+  leverageFactor?: string,
+  pool?: Pool,
+  inputCurrencyId?: string,
+  outputCurrencyId?: string
+): DerivedAddPositionResult {
   const { account } = useWeb3React()
 
-  const {
-    [MarginField.MARGIN]: margin,
-    [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-    isLimitOrder,
-  } = useMarginTradingState()
+  // const {
+  //   [MarginField.MARGIN]: margin,
+  //   [MarginField.LEVERAGE_FACTOR]: leverageFactor,
+  //   isLimitOrder,
+  // } = useMarginTradingState()
 
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
+  // const {
+  //   [Field.INPUT]: { currencyId: inputCurrencyId },
+  //   [Field.OUTPUT]: { currencyId: outputCurrencyId },
+  // } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-
-  const pool = useBestPool(inputCurrency ?? undefined, outputCurrency ?? undefined)
-  // user fund amount
 
   const marginAmount = useMemo(
     () => tryParseCurrencyAmount(margin ?? undefined, inputCurrency ?? undefined),
@@ -432,6 +434,7 @@ const useSimulateMarginTrade = (
       const amountIn = margin.add(borrowAmount).subtract(margin.add(borrowAmount).multiply(feePercent))
 
       const amountOut = await getOutputQuote(amountIn, swapRoute, provider, chainId)
+
       if (!amountOut) return
 
       const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(slippedTickTolerance.toFixed(18)) * 100))
@@ -475,7 +478,6 @@ const useSimulateMarginTrade = (
         deadline: deadline.toString(),
         simulatedOutput: amountOut,
         executionOption: 1,
-        maxSlippage: new BN(103).shiftedBy(16).toFixed(0),
         depositPremium: additionalPremium?.quotient,
         slippedTickMin,
         slippedTickMax,

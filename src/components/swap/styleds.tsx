@@ -150,6 +150,17 @@ export function SwapCallbackError({ error }: { error: ReactNode }) {
   )
 }
 
+export function CallbackError({ error }: { error: ReactNode }) {
+  return (
+    <SwapCallbackErrorInner>
+      <SwapCallbackErrorInnerAlertTriangle>
+        <AlertTriangle size={24} />
+      </SwapCallbackErrorInnerAlertTriangle>
+      <p style={{ wordBreak: 'break-word' }}>{error}</p>
+    </SwapCallbackErrorInner>
+  )
+}
+
 export const SwapShowAcceptChanges = styled(AutoColumn)`
   background-color: ${({ theme }) => transparentize(0.95, theme.deprecated_primary3)};
   color: ${({ theme }) => theme.accentAction};

@@ -71,6 +71,7 @@ export type LiquidityLoanStructOutput = [
 export interface PremiumComputerInterface extends utils.Interface {
   functions: {
     "computePremium(address,address,bool,int24,(uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "getFeeGrowthInside(IUniswapV3Pool,int24,int24)": FunctionFragment;
     "getInitFeeGrowthInside(address,address,int24,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "getInterestRate((uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
   };
@@ -78,6 +79,7 @@ export interface PremiumComputerInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "computePremium"
+      | "getFeeGrowthInside"
       | "getInitFeeGrowthInside"
       | "getInterestRate"
   ): FunctionFragment;
@@ -91,6 +93,14 @@ export interface PremiumComputerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       URateParamStruct,
       LiquidityLoanStruct[]
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFeeGrowthInside",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
@@ -110,6 +120,10 @@ export interface PremiumComputerInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "computePremium",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFeeGrowthInside",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -161,6 +175,18 @@ export interface PremiumComputer extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber]>;
 
+    getFeeGrowthInside(
+      pool: PromiseOrValue<string>,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        feeGrowthInside0X128: BigNumber;
+        feeGrowthInside1X128: BigNumber;
+      }
+    >;
+
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
@@ -187,6 +213,18 @@ export interface PremiumComputer extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber]>;
 
+  getFeeGrowthInside(
+    pool: PromiseOrValue<string>,
+    tickLower: PromiseOrValue<BigNumberish>,
+    tickUpper: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & {
+      feeGrowthInside0X128: BigNumber;
+      feeGrowthInside1X128: BigNumber;
+    }
+  >;
+
   getInitFeeGrowthInside(
     pool: PromiseOrValue<string>,
     poolManager: PromiseOrValue<string>,
@@ -212,6 +250,18 @@ export interface PremiumComputer extends BaseContract {
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
     ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber]>;
+
+    getFeeGrowthInside(
+      pool: PromiseOrValue<string>,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        feeGrowthInside0X128: BigNumber;
+        feeGrowthInside1X128: BigNumber;
+      }
+    >;
 
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
@@ -242,6 +292,13 @@ export interface PremiumComputer extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getFeeGrowthInside(
+      pool: PromiseOrValue<string>,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getInitFeeGrowthInside(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
@@ -266,6 +323,13 @@ export interface PremiumComputer extends BaseContract {
       tickDiscretization: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFeeGrowthInside(
+      pool: PromiseOrValue<string>,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

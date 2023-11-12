@@ -14,6 +14,9 @@ export interface BaseFacilityPositionDetails {
   premiumOwed: BN // how much premium is owed since last repayment
   premiumDeposit: BN
   premiumLeft: BN
+  trader: string
+  token0Decimals: number
+  token1Decimals: number
 }
 
 export interface MarginPositionDetails extends BaseFacilityPositionDetails {

@@ -320,7 +320,7 @@ const SliderText = styled(Text)`
   `};
 `
 
-export enum DerivedInfoState {
+enum DerivedInfoState {
   LOADING,
   VALID,
   INVALID,

@@ -116,8 +116,13 @@ export interface FacilityInterface extends utils.Interface {
     "checkPremiumCondition(address,address,bool,uint256)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "getBorrowInfo(address,address,bool)": FunctionFragment;
+    "maxWithdrawablePremium((address,address,uint24),address,bool)": FunctionFragment;
     "maxWithdrawablePremium(bytes32)": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
+    "setAddPaused(bool)": FunctionFragment;
+    "setForceClosePaused(bool)": FunctionFragment;
+    "setOwner(address)": FunctionFragment;
+    "setReducePaused(bool)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
   };
 
@@ -130,8 +135,13 @@ export interface FacilityInterface extends utils.Interface {
       | "checkPremiumCondition"
       | "depositPremium"
       | "getBorrowInfo"
-      | "maxWithdrawablePremium"
+      | "maxWithdrawablePremium((address,address,uint24),address,bool)"
+      | "maxWithdrawablePremium(bytes32)"
       | "payPremium"
+      | "setAddPaused"
+      | "setForceClosePaused"
+      | "setOwner"
+      | "setReducePaused"
       | "withdrawPremium"
   ): FunctionFragment;
 
@@ -182,7 +192,11 @@ export interface FacilityInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "maxWithdrawablePremium",
+    functionFragment: "maxWithdrawablePremium((address,address,uint24),address,bool)",
+    values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxWithdrawablePremium(bytes32)",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
@@ -192,6 +206,22 @@ export interface FacilityInterface extends utils.Interface {
       PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setAddPaused",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setForceClosePaused",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setOwner",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setReducePaused",
+    values: [PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawPremium",
@@ -231,10 +261,27 @@ export interface FacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "maxWithdrawablePremium",
+    functionFragment: "maxWithdrawablePremium((address,address,uint24),address,bool)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxWithdrawablePremium(bytes32)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "payPremium", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setAddPaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setForceClosePaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setReducePaused",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "withdrawPremium",
     data: BytesLike
@@ -366,7 +413,14 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[LiquidityLoanStructOutput[]]>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
@@ -375,6 +429,26 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       payToken1: PromiseOrValue<boolean>,
       depositAmount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -432,7 +506,14 @@ export interface Facility extends BaseContract {
     overrides?: CallOverrides
   ): Promise<LiquidityLoanStructOutput[]>;
 
-  maxWithdrawablePremium(
+  "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+    key: PoolKeyStruct,
+    borrower: PromiseOrValue<string>,
+    borrowedToken1: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "maxWithdrawablePremium(bytes32)"(
     positionId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -441,6 +522,26 @@ export interface Facility extends BaseContract {
     key: PoolKeyStruct,
     payToken1: PromiseOrValue<boolean>,
     depositAmount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setAddPaused(
+    addPaused: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setForceClosePaused(
+    forceClosePaused: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setOwner(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setReducePaused(
+    reducePaused: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -498,7 +599,14 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<LiquidityLoanStructOutput[]>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -509,6 +617,26 @@ export interface Facility extends BaseContract {
       depositAmount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     withdrawPremium(
       key: PoolKeyStruct,
@@ -608,7 +736,14 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -617,6 +752,26 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       payToken1: PromiseOrValue<boolean>,
       depositAmount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -675,7 +830,14 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -684,6 +846,26 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       payToken1: PromiseOrValue<boolean>,
       depositAmount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

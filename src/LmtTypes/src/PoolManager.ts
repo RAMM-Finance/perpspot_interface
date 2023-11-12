@@ -179,7 +179,6 @@ export interface PoolManagerInterface extends utils.Interface {
     "getHashedKey((address,address,uint24))": FunctionFragment;
     "getHashedPositionKey(int24,int24,address)": FunctionFragment;
     "getInterestGrowthInside(bytes32,int24,int24,int24)": FunctionFragment;
-    "getIsBorrowable((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getLiquidityInBin((address,address,uint24),int24)": FunctionFragment;
     "getLiquidityPosition((address,address,uint24),int24,int24,address)": FunctionFragment;
     "getParams((address,address,uint24))": FunctionFragment;
@@ -194,8 +193,12 @@ export interface PoolManagerInterface extends utils.Interface {
     "owner()": FunctionFragment;
     "payInterest((address,address,uint24),address,(int24,uint128,uint256,uint256,uint256,uint256)[],bool,uint256,uint256,uint256)": FunctionFragment;
     "provideDiscreteLiquidity((address,address,uint24),int24,int24,uint128,address,address)": FunctionFragment;
+    "setCollectPaused(bool)": FunctionFragment;
     "setFacilities(address,address,address,address)": FunctionFragment;
     "setMinLiquidity((address,address,uint24),uint256)": FunctionFragment;
+    "setOwner(address)": FunctionFragment;
+    "setProvidePaused(bool)": FunctionFragment;
+    "setWithdrawPaused(bool)": FunctionFragment;
     "tickDiscretizations(bytes32)": FunctionFragment;
     "uniswapFactory()": FunctionFragment;
     "uniswapV3MintCallback(uint256,uint256,bytes)": FunctionFragment;
@@ -228,7 +231,6 @@ export interface PoolManagerInterface extends utils.Interface {
       | "getHashedKey"
       | "getHashedPositionKey"
       | "getInterestGrowthInside"
-      | "getIsBorrowable"
       | "getLiquidityInBin"
       | "getLiquidityPosition"
       | "getParams"
@@ -243,8 +245,12 @@ export interface PoolManagerInterface extends utils.Interface {
       | "owner"
       | "payInterest"
       | "provideDiscreteLiquidity"
+      | "setCollectPaused"
       | "setFacilities"
       | "setMinLiquidity"
+      | "setOwner"
+      | "setProvidePaused"
+      | "setWithdrawPaused"
       | "tickDiscretizations"
       | "uniswapFactory"
       | "uniswapV3MintCallback"
@@ -370,10 +376,6 @@ export interface PoolManagerInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getIsBorrowable",
-    values: [PoolKeyStruct, LiquidityLoanStruct[]]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getLiquidityInBin",
     values: [PoolKeyStruct, PromiseOrValue<BigNumberish>]
   ): string;
@@ -451,6 +453,10 @@ export interface PoolManagerInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCollectPaused",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setFacilities",
     values: [
       PromiseOrValue<string>,
@@ -462,6 +468,18 @@ export interface PoolManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setMinLiquidity",
     values: [PoolKeyStruct, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setOwner",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProvidePaused",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setWithdrawPaused",
+    values: [PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "tickDiscretizations",
@@ -579,10 +597,6 @@ export interface PoolManagerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getIsBorrowable",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getLiquidityInBin",
     data: BytesLike
   ): Result;
@@ -627,11 +641,24 @@ export interface PoolManagerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setCollectPaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setFacilities",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "setMinLiquidity",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setProvidePaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setWithdrawPaused",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -923,12 +950,6 @@ export interface PoolManager extends BaseContract {
       [BigNumber, BigNumber] & { interest0: BigNumber; interest1: BigNumber }
     >;
 
-    getIsBorrowable(
-      key: PoolKeyStruct,
-      borrowInfo: LiquidityLoanStruct[],
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     getLiquidityInBin(
       key: PoolKeyStruct,
       tick: PromiseOrValue<BigNumberish>,
@@ -1015,6 +1036,11 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setCollectPaused(
+      collectPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setFacilities(
       mf: PromiseOrValue<string>,
       bf: PromiseOrValue<string>,
@@ -1026,6 +1052,21 @@ export interface PoolManager extends BaseContract {
     setMinLiquidity(
       key: PoolKeyStruct,
       minLiquidity: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setProvidePaused(
+      providePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setWithdrawPaused(
+      withdrawPaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1253,12 +1294,6 @@ export interface PoolManager extends BaseContract {
     [BigNumber, BigNumber] & { interest0: BigNumber; interest1: BigNumber }
   >;
 
-  getIsBorrowable(
-    key: PoolKeyStruct,
-    borrowInfo: LiquidityLoanStruct[],
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   getLiquidityInBin(
     key: PoolKeyStruct,
     tick: PromiseOrValue<BigNumberish>,
@@ -1345,6 +1380,11 @@ export interface PoolManager extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  setCollectPaused(
+    collectPaused: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   setFacilities(
     mf: PromiseOrValue<string>,
     bf: PromiseOrValue<string>,
@@ -1356,6 +1396,21 @@ export interface PoolManager extends BaseContract {
   setMinLiquidity(
     key: PoolKeyStruct,
     minLiquidity: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setOwner(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setProvidePaused(
+    providePaused: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setWithdrawPaused(
+    withdrawPaused: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1605,12 +1660,6 @@ export interface PoolManager extends BaseContract {
       [BigNumber, BigNumber] & { interest0: BigNumber; interest1: BigNumber }
     >;
 
-    getIsBorrowable(
-      key: PoolKeyStruct,
-      borrowInfo: LiquidityLoanStruct[],
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     getLiquidityInBin(
       key: PoolKeyStruct,
       tick: PromiseOrValue<BigNumberish>,
@@ -1707,6 +1756,11 @@ export interface PoolManager extends BaseContract {
       }
     >;
 
+    setCollectPaused(
+      collectPaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setFacilities(
       mf: PromiseOrValue<string>,
       bf: PromiseOrValue<string>,
@@ -1718,6 +1772,21 @@ export interface PoolManager extends BaseContract {
     setMinLiquidity(
       key: PoolKeyStruct,
       minLiquidity: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setProvidePaused(
+      providePaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setWithdrawPaused(
+      withdrawPaused: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1960,12 +2029,6 @@ export interface PoolManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getIsBorrowable(
-      key: PoolKeyStruct,
-      borrowInfo: LiquidityLoanStruct[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getLiquidityInBin(
       key: PoolKeyStruct,
       tick: PromiseOrValue<BigNumberish>,
@@ -2046,6 +2109,11 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    setCollectPaused(
+      collectPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     setFacilities(
       mf: PromiseOrValue<string>,
       bf: PromiseOrValue<string>,
@@ -2057,6 +2125,21 @@ export interface PoolManager extends BaseContract {
     setMinLiquidity(
       key: PoolKeyStruct,
       minLiquidity: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setProvidePaused(
+      providePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setWithdrawPaused(
+      withdrawPaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2245,12 +2328,6 @@ export interface PoolManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getIsBorrowable(
-      key: PoolKeyStruct,
-      borrowInfo: LiquidityLoanStruct[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getLiquidityInBin(
       key: PoolKeyStruct,
       tick: PromiseOrValue<BigNumberish>,
@@ -2331,6 +2408,11 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    setCollectPaused(
+      collectPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     setFacilities(
       mf: PromiseOrValue<string>,
       bf: PromiseOrValue<string>,
@@ -2342,6 +2424,21 @@ export interface PoolManager extends BaseContract {
     setMinLiquidity(
       key: PoolKeyStruct,
       minLiquidity: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setProvidePaused(
+      providePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setWithdrawPaused(
+      withdrawPaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -18,11 +18,6 @@ const _abi = [
     type: "error",
   },
   {
-    inputs: [],
-    name: "noPosition",
-    type: "error",
-  },
-  {
     anonymous: false,
     inputs: [
       {
@@ -440,6 +435,52 @@ const _abi = [
   {
     inputs: [
       {
+        components: [
+          {
+            internalType: "address",
+            name: "token0",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token1",
+            type: "address",
+          },
+          {
+            internalType: "uint24",
+            name: "fee",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct PoolKey",
+        name: "key",
+        type: "tuple",
+      },
+      {
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowedToken1",
+        type: "bool",
+      },
+    ],
+    name: "maxWithdrawablePremium",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "PositionId",
         name: "positionId",
         type: "bytes32",
@@ -499,6 +540,58 @@ const _abi = [
         type: "uint256",
       },
     ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bool",
+        name: "addPaused",
+        type: "bool",
+      },
+    ],
+    name: "setAddPaused",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bool",
+        name: "forceClosePaused",
+        type: "bool",
+      },
+    ],
+    name: "setForceClosePaused",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "setOwner",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bool",
+        name: "reducePaused",
+        type: "bool",
+      },
+    ],
+    name: "setReducePaused",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },

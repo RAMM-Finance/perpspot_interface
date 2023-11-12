@@ -223,6 +223,7 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
     "getOrderId(address,address,bool,bool)": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
     "getPositionId(address,address,bool)": FunctionFragment;
+    "maxWithdrawablePremium((address,address,uint24),address,bool)": FunctionFragment;
     "maxWithdrawablePremium(bytes32)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "orders(bytes32)": FunctionFragment;
@@ -230,6 +231,10 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
     "positions(bytes32)": FunctionFragment;
     "rangeConditions(bool,int24,int24,int24,int24)": FunctionFragment;
     "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes32,int24,int24,uint256))": FunctionFragment;
+    "setAddPaused(bool)": FunctionFragment;
+    "setForceClosePaused(bool)": FunctionFragment;
+    "setOwner(address)": FunctionFragment;
+    "setReducePaused(bool)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
   };
 
@@ -247,13 +252,18 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
       | "getOrderId"
       | "getPosition"
       | "getPositionId"
-      | "maxWithdrawablePremium"
+      | "maxWithdrawablePremium((address,address,uint24),address,bool)"
+      | "maxWithdrawablePremium(bytes32)"
       | "multicall"
       | "orders"
       | "payPremium"
       | "positions"
       | "rangeConditions"
       | "reducePosition"
+      | "setAddPaused"
+      | "setForceClosePaused"
+      | "setOwner"
+      | "setReducePaused"
       | "withdrawPremium"
   ): FunctionFragment;
 
@@ -337,7 +347,11 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "maxWithdrawablePremium",
+    functionFragment: "maxWithdrawablePremium((address,address,uint24),address,bool)",
+    values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxWithdrawablePremium(bytes32)",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
@@ -373,6 +387,22 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "reducePosition",
     values: [PoolKeyStruct, ReduceParamStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setAddPaused",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setForceClosePaused",
+    values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setOwner",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setReducePaused",
+    values: [PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawPremium",
@@ -429,7 +459,11 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "maxWithdrawablePremium",
+    functionFragment: "maxWithdrawablePremium((address,address,uint24),address,bool)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxWithdrawablePremium(bytes32)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
@@ -442,6 +476,19 @@ export interface MarginFacilityBaseInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "reducePosition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setAddPaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setForceClosePaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setReducePaused",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -724,10 +771,17 @@ export interface MarginFacilityBase extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { maxWithdrawable: BigNumber }>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber] & { maxWithdrawable: BigNumber }>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -791,6 +845,26 @@ export interface MarginFacilityBase extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -883,7 +957,14 @@ export interface MarginFacilityBase extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  maxWithdrawablePremium(
+  "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+    key: PoolKeyStruct,
+    borrower: PromiseOrValue<string>,
+    borrowedToken1: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "maxWithdrawablePremium(bytes32)"(
     positionId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -950,6 +1031,26 @@ export interface MarginFacilityBase extends BaseContract {
   reducePosition(
     key: PoolKeyStruct,
     param: ReduceParamStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setAddPaused(
+    addPaused: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setForceClosePaused(
+    forceClosePaused: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setOwner(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setReducePaused(
+    reducePaused: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1048,7 +1149,14 @@ export interface MarginFacilityBase extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1117,6 +1225,26 @@ export interface MarginFacilityBase extends BaseContract {
       param: ReduceParamStruct,
       overrides?: CallOverrides
     ): Promise<ReduceReturnStructOutput>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     withdrawPremium(
       key: PoolKeyStruct,
@@ -1348,7 +1476,14 @@ export interface MarginFacilityBase extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1387,6 +1522,26 @@ export interface MarginFacilityBase extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1480,7 +1635,14 @@ export interface MarginFacilityBase extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    maxWithdrawablePremium(
+    "maxWithdrawablePremium((address,address,uint24),address,bool)"(
+      key: PoolKeyStruct,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "maxWithdrawablePremium(bytes32)"(
       positionId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1519,6 +1681,26 @@ export interface MarginFacilityBase extends BaseContract {
     reducePosition(
       key: PoolKeyStruct,
       param: ReduceParamStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setAddPaused(
+      addPaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setForceClosePaused(
+      forceClosePaused: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setOwner(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setReducePaused(
+      reducePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

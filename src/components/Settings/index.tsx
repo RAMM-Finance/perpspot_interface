@@ -218,6 +218,107 @@ export default function SettingsTab({
   )
 }
 
+export function LmtSettingsTab({
+  allowedSlippage,
+  autoSlippedTick,
+  autoPremiumTolerance,
+  isOpen,
+  onToggle,
+}: {
+  allowedSlippage?: Percent
+  autoSlippedTick?: Percent
+  autoPremiumTolerance?: Percent
+  isOpen: boolean
+  onToggle: () => void
+}) {
+  const { chainId } = useWeb3React()
+
+  const node = useRef<HTMLDivElement | null>(null)
+
+  const theme = useTheme()
+
+  const [expertMode, toggleExpertMode] = useExpertModeManager()
+
+  // show confirmation view before turning on
+  const [showConfirmation, setShowConfirmation] = useState(false)
+
+  useOnClickOutside(node, isOpen ? onToggle : undefined)
+
+  return (
+    <StyledMenu ref={node}>
+      <Modal isOpen={showConfirmation} onDismiss={() => setShowConfirmation(false)} maxHeight={100}>
+        <ModalContentWrapper>
+          <AutoColumn gap="lg">
+            <RowBetween style={{ padding: '0 2rem' }}>
+              <div />
+              <Text fontWeight={500} fontSize={20}>
+                <Trans>Are you sure?</Trans>
+              </Text>
+              <StyledCloseIcon onClick={() => setShowConfirmation(false)} />
+            </RowBetween>
+            <Break />
+            <AutoColumn gap="lg" style={{ padding: '0 2rem' }}>
+              <Text fontWeight={500} fontSize={20}>
+                <Trans>
+                  Expert mode turns off the confirm transaction prompt and allows high slippage trades that often result
+                  in bad rates and lost funds.
+                </Trans>
+              </Text>
+              <Text fontWeight={600} fontSize={20}>
+                <Trans>ONLY USE THIS MODE IF YOU KNOW WHAT YOU ARE DOING.</Trans>
+              </Text>
+              <ButtonError
+                error={true}
+                padding="12px"
+                onClick={() => {
+                  const confirmWord = t`confirm`
+                  if (window.prompt(t`Please type the word "${confirmWord}" to enable expert mode.`) === confirmWord) {
+                    toggleExpertMode()
+                    setShowConfirmation(false)
+                  }
+                }}
+              >
+                <Text fontSize={20} fontWeight={500} id="confirm-expert-mode">
+                  <Trans>Turn On Expert Mode</Trans>
+                </Text>
+              </ButtonError>
+            </AutoColumn>
+          </AutoColumn>
+        </ModalContentWrapper>
+      </Modal>
+      <StyledMenuButton
+        disabled={!isSupportedChainId(chainId)}
+        onClick={onToggle}
+        id="open-settings-dialog-button"
+        aria-label={t`Transaction Settings`}
+      >
+        <StyledMenuIcon />
+        {expertMode ? (
+          <EmojiWrapper>
+            <span role="img" aria-label="wizard-icon">
+              🧙
+            </span>
+          </EmojiWrapper>
+        ) : null}
+      </StyledMenuButton>
+      {isOpen && (
+        <MenuFlyout>
+          <AutoColumn gap="md" style={{ padding: '1rem' }}>
+            <Text fontWeight={600} fontSize={14}>
+              <Trans>Settings</Trans>
+            </Text>
+            <TransactionSettings
+              placeholderSlippage={allowedSlippage}
+              placeholderPremium={autoPremiumTolerance}
+              placeholderSlippedTick={autoSlippedTick}
+            />
+          </AutoColumn>
+        </MenuFlyout>
+      )}
+    </StyledMenu>
+  )
+}
+
 /**
  *
  * transaction settings

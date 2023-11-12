@@ -5,7 +5,6 @@ import { useWeb3React } from '@web3-react/core'
 import { PoolDataSection } from 'components/ExchangeChart'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { default as BorrowSearchBar } from 'components/PositionTable/BorrowPositionTable/SearchBar'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
@@ -16,6 +15,7 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
+import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -27,7 +27,6 @@ import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
@@ -490,57 +489,35 @@ export default function Swap({ className }: { className?: string }) {
     setSwapQuoteReceivedDate,
   ])
 
-  // useEffect(() => {
-  //   if (swapHeaderHeight && swapWrapperHeight) {
-  //     setSwapHeight(swapWrapperHeight - swapHeaderHeight + 12)
-  //     // swapWrapperHeight - swapHeaderHeight + margin;
-  //   }
-  // }, [swapHeaderHeight, swapWrapperHeight])
+  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
-  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
-  // const { borrowLoading: borrowPositionsLoading, borrowPositions: borrowPositions } = useBorrowLMTPositions(account)
-  // export interface BaseFacilityPositionDetails {
-  //   poolKey: RawPoolKey
-  //   isToken0: boolean
-  //   totalDebtOutput: BN
-  //   totalDebtInput: BN
-  //   openTime: number
-  //   repayTime: number
-  //   isBorrow: boolean
-  //   premiumOwed: BN // how much premium is owed since last repayment
-  //   premiumDeposit: BN
-  //   premiumLeft: BN
-  // }
-
-  // export interface MarginPositionDetails extends BaseFacilityPositionDetails {
-  //   totalPosition: BN
-  //   margin: BN
-  // }
-  const leveragePositions: MarginPositionDetails[] = useMemo(() => {
-    return [
-      // {
-      //   poolKey: {
-      //     token0Address: fusdc_s,
-      //     token1Address: feth_s,
-      //     fee: FeeAmount.MEDIUM,
-      //   },
-      //   isToken0: true,
-      //   totalDebtOutput: new BN(99),
-      //   totalDebtInput: new BN(99),
-      //   openTime: new Date().getMilliseconds() / 1000,
-      //   repayTime: new Date().getMilliseconds() / 1000,
-      //   margin: new BN(1),
-      //   premiumOwed: new BN(2.5),
-      //   premiumDeposit: new BN(3),
-      //   premiumLeft: new BN(4),
-      //   isBorrow: false,
-      //   totalPosition: new BN(240),
-      // },
-    ]
-  }, [])
+  // const leveragePositions: MarginPositionDetails[] = useMemo(() => {
+  //   return [
+  //     {
+  //       poolKey: {
+  //         token0Address: fusdc_s,
+  //         token1Address: feth_s,
+  //         fee: 500,
+  //       },
+  //       isToken0: true,
+  //       totalDebtOutput: new BN(100),
+  //       totalDebtInput: new BN(10000),
+  //       openTime: Math.floor(new Date().getTime() / 1000),
+  //       repayTime: Math.floor(new Date().getTime() / 1000),
+  //       isBorrow: false,
+  //       premiumOwed: new BN(100),
+  //       premiumDeposit: new BN(100),
+  //       premiumLeft: new BN(100),
+  //       totalPosition: new BN(100),
+  //       margin: new BN(100),
+  //       trader: '0x2C7Cb3cB22Ba9B322af60747017acb06deB10933',
+  //       token0Decimals: 18,
+  //       token1Decimals: 18,
+  //     },
+  //   ]
+  // }, [])
 
   const [activePositionTable, setActiveTable] = useState(1)
-  console.log(inputCurrency)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -596,28 +573,17 @@ export default function Swap({ className }: { className?: string }) {
                     <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
                       Leverage Positions
                     </TabNavItem>
-                    {/* <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-                      Borrow Positions
-                    </TabNavItem> */}
-                    <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+                    <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
                       History
                     </TabNavItem>
                   </TabsWrapper>
-
                   {activePositionTable === 1 && <LeverageSearchBar />}
-                  {activePositionTable === 2 && <BorrowSearchBar />}
                 </TableHeader>
 
                 <TabContent id={1} activeTab={activePositionTable}>
-                  {/* TODO */}
-                  <LeveragePositionsTable positions={leveragePositions} loading={false} />
+                  <LeveragePositionsTable positions={leveragePositions} loading={leverageLoading} />
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
-                  {/* TODO */}
-                  {/* <BorrowPositionsTable positions={borrowPositions} loading={borrowPositionsLoading} /> */}
-                </TabContent>
-
-                <TabContent id={3} activeTab={activePositionTable}>
                   {!account ? (
                     <ActivityWrapper>
                       <MissingHistoryWrapper>None</MissingHistoryWrapper>

@@ -49,7 +49,7 @@ export enum TransactionType {
   ADD_BORROW,
   ADD_LEVERAGE,
   REDUCE_LEVERAGE,
-  PREMIUM_LEVERAGE,
+  PREMIUM_LEVERAGE_DEPOSIT,
   PREMIUM_BORROW,
   REDUCE_BORROW_COLLATERAL,
   REDUCE_BORROW_DEBT,
@@ -217,15 +217,9 @@ export interface AddBorrowPositionTransactionInfo {
 export interface ReduceLeveragePositionTransactionInfo {
   type: TransactionType.REDUCE_LEVERAGE
   reduceAmount: number
-  newTotalPosition: number
   inputCurrencyId: string
   outputCurrencyId: string
-  entryPrice: number
-  markPrice: number
   pnl: number
-  quoteBaseSymbol: string
-  initialCollateral: number
-  leverageFactor: number
   timestamp: string
 }
 
@@ -241,7 +235,7 @@ export interface ReduceLeveragePositionTransactionInfo {
 //             quoteBaseSymbol: transactionInfo.quoteBaseSymbol
 
 export interface AddLeveragePremiumTransactionInfo {
-  type: TransactionType.PREMIUM_LEVERAGE
+  type: TransactionType.PREMIUM_LEVERAGE_DEPOSIT
   inputCurrencyId: string
   outputCurrencyId: string
 }
