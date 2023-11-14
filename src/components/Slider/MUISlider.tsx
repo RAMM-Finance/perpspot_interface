@@ -17,6 +17,18 @@ const marks = [
     label: '100x',
   },
   {
+    value: 200,
+    label: '200x',
+  },
+  {
+    value: 300,
+    label: '300x',
+  },
+  {
+    value: 400,
+    label: '400x',
+  },
+  {
     value: 500,
     label: '500x',
   },
@@ -36,11 +48,13 @@ export default function DiscreteSliderMarks({ initialValue, onChange }: Discrete
         valueLabelDisplay="auto"
         marks={marks}
         step={1}
-        min={1}
+        min={0}
         max={500}
+        size="small"
         sx={{
           '& .MuiSlider-markLabel': {
             color: 'white',
+            fontSize: '12px',
           },
         }}
       />

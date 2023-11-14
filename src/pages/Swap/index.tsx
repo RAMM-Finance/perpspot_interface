@@ -60,7 +60,8 @@ export const StyledNumericalInput = styled(NumericalInput)`
   padding: 10px;
   height: 20px;
   line-height: 12px;
-  font-size: 12px;
+  font-size: 14px;
+  color: ${({ theme }) => theme.textSecondary};
 `
 
 export const StyledBorrowNumericalInput = styled(NumericalInput)`
@@ -87,6 +88,9 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
   justify-content: space-around;
   position: relative;
   font-size: 12px;
+`
+export const InputHeader = styled.div`
+  padding-left: 6px;
 `
 
 const SwapSection = styled.div`
@@ -140,7 +144,7 @@ export const InputLeverageSection = styled(SwapSection)`
 export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
-
+  padding: 10px;
   /* ::after {
     content: '';
     margin-top: 30px;
@@ -151,7 +155,12 @@ export const InputSection = styled(SwapSection)`
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
-  /* border: 1px solid ${({ theme }) => theme.backgroundSurface}; */
+  padding: 10px;
+  background-color: ${({ theme }) => theme.surface1};
+`
+export const LimitInputSection = styled(SwapSection)`
+  padding: 15px;
+  border-radius: 10px;
   background-color: ${({ theme }) => theme.surface1};
 `
 
@@ -235,7 +244,7 @@ const ActivityInnerWarpper = styled.div`
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #131a2a;
+    background-color: ${({ theme }) => theme.background};
     border: none;
   }
   ::-webkit-scrollbar-track {
@@ -360,7 +369,6 @@ export default function Swap({ className }: { className?: string }) {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
   }, [currencies])
   const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
-
   // const theme = useTheme()
 
   // toggle wallet when disconnected
@@ -491,6 +499,27 @@ export default function Swap({ className }: { className?: string }) {
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
+  // const orderPositionKey: OrderPositionKey | undefined = useMemo(() => {
+  //   const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
+  //   if (pool && account) {
+  //     return {
+  //       poolKey: {
+  //         token0Address: pool.token0.address,
+  //         token1Address: pool.token1.address,
+  //         fee: pool.fee,
+  //       },
+  //       isToken0,
+  //       trader: account,
+  //       isAdd: true,
+  //     }
+  //   } else {
+  //     return undefined
+  //   }
+  // }, [account, pool, outputCurrency])
+
+  // const order = useMarginOrderPositionFromPositionId(orderPositionKey)
+  // console.log(order)
+
   // const leveragePositions: MarginPositionDetails[] = useMemo(() => {
   //   return [
   //     {
@@ -573,17 +602,22 @@ export default function Swap({ className }: { className?: string }) {
                     <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
                       Leverage Positions
                     </TabNavItem>
-                    <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+                    <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+                      Orders
+                    </TabNavItem>
+                    <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
                       History
                     </TabNavItem>
                   </TabsWrapper>
                   {activePositionTable === 1 && <LeverageSearchBar />}
                 </TableHeader>
-
                 <TabContent id={1} activeTab={activePositionTable}>
                   <LeveragePositionsTable positions={leveragePositions} loading={leverageLoading} />
                 </TabContent>
-                <TabContent id={2} activeTab={activePositionTable}>
+                {/* <TabContent id={2} activeTab={activePositionTable}>
+                  <OrdersTable />
+                </TabContent> */}
+                <TabContent id={3} activeTab={activePositionTable}>
                   {!account ? (
                     <ActivityWrapper>
                       <MissingHistoryWrapper>None</MissingHistoryWrapper>

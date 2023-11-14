@@ -25,6 +25,13 @@ import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
 
+const WalletBalance = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  padding-right: 6px;
+`
+
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
   position: relative;
@@ -33,7 +40,6 @@ const InputPanel = styled.div<{ hideInput?: boolean }>`
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   transition: height 1s ease;
   will-change: height;
-  padding-top: 1vh;
 `
 
 const FixedContainer = styled.div`
@@ -51,6 +57,7 @@ const Container = styled.div<{ hideInput: boolean }>`
   border-radius: ${({ hideInput }) => (hideInput ? '16px' : '20px')};
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: start;
 `
@@ -73,6 +80,7 @@ const CurrencySelect = styled(ButtonGray)<{
   border: none;
   font-size: 24px;
   font-weight: 400;
+  background-color: transparent;
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   padding: ${({ selected }) => (selected ? '4px 8px 4px 4px' : '6px 6px 6px 8px')};
   gap: 12px;
@@ -107,10 +115,11 @@ const CurrencySelect = styled(ButtonGray)<{
   visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
 `
 
-const InputRow = styled.div`
+export const InputRow = styled.div`
   display: flex;
-  align-items: center; // vertically align items in the middle
-  justify-content: space-around; // maximize the space between items
+  width: 100%;
+  align-items: center;
+  justify-content: space-around;
 `
 
 const LabelRow = styled.div`
@@ -128,8 +137,8 @@ const LabelRow = styled.div`
 
 const FiatRow = styled(LabelRow)`
   justify-content: flex-end;
-  min-height: 20px;
-  padding-top: 1vh;
+  padding-bottom: 1vh;
+  width: 100%;
 `
 
 const Aligner = styled.span`
@@ -150,9 +159,9 @@ const StyledDropDown = styled(DropDown)<{ selected: boolean }>`
   }
 `
 
-const StyledTokenName = styled.span<{ active?: boolean }>`
+export const StyledTokenName = styled.span<{ active?: boolean }>`
   ${({ active }) => (active ? '  margin: 0 0.25rem 0 0.25rem;' : '  margin: 0 0.25rem 0 0.25rem;')}
-  font-size: 20px;
+  font-size: 12px;
   font-weight: 600;
 `
 
@@ -161,10 +170,10 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
   border: none;
   color: ${({ theme }) => theme.textSecondary};
   cursor: pointer;
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 600;
   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
-  padding: 4px 6px;
+  padding: 0px;
   pointer-events: ${({ disabled }) => (!disabled ? 'initial' : 'none')};
 
   :hover {
@@ -178,10 +187,10 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
 
 const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   ${loadingOpacityMixin};
+  color: ${({ theme }) => theme.textSecondary};
   text-align: left;
-  font-size: 18px;
-  line-height: 25px;
-  font-variant: small-caps;
+  font-size: 14px;
+  padding-left: 14px;
 `
 
 // const StyledTrans = styled(Trans)`
@@ -293,10 +302,81 @@ export function BaseSwapPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-        <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
+        {Boolean(!hideInput && !hideBalance) && (
+          <FiatRow>
+            <RowBetween>
+              <LoadingOpacityContainer $loading={loading}>
+                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+              </LoadingOpacityContainer>
+              {account ? (
+                <AutoColumn>
+                  <RowFixed>
+                    <WalletBalance>
+                      <ThemedText.BodySmall>
+                        {!hideBalance && currency && selectedCurrencyBalance ? (
+                          renderBalance ? (
+                            renderBalance(selectedCurrencyBalance)
+                          ) : (
+                            <div style={{ display: 'flex', gap: '2px' }}>
+                              <Trans>Wallet-Balance:</Trans>
+                              <ThemedText.BodySmall>
+                                {formatCurrencyAmount(selectedCurrencyBalance, 4)}
+                              </ThemedText.BodySmall>
+                            </div>
+                          )
+                        ) : null}
+                      </ThemedText.BodySmall>
+                      {showMaxButton && selectedCurrencyBalance ? (
+                        <TraceEvent
+                          events={[BrowserEvent.onClick]}
+                          name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+                          element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                        >
+                          <StyledBalanceMax onClick={onMax}>
+                            <Trans>Max</Trans>
+                          </StyledBalanceMax>
+                        </TraceEvent>
+                      ) : null}
+                    </WalletBalance>
+                  </RowFixed>
+                  {showPremium && (
+                    <RowFixed style={{ height: '17px' }}>
+                      <ThemedText.DeprecatedBody
+                        color={theme.textSecondary}
+                        fontWeight={400}
+                        fontSize={12}
+                        style={{ display: 'inline' }}
+                      >
+                        <div style={{ fontSize: '14px' }}>
+                          <Trans>
+                            Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
+                            {premium?.currency.symbol ?? ''}
+                          </Trans>
+                        </div>
+                      </ThemedText.DeprecatedBody>
+                    </RowFixed>
+                  )}
+                </AutoColumn>
+              ) : (
+                <span />
+              )}
+            </RowBetween>
+          </FiatRow>
+        )}
+        <InputRow>
           {/* <div style={{ marginRight: '10px', fontSize: '15px' }}>
             <Trans>{label}</Trans>
           </div> */}
+          {!hideInput && (
+            <StyledNumericalInput
+              className="token-amount-input"
+              value={value}
+              onUserInput={onUserInput}
+              disabled={!chainAllowed || disabled}
+              $loading={loading}
+              label="label"
+            />
+          )}
           <CurrencySelect
             disabled={!chainAllowed}
             visible={currency !== undefined}
@@ -311,22 +391,18 @@ export function BaseSwapPanel({
           >
             <RowFixed>
               {pair ? (
-                <span style={{ marginRight: '0.5rem' }}>
+                <span>
                   <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
                 </span>
               ) : currency ? (
-                <CurrencyLogo style={{ marginRight: '2px' }} currency={currency} size="18px" />
+                <CurrencyLogo currency={currency} size="15px" />
               ) : null}
               {pair ? (
-                <StyledTokenName style={{ fontSize: '12px' }} className="pair-name-container">
+                <StyledTokenName className="pair-name-container">
                   {pair?.token0.symbol}:{pair?.token1.symbol}
                 </StyledTokenName>
               ) : (
-                <StyledTokenName
-                  style={{ fontSize: '12px' }}
-                  className="token-symbol-container"
-                  active={Boolean(currency && currency.symbol)}
-                >
+                <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
                   {(currency && currency.symbol && currency.symbol.length > 20
                     ? currency.symbol.slice(0, 4) +
                       '...' +
@@ -338,80 +414,6 @@ export function BaseSwapPanel({
             {/* {onCurrencySelect && <StyledDropDown selected={!!currency} />} */}
           </CurrencySelect>
         </InputRow>
-        {Boolean(!hideInput && !hideBalance) && (
-          <FiatRow>
-            <RowBetween>
-              <LoadingOpacityContainer $loading={loading}>
-                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-              </LoadingOpacityContainer>
-              {account ? (
-                <AutoColumn>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
-                    <RowFixed style={{ height: '17px' }}>
-                      <ThemedText.DeprecatedBody
-                        color={theme.textSecondary}
-                        fontWeight={400}
-                        fontSize={12}
-                        style={{ display: 'inline' }}
-                      >
-                        {!hideBalance && currency && selectedCurrencyBalance ? (
-                          renderBalance ? (
-                            renderBalance(selectedCurrencyBalance)
-                          ) : (
-                            <Trans>Wallet-Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
-                          )
-                        ) : null}
-                      </ThemedText.DeprecatedBody>
-                      {showMaxButton && selectedCurrencyBalance ? (
-                        <TraceEvent
-                          events={[BrowserEvent.onClick]}
-                          name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                          element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                        >
-                          <StyledBalanceMax style={{ fontSize: '12px' }} onClick={onMax}>
-                            <Trans>Max</Trans>
-                          </StyledBalanceMax>
-                        </TraceEvent>
-                      ) : null}
-                    </RowFixed>
-                    {showPremium && (
-                      <RowFixed style={{ height: '17px' }}>
-                        <ThemedText.DeprecatedBody
-                          color={theme.textSecondary}
-                          fontWeight={400}
-                          fontSize={12}
-                          style={{ display: 'inline' }}
-                        >
-                          <div style={{ fontSize: '14px' }}>
-                            <Trans>
-                              Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
-                              {premium?.currency.symbol ?? ''}
-                            </Trans>
-                          </div>
-                        </ThemedText.DeprecatedBody>
-                      </RowFixed>
-                    )}
-                  </div>
-                </AutoColumn>
-              ) : (
-                <span />
-              )}
-            </RowBetween>
-          </FiatRow>
-        )}
-      </Container>
-      <Container hideInput={hideInput}>
-        {!hideInput && (
-          <StyledNumericalInput
-            style={{ paddingTop: '1vh', paddingLeft: '.5vw' }}
-            className="token-amount-input"
-            value={value}
-            onUserInput={onUserInput}
-            disabled={!chainAllowed || disabled}
-            $loading={loading}
-            label="label"
-          />
-        )}
       </Container>
       {onCurrencySelect && (
         <CurrencySearchModal

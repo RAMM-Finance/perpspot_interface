@@ -4,12 +4,14 @@ import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SwapEventName
 import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import AnimatedDropdown from 'components/AnimatedDropdown'
 import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
-import { RowBetween } from 'components/Row'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
@@ -46,13 +48,21 @@ import { ArrowWrapper } from '../../components/swap/styleds'
 import {
   ArrowContainer,
   DetailsSwapSection,
+  InputHeader,
   InputSection,
   LeverageGaugeSection,
   LeverageInputSection,
+  LimitInputSection,
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
 
+const TokenName = styled.span`
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 0.25rem;
+`
 const Wrapper = styled.div`
   padding: 1rem;
   padding-top: 0rem;
@@ -69,13 +79,26 @@ const Wrapper = styled.div`
     margin-top: 5px;
   }
 `
+const LimitInputWrapper = styled.div`
+  margin-top: 5px;
+`
 
 const Filter = styled.div`
   display: flex;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: fit-content;
-  margin-bottom: 0.5rem;
+`
+
+const FilterWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+`
+const LimitInputRow = styled.div`
+  padding-top: 10px;
+  display: flex;
+  margin-right: 0.25rem;
 `
 export const OpacityHoverState = css`
   &:hover {
@@ -235,6 +258,9 @@ const TradeTabContent = () => {
     [onMarginChange]
   )
 
+  // Needs to be connected to contract calls - using state management locally fo the time being
+  const [limitNumber, setLimitNumber] = useState('')
+
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
@@ -330,7 +356,7 @@ const TradeTabContent = () => {
         tradeErrorMessage={tradeErrorMessage}
       />
       <SwapHeader allowedSlippage={allowedSlippage} autoSlippedTick={allowedSlippedTick} />
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <FilterWrapper>
         <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
           <Selector active={!isLimitOrder}>
             <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
@@ -343,13 +369,14 @@ const TradeTabContent = () => {
             </StyledSelectorText>
           </Selector>
         </Filter>
-      </div>
-
+      </FilterWrapper>
       <div style={{ display: 'relative' }}>
         <InputSection>
-          <div style={{ fontWeight: 'bold' }}>
-            <Trans>Deposit Collateral</Trans>
-          </div>
+          <InputHeader>
+            <ThemedText.BodySecondary fontWeight={400}>
+              <Trans>Deposit Collateral</Trans>
+            </ThemedText.BodySecondary>
+          </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <BaseSwapPanel
               value={formattedMargin}
@@ -391,7 +418,11 @@ const TradeTabContent = () => {
       <div>
         <div>
           <OutputSwapSection showDetailsDropdown={false}>
-            <Trans>Position Size</Trans>
+            <InputHeader>
+              <ThemedText.BodySecondary fontWeight={400}>
+                <Trans>Position Size</Trans>
+              </ThemedText.BodySecondary>
+            </InputHeader>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
               <BaseSwapPanel
                 value={
@@ -414,14 +445,33 @@ const TradeTabContent = () => {
               />
             </Trace>
           </OutputSwapSection>
+          <LimitInputWrapper>
+            <AnimatedDropdown open={isLimitOrder}>
+              <LimitInputSection>
+                <ThemedText.BodySecondary fontWeight={400}>
+                  <Trans>Limit</Trans>
+                </ThemedText.BodySecondary>
+                <LimitInputRow>
+                  <StyledNumericalInput
+                    onUserInput={(str: string) => setLimitNumber(() => str)}
+                    value={limitNumber}
+                    placeholder="0"
+                    className="limit-amount-input"
+                  ></StyledNumericalInput>
+                  <RowFixed>
+                    <CurrencyLogo currency={currencies[Field.INPUT] ?? null} size="15px" />
+                    <TokenName className="pair-name-container">{currencies[Field.INPUT]?.symbol}</TokenName>
+                  </RowFixed>
+                </LimitInputRow>
+              </LimitInputSection>
+            </AnimatedDropdown>
+          </LimitInputWrapper>
           <LeverageGaugeSection>
             <AutoColumn gap="md">
               <RowBetween>
-                <div style={{ marginRight: '20px' }}>
-                  <ThemedText.DeprecatedMain fontWeight={400}>
-                    <Trans>Leverage</Trans>
-                  </ThemedText.DeprecatedMain>
-                </div>
+                <ThemedText.DeprecatedMain fontWeight={400}>
+                  <Trans>Leverage</Trans>
+                </ThemedText.DeprecatedMain>
                 <RowBetween style={{ flexWrap: 'nowrap', justifyContent: 'end' }}>
                   <LeverageInputSection>
                     <StyledNumericalInput

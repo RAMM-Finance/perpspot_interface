@@ -27,7 +27,7 @@ export default function SwapHeader({ allowedSlippage, autoSlippedTick, autoPremi
 }
 
 const StyledSwapHeader = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   width: 100%;
   color: ${({ theme }) => theme.textSecondary};
 `
