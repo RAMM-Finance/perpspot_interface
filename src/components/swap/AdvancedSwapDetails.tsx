@@ -791,24 +791,25 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-
+  // console.log('trade', trade); 
   return (
     <StyledCard>
       <AutoColumn gap="sm">
         <ValueLabel
-          description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
-          label="Quoted Premium"
+          description="The premium you are expected to put down as a deposit to borrow the amount you are borrowing. 
+          It will deplete at a faster rate when the prices are around your borrowed price range. This needs to be replenished(whether or not it has been utilized) every 48 hours or your position will be force closed."
+          label="Additional premium to pay"
           value={formatCurrencyAmount(preTradeInfo?.premiumNecessary, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={preTradeInfo?.premiumNecessary ? inputCurrency?.symbol : ''}
         />
-        <ValueLabel
+        {/*<ValueLabel
           description="Current premium deposit for this position"
           label="Existing Premium Deposit"
           value={formatCurrencyAmount(preTradeInfo?.premiumDeposit, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={preTradeInfo?.premiumDeposit ? inputCurrency?.symbol : ''}
-        />
+        />*/}
 
         <ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
@@ -824,13 +825,25 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />
         <ValueLabel
+          description="Slippage from spot price"
+          label="Slippage"
+          value={"0"}
+          syncing={syncing}
+        />
+        <ValueLabel
+          description="Swap fee + origination fee "
+          label="Total Fees"
+          value={"0"}
+          syncing={syncing}
+        />
+        {/*<ValueLabel
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
           The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."
           label="Maximum Loss"
           value={formatCurrencyAmount(trade?.margin, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
-        />
+        />*/}
         {/* <ValueLabel
           description="Fees paid for trade "
           label="Fees"
@@ -987,8 +1000,8 @@ export function AdvancedBorrowSwapDetails({
         />
         <Separator />
         <ValueLabel
-          description="The quoted premium you are expected to pay, which depletes in 24hrs."
-          label="Quoted Premium"
+          description="The premium you are expected to pay, which depletes in 48hrs(after which your position will be force closed)."
+          label="Premium to deposit"
           value={formatBNToString(borrowTrade?.quotedPremium)}
           syncing={syncing}
           symbolAppend={outputCurrency?.symbol}

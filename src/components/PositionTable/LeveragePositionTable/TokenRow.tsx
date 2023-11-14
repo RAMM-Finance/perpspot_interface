@@ -340,11 +340,11 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 
 export const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.VALUE]: <Trans>Position Value</Trans>,
-  [PositionSortMethod.COLLATERAL]: <Trans>Initial Collateral Deposited</Trans>,
-  [PositionSortMethod.REPAYTIME]: <Trans>Maximum time left until premium repayment</Trans>,
+  [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited</Trans>,
+  [PositionSortMethod.REPAYTIME]: <Trans>Maximum time left until premium repayment. Your position will be force closed if not paid by this deadline.</Trans>,
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
-  [PositionSortMethod.REMAINING]: <Trans>Remaining Premium</Trans>,
+  [PositionSortMethod.REMAINING]: <Trans>Remaining Premium that maintains this position. If this value is negative, you must deposit more premiums to modify(add/reduce/close) your position. </Trans>,
   // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
   // [PositionSortMethod.RECENT_PREMIUM]: (
   //   <Trans>Recent Premium (Total Premium Paid)</Trans>
@@ -617,6 +617,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // console.log("position: ", position)
 
   const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
+  const premiumRemaining = Number(formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount))
+                  -Number(formatCurrencyAmount(position?.premiumOwed, NumberType.SwapTradeAmount))
 
   // console.log('leverageFactor', leverageFactor, initialCollateral, totalDebtInput)
 
@@ -693,9 +695,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               <UnderlineText>
-                {`${formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)} ${
+              {premiumRemaining>0 ? <GreenText>{Math.round(premiumRemaining * 1000)/1000}
+              {" "+position?.margin.currency?.symbol}</GreenText> 
+              : <RedText>{Math.round(premiumRemaining * 1000)/1000}{position?.margin.currency?.symbol}</RedText> }
+
+                {/*`${premiumRemaining} ${
                   position?.margin.currency?.symbol
-                }`}
+                 }`*/}
+              
               </UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>

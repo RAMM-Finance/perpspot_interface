@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 
 export enum PositionSortMethod {
   VALUE = 'Net Value',
-  COLLATERAL = 'Collateral',
+  COLLATERAL = 'Margin',
   // RECENT_PREMIUM = 'Recent Premium',
   REPAYTIME = 'Time Left',
   PNL = 'PnL',
