@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { PoolDataSection } from 'components/ExchangeChart'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { OrdersTable } from 'components/OrdersTable/TokenTable'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
@@ -219,7 +220,7 @@ const LiquidityDistibutionWrapper = styled.div`
   margin-left: 0.25rem;
   margin-right: 0.25rem;
   border-radius: 10px;
-  width: 475px;
+  width: 350px;
   padding: 1rem;
   height: 450px;
   overflow-y: scroll;
@@ -614,9 +615,9 @@ export default function Swap({ className }: { className?: string }) {
                 <TabContent id={1} activeTab={activePositionTable}>
                   <LeveragePositionsTable positions={leveragePositions} loading={leverageLoading} />
                 </TabContent>
-                {/* <TabContent id={2} activeTab={activePositionTable}>
-                  <OrdersTable />
-                </TabContent> */}
+                <TabContent id={2} activeTab={activePositionTable}>
+                  <OrdersTable orders={undefined} loading={true} />
+                </TabContent>
                 <TabContent id={3} activeTab={activePositionTable}>
                   {!account ? (
                     <ActivityWrapper>

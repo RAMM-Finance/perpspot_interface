@@ -1,34 +1,32 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
 import { AutoColumn } from 'components/Column'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
-import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { useCurrency } from 'hooks/Tokens'
-import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
-import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
+import { ForwardedRef, forwardRef, useCallback, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
-import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
+import { MarginOrderDetails, TraderPositionKey } from 'types/lmtv2position'
 
+import {
+  LeveragePositionModal,
+  TradeModalActiveTab,
+} from '../PositionTable/LeveragePositionTable/LeveragePositionModal'
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
   MEDIUM_MEDIA_BREAKPOINT,
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
-import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
-import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { filterStringAtom, OrderSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
 const Cell = styled.div`
   display: flex;
@@ -43,7 +41,7 @@ const StyledTokenRow = styled.div<{
 }>`
   background-color: transparent;
   display: grid;
-  font-size: 12px;
+  font-size: 16px;
   grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -338,46 +336,27 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 //   justify-content: center;
 // `
 
-const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
-  [PositionSortMethod.VALUE]: <Trans>Position Value</Trans>,
-  [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited</Trans>,
-  [PositionSortMethod.REPAYTIME]: (
-    <Trans>
-      Maximum time left until premium repayment. Your position will be force closed if not paid by this deadline.
-    </Trans>
-  ),
-  [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
-  [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
-  [PositionSortMethod.REMAINING]: (
-    <Trans>
-      Remaining Premium that maintains this position. If this value is negative, you must deposit more premiums to
-      modify(add/reduce/close) your position.{' '}
-    </Trans>
-  ),
-  // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
-  // [PositionSortMethod.RECENT_PREMIUM]: (
-  //   <Trans>Recent Premium (Total Premium Paid)</Trans>
-  // ),
-  // [PositionSortMethod.UNUSED_PREMIUM]: (
-  //   <Trans>Unused Premium Description</Trans>
-  // )
+const HEADER_DESCRIPTIONS: Record<OrderSortMethod, ReactNode | undefined> = {
+  [OrderSortMethod.PAIR]: <Trans>Pair</Trans>,
+  [OrderSortMethod.LEVERAGE]: <Trans>Leverage</Trans>,
+  [OrderSortMethod.INPUT]: <Trans>Input</Trans>,
+  [OrderSortMethod.OUTPUT]: <Trans>Output</Trans>,
+  [OrderSortMethod.REPAYTIME]: <Trans>RepayTime</Trans>,
 }
 
 const SortingEnabled = {
-  [PositionSortMethod.VALUE]: false,
-  [PositionSortMethod.COLLATERAL]: false,
-  [PositionSortMethod.REPAYTIME]: true,
-  [PositionSortMethod.ENTRYPRICE]: false,
-  [PositionSortMethod.PNL]: false,
-  [PositionSortMethod.REMAINING]: true,
-  // [PositionSortMethod.ACTIONS]: false,
+  [OrderSortMethod.PAIR]: false,
+  [OrderSortMethod.LEVERAGE]: false,
+  [OrderSortMethod.INPUT]: false,
+  [OrderSortMethod.OUTPUT]: false,
+  [OrderSortMethod.REPAYTIME]: false,
 }
 
 /* Get singular header cell for header row */
 function HeaderCell({
   category,
 }: {
-  category: PositionSortMethod // TODO: change this to make it work for trans
+  category: OrderSortMethod // TODO: change this to make it work for trans
 }) {
   const theme = useTheme()
   const sortAscending = useAtomValue(sortAscendingAtom)
@@ -415,7 +394,6 @@ function PositionRow({
   header,
   positionInfo,
   value,
-  collateral,
   repaymentTime,
   PnL,
   entryPrice,
@@ -427,7 +405,6 @@ function PositionRow({
   header: boolean
   loading?: boolean
   value: ReactNode
-  collateral: ReactNode
   repaymentTime: ReactNode
   positionInfo: ReactNode
   positionKey?: TraderPositionKey
@@ -472,9 +449,6 @@ function PositionRow({
           {value}
         </EditCell>
       </PriceCell>
-      <PriceCell data-testid="collateral-cell" sortable={header}>
-        {collateral}
-      </PriceCell>
       <PriceCell data-testid="repaymentTime-cell" sortable={header}>
         {repaymentTime}
       </PriceCell>
@@ -513,15 +487,14 @@ export function HeaderRow() {
       header={true}
       positionInfo={
         <Box marginLeft="8px">
-          <ThemedText.TableText>Position</ThemedText.TableText>
+          <ThemedText.TableText>Order</ThemedText.TableText>
         </Box>
       }
-      value={<HeaderCell category={PositionSortMethod.VALUE} />}
-      collateral={<HeaderCell category={PositionSortMethod.COLLATERAL} />}
-      PnL={<HeaderCell category={PositionSortMethod.PNL} />}
-      entryPrice={<HeaderCell category={PositionSortMethod.ENTRYPRICE} />}
-      remainingPremium={<HeaderCell category={PositionSortMethod.REMAINING} />}
-      repaymentTime={<HeaderCell category={PositionSortMethod.REPAYTIME} />}
+      value={<HeaderCell category={OrderSortMethod.PAIR} />}
+      PnL={<HeaderCell category={OrderSortMethod.LEVERAGE} />}
+      entryPrice={<HeaderCell category={OrderSortMethod.INPUT} />}
+      remainingPremium={<HeaderCell category={OrderSortMethod.OUTPUT} />}
+      repaymentTime={<HeaderCell category={OrderSortMethod.REPAYTIME} />}
     />
   )
 }
@@ -545,7 +518,6 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
         </>
       }
       value={<MediumLoadingBubble />}
-      collateral={<LoadingBubble />}
       repaymentTime={<LoadingBubble />}
       PnL={<LoadingBubble />}
       entryPrice={<LoadingBubble />}
@@ -562,57 +534,57 @@ const FlexStartRow = styled(Row)`
 `
 
 interface LoadedRowProps {
-  position: MarginPositionDetails
+  order: MarginOrderDetails
 }
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
-  const { position: details } = props
+  const { order: details } = props
 
-  const positionKey: TraderPositionKey = useMemo(() => {
-    return {
-      trader: details.trader,
-      poolKey: details.poolKey,
-      isBorrow: false,
-      isToken0: details.isToken0,
-    }
-  }, [details])
+  // const positionKey: OrderPositionKey = useMemo(() => {
+  //   return {
+  //     // trader: details.trader,
+  //     poolKey: details.poolKey,
+  //     isAdd: false,
+  //     isToken0: details.isToken0,
+  //   }
+  // }, [details])
 
-  const { isToken0, margin, totalDebtInput } = details
-  const [token0Address, token1Address] = useMemo(() => {
-    if (details) {
-      return [details.poolKey.token0Address, details.poolKey.token1Address]
-    }
-    return [undefined, undefined]
-  }, [details])
-  const token0 = useCurrency(token0Address)
-  const token1 = useCurrency(token1Address)
+  // // const { isToken0, margin, totalDebtInput } = details
+  // const [token0Address, token1Address] = useMemo(() => {
+  //   if (details) {
+  //     return [details.poolKey.token0Address, details.poolKey.token1Address]
+  //   }
+  //   return [undefined, undefined]
+  // }, [details])
+  // const token0 = useCurrency(token0Address)
+  // const token1 = useCurrency(token1Address)
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
+  // const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
-  const leverageFactor = useMemo(
-    () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
-    [margin, totalDebtInput]
-  )
+  // // const leverageFactor = useMemo(
+  // //   () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
+  // //   [margin, totalDebtInput]
+  // )
 
-  const [entryPrice, currentPrice, position] = useMemo(() => {
-    if (pool) {
-      const _position = new MarginPosition(pool, details)
-      // token1 quote
-      const _entryPrice = _position.entryPrice()
-      const _currentPrice = pool.token0Price
+  // const [entryPrice, currentPrice, position] = useMemo(() => {
+  //   if (pool) {
+  //     // const _position = new MarginPosition(pool, details)
+  //     // token1 quote
+  //     const _entryPrice = _position.entryPrice()
+  //     const _currentPrice = pool.token0Price
 
-      if (Number(pool.token0Price.toFixed(18)) < 1) {
-        return [_entryPrice.invert(), _currentPrice.invert(), _position]
-      } else {
-        return [_entryPrice, _currentPrice, _position]
-      }
-    } else {
-      return [undefined, undefined, undefined]
-    }
-  }, [pool, details])
+  //     if (Number(pool.token0Price.toFixed(18)) < 1) {
+  //       return [_entryPrice.invert(), _currentPrice.invert(), _position]
+  //     } else {
+  //       return [_entryPrice, _currentPrice, _position]
+  //     }
+  //   } else {
+  //     return [undefined, undefined, undefined]
+  //   }
+  // }, [pool, details])
 
   // /**
   //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
@@ -625,10 +597,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   // console.log("position: ", position)
 
-  const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
-  const premiumRemaining =
-    Number(formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)) -
-    Number(formatCurrencyAmount(position?.premiumOwed, NumberType.SwapTradeAmount))
+  // const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
+  // const premiumRemaining =
+  //   Number(formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)) -
+  //   Number(formatCurrencyAmount(position?.premiumOwed, NumberType.SwapTradeAmount))
 
   // console.log('leverageFactor', leverageFactor, initialCollateral, totalDebtInput)
 
@@ -638,14 +610,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       <StyledLoadedRow>
         <PositionRow
           header={false}
-          positionKey={positionKey}
+          // positionKey={positionKey}
           positionInfo={
             <ClickableContent>
               <RowBetween>
                 <PositionInfo>
                   <GreenText>
                     {' '}
-                    x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.totalPosition.currency?.symbol}`}
+                    {/* x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.totalPosition.currency?.symbol}`} */}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -654,34 +626,27 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow>
               <UnderlineText>
-                {`${formatCurrencyAmount(position?.totalPosition, NumberType.SwapTradeAmount)} ${
+                {/* {`${formatCurrencyAmount(position?.totalPosition, NumberType.SwapTradeAmount)} ${
                   position?.totalPosition.currency?.symbol
-                }`}
+                }`} */}
               </UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
           }
-          collateral={
-            <FlexStartRow>
-              {`${formatCurrencyAmount(position?.margin, NumberType.SwapTradeAmount)} ${
-                position?.margin.currency?.symbol
-              }`}
-            </FlexStartRow>
-          }
           repaymentTime={
             <FlexStartRow>
-              {position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>}
+              {/* {position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>} */}
             </FlexStartRow>
           }
           PnL={
             <FlexStartRow>
               <AutoRow>
                 <RowBetween>
-                  <DeltaText delta={Number(position?.PnL().toExact())}>
+                  {/* <DeltaText delta={Number(position?.PnL().toExact())}>
                     {`${formatCurrencyAmount(position?.PnL(), NumberType.SwapTradeAmount)} ${
                       position?.margin.currency?.symbol
                     }`}
-                  </DeltaText>
+                  </DeltaText> */}
                 </RowBetween>
               </AutoRow>
             </FlexStartRow>
@@ -697,15 +662,15 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   lineHeight: 1.5,
                 }}
               >
-                {`${formatPrice(entryPrice)}/${formatPrice(currentPrice)} `}
-                <AutoColumn>{`${entryPrice?.baseCurrency.symbol}/${entryPrice?.quoteCurrency.symbol}`}</AutoColumn>
+                {/* {`${formatPrice(entryPrice)}/${formatPrice(currentPrice)} `}
+                <AutoColumn>{`${entryPrice?.baseCurrency.symbol}/${entryPrice?.quoteCurrency.symbol}`}</AutoColumn> */}
               </AutoColumn>
             </FlexStartRow>
           }
           remainingPremium={
             <FlexStartRow>
               <UnderlineText>
-                {premiumRemaining > 0 ? (
+                {/* {premiumRemaining > 0 ? (
                   <GreenText>
                     {Math.round(premiumRemaining * 1000) / 1000}
                     {' ' + position?.margin.currency?.symbol}
