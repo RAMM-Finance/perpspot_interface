@@ -92,6 +92,19 @@ export function useAddPositionCallback(
       const slippedTickMax = priceToClosestTick(maxPrice)
       const slippedTickMin = priceToClosestTick(minPrice)
 
+      // console.log('real calldata', {
+      //   positionKey,
+      //   margin: marginAmount.quotient.toString(),
+      //   borrowAmount: borrowAmount.quotient.toString(),
+      //   minimumOutput: JSBI.BigInt(0),
+      //   deadline: deadline.toString(),
+      //   simulatedOutput: amountOut.toString(),
+      //   executionOption: 1,
+      //   depositPremium: premium.quotient.toString(),
+      //   slippedTickMin,
+      //   slippedTickMax,
+      // })
+
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
         margin: marginAmount.quotient,
@@ -132,7 +145,7 @@ export function useAddPositionCallback(
     } catch (error: any) {
       throw new Error('Contract Error')
     }
-  }, [allowedSlippage, allowedSlippedTick, deadline, account, chainId, provider, trade])
+  }, [allowedSlippedTick, deadline, account, chainId, provider, trade, marginAmount, borrowAmount])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback) return null

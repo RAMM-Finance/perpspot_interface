@@ -293,26 +293,6 @@ const SwapTabContent = () => {
     return { priceImpactSeverity: warningSeverity(largerPriceImpact), largerPriceImpact }
   }, [stablecoinPriceImpact, trade])
 
-  // const {
-  //   trade: leverageTrade,
-  //   state: leverageState,
-  //   inputError,
-  //   allowedSlippage: leverageAllowedSlippage,
-  //   contractError,
-  // } = useDerivedLeverageCreationInfo()
-
-  // const [inputCurrency, outputCurrency] = useMemo(() => {
-  //   return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
-  // }, [currencies])
-
-  // const { callback: leverageCallback } = useAddLeveragePositionCallback(
-  //   leverageManagerAddress ?? undefined,
-  //   trade,
-  //   leverageTrade,
-  //   leverageAllowedSlippage,
-  //   leverageFactor ?? undefined
-  // )
-
   const dependentField: Field = independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT
 
   const formattedAmounts = useMemo(
@@ -324,67 +304,6 @@ const SwapTabContent = () => {
     }),
     [dependentField, independentField, parsedAmounts, showWrap, typedValue]
   )
-
-  // const handleLeverageCreation = useCallback(() => {
-  //   if (!leverageCallback) {
-  //     return
-  //   }
-  //   setSwapState({
-  //     attemptingTxn: true,
-  //     tradeToConfirm,
-  //     showConfirm,
-  //     swapErrorMessage: undefined,
-  //     txHash: undefined,
-  //     showLeverageConfirm,
-  //   })
-  //   leverageCallback()
-  //     .then((hash: any) => {
-  //       setSwapState({
-  //         attemptingTxn: false,
-  //         tradeToConfirm,
-  //         showConfirm,
-  //         swapErrorMessage: undefined,
-  //         txHash: hash,
-  //         showLeverageConfirm,
-  //       })
-  //       sendEvent({
-  //         category: 'Swap',
-  //         action: 'transaction hash',
-  //         label: hash,
-  //       })
-  //       sendEvent({
-  //         category: 'Swap',
-  //         action:
-  //           recipient === null
-  //             ? 'Swap w/o Send'
-  //             : (recipientAddress ?? recipient) === account
-  //             ? 'Swap w/o Send + recipient'
-  //             : 'Swap w/ Send',
-  //         label: [TRADE_STRING, inputCurrency?.symbol, outputCurrency?.symbol, 'MH'].join('/'),
-  //       })
-  //     })
-  //     .catch((error: any) => {
-  //       console.log('leverageCreationError: ', error)
-  //       setSwapState({
-  //         attemptingTxn: false,
-  //         tradeToConfirm,
-  //         showConfirm,
-  //         swapErrorMessage: 'Failed creation', //error.message,
-  //         txHash: undefined,
-  //         showLeverageConfirm,
-  //       })
-  //     })
-  // }, [
-  //   leverageCallback,
-  //   showLeverageConfirm,
-  //   account,
-  //   recipient,
-  //   inputCurrency,
-  //   outputCurrency,
-  //   recipientAddress,
-  //   showConfirm,
-  //   tradeToConfirm,
-  // ])
 
   const handleConfirmDismiss = useCallback(() => {
     setSwapState({
@@ -447,20 +366,7 @@ const SwapTabContent = () => {
   const priceImpactTooHigh = priceImpactSeverity > 3 && !isExpertMode
   const showPriceImpactWarning = largerPriceImpact && priceImpactSeverity > 3
 
-  // const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
-  //   leverageFactor ?? '1',
-  //   onLeverageFactorChange
-  // )
-  // const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(
-  //   leverageFactor ?? '1',
-  //   onLeverageFactorChange
-  // )
-
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
-  // const [lmtRouteNotFound, lmtRouteIsLoading] = useMemo(
-  //   () => [leverageState === LeverageTradeState.NO_ROUTE_FOUND, leverageState === LeverageTradeState.LOADING],
-  //   [leverageState]
-  // )
   const isApprovalLoading = allowance.state === AllowanceState.REQUIRED && allowance.isApprovalLoading
   const [isAllowancePending, setIsAllowancePending] = useState(false)
   const updateAllowance = useCallback(async () => {

@@ -103,9 +103,13 @@ export interface AddMarginTrade {
 }
 
 export interface PreTradeInfo {
+  // current premium deposit
   premiumDeposit: CurrencyAmount<Currency>
+  // premium necessary for the transaction
   premiumNecessary: CurrencyAmount<Currency>
+  // additional premium (necessary - deposit)
   additionalPremium: CurrencyAmount<Currency>
+  // how much to approve (margin + additional premium)
   approvalAmount: CurrencyAmount<Currency>
 }
 
@@ -413,6 +417,7 @@ const useSimulateMarginTrade = (
         setResult(undefined)
         return
       }
+
       const swapRoute = new Route(
         [pool],
         inputIsToken0 ? pool.token0 : pool.token1,
@@ -425,15 +430,17 @@ const useSimulateMarginTrade = (
         fee: pool.fee,
       })
 
-      const feePercent = CurrencyAmount.fromFractionalAmount(
-        inputCurrency,
-        JSBI.BigInt(rawFeesResult[0].toString()),
-        JSBI.BigInt(1e18)
+      const bnMargin = new BN(margin.toExact())
+      const bnBorrow = new BN(borrowAmount.toExact())
+      const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
+      const bnAmountIn = bnMargin.plus(bnBorrow).minus(bnMargin.plus(bnBorrow).multipliedBy(feePercent))
+
+      const amountOut = await getOutputQuote(
+        CurrencyAmount.fromRawAmount(inputCurrency, BnToCurrencyAmount(bnAmountIn, inputCurrency).quotient.toString()),
+        swapRoute,
+        provider,
+        chainId
       )
-
-      const amountIn = margin.add(borrowAmount).subtract(margin.add(borrowAmount).multiply(feePercent))
-
-      const amountOut = await getOutputQuote(amountIn, swapRoute, provider, chainId)
 
       if (!amountOut) return
 
@@ -487,7 +494,11 @@ const useSimulateMarginTrade = (
         setTradeState(LeverageTradeState.LOADING)
         const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
-        const { totalPosition, totalInputDebt, margin } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
+        const {
+          totalPosition: newTotalPosition,
+          totalInputDebt: newTotalInputDebt,
+          margin: newMargin,
+        } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
 
         // compute the added output amount + the execution price. (margin + borrowAmount - fees) / outputAmount
         let swapInput: JSBI
@@ -495,19 +506,22 @@ const useSimulateMarginTrade = (
         let _margin: JSBI
         let _borrowAmount: JSBI
         if (existingPosition.openTime > 0) {
-          swapOutput = JSBI.subtract(totalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
+          swapOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
 
-          _margin = JSBI.subtract(margin, BnToJSBI(existingPosition.margin, inputCurrency))
+          _margin = JSBI.subtract(newMargin, BnToJSBI(existingPosition.margin, inputCurrency))
 
           // margin + borrowAmount - fees
-          const borrowAmount = JSBI.subtract(totalInputDebt, BnToJSBI(existingPosition.totalDebtInput, inputCurrency))
-          swapInput = JSBI.add(margin, borrowAmount)
+          const borrowAmount = JSBI.subtract(
+            newTotalInputDebt,
+            BnToJSBI(existingPosition.totalDebtInput, inputCurrency)
+          )
+          swapInput = JSBI.add(_margin, borrowAmount)
           _borrowAmount = borrowAmount
         } else {
-          swapOutput = totalPosition
-          _margin = margin
-          swapInput = JSBI.add(margin, totalInputDebt)
-          _borrowAmount = totalInputDebt
+          swapOutput = newTotalPosition
+          _margin = newMargin
+          swapInput = JSBI.add(_margin, newTotalInputDebt)
+          _borrowAmount = newTotalInputDebt
         }
 
         const executionPrice = new Price<Currency, Currency>(inputCurrency, outputCurrency, swapInput, swapOutput)

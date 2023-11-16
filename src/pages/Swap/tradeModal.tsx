@@ -169,6 +169,7 @@ const TradeTabContent = () => {
   } = useMarginTradingState()
 
   const pool = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
+
   const {
     trade,
     preTradeInfo,
@@ -185,6 +186,13 @@ const TradeTabContent = () => {
     currencies[Field.INPUT]?.wrapped.address,
     currencies[Field.OUTPUT]?.wrapped.address
   )
+  // console.log(
+  //   'trade: ',
+  //   existingPosition?.premiumOwed.toString(),
+  //   preTradeInfo?.premiumDeposit.toExact(),
+  //   preTradeInfo?.premiumNecessary.toExact(),
+  //   preTradeInfo?.approvalAmount.toExact()
+  // )
 
   const { onLeverageFactorChange, onMarginChange, onChangeTradeType } = useMarginTradingActionHandlers()
 
@@ -258,19 +266,9 @@ const TradeTabContent = () => {
     [onMarginChange]
   )
 
-  // Needs to be connected to contract calls - using state management locally fo the time being
-  const [limitNumber, setLimitNumber] = useState('')
-
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
-
-  // const handleChangeLimit = useCallback(
-  //   (isLimit: boolean) => {
-  //     onChangeTradeType(isLimit)
-  //   },
-  //   [onChangeTradeType]
-  // )
 
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
@@ -336,6 +334,16 @@ const TradeTabContent = () => {
       console.log('approveLeverageManager err: ', err)
     }
   }, [approveMarginFacility])
+
+  //       address pool,
+  //       bool positionIsToken0,
+  //       bool isAdd,
+  //       uint256 deadline,
+  //       uint256 startOutput,
+  //       uint256 minOutput,
+  //       uint256 inputAmount,
+  //       uint256 decayRate,
+  //       uint256 margin
 
   return (
     <Wrapper>
