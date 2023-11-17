@@ -24,6 +24,7 @@ import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
+import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
@@ -166,6 +167,7 @@ const TradeTabContent = () => {
     [MarginField.MARGIN]: margin,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
     isLimitOrder,
+    startingPrice,
   } = useMarginTradingState()
 
   const pool = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
@@ -194,7 +196,7 @@ const TradeTabContent = () => {
   //   preTradeInfo?.approvalAmount.toExact()
   // )
 
-  const { onLeverageFactorChange, onMarginChange, onChangeTradeType } = useMarginTradingActionHandlers()
+  const { onLeverageFactorChange, onMarginChange, onChangeTradeType, onPriceInput } = useMarginTradingActionHandlers()
 
   // allowance / approval
   const [facilityApprovalState, approveMarginFacility] = useApproveCallback(
@@ -338,12 +340,14 @@ const TradeTabContent = () => {
   //       address pool,
   //       bool positionIsToken0,
   //       bool isAdd,
-  //       uint256 deadline,
-  //       uint256 startOutput,
-  //       uint256 minOutput,
-  //       uint256 inputAmount,
+  //       uint256 deadline, -> deadline parameter?
+  //       uint256 startOutput, -> can be caluclated from user
+  //       uint256 minOutput, -> can be caluclated from slippage + start output
+  //       uint256 inputAmount, -> margin
   //       uint256 decayRate,
   //       uint256 margin
+
+  const deadline = useTransactionDeadline()
 
   return (
     <Wrapper>
@@ -461,8 +465,8 @@ const TradeTabContent = () => {
                 </ThemedText.BodySecondary>
                 <LimitInputRow>
                   <StyledNumericalInput
-                    onUserInput={(str: string) => setLimitNumber(() => str)}
-                    value={limitNumber}
+                    onUserInput={onPriceInput}
+                    value={startingPrice ?? ''}
                     placeholder="0"
                     className="limit-amount-input"
                   ></StyledNumericalInput>

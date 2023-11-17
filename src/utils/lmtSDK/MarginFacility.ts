@@ -3,7 +3,7 @@ import { MethodParameters, toHex } from '@uniswap/v3-sdk'
 import MarginFacilityJson from 'abis_v2/MarginFacility.json'
 import { Interface } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
-import { TraderPositionKey } from 'types/lmtv2position'
+import { OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 import { Multicall } from './multicall'
 
@@ -38,6 +38,30 @@ export interface DepositPremiumOptions {
 export interface WithdrawPremiumOptions {
   positionKey: TraderPositionKey
   amount: JSBI
+}
+
+//     address pool,
+//     bool positionIsToken0,
+//     bool isAdd,
+//     uint256 deadline,
+//     uint256 startOutput,
+//     uint256 minOutput,
+//     uint256 inputAmount,
+//     uint256 decayRate,
+//     uint256 margin
+
+interface AddLimitOrderOptions {
+  positionKey: OrderPositionKey
+  margin: string
+  pool: string
+  positionIsToken0: boolean
+  isAdd: boolean
+  deadline: string
+  startOutput: string
+  minOutput: string
+  inputAmount: string
+  decayRate: string
+  depositPremium?: string
 }
 
 export abstract class MarginFacilitySDK {
@@ -91,6 +115,53 @@ export abstract class MarginFacilitySDK {
     //   calldata: Multicall.encodeMulticall(calldatas),
     //   value: toHex(0),
     // }
+    return calldatas
+  }
+
+  public static addLimitOrder(param: AddLimitOrderOptions) {
+    const calldatas: string[] = []
+
+    if (param.depositPremium) {
+      calldatas.push(
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
+          {
+            token0: param.positionKey.poolKey.token0Address,
+            token1: param.positionKey.poolKey.token1Address,
+            fee: param.positionKey.poolKey.fee,
+          },
+          param.positionKey.trader,
+          param.positionKey.isToken0,
+          param.depositPremium,
+        ])
+      )
+    }
+
+    //   function submitOrder(
+    //     address pool,
+    //     bool positionIsToken0,
+    //     bool isAdd,
+    //     uint256 deadline,
+    //     uint256 startOutput,
+    //     uint256 minOutput,
+    //     uint256 inputAmount,
+    //     uint256 decayRate,
+    //     uint256 margin
+    // )
+
+    calldatas.push(
+      MarginFacilitySDK.INTERFACE.encodeFunctionData('submitOrder', [
+        param.pool,
+        param.positionIsToken0,
+        param.isAdd,
+        param.deadline,
+        param.startOutput,
+        param.minOutput,
+        param.inputAmount,
+        param.decayRate,
+        param.margin,
+      ])
+    )
+
     return calldatas
   }
 
