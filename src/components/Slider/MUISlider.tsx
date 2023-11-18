@@ -8,9 +8,21 @@ interface DiscreteSliderMarksProps {
 }
 
 const marks = [
+  // {
+  //   value: 2,
+  //   label: '2',
+  // },
   {
     value: 10,
     label: '10x',
+  },
+  // {
+  //   value: 20,
+  //   label: '20x',
+  // },
+  {
+    value: 50,
+    label: '50x',
   },
   {
     value: 100,
@@ -20,19 +32,8 @@ const marks = [
     value: 200,
     label: '200x',
   },
-  {
-    value: 300,
-    label: '300x',
-  },
-  {
-    value: 400,
-    label: '400x',
-  },
-  {
-    value: 500,
-    label: '500x',
-  },
 ]
+
 
 export default function DiscreteSliderMarks({ initialValue, onChange }: DiscreteSliderMarksProps) {
   const handleChange = (event: Event, newValue: number | number[]) => {
@@ -49,7 +50,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange }: Discrete
         marks={marks}
         step={1}
         min={0}
-        max={500}
+        max={200}
         size="small"
         sx={{
           '& .MuiSlider-markLabel': {

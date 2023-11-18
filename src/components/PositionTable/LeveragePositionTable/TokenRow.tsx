@@ -623,7 +623,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //  */
   // get token1Price(): Price<Token, Token>;
 
-  // console.log("position: ", position)
 
   const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
   const premiumRemaining =
