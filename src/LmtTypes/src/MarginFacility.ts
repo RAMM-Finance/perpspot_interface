@@ -566,7 +566,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "OrderCanceled(address,bool,address,bool)": EventFragment;
     "PremiumDeposited(address,address,bool,uint256)": EventFragment;
-    "PremiumPaid(address,address,uint256,uint256,uint256)": EventFragment;
     "PremiumWithdrawn(address,address,bool,uint256)": EventFragment;
   };
 
@@ -576,7 +575,6 @@ export interface MarginFacilityInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OrderAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OrderCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PremiumDeposited"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PremiumPaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PremiumWithdrawn"): EventFragment;
 }
 
@@ -697,20 +695,6 @@ export type PremiumDepositedEvent = TypedEvent<
 
 export type PremiumDepositedEventFilter =
   TypedEventFilter<PremiumDepositedEvent>;
-
-export interface PremiumPaidEventObject {
-  payer: string;
-  pool: string;
-  token0Amount: BigNumber;
-  token1Amount: BigNumber;
-  swappedAmount: BigNumber;
-}
-export type PremiumPaidEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, BigNumber],
-  PremiumPaidEventObject
->;
-
-export type PremiumPaidEventFilter = TypedEventFilter<PremiumPaidEvent>;
 
 export interface PremiumWithdrawnEventObject {
   withdrawer: string;
@@ -1505,21 +1489,6 @@ export interface MarginFacility extends BaseContract {
       isToken1?: null,
       amount?: null
     ): PremiumDepositedEventFilter;
-
-    "PremiumPaid(address,address,uint256,uint256,uint256)"(
-      payer?: PromiseOrValue<string> | null,
-      pool?: PromiseOrValue<string> | null,
-      token0Amount?: null,
-      token1Amount?: null,
-      swappedAmount?: null
-    ): PremiumPaidEventFilter;
-    PremiumPaid(
-      payer?: PromiseOrValue<string> | null,
-      pool?: PromiseOrValue<string> | null,
-      token0Amount?: null,
-      token1Amount?: null,
-      swappedAmount?: null
-    ): PremiumPaidEventFilter;
 
     "PremiumWithdrawn(address,address,bool,uint256)"(
       withdrawer?: PromiseOrValue<string> | null,

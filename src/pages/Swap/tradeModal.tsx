@@ -297,10 +297,10 @@ const TradeTabContent = () => {
     onLeverageFactorChange
   )
 
-  const [sliderLeverageFactor, setSliderLeverageFactor] = useDebouncedChangeHandler(
-    leverageFactor ?? '',
-    onLeverageFactorChange
-  )
+  // const [sliderLeverageFactor, debouncedLeverageFactor] = useDebouncedChangeHandler(
+  //   leverageFactor ?? '',
+  //   onLeverageFactorChange
+  // )
 
   const userHasSpecifiedInputOutput = Boolean(
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && trade?.margin.greaterThan(JSBI.BigInt(0))
@@ -522,8 +522,8 @@ const TradeTabContent = () => {
 
               <>
                 <DiscreteSliderMarks
-                  initialValue={sliderLeverageFactor === '' ? 10 : parseInt(sliderLeverageFactor, 10)}
-                  onChange={(val) => setSliderLeverageFactor(val.toString())}
+                  initialValue={debouncedLeverageFactor === '' ? 10 : parseInt(debouncedLeverageFactor, 10)}
+                  onChange={(val) => onDebouncedLeverageFactor(val.toString())}
                 />
               </>
             </AutoColumn>

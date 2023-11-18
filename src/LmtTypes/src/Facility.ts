@@ -289,12 +289,10 @@ export interface FacilityInterface extends utils.Interface {
 
   events: {
     "PremiumDeposited(address,address,bool,uint256)": EventFragment;
-    "PremiumPaid(address,address,uint256,uint256,uint256)": EventFragment;
     "PremiumWithdrawn(address,address,bool,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "PremiumDeposited"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PremiumPaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PremiumWithdrawn"): EventFragment;
 }
 
@@ -311,20 +309,6 @@ export type PremiumDepositedEvent = TypedEvent<
 
 export type PremiumDepositedEventFilter =
   TypedEventFilter<PremiumDepositedEvent>;
-
-export interface PremiumPaidEventObject {
-  payer: string;
-  pool: string;
-  token0Amount: BigNumber;
-  token1Amount: BigNumber;
-  swappedAmount: BigNumber;
-}
-export type PremiumPaidEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, BigNumber],
-  PremiumPaidEventObject
->;
-
-export type PremiumPaidEventFilter = TypedEventFilter<PremiumPaidEvent>;
 
 export interface PremiumWithdrawnEventObject {
   withdrawer: string;
@@ -659,21 +643,6 @@ export interface Facility extends BaseContract {
       isToken1?: null,
       amount?: null
     ): PremiumDepositedEventFilter;
-
-    "PremiumPaid(address,address,uint256,uint256,uint256)"(
-      payer?: PromiseOrValue<string> | null,
-      pool?: PromiseOrValue<string> | null,
-      token0Amount?: null,
-      token1Amount?: null,
-      swappedAmount?: null
-    ): PremiumPaidEventFilter;
-    PremiumPaid(
-      payer?: PromiseOrValue<string> | null,
-      pool?: PromiseOrValue<string> | null,
-      token0Amount?: null,
-      token1Amount?: null,
-      swappedAmount?: null
-    ): PremiumPaidEventFilter;
 
     "PremiumWithdrawn(address,address,bool,uint256)"(
       withdrawer?: PromiseOrValue<string> | null,

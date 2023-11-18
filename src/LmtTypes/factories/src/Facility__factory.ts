@@ -13,11 +13,6 @@ const _abi = [
     type: "error",
   },
   {
-    inputs: [],
-    name: "insufficientPremiumDeposit",
-    type: "error",
-  },
-  {
     anonymous: false,
     inputs: [
       {
@@ -46,43 +41,6 @@ const _abi = [
       },
     ],
     name: "PremiumDeposited",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "payer",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "pool",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "token0Amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "token1Amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "swappedAmount",
-        type: "uint256",
-      },
-    ],
-    name: "PremiumPaid",
     type: "event",
   },
   {

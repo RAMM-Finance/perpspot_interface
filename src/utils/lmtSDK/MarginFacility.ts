@@ -50,11 +50,11 @@ export interface WithdrawPremiumOptions {
 //     uint256 decayRate,
 //     uint256 margin
 
-interface AddLimitOrderOptions {
+interface LimitOrderOptions {
   positionKey: OrderPositionKey
   margin: string
   pool: string
-  positionIsToken0: boolean
+  // positionIsToken0: boolean
   isAdd: boolean
   deadline: string
   startOutput: string
@@ -118,7 +118,7 @@ export abstract class MarginFacilitySDK {
     return calldatas
   }
 
-  public static addLimitOrder(param: AddLimitOrderOptions) {
+  public static submitLimitOrder(param: LimitOrderOptions) {
     const calldatas: string[] = []
 
     if (param.depositPremium) {
@@ -151,7 +151,7 @@ export abstract class MarginFacilitySDK {
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('submitOrder', [
         param.pool,
-        param.positionIsToken0,
+        param.positionKey.isToken0,
         param.isAdd,
         param.deadline,
         param.startOutput,

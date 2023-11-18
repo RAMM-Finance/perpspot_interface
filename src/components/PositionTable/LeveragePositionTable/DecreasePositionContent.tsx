@@ -22,12 +22,14 @@ import {
 } from 'components/modalFooters/common'
 import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
+import { PercentSlider } from 'components/Slider/MUISlider'
 import { TruncatedText } from 'components/swap/styleds'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { ethers } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
+import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
@@ -381,6 +383,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     setErrorMessage,
   ])
 
+  const [debouncedReduceAmount, onDebouncedReduceAmount] = useDebouncedChangeHandler(
+    reduceAmount ?? '',
+    setReduceAmount
+  )
+
   const theme = useTheme()
 
   const loading = useMemo(() => tradeState === DerivedInfoState.LOADING, [tradeState])
@@ -427,13 +434,20 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
         </ThemedText.DeprecatedMain>
       </RowBetween>
       <AutoColumn>
+        <PercentSlider
+          initialValue={position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0}
+          onChange={(val) =>
+            position &&
+            onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
+          }
+        />
         <CurrencyInputPanel
           value={reduceAmount}
           id="reduce-position-input"
           onUserInput={(str: string) => {
             if (position?.totalDebtInput) {
               if (str === '') {
-                setReduceAmount('')
+                onDebouncedReduceAmount('')
               } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
                 return
               } else {
@@ -443,10 +457,10 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           }}
           showMaxButton={true}
           onMax={() => {
-            setReduceAmount(position?.totalDebtInput ? position?.totalDebtInput.toString(10) : '')
+            setReduceAmount(position?.totalPosition ? position?.totalPosition.toString(10) : '')
           }}
           hideBalance={true}
-          currency={inputCurrency}
+          currency={outputCurrency}
         />
         <TransactionDetails>
           <Wrapper style={{ marginTop: '0' }}>

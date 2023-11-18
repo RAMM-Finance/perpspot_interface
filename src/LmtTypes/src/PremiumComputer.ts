@@ -11,7 +11,11 @@ import type {
   Signer,
   utils,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type {
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -135,8 +139,42 @@ export interface PremiumComputerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
 
-  events: {};
+  events: {
+    "PremiumDeposited(address,address,bool,uint256)": EventFragment;
+    "PremiumPaid(address,address,uint256,uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "PremiumDeposited"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PremiumPaid"): EventFragment;
 }
+
+export interface PremiumDepositedEventObject {
+  payer: string;
+  pool: string;
+  isToken1: boolean;
+  amount: BigNumber;
+}
+export type PremiumDepositedEvent = TypedEvent<
+  [string, string, boolean, BigNumber],
+  PremiumDepositedEventObject
+>;
+
+export type PremiumDepositedEventFilter =
+  TypedEventFilter<PremiumDepositedEvent>;
+
+export interface PremiumPaidEventObject {
+  payer: string;
+  pool: string;
+  token0Amount: BigNumber;
+  token1Amount: BigNumber;
+  swappedAmount: BigNumber;
+}
+export type PremiumPaidEvent = TypedEvent<
+  [string, string, BigNumber, BigNumber, BigNumber],
+  PremiumPaidEventObject
+>;
+
+export type PremiumPaidEventFilter = TypedEventFilter<PremiumPaidEvent>;
 
 export interface PremiumComputer extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -173,7 +211,7 @@ export interface PremiumComputer extends BaseContract {
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
-    ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber]>;
+    ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber, BigNumber]>;
 
     getFeeGrowthInside(
       pool: PromiseOrValue<string>,
@@ -211,7 +249,7 @@ export interface PremiumComputer extends BaseContract {
     param: URateParamStruct,
     borrowInfo: LiquidityLoanStruct[],
     overrides?: CallOverrides
-  ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber]>;
+  ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber, BigNumber]>;
 
   getFeeGrowthInside(
     pool: PromiseOrValue<string>,
@@ -249,7 +287,7 @@ export interface PremiumComputer extends BaseContract {
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
-    ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber]>;
+    ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber, BigNumber]>;
 
     getFeeGrowthInside(
       pool: PromiseOrValue<string>,
@@ -279,7 +317,35 @@ export interface PremiumComputer extends BaseContract {
     ): Promise<BigNumber>;
   };
 
-  filters: {};
+  filters: {
+    "PremiumDeposited(address,address,bool,uint256)"(
+      payer?: PromiseOrValue<string> | null,
+      pool?: PromiseOrValue<string> | null,
+      isToken1?: null,
+      amount?: null
+    ): PremiumDepositedEventFilter;
+    PremiumDeposited(
+      payer?: PromiseOrValue<string> | null,
+      pool?: PromiseOrValue<string> | null,
+      isToken1?: null,
+      amount?: null
+    ): PremiumDepositedEventFilter;
+
+    "PremiumPaid(address,address,uint256,uint256,uint256)"(
+      payer?: PromiseOrValue<string> | null,
+      pool?: PromiseOrValue<string> | null,
+      token0Amount?: null,
+      token1Amount?: null,
+      swappedAmount?: null
+    ): PremiumPaidEventFilter;
+    PremiumPaid(
+      payer?: PromiseOrValue<string> | null,
+      pool?: PromiseOrValue<string> | null,
+      token0Amount?: null,
+      token1Amount?: null,
+      swappedAmount?: null
+    ): PremiumPaidEventFilter;
+  };
 
   estimateGas: {
     computePremium(
