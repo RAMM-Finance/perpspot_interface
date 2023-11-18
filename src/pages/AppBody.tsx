@@ -10,11 +10,11 @@ interface BodyWrapperProps {
 export const BodyWrapper = styled.main<BodyWrapperProps>`
   position: relative;
   margin-top: ${({ $margin }) => $margin ?? '0px'};
-  max-width: ${({ $maxWidth }) => $maxWidth ?? '420px'};
+  // max-width: ${({ $maxWidth }) => $maxWidth ?? '420px'};
   width: 100%;
   background: ${({ theme }) => theme.backgroundBackdrop};
-  border-radius: 32px;
-  border: 3px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
   margin-top: 1rem;
   margin-left: auto;
   margin-right: auto;
@@ -22,14 +22,13 @@ export const BodyWrapper = styled.main<BodyWrapperProps>`
   font-feature-settings: 'ss01' on, 'ss02' on, 'cv01' on, 'cv03' on;
 `
 
-
 export const BodyWrapperAdd = styled.main<BodyWrapperProps>`
   position: relative;
   margin-top: ${({ $margin }) => $margin ?? '0px'};
   max-width: ${({ $maxWidth }) => $maxWidth ?? '420px'};
   width: 100%;
   background: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   margin-top: 1rem;
   margin-left: auto;

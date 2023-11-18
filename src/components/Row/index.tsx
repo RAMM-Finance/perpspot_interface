@@ -24,7 +24,11 @@ const Row = styled(Box)<{
 export const RowBetween = styled(Row)`
   justify-content: space-between;
 `
-
+export const RowStart = styled(Row)`
+  justify-content: start;
+  align-items: center;
+  gap: 20px;
+`
 export const RowFlat = styled.div`
   display: flex;
   align-items: flex-end;

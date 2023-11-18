@@ -108,33 +108,31 @@ export const PositionPreview = ({
             </ThemedText.DeprecatedLabel>
           </RowBetween>*/}
         </AutoColumn>
-
       </LightCard>
-        <RowBetween>
-          {title ? <ThemedText.DeprecatedMain>{title}</ThemedText.DeprecatedMain> : <div />}
-          <RateToggle
-            currencyA={sorted ? currency0 : currency1}
-            currencyB={sorted ? currency1 : currency0}
-            handleRateToggle={handleRateChange}
-          />
-        </RowBetween>
+      <RowBetween>
+        {title ? <ThemedText.DeprecatedMain>{title}</ThemedText.DeprecatedMain> : <div />}
+        <RateToggle
+          currencyA={sorted ? currency0 : currency1}
+          currencyB={sorted ? currency1 : currency0}
+          handleRateToggle={handleRateChange}
+        />
+      </RowBetween>
 
-        <LightCard padding="12px ">
-          <AutoColumn gap="4px" justify="center">
-            <ThemedText.DeprecatedMain fontSize="12px">
-              <Trans>Current price</Trans>
-            </ThemedText.DeprecatedMain>
-            <ThemedText.DeprecatedMediumHeader>{`${price.toSignificant(5)} `}</ThemedText.DeprecatedMediumHeader>
-            <ThemedText.DeprecatedMain textAlign="center" fontSize="12px">
-              <Trans>
-                {quoteCurrency.symbol} per {baseCurrency.symbol}
-              </Trans>
-            </ThemedText.DeprecatedMain>
-          </AutoColumn>
-        </LightCard>
+      <LightCard padding="12px ">
+        <AutoColumn gap="4px" justify="center">
+          <ThemedText.DeprecatedMain fontSize="12px">
+            <Trans>Current price</Trans>
+          </ThemedText.DeprecatedMain>
+          <ThemedText.DeprecatedMediumHeader>{`${price.toSignificant(5)} `}</ThemedText.DeprecatedMediumHeader>
+          <ThemedText.DeprecatedMain textAlign="center" fontSize="12px">
+            <Trans>
+              {quoteCurrency.symbol} per {baseCurrency.symbol}
+            </Trans>
+          </ThemedText.DeprecatedMain>
+        </AutoColumn>
+      </LightCard>
 
       <AutoColumn gap="md">
-
         <RowBetween>
           <LightCard width="48%" padding="8px">
             <AutoColumn gap="4px" justify="center">

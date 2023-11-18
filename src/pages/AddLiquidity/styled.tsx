@@ -1,10 +1,10 @@
-import { AutoColumn } from 'components/Column'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
+import { AutoColumn } from 'components/Column'
 import Input from 'components/NumericalInput'
-import { BodyWrapper,BodyWrapperAdd } from 'pages/AppBody'
+import { BodyWrapper } from 'pages/AppBody'
 import styled from 'styled-components/macro'
 
-
+import { ButtonError, ButtonPrimary } from '../../components/Button'
 
 export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
   max-width: ${({ wide }) => (wide ? '1200px' : '800px')};
@@ -20,20 +20,12 @@ export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
 export const Wrapper = styled.div`
   position: relative;
   padding: 26px 16px;
-  min-width: 480px;
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    min-width: 400px;
-  `};
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToExtraSmall`
-  min-width: 340px;
-`};
+  width: 1200px;
 `
 
 export const ScrollablePage = styled.div`
-  padding: 68px 8px 0px;
   position: relative;
+  padding-top: 15px;
   display: flex;
   flex-direction: column;
 
@@ -57,7 +49,8 @@ export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
 `
 
 export const CurrencyDropdown = styled(CurrencyInputPanel)`
-  width: 48.5%;
+  width: 50%;
+  font-size: 12px;
 `
 
 export const StyledInput = styled(Input)`
@@ -65,6 +58,19 @@ export const StyledInput = styled(Input)`
   text-align: left;
   font-size: 18px;
   width: 100%;
+`
+
+export const StyledButtonPrimary = styled(ButtonPrimary)`
+  font-size: 12px;
+  width: 200px;
+  height: 40px;
+  border-radius: 10px;
+`
+export const StyledButtonError = styled(ButtonError)`
+  font-size: 12px;
+  width: 200px;
+  height: 40px;
+  border-radius: 10px;
 `
 
 /* two-column layout where DepositAmount is moved at the very end on mobile. */
@@ -97,6 +103,18 @@ export const RightContainer = styled(AutoColumn)`
   grid-column: 1;
   `};
 `
+export const SectionWrapper = styled.div`
+  display: flex;
+  justify-content: space-around;
+`
+
+export const LeftSection = styled(AutoColumn)`
+  width: 45%;
+`
+
+export const RightSection = styled(AutoColumn)`
+  width: 40%;
+`
 
 export const StackedContainer = styled.div`
   display: grid;
@@ -110,14 +128,11 @@ export const StackedItem = styled.div<{ zIndex?: number }>`
 `
 
 export const MediumOnly = styled.div`
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    display: none;
-  `};
+  display: flex;
+  justify-content: center;
 `
 
 export const HideMedium = styled.div`
-  display: none;
-
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
     display: block;
   `};

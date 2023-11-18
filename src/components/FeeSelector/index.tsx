@@ -149,18 +149,18 @@ export default function FeeSelector({
             <AutoColumn id="add-liquidity-selected-fee">
               {!feeAmount ? (
                 <>
-                  <ThemedText.DeprecatedLabel>
+                  <ThemedText.BodyPrimary>
                     <Trans>Fee tier</Trans>
-                  </ThemedText.DeprecatedLabel>
-                  <ThemedText.DeprecatedMain fontWeight={400} fontSize="12px" textAlign="left">
+                  </ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary fontWeight={400} fontSize="12px" textAlign="left">
                     <Trans>The % you will earn in fees.</Trans>
-                  </ThemedText.DeprecatedMain>
+                  </ThemedText.BodyPrimary>
                 </>
               ) : (
                 <>
-                  <ThemedText.DeprecatedLabel className="selected-fee-label">
+                  <ThemedText.BodyPrimary className="selected-fee-label">
                     <Trans>{FEE_AMOUNT_DETAIL[feeAmount].label}% fee tier</Trans>
-                  </ThemedText.DeprecatedLabel>
+                  </ThemedText.BodyPrimary>
                   <Box style={{ width: 'fit-content', marginTop: '8px' }} className="selected-fee-percentage">
                     {distributions && (
                       <FeeTierPercentageBadge
@@ -175,7 +175,7 @@ export default function FeeSelector({
             </AutoColumn>
 
             <ButtonGray onClick={() => setShowOptions(!showOptions)} width="auto" padding="4px" $borderRadius="6px">
-              {showOptions ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}
+              <ThemedText.BodyPrimary>{showOptions ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}</ThemedText.BodyPrimary>
             </ButtonGray>
           </RowBetween>
         </FocusedOutlineCard>

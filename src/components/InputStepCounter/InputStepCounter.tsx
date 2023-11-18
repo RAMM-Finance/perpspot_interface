@@ -46,6 +46,7 @@ const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`
   text-align: center;
   width: 100%;
   font-weight: 500;
+  font-size: 14px;
   padding: 0 10px;
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
@@ -151,7 +152,7 @@ const StepCounter = ({
           {!locked && (
             <SmallButton onClick={handleDecrement} disabled={decrementDisabled}>
               <ButtonLabel disabled={decrementDisabled} fontSize="12px">
-                <Minus size={18} />
+                <Minus size={10} />
               </ButtonLabel>
             </SmallButton>
           )}
@@ -169,7 +170,7 @@ const StepCounter = ({
           {!locked && (
             <SmallButton onClick={handleIncrement} disabled={incrementDisabled}>
               <ButtonLabel disabled={incrementDisabled} fontSize="12px">
-                <Plus size={18} />
+                <Plus size={10} />
               </ButtonLabel>
             </SmallButton>
           )}
