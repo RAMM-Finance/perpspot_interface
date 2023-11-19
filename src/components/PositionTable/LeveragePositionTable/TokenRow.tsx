@@ -639,7 +639,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //  */
   // get token1Price(): Price<Token, Token>;
 
-  // console.log("position: ", position)
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
   // Number(formatBNToString(position?.premiumLeft.minus(position?.premiumOwed), NumberType.SwapTradeAmount)) -

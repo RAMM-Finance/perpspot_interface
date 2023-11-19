@@ -123,14 +123,14 @@ function useDerivedReducePositionInfo(
       try {
         const reducePercent = new BN(reduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
         const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
-        const price = position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+        const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
         const minOutput = new BN(100)
           .minus(new BN(allowedSlippage.toFixed(18)))
           .div(100)
           .times(reduceAmount)
           .times(price)
-
+     
         //   struct ReduceReturn {
         //     int256 amount0;
         //     int256 amount1;
@@ -533,7 +533,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                         </RowBetween>
                         <RowBetween>
                           <RowFixed>
-                            <MouseoverTooltip text={<Trans>The amount of premiums returned</Trans>}>
+                            <MouseoverTooltip text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}>
                               <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
                                 <Trans>Premium Owed</Trans>
                               </ThemedText.DeprecatedSubHeader>

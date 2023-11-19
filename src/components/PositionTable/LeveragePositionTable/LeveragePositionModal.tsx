@@ -75,7 +75,8 @@ export function LeveragePositionModal(props: TradeModalProps) {
     ) : activeTab === TradeModalActiveTab.WITHDRAW_PREMIUM ? (
       <WithdrawPremiumContent positionKey={positionKey} />
     ) : (
-      <IncreasePositionContent positionKey={positionKey} />
+      <DecreasePositionContent positionKey={positionKey} />
+      // <IncreasePositionContent positionKey={positionKey} />
     )
   }, [positionKey, activeTab])
 
@@ -84,13 +85,13 @@ export function LeveragePositionModal(props: TradeModalProps) {
       <CloseIcon onClick={onClose} />
       <Wrapper>
         <TabsWrapper>
-          <TabElement
+          {/*<TabElement
             first={true}
             isActive={activeTab === TradeModalActiveTab.INCREASE_POSITION}
             onClick={() => setActiveTab(TradeModalActiveTab.INCREASE_POSITION)}
           >
             Increase Position
-          </TabElement>
+          </TabElement>*/}
           <TabElement
             isActive={activeTab === TradeModalActiveTab.DECREASE_POSITION}
             onClick={() => setActiveTab(TradeModalActiveTab.DECREASE_POSITION)}
