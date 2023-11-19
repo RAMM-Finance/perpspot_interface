@@ -23,7 +23,7 @@ import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
-import { MarginField, setLimit, setLocked, setPrice, typeInput } from './actions'
+import { MarginField, setBaseCurrencyIsInputToken, setLimit, setLocked, setPrice, typeInput } from './actions'
 import { getOutputQuote } from './getOutputQuote'
 
 export function useMarginTradingState(): AppState['margin'] {
@@ -41,6 +41,7 @@ export function useMarginTradingActionHandlers(): {
   onLockChange: (locked: MarginField | null) => void
   onChangeTradeType: (isLimit: boolean) => void
   onPriceInput: (typedValue: string) => void
+  onPriceToggle: (baseCurrencyIsInputToken: boolean) => void
 } {
   const dispatch = useAppDispatch()
 
@@ -86,6 +87,13 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onPriceToggle = useCallback(
+    (baseCurrencyIsInputToken: boolean) => {
+      dispatch(setBaseCurrencyIsInputToken({ baseCurrencyIsInputToken }))
+    },
+    [dispatch]
+  )
+
   return {
     // onSwitchTokens,
     // onCurrencySelection,
@@ -97,6 +105,7 @@ export function useMarginTradingActionHandlers(): {
     onLockChange,
     onChangeTradeType,
     onPriceInput,
+    onPriceToggle,
   }
 }
 
@@ -385,7 +394,7 @@ interface AddLimitOrderInfo {
   decayRate: BN
 }
 
-function useDerivedLimitAddPositionInfo(
+export function useDerivedLimitAddPositionInfo(
   margin: string | undefined,
   leverageFactor: string | undefined,
   startingPrice: string | undefined,

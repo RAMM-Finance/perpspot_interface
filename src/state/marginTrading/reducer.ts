@@ -1,6 +1,15 @@
 import { createReducer } from '@reduxjs/toolkit'
 
-import { MarginField, replaceMarginTradeState, setLimit, setLocked, setPrice, setRecipient, typeInput } from './actions'
+import {
+  MarginField,
+  replaceMarginTradeState,
+  setBaseCurrencyIsInputToken,
+  setLimit,
+  setLocked,
+  setPrice,
+  setRecipient,
+  typeInput,
+} from './actions'
 
 export interface MarginTradeState {
   readonly lockedField: MarginField | undefined | null
@@ -13,7 +22,8 @@ export interface MarginTradeState {
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
   readonly isLimitOrder: boolean
-  readonly startingPrice: string | undefined // ratio of output currency to input currency
+  readonly startingPrice: string | undefined
+  readonly baseCurrencyIsInputToken: boolean
   // readonly premium: string | null
 }
 
@@ -30,6 +40,7 @@ const initialState: MarginTradeState = {
   recipient: null,
   isLimitOrder: false,
   startingPrice: undefined,
+  baseCurrencyIsInputToken: false,
   // premium: null,
 }
 
@@ -55,6 +66,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             premium,
             isLimitOrder,
             startingPrice,
+            baseCurrencyIsInputToken,
           },
         }
       ) => {
@@ -69,6 +81,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
           recipient,
           isLimitOrder,
           startingPrice,
+          baseCurrencyIsInputToken,
           // premium: premium ?? null,
         }
       }
@@ -130,6 +143,12 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
       return {
         ...state,
         startingPrice,
+      }
+    })
+    .addCase(setBaseCurrencyIsInputToken, (state, { payload: { baseCurrencyIsInputToken } }) => {
+      return {
+        ...state,
+        baseCurrencyIsInputToken,
       }
     })
 )

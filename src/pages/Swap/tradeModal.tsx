@@ -4,13 +4,15 @@ import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SwapEventName
 import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
+import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
@@ -27,6 +29,7 @@ import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
@@ -53,7 +56,6 @@ import {
   InputSection,
   LeverageGaugeSection,
   LeverageInputSection,
-  LimitInputSection,
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
@@ -117,6 +119,34 @@ export const OpacityHoverState = css`
   }) => `opacity ${duration.medium} ${timing.ease}`};
 `
 
+export const PriceToggleSection = styled.div`
+  position: relative;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  margin: 0.5rem;
+`
+
+export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
+  opacity: ${({ disabled }) => (disabled ? '0.2' : '1')};
+  pointer-events: ${({ disabled }) => (disabled ? 'none' : 'initial')};
+`
+
+const LimitInputPrice = styled(AutoColumn)`
+  background-color: ${({ theme }) => theme.surface1};
+  border-radius: 10px;
+  padding: 16px;
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+`
+
 const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
 `
@@ -168,6 +198,7 @@ const TradeTabContent = () => {
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
     isLimitOrder,
     startingPrice,
+    baseCurrencyIsInputToken,
   } = useMarginTradingState()
 
   const pool = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
@@ -196,7 +227,8 @@ const TradeTabContent = () => {
   //   preTradeInfo?.approvalAmount.toExact()
   // )
 
-  const { onLeverageFactorChange, onMarginChange, onChangeTradeType, onPriceInput } = useMarginTradingActionHandlers()
+  const { onLeverageFactorChange, onMarginChange, onChangeTradeType, onPriceInput, onPriceToggle } =
+    useMarginTradingActionHandlers()
 
   // allowance / approval
   const [facilityApprovalState, approveMarginFacility] = useApproveCallback(
@@ -297,14 +329,17 @@ const TradeTabContent = () => {
     onLeverageFactorChange
   )
 
-  // const [sliderLeverageFactor, debouncedLeverageFactor] = useDebouncedChangeHandler(
-  //   leverageFactor ?? '',
-  //   onLeverageFactorChange
-  // )
-
   const userHasSpecifiedInputOutput = Boolean(
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && trade?.margin.greaterThan(JSBI.BigInt(0))
   )
+
+  const [baseCurrency, quoteCurrency] = useMemo(() => {
+    if (baseCurrencyIsInputToken) {
+      return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
+    } else {
+      return [currencies[Field.OUTPUT], currencies[Field.INPUT]]
+    }
+  }, [currencies, baseCurrencyIsInputToken])
 
   const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage, allowedSlippedTick)
 
@@ -336,6 +371,21 @@ const TradeTabContent = () => {
       console.log('approveLeverageManager err: ', err)
     }
   }, [approveMarginFacility])
+
+  const currentPrice = useMemo(() => {
+    const inputCurrency = currencies[Field.INPUT]?.wrapped
+    const outputCurrency = currencies[Field.OUTPUT]?.wrapped
+    if (pool && inputCurrency && outputCurrency) {
+      const inputIsToken0 = inputCurrency.sortsBefore(outputCurrency)
+      const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
+      if (baseIsToken0) {
+        return formatBNToString(new BN(pool.token0Price.toFixed(18)))
+      } else {
+        return formatBNToString(new BN(pool.token1Price.toFixed(18)))
+      }
+    }
+    return undefined
+  }, [baseCurrencyIsInputToken, pool, currencies])
 
   //       address pool,
   //       bool positionIsToken0,
@@ -459,7 +509,65 @@ const TradeTabContent = () => {
           </OutputSwapSection>
           <LimitInputWrapper>
             <AnimatedDropdown open={isLimitOrder}>
-              <LimitInputSection>
+              <DynamicSection gap="md" disabled={false}>
+                <RowBetween>
+                  {Boolean(baseCurrency && quoteCurrency) && (
+                    <PriceToggleSection>
+                      <PriceToggle
+                        currencyA={baseCurrency as Currency}
+                        currencyB={quoteCurrency as Currency}
+                        handlePriceToggle={() => {
+                          onPriceToggle(!baseCurrencyIsInputToken)
+                          if (startingPrice && startingPrice !== '') {
+                            onPriceInput(new BN(1).div(new BN(startingPrice)).toString())
+                          }
+                        }}
+                      />
+                    </PriceToggleSection>
+                  )}
+                </RowBetween>
+              </DynamicSection>
+
+              <DynamicSection gap="md" disabled={false}>
+                <LimitInputPrice>
+                  <ThemedText.DeprecatedMain fontSize={14}>
+                    <Trans>Starting {baseCurrency?.symbol} Price:</Trans>
+                  </ThemedText.DeprecatedMain>
+                  <LimitInputRow>
+                    <StyledNumericalInput
+                      onUserInput={onPriceInput}
+                      value={startingPrice ?? ''}
+                      placeholder="0"
+                      className="limit-amount-input"
+                    ></StyledNumericalInput>
+                    <RowFixed>
+                      <Trans>
+                        {quoteCurrency?.symbol} per {baseCurrency?.symbol}
+                      </Trans>
+                    </RowFixed>
+                  </LimitInputRow>
+                </LimitInputPrice>
+
+                {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
+                  <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
+                    <Trans>
+                      <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
+                        Current Price:
+                      </ThemedText.DeprecatedMain>
+                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
+                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
+                      </ThemedText.DeprecatedBody>
+                      {baseCurrency && (
+                        <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                        </ThemedText.DeprecatedBody>
+                      )}
+                    </Trans>
+                  </AutoColumn>
+                )}
+              </DynamicSection>
+
+              {/* <LimitInputSection>
                 <ThemedText.BodySecondary fontWeight={400}>
                   <Trans>Limit</Trans>
                 </ThemedText.BodySecondary>
@@ -475,7 +583,7 @@ const TradeTabContent = () => {
                     <TokenName className="pair-name-container">{currencies[Field.INPUT]?.symbol}</TokenName>
                   </RowFixed>
                 </LimitInputRow>
-              </LimitInputSection>
+              </LimitInputSection> */}
             </AnimatedDropdown>
           </LimitInputWrapper>
           <LeverageGaugeSection>

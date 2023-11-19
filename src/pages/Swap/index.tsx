@@ -94,7 +94,7 @@ export const InputHeader = styled.div`
   padding-left: 6px;
 `
 
-const SwapSection = styled.div`
+export const SwapSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 16px;
@@ -394,22 +394,6 @@ export default function Swap({ className }: { className?: string }) {
     // execute: onWrap,
     // inputError: wrapInputError,
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
-  // const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
-  // const { address: recipientAddress } = useENSAddress(recipient)
-
-  // const parsedAmounts = useMemo(
-  //   () =>
-  //     showWrap
-  //       ? {
-  //           [Field.INPUT]: parsedAmount,
-  //           [Field.OUTPUT]: parsedAmount,
-  //         }
-  //       : {
-  //           [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
-  //           [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
-  //         },
-  //   [independentField, parsedAmount, showWrap, trade]
-  // )
 
   const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
@@ -423,42 +407,6 @@ export default function Swap({ className }: { className?: string }) {
     setDismissTokenWarning(true)
     navigate('/swap/')
   }, [navigate])
-
-  // const poolAddress = useBestPoolAddress(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
-
-  // useEffect(() => {
-  //   // declare the data fetching function
-  //   if (pool && account && provider && inputCurrency && outputCurrency) {
-  //     onLeverageManagerAddress(
-  //       computeLeverageManagerAddress({
-  //         factoryAddress: LEVERAGE_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
-  //         tokenA: inputCurrency?.wrapped.address ?? '',
-  //         tokenB: outputCurrency?.wrapped.address ?? '',
-  //         fee: pool.fee,
-  //       })
-  //     )
-  //     onBorrowManagerAddress(
-  //       computeBorrowManagerAddress({
-  //         factoryAddress: BORROW_MANAGER_FACTORY_ADDRESSES[chainId ?? 11155111],
-  //         tokenA: inputCurrency?.wrapped.address ?? '',
-  //         tokenB: outputCurrency?.wrapped.address ?? '',
-  //         fee: pool.fee,
-  //       })
-  //     )
-  //   }
-  // }, [
-  //   poolAddress,
-  //   account,
-  //   trade,
-  //   currencies,
-  //   provider,
-  //   onBorrowManagerAddress,
-  //   onLeverageManagerAddress,
-  //   inputCurrency,
-  //   outputCurrency,
-  //   chainId,
-  //   pool,
-  // ])
 
   // errors
   const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
@@ -499,54 +447,6 @@ export default function Swap({ className }: { className?: string }) {
   ])
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
-
-  // console.log('leveragePositions', leveragePositions)
-  // const orderPositionKey: OrderPositionKey | undefined = useMemo(() => {
-  //   const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
-  //   if (pool && account) {
-  //     return {
-  //       poolKey: {
-  //         token0Address: pool.token0.address,
-  //         token1Address: pool.token1.address,
-  //         fee: pool.fee,
-  //       },
-  //       isToken0,
-  //       trader: account,
-  //       isAdd: true,
-  //     }
-  //   } else {
-  //     return undefined
-  //   }
-  // }, [account, pool, outputCurrency])
-
-  // const order = useMarginOrderPositionFromPositionId(orderPositionKey)
-  // console.log(order)
-
-  // const leveragePositions: MarginPositionDetails[] = useMemo(() => {
-  //   return [
-  //     {
-  //       poolKey: {
-  //         token0Address: fusdc_s,
-  //         token1Address: feth_s,
-  //         fee: 500,
-  //       },
-  //       isToken0: true,
-  //       totalDebtOutput: new BN(100),
-  //       totalDebtInput: new BN(10000),
-  //       openTime: Math.floor(new Date().getTime() / 1000),
-  //       repayTime: Math.floor(new Date().getTime() / 1000),
-  //       isBorrow: false,
-  //       premiumOwed: new BN(100),
-  //       premiumDeposit: new BN(100),
-  //       premiumLeft: new BN(100),
-  //       totalPosition: new BN(100),
-  //       margin: new BN(100),
-  //       trader: '0x2C7Cb3cB22Ba9B322af60747017acb06deB10933',
-  //       token0Decimals: 18,
-  //       token1Decimals: 18,
-  //     },
-  //   ]
-  // }, [])
 
   const [activePositionTable, setActiveTable] = useState(1)
 
