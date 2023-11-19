@@ -145,6 +145,9 @@ const LimitInputPrice = styled(AutoColumn)`
   line-height: 20px;
   font-weight: 500;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
+  }
 `
 
 const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`

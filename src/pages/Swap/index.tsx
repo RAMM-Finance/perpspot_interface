@@ -94,7 +94,7 @@ export const InputHeader = styled.div`
   padding-left: 6px;
 `
 
-export const SwapSection = styled.div`
+const SwapSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 16px;
@@ -105,29 +105,9 @@ export const SwapSection = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
 
-  &:before {
-    box-sizing: border-box;
-    background-size: 100%;
-    border-radius: inherit;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    content: '';
-    // border: 1px solid ${({ theme }) => theme.backgroundSurface};
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
   }
-
-  // &:hover:before {
-  //   border-color: ${({ theme }) => theme.stateOverlayHover};
-  // }
-
-  // &:focus-within:before {
-  //   border-color: ${({ theme }) => theme.stateOverlayPressed};
-  // }
 `
 
 export const InputLeverageSection = styled(SwapSection)`
@@ -146,13 +126,6 @@ export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
   padding: 10px;
-  /* ::after {
-    content: '';
-    margin-top: 30px;
-    background-color: ${({ theme }) => theme.backgroundSurface};
-
-    height: 0.1em;
-  } */
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
@@ -446,6 +419,31 @@ export default function Swap({ className }: { className?: string }) {
     setSwapQuoteReceivedDate,
   ])
 
+  //Mock Order Book data
+  const fETHPrice = 1976
+  const fETH_fUSDC = [
+    [1966, 132000],
+    [1967, 395000],
+    [1968, 444000],
+    [1969, 203000],
+    [1970, 780000],
+    [1971, 420000],
+    [1972, 756000],
+    [1973, 603000],
+    [1974, 556000],
+    [1975, 506000],
+
+    [1977, 177000],
+    [1978, 395000],
+    [1979, 310000],
+    [1980, 150000],
+    [1981, 900000],
+    [1982, 140000],
+    [1983, 500000],
+    [1984, 870000],
+    [1985, 770000],
+  ]
+
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
@@ -495,7 +493,7 @@ export default function Swap({ className }: { className?: string }) {
                   fee={pool?.fee}
                 />
                 <LiquidityDistibutionWrapper>
-                  <LiquidityDistributionTable />
+                  <LiquidityDistributionTable currentPrice={fETHPrice} bids={fETH_fUSDC} />
                 </LiquidityDistibutionWrapper>
               </MiddleContainer>
               <PositionsContainer>
