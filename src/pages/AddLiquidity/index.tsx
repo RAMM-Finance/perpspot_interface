@@ -10,6 +10,7 @@ import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
 import FeeSelector from 'components/FeeSelector'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
+import { PositionPreview } from 'components/PositionPreview'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
@@ -35,7 +36,6 @@ import { BlueCard, OutlineCard, YellowCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
 import HoverInlineText from '../../components/HoverInlineText'
 import { AddRemoveTabs } from '../../components/NavigationTabs'
-import { PositionPreview } from '../../components/PositionPreview'
 import RangeSelector from '../../components/RangeSelector'
 import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import RateToggle from '../../components/RateToggle'
@@ -73,6 +73,7 @@ import {
   LeftSection,
   MediumOnly,
   PageWrapper,
+  PositionPreviewWrapper,
   RightContainer,
   RightSection,
   ScrollablePage,
@@ -641,6 +642,52 @@ export default function AddLiquidity() {
               </Row>
             )}
           </AddRemoveTabs>
+          {hasExistingPosition && existingPosition && (
+            <PositionPreviewWrapper>
+              <PositionPreview
+                position={existingPosition}
+                title={<ThemedText.BodyPrimary fontWeight={700}>Selected Range</ThemedText.BodyPrimary>}
+                inRange={!outOfRange}
+                ticksAtLimit={ticksAtLimit}
+              />
+
+              <AutoColumn justify="center" gap="md">
+                <div style={{ width: '90%' }}>
+                  <ThemedText.BodyPrimary fontWeight={700} mb="10px">
+                    {hasExistingPosition ? <Trans>Additional liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
+                  </ThemedText.BodyPrimary>
+
+                  <CurrencyInputPanel
+                    value={formattedAmounts[Field.CURRENCY_A]}
+                    onUserInput={onFieldAInput}
+                    onMax={() => {
+                      onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+                    }}
+                    showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
+                    currency={currencies[Field.CURRENCY_A] ?? null}
+                    id="add-liquidity-input-tokena"
+                    fiatValue={currencyAFiat}
+                    showCommonBases
+                    locked={depositADisabled}
+                  />
+
+                  <CurrencyInputPanel
+                    value={formattedAmounts[Field.CURRENCY_B]}
+                    onUserInput={onFieldBInput}
+                    onMax={() => {
+                      onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
+                    }}
+                    showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
+                    fiatValue={currencyBFiat}
+                    currency={currencies[Field.CURRENCY_B] ?? null}
+                    id="add-liquidity-input-tokenb"
+                    showCommonBases
+                    locked={depositBDisabled}
+                  />
+                </div>
+              </AutoColumn>
+            </PositionPreviewWrapper>
+          )}
           <Wrapper>
             <SectionWrapper>
               <LeftSection>
@@ -685,52 +732,8 @@ export default function AddLiquidity() {
                       </AutoColumn>{' '}
                     </>
                   )}
-                  {hasExistingPosition && existingPosition && (
-                    <PositionPreview
-                      position={existingPosition}
-                      title={<ThemedText.BodyPrimary>Selected Range</ThemedText.BodyPrimary>}
-                      inRange={!outOfRange}
-                      ticksAtLimit={ticksAtLimit}
-                    />
-                  )}
                 </AutoColumn>
                 <div>
-                  {hasExistingPosition && (
-                    <AutoColumn gap="md">
-                      <div></div>
-                      <ThemedText.BodyPrimary>
-                        {hasExistingPosition ? <Trans>Additional liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
-                      </ThemedText.BodyPrimary>
-
-                      <CurrencyInputPanel
-                        value={formattedAmounts[Field.CURRENCY_A]}
-                        onUserInput={onFieldAInput}
-                        onMax={() => {
-                          onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-                        }}
-                        showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-                        currency={currencies[Field.CURRENCY_A] ?? null}
-                        id="add-liquidity-input-tokena"
-                        fiatValue={currencyAFiat}
-                        showCommonBases
-                        locked={depositADisabled}
-                      />
-
-                      <CurrencyInputPanel
-                        value={formattedAmounts[Field.CURRENCY_B]}
-                        onUserInput={onFieldBInput}
-                        onMax={() => {
-                          onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-                        }}
-                        showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                        fiatValue={currencyBFiat}
-                        currency={currencies[Field.CURRENCY_B] ?? null}
-                        id="add-liquidity-input-tokenb"
-                        showCommonBases
-                        locked={depositBDisabled}
-                      />
-                    </AutoColumn>
-                  )}
                   {!hasExistingPosition ? (
                     <>
                       {/* <HideMedium>
@@ -796,7 +799,7 @@ export default function AddLiquidity() {
                                       {quoteCurrency?.symbol} per {baseCurrency.symbol}
                                     </ThemedText.DeprecatedBody>
                                   </Trans>
-                                  {!noLiquidity && <PresetsButtons onSetFullRange={handleSetFullRange} />}
+                                  {!noLiquidity && <PresetsButtons onSetFullRange={handleSetRecommendedRange} />}
                                 </AutoRow>
                               )}
 
@@ -1186,97 +1189,70 @@ export default function AddLiquidity() {
                     />
                   </>
                 )}
-                {hasExistingPosition && existingPosition && (
-                  <PositionPreview
-                    position={existingPosition}
-                    title={<ThemedText.DeprecatedLabel>Selected Range</ThemedText.DeprecatedLabel>}
-                    inRange={!outOfRange}
-                    ticksAtLimit={ticksAtLimit}
-                  />
-                )}
                 <div>
-                  {hasExistingPosition && (
-                    <>
-                      <div></div>
-                      <ThemedText.BodyPrimary>
-                        {hasExistingPosition ? <Trans>Additional liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
-                      </ThemedText.BodyPrimary>
-
-                      <CurrencyInputPanel
-                        value={formattedAmounts[Field.CURRENCY_A]}
-                        onUserInput={onFieldAInput}
-                        onMax={() => {
-                          onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-                        }}
-                        showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-                        currency={currencies[Field.CURRENCY_A] ?? null}
-                        id="add-liquidity-input-tokena"
-                        fiatValue={currencyAFiat}
-                        showCommonBases
-                        locked={depositADisabled}
-                      />
-
-                      <CurrencyInputPanel
-                        value={formattedAmounts[Field.CURRENCY_B]}
-                        onUserInput={onFieldBInput}
-                        onMax={() => {
-                          onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-                        }}
-                        showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                        fiatValue={currencyBFiat}
-                        currency={currencies[Field.CURRENCY_B] ?? null}
-                        id="add-liquidity-input-tokenb"
-                        showCommonBases
-                        locked={depositBDisabled}
-                      />
-                    </>
-                  )}
                   {!hasExistingPosition ? (
                     <>
                       {/* <HideMedium>
                         <Buttons />
                       </HideMedium> */}
                       <RightContainer gap="lg">
-                        <ThemedText.BodyPrimary>
-                          {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
-                        </ThemedText.BodyPrimary>
+                        <DynamicSection disabled={!feeAmount || invalidPool || (noLiquidity && !startPriceTypedValue)}>
+                          <ThemedText.BodyPrimary style={{ marginBottom: '10px', marginTop: '10px' }}>
+                            {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
+                          </ThemedText.BodyPrimary>
 
-                        <CurrencyInputPanel
-                          value={formattedAmounts[Field.CURRENCY_A]}
-                          onUserInput={onFieldAInput}
-                          onMax={() => {
-                            onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-                          }}
-                          showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-                          currency={currencies[Field.CURRENCY_A] ?? null}
-                          id="add-liquidity-input-tokena"
-                          fiatValue={currencyAFiat}
-                          showCommonBases
-                          locked={depositADisabled}
-                        />
+                          <CurrencyInputPanel
+                            value={formattedAmounts[Field.CURRENCY_A]}
+                            onUserInput={onFieldAInput}
+                            onMax={() => {
+                              onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+                            }}
+                            showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
+                            currency={currencies[Field.CURRENCY_A] ?? null}
+                            id="add-liquidity-input-tokena"
+                            fiatValue={currencyAFiat}
+                            showCommonBases
+                            locked={depositADisabled}
+                          />
 
-                        <CurrencyInputPanel
-                          value={formattedAmounts[Field.CURRENCY_B]}
-                          onUserInput={onFieldBInput}
-                          onMax={() => {
-                            onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-                          }}
-                          showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                          fiatValue={currencyBFiat}
-                          currency={currencies[Field.CURRENCY_B] ?? null}
-                          id="add-liquidity-input-tokenb"
-                          showCommonBases
-                          locked={depositBDisabled}
-                        />
+                          <CurrencyInputPanel
+                            value={formattedAmounts[Field.CURRENCY_B]}
+                            onUserInput={onFieldBInput}
+                            onMax={() => {
+                              onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
+                            }}
+                            showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
+                            fiatValue={currencyBFiat}
+                            currency={currencies[Field.CURRENCY_B] ?? null}
+                            id="add-liquidity-input-tokenb"
+                            showCommonBases
+                            locked={depositBDisabled}
+                          />
+                        </DynamicSection>
+                        <AutoColumn gap="16px">
+                          <DynamicSection
+                            disabled={!feeAmount || invalidPool || (noLiquidity && !startPriceTypedValue)}
+                            gap="md"
+                          >
+                            {' '}
+                            <ThemedText.BodyPrimary style={{ marginBottom: '5px' }}>Details</ThemedText.BodyPrimary>
+                            <OutlineCard>
+                              <RowBetween style={{ marginBottom: '6px' }}>
+                                <ThemedText.BodySmall>APR:</ThemedText.BodySmall>
+                              </RowBetween>
+                              <RowBetween>
+                                <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
+                              </RowBetween>
+                            </OutlineCard>
+                          </DynamicSection>
+                        </AutoColumn>
 
                         <MediumOnly>
                           <Buttons />
                         </MediumOnly>
                       </RightContainer>
                     </>
-                  ) : (
-                    <Buttons />
-                  )}
+                  ) : null}
                 </div>
               </RightSection>
             </SectionWrapper>

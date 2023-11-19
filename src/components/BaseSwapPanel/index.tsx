@@ -28,7 +28,7 @@ import { FiatValue } from './FiatValue'
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
   position: relative;
-  border-radius: ${({ hideInput }) => (hideInput ? '16px' : '20px')};
+  border-radius: ${({ hideInput }) => (hideInput ? '10px' : '10px')};
   background-color: ${({ theme, hideInput }) => (hideInput ? 'transparent' : '#0a0f19')};
   z-index: 1;
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
@@ -49,7 +49,7 @@ const FixedContainer = styled.div`
 `
 
 const Container = styled.div<{ hideInput: boolean; disabled: boolean }>`
-  border-radius: ${({ hideInput }) => (hideInput ? '16px' : '20px')};
+  border-radius: ${({ hideInput }) => (hideInput ? '10px' : '10px')};
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
 
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
@@ -320,7 +320,9 @@ export default function CurrencyInputPanel({
                       element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
                     >
                       <StyledBalanceMax onClick={onMax}>
-                        <Trans>MAX</Trans>
+                        <ThemedText.BodySmall color={theme.textTertiary} fontSize={9}>
+                          <Trans>MAX</Trans>
+                        </ThemedText.BodySmall>
                       </StyledBalanceMax>
                     </TraceEvent>
                   ) : null}

@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import PositionListItem from 'components/PositionListItem'
 import React from 'react'
 import styled from 'styled-components/macro'
-import { MEDIA_WIDTHS } from 'theme'
+import { MEDIA_WIDTHS, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
 
 const DesktopHeader = styled.div`
@@ -83,7 +83,15 @@ export default function PositionList({
             setUserHideClosedPositions(!userHideClosedPositions)
           }}
         >
-          {userHideClosedPositions ? <Trans>Show closed positions</Trans> : <Trans>Hide closed positions</Trans>}
+          {userHideClosedPositions ? (
+            <ThemedText.BodyPrimary>
+              <Trans>Show closed positions</Trans>
+            </ThemedText.BodyPrimary>
+          ) : (
+            <ThemedText.BodyPrimary>
+              <Trans>Hide closed positions</Trans>
+            </ThemedText.BodyPrimary>
+          )}
         </ToggleLabel>
       </DesktopHeader>
       <MobileHeader>
@@ -94,7 +102,15 @@ export default function PositionList({
               setUserHideClosedPositions(!userHideClosedPositions)
             }}
           >
-            {userHideClosedPositions ? <Trans>Show closed positions</Trans> : <Trans>Hide closed positions</Trans>}
+            {userHideClosedPositions ? (
+              <ThemedText.BodyPrimary>
+                <Trans>Show closed positions</Trans>
+              </ThemedText.BodyPrimary>
+            ) : (
+              <ThemedText.BodyPrimary>
+                <Trans>Hide closed positions</Trans>
+              </ThemedText.BodyPrimary>
+            )}
           </ToggleLabel>
         </ToggleWrap>
       </MobileHeader>

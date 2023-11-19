@@ -22,8 +22,8 @@ const Button = styled(ButtonGray)`
     color: ${({ theme }) => theme.textPrimary};
   }
 
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   padding: 4px;
 `
 
@@ -117,14 +117,14 @@ export default function Zoom({
           }}
           disabled={false}
         >
-          <RefreshCcw size={16} />
+          <RefreshCcw size={13} />
         </Button>
       )}
       <Button onClick={zoomIn} disabled={false}>
-        <ZoomIn size={16} />
+        <ZoomIn size={13} />
       </Button>
       <Button onClick={zoomOut} disabled={false}>
-        <ZoomOut size={16} />
+        <ZoomOut size={13} />
       </Button>
     </Wrapper>
   )

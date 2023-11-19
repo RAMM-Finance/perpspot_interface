@@ -142,25 +142,25 @@ export default function FeeSelector({
   }, [previousFeeAmount, feeAmount])
 
   return (
-    <AutoColumn gap="16px">
+    <AutoColumn style={{ marginBottom: '5px' }} gap="16px">
       <DynamicSection gap="md" disabled={disabled}>
         <FocusedOutlineCard pulsing={pulsing} onAnimationEnd={() => setPulsing(false)}>
           <RowBetween>
             <AutoColumn id="add-liquidity-selected-fee">
               {!feeAmount ? (
                 <>
-                  <ThemedText.BodyPrimary>
+                  <ThemedText.BodySmall>
                     <Trans>Fee tier</Trans>
-                  </ThemedText.BodyPrimary>
-                  <ThemedText.BodyPrimary fontWeight={400} fontSize="12px" textAlign="left">
+                  </ThemedText.BodySmall>
+                  <ThemedText.BodySmall fontWeight={400} textAlign="left">
                     <Trans>The % you will earn in fees.</Trans>
-                  </ThemedText.BodyPrimary>
+                  </ThemedText.BodySmall>
                 </>
               ) : (
                 <>
-                  <ThemedText.BodyPrimary className="selected-fee-label">
+                  <ThemedText.BodySmall className="selected-fee-label">
                     <Trans>{FEE_AMOUNT_DETAIL[feeAmount].label}% fee tier</Trans>
-                  </ThemedText.BodyPrimary>
+                  </ThemedText.BodySmall>
                   <Box style={{ width: 'fit-content', marginTop: '8px' }} className="selected-fee-percentage">
                     {distributions && (
                       <FeeTierPercentageBadge
@@ -175,7 +175,7 @@ export default function FeeSelector({
             </AutoColumn>
 
             <ButtonGray onClick={() => setShowOptions(!showOptions)} width="auto" padding="4px" $borderRadius="6px">
-              <ThemedText.BodyPrimary>{showOptions ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}</ThemedText.BodyPrimary>
+              <ThemedText.BodySmall>{showOptions ? <Trans>Hide</Trans> : <Trans>Edit</Trans>}</ThemedText.BodySmall>
             </ButtonGray>
           </RowBetween>
         </FocusedOutlineCard>

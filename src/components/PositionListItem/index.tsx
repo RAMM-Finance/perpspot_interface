@@ -271,37 +271,40 @@ export default function PositionListItem({
         <RangeBadge removed={removed} inRange={!outOfRange} />
       </RowBetween>
       {priceLower && priceUpper ? (
-        <RangeLineItem>
-          Accumulated Fees:
-          <RangeText>
-            {/*<ExtentsText>
+        <>
+          <RangeLineItem>
+            Accumulated Fees:
+            <RangeText>
+              {/*<ExtentsText>
               <Trans>Min: </Trans>
             </ExtentsText> */}
-            <Trans>
-              <span>-</span>
-              <HoverInlineText text={currencyQuote?.symbol} /> +
-            </Trans>
-            <Trans>
-              <span>-</span>
-              <HoverInlineText text={currencyBase?.symbol} />
-            </Trans>
-          </RangeText>
-          {'    '}
-          <HideSmall>Estimated APR:</HideSmall>
-          <SmallOnly>
-            <DoubleArrow>↔</DoubleArrow>{' '}
-          </SmallOnly>
-          <RangeText>
-            {/*<ExtentsText>
-              <Trans>Max:</Trans>
-            </ExtentsText> */}
-            <Trans>
-              <span>-%</span>
-              {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
-              <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
-            </Trans>
-          </RangeText>
-        </RangeLineItem>
+              <Trans>
+                <span>-</span>
+                <HoverInlineText text={currencyQuote?.symbol} /> +
+              </Trans>
+              <Trans>
+                <span>-</span>
+                <HoverInlineText text={currencyBase?.symbol} />
+              </Trans>
+            </RangeText>
+          </RangeLineItem>
+          <RangeLineItem>
+            <HideSmall>Estimated APR:</HideSmall>
+            <SmallOnly>
+              <DoubleArrow>↔</DoubleArrow>{' '}
+            </SmallOnly>
+            <RangeText>
+              {/*<ExtentsText>
+                   <Trans>Max:</Trans>
+                 </ExtentsText> */}
+              <Trans>
+                <span>-%</span>
+                {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
+                   <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
+              </Trans>
+            </RangeText>
+          </RangeLineItem>
+        </>
       ) : (
         <Loader />
       )}

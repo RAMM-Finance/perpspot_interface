@@ -8,6 +8,7 @@ import { ButtonError, ButtonPrimary } from '../../components/Button'
 
 export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
   max-width: ${({ wide }) => (wide ? '1200px' : '800px')};
+  background-color: ${({ theme }) => theme.backgroundSurface};
   width: 100%;
 
   padding: ${({ wide }) => (wide ? '10px' : '0')};
@@ -16,11 +17,14 @@ export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
     max-width: 480px;
   `};
 `
-
 export const Wrapper = styled.div`
   position: relative;
   padding: 26px 16px;
   width: 1200px;
+`
+
+export const PositionPreviewWrapper = styled.div`
+  padding: 2 rem;
 `
 
 export const ScrollablePage = styled.div`
@@ -114,6 +118,7 @@ export const LeftSection = styled(AutoColumn)`
 
 export const RightSection = styled(AutoColumn)`
   width: 40%;
+  margin-top: 50px;
 `
 
 export const StackedContainer = styled.div`
