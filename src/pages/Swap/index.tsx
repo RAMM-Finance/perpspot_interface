@@ -500,6 +500,7 @@ export default function Swap({ className }: { className?: string }) {
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
+  // console.log('leveragePositions', leveragePositions)
   // const orderPositionKey: OrderPositionKey | undefined = useMemo(() => {
   //   const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
   //   if (pool && account) {

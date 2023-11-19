@@ -1,6 +1,6 @@
-import { Currency, CurrencyAmount, Price, Token } from '@uniswap/sdk-core'
+import { Token } from '@uniswap/sdk-core'
 import { Pool } from '@uniswap/v3-sdk'
-import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
+import { BigNumber as BN } from 'bignumber.js'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
 // export interface BaseFacilityPositionDetails {
@@ -26,63 +26,54 @@ export class MarginPosition {
   public readonly inputCurrency: Token
   public readonly outputCurrency: Token
   public readonly isToken0: boolean
-  public readonly totalDebtOutput: CurrencyAmount<Currency>
-  public readonly totalDebtInput: CurrencyAmount<Currency>
+  public readonly totalDebtOutput: BN
+  public readonly totalDebtInput: BN
   public readonly openTime: number
   public readonly repayTime: number
   public readonly isBorrow: boolean
-  public readonly premiumOwed: CurrencyAmount<Currency>
-  public readonly premiumDeposit: CurrencyAmount<Currency>
-  public readonly premiumLeft: CurrencyAmount<Currency>
-  public readonly totalPosition: CurrencyAmount<Currency>
-  public readonly margin: CurrencyAmount<Currency>
+  public readonly premiumOwed: BN
+  public readonly premiumDeposit: BN
+  public readonly premiumLeft: BN
+  public readonly totalPosition: BN
+  public readonly margin: BN
 
   constructor(pool: Pool, details: MarginPositionDetails) {
     this.pool = pool
     this.inputCurrency = details.isToken0 ? pool.token1 : pool.token0
     this.outputCurrency = details.isToken0 ? pool.token0 : pool.token1
     this.isToken0 = details.isToken0
-    this.totalDebtOutput = BnToCurrencyAmount(details.totalDebtOutput, this.outputCurrency)
-    this.totalDebtInput = BnToCurrencyAmount(details.totalDebtInput, this.inputCurrency)
+    this.totalDebtOutput = details.totalDebtOutput
+    this.totalDebtInput = details.totalDebtInput
     this.openTime = details.openTime
     this.repayTime = details.repayTime
     this.isBorrow = details.isBorrow
-    this.premiumOwed = BnToCurrencyAmount(details.premiumOwed, this.inputCurrency)
-    this.premiumDeposit = BnToCurrencyAmount(details.premiumDeposit, this.inputCurrency)
-    this.premiumLeft = BnToCurrencyAmount(details.premiumLeft, this.inputCurrency)
-    this.totalPosition = BnToCurrencyAmount(details.totalPosition, this.outputCurrency)
-    this.margin = BnToCurrencyAmount(details.margin, this.inputCurrency)
+    this.premiumOwed = details.premiumOwed
+    this.premiumDeposit = details.premiumDeposit
+    this.premiumLeft = details.premiumLeft
+    this.totalPosition = details.totalPosition
+    this.margin = details.margin
   }
 
   // profit/loss in input token
-  public PnL(): CurrencyAmount<Currency> {
-    // price in token1 / token0 (token1 is quote currency)
-    const entryPrice = this.entryPrice()
-    const currentPrice = this.pool.token0Price
+  public PnL(): BN {
+    // input / output
+    const entryPrice = this.isToken0 ? this.entryPrice() : new BN(1).div(this.entryPrice())
 
-    const priceDiff = currentPrice.subtract(entryPrice)
-    const tokenAmount = this.isToken0
-      ? priceDiff.multiply(this.totalPosition)
-      : priceDiff.invert().multiply(this.totalPosition)
+    const currentPrice = this.isToken0
+      ? new BN(this.pool.token0Price.toFixed(18))
+      : new BN(this.pool.token1Price.toFixed(18))
 
-    return CurrencyAmount.fromRawAmount(this.inputCurrency, tokenAmount.quotient)
+    return this.totalPosition.times(currentPrice.minus(entryPrice))
   }
 
-  public entryPrice(): Price<Currency, Currency> {
+  /**
+   * @returns entry price in token1 per unit token0
+   */
+  public entryPrice(): BN {
     if (this.isToken0) {
-      return new Price(
-        this.pool.token0,
-        this.pool.token1,
-        this.totalPosition.quotient,
-        this.totalDebtInput.add(this.margin).quotient
-      )
+      return this.totalDebtInput.plus(this.margin).div(this.totalPosition)
     } else {
-      return new Price(
-        this.pool.token0,
-        this.pool.token1,
-        this.totalDebtInput.add(this.margin).quotient,
-        this.totalPosition.quotient
-      )
+      return this.totalPosition.div(this.totalDebtInput.plus(this.margin))
     }
   }
 

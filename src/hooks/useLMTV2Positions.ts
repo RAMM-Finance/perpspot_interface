@@ -55,7 +55,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         }
       }),
     }
-  }, [loading, error, result])
+  }, [loading, error, result, account])
 }
 
 // function getFee(fee: number): FeeAmount {

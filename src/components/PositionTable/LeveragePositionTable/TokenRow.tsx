@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, formatPrice, NumberType } from '@uniswap/conedison/format'
+import { NumberType } from '@uniswap/conedison/format'
+import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
@@ -8,6 +9,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -597,17 +599,31 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     [margin, totalDebtInput]
   )
 
-  const [entryPrice, currentPrice, position] = useMemo(() => {
+  const [entryPrice, currentPrice, baseToken, quoteToken, position, premiumRemaining] = useMemo(() => {
     if (pool) {
       const _position = new MarginPosition(pool, details)
-      // token1 quote
-      const _entryPrice = _position.entryPrice()
-      const _currentPrice = pool.token0Price
 
-      if (Number(pool.token0Price.toFixed(18)) < 1) {
-        return [_entryPrice.invert(), _currentPrice.invert(), _position]
+      const _entryPrice = _position.entryPrice()
+      const _currentPrice = new BN(pool.token0Price.toFixed(18))
+
+      if (_entryPrice.isLessThan(1)) {
+        return [
+          new BN(1).div(_entryPrice),
+          new BN(1).div(_currentPrice),
+          pool.token1,
+          pool.token0,
+          _position,
+          _position.premiumLeft.minus(_position.premiumOwed),
+        ]
       } else {
-        return [_entryPrice, _currentPrice, _position]
+        return [
+          _entryPrice,
+          _currentPrice,
+          pool.token0,
+          pool.token1,
+          _position,
+          _position.premiumLeft.minus(_position.premiumOwed),
+        ]
       }
     } else {
       return [undefined, undefined, undefined]
@@ -625,10 +641,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   // console.log("position: ", position)
 
-  const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
-  const premiumRemaining =
-    Number(formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)) -
-    Number(formatCurrencyAmount(position?.premiumOwed, NumberType.SwapTradeAmount))
+  const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
+  // Number(formatBNToString(position?.premiumLeft.minus(position?.premiumOwed), NumberType.SwapTradeAmount)) -
+  // Number(formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount))
 
   // console.log('leverageFactor', leverageFactor, initialCollateral, totalDebtInput)
 
@@ -645,7 +660,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 <PositionInfo>
                   <GreenText>
                     {' '}
-                    x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.totalPosition.currency?.symbol}`}
+                    x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.outputCurrency.symbol}`}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -654,8 +669,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow>
               <UnderlineText>
-                {`${formatCurrencyAmount(position?.totalPosition, NumberType.SwapTradeAmount)} ${
-                  position?.totalPosition.currency?.symbol
+                {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
+                  position?.outputCurrency?.symbol
                 }`}
               </UnderlineText>
               <Edit3 size={14} />
@@ -663,9 +678,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow>
-              {`${formatCurrencyAmount(position?.margin, NumberType.SwapTradeAmount)} ${
-                position?.margin.currency?.symbol
-              }`}
+              {`${formatBNToString(position?.margin, NumberType.SwapTradeAmount)} ${position?.inputCurrency?.symbol}`}
             </FlexStartRow>
           }
           repaymentTime={
@@ -677,9 +690,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow>
               <AutoRow>
                 <RowBetween>
-                  <DeltaText delta={Number(position?.PnL().toExact())}>
-                    {`${formatCurrencyAmount(position?.PnL(), NumberType.SwapTradeAmount)} ${
-                      position?.margin.currency?.symbol
+                  <DeltaText delta={Number(position?.PnL().toNumber())}>
+                    {`${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} ${
+                      position?.inputCurrency?.symbol
                     }`}
                   </DeltaText>
                 </RowBetween>
@@ -697,29 +710,28 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   lineHeight: 1.5,
                 }}
               >
-                {`${formatPrice(entryPrice)}/${formatPrice(currentPrice)} `}
-                <AutoColumn>{`${entryPrice?.baseCurrency.symbol}/${entryPrice?.quoteCurrency.symbol}`}</AutoColumn>
+                {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                  currentPrice,
+                  NumberType.SwapTradeAmount
+                )} `}
+                <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn>
               </AutoColumn>
             </FlexStartRow>
           }
           remainingPremium={
             <FlexStartRow>
               <UnderlineText>
-                {premiumRemaining > 0 ? (
+                {premiumRemaining?.isGreaterThan(0) ? (
                   <GreenText>
-                    {Math.round(premiumRemaining * 1000) / 1000}
-                    {' ' + position?.margin.currency?.symbol}
+                    {formatBNToString(premiumRemaining, NumberType.SwapTradeAmount)}
+                    {' ' + position?.inputCurrency?.symbol}
                   </GreenText>
                 ) : (
                   <RedText>
-                    {Math.round(premiumRemaining * 1000) / 1000}
-                    {position?.margin.currency?.symbol}
+                    {formatBNToString(premiumRemaining, NumberType.SwapTradeAmount)}
+                    {position?.inputCurrency?.symbol}
                   </RedText>
                 )}
-
-                {/*`${premiumRemaining} ${
-                  position?.margin.currency?.symbol
-                 }`*/}
               </UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
