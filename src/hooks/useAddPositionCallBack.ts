@@ -3,15 +3,12 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Percent, Price } from '@uniswap/sdk-core'
 import { priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import JSBI from 'jsbi'
-import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useCallback, useMemo } from 'react'
-import { MarginField } from 'state/marginTrading/actions'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
-import { AddMarginTrade, useMarginTradingState } from 'state/marginTrading/hooks'
-import { Field } from 'state/swap/actions'
-import { useSwapState } from 'state/swap/hooks'
+import { AddMarginTrade } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
@@ -19,7 +16,6 @@ import { Multicall as MulticallSDK } from 'utils/lmtSDK/multicall'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
-import { useCurrency } from './Tokens'
 import useTransactionDeadline from './useTransactionDeadline'
 
 export function useAddPositionCallback(
@@ -30,30 +26,6 @@ export function useAddPositionCallback(
   const deadline = useTransactionDeadline()
   const { account, chainId, provider } = useWeb3React()
 
-  const {
-    [MarginField.MARGIN]: margin,
-    [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-    isLimitOrder,
-  } = useMarginTradingState()
-
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
-
-  const inputCurrency = useCurrency(inputCurrencyId)
-  // const outputCurrency = useCurrency(outputCurrencyId)
-
-  const marginAmount = useMemo(
-    () => tryParseCurrencyAmount(margin ?? undefined, inputCurrency ?? undefined),
-    [inputCurrency, margin]
-  )
-
-  const borrowAmount = useMemo(() => {
-    if (!marginAmount || !leverageFactor || Number(leverageFactor) < 1) return undefined
-    return marginAmount?.multiply(JSBI.BigInt(leverageFactor)).subtract(marginAmount)
-  }, [leverageFactor, marginAmount])
-
   const addTransaction = useTransactionAdder()
   // console.log("allowedSlippage", allowedSlippage)
   const addPositionCallback = useCallback(async (): Promise<TransactionResponse> => {
@@ -63,7 +35,7 @@ export function useAddPositionCallback(
       if (!provider) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
-      if (!marginAmount || !borrowAmount) throw new Error('missing parameters')
+      // if (!marginAmount || !borrowAmount) throw new Error('missing parameters')
 
       const { pool, swapInput, swapRoute, positionKey, premium } = trade
 
@@ -71,49 +43,43 @@ export function useAddPositionCallback(
 
       if (!amountOut) throw new Error('unable to get trade output')
 
+      // calculate max and minimum tick bounds (current price bounds)
       const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippedTick.toFixed(18)) * 100))
-
       const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippedTick.toFixed(18)) * 100))
-
       const minPrice = new Price(
         pool.token0,
         pool.token1,
         JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
         JSBI.multiply(pool.token0Price.numerator, pullDown)
       )
-
       const maxPrice = new Price(
         pool.token0,
         pool.token1,
         JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
         JSBI.multiply(pool.token0Price.numerator, pullUp)
       )
-
       const slippedTickMax = priceToClosestTick(maxPrice)
       const slippedTickMin = priceToClosestTick(minPrice)
 
-      // console.log('real calldata', {
-      //   positionKey,
-      //   margin: marginAmount.quotient.toString(),
-      //   borrowAmount: borrowAmount.quotient.toString(),
-      //   minimumOutput: JSBI.BigInt(0),
-      //   deadline: deadline.toString(),
-      //   simulatedOutput: amountOut.toString(),
-      //   executionOption: 1,
-      //   depositPremium: premium.quotient.toString(),
-      //   slippedTickMin,
-      //   slippedTickMax,
-      // })
+      const inputDecimals = swapInput.currency.wrapped.decimals
+      const outputDecimals = trade.swapOutput.currency.wrapped.decimals
+      // calculate minimum output amount
+      const currentPrice = trade.inputIsToken0
+        ? new BN(pool.token0Price.toFixed(18))
+        : new BN(pool.token1Price.toFixed(18))
+      const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
+      const totalInput = new BN(swapInput.quotient.toString()).shiftedBy(-inputDecimals)
+      const minimumOutput = totalInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
-        margin: marginAmount.quotient,
-        borrowAmount: borrowAmount.quotient,
-        minimumOutput: JSBI.BigInt(0),
+        margin: trade.margin.quotient.toString(),
+        borrowAmount: trade.borrowAmount.quotient.toString(),
+        minimumOutput: minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
-        simulatedOutput: amountOut,
+        simulatedOutput: amountOut.toString(),
         executionOption: 1,
-        depositPremium: premium.quotient,
+        depositPremium: premium.quotient.toString(),
         slippedTickMin,
         slippedTickMax,
       })
@@ -145,7 +111,7 @@ export function useAddPositionCallback(
     } catch (error: any) {
       throw new Error('Contract Error')
     }
-  }, [allowedSlippedTick, deadline, account, chainId, provider, trade, marginAmount, borrowAmount])
+  }, [allowedSlippedTick, deadline, account, chainId, provider, trade, allowedSlippage])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback) return null

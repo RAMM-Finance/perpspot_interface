@@ -55,6 +55,7 @@ export enum TransactionType {
   REDUCE_BORROW_DEBT,
   ADD_LMT_LIQUIDITY,
   REMOVE_LMT_LIQUIDITY,
+  ADD_LIMIT_ORDER,
 }
 
 interface BaseTransactionInfo {
@@ -223,6 +224,14 @@ export interface ReduceLeveragePositionTransactionInfo {
   timestamp: string
 }
 
+export interface AddLimitOrderTransactionInfo {
+  type: TransactionType.ADD_LIMIT_ORDER
+  inputCurrencyId: string
+  outputCurrencyId: string
+  margin: string
+  startingPrice: string
+}
+
 // type: TransactionType.REDUCE_LEVERAGE,
 //             reduceAmount: inputReduceAmount ?? "",
 //             pnl: Number(transactionInfo.pnl),
@@ -302,6 +311,7 @@ export type TransactionInfo =
   | ReduceBorrowDebtTransactionInfo
   | AddLeverageTransactionInfo
   | AddLmtLiquidityTransactionInfo
+  | AddLimitOrderTransactionInfo
 
 export interface TransactionDetails {
   hash: string

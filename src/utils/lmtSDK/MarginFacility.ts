@@ -9,16 +9,16 @@ import { Multicall } from './multicall'
 
 export interface AddPositionOptions {
   positionKey: TraderPositionKey
-  margin: JSBI
-  borrowAmount: JSBI
-  minimumOutput: JSBI
+  margin: string
+  borrowAmount: string
+  minimumOutput: string
   deadline: string
-  simulatedOutput: JSBI
+  simulatedOutput: string
   executionOption: number
   // maxSlippage: string
   slippedTickMin: number
   slippedTickMax: number
-  depositPremium?: JSBI
+  depositPremium?: string
 }
 
 export interface ReducePositionOptions {
@@ -51,7 +51,7 @@ export interface WithdrawPremiumOptions {
 //     uint256 margin
 
 interface LimitOrderOptions {
-  positionKey: OrderPositionKey
+  orderKey: OrderPositionKey
   margin: string
   pool: string
   // positionIsToken0: boolean
@@ -82,7 +82,7 @@ export abstract class MarginFacilitySDK {
           },
           param.positionKey.trader,
           param.positionKey.isToken0,
-          toHex(param.depositPremium),
+          param.depositPremium,
         ])
       )
     }
@@ -95,13 +95,13 @@ export abstract class MarginFacilitySDK {
           fee: param.positionKey.poolKey.fee.toString(),
         },
         {
-          margin: toHex(param.margin),
-          simulatedOutput: toHex(param.simulatedOutput),
-          borrowAmount: toHex(param.borrowAmount),
+          margin: param.margin,
+          simulatedOutput: param.simulatedOutput,
+          borrowAmount: param.borrowAmount,
           positionIsToken0: param.positionKey.isToken0,
           executionOption: param.executionOption,
           trader: param.positionKey.trader,
-          minOutput: toHex(param.minimumOutput),
+          minOutput: param.minimumOutput,
           deadline: param.deadline,
           executionData: [],
           slippedTickMin: param.slippedTickMin,
@@ -125,12 +125,12 @@ export abstract class MarginFacilitySDK {
       calldatas.push(
         MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
           {
-            token0: param.positionKey.poolKey.token0Address,
-            token1: param.positionKey.poolKey.token1Address,
-            fee: param.positionKey.poolKey.fee,
+            token0: param.orderKey.poolKey.token0Address,
+            token1: param.orderKey.poolKey.token1Address,
+            fee: param.orderKey.poolKey.fee,
           },
-          param.positionKey.trader,
-          param.positionKey.isToken0,
+          param.orderKey.trader,
+          param.orderKey.isToken0,
           param.depositPremium,
         ])
       )
@@ -151,7 +151,7 @@ export abstract class MarginFacilitySDK {
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('submitOrder', [
         param.pool,
-        param.positionKey.isToken0,
+        param.orderKey.isToken0,
         param.isAdd,
         param.deadline,
         param.startOutput,

@@ -22,6 +22,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { isSupportedChain, SupportedChainId } from 'constants/chains'
+import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
@@ -36,10 +37,11 @@ import { MarginField } from 'state/marginTrading/actions'
 import {
   AddMarginTrade,
   useDerivedAddPositionInfo,
+  useDerivedLimitAddPositionInfo,
   useMarginTradingActionHandlers,
   useMarginTradingState,
 } from 'state/marginTrading/hooks'
-import { LeverageTradeState } from 'state/routing/types'
+import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useBestPool, useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
 import styled, { css } from 'styled-components/macro'
@@ -222,13 +224,26 @@ const TradeTabContent = () => {
     currencies[Field.INPUT]?.wrapped.address,
     currencies[Field.OUTPUT]?.wrapped.address
   )
-  // console.log(
-  //   'trade: ',
-  //   existingPosition?.premiumOwed.toString(),
-  //   preTradeInfo?.premiumDeposit.toExact(),
-  //   preTradeInfo?.premiumNecessary.toExact(),
-  //   preTradeInfo?.approvalAmount.toExact()
-  // )
+
+  const {
+    orderKey,
+    contractError: limitContractError,
+    inputError: limitInputError,
+    preTradeInfo: limitPreTradeInfo,
+    state: limitTradeState,
+    trade: limitTrade,
+  } = useDerivedLimitAddPositionInfo(
+    margin ?? undefined,
+    leverageFactor ?? undefined,
+    startingPrice,
+    baseCurrencyIsInputToken,
+    pool,
+    currencies[Field.INPUT] ?? undefined,
+    currencies[Field.OUTPUT] ?? undefined,
+    allowedSlippage
+  )
+
+  const { callback: addLimitCallback } = useAddLimitOrderCallback(limitTrade)
 
   const { onLeverageFactorChange, onMarginChange, onChangeTradeType, onPriceInput, onPriceToggle } =
     useMarginTradingActionHandlers()
@@ -390,16 +405,6 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, currencies])
 
-  //       address pool,
-  //       bool positionIsToken0,
-  //       bool isAdd,
-  //       uint256 deadline, -> deadline parameter?
-  //       uint256 startOutput, -> can be caluclated from user
-  //       uint256 minOutput, -> can be caluclated from slippage + start output
-  //       uint256 inputAmount, -> margin
-  //       uint256 decayRate,
-  //       uint256 margin
-
   const deadline = useTransactionDeadline()
 
   return (
@@ -530,7 +535,6 @@ const TradeTabContent = () => {
                   )}
                 </RowBetween>
               </DynamicSection>
-
               <DynamicSection gap="md" disabled={false}>
                 <LimitInputPrice>
                   <ThemedText.DeprecatedMain fontSize={14}>
@@ -569,24 +573,6 @@ const TradeTabContent = () => {
                   </AutoColumn>
                 )}
               </DynamicSection>
-
-              {/* <LimitInputSection>
-                <ThemedText.BodySecondary fontWeight={400}>
-                  <Trans>Limit</Trans>
-                </ThemedText.BodySecondary>
-                <LimitInputRow>
-                  <StyledNumericalInput
-                    onUserInput={onPriceInput}
-                    value={startingPrice ?? ''}
-                    placeholder="0"
-                    className="limit-amount-input"
-                  ></StyledNumericalInput>
-                  <RowFixed>
-                    <CurrencyLogo currency={currencies[Field.INPUT] ?? null} size="15px" />
-                    <TokenName className="pair-name-container">{currencies[Field.INPUT]?.symbol}</TokenName>
-                  </RowFixed>
-                </LimitInputRow>
-              </LimitInputSection> */}
             </AnimatedDropdown>
           </LimitInputWrapper>
           <LeverageGaugeSection>
@@ -651,89 +637,172 @@ const TradeTabContent = () => {
         </div>
         {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />} */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          {swapIsUnsupported ? (
-            <ButtonPrimary disabled={true}>
-              <ThemedText.DeprecatedMain mb="4px">
-                <Trans>Unsupported Asset</Trans>
-              </ThemedText.DeprecatedMain>
-            </ButtonPrimary>
-          ) : !account ? (
-            <ButtonLight
-              style={{ fontSize: '14px', borderRadius: '10px' }}
-              width="14"
-              padding=".5rem"
-              onClick={toggleWalletDrawer}
-              fontWeight={600}
-            >
-              <Trans>Connect Wallet</Trans>
-            </ButtonLight>
-          ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
-                <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
-          ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
-            <ButtonPrimary
-              onClick={updateLeverageAllowance}
-              style={{ gap: 14 }}
-              disabled={facilityApprovalState === ApprovalState.PENDING}
-            >
-              {facilityApprovalState === ApprovalState.PENDING ? (
-                <>
-                  <Loader size="20px" />
-                  <Trans>Approval pending</Trans>
-                </>
-              ) : (
-                <>
-                  <MouseoverTooltip
-                    text={
-                      <Trans>
-                        Permission is required for Limitless to use each token.{' '}
-                        {preTradeInfo && formattedMargin
-                          ? `Allowance of ${formatNumberOrString(
-                              Number(preTradeInfo.additionalPremium.toExact()) + Number(formattedMargin),
-                              NumberType.SwapTradeAmount
-                            )} ${currencies[Field.INPUT]?.symbol} required.`
-                          : null}
-                      </Trans>
-                    }
-                  >
-                    <RowBetween>
-                      <Info size={20} />
-                      <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
-                    </RowBetween>
-                  </MouseoverTooltip>
-                </>
-              )}
-            </ButtonPrimary>
-          ) : (
-            <ButtonError
-              style={{ fontSize: '14px', borderRadius: '10px' }}
-              width="14"
-              padding=".25rem"
-              onClick={() => {
-                setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
-              }}
-              id="leverage-button"
-              disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
-            >
-              <ThemedText.BodyPrimary fontWeight={600}>
-                {inputError ? (
-                  inputError
-                ) : contractError ? (
-                  contractError
-                ) : invalidTrade ? (
-                  <Trans>Invalid Trade</Trans>
-                ) : tradeIsLoading ? (
-                  <Trans>Execute</Trans>
+          {!isLimitOrder &&
+            (swapIsUnsupported ? (
+              <ButtonPrimary disabled={true}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Unsupported Asset</Trans>
+                </ThemedText.DeprecatedMain>
+              </ButtonPrimary>
+            ) : !account ? (
+              <ButtonLight
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".5rem"
+                onClick={toggleWalletDrawer}
+                fontWeight={600}
+              >
+                <Trans>Connect Wallet</Trans>
+              </ButtonLight>
+            ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
+              <GrayCard style={{ textAlign: 'center' }}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Insufficient liquidity for this trade.</Trans>
+                </ThemedText.DeprecatedMain>
+              </GrayCard>
+            ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
+              <ButtonPrimary
+                onClick={updateLeverageAllowance}
+                style={{ gap: 14 }}
+                disabled={facilityApprovalState === ApprovalState.PENDING}
+              >
+                {facilityApprovalState === ApprovalState.PENDING ? (
+                  <>
+                    <Loader size="20px" />
+                    <Trans>Approval pending</Trans>
+                  </>
                 ) : (
-                  <Trans>Execute</Trans>
+                  <>
+                    <MouseoverTooltip
+                      text={
+                        <Trans>
+                          Permission is required for Limitless to use each token.{' '}
+                          {preTradeInfo && formattedMargin
+                            ? `Allowance of ${formatNumberOrString(
+                                Number(preTradeInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                NumberType.SwapTradeAmount
+                              )} ${currencies[Field.INPUT]?.symbol} required.`
+                            : null}
+                        </Trans>
+                      }
+                    >
+                      <RowBetween>
+                        <Info size={20} />
+                        <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                      </RowBetween>
+                    </MouseoverTooltip>
+                  </>
                 )}
-              </ThemedText.BodyPrimary>
-            </ButtonError>
-          )}
-          {/* {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null} */}
+              </ButtonPrimary>
+            ) : (
+              <ButtonError
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".25rem"
+                onClick={() => {
+                  setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
+                }}
+                id="leverage-button"
+                disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
+              >
+                <ThemedText.BodyPrimary fontWeight={600}>
+                  {inputError ? (
+                    inputError
+                  ) : contractError ? (
+                    contractError
+                  ) : invalidTrade ? (
+                    <Trans>Invalid Trade</Trans>
+                  ) : tradeIsLoading ? (
+                    <Trans>Execute</Trans>
+                  ) : (
+                    <Trans>Execute</Trans>
+                  )}
+                </ThemedText.BodyPrimary>
+              </ButtonError>
+            ))}
+          {isLimitOrder &&
+            (swapIsUnsupported ? (
+              <ButtonPrimary disabled={true}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Unsupported Asset</Trans>
+                </ThemedText.DeprecatedMain>
+              </ButtonPrimary>
+            ) : !account ? (
+              <ButtonLight
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".5rem"
+                onClick={toggleWalletDrawer}
+                fontWeight={600}
+              >
+                <Trans>Connect Wallet</Trans>
+              </ButtonLight>
+            ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
+              <GrayCard style={{ textAlign: 'center' }}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Insufficient liquidity for this trade.</Trans>
+                </ThemedText.DeprecatedMain>
+              </GrayCard>
+            ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
+              <ButtonPrimary
+                onClick={updateLeverageAllowance}
+                style={{ gap: 14 }}
+                disabled={facilityApprovalState === ApprovalState.PENDING}
+              >
+                {facilityApprovalState === ApprovalState.PENDING ? (
+                  <>
+                    <Loader size="20px" />
+                    <Trans>Approval pending</Trans>
+                  </>
+                ) : (
+                  <>
+                    <MouseoverTooltip
+                      text={
+                        <Trans>
+                          Permission is required for Limitless to use each token.{' '}
+                          {preTradeInfo && formattedMargin
+                            ? `Allowance of ${formatNumberOrString(
+                                Number(preTradeInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                NumberType.SwapTradeAmount
+                              )} ${currencies[Field.INPUT]?.symbol} required.`
+                            : null}
+                        </Trans>
+                      }
+                    >
+                      <RowBetween>
+                        <Info size={20} />
+                        <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                      </RowBetween>
+                    </MouseoverTooltip>
+                  </>
+                )}
+              </ButtonPrimary>
+            ) : (
+              <ButtonError
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".25rem"
+                onClick={() => {
+                  // setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
+                }}
+                id="leverage-button"
+                disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
+              >
+                <ThemedText.BodyPrimary fontWeight={600}>
+                  {limitInputError ? (
+                    limitInputError
+                  ) : limitContractError ? (
+                    limitContractError
+                  ) : limitTradeState === LimitTradeState.INVALID ? (
+                    <Trans>Invalid Trade</Trans>
+                  ) : limitTradeState === LimitTradeState.LOADING ? (
+                    <Trans>Execute</Trans>
+                  ) : (
+                    <Trans>Execute</Trans>
+                  )}
+                </ThemedText.BodyPrimary>
+              </ButtonError>
+            ))}
         </div>
       </div>
     </Wrapper>

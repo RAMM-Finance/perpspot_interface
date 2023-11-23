@@ -402,5 +402,7 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Add Leverage Summary</Trans>
     case TransactionType.ADD_LMT_LIQUIDITY:
       return <AddLmtLiquiditySummary info={info} />
+    case TransactionType.ADD_LIMIT_ORDER:
+      return <Trans>Add Limit Order Summary</Trans>
   }
 }

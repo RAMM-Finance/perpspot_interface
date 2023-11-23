@@ -56,7 +56,6 @@ export class MarginPosition {
 
   // profit/loss in input token
   public PnL(): BN {
-    // input / output
     const entryPrice = this.isToken0 ? this.entryPrice() : new BN(1).div(this.entryPrice())
 
     const currentPrice = this.isToken0

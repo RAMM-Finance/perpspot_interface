@@ -19,6 +19,14 @@ export enum LeverageTradeState {
   SYNCING, // when same parameters are used, but newer block number
 }
 
+export enum LimitTradeState {
+  LOADING,
+  EXISTING_ORDER,
+  INVALID,
+  VALID,
+  SYNCING,
+}
+
 // from https://github.com/Uniswap/routing-api/blob/main/lib/handlers/schema.ts
 
 type TokenInRoute = Pick<Token, 'address' | 'chainId' | 'symbol' | 'decimals'>
