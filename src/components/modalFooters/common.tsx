@@ -1,15 +1,15 @@
-import { Text } from 'rebass'
-import { ChevronDown, Info } from 'react-feather'
-import Row, { AutoRow, RowBetween, RowFixed } from '../Row'
-
-import styled, { keyframes, useTheme } from 'styled-components'
-import Card, { DarkCard, LightCard, OutlineCard } from 'components/Card'
+import { OutlineCard } from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
+import { ChevronDown, Info } from 'react-feather'
+import { Text } from 'rebass'
+import styled, { keyframes } from 'styled-components'
+
+import Row, { RowBetween } from '../Row'
 
 export const TransactionDetails = styled.div`
   position: relative;
   width: 100%;
-
+  margin-top: 10px;
 `
 export const Wrapper = styled(Row)`
   width: 100%;
@@ -32,13 +32,13 @@ export const StyledCard = styled(OutlineCard)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
-export const StyledHeaderRow = styled(RowBetween) <{ disabled: boolean; open: boolean }>`
+export const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
   padding: 0;
   align-items: center;
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
 `
 
-export const RotatingArrow = styled(ChevronDown) <{ open?: boolean }>`
+export const RotatingArrow = styled(ChevronDown)<{ open?: boolean }>`
   transform: ${({ open }) => (open ? 'rotate(180deg)' : 'none')};
   transition: transform 0.1s linear;
 `
@@ -115,7 +115,6 @@ export const Spinner = styled.div`
   top: -3px;
 `
 
-
 export const StyledPriceContainer = styled.button`
   background-color: transparent;
   border: none;
@@ -141,10 +140,9 @@ export const SliderText = styled(Text)`
   `};
 `
 
-
-export const TruncatedText = styled(Text)<{width?: string}>`
+export const TruncatedText = styled(Text)<{ width?: string }>`
   text-overflow: ellipsis;
-  max-width: ${({width}) => width ? width : '180px'};
+  max-width: ${({ width }) => (width ? width : '180px')};
   overflow: hidden;
   text-align: right;
 `
@@ -152,7 +150,7 @@ export const TruncatedText = styled(Text)<{width?: string}>`
 export enum DerivedInfoState {
   LOADING,
   VALID,
-  INVALID
+  INVALID,
 }
 
 export function TextWithLoadingPlaceholder({

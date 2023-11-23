@@ -714,7 +714,6 @@ export default function AddLiquidity() {
                             id="add-liquidity-input-tokena"
                             showCommonBases
                           />
-                          <div style={{ width: '12px' }} />
                           <CurrencyDropdown
                             value={formattedAmounts[Field.CURRENCY_B]}
                             hideInput={true}

@@ -867,13 +867,14 @@ export function PositionPage() {
                               </ThemedText.DeprecatedLargeHeader>
                             )}
                           </AutoColumn>
-                          {ownsNFT && tokenId && !removed ? (
+                          {/* {ownsNFT && tokenId && !removed ? ( */}
+                          {tokenId && !removed ? (
                             <SmallButtonPrimary
                               as={Link}
                               to={`/remove/${tokenId}`}
-                              padding="8px 10px"
+                              padding="5px 8px"
                               width="fit-content"
-                              $borderRadius="12px"
+                              $borderRadius="10px"
                             >
                               <Trans>Remove Liquidity</Trans>
                             </SmallButtonPrimary>

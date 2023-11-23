@@ -97,13 +97,21 @@ export function AdvancedSwapDetails({
         <MouseoverValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           value={trade?.outputAmount.toFixed(3)}
-          label={<Trans>Output</Trans>}
+          label={
+            <Trans>
+              <ThemedText.BodySmall>Output</ThemedText.BodySmall>
+            </Trans>
+          }
           appendSymbol={trade ? trade.outputAmount.currency.symbol : '-'}
         />
         <MouseoverValueLabel
           description="The impact your trade has on the market price of this pool."
           value={<FormattedPriceImpact priceImpact={priceImpact} />}
-          label={<Trans>Price Impact</Trans>}
+          label={
+            <Trans>
+              <ThemedText.BodySmall>Price Impact</ThemedText.BodySmall>
+            </Trans>
+          }
         />
         <Separator />
         <MouseoverValueLabel
@@ -563,17 +571,17 @@ export function ValueLabel({
   // const theme = useTheme()
 
   return (
-    <RowBetween>
+    <RowBetween padding="1px">
       <RowFixed>
         <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
-          <ThemedText.BodySecondary fontSize={13}>{label}</ThemedText.BodySecondary>
+          <ThemedText.BodySmall>{label}</ThemedText.BodySmall>
         </MouseoverTooltip>
       </RowFixed>
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
-        <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
+        <ThemedText.BodySmall color="textSecondary" textAlign="right">
           {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
-        </ThemedText.DeprecatedBlack>
+        </ThemedText.BodySmall>
       </TextWithLoadingPlaceholder>
     </RowBetween>
   )
@@ -791,7 +799,7 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-  // console.log('trade', trade); 
+  // console.log('trade', trade);
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -842,6 +850,7 @@ export function AdvancedMarginTradeDetails({
           value={"0"}
           syncing={syncing}
         />
+
         {/*<ValueLabel
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
           The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."

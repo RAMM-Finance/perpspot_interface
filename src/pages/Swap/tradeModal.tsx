@@ -10,10 +10,10 @@ import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
-import { RowBetween, RowFixed } from 'components/Row'
+import { RowBetween, RowFixed, RowStart } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
@@ -125,12 +125,13 @@ export const PriceToggleSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
   color: ${({ theme }) => theme.textSecondary};
-  font-size: 14px;
+
   line-height: 20px;
-  font-weight: 500;
+
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
-  margin: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 `
 
 export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
@@ -157,7 +158,7 @@ const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
 `
 
 const Selector = styled.div<{ active: boolean }>`
-  padding: 6px 8px;
+  padding: 5px 7px;
   border-radius: 10px;
   background: ${({ active, theme }) => (active ? theme.background : 'none')};
   cursor: pointer;
@@ -489,7 +490,7 @@ const TradeTabContent = () => {
         <div>
           <OutputSwapSection showDetailsDropdown={false}>
             <InputHeader>
-              <ThemedText.BodySecondary fontWeight={400}>
+              <ThemedText.BodySecondary>
                 <Trans>Position Size</Trans>
               </ThemedText.BodySecondary>
             </InputHeader>
@@ -517,8 +518,8 @@ const TradeTabContent = () => {
           </OutputSwapSection>
           <LimitInputWrapper>
             <AnimatedDropdown open={isLimitOrder}>
-              <DynamicSection gap="md" disabled={false}>
-                <RowBetween>
+              <DynamicSection justify="start" gap="md" disabled={false}>
+                <RowStart>
                   {Boolean(baseCurrency && quoteCurrency) && (
                     <PriceToggleSection>
                       <PriceToggle
@@ -533,13 +534,16 @@ const TradeTabContent = () => {
                       />
                     </PriceToggleSection>
                   )}
-                </RowBetween>
+                </RowStart>
               </DynamicSection>
               <DynamicSection gap="md" disabled={false}>
                 <LimitInputPrice>
-                  <ThemedText.DeprecatedMain fontSize={14}>
-                    <Trans>Starting {baseCurrency?.symbol} Price:</Trans>
-                  </ThemedText.DeprecatedMain>
+                  <Trans>
+                    <ThemedText.BodySecondary>Starting Price </ThemedText.BodySecondary>{' '}
+                  </Trans>
+                  <div style={{ textAlign: 'end', gap: '5px' }}>
+                    <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
+                  </div>
                   <LimitInputRow>
                     <StyledNumericalInput
                       onUserInput={onPriceInput}
@@ -548,13 +552,22 @@ const TradeTabContent = () => {
                       className="limit-amount-input"
                     ></StyledNumericalInput>
                     <RowFixed>
-                      <Trans>
-                        {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                      </Trans>
+                      {baseCurrency && (
+                        <Trans>
+                          <ThemedText.BodySmall>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <CurrencyLogo currency={quoteCurrency} size="15px" />
+                              {quoteCurrency?.symbol} /
+                              <CurrencyLogo currency={baseCurrency} size="15px" />
+                              {baseCurrency.symbol}
+                            </div>
+                          </ThemedText.BodySmall>
+                        </Trans>
+                      )}
                     </RowFixed>
                   </LimitInputRow>
                 </LimitInputPrice>
-
+                {/* 
                 {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
                   <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
                     <Trans>
@@ -571,7 +584,7 @@ const TradeTabContent = () => {
                       )}
                     </Trans>
                   </AutoColumn>
-                )}
+                )} */}
               </DynamicSection>
             </AnimatedDropdown>
           </LimitInputWrapper>
