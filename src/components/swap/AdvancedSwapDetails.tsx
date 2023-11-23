@@ -825,6 +825,12 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />
         <ValueLabel
+          description="Swap fee + origination fee "
+          label="Borrow Rate per hour"
+          value={"0"}
+          syncing={syncing}
+        />
+        <ValueLabel
           description="Slippage from spot price"
           label="Slippage"
           value={"0"}

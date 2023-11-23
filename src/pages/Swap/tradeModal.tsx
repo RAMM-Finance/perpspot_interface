@@ -444,7 +444,7 @@ const TradeTabContent = () => {
         <InputSection>
           <InputHeader>
             <ThemedText.BodySecondary fontWeight={400}>
-              <Trans>Deposit Collateral</Trans>
+              <Trans>Margin</Trans>
             </ThemedText.BodySecondary>
           </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>

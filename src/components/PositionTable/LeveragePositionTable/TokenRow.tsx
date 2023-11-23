@@ -345,15 +345,14 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited</Trans>,
   [PositionSortMethod.REPAYTIME]: (
     <Trans>
-      Maximum time left until premium repayment. Your position will be force closed if not paid by this deadline.
+      Borrow rate per hour
     </Trans>
   ),
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
   [PositionSortMethod.REMAINING]: (
     <Trans>
-      Remaining Premium that maintains this position. If this value is negative, you must deposit more premiums to
-      modify(add/reduce/close) your position.{' '}
+      Remaining Premium that maintains this position. Position is forced closed when this becomes 0{' '}
     </Trans>
   ),
   // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
