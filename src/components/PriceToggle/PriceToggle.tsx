@@ -1,5 +1,5 @@
-import { Trans } from '@lingui/macro'
 import { Currency } from '@uniswap/sdk-core'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 
 // the order of displayed base currencies from left to right is always in sort order
@@ -21,11 +21,11 @@ export default function PriceToggle({
   return tokenA && tokenB ? (
     <div style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }} onClick={handlePriceToggle}>
       <ToggleWrapper width="fit-content">
-        <ToggleElement isActive={isSorted} fontSize="12px">
-          <Trans>{isSorted ? currencyA.symbol : currencyB.symbol}</Trans>
+        <ToggleElement isActive={isSorted}>
+          <CurrencyLogo currency={isSorted ? currencyA : currencyB} size="15px" />
         </ToggleElement>
-        <ToggleElement isActive={!isSorted} fontSize="12px">
-          <Trans>{isSorted ? currencyB.symbol : currencyA.symbol}</Trans>
+        <ToggleElement isActive={!isSorted}>
+          <CurrencyLogo currency={isSorted ? currencyB : currencyA} size="15px" />
         </ToggleElement>
       </ToggleWrapper>
     </div>

@@ -34,7 +34,6 @@ const marks = [
   },
 ]
 
-
 export default function DiscreteSliderMarks({ initialValue, onChange }: DiscreteSliderMarksProps) {
   const handleChange = (event: Event, newValue: number | number[]) => {
     onChange(newValue as number)

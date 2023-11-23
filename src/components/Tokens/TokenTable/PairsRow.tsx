@@ -728,7 +728,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } })
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
           >
@@ -747,7 +750,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } })
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
           >
@@ -759,7 +765,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } })
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
           >
@@ -771,7 +780,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } })
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
           >
@@ -783,7 +795,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableRate
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } })
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
             rate={estimatedapr_}
@@ -795,7 +810,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableRate
             onClick={() => {
               if (currency1 && currency0) {
-                navigate('/swap', { state: { currency0, currency1 } })
+                navigate({
+                  pathname: '/swap',
+                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+                })
               }
             }}
             rate={urate_}
@@ -833,7 +851,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   )
 })
 
-// PLoadedRow.displayName = 'LoadedRow'
+PLoadedRow.displayName = 'LoadedRow'
 
 const Price = styled.span`
   font-weight: 700;

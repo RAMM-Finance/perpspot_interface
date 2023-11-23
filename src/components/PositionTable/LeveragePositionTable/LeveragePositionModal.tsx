@@ -6,7 +6,6 @@ import { TraderPositionKey } from 'types/lmtv2position'
 
 import DecreasePositionContent from './DecreasePositionContent'
 import { DepositPremiumContent } from './DepositPremiumContent'
-import { IncreasePositionContent } from './InreasePosition'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
 
 interface TradeModalProps {
@@ -26,31 +25,26 @@ export enum TradeModalActiveTab {
 const TabElement = styled.button<{ isActive: boolean; first?: boolean; last?: boolean }>`
   padding: 0;
   border: none;
-  background: ${({ isActive, theme }) => (isActive ? theme.background : 'transparent')};
-  color: ${({ theme }) => theme.textSecondary};
+  background: transparent;
+  color: ${({ isActive, theme }) => (isActive ? theme.textSecondary : 'gray')};
   font-size: 14px;
   font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
   outline: none;
-  border: ${({ theme }) => `1px solid ${theme.backgroundOutline}`};
-  border-top-left-radius: ${({ first }) => (first ? '10px' : '0px')};
-  border-bottom-left-radius: ${({ first }) => (first ? '10px' : '0px')};
-  border-top-right-radius: ${({ last }) => (last ? '10px' : '0px')};
-  border-bottom-right-radius: ${({ last }) => (last ? '10px' : '0px')};
 `
 
 const TabsWrapper = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin: 20px;
+  margin-top: 10px;
   flex-direction: row;
 `
 
 const Wrapper = styled.div`
   padding: 1rem;
-  padding-top: 0rem;
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  padding-top: 0.5rem;
 `
 
 const ContentWrapper = styled.div`
@@ -82,8 +76,8 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   return positionKey ? (
     <Modal isOpen={isOpen} maxHeight={1500} maxWidth={700} $scrollOverlay={true}>
-      <CloseIcon onClick={onClose} />
       <Wrapper>
+        <CloseIcon style={{ width: '12px' }} onClick={onClose} />
         <TabsWrapper>
           {/*<TabElement
             first={true}

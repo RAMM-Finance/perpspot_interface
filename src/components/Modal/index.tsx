@@ -60,7 +60,7 @@ const StyledDialogContent = styled(AnimatedDialogContent)<StyledDialogProps>`
         min-height: ${$minHeight}vh;
       `}
     display: ${({ $scrollOverlay }) => ($scrollOverlay ? 'inline-table' : 'flex')};
-    border-radius: 20px;
+    border-radius: 10px;
 
     @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
       width: 65vw;

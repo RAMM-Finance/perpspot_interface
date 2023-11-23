@@ -20,7 +20,7 @@ export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
 export const Wrapper = styled.div`
   position: relative;
   padding: 26px 16px;
-  width: 1200px;
+  width: 90%;
 `
 
 export const PositionPreviewWrapper = styled.div`
@@ -32,6 +32,8 @@ export const ScrollablePage = styled.div`
   padding-top: 15px;
   display: flex;
   flex-direction: column;
+  width: 90%;
+  height: auto;
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
     max-width: 480px;
@@ -53,8 +55,8 @@ export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
 `
 
 export const CurrencyDropdown = styled(CurrencyInputPanel)`
-  width: 50%;
-  font-size: 12px;
+  font-size: 14px;
+  transform: scale(1.1, 1.1);
 `
 
 export const StyledInput = styled(Input)`
@@ -109,6 +111,7 @@ export const RightContainer = styled(AutoColumn)`
 `
 export const SectionWrapper = styled.div`
   display: flex;
+
   justify-content: space-around;
 `
 

@@ -92,6 +92,7 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
 `
 export const InputHeader = styled.div`
   padding-left: 6px;
+  padding-top: 3px;
 `
 
 const SwapSection = styled.div`
@@ -144,11 +145,15 @@ export const LeverageGaugeSection = styled(SwapSection)`
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  &:focus-within {
+    border: 1px solid transparent;
+  }
 `
 
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
   padding: 0px;
+  margin-top: 5px;
   width: 100%;
 `
 

@@ -36,7 +36,6 @@ import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
-import { Text } from 'rebass'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
@@ -508,17 +507,17 @@ const SwapTabContent = () => {
               </>
             ) : null}
           </OutputSwapSection>
-          <DetailsSwapSection>
-            <SwapDetailsDropdown
-              trade={trade}
-              syncing={routeIsSyncing}
-              loading={routeIsLoading}
-              allowedSlippage={allowedSlippage}
-            />
-          </DetailsSwapSection>
         </div>
+        <DetailsSwapSection>
+          <SwapDetailsDropdown
+            trade={trade}
+            syncing={routeIsSyncing}
+            loading={routeIsLoading}
+            allowedSlippage={allowedSlippage}
+          />
+        </DetailsSwapSection>
         {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}
-        <div>
+        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
           {swapIsUnsupported ? (
             <ButtonPrimary disabled={true}>
               <ThemedText.DeprecatedMain mb="4px">
@@ -534,7 +533,13 @@ const SwapTabContent = () => {
               }}
               element={InterfaceElementName.CONNECT_WALLET_BUTTON}
             >
-              <ButtonLight onClick={toggleWalletDrawer} fontWeight={600}>
+              <ButtonLight
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".5rem"
+                onClick={toggleWalletDrawer}
+                fontWeight={600}
+              >
                 <Trans>Connect Wallet</Trans>
               </ButtonLight>
             </TraceEvent>
@@ -583,6 +588,9 @@ const SwapTabContent = () => {
             </ButtonPrimary>
           ) : (
             <ButtonError
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="14"
+              padding=".25rem"
               onClick={() => {
                 if (isExpertMode) {
                   handleSwap()
@@ -607,7 +615,7 @@ const SwapTabContent = () => {
               }
               error={isValid && priceImpactSeverity > 2 && allowance.state === AllowanceState.ALLOWED}
             >
-              <Text fontSize={20} fontWeight={600}>
+              <ThemedText.BodyPrimary fontWeight={600}>
                 {swapInputError ? (
                   swapInputError
                 ) : routeIsSyncing || routeIsLoading ? (
@@ -619,7 +627,7 @@ const SwapTabContent = () => {
                 ) : (
                   <Trans>Swap</Trans>
                 )}
-              </Text>
+              </ThemedText.BodyPrimary>
             </ButtonError>
           )}
           {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}

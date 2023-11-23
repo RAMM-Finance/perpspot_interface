@@ -29,18 +29,22 @@ const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
   position: relative;
   border-radius: ${({ hideInput }) => (hideInput ? '10px' : '10px')};
-  background-color: ${({ theme, hideInput }) => (hideInput ? 'transparent' : '#0a0f19')};
+  background-color: transparent;
   z-index: 1;
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
-  transition: height 1s ease;
-  will-change: height;
+  // transition: height 1s ease;
+  // will-change: height;
+  // :focus,
+  // :hover {
+  //   border: 1px solid ${({ theme }) => theme.deprecated_bg3};
+  // }
 `
 
 const FixedContainer = styled.div`
   width: 100%;
   height: 100%;
   position: absolute;
-  border-radius: 20px;
+  border-radius: 10px;
   background-color: ${({ theme }) => '#0a0f19'};
   display: flex;
   align-items: center;
@@ -50,7 +54,8 @@ const FixedContainer = styled.div`
 
 const Container = styled.div<{ hideInput: boolean; disabled: boolean }>`
   border-radius: ${({ hideInput }) => (hideInput ? '10px' : '10px')};
-  border: 1px solid ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ hideInput }) => (hideInput ? 'transparent' : '#0a0f19')};
+  // border: 1px solid ${({ theme }) => theme.backgroundSurface};
 
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   ${({ theme, hideInput, disabled }) =>
@@ -83,8 +88,8 @@ const CurrencySelect = styled(ButtonGray)<{
   font-size: 12px;
   font-weight: 500;
 
-  width: 120px;
-  height: 20px;
+  width: fit-content;
+  height: 15px;
   justify-content: space-between;
   margin-left: ${({ hideInput }) => (hideInput ? '0' : '12px')};
   :focus,
@@ -146,10 +151,10 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
   background-color: transparent;
   background-color: ${({ theme }) => theme.deprecated_primary5};
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   color: ${({ theme }) => theme.textSecondary};
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   margin-left: 0.25rem;
   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
@@ -168,7 +173,7 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
 const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   ${loadingOpacityMixin};
   text-align: left;
-  font-size: 14px;
+  font-size: 12px;
 `
 
 interface CurrencyInputPanelProps {
@@ -298,11 +303,10 @@ export default function CurrencyInputPanel({
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>
-                  <ThemedText.DeprecatedBody
+                  <ThemedText.BodySmall
                     onClick={onMax}
                     color={theme.textTertiary}
                     fontWeight={500}
-                    fontSize={14}
                     style={{ display: 'inline', cursor: 'pointer' }}
                   >
                     {!hideBalance && currency && selectedCurrencyBalance ? (
@@ -312,7 +316,7 @@ export default function CurrencyInputPanel({
                         <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
                       )
                     ) : null}
-                  </ThemedText.DeprecatedBody>
+                  </ThemedText.BodySmall>
                   {showMaxButton && selectedCurrencyBalance ? (
                     <TraceEvent
                       events={[BrowserEvent.onClick]}

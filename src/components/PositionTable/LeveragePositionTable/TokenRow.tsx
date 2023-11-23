@@ -43,6 +43,7 @@ const StyledTokenRow = styled.div<{
   last?: boolean
   loading?: boolean
 }>`
+  cursor: pointer;
   background-color: transparent;
   display: grid;
   font-size: 12px;
@@ -209,6 +210,7 @@ const PriceInfoCell = styled(Cell)`
 
 const GreenText = styled.span`
   color: ${({ theme }) => theme.accentSuccess};
+  cursor: pointer;
 `
 
 const RedText = styled.span`
@@ -246,6 +248,7 @@ const StyledLink = styled(Link)`
 
 const StyledLoadedRow = styled.div`
   text-decoration: none;
+  cursor: pointer;
 `
 
 const TokenInfoCell = styled(Cell)`
@@ -505,7 +508,17 @@ function PositionRow({
   )
 
   if (header) return <StyledHeaderRow data-testid="header-row">{rowCells}</StyledHeaderRow>
-  return <StyledTokenRow {...rest}>{rowCells}</StyledTokenRow>
+  return (
+    <StyledTokenRow
+      onClick={() => {
+        setShowModal(!showModal)
+        setSelectedTab(TradeModalActiveTab.WITHDRAW_PREMIUM)
+      }}
+      {...rest}
+    >
+      {rowCells}
+    </StyledTokenRow>
+  )
 }
 
 /* Header Row: top header row component for table */
@@ -638,7 +651,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //  * Returns the current mid price of the pool in terms of token1, i.e. the ratio of token0 over token1
   //  */
   // get token1Price(): Price<Token, Token>;
-
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
   // Number(formatBNToString(position?.premiumLeft.minus(position?.premiumOwed), NumberType.SwapTradeAmount)) -

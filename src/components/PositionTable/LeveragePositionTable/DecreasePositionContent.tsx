@@ -130,7 +130,7 @@ function useDerivedReducePositionInfo(
           .div(100)
           .times(reduceAmount)
           .times(price)
-     
+
         //   struct ReduceReturn {
         //     int256 amount0;
         //     int256 amount1;
@@ -217,7 +217,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
   const [reduceAmount, setReduceAmount] = useState('')
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const { position } = useMarginLMTPositionFromPositionId(positionKey)
@@ -400,7 +400,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
   }, [])
 
   return (
-    <DarkCard>
+    <DarkCard style={{ paddingTop: '0px' }}>
       {showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -422,158 +422,179 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
         />
       )}
-      <LmtSettingsTab
-        isOpen={showSettings}
-        onToggle={onToggle}
-        allowedSlippage={allowedSlippage}
-        autoSlippedTick={allowedSlippedTick}
-      />
-      <RowBetween>
-        <ThemedText.DeprecatedMain fontWeight={400}>
-          <Trans>Debt Reduce Amount ({`${reductionPercent}% Reduction`})</Trans>
-        </ThemedText.DeprecatedMain>
-      </RowBetween>
-      <AutoColumn>
-        <PercentSlider
-          initialValue={position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0}
-          onChange={(val) =>
-            position &&
-            onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
-          }
+      <div style={{ display: 'flex', justifyContent: 'end' }}>
+        <LmtSettingsTab
+          isOpen={showSettings}
+          onToggle={onToggle}
+          allowedSlippage={allowedSlippage}
+          autoSlippedTick={allowedSlippedTick}
         />
-        <CurrencyInputPanel
-          value={reduceAmount}
-          id="reduce-position-input"
-          onUserInput={(str: string) => {
-            if (position?.totalDebtInput) {
-              if (str === '') {
-                onDebouncedReduceAmount('')
-              } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
-                return
-              } else {
-                setReduceAmount(str)
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'end', gap: '15px', marginTop: '15px' }}>
+        <AutoColumn style={{ width: '50%' }}>
+          <AutoColumn justify="center">
+            <RowBetween>
+              <Trans>
+                <div style={{ display: 'flex', gap: '3px' }}>
+                  <ThemedText.BodyPrimary fontWeight={400}>Debt Reduce Amount </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary>({`${reductionPercent}% Reduction`})</ThemedText.BodySecondary>
+                </div>
+              </Trans>
+            </RowBetween>
+            <PercentSlider
+              initialValue={
+                position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0
               }
-            }
-          }}
-          showMaxButton={true}
-          onMax={() => {
-            setReduceAmount(position?.totalPosition ? position?.totalPosition.toString(10) : '')
-          }}
-          hideBalance={true}
-          currency={outputCurrency}
-        />
-        <TransactionDetails>
-          <Wrapper style={{ marginTop: '0' }}>
-            <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-              <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
-                <RowFixed style={{ position: 'relative' }}>
-                  {loading ? (
-                    <StyledPolling>
-                      <StyledPollingDot>
-                        <Spinner />
-                      </StyledPollingDot>
-                    </StyledPolling>
-                  ) : (
-                    <HideSmall>
-                      <StyledInfoIcon color={theme.deprecated_bg3} />
-                    </HideSmall>
-                  )}
-                  {position ? (
-                    loading ? (
-                      <ThemedText.DeprecatedMain fontSize={14}>
-                        <Trans>Fetching details...</Trans>
-                      </ThemedText.DeprecatedMain>
+              onChange={(val) =>
+                position &&
+                onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
+              }
+            />
+          </AutoColumn>
+          <CurrencyInputPanel
+            value={reduceAmount}
+            id="reduce-position-input"
+            onUserInput={(str: string) => {
+              if (position?.totalDebtInput) {
+                if (str === '') {
+                  onDebouncedReduceAmount('')
+                } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
+                  return
+                } else {
+                  setReduceAmount(str)
+                }
+              }
+            }}
+            showMaxButton={true}
+            onMax={() => {
+              setReduceAmount(position?.totalPosition ? position?.totalPosition.toString(10) : '')
+            }}
+            hideBalance={true}
+            currency={outputCurrency}
+          />
+        </AutoColumn>
+        <AutoColumn justify="center" style={{ width: '50%' }}>
+          <TransactionDetails>
+            <Wrapper style={{ marginTop: '0' }}>
+              <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
+                <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
+                  <RowFixed style={{ position: 'relative' }}>
+                    {loading ? (
+                      <StyledPolling>
+                        <StyledPollingDot>
+                          <Spinner />
+                        </StyledPollingDot>
+                      </StyledPolling>
                     ) : (
-                      <LoadingOpacityContainer $loading={loading}>Trade Details</LoadingOpacityContainer>
-                    )
-                  ) : null}
-                </RowFixed>
-                <RowFixed>
-                  <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
-                </RowFixed>
-              </StyledHeaderRow>
-              <AnimatedDropdown open={showDetails}>
-                <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-                  {!loading && txnInfo ? (
-                    <StyledCard>
-                      <AutoColumn gap="sm">
-                        <RowBetween>
-                          <RowFixed>
-                            <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
-                              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                                <Trans>Collateral Returned</Trans>
-                              </ThemedText.DeprecatedSubHeader>
-                            </MouseoverTooltip>
-                          </RowFixed>
-                          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                              <TruncatedText>
-                                {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
-                              </TruncatedText>
-                            </ThemedText.DeprecatedBlack>
-                          </TextWithLoadingPlaceholder>
-                        </RowBetween>
-                        <RowBetween>
-                          <RowFixed>
-                            <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
-                              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                                <Trans>PnL</Trans>
-                              </ThemedText.DeprecatedSubHeader>
-                            </MouseoverTooltip>
-                          </RowFixed>
-                          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                              <TruncatedText>
-                                <DeltaText delta={Number(txnInfo?.PnL)}>
-                                  {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
-                                </DeltaText>
-                              </TruncatedText>
-                            </ThemedText.DeprecatedBlack>
-                          </TextWithLoadingPlaceholder>
-                        </RowBetween>
-                        <RowBetween>
-                          <RowFixed>
-                            <MouseoverTooltip text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}>
-                              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                                <Trans>Premium Owed</Trans>
-                              </ThemedText.DeprecatedSubHeader>
-                            </MouseoverTooltip>
-                          </RowFixed>
-                          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-                              <TruncatedText>
-                                {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
-                              </TruncatedText>
-                            </ThemedText.DeprecatedBlack>
-                          </TextWithLoadingPlaceholder>
-                        </RowBetween>
-                      </AutoColumn>
-                    </StyledCard>
-                  ) : null}
-                </AutoColumn>
-              </AnimatedDropdown>
-            </AutoColumn>
-          </Wrapper>
-        </TransactionDetails>
-        <ButtonError
-          style={{ fontSize: '14px', borderRadius: '10px' }}
-          width="14"
-          padding=".25rem"
-          onClick={() => setShowModal(true)}
-          id="leverage-button"
-          disabled={!!inputError || !txnInfo}
-        >
-          <ThemedText.BodyPrimary fontWeight={600}>
-            {inputError ? (
-              inputError
-            ) : tradeState === DerivedInfoState.INVALID ? (
-              <Trans>Invalid Trade</Trans>
-            ) : (
-              <Trans>Execute</Trans>
-            )}
-          </ThemedText.BodyPrimary>
-        </ButtonError>
-      </AutoColumn>
+                      <HideSmall>
+                        <StyledInfoIcon color={theme.deprecated_bg3} />
+                      </HideSmall>
+                    )}
+                    {position ? (
+                      loading ? (
+                        <ThemedText.BodySmall>
+                          <Trans>Fetching details...</Trans>
+                        </ThemedText.BodySmall>
+                      ) : (
+                        <LoadingOpacityContainer $loading={loading}>
+                          <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
+                        </LoadingOpacityContainer>
+                      )
+                    ) : null}
+                  </RowFixed>
+                  <RowFixed>
+                    <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
+                  </RowFixed>
+                </StyledHeaderRow>
+                <AnimatedDropdown open={showDetails}>
+                  <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+                    {!loading && txnInfo ? (
+                      <StyledCard>
+                        <AutoColumn gap="sm">
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>Collateral Returned</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                <TruncatedText>
+                                  {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>PnL</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right">
+                                <TruncatedText>
+                                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                  </DeltaText>
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip
+                                text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
+                              >
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>Premium Owed</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                <TruncatedText>
+                                  {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
+                        </AutoColumn>
+                      </StyledCard>
+                    ) : null}
+                  </AutoColumn>
+                </AnimatedDropdown>
+              </AutoColumn>
+            </Wrapper>
+          </TransactionDetails>
+          <ButtonError
+            style={{
+              fontSize: '12px',
+              borderRadius: '10px',
+              width: 'fit-content',
+              height: '15px',
+            }}
+            padding=".25rem"
+            onClick={() => setShowModal(true)}
+            id="leverage-button"
+            disabled={!!inputError || !txnInfo}
+          >
+            <ThemedText.BodySmall fontWeight={600}>
+              {inputError ? (
+                inputError
+              ) : tradeState === DerivedInfoState.INVALID ? (
+                <Trans>Invalid Trade</Trans>
+              ) : (
+                <Trans>Execute</Trans>
+              )}
+            </ThemedText.BodySmall>
+          </ButtonError>
+        </AutoColumn>
+      </div>
     </DarkCard>
   )
 }

@@ -161,7 +161,7 @@ const DataCell = styled(Cell)<{ sortable: boolean }>`
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
   align-items: center;
-  cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
+  cursor: 'pointer';
 `
 
 const TvlCell = styled(DataCell)`
