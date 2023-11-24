@@ -1,6 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
 import { Percent, Price } from '@uniswap/sdk-core'
+import { Currency } from '@uniswap/sdk-core'
 import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -10,6 +11,7 @@ import { ButtonError } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import {
   RotatingArrow,
   Spinner,
@@ -20,6 +22,8 @@ import {
   TextWithLoadingPlaceholder,
   TransactionDetails,
 } from 'components/modalFooters/common'
+import PriceToggle from 'components/PriceToggle/PriceToggle'
+import { RowStart } from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
@@ -34,7 +38,15 @@ import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { StyledNumericalInput } from 'pages/Swap'
+import { DynamicSection } from 'pages/Swap/tradeModal'
+import { PriceToggleSection } from 'pages/Swap/tradeModal'
+import { LimitInputPrice, LimitInputRow, LimitInputWrapper } from 'pages/Swap/tradeModal'
+import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
+import { Field } from 'state/swap/actions'
+import { useDerivedSwapInfo } from 'state/swap/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
@@ -398,6 +410,34 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     setTxHash(undefined)
     setErrorMessage(undefined)
   }, [])
+  const {
+    // trade: { state: tradeState, trade },
+    // allowedSlippage,
+    currencyBalances,
+    // parsedAmount,
+    currencies,
+    // leverage,
+    // inputError: swapInputError,
+  } = useDerivedSwapInfo()
+
+  const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
+
+  const { isLimitOrder, baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
+
+  const currentPrice = useMemo(() => {
+    const inputCurrency = currencies[Field.INPUT]?.wrapped
+    const outputCurrency = currencies[Field.OUTPUT]?.wrapped
+    if (pool && inputCurrency && outputCurrency) {
+      const inputIsToken0 = inputCurrency.sortsBefore(outputCurrency)
+      const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
+      if (baseIsToken0) {
+        return formatBNToString(new BN(pool.token0Price.toFixed(18)))
+      } else {
+        return formatBNToString(new BN(pool.token1Price.toFixed(18)))
+      }
+    }
+    return undefined
+  }, [baseCurrencyIsInputToken, pool, currencies])
 
   return (
     <DarkCard style={{ paddingTop: '0px' }}>
@@ -422,7 +462,22 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
         />
       )}
-      <div style={{ display: 'flex', justifyContent: 'end' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <FilterWrapper>
+          <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
+            <Selector active={!isLimitOrder}>
+              <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
+                Market
+              </StyledSelectorText>
+            </Selector>
+            <Selector active={isLimitOrder}>
+              <StyledSelectorText lineHeight="20px" active={isLimitOrder}>
+                Limit
+              </StyledSelectorText>
+            </Selector>
+          </Filter>
+        </FilterWrapper>
+        <ThemedText.BodySmall>Current Total Position:</ThemedText.BodySmall>
         <LmtSettingsTab
           isOpen={showSettings}
           onToggle={onToggle}
@@ -432,7 +487,79 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       </div>
       <div style={{ display: 'flex', justifyContent: 'end', gap: '15px', marginTop: '15px' }}>
         <AutoColumn style={{ width: '50%' }}>
-          <AutoColumn justify="center">
+          <LimitInputWrapper>
+            <AnimatedDropdown open={isLimitOrder}>
+              <DynamicSection justify="start" gap="md" disabled={false}>
+                <RowStart>
+                  {Boolean(inputCurrency && outputCurrency) && (
+                    <PriceToggleSection>
+                      <PriceToggle
+                        currencyA={inputCurrency as Currency}
+                        currencyB={outputCurrency as Currency}
+                        handlePriceToggle={() => {
+                          onPriceToggle(!baseCurrencyIsInputToken)
+                          if (startingPrice && startingPrice !== '') {
+                            onPriceInput(new BN(1).div(new BN(startingPrice)).toString())
+                          }
+                        }}
+                      />
+                    </PriceToggleSection>
+                  )}
+                </RowStart>
+              </DynamicSection>
+              <DynamicSection gap="md" disabled={false}>
+                <LimitInputPrice>
+                  <Trans>
+                    <ThemedText.BodySecondary>Starting Price </ThemedText.BodySecondary>{' '}
+                  </Trans>
+                  <div style={{ textAlign: 'end', gap: '5px' }}>
+                    <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
+                  </div>
+                  <LimitInputRow>
+                    <StyledNumericalInput
+                      onUserInput={onPriceInput}
+                      value={startingPrice ?? ''}
+                      placeholder="0"
+                      className="limit-amount-input"
+                    ></StyledNumericalInput>
+                    <RowFixed>
+                      {inputCurrency && (
+                        <Trans>
+                          <ThemedText.BodySmall>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <CurrencyLogo currency={outputCurrency} size="15px" />
+                              {outputCurrency?.symbol} /
+                              <CurrencyLogo currency={inputCurrency} size="15px" />
+                              {inputCurrency.symbol}
+                            </div>
+                          </ThemedText.BodySmall>
+                        </Trans>
+                      )}
+                    </RowFixed>
+                  </LimitInputRow>
+                </LimitInputPrice>
+                {/* 
+                {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
+                  <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
+                    <Trans>
+                      <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
+                        Current Price:
+                      </ThemedText.DeprecatedMain>
+                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
+                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
+                      </ThemedText.DeprecatedBody>
+                      {baseCurrency && (
+                        <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                        </ThemedText.DeprecatedBody>
+                      )}
+                    </Trans>
+                  </AutoColumn>
+                )} */}
+              </DynamicSection>
+            </AnimatedDropdown>
+          </LimitInputWrapper>
+          <AutoColumn style={{ paddingTop: '20px' }} justify="center">
             <RowBetween>
               <Trans>
                 <div style={{ display: 'flex', gap: '3px' }}>
@@ -579,7 +706,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
               height: '15px',
             }}
             padding=".25rem"
-            onClick={() => setShowModal(true)}
+            onClick={() => handleReducePosition()}
             id="leverage-button"
             disabled={!!inputError || !txnInfo}
           >

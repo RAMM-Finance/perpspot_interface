@@ -84,23 +84,22 @@ const Wrapper = styled.div`
     margin-top: 5px;
   }
 `
-const LimitInputWrapper = styled.div`
+export const LimitInputWrapper = styled.div`
   margin-top: 5px;
 `
 
-const Filter = styled.div`
+export const Filter = styled.div`
   display: flex;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: fit-content;
 `
 
-const FilterWrapper = styled.div`
+export const FilterWrapper = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
 `
-const LimitInputRow = styled.div`
+export const LimitInputRow = styled.div`
   padding-top: 10px;
   display: flex;
   margin-right: 0.25rem;
@@ -139,7 +138,7 @@ export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
   pointer-events: ${({ disabled }) => (disabled ? 'none' : 'initial')};
 `
 
-const LimitInputPrice = styled(AutoColumn)`
+export const LimitInputPrice = styled(AutoColumn)`
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
   padding: 16px;
@@ -153,11 +152,11 @@ const LimitInputPrice = styled(AutoColumn)`
   }
 `
 
-const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
+export const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
 `
 
-const Selector = styled.div<{ active: boolean }>`
+export const Selector = styled.div<{ active: boolean }>`
   padding: 5px 7px;
   border-radius: 10px;
   background: ${({ active, theme }) => (active ? theme.background : 'none')};
@@ -442,7 +441,7 @@ const TradeTabContent = () => {
         </Filter>
       </FilterWrapper>
       <div style={{ display: 'relative' }}>
-        <InputSection>
+        <InputSection style={{ marginTop: '20px' }}>
           <InputHeader>
             <ThemedText.BodySecondary fontWeight={400}>
               <Trans>Margin</Trans>

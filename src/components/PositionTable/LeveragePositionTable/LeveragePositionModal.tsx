@@ -1,5 +1,6 @@
 import Modal from 'components/Modal'
-import { useMemo, useState } from 'react'
+import { useOnClickOutside } from 'hooks/useOnClickOutside'
+import { useMemo, useRef, useState } from 'react'
 import styled from 'styled-components/macro'
 import { CloseIcon } from 'theme'
 import { TraderPositionKey } from 'types/lmtv2position'
@@ -53,6 +54,11 @@ const ContentWrapper = styled.div`
   justify-content: space-between;
   height: 100%;
 `
+const ModalWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
 
 export function LeveragePositionModal(props: TradeModalProps) {
   const { isOpen, positionKey, onClose } = props
@@ -74,9 +80,13 @@ export function LeveragePositionModal(props: TradeModalProps) {
     )
   }, [positionKey, activeTab])
 
+  const ref = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useOnClickOutside(ref, () => onClose(), [modalRef])
+
   return positionKey ? (
     <Modal isOpen={isOpen} maxHeight={1500} maxWidth={700} $scrollOverlay={true}>
-      <Wrapper>
+      <Wrapper ref={modalRef}>
         <CloseIcon style={{ width: '12px' }} onClick={onClose} />
         <TabsWrapper>
           {/*<TabElement
