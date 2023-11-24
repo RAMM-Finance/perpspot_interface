@@ -110,11 +110,6 @@ export abstract class MarginFacilitySDK {
         [],
       ])
     )
-
-    // return {
-    //   calldata: Multicall.encodeMulticall(calldatas),
-    //   value: toHex(0),
-    // }
     return calldatas
   }
 

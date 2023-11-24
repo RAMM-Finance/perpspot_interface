@@ -92,7 +92,7 @@ export function AdvancedSwapDetails({
   }, [trade])
 
   return (
-    /* !trade ? null :  */ <StyledCard>
+    <StyledCard>
       <AutoColumn gap="sm">
         <MouseoverValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
@@ -835,21 +835,11 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Swap fee + origination fee "
           label="Borrow Rate per hour"
-          value={"0"}
+          value="0"
           syncing={syncing}
         />
-        <ValueLabel
-          description="Slippage from spot price"
-          label="Slippage"
-          value={"0"}
-          syncing={syncing}
-        />
-        <ValueLabel
-          description="Swap fee + origination fee "
-          label="Total Fees"
-          value={"0"}
-          syncing={syncing}
-        />
+        <ValueLabel description="Slippage from spot price" label="Slippage" value="0" syncing={syncing} />
+        <ValueLabel description="Swap fee + origination fee " label="Total Fees" value="0" syncing={syncing} />
 
         {/*<ValueLabel
           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  

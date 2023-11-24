@@ -375,16 +375,6 @@ export function LeverageCloseModalHeader({
   )
 }
 
-// LeverageTrade {
-//   inputAmount: CurrencyAmount<Currency> | undefined
-//   borrowedAmount: CurrencyAmount<Currency> | undefined
-//   state: LeverageTradeState
-//   expectedOutput: string | undefined
-//   strikePrice: string | undefined
-//   quotedPremium: string | undefined
-//   priceImpact: Percent | undefined
-//   effectiveLeverage: string | undefined
-// }
 export function LeverageModalHeader({
   trade,
   allowedSlippage,
@@ -414,31 +404,6 @@ export function LeverageModalHeader({
     trade?.margin && trade?.borrowAmount ? trade?.margin?.add(trade?.borrowAmount) : undefined
   )
   const fiatValueTotalOutput = useUSDPrice(trade?.swapOutput)
-  // const fiatValueOutput = useUSDPrice(trade.outputAmount)
-
-  // const displayValues = useMemo(() => {
-  //   let totalInput
-  //   let totalOutput
-  //   if (leverageTrade) {
-  //     const {
-  //       inputAmount,
-  //       borrowedAmount,
-  //       existingPosition,
-  //       existingTotalDebtInput,
-  //       existingTotalPosition,
-  //       expectedTotalPosition,
-  //     } = trade
-  //     if (inputAmount && borrowedAmount) {
-  //       totalInput = Number(inputAmount.toExact()) * leverageFactor
-  //       totalOutput = existingTotalPosition ? expectedTotalPosition.minus(existingTotalPosition) : expectedTotalPosition
-  //     }
-  //   }
-
-  //   return {
-  //     totalInput,
-  //     totalOutput,
-  //   }
-  // }, [leverageTrade, leverageFactor])
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
