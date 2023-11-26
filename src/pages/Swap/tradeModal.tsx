@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { Button } from '@mui/material'
 import { Trace, TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SwapEventName } from '@uniswap/analytics-events'
 import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
@@ -15,8 +16,9 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowFixed, RowStart } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
+import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
-import { LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
+import { AddLimitDetailsDropdown, LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
 import SwapHeader from 'components/swap/SwapHeader'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
@@ -27,6 +29,7 @@ import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
+import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
@@ -35,6 +38,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
 import {
+  AddLimitTrade,
   AddMarginTrade,
   useDerivedAddPositionInfo,
   useDerivedLimitAddPositionInfo,
@@ -50,6 +54,7 @@ import { ThemedText } from 'theme'
 import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
+// import { styled } from '@mui/system';
 import { ArrowWrapper } from '../../components/swap/styleds'
 import {
   ArrowContainer,
@@ -98,6 +103,7 @@ export const Filter = styled.div`
 export const FilterWrapper = styled.div`
   display: flex;
   align-items: center;
+  margin-bottom: 20px;
 `
 export const LimitInputRow = styled.div`
   padding-top: 10px;
@@ -198,6 +204,29 @@ const TradeTabContent = () => {
     tradeErrorMessage: undefined,
   })
 
+  const [
+    {
+      attemptingTxn: lmtAttemptingTxn,
+      txHash: lmtTxHash,
+      showConfirm: lmtShowConfirm,
+      errorMessage: lmtErrorMessage,
+      limitTradeConfirm,
+    },
+    setLimitState,
+  ] = useState<{
+    attemptingTxn: boolean
+    txHash: string | undefined
+    showConfirm: boolean
+    limitTradeConfirm: AddLimitTrade | undefined
+    errorMessage: string | undefined
+  }>({
+    showConfirm: false,
+    limitTradeConfirm: undefined,
+    attemptingTxn: false,
+    txHash: undefined,
+    errorMessage: undefined,
+  })
+
   const {
     [MarginField.MARGIN]: margin,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
@@ -207,7 +236,6 @@ const TradeTabContent = () => {
   } = useMarginTradingState()
 
   const pool = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
-
   const {
     trade,
     preTradeInfo,
@@ -299,13 +327,20 @@ const TradeTabContent = () => {
       txHash: undefined,
       attemptingTxn: false,
     }))
+    setLimitState((currentState) => ({
+      ...currentState,
+      showConfirm: false,
+      errorMessage: undefined,
+      txHash: undefined,
+      attemptingTxn: false,
+    }))
     if (txHash) {
       onUserInput(Field.INPUT, '')
-      // onBorrowChange('')
       onMarginChange('')
       onLeverageFactorChange('')
+      onPriceInput('')
     }
-  }, [onUserInput, onMarginChange, onLeverageFactorChange, txHash])
+  }, [onUserInput, onMarginChange, onLeverageFactorChange, txHash, onPriceInput])
 
   // const handleAcceptChanges = useCallback(() => {
   //   setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
@@ -361,6 +396,8 @@ const TradeTabContent = () => {
 
   const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage, allowedSlippedTick)
 
+  const existingLimitOrder = useMarginOrderPositionFromPositionId(orderKey)
+
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
       return
@@ -381,6 +418,27 @@ const TradeTabContent = () => {
         }))
       })
   }, [addPositionCallback])
+
+  const handleAddLimit = useCallback(() => {
+    if (!addLimitCallback) {
+      return
+    }
+    setLimitState((currentState) => ({ ...currentState, attemptingTxn: true }))
+
+    addLimitCallback()
+      .then((hash) => {
+        setLimitState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
+      })
+      .catch((error) => {
+        console.log('callback', error.message)
+        setLimitState((currentState) => ({
+          ...currentState,
+          attemptingTxn: false,
+          txHash: undefined,
+          errorMessage: error.message,
+        }))
+      })
+  }, [addLimitCallback])
 
   const updateLeverageAllowance = useCallback(async () => {
     try {
@@ -425,6 +483,20 @@ const TradeTabContent = () => {
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage}
       />
+      <ConfirmAddLimitOrderModal
+        isOpen={lmtShowConfirm}
+        trade={limitTrade}
+        originalTrade={limitTradeConfirm}
+        onConfirm={handleAddLimit}
+        onDismiss={handleConfirmDismiss}
+        onAcceptChanges={() => {
+          return
+        }}
+        attemptingTxn={lmtAttemptingTxn}
+        txHash={lmtTxHash}
+        tradeErrorMessage={lmtErrorMessage}
+        preTradeInfo={preTradeInfo}
+      />
       <SwapHeader allowedSlippage={allowedSlippage} autoSlippedTick={allowedSlippedTick} />
       <FilterWrapper>
         <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
@@ -441,7 +513,7 @@ const TradeTabContent = () => {
         </Filter>
       </FilterWrapper>
       <div style={{ display: 'relative' }}>
-        <InputSection style={{ marginTop: '20px' }}>
+        <InputSection>
           <InputHeader>
             <ThemedText.BodySecondary fontWeight={400}>
               <Trans>Margin</Trans>
@@ -490,15 +562,19 @@ const TradeTabContent = () => {
           <OutputSwapSection showDetailsDropdown={false}>
             <InputHeader>
               <ThemedText.BodySecondary>
-                <Trans>Position Size</Trans>
+                <Trans>{!isLimitOrder ? 'Position Size' : 'Maximum Output'}</Trans>
               </ThemedText.BodySecondary>
             </InputHeader>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
               <BaseSwapPanel
                 value={
-                  tradeState !== LeverageTradeState.VALID || !trade
+                  !isLimitOrder
+                    ? tradeState !== LeverageTradeState.VALID || !trade
+                      ? '-'
+                      : formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)
+                    : limitTradeState !== LimitTradeState.VALID || !limitTrade
                     ? '-'
-                    : formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)
+                    : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
                 }
                 onUserInput={() => 0}
                 showMaxButton={false}
@@ -527,7 +603,7 @@ const TradeTabContent = () => {
                         handlePriceToggle={() => {
                           onPriceToggle(!baseCurrencyIsInputToken)
                           if (startingPrice && startingPrice !== '') {
-                            onPriceInput(new BN(1).div(new BN(startingPrice)).toString())
+                            onPriceInput(new BN(1).div(new BN(startingPrice)).toFixed())
                           }
                         }}
                       />
@@ -538,7 +614,7 @@ const TradeTabContent = () => {
               <DynamicSection gap="md" disabled={false}>
                 <LimitInputPrice>
                   <Trans>
-                    <ThemedText.BodySecondary>Starting Price </ThemedText.BodySecondary>{' '}
+                    <ThemedText.BodySecondary>Limit Price </ThemedText.BodySecondary>{' '}
                   </Trans>
                   <div style={{ textAlign: 'end', gap: '5px' }}>
                     <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
@@ -552,16 +628,24 @@ const TradeTabContent = () => {
                     ></StyledNumericalInput>
                     <RowFixed>
                       {baseCurrency && (
-                        <Trans>
+                        <Button
+                          sx={{ textTransform: 'none' }}
+                          onClick={() => {
+                            onPriceToggle(!baseCurrencyIsInputToken)
+                            if (startingPrice && startingPrice !== '') {
+                              onPriceInput(new BN(1).div(new BN(startingPrice)).toFixed())
+                            }
+                          }}
+                        >
                           <ThemedText.BodySmall>
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <CurrencyLogo currency={quoteCurrency} size="15px" />
                               {quoteCurrency?.symbol} /
                               <CurrencyLogo currency={baseCurrency} size="15px" />
-                              {baseCurrency.symbol}
+                              {baseCurrency?.symbol}
                             </div>
                           </ThemedText.BodySmall>
-                        </Trans>
+                        </Button>
                       )}
                     </RowFixed>
                   </LimitInputRow>
@@ -631,20 +715,29 @@ const TradeTabContent = () => {
 
               <>
                 <DiscreteSliderMarks
-                  initialValue={debouncedLeverageFactor === '' ? 10 : parseInt(debouncedLeverageFactor, 10)}
+                  initialValue={debouncedLeverageFactor === '' ? 0 : parseInt(debouncedLeverageFactor, 10)}
                   onChange={(val) => onDebouncedLeverageFactor(val.toString())}
                 />
               </>
             </AutoColumn>
           </LeverageGaugeSection>
           <DetailsSwapSection>
-            <LeverageDetailsDropdown
-              trade={trade}
-              preTradeInfo={preTradeInfo}
-              existingPosition={existingPosition}
-              loading={tradeIsLoading}
-              allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
-            />
+            {!isLimitOrder ? (
+              <LeverageDetailsDropdown
+                trade={trade}
+                preTradeInfo={preTradeInfo}
+                existingPosition={existingPosition}
+                loading={tradeIsLoading}
+                allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
+              />
+            ) : (
+              <AddLimitDetailsDropdown
+                existingPosition={existingLimitOrder}
+                trade={limitTrade}
+                preTradeInfo={preTradeInfo}
+                loading={false}
+              />
+            )}
           </DetailsSwapSection>
         </div>
         {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />} */}

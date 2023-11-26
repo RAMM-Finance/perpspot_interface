@@ -15,7 +15,10 @@ import { useTransactionAdder } from '../state/transactions/hooks'
 import { useCurrency } from './Tokens'
 import useTransactionDeadline from './useTransactionDeadline'
 
-export function useAddLimitOrderCallback(trade: AddLimitTrade | undefined): {
+export function useAddLimitOrderCallback(
+  trade: AddLimitTrade | undefined
+  // preTradeInfo: PreTradeInfo | undefined
+): {
   callback: null | (() => Promise<string>)
 } {
   const deadline = useTransactionDeadline()

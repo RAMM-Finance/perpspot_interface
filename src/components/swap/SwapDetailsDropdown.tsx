@@ -11,13 +11,14 @@ import Row, { RowBetween, RowFixed } from 'components/Row'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useEffect, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
-import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
+import { AddLimitTrade, AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
 import { BorrowCreationDetails } from 'state/swap/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { MarginPositionDetails } from 'types/lmtv2position'
+import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
 
+import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { AdvancedBorrowSwapDetails, AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
 // import { useCurrency } from 'hooks/Tokens'
 // import { Field } from 'state/swap/actions'
@@ -271,6 +272,81 @@ export function LeverageDetailsDropdown({
                 preTradeInfo={preTradeInfo}
                 existingPosition={existingPosition}
               />
+            </StyledCard>
+          </AutoColumn>
+        </AnimatedDropdown>
+      </AutoColumn>
+    </Wrapper>
+  )
+}
+
+export function AddLimitDetailsDropdown({
+  trade,
+  existingPosition,
+  loading,
+  preTradeInfo,
+}: {
+  trade: AddLimitTrade | undefined
+  preTradeInfo: PreTradeInfo | undefined
+  existingPosition: MarginLimitOrder | undefined
+  loading: boolean
+}) {
+  const theme = useTheme()
+  // const { chainId } = useWeb3React()
+  const [showDetails, setShowDetails] = useState(true)
+
+  return (
+    <Wrapper style={{ marginTop: '0' }}>
+      <AutoColumn gap="sm">
+        <TraceEvent
+          events={[BrowserEvent.onClick]}
+          name={SwapEventName.SWAP_DETAILS_EXPANDED}
+          element={InterfaceElementName.SWAP_DETAILS_DROPDOWN}
+          shouldLogImpression={!showDetails}
+        >
+          <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
+            <RowFixed style={{ position: 'relative' }}>
+              {Boolean(loading) && (
+                <StyledPolling>
+                  <StyledPollingDot>
+                    <Spinner />
+                  </StyledPollingDot>
+                </StyledPolling>
+              )}
+              {loading ? (
+                <ThemedText.DeprecatedMain fontSize={14}>
+                  <Trans>Simulating position ...</Trans>
+                </ThemedText.DeprecatedMain>
+              ) : (
+                <LoadingOpacityContainer $loading={loading}>
+                  <RowFixed>
+                    <Info size={12} />
+                    <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
+                  </RowFixed>
+                </LoadingOpacityContainer>
+              )}
+            </RowFixed>
+            <RowFixed>
+              {/* {!trade?.gasUseEstimateUSD ||
+              showDetails ||
+              !chainId ||
+              !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
+                <GasEstimateBadge
+                  trade={trade}
+                  loading={syncing || loading}
+                  showRoute={!showDetails}
+                  disableHover={showDetails}
+                />
+              )} */}
+
+              <RotatingArrow stroke={trade ? theme.textTertiary : theme.deprecated_bg3} open={Boolean(showDetails)} />
+            </RowFixed>
+          </StyledHeaderRow>
+        </TraceEvent>
+        <AnimatedDropdown open={showDetails}>
+          <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+            <StyledCard>
+              <AdvancedAddLimitDetails trade={trade} syncing={loading} />
             </StyledCard>
           </AutoColumn>
         </AnimatedDropdown>

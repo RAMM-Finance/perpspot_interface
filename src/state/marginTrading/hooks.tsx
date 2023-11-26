@@ -680,12 +680,13 @@ const useSimulateAddLimitOrder = (
 
       const totalInput = new BN(margin).times(leverageFactor)
       const totalInputWithFees = totalInput.times(new BN(1).minus(feePercent))
-      const limitPrice = baseCurrencyIsInputToken ? new BN(1).div(startingPrice) : startingPrice
+      // if base is input then output / input.
+      const limitPrice = baseCurrencyIsInputToken ? startingPrice : new BN(1).div(startingPrice)
 
       // we assume that starting price is output / input here.
       const startOutput = totalInputWithFees.times(limitPrice)
       const slippageBn = new BN(allowedSlippage.toFixed(18)).div(100)
-      const minOutput = totalInputWithFees.times(limitPrice).times(new BN(1).times(slippageBn))
+      const minOutput = totalInputWithFees.times(limitPrice).times(new BN(1).minus(slippageBn))
 
       // decay rate defaults to zero
       const decayRate = new BN('0')
@@ -701,6 +702,19 @@ const useSimulateAddLimitOrder = (
         decayRate: decayRate.shiftedBy(18).toFixed(0),
         depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
       })
+
+      // console.log('limit calldata', {
+      //   orderKey,
+      //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+      //   pool: poolAddress,
+      //   isAdd: true,
+      //   deadline: deadline.toString(),
+      //   startOutput: startOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      //   minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      //   inputAmount: totalInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+      //   decayRate: decayRate.shiftedBy(18).toFixed(0),
+      //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+      // })
 
       try {
         setTradeState(LimitTradeState.LOADING)
@@ -901,7 +915,7 @@ const useSimulateMarginTrade = (
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toString(),
         executionOption: 1,
-        depositPremium: additionalPremium.toString(),
+        depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
         slippedTickMin,
         slippedTickMax,
       })
