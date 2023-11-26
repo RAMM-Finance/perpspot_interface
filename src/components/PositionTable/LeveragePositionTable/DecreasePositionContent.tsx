@@ -297,13 +297,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       // get reduce parameters
       const reducePercent = new BN(reduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
       const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
-      const price = position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+      const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
-      const minOutput = new BN(100)
-        .minus(new BN(allowedSlippage.toFixed(18)))
-        .div(100)
-        .times(reduceAmount)
+      const minOutput = new BN(reduceAmount)
         .times(price)
+        .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
       //   struct ReduceReturn {
       //     int256 amount0;
@@ -315,6 +313,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       //     uint256 premium;
       //     uint256 profitFee;
       // }
+
       const reduceParam = {
         positionIsToken0: position.isToken0,
         reducePercentage: reducePercent,
