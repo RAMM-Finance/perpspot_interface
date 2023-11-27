@@ -235,6 +235,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
   const { position } = useMarginLMTPositionFromPositionId(positionKey)
   const [errorMessage, setErrorMessage] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
+  const [isLimit, setIsLimit] = useState(false)
 
   const inputCurrency = useCurrency(
     position?.isToken0 ? position?.poolKey?.token1Address : position?.poolKey.token0Address
@@ -421,7 +422,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
 
   const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
 
-  const { isLimitOrder, baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
+  const { baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
 
   const currentPrice = useMemo(() => {
     const inputCurrency = currencies[Field.INPUT]?.wrapped
@@ -461,22 +462,21 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
         />
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <FilterWrapper>
-          <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
-            <Selector active={!isLimitOrder}>
-              <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
+          <Filter onClick={() => setIsLimit(!isLimit)}>
+            <Selector active={!isLimit}>
+              <StyledSelectorText lineHeight="20px" active={!isLimit}>
                 Market
               </StyledSelectorText>
             </Selector>
-            <Selector active={isLimitOrder}>
-              <StyledSelectorText lineHeight="20px" active={isLimitOrder}>
+            <Selector active={isLimit}>
+              <StyledSelectorText lineHeight="20px" active={isLimit}>
                 Limit
               </StyledSelectorText>
             </Selector>
           </Filter>
         </FilterWrapper>
-        <ThemedText.BodySmall>Current Total Position:</ThemedText.BodySmall>
         <LmtSettingsTab
           isOpen={showSettings}
           onToggle={onToggle}
@@ -484,60 +484,59 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           autoSlippedTick={allowedSlippedTick}
         />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'end', gap: '15px', marginTop: '15px' }}>
-        <AutoColumn style={{ width: '50%' }}>
-          <LimitInputWrapper>
-            <AnimatedDropdown open={isLimitOrder}>
-              <DynamicSection justify="start" gap="md" disabled={false}>
-                <RowStart>
-                  {Boolean(inputCurrency && outputCurrency) && (
-                    <PriceToggleSection>
-                      <PriceToggle
-                        currencyA={inputCurrency as Currency}
-                        currencyB={outputCurrency as Currency}
-                        handlePriceToggle={() => {
-                          onPriceToggle(!baseCurrencyIsInputToken)
-                          if (startingPrice && startingPrice !== '') {
-                            onPriceInput(new BN(1).div(new BN(startingPrice)).toString())
-                          }
-                        }}
-                      />
-                    </PriceToggleSection>
-                  )}
-                </RowStart>
-              </DynamicSection>
-              <DynamicSection gap="md" disabled={false}>
-                <LimitInputPrice>
-                  <Trans>
-                    <ThemedText.BodySecondary>Starting Price </ThemedText.BodySecondary>{' '}
-                  </Trans>
-                  <div style={{ textAlign: 'end', gap: '5px' }}>
-                    <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
-                  </div>
-                  <LimitInputRow>
-                    <StyledNumericalInput
-                      onUserInput={onPriceInput}
-                      value={startingPrice ?? ''}
-                      placeholder="0"
-                      className="limit-amount-input"
-                    ></StyledNumericalInput>
-                    <RowFixed>
-                      {inputCurrency && (
-                        <Trans>
-                          <ThemedText.BodySmall>
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                              <CurrencyLogo currency={outputCurrency} size="15px" />
-                              {outputCurrency?.symbol} /
-                              <CurrencyLogo currency={inputCurrency} size="15px" />
-                              {inputCurrency.symbol}
-                            </div>
-                          </ThemedText.BodySmall>
-                        </Trans>
-                      )}
-                    </RowFixed>
-                  </LimitInputRow>
-                </LimitInputPrice>
-                {/* 
+      <div>
+        <LimitInputWrapper>
+          <AnimatedDropdown open={isLimit}>
+            <DynamicSection justify="start" gap="md" disabled={false}>
+              <RowStart>
+                {Boolean(inputCurrency && outputCurrency) && (
+                  <PriceToggleSection>
+                    <PriceToggle
+                      currencyA={inputCurrency as Currency}
+                      currencyB={outputCurrency as Currency}
+                      handlePriceToggle={() => {
+                        onPriceToggle(!baseCurrencyIsInputToken)
+                        if (startingPrice && startingPrice !== '') {
+                          onPriceInput(new BN(1).div(new BN(startingPrice)).toString())
+                        }
+                      }}
+                    />
+                  </PriceToggleSection>
+                )}
+              </RowStart>
+            </DynamicSection>
+            <DynamicSection gap="md" disabled={false}>
+              <LimitInputPrice>
+                <Trans>
+                  <ThemedText.BodySecondary>Starting Price </ThemedText.BodySecondary>{' '}
+                </Trans>
+                <div style={{ textAlign: 'end', gap: '5px' }}>
+                  <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
+                </div>
+                <LimitInputRow>
+                  <StyledNumericalInput
+                    onUserInput={onPriceInput}
+                    value={startingPrice ?? ''}
+                    placeholder="0"
+                    className="limit-amount-input"
+                  ></StyledNumericalInput>
+                  <RowFixed>
+                    {inputCurrency && (
+                      <Trans>
+                        <ThemedText.BodySmall>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <CurrencyLogo currency={outputCurrency} size="15px" />
+                            {outputCurrency?.symbol} /
+                            <CurrencyLogo currency={inputCurrency} size="15px" />
+                            {inputCurrency.symbol}
+                          </div>
+                        </ThemedText.BodySmall>
+                      </Trans>
+                    )}
+                  </RowFixed>
+                </LimitInputRow>
+              </LimitInputPrice>
+              {/* 
                 {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
                   <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
                     <Trans>
@@ -555,10 +554,13 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                     </Trans>
                   </AutoColumn>
                 )} */}
-              </DynamicSection>
-            </AnimatedDropdown>
-          </LimitInputWrapper>
-          <AutoColumn style={{ paddingTop: '20px' }} justify="center">
+            </DynamicSection>
+          </AnimatedDropdown>
+        </LimitInputWrapper>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'end', alignItems: 'start', gap: '15px', marginTop: '15px' }}>
+        <AutoColumn style={{ width: '50%' }}>
+          <AutoColumn justify="center">
             <RowBetween>
               <Trans>
                 <div style={{ display: 'flex', gap: '3px' }}>
@@ -599,127 +601,207 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
             currency={outputCurrency}
           />
         </AutoColumn>
-        <AutoColumn justify="center" style={{ width: '50%' }}>
-          <TransactionDetails>
-            <Wrapper style={{ marginTop: '0' }}>
-              <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-                <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
-                  <RowFixed style={{ position: 'relative' }}>
-                    {loading ? (
-                      <StyledPolling>
-                        <StyledPollingDot>
-                          <Spinner />
-                        </StyledPollingDot>
-                      </StyledPolling>
-                    ) : (
-                      <HideSmall>
-                        <StyledInfoIcon color={theme.deprecated_bg3} />
-                      </HideSmall>
-                    )}
-                    {position ? (
-                      loading ? (
-                        <ThemedText.BodySmall>
-                          <Trans>Fetching details...</Trans>
-                        </ThemedText.BodySmall>
+        <AutoColumn justify="start" style={{ width: '50%' }}>
+          <ThemedText.BodyPrimary style={{ marginLeft: '15px' }}>Current Total Position:</ThemedText.BodyPrimary>
+          <AutoColumn justify="center" style={{ width: '100%', marginTop: '5px' }}>
+            <TransactionDetails>
+              <Wrapper style={{ marginTop: '0' }}>
+                <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
+                  <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
+                    <RowFixed style={{ position: 'relative' }}>
+                      {loading ? (
+                        <StyledPolling>
+                          <StyledPollingDot>
+                            <Spinner />
+                          </StyledPollingDot>
+                        </StyledPolling>
                       ) : (
-                        <LoadingOpacityContainer $loading={loading}>
-                          <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
-                        </LoadingOpacityContainer>
-                      )
-                    ) : null}
-                  </RowFixed>
-                  <RowFixed>
-                    <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
-                  </RowFixed>
-                </StyledHeaderRow>
-                <AnimatedDropdown open={showDetails}>
-                  <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-                    {!loading && txnInfo ? (
-                      <StyledCard>
-                        <AutoColumn gap="sm">
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Collateral Returned</Trans>
+                        <HideSmall>
+                          <StyledInfoIcon color={theme.deprecated_bg3} />
+                        </HideSmall>
+                      )}
+                      {position ? (
+                        loading ? (
+                          <ThemedText.BodySmall>
+                            <Trans>Fetching details...</Trans>
+                          </ThemedText.BodySmall>
+                        ) : (
+                          <LoadingOpacityContainer $loading={loading}>
+                            <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
+                          </LoadingOpacityContainer>
+                        )
+                      ) : null}
+                    </RowFixed>
+                    <RowFixed>
+                      <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
+                    </RowFixed>
+                  </StyledHeaderRow>
+                  <AnimatedDropdown open={showDetails}>
+                    <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+                      {!loading && !isLimit ? (
+                        <StyledCard style={{ width: '100%' }}>
+                          <AutoColumn gap="sm">
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>Collateral Returned</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                  <TruncatedText>
+                                    {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
+                                  </TruncatedText>
                                 </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>PnL</Trans>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>PnL</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right">
+                                  <TruncatedText>
+                                    <DeltaText delta={Number(txnInfo?.PnL)}>
+                                      {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                    </DeltaText>
+                                  </TruncatedText>
                                 </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right">
-                                <TruncatedText>
-                                  <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
-                                  </DeltaText>
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip
-                                text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
-                              >
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Premium Owed</Trans>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip
+                                  text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
+                                >
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>Premium Owed</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                  <TruncatedText>
+                                    {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
+                                  </TruncatedText>
                                 </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                        </AutoColumn>
-                      </StyledCard>
-                    ) : null}
-                  </AutoColumn>
-                </AnimatedDropdown>
-              </AutoColumn>
-            </Wrapper>
-          </TransactionDetails>
-          <ButtonError
-            style={{
-              fontSize: '12px',
-              borderRadius: '10px',
-              width: 'fit-content',
-              height: '15px',
-            }}
-            padding=".25rem"
-            onClick={() => handleReducePosition()}
-            id="leverage-button"
-            disabled={!!inputError || !txnInfo}
-          >
-            <ThemedText.BodySmall fontWeight={600}>
-              {inputError ? (
-                inputError
-              ) : tradeState === DerivedInfoState.INVALID ? (
-                <Trans>Invalid Trade</Trans>
-              ) : (
-                <Trans>Execute</Trans>
-              )}
-            </ThemedText.BodySmall>
-          </ButtonError>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                          </AutoColumn>
+                        </StyledCard>
+                      ) : (
+                        <StyledCard style={{ width: '100%' }}>
+                          <AutoColumn gap="sm">
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>Limit Data 1</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                  <TruncatedText>
+                                    {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
+                                  </TruncatedText>
+                                </ThemedText.BodySmall>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>Limit Data 2</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right">
+                                  <TruncatedText>
+                                    <DeltaText delta={Number(txnInfo?.PnL)}>
+                                      {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                    </DeltaText>
+                                  </TruncatedText>
+                                </ThemedText.BodySmall>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip
+                                  text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
+                                >
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>Limit Data 3</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                  <TruncatedText>
+                                    {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
+                                  </TruncatedText>
+                                </ThemedText.BodySmall>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                            <RowBetween>
+                              <RowFixed>
+                                <MouseoverTooltip
+                                  text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
+                                >
+                                  <ThemedText.BodySmall color="textPrimary">
+                                    <Trans>Limit Data 4</Trans>
+                                  </ThemedText.BodySmall>
+                                </MouseoverTooltip>
+                              </RowFixed>
+                              <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                                <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                  <TruncatedText>
+                                    {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
+                                  </TruncatedText>
+                                </ThemedText.BodySmall>
+                              </TextWithLoadingPlaceholder>
+                            </RowBetween>
+                          </AutoColumn>
+                        </StyledCard>
+                      )}
+                    </AutoColumn>
+                  </AnimatedDropdown>
+                </AutoColumn>
+              </Wrapper>
+            </TransactionDetails>
+          </AutoColumn>
         </AutoColumn>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+        <ButtonError
+          style={{
+            fontSize: '12px',
+            borderRadius: '10px',
+            width: 'fit-content',
+            height: '15px',
+          }}
+          padding=".25rem"
+          onClick={() => handleReducePosition()}
+          id="leverage-button"
+          disabled={!!inputError || !txnInfo}
+        >
+          <ThemedText.BodySmall fontWeight={600}>
+            {inputError ? (
+              inputError
+            ) : tradeState === DerivedInfoState.INVALID ? (
+              <Trans>Invalid Trade</Trans>
+            ) : (
+              <Trans>Execute</Trans>
+            )}
+          </ThemedText.BodySmall>
+        </ButtonError>
       </div>
     </DarkCard>
   )

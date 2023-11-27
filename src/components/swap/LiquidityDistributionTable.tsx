@@ -57,10 +57,12 @@ const LDDataRow = styled.div<SpreadProps>`
   padding: 0.2rem;
   border-radius: 5px;
   margin-bottom: 0.15rem;
+  :hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
 `
 const LDDataCellIn = styled.div`
   padding-left: 0.5rem;
-
   font-size: 0.75rem;
   color: white;
 `
@@ -73,18 +75,12 @@ const LDDataCellOut = styled.div`
   text-align: end;
 `
 
-const LDDataRowNeg = styled.div<SpreadProps>`
-  display: grid;
-  grid-template-columns: 2fr 2fr;
+const LDDataRowNeg = styled(LDDataRow)<SpreadProps>`
   background-image: linear-gradient(to right, transparent ${(props) => props.spread}px, rgba(131, 0, 0, 0.47));
-
-  padding: 0.2rem;
-  border-radius: 5px;
-  margin-bottom: 0.15rem;
 `
+
 const LDDataCellInNeg = styled.div`
   padding-left: 0.5rem;
-
   font-size: 0.75rem;
   color: white;
 `
@@ -95,5 +91,3 @@ const LDDataCellOutNeg = styled.div`
   color: white;
   text-align: end;
 `
-
-function LiquidityTableRow() {}

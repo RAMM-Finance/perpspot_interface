@@ -11,12 +11,9 @@ import { ButtonError, ButtonPrimary } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
-import { LoadingOpacityContainer } from 'components/Loader/styled'
 import {
-  RotatingArrow,
   Spinner,
   StyledCard,
-  StyledInfoIcon,
   StyledPolling,
   StyledPollingDot,
   TextWithLoadingPlaceholder,
@@ -42,7 +39,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
-import { HideSmall, ThemedText } from 'theme'
+import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 
 import ConfirmModifyPositionModal from './TransactionModal'
@@ -330,30 +327,7 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
       )}
       <div style={{ display: 'flex' }}>
         <AutoColumn style={{ width: '50%' }}>
-          <AutoColumn style={{ paddingBottom: '5px' }}>
-            <ValueLabel
-              description="Current Premium Deposit"
-              label="Current Premium Deposit"
-              value={formatBNToString(position?.premiumDeposit, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />
-            <ValueLabel
-              description="Current Premium Owed"
-              label="Current Premium Owed"
-              value={formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />
-            <ValueLabel
-              description="Current Premium Left"
-              label="Current Premium Left"
-              value={formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />
-          </AutoColumn>
-          <RowBetween padding="5px">
+          <RowBetween style={{ marginBottom: '10px' }}>
             <ThemedText.BodyPrimary fontWeight={400}>
               <Trans>Deposit Amount</Trans>
             </ThemedText.BodyPrimary>
@@ -381,42 +355,67 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
             currency={inputCurrency}
           />
         </AutoColumn>
-        <AutoColumn justify="center" style={{ width: '50%' }}>
+        <AutoColumn justify="start" style={{ marginTop: '15px', width: '50%' }}>
+          <AutoColumn
+            justify="space-between"
+            style={{ paddingLeft: '15px', paddingBottom: '5px', paddingRight: '10px', width: '100%' }}
+          >
+            <ValueLabel
+              description="Current Premium Deposit"
+              label="Current Premium Deposit"
+              value={formatBNToString(position?.premiumDeposit, NumberType.SwapTradeAmount)}
+              syncing={positionLoading}
+              symbolAppend={inputCurrency?.symbol}
+            />
+            <ValueLabel
+              description="Current Premium Owed"
+              label="Current Premium Owed"
+              value={formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount)}
+              syncing={positionLoading}
+              symbolAppend={inputCurrency?.symbol}
+            />
+            <ValueLabel
+              description="Current Premium Left"
+              label="Current Premium Left"
+              value={formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}
+              syncing={positionLoading}
+              symbolAppend={inputCurrency?.symbol}
+            />
+          </AutoColumn>
           <TransactionDetails>
             <Wrapper style={{ marginTop: '0' }}>
               <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
                 <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
                   <RowFixed style={{ position: 'relative' }}>
-                    {loading ? (
-                      <StyledPolling>
-                        <StyledPollingDot>
-                          <Spinner />
-                        </StyledPollingDot>
-                      </StyledPolling>
-                    ) : (
-                      <HideSmall>
-                        <StyledInfoIcon color={theme.deprecated_bg3} />
-                      </HideSmall>
-                    )}
+                    {
+                      loading ? (
+                        <StyledPolling>
+                          <StyledPollingDot>
+                            <Spinner />
+                          </StyledPollingDot>
+                        </StyledPolling>
+                      ) : null // <HideSmall>
+                      //   <StyledInfoIcon color={theme.deprecated_bg3} />
+                      // </HideSmall>
+                    }
                     {position ? (
                       loading ? (
                         <ThemedText.BodySmall>
                           <Trans>Fetching details...</Trans>
                         </ThemedText.BodySmall>
-                      ) : (
-                        <LoadingOpacityContainer $loading={loading}>
-                          <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
-                        </LoadingOpacityContainer>
-                      )
+                      ) : // <LoadingOpacityContainer $loading={loading}>
+                      //   <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
+                      // </LoadingOpacityContainer>
+                      null
                     ) : null}
                   </RowFixed>
-                  <RowFixed>
+                  {/* <RowFixed>
                     <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
-                  </RowFixed>
+                  </RowFixed> */}
                 </StyledHeaderRow>
                 <AnimatedDropdown open={showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-                    {!loading && txnInfo ? (
+                    {!loading ? (
                       <StyledCard>
                         <AutoColumn gap="sm">
                           <RowBetween>
@@ -443,57 +442,59 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
               </AutoColumn>
             </Wrapper>
           </TransactionDetails>
-          {!inputError && approvalState !== ApprovalState.APPROVED ? (
-            <ButtonPrimary
-              onClick={updateAllowance}
-              style={{ gap: 14 }}
-              disabled={approvalState === ApprovalState.PENDING}
-            >
-              {approvalState === ApprovalState.PENDING ? (
-                <>
-                  <Loader size="20px" />
-                  <Trans>Approval pending</Trans>
-                </>
-              ) : (
-                <>
-                  <MouseoverTooltip
-                    text={
-                      <Trans>
-                        Permission is required for Limitless to use each token.{' '}
-                        {`Allowance of ${formatNumberOrString(Number(amount), NumberType.SwapTradeAmount)} ${
-                          inputCurrency?.symbol
-                        } required.`}
-                      </Trans>
-                    }
-                  >
-                    <RowBetween>
-                      <Info size={20} />
-                      <Trans>Approve use of {inputCurrency?.symbol}</Trans>
-                    </RowBetween>
-                  </MouseoverTooltip>
-                </>
-              )}
-            </ButtonPrimary>
-          ) : (
-            <ButtonError
-              style={{ fontSize: '12px', borderRadius: '10px', width: 'fit-content', height: '15px' }}
-              padding=".25rem"
-              onClick={handleDeposit}
-              id="leverage-button"
-              disabled={!!inputError || tradeState !== DerivedInfoState.VALID}
-            >
-              <ThemedText.BodySmall fontWeight={600}>
-                {inputError ? (
-                  inputError
-                ) : tradeState !== DerivedInfoState.VALID ? (
-                  <Trans>Invalid Transaction</Trans>
-                ) : (
-                  <Trans>Execute</Trans>
-                )}
-              </ThemedText.BodySmall>
-            </ButtonError>
-          )}
         </AutoColumn>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+        {!inputError && approvalState !== ApprovalState.APPROVED ? (
+          <ButtonPrimary
+            onClick={updateAllowance}
+            style={{ gap: 14 }}
+            disabled={approvalState === ApprovalState.PENDING}
+          >
+            {approvalState === ApprovalState.PENDING ? (
+              <>
+                <Loader size="20px" />
+                <Trans>Approval pending</Trans>
+              </>
+            ) : (
+              <>
+                <MouseoverTooltip
+                  text={
+                    <Trans>
+                      Permission is required for Limitless to use each token.{' '}
+                      {`Allowance of ${formatNumberOrString(Number(amount), NumberType.SwapTradeAmount)} ${
+                        inputCurrency?.symbol
+                      } required.`}
+                    </Trans>
+                  }
+                >
+                  <RowBetween>
+                    <Info size={20} />
+                    <Trans>Approve use of {inputCurrency?.symbol}</Trans>
+                  </RowBetween>
+                </MouseoverTooltip>
+              </>
+            )}
+          </ButtonPrimary>
+        ) : (
+          <ButtonError
+            style={{ fontSize: '12px', borderRadius: '10px', width: 'fit-content', height: '15px' }}
+            padding=".25rem"
+            onClick={handleDeposit}
+            id="leverage-button"
+            disabled={!!inputError || tradeState !== DerivedInfoState.VALID}
+          >
+            <ThemedText.BodySmall fontWeight={600}>
+              {inputError ? (
+                inputError
+              ) : tradeState !== DerivedInfoState.VALID ? (
+                <Trans>Invalid Transaction</Trans>
+              ) : (
+                <Trans>Execute</Trans>
+              )}
+            </ThemedText.BodySmall>
+          </ButtonError>
+        )}
       </div>
     </DarkCard>
   )

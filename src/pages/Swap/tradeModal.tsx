@@ -95,6 +95,7 @@ export const LimitInputWrapper = styled.div`
 
 export const Filter = styled.div`
   display: flex;
+  align-items: start;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: fit-content;
@@ -102,8 +103,8 @@ export const Filter = styled.div`
 
 export const FilterWrapper = styled.div`
   display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: start;
+  margin-bottom: 6px;
 `
 export const LimitInputRow = styled.div`
   padding-top: 10px;
@@ -135,8 +136,6 @@ export const PriceToggleSection = styled.div`
 
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
 `
 
 export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
@@ -147,6 +146,8 @@ export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
 export const LimitInputPrice = styled(AutoColumn)`
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   padding: 16px;
   color: ${({ theme }) => theme.textSecondary};
   font-size: 14px;
@@ -512,6 +513,86 @@ const TradeTabContent = () => {
           </Selector>
         </Filter>
       </FilterWrapper>
+      <LimitInputWrapper>
+        <AnimatedDropdown open={isLimitOrder}>
+          <DynamicSection justify="start" gap="md" disabled={false}>
+            <RowStart>
+              {Boolean(baseCurrency && quoteCurrency) && (
+                <PriceToggleSection>
+                  <PriceToggle
+                    currencyA={baseCurrency as Currency}
+                    currencyB={quoteCurrency as Currency}
+                    handlePriceToggle={() => {
+                      onPriceToggle(!baseCurrencyIsInputToken)
+                      if (startingPrice && startingPrice !== '') {
+                        onPriceInput(new BN(1).div(new BN(startingPrice)).toFixed())
+                      }
+                    }}
+                  />
+                </PriceToggleSection>
+              )}
+            </RowStart>
+          </DynamicSection>
+          <DynamicSection gap="md" disabled={false}>
+            <LimitInputPrice>
+              <Trans>
+                <ThemedText.BodySecondary>Limit Price </ThemedText.BodySecondary>{' '}
+              </Trans>
+              <div style={{ textAlign: 'end', gap: '5px' }}>
+                <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
+              </div>
+              <LimitInputRow>
+                <StyledNumericalInput
+                  onUserInput={onPriceInput}
+                  value={startingPrice ?? ''}
+                  placeholder="0"
+                  className="limit-amount-input"
+                ></StyledNumericalInput>
+                <RowFixed>
+                  {baseCurrency && (
+                    <Button
+                      sx={{ textTransform: 'none' }}
+                      onClick={() => {
+                        onPriceToggle(!baseCurrencyIsInputToken)
+                        if (startingPrice && startingPrice !== '') {
+                          onPriceInput(new BN(1).div(new BN(startingPrice)).toFixed())
+                        }
+                      }}
+                    >
+                      <ThemedText.BodySmall>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <CurrencyLogo currency={quoteCurrency} size="15px" />
+                          {quoteCurrency?.symbol} /
+                          <CurrencyLogo currency={baseCurrency} size="15px" />
+                          {baseCurrency?.symbol}
+                        </div>
+                      </ThemedText.BodySmall>
+                    </Button>
+                  )}
+                </RowFixed>
+              </LimitInputRow>
+            </LimitInputPrice>
+            {/* 
+                {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
+                  <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
+                    <Trans>
+                      <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
+                        Current Price:
+                      </ThemedText.DeprecatedMain>
+                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
+                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
+                      </ThemedText.DeprecatedBody>
+                      {baseCurrency && (
+                        <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                        </ThemedText.DeprecatedBody>
+                      )}
+                    </Trans>
+                  </AutoColumn>
+                )} */}
+          </DynamicSection>
+        </AnimatedDropdown>
+      </LimitInputWrapper>
       <div style={{ display: 'relative' }}>
         <InputSection>
           <InputHeader>
@@ -591,86 +672,6 @@ const TradeTabContent = () => {
               />
             </Trace>
           </OutputSwapSection>
-          <LimitInputWrapper>
-            <AnimatedDropdown open={isLimitOrder}>
-              <DynamicSection justify="start" gap="md" disabled={false}>
-                <RowStart>
-                  {Boolean(baseCurrency && quoteCurrency) && (
-                    <PriceToggleSection>
-                      <PriceToggle
-                        currencyA={baseCurrency as Currency}
-                        currencyB={quoteCurrency as Currency}
-                        handlePriceToggle={() => {
-                          onPriceToggle(!baseCurrencyIsInputToken)
-                          if (startingPrice && startingPrice !== '') {
-                            onPriceInput(new BN(1).div(new BN(startingPrice)).toFixed())
-                          }
-                        }}
-                      />
-                    </PriceToggleSection>
-                  )}
-                </RowStart>
-              </DynamicSection>
-              <DynamicSection gap="md" disabled={false}>
-                <LimitInputPrice>
-                  <Trans>
-                    <ThemedText.BodySecondary>Limit Price </ThemedText.BodySecondary>{' '}
-                  </Trans>
-                  <div style={{ textAlign: 'end', gap: '5px' }}>
-                    <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
-                  </div>
-                  <LimitInputRow>
-                    <StyledNumericalInput
-                      onUserInput={onPriceInput}
-                      value={startingPrice ?? ''}
-                      placeholder="0"
-                      className="limit-amount-input"
-                    ></StyledNumericalInput>
-                    <RowFixed>
-                      {baseCurrency && (
-                        <Button
-                          sx={{ textTransform: 'none' }}
-                          onClick={() => {
-                            onPriceToggle(!baseCurrencyIsInputToken)
-                            if (startingPrice && startingPrice !== '') {
-                              onPriceInput(new BN(1).div(new BN(startingPrice)).toFixed())
-                            }
-                          }}
-                        >
-                          <ThemedText.BodySmall>
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                              <CurrencyLogo currency={quoteCurrency} size="15px" />
-                              {quoteCurrency?.symbol} /
-                              <CurrencyLogo currency={baseCurrency} size="15px" />
-                              {baseCurrency?.symbol}
-                            </div>
-                          </ThemedText.BodySmall>
-                        </Button>
-                      )}
-                    </RowFixed>
-                  </LimitInputRow>
-                </LimitInputPrice>
-                {/* 
-                {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
-                  <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
-                    <Trans>
-                      <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
-                        Current Price:
-                      </ThemedText.DeprecatedMain>
-                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
-                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
-                      </ThemedText.DeprecatedBody>
-                      {baseCurrency && (
-                        <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                        </ThemedText.DeprecatedBody>
-                      )}
-                    </Trans>
-                  </AutoColumn>
-                )} */}
-              </DynamicSection>
-            </AnimatedDropdown>
-          </LimitInputWrapper>
           <LeverageGaugeSection>
             <AutoColumn gap="md">
               <RowBetween>

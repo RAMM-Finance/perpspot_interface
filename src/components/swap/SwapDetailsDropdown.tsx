@@ -26,7 +26,7 @@ import GasEstimateTooltip from './GasEstimateTooltip'
 import TradePrice from './TradePrice'
 
 const Wrapper = styled(Row)`
-  width: 100%;
+  min-width: 200px;
   justify-content: center;
   min-height: 32px;
   border: none;
@@ -296,8 +296,8 @@ export function AddLimitDetailsDropdown({
   const [showDetails, setShowDetails] = useState(true)
 
   return (
-    <Wrapper style={{ marginTop: '0' }}>
-      <AutoColumn gap="sm">
+    <Wrapper>
+      <AutoColumn style={{ minWidth: '280px' }} gap="sm">
         <TraceEvent
           events={[BrowserEvent.onClick]}
           name={SwapEventName.SWAP_DETAILS_EXPANDED}

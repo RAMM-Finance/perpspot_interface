@@ -207,20 +207,20 @@ export function MouseoverValueLabel({
   appendSymbol?: string
   syncing?: boolean
 }) {
-  const theme = useTheme()
+  // const theme = useTheme()
 
   return (
-    <RowBetween>
+    <RowBetween padding="1px">
       <RowFixed>
         <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={false}>
-          <ThemedText.DeprecatedSubHeader color={theme.textSecondary}>{label}</ThemedText.DeprecatedSubHeader>
+          <ThemedText.BodySmall color="textSecondary">{label}</ThemedText.BodySmall>
         </MouseoverTooltip>
       </RowFixed>
       <TextWithLoadingPlaceholder syncing={syncing ?? false} width={65}>
-        <StyledText textAlign="right" fontSize={14}>
-          <TruncatedText>{value}</TruncatedText>
+        <ThemedText.BodySmall color="textSecondary" textAlign="right">
+          {value}
           {appendSymbol}
-        </StyledText>
+        </ThemedText.BodySmall>
       </TextWithLoadingPlaceholder>
     </RowBetween>
   )

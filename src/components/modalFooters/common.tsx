@@ -9,7 +9,6 @@ import Row, { RowBetween } from '../Row'
 export const TransactionDetails = styled.div`
   position: relative;
   width: 100%;
-  margin-top: 10px;
 `
 export const Wrapper = styled(Row)`
   width: 100%;
