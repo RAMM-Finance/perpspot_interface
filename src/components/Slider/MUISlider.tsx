@@ -1,10 +1,19 @@
 import Box from '@mui/material/Box'
+import Grid from '@mui/material/Grid'
+import MuiInput from '@mui/material/Input'
 import Slider from '@mui/material/Slider'
+import { styled } from '@mui/material/styles'
 import * as React from 'react'
 
 interface DiscreteSliderMarksProps {
   initialValue: number
   onChange: (val: number) => void
+}
+
+interface DiscreteSliderInputMarksProps {
+  initialValue: number
+  onSlideChange: (val: number) => void
+  onInputChange: (val: number) => void
 }
 
 const marks = [
@@ -105,30 +114,51 @@ const percentMarks = [
   },
 ]
 
-export function PercentSlider({ initialValue, onChange }: DiscreteSliderMarksProps) {
-  const handleChange = (event: Event, newValue: number | number[]) => {
-    onChange(newValue as number)
+export function PercentSlider({ initialValue, onSlideChange, onInputChange }: DiscreteSliderInputMarksProps) {
+  const handleSlideChange = (event: Event, newValue: number | number[]) => {
+    onSlideChange(newValue as number)
+  }
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onInputChange(event.target.value === '' ? 0 : Number(event.target.value))
   }
 
   return (
-    <Box sx={{ width: 250 }}>
-      <Slider
-        aria-label="Custom marks"
-        value={initialValue}
-        onChange={handleChange}
-        valueLabelDisplay="auto"
-        marks={percentMarks}
-        step={0.1}
-        min={0}
-        max={100}
-        size="small"
-        sx={{
-          '& .MuiSlider-markLabel': {
-            color: 'white',
-            fontSize: '12px',
-          },
-        }}
-      />
+    <Box sx={{ width: 400 }}>
+      <Grid container spacing={2} alignItems="center">
+        <Grid item></Grid>
+        <Grid item xs>
+          <Slider size="small" value={initialValue} onChange={handleSlideChange} aria-labelledby="input-slider" />
+        </Grid>
+        <Grid item>
+          <Input
+            placeholder="0"
+            value={initialValue}
+            size="small"
+            onChange={handleInputChange}
+            sx={{
+              input: {
+                color: 'white',
+              },
+            }}
+            inputProps={{
+              min: 0,
+              max: 100,
+              type: 'number',
+              'aria-labelledby': 'input-slider',
+            }}
+          />{' '}
+          % Reduction
+        </Grid>
+      </Grid>
     </Box>
   )
 }
+
+const Input = styled(MuiInput)`
+  width: 42px;
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+`

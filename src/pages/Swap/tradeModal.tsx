@@ -147,7 +147,6 @@ export const LimitInputPrice = styled(AutoColumn)`
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
   margin-top: 10px;
-  margin-bottom: 10px;
   padding: 16px;
   color: ${({ theme }) => theme.textSecondary};
   font-size: 14px;

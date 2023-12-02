@@ -127,6 +127,7 @@ export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
   padding: 10px;
+  margin-top: 5px;
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`

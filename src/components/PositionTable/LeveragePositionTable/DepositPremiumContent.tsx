@@ -10,6 +10,7 @@ import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonError, ButtonPrimary } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
+import { Break } from 'components/earn/styled'
 import Loader from 'components/Icons/LoadingSpinner'
 import {
   Spinner,
@@ -49,8 +50,6 @@ interface DerivedDepositPremiumInfo {
 }
 
 const Wrapper = styled.div`
-  padding: 1rem;
-  padding-top: 0rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
@@ -325,41 +324,38 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
           errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
         />
       )}
-      <div style={{ display: 'flex' }}>
-        <AutoColumn style={{ width: '50%' }}>
-          <RowBetween style={{ marginBottom: '10px' }}>
-            <ThemedText.BodyPrimary fontWeight={400}>
-              <Trans>Deposit Amount</Trans>
-            </ThemedText.BodyPrimary>
-          </RowBetween>
-          <CurrencyInputPanel
-            value={amount}
-            id="deposit-premium-input"
-            onUserInput={(str: string) => {
-              if (inputCurrencyBalance) {
-                const balance = inputCurrencyBalance.toExact()
-                if (str === '') {
-                  setAmount('')
-                } else if (Number(str) > Number(balance)) {
-                  return
-                } else {
-                  setAmount(str)
-                }
+      <AutoColumn>
+        <RowBetween style={{ marginBottom: '10px' }}>
+          <ThemedText.BodyPrimary fontWeight={400}>
+            <Trans>Deposit Amount</Trans>
+          </ThemedText.BodyPrimary>
+        </RowBetween>
+      </AutoColumn>
+      <AutoColumn gap="10px" style={{ width: '95%', marginLeft: '10px' }}>
+        <CurrencyInputPanel
+          value={amount}
+          id="deposit-premium-input"
+          onUserInput={(str: string) => {
+            if (inputCurrencyBalance) {
+              const balance = inputCurrencyBalance.toExact()
+              if (str === '') {
+                setAmount('')
+              } else if (Number(str) > Number(balance)) {
+                return
+              } else {
+                setAmount(str)
               }
-            }}
-            showMaxButton={true}
-            onMax={() => {
-              inputCurrencyBalance && setAmount(inputCurrencyBalance.toExact())
-            }}
-            hideBalance={false}
-            currency={inputCurrency}
-          />
-        </AutoColumn>
-        <AutoColumn justify="start" style={{ marginTop: '15px', width: '50%' }}>
-          <AutoColumn
-            justify="space-between"
-            style={{ paddingLeft: '15px', paddingBottom: '5px', paddingRight: '10px', width: '100%' }}
-          >
+            }
+          }}
+          showMaxButton={true}
+          onMax={() => {
+            inputCurrencyBalance && setAmount(inputCurrencyBalance.toExact())
+          }}
+          hideBalance={false}
+          currency={inputCurrency}
+        />
+        <StyledCard>
+          <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
             <ValueLabel
               description="Current Premium Deposit"
               label="Current Premium Deposit"
@@ -382,6 +378,7 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
               symbolAppend={inputCurrency?.symbol}
             />
           </AutoColumn>
+          <Break />
           <TransactionDetails>
             <Wrapper style={{ marginTop: '0' }}>
               <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
@@ -416,34 +413,32 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
                 <AnimatedDropdown open={showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
                     {!loading ? (
-                      <StyledCard>
-                        <AutoColumn gap="sm">
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
-                                <ThemedText.BodySmall>
-                                  <Trans>New Deposit Amount</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.newDepositAmount)}  ${inputCurrency?.symbol}`}
-                                </TruncatedText>
+                      <AutoColumn gap="sm">
+                        <RowBetween>
+                          <RowFixed>
+                            <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
+                              <ThemedText.BodySmall>
+                                <Trans>New Deposit Amount</Trans>
                               </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                        </AutoColumn>
-                      </StyledCard>
+                            </MouseoverTooltip>
+                          </RowFixed>
+                          <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                              <TruncatedText>
+                                {txnInfo && `${Number(txnInfo?.newDepositAmount)}  ${inputCurrency?.symbol}`}
+                              </TruncatedText>
+                            </ThemedText.BodySmall>
+                          </TextWithLoadingPlaceholder>
+                        </RowBetween>
+                      </AutoColumn>
                     ) : null}
                   </AutoColumn>
                 </AnimatedDropdown>
               </AutoColumn>
             </Wrapper>
           </TransactionDetails>
-        </AutoColumn>
-      </div>
+        </StyledCard>
+      </AutoColumn>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         {!inputError && approvalState !== ApprovalState.APPROVED ? (
           <ButtonPrimary
