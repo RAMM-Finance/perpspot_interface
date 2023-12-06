@@ -87,5 +87,6 @@ export const portfolioFadeInAnimation = css`
 `
 
 export const PortfolioTabWrapper = styled.div`
+  padding: 5px;
   ${portfolioFadeInAnimation}
 `

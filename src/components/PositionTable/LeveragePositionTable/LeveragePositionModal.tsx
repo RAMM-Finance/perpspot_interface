@@ -64,7 +64,7 @@ const ModalWrapper = styled.div`
 export function LeveragePositionModal(props: TradeModalProps) {
   const { isOpen, positionKey, onClose } = props
   const [activeTab, setActiveTab] = useState<TradeModalActiveTab>(
-    props.selectedTab ?? TradeModalActiveTab.INCREASE_POSITION
+    props.selectedTab ?? TradeModalActiveTab.DECREASE_POSITION
   )
 
   const displayedContent = useMemo(() => {

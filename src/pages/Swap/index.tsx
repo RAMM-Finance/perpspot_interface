@@ -166,6 +166,10 @@ const PositionsContainer = styled.div`
   margin-right: 0.25rem;
   height: calc(100vh - 582px);
   border-radius: 10px;
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 `
 
 const StatsContainer = styled.div`

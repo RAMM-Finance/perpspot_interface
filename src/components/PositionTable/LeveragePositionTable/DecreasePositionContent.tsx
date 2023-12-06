@@ -1,7 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
+import { Button } from '@mui/material'
 import { Percent, Price } from '@uniswap/sdk-core'
-import { Currency } from '@uniswap/sdk-core'
 import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -22,12 +22,12 @@ import {
   TextWithLoadingPlaceholder,
   TransactionDetails,
 } from 'components/modalFooters/common'
-import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowStart } from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import { TruncatedText } from 'components/swap/styleds'
+import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { ethers } from 'ethers'
@@ -234,6 +234,8 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
   const [errorMessage, setErrorMessage] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
   const [isLimit, setIsLimit] = useState(false)
+  const [limitToken, setLimitToken] = useState(false)
+  const [limitPrice, setLimitPrice] = useState<string>('')
 
   const inputCurrency = useCurrency(
     position?.isToken0 ? position?.poolKey?.token1Address : position?.poolKey.token0Address
@@ -426,16 +428,14 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     const inputCurrency = currencies[Field.INPUT]?.wrapped
     const outputCurrency = currencies[Field.OUTPUT]?.wrapped
     if (pool && inputCurrency && outputCurrency) {
-      const inputIsToken0 = inputCurrency.sortsBefore(outputCurrency)
-      const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
-      if (baseIsToken0) {
+      if (!limitToken) {
         return formatBNToString(new BN(pool.token0Price.toFixed(18)))
       } else {
         return formatBNToString(new BN(pool.token1Price.toFixed(18)))
       }
     }
     return undefined
-  }, [baseCurrencyIsInputToken, pool, currencies])
+  }, [limitToken, currencies, pool])
 
   return (
     <DarkCard style={{ paddingTop: '0px' }}>
@@ -492,16 +492,19 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
             <RowStart>
               {Boolean(inputCurrency && outputCurrency) && (
                 <PriceToggleSection>
-                  <PriceToggle
-                    currencyA={inputCurrency as Currency}
-                    currencyB={outputCurrency as Currency}
-                    handlePriceToggle={() => {
-                      onPriceToggle(!baseCurrencyIsInputToken)
-                      if (startingPrice && startingPrice !== '') {
-                        onPriceInput(new BN(1).div(new BN(startingPrice)).toString())
-                      }
-                    }}
-                  />
+                  <div
+                    style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
+                    onClick={() => setLimitToken(() => !limitToken)}
+                  >
+                    <ToggleWrapper width="fit-content">
+                      <ToggleElement isActive={!limitToken}>
+                        <CurrencyLogo currency={outputCurrency} size="15px" />
+                      </ToggleElement>
+                      <ToggleElement isActive={limitToken}>
+                        <CurrencyLogo currency={inputCurrency} size="15px" />
+                      </ToggleElement>
+                    </ToggleWrapper>
+                  </div>
                 </PriceToggleSection>
               )}
             </RowStart>
@@ -509,30 +512,41 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           <DynamicSection gap="md" disabled={false}>
             <LimitInputPrice>
               <Trans>
-                <ThemedText.BodySecondary>Starting Price </ThemedText.BodySecondary>{' '}
+                <ThemedText.BodySecondary>Order Price </ThemedText.BodySecondary>{' '}
               </Trans>
               <div style={{ textAlign: 'end', gap: '5px' }}>
                 <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
               </div>
               <LimitInputRow>
                 <StyledNumericalInput
-                  onUserInput={onPriceInput}
-                  value={startingPrice ?? ''}
+                  onUserInput={setLimitPrice}
+                  value={limitPrice ?? ''}
                   placeholder="0"
                   className="limit-amount-input"
                 ></StyledNumericalInput>
                 <RowFixed>
                   {inputCurrency && (
-                    <Trans>
+                    <Button sx={{ textTransform: 'none' }} onClick={() => setLimitToken(() => !limitToken)}>
                       <ThemedText.BodySmall>
                         <div style={{ display: 'flex', gap: '4px' }}>
-                          <CurrencyLogo currency={outputCurrency} size="15px" />
-                          {outputCurrency?.symbol} /
-                          <CurrencyLogo currency={inputCurrency} size="15px" />
-                          {inputCurrency.symbol}
+                          {!limitToken ? (
+                            <>
+                              <CurrencyLogo currency={inputCurrency} size="15px" />
+                              {inputCurrency?.symbol} /
+                              <CurrencyLogo currency={outputCurrency} size="15px" />
+                              {outputCurrency?.symbol}
+                            </>
+                          ) : (
+                            <>
+                              <CurrencyLogo currency={outputCurrency} size="15px" />
+                              {outputCurrency?.symbol} /
+                              <CurrencyLogo currency={inputCurrency} size="15px" />
+                              {inputCurrency?.symbol}
+                            </>
+                          )}
                         </div>
                       </ThemedText.BodySmall>
-                    </Trans>
+                    </Button>
                   )}
                 </RowFixed>
               </LimitInputRow>
@@ -622,6 +636,10 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                         <ThemedText.BodySmall>
                           <Trans>Fetching details...</Trans>
                         </ThemedText.BodySmall>
+                      ) : isLimit ? (
+                        <LoadingOpacityContainer $loading={loading}>
+                          <ThemedText.BodySmall>Order Details </ThemedText.BodySmall>
+                        </LoadingOpacityContainer>
                       ) : (
                         <LoadingOpacityContainer $loading={loading}>
                           <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
@@ -793,6 +811,8 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
               inputError
             ) : tradeState === DerivedInfoState.INVALID ? (
               <Trans>Invalid Trade</Trans>
+            ) : isLimit ? (
+              <Trans>Place Order</Trans>
             ) : (
               <Trans>Execute</Trans>
             )}

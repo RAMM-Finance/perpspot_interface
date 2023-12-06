@@ -1252,7 +1252,11 @@ export default function AddLiquidity() {
                         </MediumOnly>
                       </RightContainer>
                     </>
-                  ) : null}
+                  ) : (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <Buttons />
+                    </div>
+                  )}
                 </div>
               </RightSection>
             </SectionWrapper>
