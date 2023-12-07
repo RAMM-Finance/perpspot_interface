@@ -7,11 +7,10 @@ export enum OrderSortMethod {
   LEVERAGE = 'Leverage',
   INPUT = 'Input',
   OUTPUT = 'Output',
-  REPAYTIME = 'Repay Time',
 }
 
 export const filterStringAtom = atomWithReset<string>('')
-export const sortMethodAtom = atom<OrderSortMethod>(OrderSortMethod.REPAYTIME)
+export const sortMethodAtom = atom<OrderSortMethod>(OrderSortMethod.OUTPUT)
 export const sortAscendingAtom = atom<boolean>(false)
 
 /* keep track of sort category for token table */

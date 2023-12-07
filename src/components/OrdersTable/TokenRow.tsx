@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { MarginOrderDetails, TraderPositionKey } from 'types/lmtv2position'
+import { MarginOrderDetails, MarginLimitOrder, TraderPositionKey } from 'types/lmtv2position'
 
 import {
   LeveragePositionModal,
@@ -341,7 +341,6 @@ const HEADER_DESCRIPTIONS: Record<OrderSortMethod, ReactNode | undefined> = {
   [OrderSortMethod.LEVERAGE]: <Trans>Leverage</Trans>,
   [OrderSortMethod.INPUT]: <Trans>Input</Trans>,
   [OrderSortMethod.OUTPUT]: <Trans>Output</Trans>,
-  [OrderSortMethod.REPAYTIME]: <Trans>RepayTime</Trans>,
 }
 
 const SortingEnabled = {
@@ -349,7 +348,6 @@ const SortingEnabled = {
   [OrderSortMethod.LEVERAGE]: false,
   [OrderSortMethod.INPUT]: false,
   [OrderSortMethod.OUTPUT]: false,
-  [OrderSortMethod.REPAYTIME]: false,
 }
 
 /* Get singular header cell for header row */
@@ -394,7 +392,6 @@ function PositionRow({
   header,
   positionInfo,
   value,
-  repaymentTime,
   PnL,
   entryPrice,
   positionKey,
@@ -405,7 +402,7 @@ function PositionRow({
   header: boolean
   loading?: boolean
   value: ReactNode
-  repaymentTime: ReactNode
+  // repaymentTime: ReactNode
   positionInfo: ReactNode
   positionKey?: TraderPositionKey
   // recentPremium: ReactNode
@@ -449,9 +446,9 @@ function PositionRow({
           {value}
         </EditCell>
       </PriceCell>
-      <PriceCell data-testid="repaymentTime-cell" sortable={header}>
+      {/*<PriceCell data-testid="repaymentTime-cell" sortable={header}>
         {repaymentTime}
-      </PriceCell>
+      </PriceCell>*/}
       <PriceCell data-testid="premium-cell" sortable={header}>
         <EditCell
           onClick={() => {
@@ -494,7 +491,7 @@ export function HeaderRow() {
       PnL={<HeaderCell category={OrderSortMethod.LEVERAGE} />}
       entryPrice={<HeaderCell category={OrderSortMethod.INPUT} />}
       remainingPremium={<HeaderCell category={OrderSortMethod.OUTPUT} />}
-      repaymentTime={<HeaderCell category={OrderSortMethod.REPAYTIME} />}
+      // repaymentTime={<HeaderCell category={OrderSortMethod.REPAYTIME} />}
     />
   )
 }
@@ -518,7 +515,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
         </>
       }
       value={<MediumLoadingBubble />}
-      repaymentTime={<LoadingBubble />}
+      // repaymentTime={<LoadingBubble />}
       PnL={<LoadingBubble />}
       entryPrice={<LoadingBubble />}
       remainingPremium={<LoadingBubble />}
@@ -534,7 +531,7 @@ const FlexStartRow = styled(Row)`
 `
 
 interface LoadedRowProps {
-  order: MarginOrderDetails
+  order: MarginLimitOrder
 }
 
 /* Loaded State: row component with token information */
@@ -542,6 +539,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { order: details } = props
+  console.log('orders', details); 
 
   // const positionKey: OrderPositionKey = useMemo(() => {
   //   return {
@@ -616,6 +614,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <RowBetween>
                 <PositionInfo>
                   <GreenText>
+              {details?.isAdd? "Add Order": "Reduce Order"}
+
                     {' '}
                     {/* x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.totalPosition.currency?.symbol}`} */}
                   </GreenText>
@@ -626,18 +626,19 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow>
               <UnderlineText>
-                {/* {`${formatCurrencyAmount(position?.totalPosition, NumberType.SwapTradeAmount)} ${
+
+                {/*{`${formatCurrencyAmount(details?.startOutput, NumberType.SwapTradeAmount)} 
+                ${
                   position?.totalPosition.currency?.symbol
-                }`} */}
+                }
+                `
+              } */}
+              {details?.startOutput.toString()} 
               </UnderlineText>
               <Edit3 size={14} />
             </FlexStartRow>
           }
-          repaymentTime={
-            <FlexStartRow>
-              {/* {position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>} */}
-            </FlexStartRow>
-          }
+
           PnL={
             <FlexStartRow>
               <AutoRow>
