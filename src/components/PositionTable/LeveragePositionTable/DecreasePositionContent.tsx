@@ -162,6 +162,8 @@ function useDerivedReducePositionInfo(
           reduceAmount: 0,
         }
 
+        console.log('simulation reduce param', reduceParam)
+
         const result = await marginFacility.callStatic.reducePosition(
           {
             token0: positionKey.poolKey.token0Address,
@@ -335,6 +337,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
         slippedTickMax,
         reduceAmount: 0,
       }
+
+      console.log('reduce param', reduceParam)
+
       const poolKey = {
         token0: positionKey.poolKey.token0Address,
         token1: positionKey.poolKey.token1Address,
