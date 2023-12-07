@@ -81,11 +81,31 @@ export function AdvancedAddLimitDetails({
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
         />
         <MouseoverValueLabel
-          description="Total Input Debt"
+          description="Borrow Amount"
           value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
           label={
             <Trans>
-              <ThemedText.BodySmall>Total Debt Input</ThemedText.BodySmall>
+              <ThemedText.BodySmall>Borrow Amount</ThemedText.BodySmall>
+            </Trans>
+          }
+          appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
+        />
+        <MouseoverValueLabel
+          description="Amount of premiums to be held for order to be filled"
+          value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
+          label={
+            <Trans>
+              <ThemedText.BodySmall>Premium Depositing</ThemedText.BodySmall>
+            </Trans>
+          }
+          appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
+        />
+        <MouseoverValueLabel
+          description="Order Price"
+          value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
+          label={
+            <Trans>
+              <ThemedText.BodySmall>Order Price</ThemedText.BodySmall>
             </Trans>
           }
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}

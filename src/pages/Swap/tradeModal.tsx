@@ -892,6 +892,8 @@ const TradeTabContent = () => {
                 width="14"
                 padding=".25rem"
                 onClick={() => {
+                  setLimitState((currentState)=>({... currentState, showConfirm : true}))
+  
                   // setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
                 }}
                 id="leverage-button"

@@ -152,18 +152,36 @@ export function AddLimitModalHeader({
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
         <AutoColumn gap="sm">
-          <></>
+          <RowBetween>
+            <ThemedText.DeprecatedMain>Desired Output</ThemedText.DeprecatedMain>
+          </RowBetween>
+          <RowBetween align="flex-end">
+            <RowFixed gap="0px">
+              <TruncatedText fontSize={24} fontWeight={500}>
+                {trade.minOutput.toPrecision(6)}
+              </TruncatedText>
+            </RowFixed>
+            <RowFixed gap="0px">
+              <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
+              <Text fontSize={20} fontWeight={500}>
+                {outputCurrency?.symbol}
+              </Text>
+            </RowFixed>
+          </RowBetween>
+          <RowBetween>
+            <FiatValue fiatValue={fiatValueMargin} />
+          </RowBetween>
         </AutoColumn>
       </LightCard>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
-        <ThemedText.DeprecatedMain>Starting Output</ThemedText.DeprecatedMain>
+        <ThemedText.DeprecatedMain>Order Price</ThemedText.DeprecatedMain>
       </RowBetween>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         {limitPrice && <TradePrice price={limitPrice} />}
       </RowBetween>
-      <LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
+      {/*<LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
         <AdvancedAddLimitDetails trade={trade} />
-      </LightCard>
+      </LightCard>*/}
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
           <RowBetween>
@@ -190,7 +208,7 @@ export function AddLimitModalHeader({
             <b>
               {formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)} {outputCurrency?.symbol}
             </b>{' '}
-            or the transaction will revert.
+            or the order will not be filled.
           </Trans>
         </ThemedText.DeprecatedItalic>
       </AutoColumn>
