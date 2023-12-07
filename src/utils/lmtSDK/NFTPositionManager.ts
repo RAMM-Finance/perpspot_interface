@@ -126,7 +126,12 @@ export abstract class NonfungiblePositionManager {
     return calldatas
   }
 
-  public static addCallParameters(position: Position, options: AddLiquidityOptions): MethodParameters {
+  public static addCallParameters(
+    position: Position,
+    options: AddLiquidityOptions,
+    amount0Max: JSBI,
+    amount1Max: JSBI
+  ): MethodParameters {
     // get amounts
     const { amount0: amount0Desired, amount1: amount1Desired } = position.mintAmounts
 
@@ -137,9 +142,23 @@ export abstract class NonfungiblePositionManager {
 
     const deadline = toHex(options.deadline)
     let calldata: string
+
     // mint
     if (isMint(options)) {
       const recipient: string = validateAndParseAddress(options.recipient)
+      // address token0;
+      // address token1;
+      // uint24 fee;
+      // // ticks
+      // int24 tickLower;
+      // int24 tickUpper;
+      // uint256 amount0Desired;
+      // uint256 amount1Desired;
+      // uint256 amount0Min;
+      // uint256 amount1Min;
+      // address recipient;
+      // uint256 deadline;
+
       // console.log('params', {
       //   token0: position.pool.token0.address,
       //   token1: position.pool.token1.address,
@@ -160,8 +179,10 @@ export abstract class NonfungiblePositionManager {
           fee: position.pool.fee,
           tickLower: position.tickLower,
           tickUpper: position.tickUpper,
-          amount0Desired: toHex(amount0Desired),
-          amount1Desired: toHex(amount1Desired),
+          amount0Desired: amount0Desired.toString(),
+          amount1Desired: amount1Desired.toString(),
+          amount0Max: amount0Max.toString(),
+          amount1Max: amount1Max.toString(),
           amount0Min,
           amount1Min,
           recipient,
@@ -173,6 +194,8 @@ export abstract class NonfungiblePositionManager {
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('increaseLiquidity', [
         {
           tokenId: toHex(options.tokenId),
+          amount0Max: amount0Max.toString(),
+          amount1Max: amount1Max.toString(),
           amount0Desired: toHex(amount0Desired),
           amount1Desired: toHex(amount1Desired),
           amount0Min,

@@ -54,6 +54,7 @@ export type PositionStruct = {
   totalDebtOutput: PromiseOrValue<BigNumberish>;
   totalDebtInput: PromiseOrValue<BigNumberish>;
   recentPremium: PromiseOrValue<BigNumberish>;
+  lastPremiumPaymentTime: PromiseOrValue<BigNumberish>;
   openTime: PromiseOrValue<BigNumberish>;
   repayTime: PromiseOrValue<BigNumberish>;
   borrowInfo: LiquidityLoanStruct[];
@@ -67,6 +68,7 @@ export type PositionStructOutput = [
   BigNumber,
   number,
   number,
+  number,
   LiquidityLoanStructOutput[]
 ] & {
   pool: string;
@@ -74,6 +76,7 @@ export type PositionStructOutput = [
   totalDebtOutput: BigNumber;
   totalDebtInput: BigNumber;
   recentPremium: BigNumber;
+  lastPremiumPaymentTime: number;
   openTime: number;
   repayTime: number;
   borrowInfo: LiquidityLoanStructOutput[];
@@ -105,9 +108,8 @@ export type PoolKeyStructOutput = [string, string, number] & {
 
 export interface IFacilityInterface extends utils.Interface {
   functions: {
-    "canForceClose(((address,bool,uint256,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
+    "canForceClose(((address,bool,uint256,uint256,uint256,uint32,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
-    "maxWithdrawablePremium(bytes32)": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
   };
@@ -116,7 +118,6 @@ export interface IFacilityInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "canForceClose"
       | "depositPremium"
-      | "maxWithdrawablePremium"
       | "payPremium"
       | "withdrawPremium"
   ): FunctionFragment;
@@ -133,10 +134,6 @@ export interface IFacilityInterface extends utils.Interface {
       PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "maxWithdrawablePremium",
-    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "payPremium",
@@ -161,10 +158,6 @@ export interface IFacilityInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "depositPremium",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "maxWithdrawablePremium",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "payPremium", data: BytesLike): Result;
@@ -216,11 +209,6 @@ export interface IFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    maxWithdrawablePremium(
-      positionId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     payPremium(
       key: PoolKeyStruct,
       payToken1: PromiseOrValue<boolean>,
@@ -249,11 +237,6 @@ export interface IFacility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  maxWithdrawablePremium(
-    positionId: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   payPremium(
     key: PoolKeyStruct,
     payToken1: PromiseOrValue<boolean>,
@@ -281,11 +264,6 @@ export interface IFacility extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    maxWithdrawablePremium(
-      positionId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     payPremium(
       key: PoolKeyStruct,
@@ -318,11 +296,6 @@ export interface IFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    maxWithdrawablePremium(
-      positionId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     payPremium(
       key: PoolKeyStruct,
       payToken1: PromiseOrValue<boolean>,
@@ -350,11 +323,6 @@ export interface IFacility extends BaseContract {
       isToken0: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    maxWithdrawablePremium(
-      positionId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     payPremium(

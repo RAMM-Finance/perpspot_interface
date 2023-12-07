@@ -865,11 +865,23 @@ export function useDerivedLmtMintInfo(
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts
 
-  if (currencyAAmount && currencyBalances?.[Field.CURRENCY_A]?.lessThan(currencyAAmount)) {
+  if (
+    currencyA &&
+    currencyAAmount &&
+    currencyBalances?.[Field.CURRENCY_A]?.lessThan(
+      currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(100)))
+    )
+  ) {
     errorMessage = <Trans>Insufficient {currencies[Field.CURRENCY_A]?.symbol} balance</Trans>
   }
 
-  if (currencyBAmount && currencyBalances?.[Field.CURRENCY_B]?.lessThan(currencyBAmount)) {
+  if (
+    currencyB &&
+    currencyBAmount &&
+    currencyBalances?.[Field.CURRENCY_B]?.lessThan(
+      currencyBAmount.add(CurrencyAmount.fromRawAmount(currencyB, JSBI.BigInt(100)))
+    )
+  ) {
     errorMessage = <Trans>Insufficient {currencies[Field.CURRENCY_B]?.symbol} balance</Trans>
   }
 

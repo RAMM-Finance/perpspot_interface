@@ -162,6 +162,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -292,6 +297,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -413,9 +423,9 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "bytes32",
+            internalType: "bytes",
             name: "executionData",
-            type: "bytes32",
+            type: "bytes",
           },
           {
             internalType: "int24",

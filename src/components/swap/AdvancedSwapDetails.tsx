@@ -557,7 +557,6 @@ export function ValueLabel({
   syncing,
   symbolAppend,
   hideInfoTooltips = false,
-  width = '',
 }: {
   description: string
   label: string
@@ -566,7 +565,6 @@ export function ValueLabel({
   syncing: boolean
   symbolAppend?: string
   hideInfoTooltips?: boolean
-  width?: string
 }) {
   // const theme = useTheme()
 
@@ -586,181 +584,6 @@ export function ValueLabel({
     </RowBetween>
   )
 }
-
-// export const DefaultLeverageTrade: LeverageTrade = {
-//   inputAmount:  undefined,
-//   borrowedAmount:  undefined,
-//   state: LeverageTradeState.INVALID,
-//   expectedOutput: undefined, // new output. i.e. new position - existing position.
-//   strikePrice:  undefined,
-//   quotedPremium:  undefined,
-//   priceImpact:  undefined,
-//   remainingPremium:  undefined,
-//   effectiveLeverage:  undefined,
-//   existingPosition: undefined,
-//   existingTotalDebtInput:  undefined,
-//   existingTotalPosition: undefined,
-//   tokenId: undefined,
-//   existingCollateral: undefined
-// }
-
-// export function AdvancedLeverageSwapDetails({
-//   allowedSlippage,
-//   syncing = false,
-//   hideInfoTooltips = false,
-//   // leverageFactor,
-//   trade,
-//   leverageTrade,
-// }: AdvancedAddLeverageDetailsProps) {
-//   const theme = useTheme()
-
-//   const {
-//     [Field.INPUT]: { currencyId: inputCurrencyId },
-//     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-//   } = useSwapState()
-
-//   const inputCurrency = useCurrency(inputCurrencyId)
-//   const outputCurrency = useCurrency(outputCurrencyId)
-//   // const {
-//   //   existingTotalPosition,
-//   //   existingPosition,
-//   //   existingTotalDebtInput,
-//   //   existingCollateral,
-//   //   expectedOutput,
-//   //   borrowedAmount,
-//   //   inputAmount
-//   // } = leverageTrade;
-//   const [price, fees, addedOutput] = useMemo(() => {
-//     let _price
-//     let _fees
-//     let _addedOutput
-//     if (leverageTrade) {
-//       if (leverageTrade.existingPosition) {
-//         _price = leverageTrade?.expectedTotalPosition
-//           .minus(leverageTrade?.existingTotalPosition)
-//           .div(leverageTrade?.borrowedAmount?.toExact())
-//         _fees = new BN(leverageTrade?.borrowedAmount?.toExact())
-//           .minus(leverageTrade?.existingTotalDebtInput)
-//           .plus(leverageTrade?.inputAmount?.toExact())
-//           .times(0.0005)
-//         _addedOutput = leverageTrade?.expectedTotalPosition.minus(leverageTrade?.existingTotalPosition)
-//       } else {
-//         _price = leverageTrade?.expectedTotalPosition.div(
-//           new BN(leverageTrade?.borrowedAmount?.toExact()).plus(leverageTrade?.inputAmount?.toExact())
-//         )
-//         _fees = new BN(leverageTrade?.borrowedAmount?.toExact())
-//           .plus(leverageTrade?.inputAmount?.toExact())
-//           .times(0.0005)
-//         _addedOutput = leverageTrade?.expectedTotalPosition
-//       }
-//     }
-
-//     return [_price, _fees, _addedOutput]
-//   }, [leverageTrade])
-
-//   return (
-//     <StyledCard>
-//       <AutoColumn gap="sm">
-//         <ValueLabel
-//           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
-//           label={leverageTrade?.existingPosition ? 'Added Position' : 'Exp. Output'}
-//           value={formatBNToString(addedOutput)}
-//           syncing={syncing}
-//           symbolAppend={outputCurrency?.symbol}
-//         />
-//         <ValueLabel
-//           description="Amount In / Amount Out"
-//           label="Quoted Price"
-//           value={formatBNToString(price)}
-//           syncing={syncing}
-//           symbolAppend={price ? '/' + formatBNToString(new BN(1).div(price)) : '/-'}
-//         />
-//         <ValueLabel
-//           description="The premium payment required to open this position. It depletes at a constant rate for 24 hours, and when you close your position early, you will regain the remaining amount."
-//           label="Quoted Premium"
-//           value={formatBNToString(leverageTrade?.quotedPremium)}
-//           syncing={syncing}
-//           symbolAppend={inputCurrency?.symbol}
-//         />
-//         {leverageTrade?.existingPosition && (
-//           <ValueLabel
-//             description="The premium refunded from your old payment"
-//             label="Returned premium"
-//             value={formatBNToString(leverageTrade?.remainingPremium)}
-//             syncing={syncing}
-//             symbolAppend={inputCurrency?.symbol}
-//           />
-//         )}
-//         <ValueLabel
-//           description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.
-//           The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."
-//           label="Maximum Loss"
-//           value={formatBNToString(
-//             leverageTrade?.inputAmount ? new BN(leverageTrade?.inputAmount?.toExact()) : undefined
-//           )}
-//           syncing={syncing}
-//           symbolAppend={inputCurrency?.symbol}
-//         />
-//         <ValueLabel
-//           description="Fees paid for trade "
-//           label="Fees"
-//           value={formatBNToString(fees)}
-//           syncing={syncing}
-//           symbolAppend={inputCurrency?.symbol}
-//         />
-
-//         <Separator />
-//         <RowBetween>
-//           <RowFixed style={{ marginRight: '20px' }}>
-//             <MouseoverTooltip
-//               text={
-//                 <Trans>
-//                   The minimum amount you are guaranteed to receive. If the price slips any further, your transaction
-//                   will revert.
-//                 </Trans>
-//               }
-//               disableHover={hideInfoTooltips}
-//             >
-//               <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-//                 <Trans>Minimum output</Trans> <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
-//               </ThemedText.DeprecatedSubHeader>
-//             </MouseoverTooltip>
-//           </RowFixed>
-//           <TextWithLoadingPlaceholder syncing={syncing} width={70}>
-//             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-//               <TruncatedText>
-//                 {trade?.tradeType === TradeType.EXACT_INPUT
-//                   ? `${formatBNToString(addedOutput) ?? '-'}  ${trade?.outputAmount.currency.symbol}`
-//                   : '-'}
-//               </TruncatedText>
-//             </ThemedText.DeprecatedBlack>
-//           </TextWithLoadingPlaceholder>
-//         </RowBetween>
-//         {/* {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
-//           <RowBetween>
-//             <MouseoverTooltip
-//               text={
-//                 <Trans>
-//                   The fee paid to miners who process your transaction. This must be paid in {nativeCurrency.symbol}.
-//                 </Trans>
-//               }
-//               disableHover={hideInfoTooltips}
-//             >
-//               <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-//                 <Trans>Network Fee</Trans>
-//               </ThemedText.DeprecatedSubHeader>
-//             </MouseoverTooltip>
-//             <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-//               <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-//                 ~${trade.gasUseEstimateUSD.toFixed(2)}
-//               </ThemedText.DeprecatedBlack>
-//             </TextWithLoadingPlaceholder>
-//           </RowBetween>
-//         )} */}
-//       </AutoColumn>
-//     </StyledCard>
-//   )
-// }
 
 function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
   if (price) {
@@ -811,14 +634,6 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={preTradeInfo?.premiumNecessary ? inputCurrency?.symbol : ''}
         />
-        {/*<ValueLabel
-          description="Current premium deposit for this position"
-          label="Existing Premium Deposit"
-          value={formatCurrencyAmount(preTradeInfo?.premiumDeposit, NumberType.SwapTradeAmount)}
-          syncing={syncing}
-          symbolAppend={preTradeInfo?.premiumDeposit ? inputCurrency?.symbol : ''}
-        />*/}
-
         <ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={existingPosition && existingPosition?.openTime > 0 ? 'Added Position' : 'Exp. Output'}
@@ -838,25 +653,19 @@ export function AdvancedMarginTradeDetails({
           value="0"
           syncing={syncing}
         />
-        <ValueLabel description="Slippage from spot price" label="Slippage" value="0" syncing={syncing} />
-        <ValueLabel description="Swap fee + origination fee " label="Total Fees" value="0" syncing={syncing} />
-
-        {/*<ValueLabel
-          description="The maximum loss you can incur is capped by which UniswapV3 ticks you borrow from. The highest value it can take is your margin.  
-          The exact value depends on the ticks you borrow from, if you borrow closer to the current market price(where you borrow depends on the pool's liquidity condition), the more expensive the premium, but the less maximum loss. This value does not account for premiums."
-          label="Maximum Loss"
-          value={formatCurrencyAmount(trade?.margin, NumberType.SwapTradeAmount)}
+        <ValueLabel
+          description="Slippage from spot price"
+          label="Slippage"
+          value={trade?.allowedSlippage.toFixed(6)}
+          symbolAppend="%"
           syncing={syncing}
-          symbolAppend={trade ? inputCurrency?.symbol : ''}
-        />*/}
-        {/* <ValueLabel
-          description="Fees paid for trade "
-          label="Fees"
-          value={formatBNToString(fees)}
+        />
+        <ValueLabel
+          description="Swap fee + origination fee "
+          label="Total Fees"
+          value={formatCurrencyAmount(trade?.fees, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={inputCurrency?.symbol}
-        /> */}
-
+        />
         <Separator />
         <RowBetween>
           <RowFixed style={{ marginRight: '20px' }}>
@@ -989,7 +798,6 @@ export function AdvancedBorrowSwapDetails({
           value={formatBNToString(displayValues.additionalCollateral)}
           syncing={syncing}
           symbolAppend={inputCurrency?.symbol}
-          width="100px"
         />
         <ValueLabel
           description={
@@ -1001,7 +809,6 @@ export function AdvancedBorrowSwapDetails({
           value={formatBNToString(displayValues.borrowedAmount)}
           syncing={syncing}
           symbolAppend={outputCurrency?.symbol}
-          width="100px"
         />
         <Separator />
         <ValueLabel
@@ -1010,7 +817,6 @@ export function AdvancedBorrowSwapDetails({
           value={formatBNToString(borrowTrade?.quotedPremium)}
           syncing={syncing}
           symbolAppend={outputCurrency?.symbol}
-          width="100px"
         />
         {/* <ValueLabel 
           description="The remaining premium returned."

@@ -38,7 +38,7 @@ export type PoolKeyStructOutput = [string, string, number] & {
 export interface IPoolManagerInterface extends utils.Interface {
   functions: {
     "collectFees((address,address,uint24),int24,int24)": FunctionFragment;
-    "provideDiscreteLiquidity((address,address,uint24),int24,int24,uint128,address,address)": FunctionFragment;
+    "provideDiscreteLiquidity((address,address,uint24),int24,int24,uint128,address)": FunctionFragment;
     "withdrawDiscreteLiquidity((address,address,uint24),int24,int24,uint128)": FunctionFragment;
   };
 
@@ -64,7 +64,6 @@ export interface IPoolManagerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
       PromiseOrValue<string>
     ]
   ): string;
@@ -134,7 +133,6 @@ export interface IPoolManager extends BaseContract {
       tickUpper: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      payer: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -160,7 +158,6 @@ export interface IPoolManager extends BaseContract {
     tickUpper: PromiseOrValue<BigNumberish>,
     liquidity: PromiseOrValue<BigNumberish>,
     recipient: PromiseOrValue<string>,
-    payer: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -188,7 +185,6 @@ export interface IPoolManager extends BaseContract {
       tickUpper: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      payer: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber]>;
 
@@ -217,7 +213,6 @@ export interface IPoolManager extends BaseContract {
       tickUpper: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      payer: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -244,7 +239,6 @@ export interface IPoolManager extends BaseContract {
       tickUpper: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
       recipient: PromiseOrValue<string>,
-      payer: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

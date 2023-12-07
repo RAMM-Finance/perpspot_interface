@@ -499,6 +499,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -629,6 +634,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -761,6 +771,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -825,6 +840,21 @@ const _abi = [
         internalType: "struct MarginPosition",
         name: "position",
         type: "tuple",
+      },
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "trader",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "positionIsToken0",
+        type: "bool",
       },
     ],
     name: "canForceClose",
@@ -947,6 +977,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "executioner",
+    outputs: [
+      {
+        internalType: "contract Executioner",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -1002,6 +1045,35 @@ const _abi = [
         internalType: "struct LiquidityLoan[]",
         name: "",
         type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "trader",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "positionIsToken0",
+        type: "bool",
+      },
+    ],
+    name: "getLastRepayTime",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
       },
     ],
     stateMutability: "view",
@@ -1089,6 +1161,11 @@ const _abi = [
                 internalType: "uint256",
                 name: "recentPremium",
                 type: "uint256",
+              },
+              {
+                internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
               },
               {
                 internalType: "uint32",
@@ -1223,25 +1300,6 @@ const _abi = [
         internalType: "bool",
         name: "borrowedToken1",
         type: "bool",
-      },
-    ],
-    name: "maxWithdrawablePremium",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "maxWithdrawable",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "PositionId",
-        name: "positionId",
-        type: "bytes32",
       },
     ],
     name: "maxWithdrawablePremium",
@@ -1435,6 +1493,11 @@ const _abi = [
           },
           {
             internalType: "uint32",
+            name: "lastPremiumPaymentTime",
+            type: "uint32",
+          },
+          {
+            internalType: "uint32",
             name: "openTime",
             type: "uint32",
           },
@@ -1502,45 +1565,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bool",
-        name: "positionIsToken0",
-        type: "bool",
-      },
-      {
-        internalType: "int24",
-        name: "curTick",
-        type: "int24",
-      },
-      {
-        internalType: "int24",
-        name: "maxTick",
-        type: "int24",
-      },
-      {
-        internalType: "int24",
-        name: "minTick",
-        type: "int24",
-      },
-      {
-        internalType: "int24",
-        name: "tickDiscretization",
-        type: "int24",
-      },
-    ],
-    name: "rangeConditions",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         components: [
           {
             internalType: "address",
@@ -1590,9 +1614,9 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "bytes32",
+            internalType: "bytes",
             name: "executionData",
-            type: "bytes32",
+            type: "bytes",
           },
           {
             internalType: "int24",

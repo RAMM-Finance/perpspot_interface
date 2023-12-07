@@ -103,6 +103,7 @@ export type PositionStruct = {
   totalDebtOutput: PromiseOrValue<BigNumberish>;
   totalDebtInput: PromiseOrValue<BigNumberish>;
   recentPremium: PromiseOrValue<BigNumberish>;
+  lastPremiumPaymentTime: PromiseOrValue<BigNumberish>;
   openTime: PromiseOrValue<BigNumberish>;
   repayTime: PromiseOrValue<BigNumberish>;
   borrowInfo: LiquidityLoanStruct[];
@@ -116,6 +117,7 @@ export type PositionStructOutput = [
   BigNumber,
   number,
   number,
+  number,
   LiquidityLoanStructOutput[]
 ] & {
   pool: string;
@@ -123,6 +125,7 @@ export type PositionStructOutput = [
   totalDebtOutput: BigNumber;
   totalDebtInput: BigNumber;
   recentPremium: BigNumber;
+  lastPremiumPaymentTime: number;
   openTime: number;
   repayTime: number;
   borrowInfo: LiquidityLoanStructOutput[];
@@ -209,7 +212,7 @@ export interface IMarginFacilityInterface extends utils.Interface {
   functions: {
     "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
-    "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes32,int24,int24,uint256))": FunctionFragment;
+    "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256))": FunctionFragment;
   };
 
   getFunction(

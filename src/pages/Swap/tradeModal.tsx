@@ -643,7 +643,7 @@ const TradeTabContent = () => {
           <OutputSwapSection showDetailsDropdown={false}>
             <InputHeader>
               <ThemedText.BodySecondary>
-                <Trans>{!isLimitOrder ? 'Position Size' : 'Maximum Output'}</Trans>
+                <Trans>Long</Trans>
               </ThemedText.BodySecondary>
             </InputHeader>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>

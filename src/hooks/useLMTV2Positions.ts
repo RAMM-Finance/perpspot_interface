@@ -30,6 +30,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         const outputDecimals = position.isToken0
           ? Number(position.token0Decimals.toString())
           : Number(position.token1Decimals.toString())
+
         return {
           poolKey: {
             token0Address: position.poolKey.token0,

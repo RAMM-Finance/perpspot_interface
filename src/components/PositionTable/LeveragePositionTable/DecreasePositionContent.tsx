@@ -10,6 +10,7 @@ import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonError } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
+import { TextWrapper } from 'components/HoverInlineText'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import {
@@ -45,8 +46,6 @@ import { LimitInputPrice, LimitInputRow, LimitInputWrapper } from 'pages/Swap/tr
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
-import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo } from 'state/swap/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
@@ -272,6 +271,16 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     setTradeState
   )
 
+  const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
+
+  const positionExists = useMemo(() => {
+    if (!positionLoading && existingPosition?.openTime === 0) {
+      return false
+    } else {
+      return true
+    }
+  }, [existingPosition, positionLoading])
+
   const reductionPercent = useMemo(() => {
     return position?.totalPosition && reduceAmount !== ''
       ? formatBNToString(new BN(reduceAmount).div(position?.totalPosition).times(100))
@@ -374,6 +383,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
         })
+        setReduceAmount('')
       })
       .catch((error) => {
         console.error(error)
@@ -410,25 +420,14 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     setTxHash(undefined)
     setErrorMessage(undefined)
   }, [])
-  const {
-    // trade: { state: tradeState, trade },
-    // allowedSlippage,
-    currencyBalances,
-    // parsedAmount,
-    currencies,
-    // leverage,
-    // inputError: swapInputError,
-  } = useDerivedSwapInfo()
 
   const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
 
   const { baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
 
   const currentPrice = useMemo(() => {
-    const inputCurrency = currencies[Field.INPUT]?.wrapped
-    const outputCurrency = currencies[Field.OUTPUT]?.wrapped
     if (pool && inputCurrency && outputCurrency) {
-      const inputIsToken0 = inputCurrency.sortsBefore(outputCurrency)
+      const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
       const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
       if (baseIsToken0) {
         return formatBNToString(new BN(pool.token0Price.toFixed(18)))
@@ -437,7 +436,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       }
     }
     return undefined
-  }, [baseCurrencyIsInputToken, pool, currencies])
+  }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
+
+  if (!positionExists) {
+    return <PositionMissing />
+  }
 
   return (
     <DarkCard style={{ paddingTop: '0px' }}>
@@ -571,7 +574,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
             </RowBetween>
             <PercentSlider
               initialValue={
-                position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0
+                position && debouncedReduceAmount !== ''
+                  ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber()
+                  : 0
               }
               onChange={(val) =>
                 position &&
@@ -788,7 +793,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
             height: '15px',
           }}
           padding=".25rem"
-          onClick={() => handleReducePosition()}
+          onClick={() => {
+            setShowModal(true)
+          }}
           id="leverage-button"
           disabled={!!inputError || !txnInfo}
         >
@@ -837,4 +844,18 @@ export function getSlippedTicks(
     slippedTickMax,
     slippedTickMin,
   }
+}
+
+export function PositionMissing() {
+  return (
+    <AutoColumn gap="lg" justify="center">
+      <AutoColumn gap="md" style={{ width: '100%' }}>
+        <TextWrapper margin={false}>
+          <ThemedText.BodySecondary color="neutral2" textAlign="center">
+            <Trans>Missing Position</Trans>
+          </ThemedText.BodySecondary>
+        </TextWrapper>
+      </AutoColumn>
+    </AutoColumn>
+  )
 }

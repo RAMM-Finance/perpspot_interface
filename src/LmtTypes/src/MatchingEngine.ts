@@ -26,6 +26,7 @@ export interface MatchingEngineInterface extends utils.Interface {
     "computeBoundaryTicks(bool,int24,uint160,int24)": FunctionFragment;
     "computeMaxLiquidity(int24,uint256,uint256,uint160,int24)": FunctionFragment;
     "computeSqrtStartingPriceX96(bool,uint256,uint256)": FunctionFragment;
+    "computeSqrtStrikePriceX96(bool,uint256,uint256,uint160)": FunctionFragment;
     "getFilled(int24,int128,int24,bool)": FunctionFragment;
   };
 
@@ -34,6 +35,7 @@ export interface MatchingEngineInterface extends utils.Interface {
       | "computeBoundaryTicks"
       | "computeMaxLiquidity"
       | "computeSqrtStartingPriceX96"
+      | "computeSqrtStrikePriceX96"
       | "getFilled"
   ): FunctionFragment;
 
@@ -65,6 +67,15 @@ export interface MatchingEngineInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "computeSqrtStrikePriceX96",
+    values: [
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getFilled",
     values: [
       PromiseOrValue<BigNumberish>,
@@ -84,6 +95,10 @@ export interface MatchingEngineInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "computeSqrtStartingPriceX96",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "computeSqrtStrikePriceX96",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getFilled", data: BytesLike): Result;
@@ -148,6 +163,14 @@ export interface MatchingEngine extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { sqrtStartingPriceX96: BigNumber }>;
 
+    computeSqrtStrikePriceX96(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      margin: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getFilled(
       tick: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
@@ -184,6 +207,14 @@ export interface MatchingEngine extends BaseContract {
     borrowBelow: PromiseOrValue<boolean>,
     borrowAmount: PromiseOrValue<BigNumberish>,
     simulatedOutput: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  computeSqrtStrikePriceX96(
+    borrowBelow: PromiseOrValue<boolean>,
+    borrowAmount: PromiseOrValue<BigNumberish>,
+    margin: PromiseOrValue<BigNumberish>,
+    finishPriceX96: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -226,6 +257,14 @@ export interface MatchingEngine extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    computeSqrtStrikePriceX96(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      margin: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getFilled(
       tick: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
@@ -262,6 +301,14 @@ export interface MatchingEngine extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    computeSqrtStrikePriceX96(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      margin: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getFilled(
       tick: PromiseOrValue<BigNumberish>,
       liquidity: PromiseOrValue<BigNumberish>,
@@ -293,6 +340,14 @@ export interface MatchingEngine extends BaseContract {
       borrowBelow: PromiseOrValue<boolean>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    computeSqrtStrikePriceX96(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      margin: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

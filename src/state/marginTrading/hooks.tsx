@@ -270,7 +270,9 @@ export function useDerivedAddPositionInfo(
       .plus(existingPosition.premiumOwed)
 
     // premium to approve
-    const _additionalPremium = _premiumNecessary.minus(existingPosition.premiumDeposit)
+    const _additionalPremium = _premiumNecessary.isGreaterThanOrEqualTo(existingPosition.premiumDeposit)
+      ? _premiumNecessary.minus(existingPosition.premiumDeposit)
+      : new BN(0)
 
     const _approvalAmount = _additionalPremium.isGreaterThan(0) ? _additionalPremium.plus(parsedMargin) : parsedMargin
 
@@ -331,7 +333,7 @@ export function useDerivedAddPositionInfo(
     }
 
     return inputError
-  }, [account, currencies, parsedMargin, currencyBalances, parsedLeverageFactor, preTradeInfo])
+  }, [account, currencies, existingLimitPosition, parsedMargin, currencyBalances, parsedLeverageFactor, preTradeInfo])
 
   const {
     state,

@@ -31,9 +31,11 @@ export type URateParamStruct = {
   intercept1: PromiseOrValue<BigNumberish>;
   slope2: PromiseOrValue<BigNumberish>;
   intercept2: PromiseOrValue<BigNumberish>;
+  twatDiffScale: PromiseOrValue<BigNumberish>;
 };
 
 export type URateParamStructOutput = [
+  BigNumber,
   BigNumber,
   BigNumber,
   BigNumber,
@@ -45,6 +47,7 @@ export type URateParamStructOutput = [
   intercept1: BigNumber;
   slope2: BigNumber;
   intercept2: BigNumber;
+  twatDiffScale: BigNumber;
 };
 
 export type LiquidityLoanStruct = {
@@ -74,26 +77,44 @@ export type LiquidityLoanStructOutput = [
 
 export interface PremiumComputerInterface extends utils.Interface {
   functions: {
-    "computePremium(address,address,bool,int24,(uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "computeInstantaeneousPremiumOwed(address,address,int24,uint32,(uint256,uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "computePremium(address,address,bool,int24,uint32,(uint256,uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getFeeGrowthInside(IUniswapV3Pool,int24,int24)": FunctionFragment;
-    "getInitFeeGrowthInside(address,address,int24,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
-    "getInterestRate((uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
+    "getInitFeeGrowthInside(address,address,int24,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "getInterestRate((uint256,uint256,uint256,uint256,uint256,uint256),uint256)": FunctionFragment;
+    "getMultiplier(int24,int24,uint256)": FunctionFragment;
+    "getTWAT(address,uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "computeInstantaeneousPremiumOwed"
       | "computePremium"
       | "getFeeGrowthInside"
       | "getInitFeeGrowthInside"
       | "getInterestRate"
+      | "getMultiplier"
+      | "getTWAT"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "computeInstantaeneousPremiumOwed",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      URateParamStruct,
+      LiquidityLoanStruct[]
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "computePremium",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       URateParamStruct,
       LiquidityLoanStruct[]
@@ -121,7 +142,23 @@ export interface PremiumComputerInterface extends utils.Interface {
     functionFragment: "getInterestRate",
     values: [URateParamStruct, PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getMultiplier",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTWAT",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "computeInstantaeneousPremiumOwed",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "computePremium",
     data: BytesLike
@@ -138,10 +175,15 @@ export interface PremiumComputerInterface extends utils.Interface {
     functionFragment: "getInterestRate",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMultiplier",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getTWAT", data: BytesLike): Result;
 
   events: {
     "PremiumDeposited(address,address,bool,uint256)": EventFragment;
-    "PremiumPaid(address,address,uint256,uint256,uint256)": EventFragment;
+    "PremiumPaid(address,address,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "PremiumDeposited"): EventFragment;
@@ -167,10 +209,9 @@ export interface PremiumPaidEventObject {
   pool: string;
   token0Amount: BigNumber;
   token1Amount: BigNumber;
-  swappedAmount: BigNumber;
 }
 export type PremiumPaidEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, BigNumber],
+  [string, string, BigNumber, BigNumber],
   PremiumPaidEventObject
 >;
 
@@ -203,15 +244,26 @@ export interface PremiumComputer extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    computeInstantaeneousPremiumOwed(
+      pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { apr: BigNumber }>;
+
     computePremium(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       borrowToken0: PromiseOrValue<boolean>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
-    ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber, BigNumber]>;
+    ): Promise<[LiquidityLoanStructOutput[], BigNumber]>;
 
     getFeeGrowthInside(
       pool: PromiseOrValue<string>,
@@ -239,17 +291,41 @@ export interface PremiumComputer extends BaseContract {
       uRate: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { ratePerSecond: BigNumber }>;
+
+    getMultiplier(
+      twat: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      scale: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { multiplier: BigNumber }>;
+
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
   };
+
+  computeInstantaeneousPremiumOwed(
+    pool: PromiseOrValue<string>,
+    poolManager: PromiseOrValue<string>,
+    tickDiscretization: PromiseOrValue<BigNumberish>,
+    lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
+    param: URateParamStruct,
+    borrowInfo: LiquidityLoanStruct[],
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   computePremium(
     pool: PromiseOrValue<string>,
     poolManager: PromiseOrValue<string>,
     borrowToken0: PromiseOrValue<boolean>,
     tickDiscretization: PromiseOrValue<BigNumberish>,
+    lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
     param: URateParamStruct,
     borrowInfo: LiquidityLoanStruct[],
     overrides?: CallOverrides
-  ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber, BigNumber]>;
+  ): Promise<[LiquidityLoanStructOutput[], BigNumber]>;
 
   getFeeGrowthInside(
     pool: PromiseOrValue<string>,
@@ -278,16 +354,40 @@ export interface PremiumComputer extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getMultiplier(
+    twat: PromiseOrValue<BigNumberish>,
+    referenceTick: PromiseOrValue<BigNumberish>,
+    scale: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getTWAT(
+    pool: PromiseOrValue<string>,
+    interval: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
   callStatic: {
+    computeInstantaeneousPremiumOwed(
+      pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     computePremium(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       borrowToken0: PromiseOrValue<boolean>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
-    ): Promise<[LiquidityLoanStructOutput[], BigNumber, BigNumber, BigNumber]>;
+    ): Promise<[LiquidityLoanStructOutput[], BigNumber]>;
 
     getFeeGrowthInside(
       pool: PromiseOrValue<string>,
@@ -315,6 +415,19 @@ export interface PremiumComputer extends BaseContract {
       uRate: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getMultiplier(
+      twat: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      scale: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<number>;
   };
 
   filters: {
@@ -331,28 +444,37 @@ export interface PremiumComputer extends BaseContract {
       amount?: null
     ): PremiumDepositedEventFilter;
 
-    "PremiumPaid(address,address,uint256,uint256,uint256)"(
+    "PremiumPaid(address,address,uint256,uint256)"(
       payer?: PromiseOrValue<string> | null,
       pool?: PromiseOrValue<string> | null,
       token0Amount?: null,
-      token1Amount?: null,
-      swappedAmount?: null
+      token1Amount?: null
     ): PremiumPaidEventFilter;
     PremiumPaid(
       payer?: PromiseOrValue<string> | null,
       pool?: PromiseOrValue<string> | null,
       token0Amount?: null,
-      token1Amount?: null,
-      swappedAmount?: null
+      token1Amount?: null
     ): PremiumPaidEventFilter;
   };
 
   estimateGas: {
+    computeInstantaeneousPremiumOwed(
+      pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     computePremium(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       borrowToken0: PromiseOrValue<boolean>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
@@ -377,16 +499,40 @@ export interface PremiumComputer extends BaseContract {
     getInterestRate(
       param: URateParamStruct,
       uRate: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMultiplier(
+      twat: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      scale: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    computeInstantaeneousPremiumOwed(
+      pool: PromiseOrValue<string>,
+      poolManager: PromiseOrValue<string>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     computePremium(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       borrowToken0: PromiseOrValue<boolean>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
+      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
@@ -411,6 +557,19 @@ export interface PremiumComputer extends BaseContract {
     getInterestRate(
       param: URateParamStruct,
       uRate: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMultiplier(
+      twat: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      scale: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

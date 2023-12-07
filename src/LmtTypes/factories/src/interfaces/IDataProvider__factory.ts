@@ -51,6 +51,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },

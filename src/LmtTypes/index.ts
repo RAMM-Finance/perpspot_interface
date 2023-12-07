@@ -52,6 +52,8 @@ export type { MarginPositionHelper } from "./src/MarginPositionHelper";
 export { MarginPositionHelper__factory } from "./factories/src/MarginPositionHelper__factory";
 export type { MatchingEngine } from "./src/MatchingEngine";
 export { MatchingEngine__factory } from "./factories/src/MatchingEngine__factory";
+export type { Arbitrageur } from "./src/periphery/Arbitrageur";
+export { Arbitrageur__factory } from "./factories/src/periphery/Arbitrageur__factory";
 export type { DataProvider } from "./src/periphery/DataProvider";
 export { DataProvider__factory } from "./factories/src/periphery/DataProvider__factory";
 export type { ERC721Enumerable } from "./src/periphery/ERC721Enumerable";

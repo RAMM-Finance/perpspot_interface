@@ -62,6 +62,9 @@ export declare namespace INonfungiblePositionManager {
 
   export type IncreaseLiquidityParamsStruct = {
     tokenId: PromiseOrValue<BigNumberish>;
+    tickUpper: PromiseOrValue<BigNumberish>;
+    amount0Max: PromiseOrValue<BigNumberish>;
+    amount1Max: PromiseOrValue<BigNumberish>;
     amount0Desired: PromiseOrValue<BigNumberish>;
     amount1Desired: PromiseOrValue<BigNumberish>;
     amount0Min: PromiseOrValue<BigNumberish>;
@@ -71,6 +74,9 @@ export declare namespace INonfungiblePositionManager {
 
   export type IncreaseLiquidityParamsStructOutput = [
     BigNumber,
+    number,
+    BigNumber,
+    BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -78,6 +84,9 @@ export declare namespace INonfungiblePositionManager {
     BigNumber
   ] & {
     tokenId: BigNumber;
+    tickUpper: number;
+    amount0Max: BigNumber;
+    amount1Max: BigNumber;
     amount0Desired: BigNumber;
     amount1Desired: BigNumber;
     amount0Min: BigNumber;
@@ -91,6 +100,8 @@ export declare namespace INonfungiblePositionManager {
     fee: PromiseOrValue<BigNumberish>;
     tickLower: PromiseOrValue<BigNumberish>;
     tickUpper: PromiseOrValue<BigNumberish>;
+    amount0Max: PromiseOrValue<BigNumberish>;
+    amount1Max: PromiseOrValue<BigNumberish>;
     amount0Desired: PromiseOrValue<BigNumberish>;
     amount1Desired: PromiseOrValue<BigNumberish>;
     amount0Min: PromiseOrValue<BigNumberish>;
@@ -109,6 +120,8 @@ export declare namespace INonfungiblePositionManager {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
+    BigNumber,
     string,
     BigNumber
   ] & {
@@ -117,6 +130,8 @@ export declare namespace INonfungiblePositionManager {
     fee: number;
     tickLower: number;
     tickUpper: number;
+    amount0Max: BigNumber;
+    amount1Max: BigNumber;
     amount0Desired: BigNumber;
     amount1Desired: BigNumber;
     amount0Min: BigNumber;
@@ -130,14 +145,15 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
   functions: {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "burn(uint256)": FunctionFragment;
     "collect((uint256,address))": FunctionFragment;
     "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))": FunctionFragment;
     "factory()": FunctionFragment;
     "fetchLatestTotalFeeGrowth(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "increaseLiquidity((uint256,int24,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))": FunctionFragment;
+    "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,uint256,uint256,address,uint256))": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
@@ -158,6 +174,7 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "approve"
       | "balanceOf"
+      | "burn"
       | "collect"
       | "decreaseLiquidity"
       | "factory"
@@ -189,6 +206,10 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burn",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "collect",
@@ -285,6 +306,7 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "collect", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseLiquidity",
@@ -350,11 +372,17 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "Collect(uint256,address,uint256,uint256)": EventFragment;
+    "DecreaseLiquidity(uint256,uint128,uint256,uint256)": EventFragment;
+    "IncreaseLiquidity(uint256,uint128,uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Collect"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DecreaseLiquidity"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "IncreaseLiquidity"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -381,6 +409,47 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface CollectEventObject {
+  tokenId: BigNumber;
+  recipient: string;
+  amount0: BigNumber;
+  amount1: BigNumber;
+}
+export type CollectEvent = TypedEvent<
+  [BigNumber, string, BigNumber, BigNumber],
+  CollectEventObject
+>;
+
+export type CollectEventFilter = TypedEventFilter<CollectEvent>;
+
+export interface DecreaseLiquidityEventObject {
+  tokenId: BigNumber;
+  liquidity: BigNumber;
+  amount0: BigNumber;
+  amount1: BigNumber;
+}
+export type DecreaseLiquidityEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber],
+  DecreaseLiquidityEventObject
+>;
+
+export type DecreaseLiquidityEventFilter =
+  TypedEventFilter<DecreaseLiquidityEvent>;
+
+export interface IncreaseLiquidityEventObject {
+  tokenId: BigNumber;
+  liquidity: BigNumber;
+  amount0: BigNumber;
+  amount1: BigNumber;
+}
+export type IncreaseLiquidityEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber],
+  IncreaseLiquidityEventObject
+>;
+
+export type IncreaseLiquidityEventFilter =
+  TypedEventFilter<IncreaseLiquidityEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -431,6 +500,11 @@ export interface NonfungiblePositionManager extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    burn(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     collect(
       params: INonfungiblePositionManager.CollectParamsStruct,
@@ -583,6 +657,11 @@ export interface NonfungiblePositionManager extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  burn(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   collect(
     params: INonfungiblePositionManager.CollectParamsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -734,11 +813,19 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    burn(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     collect(
       params: INonfungiblePositionManager.CollectParamsStruct,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+      [BigNumber, BigNumber] & {
+        tokensOwed0: BigNumber;
+        tokensOwed1: BigNumber;
+      }
     >;
 
     decreaseLiquidity(
@@ -914,6 +1001,45 @@ export interface NonfungiblePositionManager extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
+    "Collect(uint256,address,uint256,uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      recipient?: null,
+      amount0?: null,
+      amount1?: null
+    ): CollectEventFilter;
+    Collect(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      recipient?: null,
+      amount0?: null,
+      amount1?: null
+    ): CollectEventFilter;
+
+    "DecreaseLiquidity(uint256,uint128,uint256,uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): DecreaseLiquidityEventFilter;
+    DecreaseLiquidity(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): DecreaseLiquidityEventFilter;
+
+    "IncreaseLiquidity(uint256,uint128,uint256,uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): IncreaseLiquidityEventFilter;
+    IncreaseLiquidity(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): IncreaseLiquidityEventFilter;
+
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
@@ -936,6 +1062,11 @@ export interface NonfungiblePositionManager extends BaseContract {
     balanceOf(
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    burn(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     collect(
@@ -1057,6 +1188,11 @@ export interface NonfungiblePositionManager extends BaseContract {
     balanceOf(
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    burn(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     collect(

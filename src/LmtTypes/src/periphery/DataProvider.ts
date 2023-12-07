@@ -58,15 +58,51 @@ export type LiquidityLoanStructOutput = [
   lastGrowth: BigNumber;
 };
 
+export type OrderStruct = {
+  key: PoolKeyStruct;
+  positionIsToken0: PromiseOrValue<boolean>;
+  auctionDeadline: PromiseOrValue<BigNumberish>;
+  auctionStartTime: PromiseOrValue<BigNumberish>;
+  startOutput: PromiseOrValue<BigNumberish>;
+  minOutput: PromiseOrValue<BigNumberish>;
+  inputAmount: PromiseOrValue<BigNumberish>;
+  decayRate: PromiseOrValue<BigNumberish>;
+  margin: PromiseOrValue<BigNumberish>;
+};
+
+export type OrderStructOutput = [
+  PoolKeyStructOutput,
+  boolean,
+  number,
+  number,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
+  key: PoolKeyStructOutput;
+  positionIsToken0: boolean;
+  auctionDeadline: number;
+  auctionStartTime: number;
+  startOutput: BigNumber;
+  minOutput: BigNumber;
+  inputAmount: BigNumber;
+  decayRate: BigNumber;
+  margin: BigNumber;
+};
+
 export type URateParamStruct = {
   pivotRate: PromiseOrValue<BigNumberish>;
   slope1: PromiseOrValue<BigNumberish>;
   intercept1: PromiseOrValue<BigNumberish>;
   slope2: PromiseOrValue<BigNumberish>;
   intercept2: PromiseOrValue<BigNumberish>;
+  twatDiffScale: PromiseOrValue<BigNumberish>;
 };
 
 export type URateParamStructOutput = [
+  BigNumber,
   BigNumber,
   BigNumber,
   BigNumber,
@@ -78,6 +114,7 @@ export type URateParamStructOutput = [
   intercept1: BigNumber;
   slope2: BigNumber;
   intercept2: BigNumber;
+  twatDiffScale: BigNumber;
 };
 
 export declare namespace DataProvider {
@@ -123,38 +160,117 @@ export declare namespace DataProvider {
     token0Decimals: number;
     token1Decimals: number;
   };
+
+  export type LimitOrderInfoStruct = {
+    key: PoolKeyStruct;
+    isAdd: PromiseOrValue<boolean>;
+    positionIsToken0: PromiseOrValue<boolean>;
+    auctionDeadline: PromiseOrValue<BigNumberish>;
+    auctionStartTime: PromiseOrValue<BigNumberish>;
+    startOutput: PromiseOrValue<BigNumberish>;
+    minOutput: PromiseOrValue<BigNumberish>;
+    inputAmount: PromiseOrValue<BigNumberish>;
+    decayRate: PromiseOrValue<BigNumberish>;
+    margin: PromiseOrValue<BigNumberish>;
+  };
+
+  export type LimitOrderInfoStructOutput = [
+    PoolKeyStructOutput,
+    boolean,
+    boolean,
+    number,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    key: PoolKeyStructOutput;
+    isAdd: boolean;
+    positionIsToken0: boolean;
+    auctionDeadline: number;
+    auctionStartTime: number;
+    startOutput: BigNumber;
+    minOutput: BigNumber;
+    inputAmount: BigNumber;
+    decayRate: BigNumber;
+    margin: BigNumber;
+  };
 }
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
+    "findMaxLeverageWithEstimatedSlippage((address,address,uint24),uint256,bool,uint256,uint256)": FunctionFragment;
+    "findTicks((address,address,uint24),uint256,uint256,bool,uint256)": FunctionFragment;
     "getActiveMarginPositions(address)": FunctionFragment;
+    "getActiveOrders(address)": FunctionFragment;
+    "getAddOrders(address)": FunctionFragment;
     "getBorrowedLiquidityInBin((address,address,uint24),int24)": FunctionFragment;
     "getExpectedFeesOwed((int24,uint128,uint256,uint256,uint256,uint256)[],bool,address,int24)": FunctionFragment;
-    "getExpectedInterestOwed((int24,uint128,uint256,uint256,uint256,uint256)[],bool,(uint256,uint256,uint256,uint256,uint256),address,int24)": FunctionFragment;
+    "getExpectedInterestOwed((int24,uint128,uint256,uint256,uint256,uint256)[],bool,(uint256,uint256,uint256,uint256,uint256,uint256),address,int24)": FunctionFragment;
     "getExpectedPremiumOwed((address,address,uint24),address,bool)": FunctionFragment;
+    "getInstantaeneousRate((address,address,uint24),address,bool)": FunctionFragment;
     "getIsBorrowable((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getLiquidityInBin((address,address,uint24),int24)": FunctionFragment;
     "getMarginPosition(address,address,bool)": FunctionFragment;
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
+    "getOrder(address,address,bool,bool)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
+    "getReduceOrders(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "findMaxLeverageWithEstimatedSlippage"
+      | "findTicks"
       | "getActiveMarginPositions"
+      | "getActiveOrders"
+      | "getAddOrders"
       | "getBorrowedLiquidityInBin"
       | "getExpectedFeesOwed"
       | "getExpectedInterestOwed"
       | "getExpectedPremiumOwed"
+      | "getInstantaeneousRate"
       | "getIsBorrowable"
       | "getLiquidityInBin"
       | "getMarginPosition"
       | "getMaxWithdrawable"
+      | "getOrder"
       | "getPoolkeys"
+      | "getReduceOrders"
   ): FunctionFragment;
 
   encodeFunctionData(
+    functionFragment: "findMaxLeverageWithEstimatedSlippage",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "findTicks",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getActiveMarginPositions",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getActiveOrders",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAddOrders",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -185,6 +301,10 @@ export interface DataProviderInterface extends utils.Interface {
     values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getInstantaeneousRate",
+    values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getIsBorrowable",
     values: [PoolKeyStruct, LiquidityLoanStruct[]]
   ): string;
@@ -209,12 +329,38 @@ export interface DataProviderInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "getOrder",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<boolean>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getPoolkeys",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getReduceOrders",
     values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "findMaxLeverageWithEstimatedSlippage",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "findTicks", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "getActiveMarginPositions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getActiveOrders",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getAddOrders",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -234,6 +380,10 @@ export interface DataProviderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getInstantaeneousRate",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getIsBorrowable",
     data: BytesLike
   ): Result;
@@ -249,8 +399,13 @@ export interface DataProviderInterface extends utils.Interface {
     functionFragment: "getMaxWithdrawable",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getOrder", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPoolkeys",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getReduceOrders",
     data: BytesLike
   ): Result;
 
@@ -284,10 +439,38 @@ export interface DataProvider extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    findMaxLeverageWithEstimatedSlippage(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      slippage: PromiseOrValue<BigNumberish>,
+      startingLeverage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    findTicks(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, LiquidityLoanStructOutput[]]>;
+
     getActiveMarginPositions(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[DataProvider.MarginPositionInfoStructOutput[]]>;
+
+    getActiveOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[OrderStructOutput[]]>;
+
+    getAddOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[DataProvider.LimitOrderInfoStructOutput[]]>;
 
     getBorrowedLiquidityInBin(
       key: PoolKeyStruct,
@@ -313,6 +496,13 @@ export interface DataProvider extends BaseContract {
     ): Promise<[BigNumber]>;
 
     getExpectedPremiumOwed(
+      poolKey: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getInstantaeneousRate(
       poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,
@@ -345,18 +535,59 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { maxWithdrawable: BigNumber }>;
 
+    getOrder(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[OrderStructOutput] & { order: OrderStructOutput }>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
       [string, string, number] & { token0: string; token1: string; fee: number }
     >;
+
+    getReduceOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[DataProvider.LimitOrderInfoStructOutput[]]>;
   };
+
+  findMaxLeverageWithEstimatedSlippage(
+    key: PoolKeyStruct,
+    margin: PromiseOrValue<BigNumberish>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    slippage: PromiseOrValue<BigNumberish>,
+    startingLeverage: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  findTicks(
+    key: PoolKeyStruct,
+    margin: PromiseOrValue<BigNumberish>,
+    borrowAmount: PromiseOrValue<BigNumberish>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    simulatedOutput: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<[BigNumber, LiquidityLoanStructOutput[]]>;
 
   getActiveMarginPositions(
     trader: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<DataProvider.MarginPositionInfoStructOutput[]>;
+
+  getActiveOrders(
+    trader: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<OrderStructOutput[]>;
+
+  getAddOrders(
+    trader: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<DataProvider.LimitOrderInfoStructOutput[]>;
 
   getBorrowedLiquidityInBin(
     key: PoolKeyStruct,
@@ -382,6 +613,13 @@ export interface DataProvider extends BaseContract {
   ): Promise<BigNumber>;
 
   getExpectedPremiumOwed(
+    poolKey: PoolKeyStruct,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getInstantaeneousRate(
     poolKey: PoolKeyStruct,
     trader: PromiseOrValue<string>,
     positionIsToken0: PromiseOrValue<boolean>,
@@ -414,6 +652,14 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getOrder(
+    pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    isAdd: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<OrderStructOutput>;
+
   getPoolkeys(
     pool: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -421,11 +667,44 @@ export interface DataProvider extends BaseContract {
     [string, string, number] & { token0: string; token1: string; fee: number }
   >;
 
+  getReduceOrders(
+    trader: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<DataProvider.LimitOrderInfoStructOutput[]>;
+
   callStatic: {
+    findMaxLeverageWithEstimatedSlippage(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      slippage: PromiseOrValue<BigNumberish>,
+      startingLeverage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    findTicks(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, LiquidityLoanStructOutput[]]>;
+
     getActiveMarginPositions(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<DataProvider.MarginPositionInfoStructOutput[]>;
+
+    getActiveOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<OrderStructOutput[]>;
+
+    getAddOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<DataProvider.LimitOrderInfoStructOutput[]>;
 
     getBorrowedLiquidityInBin(
       key: PoolKeyStruct,
@@ -451,6 +730,13 @@ export interface DataProvider extends BaseContract {
     ): Promise<BigNumber>;
 
     getExpectedPremiumOwed(
+      poolKey: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getInstantaeneousRate(
       poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,
@@ -483,18 +769,59 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getOrder(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<OrderStructOutput>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
       [string, string, number] & { token0: string; token1: string; fee: number }
     >;
+
+    getReduceOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<DataProvider.LimitOrderInfoStructOutput[]>;
   };
 
   filters: {};
 
   estimateGas: {
+    findMaxLeverageWithEstimatedSlippage(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      slippage: PromiseOrValue<BigNumberish>,
+      startingLeverage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    findTicks(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getActiveMarginPositions(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getActiveOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getAddOrders(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -529,6 +856,13 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getInstantaeneousRate(
+      poolKey: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getIsBorrowable(
       key: PoolKeyStruct,
       borrowInfo: LiquidityLoanStruct[],
@@ -555,14 +889,55 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getOrder(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getReduceOrders(
+      trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    findMaxLeverageWithEstimatedSlippage(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      slippage: PromiseOrValue<BigNumberish>,
+      startingLeverage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    findTicks(
+      key: PoolKeyStruct,
+      margin: PromiseOrValue<BigNumberish>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getActiveMarginPositions(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getActiveOrders(
+      trader: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getAddOrders(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -597,6 +972,13 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getInstantaeneousRate(
+      poolKey: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getIsBorrowable(
       key: PoolKeyStruct,
       borrowInfo: LiquidityLoanStruct[],
@@ -623,8 +1005,21 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getOrder(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getReduceOrders(
+      trader: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

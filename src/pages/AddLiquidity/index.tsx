@@ -41,11 +41,7 @@ import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import RateToggle from '../../components/RateToggle'
 import Row, { AutoRow, RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import {
-  LMT_NFT_POSITION_MANAGER,
-  LMT_POOL_MANAGER,
-  NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
-} from '../../constants/addresses'
+import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
 import { ZERO_PERCENT } from '../../constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import { useCurrency } from '../../hooks/Tokens'
@@ -209,15 +205,25 @@ export default function AddLiquidity() {
 
   const argentWalletContract = useArgentWalletContract()
 
+  const [approvalAmountA, approvalAmountB] = useMemo(() => {
+    if (baseCurrency && quoteCurrency) {
+      return [
+        parsedAmounts[Field.CURRENCY_A]?.add(CurrencyAmount.fromRawAmount(baseCurrency, '100')),
+        parsedAmounts[Field.CURRENCY_B]?.add(CurrencyAmount.fromRawAmount(quoteCurrency, '100')),
+      ]
+    }
+    return [undefined, undefined]
+  }, [baseCurrency, quoteCurrency, parsedAmounts])
+
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(
-    argentWalletContract ? undefined : parsedAmounts[Field.CURRENCY_A],
-    chainId ? LMT_POOL_MANAGER[chainId] : undefined
+    argentWalletContract ? undefined : approvalAmountA,
+    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
   )
 
   const [approvalB, approveBCallback] = useApproveCallback(
-    argentWalletContract ? undefined : parsedAmounts[Field.CURRENCY_B],
-    chainId ? LMT_POOL_MANAGER[chainId] : undefined
+    argentWalletContract ? undefined : approvalAmountB,
+    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
   )
 
   const allowedSlippage = useUserSlippageToleranceWithDefault(
@@ -227,27 +233,39 @@ export default function AddLiquidity() {
   async function onAdd() {
     if (!chainId || !provider || !account) return
 
-    if (!lmtPositionManager || !baseCurrency || !quoteCurrency) {
+    if (!lmtPositionManager || !baseCurrency || !quoteCurrency || !approvalAmountA || !approvalAmountB || !pool) {
       return
     }
 
     if (position && account && deadline) {
       const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
+
+      const baseIsToken0 = baseCurrency.wrapped.sortsBefore(quoteCurrency.wrapped)
       const { calldata, value } =
         hasExistingPosition && tokenId
-          ? LmtNFTPositionManager.addCallParameters(position, {
-              tokenId,
-              slippageTolerance: allowedSlippage,
-              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-              useNative,
-            })
-          : LmtNFTPositionManager.addCallParameters(position, {
-              slippageTolerance: allowedSlippage,
-              recipient: account,
-              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-              // useNative,
-              // createPool: noLiquidity,
-            })
+          ? LmtNFTPositionManager.addCallParameters(
+              position,
+              {
+                tokenId,
+                slippageTolerance: allowedSlippage,
+                deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+                useNative,
+              },
+              baseIsToken0 ? approvalAmountA.quotient : approvalAmountB.quotient,
+              baseIsToken0 ? approvalAmountB.quotient : approvalAmountA.quotient
+            )
+          : LmtNFTPositionManager.addCallParameters(
+              position,
+              {
+                slippageTolerance: allowedSlippage,
+                recipient: account,
+                deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+                // useNative,
+                // createPool: noLiquidity,
+              },
+              baseIsToken0 ? approvalAmountA.quotient : approvalAmountB.quotient,
+              baseIsToken0 ? approvalAmountB.quotient : approvalAmountA.quotient
+            )
 
       let txn: { to: string; data: string; value: string } = {
         to: LMT_NFT_POSITION_MANAGER[chainId],

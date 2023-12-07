@@ -105,11 +105,6 @@ const _abi = [
         name: "recipient",
         type: "address",
       },
-      {
-        internalType: "address",
-        name: "payer",
-        type: "address",
-      },
     ],
     name: "provideDiscreteLiquidity",
     outputs: [

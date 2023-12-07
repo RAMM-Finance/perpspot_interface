@@ -52,6 +52,7 @@ export type PositionStruct = {
   totalDebtOutput: PromiseOrValue<BigNumberish>;
   totalDebtInput: PromiseOrValue<BigNumberish>;
   recentPremium: PromiseOrValue<BigNumberish>;
+  lastPremiumPaymentTime: PromiseOrValue<BigNumberish>;
   openTime: PromiseOrValue<BigNumberish>;
   repayTime: PromiseOrValue<BigNumberish>;
   borrowInfo: LiquidityLoanStruct[];
@@ -65,6 +66,7 @@ export type PositionStructOutput = [
   BigNumber,
   number,
   number,
+  number,
   LiquidityLoanStructOutput[]
 ] & {
   pool: string;
@@ -72,6 +74,7 @@ export type PositionStructOutput = [
   totalDebtOutput: BigNumber;
   totalDebtInput: BigNumber;
   recentPremium: BigNumber;
+  lastPremiumPaymentTime: number;
   openTime: number;
   repayTime: number;
   borrowInfo: LiquidityLoanStructOutput[];

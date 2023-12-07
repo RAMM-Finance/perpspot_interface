@@ -43,6 +43,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -163,25 +168,6 @@ const _abi = [
     name: "depositPremium",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "PositionId",
-        name: "positionId",
-        type: "bytes32",
-      },
-    ],
-    name: "maxWithdrawablePremium",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

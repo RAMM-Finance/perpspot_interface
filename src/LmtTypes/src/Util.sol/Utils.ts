@@ -52,8 +52,10 @@ export interface UtilsInterface extends utils.Interface {
     "getAmountsRequired((int24,uint128,uint256,uint256,uint256,uint256)[],uint256,int24,int24,uint160)": FunctionFragment;
     "getFilledAmount((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24)": FunctionFragment;
     "getMinMaxTicks((int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "getRangeConditions((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,int24)": FunctionFragment;
     "getRepayInfo((int24,uint128,uint256,uint256,uint256,uint256)[],uint256)": FunctionFragment;
     "mergeLiquidityLoans((int24,uint128,uint256,uint256,uint256,uint256)[],(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "rangeConditions(bool,int24,int24,int24,int24)": FunctionFragment;
     "roundTick(int24,bool,int24)": FunctionFragment;
   };
 
@@ -63,8 +65,10 @@ export interface UtilsInterface extends utils.Interface {
       | "getAmountsRequired"
       | "getFilledAmount"
       | "getMinMaxTicks"
+      | "getRangeConditions"
       | "getRepayInfo"
       | "mergeLiquidityLoans"
+      | "rangeConditions"
       | "roundTick"
   ): FunctionFragment;
 
@@ -99,12 +103,31 @@ export interface UtilsInterface extends utils.Interface {
     values: [LiquidityLoanStruct[]]
   ): string;
   encodeFunctionData(
+    functionFragment: "getRangeConditions",
+    values: [
+      LiquidityLoanStruct[],
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRepayInfo",
     values: [LiquidityLoanStruct[], PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "mergeLiquidityLoans",
     values: [LiquidityLoanStruct[], LiquidityLoanStruct[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rangeConditions",
+    values: [
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "roundTick",
@@ -132,11 +155,19 @@ export interface UtilsInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getRangeConditions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getRepayInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "mergeLiquidityLoans",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "rangeConditions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "roundTick", data: BytesLike): Result;
@@ -204,6 +235,14 @@ export interface Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[number, number] & { min: number; max: number }>;
 
+    getRangeConditions(
+      borrowInfo: LiquidityLoanStruct[],
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getRepayInfo(
       borrowInfo: LiquidityLoanStruct[],
       reducePercentage: PromiseOrValue<BigNumberish>,
@@ -215,6 +254,15 @@ export interface Utils extends BaseContract {
       loans2: LiquidityLoanStruct[],
       overrides?: CallOverrides
     ): Promise<[LiquidityLoanStructOutput[]]>;
+
+    rangeConditions(
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      maxTick: PromiseOrValue<BigNumberish>,
+      minTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     roundTick(
       tick: PromiseOrValue<BigNumberish>,
@@ -257,6 +305,14 @@ export interface Utils extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[number, number] & { min: number; max: number }>;
 
+  getRangeConditions(
+    borrowInfo: LiquidityLoanStruct[],
+    positionIsToken0: PromiseOrValue<boolean>,
+    curTick: PromiseOrValue<BigNumberish>,
+    tickDiscretization: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getRepayInfo(
     borrowInfo: LiquidityLoanStruct[],
     reducePercentage: PromiseOrValue<BigNumberish>,
@@ -268,6 +324,15 @@ export interface Utils extends BaseContract {
     loans2: LiquidityLoanStruct[],
     overrides?: CallOverrides
   ): Promise<LiquidityLoanStructOutput[]>;
+
+  rangeConditions(
+    positionIsToken0: PromiseOrValue<boolean>,
+    curTick: PromiseOrValue<BigNumberish>,
+    maxTick: PromiseOrValue<BigNumberish>,
+    minTick: PromiseOrValue<BigNumberish>,
+    tickDiscretization: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   roundTick(
     tick: PromiseOrValue<BigNumberish>,
@@ -310,6 +375,14 @@ export interface Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[number, number] & { min: number; max: number }>;
 
+    getRangeConditions(
+      borrowInfo: LiquidityLoanStruct[],
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getRepayInfo(
       borrowInfo: LiquidityLoanStruct[],
       reducePercentage: PromiseOrValue<BigNumberish>,
@@ -321,6 +394,15 @@ export interface Utils extends BaseContract {
       loans2: LiquidityLoanStruct[],
       overrides?: CallOverrides
     ): Promise<LiquidityLoanStructOutput[]>;
+
+    rangeConditions(
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      maxTick: PromiseOrValue<BigNumberish>,
+      minTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     roundTick(
       tick: PromiseOrValue<BigNumberish>,
@@ -361,6 +443,14 @@ export interface Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getRangeConditions(
+      borrowInfo: LiquidityLoanStruct[],
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getRepayInfo(
       borrowInfo: LiquidityLoanStruct[],
       reducePercentage: PromiseOrValue<BigNumberish>,
@@ -370,6 +460,15 @@ export interface Utils extends BaseContract {
     mergeLiquidityLoans(
       loans1: LiquidityLoanStruct[],
       loans2: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    rangeConditions(
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      maxTick: PromiseOrValue<BigNumberish>,
+      minTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -410,6 +509,14 @@ export interface Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getRangeConditions(
+      borrowInfo: LiquidityLoanStruct[],
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getRepayInfo(
       borrowInfo: LiquidityLoanStruct[],
       reducePercentage: PromiseOrValue<BigNumberish>,
@@ -419,6 +526,15 @@ export interface Utils extends BaseContract {
     mergeLiquidityLoans(
       loans1: LiquidityLoanStruct[],
       loans2: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    rangeConditions(
+      positionIsToken0: PromiseOrValue<boolean>,
+      curTick: PromiseOrValue<BigNumberish>,
+      maxTick: PromiseOrValue<BigNumberish>,
+      minTick: PromiseOrValue<BigNumberish>,
+      tickDiscretization: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

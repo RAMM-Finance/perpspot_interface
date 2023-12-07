@@ -42,5 +42,5 @@ export default function formatLocaleNumber({
 }
 
 export function formatBNToString(n: BN | undefined, type = NumberType.SwapTradeAmount): string {
-  return n ? formatNumberOrString(n?.toString(10), type) : ''
+  return n ? (!n.isNaN() ? formatNumberOrString(n?.toNumber(), type) : '') : ''
 }

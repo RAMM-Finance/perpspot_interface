@@ -144,6 +144,11 @@ const _abi = [
               },
               {
                 internalType: "uint32",
+                name: "lastPremiumPaymentTime",
+                type: "uint32",
+              },
+              {
+                internalType: "uint32",
                 name: "openTime",
                 type: "uint32",
               },
@@ -330,6 +335,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "executioner",
+    outputs: [
+      {
+        internalType: "contract Executioner",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -393,6 +411,35 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowedToken1",
+        type: "bool",
+      },
+    ],
+    name: "getLastRepayTime",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "address",
@@ -423,25 +470,6 @@ const _abi = [
         internalType: "bool",
         name: "borrowedToken1",
         type: "bool",
-      },
-    ],
-    name: "maxWithdrawablePremium",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "PositionId",
-        name: "positionId",
-        type: "bytes32",
       },
     ],
     name: "maxWithdrawablePremium",
