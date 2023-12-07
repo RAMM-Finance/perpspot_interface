@@ -127,6 +127,7 @@ export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
   padding: 10px;
+  margin-top: 5px;
 `
 
 export const OutputSwapSection = styled(SwapSection)<{ showDetailsDropdown: boolean }>`
@@ -165,6 +166,10 @@ const PositionsContainer = styled.div`
   margin-right: 0.25rem;
   height: calc(100vh - 582px);
   border-radius: 10px;
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 `
 
 const StatsContainer = styled.div`

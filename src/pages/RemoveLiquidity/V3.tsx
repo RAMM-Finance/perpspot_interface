@@ -6,7 +6,6 @@ import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
-import { LightCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { Break } from 'components/earn/styled'
@@ -23,6 +22,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
+import { DarkCardOutline } from 'pages/Pool/PositionPage'
 import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { Text } from 'rebass'
@@ -285,6 +285,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
         WRAPPED_NATIVE_CURRENCY[liquidityValue0.currency.chainId]?.equals(liquidityValue0.currency.wrapped) ||
         WRAPPED_NATIVE_CURRENCY[liquidityValue1.currency.chainId]?.equals(liquidityValue1.currency.wrapped))
   )
+  console.log(feeValue0)
   return (
     <AutoColumn>
       <TransactionConfirmationModal
@@ -314,19 +315,19 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               <RowBetween>
                 <RowFixed>
                   <DoubleCurrencyLogo
-                    currency0={feeValue0?.currency}
-                    currency1={feeValue1?.currency}
-                    size={20}
+                    currency0={liquidityValue0?.currency}
+                    currency1={liquidityValue1?.currency}
+                    size={14}
                     margin={true}
                   />
                   <ThemedText.DeprecatedLabel
-                    ml="10px"
-                    fontSize="20px"
-                  >{`${feeValue0?.currency?.symbol}/${feeValue1?.currency?.symbol}`}</ThemedText.DeprecatedLabel>
+                    fontSize="14px"
+                    ml="8px"
+                  >{`${liquidityValue0?.currency?.symbol}/${liquidityValue1?.currency?.symbol}`}</ThemedText.DeprecatedLabel>
                 </RowFixed>
                 <RangeBadge removed={removed} inRange={!outOfRange} />
               </RowBetween>
-              <LightCard>
+              <DarkCardOutline>
                 <AutoColumn gap="md">
                   <ThemedText.DeprecatedMain fontWeight={400}>
                     <Trans>Amount</Trans>
@@ -352,29 +353,29 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                   </RowBetween>
                   <Slider value={percentForSlider} onChange={onPercentSelectForSlider} />
                 </AutoColumn>
-              </LightCard>
-              <LightCard>
+              </DarkCardOutline>
+              <DarkCardOutline>
                 <AutoColumn gap="md">
                   <RowBetween>
-                    <Text fontSize={16} fontWeight={500}>
+                    <ThemedText.BodySmall fontWeight={600}>
                       <Trans>Pooled {liquidityValue0?.currency?.symbol}:</Trans>
-                    </Text>
+                    </ThemedText.BodySmall>
                     <RowFixed>
-                      <Text fontSize={16} fontWeight={500} marginLeft="6px">
+                      <ThemedText.BodySmall fontWeight={600} ml="6px">
                         {liquidityValue0 && <FormattedCurrencyAmount currencyAmount={liquidityValue0} />}
-                      </Text>
-                      <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={liquidityValue0?.currency} />
+                      </ThemedText.BodySmall>
+                      <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={liquidityValue0?.currency} />
                     </RowFixed>
                   </RowBetween>
                   <RowBetween>
-                    <Text fontSize={16} fontWeight={500}>
+                    <ThemedText.BodySmall fontWeight={600}>
                       <Trans>Pooled {liquidityValue1?.currency?.symbol}:</Trans>
-                    </Text>
+                    </ThemedText.BodySmall>
                     <RowFixed>
-                      <Text fontSize={16} fontWeight={500} marginLeft="6px">
+                      <ThemedText.BodySmall fontWeight={600} ml="6px">
                         {liquidityValue1 && <FormattedCurrencyAmount currencyAmount={liquidityValue1} />}
-                      </Text>
-                      <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={liquidityValue1?.currency} />
+                      </ThemedText.BodySmall>
+                      <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={liquidityValue1?.currency} />
                     </RowFixed>
                   </RowBetween>
                   {feeValue0?.greaterThan(0) || feeValue1?.greaterThan(0) ? (
@@ -405,7 +406,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                     </>
                   ) : null}
                 </AutoColumn>
-              </LightCard>
+              </DarkCardOutline>
 
               {showCollectAsWeth && (
                 <RowBetween>
@@ -421,13 +422,24 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               )}
 
               <div style={{ display: 'flex' }}>
-                <AutoColumn gap="md" style={{ flex: '1' }}>
+                <AutoColumn justify="center" gap="md" style={{ flex: '1' }}>
                   <ButtonConfirmed
+                    style={{ width: 'fit-content', borderRadius: '10px', height: '25px' }}
                     confirmed={false}
                     disabled={removed || percent === 0 || !liquidityValue0}
                     onClick={() => setShowConfirm(true)}
                   >
-                    {removed ? <Trans>Closed</Trans> : error ?? <Trans>Remove</Trans>}
+                    {removed ? (
+                      <ThemedText.BodyPrimary>
+                        <Trans>Closed</Trans>
+                      </ThemedText.BodyPrimary>
+                    ) : (
+                      error ?? (
+                        <ThemedText.BodyPrimary>
+                          <Trans>Remove</Trans>
+                        </ThemedText.BodyPrimary>
+                      )
+                    )}
                   </ButtonConfirmed>
                 </AutoColumn>
               </div>

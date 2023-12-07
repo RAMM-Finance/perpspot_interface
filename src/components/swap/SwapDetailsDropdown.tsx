@@ -321,7 +321,7 @@ export function AddLimitDetailsDropdown({
                 <LoadingOpacityContainer $loading={loading}>
                   <RowFixed>
                     <Info size={12} />
-                    <ThemedText.DeprecatedMain marginLeft="5px">Trade Details</ThemedText.DeprecatedMain>
+                    <ThemedText.DeprecatedMain marginLeft="5px">Order Details</ThemedText.DeprecatedMain>
                   </RowFixed>
                 </LoadingOpacityContainer>
               )}

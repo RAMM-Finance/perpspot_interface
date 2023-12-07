@@ -12,7 +12,6 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import { ActivityTab } from './Activity/ActivityTab'
-import NFTs from './NFTs'
 import Pools from './Pools'
 import { PortfolioRowWrapper } from './PortfolioRow'
 import Tokens from './Tokens'
@@ -111,7 +110,7 @@ function MiniPortfolio({ account }: { account: string }) {
                 active={currentPage === index}
                 key={`Mini Portfolio page ${index}`}
               >
-                {title}
+                <ThemedText.HeadlineSmall fontSize={16}>{title}</ThemedText.HeadlineSmall>
               </NavItem>
             </TraceEvent>
           )

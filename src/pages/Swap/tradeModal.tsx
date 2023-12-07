@@ -147,7 +147,6 @@ export const LimitInputPrice = styled(AutoColumn)`
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
   margin-top: 10px;
-  margin-bottom: 10px;
   padding: 16px;
   color: ${({ theme }) => theme.textSecondary};
   font-size: 14px;
@@ -769,7 +768,9 @@ const TradeTabContent = () => {
             ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
                 onClick={updateLeverageAllowance}
-                style={{ gap: 14 }}
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".5rem"
                 disabled={facilityApprovalState === ApprovalState.PENDING}
               >
                 {facilityApprovalState === ApprovalState.PENDING ? (
@@ -852,12 +853,14 @@ const TradeTabContent = () => {
             ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
                 onClick={updateLeverageAllowance}
-                style={{ gap: 14 }}
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".5rem"
                 disabled={facilityApprovalState === ApprovalState.PENDING}
               >
                 {facilityApprovalState === ApprovalState.PENDING ? (
                   <>
-                    <Loader size="20px" />
+                    <Loader size="14px" />
                     <Trans>Approval pending</Trans>
                   </>
                 ) : (
@@ -876,7 +879,7 @@ const TradeTabContent = () => {
                       }
                     >
                       <RowBetween>
-                        <Info size={20} />
+                        <Info size={14} />
                         <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
                       </RowBetween>
                     </MouseoverTooltip>
@@ -902,9 +905,9 @@ const TradeTabContent = () => {
                   ) : limitTradeState === LimitTradeState.INVALID ? (
                     <Trans>Invalid Trade</Trans>
                   ) : limitTradeState === LimitTradeState.LOADING ? (
-                    <Trans>Execute</Trans>
+                    <Trans>Place Order</Trans>
                   ) : (
-                    <Trans>Execute</Trans>
+                    <Trans>Place Order</Trans>
                   )}
                 </ThemedText.BodyPrimary>
               </ButtonError>

@@ -17,7 +17,7 @@ export default function Slider({
   min = 0,
   step = 1,
   max = 100,
-  size = 28,
+  size = 14,
   float = false,
   ...rest
 }: InputSliderProps) {

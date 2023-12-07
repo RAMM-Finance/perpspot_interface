@@ -50,6 +50,7 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
+import { InputHeader } from '.'
 import { ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
 
 const TRADE_STRING = 'SwapRouter'
@@ -434,6 +435,11 @@ const SwapTabContent = () => {
 
       <div style={{ display: 'relative' }}>
         <InputSection>
+          <InputHeader>
+            <ThemedText.BodySecondary fontWeight={400}>
+              <Trans>Sell</Trans>
+            </ThemedText.BodySecondary>
+          </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <BaseSwapPanel
               value={formattedAmounts[Field.INPUT]}
@@ -465,7 +471,7 @@ const SwapTabContent = () => {
               color={theme.textPrimary}
             >
               <Maximize2
-                size="16"
+                size="10"
                 color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />
             </ArrowContainer>
@@ -475,6 +481,9 @@ const SwapTabContent = () => {
       <div>
         <div>
           <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
+            <ThemedText.BodySecondary fontWeight={400}>
+              <Trans>Buy</Trans>
+            </ThemedText.BodySecondary>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
               <BaseSwapPanel
                 value={formattedAmounts[Field.OUTPUT]}

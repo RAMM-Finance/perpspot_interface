@@ -51,7 +51,8 @@ const Wrapper = styled.div`
 const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   height: 100%;
 `
 const ModalWrapper = styled.div`
@@ -63,7 +64,7 @@ const ModalWrapper = styled.div`
 export function LeveragePositionModal(props: TradeModalProps) {
   const { isOpen, positionKey, onClose } = props
   const [activeTab, setActiveTab] = useState<TradeModalActiveTab>(
-    props.selectedTab ?? TradeModalActiveTab.INCREASE_POSITION
+    props.selectedTab ?? TradeModalActiveTab.DECREASE_POSITION
   )
 
   const displayedContent = useMemo(() => {
@@ -85,7 +86,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
   useOnClickOutside(ref, () => onClose(), [modalRef])
 
   return positionKey ? (
-    <Modal isOpen={isOpen} maxHeight={1500} maxWidth={700} $scrollOverlay={true}>
+    <Modal isOpen={isOpen} maxHeight={1500} maxWidth={600} $scrollOverlay={true}>
       <Wrapper ref={modalRef}>
         <CloseIcon style={{ width: '12px' }} onClick={onClose} />
         <TabsWrapper>
