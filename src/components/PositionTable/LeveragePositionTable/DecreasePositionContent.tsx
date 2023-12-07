@@ -725,9 +725,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                         <AutoColumn gap="sm">
                           <RowBetween>
                             <RowFixed>
-                              <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
+                              <MouseoverTooltip text={<Trans>Amount of position reduced</Trans>}>
                                 <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Limit Data 1</Trans>
+                                  <Trans>Reduced Position</Trans>
                                 </ThemedText.BodySmall>
                               </MouseoverTooltip>
                             </RowFixed>
@@ -741,9 +741,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                           </RowBetween>
                           <RowBetween>
                             <RowFixed>
-                              <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
+                              <MouseoverTooltip text={<Trans>Your specified order price</Trans>}>
                                 <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Limit Data 2</Trans>
+                                  <Trans>Order Price</Trans>
                                 </ThemedText.BodySmall>
                               </MouseoverTooltip>
                             </RowFixed>
@@ -760,10 +760,10 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                           <RowBetween>
                             <RowFixed>
                               <MouseoverTooltip
-                                text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
+                                text={<Trans>Amount the reduced position converts to, given your order price </Trans>}
                               >
                                 <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Limit Data 3</Trans>
+                                  <Trans>Desired Output</Trans>
                                 </ThemedText.BodySmall>
                               </MouseoverTooltip>
                             </RowFixed>
@@ -778,18 +778,19 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                           <RowBetween>
                             <RowFixed>
                               <MouseoverTooltip
-                                text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
+                                text={<Trans>Estimated PnL when position is closed at specified price</Trans>}
                               >
                                 <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Limit Data 4</Trans>
+                                  <Trans>Estimated PnL</Trans>
                                 </ThemedText.BodySmall>
                               </MouseoverTooltip>
                             </RowFixed>
                             <TextWithLoadingPlaceholder syncing={loading} width={65}>
                               <ThemedText.BodySmall textAlign="right" color="textSecondary">
                                 <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
-                                </TruncatedText>
+                                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                  </DeltaText>                                </TruncatedText>
                               </ThemedText.BodySmall>
                             </TextWithLoadingPlaceholder>
                           </RowBetween>

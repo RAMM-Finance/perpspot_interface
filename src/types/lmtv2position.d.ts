@@ -24,8 +24,10 @@ export interface MarginPositionDetails extends BaseFacilityPositionDetails {
   margin: BN
 }
 
+
 export interface MarginLimitOrder {
   key: RawPoolKey,
+  isAdd: boolean, 
   positionIsToken0: boolean,
   auctionDeadline: number,
   auctionStartTime: number,

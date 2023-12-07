@@ -6,7 +6,7 @@ import { useAtomValue, useResetAtom } from 'jotai/utils'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { MarginOrderDetails } from 'types/lmtv2position'
+import { MarginOrderDetails, MarginLimitOrder} from 'types/lmtv2position'
 
 import { TokenDataContainer } from './comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
@@ -147,14 +147,14 @@ function useSelectOrders(orders?: MarginOrderDetails[]) {
   return { filteredOrders: orders }
 }
 
-export function OrdersTable({ orders, loading }: { orders?: MarginOrderDetails[]; loading: boolean }) {
+export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; loading: boolean }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
 
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
 
-  const { filteredOrders } = useSelectOrders(orders)
-
+  // const { filteredOrders } = useSelectOrders(orders)
+  const filteredOrders = orders
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
@@ -173,13 +173,13 @@ export function OrdersTable({ orders, loading }: { orders?: MarginOrderDetails[]
           {filteredOrders?.map((order) => (
             <LoadedRow
               key={
-                order.poolKey.token0Address +
+                order.key.token0Address +
                 '-' +
-                order.poolKey.token1Address +
+                order.key.token1Address +
                 '-' +
-                order.poolKey.fee.toString() +
+                order.key.fee.toString() +
                 '-' +
-                order.isToken0
+                order.positionIsToken0
               }
               order={order}
             />

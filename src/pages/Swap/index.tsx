@@ -16,7 +16,7 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
-import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
+import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -455,6 +455,7 @@ export default function Swap({ className }: { className?: string }) {
   ]
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const [activePositionTable, setActiveTable] = useState(1)
 
@@ -525,7 +526,7 @@ export default function Swap({ className }: { className?: string }) {
                   <LeveragePositionsTable positions={leveragePositions} loading={leverageLoading} />
                 </TabContent>
                 <TabContent id={2} activeTab={activePositionTable}>
-                  <OrdersTable orders={undefined} loading={true} />
+                  <OrdersTable orders={limitOrders} loading={orderLoading} />
                 </TabContent>
                 <TabContent id={3} activeTab={activePositionTable}>
                   {!account ? (

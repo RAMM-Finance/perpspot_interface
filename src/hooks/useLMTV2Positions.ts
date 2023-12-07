@@ -18,7 +18,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
 
   // make sure to have dataProvider provide the decimals for each token
   const { loading, error, result } = useSingleCallResult(dataProvider, 'getActiveMarginPositions', [account])
-
+  
   return useMemo(() => {
     return {
       loading,
@@ -30,7 +30,6 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         const outputDecimals = position.isToken0
           ? Number(position.token0Decimals.toString())
           : Number(position.token1Decimals.toString())
-
         return {
           poolKey: {
             token0Address: position.poolKey.token0,
@@ -56,8 +55,93 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         }
       }),
     }
-  }, [loading, error, result, account])
+  }, [loading, error, result])
 }
+
+// export interface MarginLimitOrder_ {
+//   key: RawPoolKey,
+//   isAdd: boolean ,
+//   positionIsToken0: boolean,
+//   auctionDeadline: number,
+//   auctionStartTime: number,
+//   startOutput: BN,
+//   minOutput: BN,
+//   inputAmount: BN,
+//   decayRate: BN,
+//   margin: BN
+// }
+
+// export interface BaseFacilityPositionDetails_ {
+//   poolKey: RawPoolKey
+//   isToken0: boolean
+//   totalDebtOutput: BN
+//   totalDebtInput: BN
+//   openTime: number
+//   repayTime: number
+//   isBorrow: boolean
+//   premiumOwed: BN // how much premium is owed since last repayment
+//   premiumDeposit: BN
+//   premiumLeft: BN
+//   trader: string
+//   token0Decimals: number
+//   token1Decimals: number
+// }
+
+// export interface MarginPositionDetails_ extends BaseFacilityPositionDetails_ {
+//   totalPosition: BN
+//   margin: BN
+// }
+// export interface MarginLimitOrder {
+//   key: RawPoolKey,
+//   isAdd: boolean, 
+//   positionIsToken0: boolean,
+//   auctionDeadline: number,
+//   auctionStartTime: number,
+//   startOutput: BN,
+//   minOutput: BN,
+//   inputAmount: BN,
+//   decayRate: BN,
+//   margin: BN
+// }
+
+export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
+  const dataProvider = useDataProviderContract()
+
+  // make sure to have dataProvider provide the decimals for each token
+  const { loading, error, result } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
+  
+  return useMemo(() => {
+    return {
+      loading,
+      error,
+      Orders: result?.[0]?.map((order: any) => {
+        // const inputDecimals = position.isToken0
+        //   ? Number(position.token1Decimals.toString())
+        //   : Number(position.token0Decimals.toString())
+        // const outputDecimals = position.isToken0
+        //   ? Number(position.token0Decimals.toString())
+        //   : Number(position.token1Decimals.toString())
+        return {
+          key: {
+            token0Address: order.key.token0,
+            token1Address: order.key.token1,
+            fee: order.key.fee,
+          },
+          isAdd: order.isAdd,
+          auctionDeadline: order.auctionDeadline, 
+          auctionStartTime: order.auctionStartTime,
+          startOutput: order.startOutput.toString(), 
+          minOutput: order.minOutput.toString(), 
+          inputAmount: order.inputAmount.toString(), 
+          decayRate: order.decayRate.toString(), 
+          margin: order.margin.toString(), 
+
+        }
+      }),
+    }
+  }, [loading, error, result])
+}
+
 
 // function getFee(fee: number): FeeAmount {
 //   switch (fee) {
@@ -196,6 +280,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     }
     return {
       key: key.poolKey,
+      isAdd: result.isAdd, 
       positionIsToken0: key.isToken0,
       auctionDeadline: result.auctionDeadline,
       auctionStartTime: result.auctionStartTime,
@@ -212,4 +297,9 @@ interface UseLmtMarginPositionsResults {
   loading: boolean
   error: any
   positions: MarginPositionDetails[] | undefined
+}
+interface UseLmtOrdersResults {
+  loading: boolean
+  error: any
+  Orders: MarginLimitOrder[] | undefined
 }
