@@ -1,23 +1,23 @@
 import { Trans } from '@lingui/macro'
+import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { useCurrency } from 'hooks/Tokens'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
-import { ForwardedRef, forwardRef, useCallback, useState } from 'react'
+import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { MarginOrderDetails, MarginLimitOrder, TraderPositionKey } from 'types/lmtv2position'
+import { MarginLimitOrder, TraderPositionKey } from 'types/lmtv2position'
 
-import {
-  LeveragePositionModal,
-  TradeModalActiveTab,
-} from '../PositionTable/LeveragePositionTable/LeveragePositionModal'
+import { TradeModalActiveTab } from '../PositionTable/LeveragePositionTable/LeveragePositionModal'
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
@@ -42,7 +42,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr;
+  grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -73,15 +73,15 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -391,25 +391,26 @@ function HeaderCell({
 function PositionRow({
   header,
   positionInfo,
-  value,
-  PnL,
-  entryPrice,
-  positionKey,
-  remainingPremium,
+  pair,
+  leverage,
+  input,
+  output,
+  buttons,
   ...rest
 }: {
   first?: boolean
   header: boolean
   loading?: boolean
-  value: ReactNode
   // repaymentTime: ReactNode
   positionInfo: ReactNode
   positionKey?: TraderPositionKey
   // recentPremium: ReactNode
   // unusedPremium: ReactNode
-  PnL: ReactNode
-  entryPrice: ReactNode
-  remainingPremium: ReactNode
+  pair: ReactNode
+  input: ReactNode
+  output: ReactNode
+  buttons: ReactNode
+  leverage: ReactNode
   last?: boolean
   style?: CSSProperties
 }) {
@@ -428,12 +429,12 @@ function PositionRow({
 
   const rowCells = (
     <>
-      <LeveragePositionModal
+      {/* <LeveragePositionModal
         positionKey={positionKey}
         selectedTab={selectedTab}
         isOpen={showModal}
         onClose={handleCloseModal}
-      />
+      /> */}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
@@ -443,7 +444,7 @@ function PositionRow({
           }}
           disabled={false}
         >
-          {value}
+          {pair}
         </EditCell>
       </PriceCell>
       {/*<PriceCell data-testid="repaymentTime-cell" sortable={header}>
@@ -457,19 +458,20 @@ function PositionRow({
           }}
           disabled={true}
         >
-          {remainingPremium}
+          {input}
         </EditCell>
       </PriceCell>
       <PriceCell data-testid="premium-cell" sortable={header}>
-        {entryPrice}
+        {output}
       </PriceCell>
       <PriceCell data-testid="premium-cell" sortable={header}>
-        {PnL}
+        {leverage}
       </PriceCell>
       {/* <ActionCell data-testid="action-cell" sortable={header}>
         {actions}
       </ActionCell> */}
       {/* <SparkLineCell>{sparkLine}</SparkLineCell> */}
+      <NameCell>{buttons}</NameCell>
     </>
   )
 
@@ -487,10 +489,12 @@ export function HeaderRow() {
           <ThemedText.TableText>Order</ThemedText.TableText>
         </Box>
       }
-      value={<HeaderCell category={OrderSortMethod.PAIR} />}
-      PnL={<HeaderCell category={OrderSortMethod.LEVERAGE} />}
-      entryPrice={<HeaderCell category={OrderSortMethod.INPUT} />}
-      remainingPremium={<HeaderCell category={OrderSortMethod.OUTPUT} />}
+      pair={<HeaderCell category={OrderSortMethod.PAIR} />}
+      input={<HeaderCell category={OrderSortMethod.INPUT} />}
+      output={<HeaderCell category={OrderSortMethod.OUTPUT} />}
+      leverage={<HeaderCell category={OrderSortMethod.LEVERAGE} />}
+      buttons={<></>}
+
       // repaymentTime={<HeaderCell category={OrderSortMethod.REPAYTIME} />}
     />
   )
@@ -514,11 +518,12 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
           <MediumLoadingBubble />
         </>
       }
-      value={<MediumLoadingBubble />}
+      pair={<MediumLoadingBubble />}
       // repaymentTime={<LoadingBubble />}
-      PnL={<LoadingBubble />}
-      entryPrice={<LoadingBubble />}
-      remainingPremium={<LoadingBubble />}
+      input={<LoadingBubble />}
+      output={<LoadingBubble />}
+      leverage={<LoadingBubble />}
+      buttons={<LoadingBubble />}
       {...props}
     />
   )
@@ -539,70 +544,39 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { order: details } = props
-  console.log('orders', details); 
+  console.log('orders', details)
 
   // const positionKey: OrderPositionKey = useMemo(() => {
   //   return {
-  //     // trader: details.trader,
-  //     poolKey: details.poolKey,
-  //     isAdd: false,
-  //     isToken0: details.isToken0,
+  //     poolKey: details.key,
+  //     isAdd: details.isAdd,
+  //     trader: 'yes',
+  //     isToken0: false,
   //   }
   // }, [details])
 
-  // // const { isToken0, margin, totalDebtInput } = details
-  // const [token0Address, token1Address] = useMemo(() => {
-  //   if (details) {
-  //     return [details.poolKey.token0Address, details.poolKey.token1Address]
-  //   }
-  //   return [undefined, undefined]
-  // }, [details])
-  // const token0 = useCurrency(token0Address)
-  // const token1 = useCurrency(token1Address)
+  const [token0Address, token1Address] = useMemo(() => {
+    if (details) {
+      return [details.key.token0Address, details.key.token1Address]
+    }
+    return [undefined, undefined]
+  }, [details])
 
-  // const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
+  const token0 = useCurrency(token0Address)
+  const token1 = useCurrency(token1Address)
 
-  // // const leverageFactor = useMemo(
-  // //   () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
-  // //   [margin, totalDebtInput]
-  // )
+  // const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.key.fee)
 
-  // const [entryPrice, currentPrice, position] = useMemo(() => {
+  // const [inputAmount, startOutput, margin] = useMemo(() => {
   //   if (pool) {
-  //     // const _position = new MarginPosition(pool, details)
-  //     // token1 quote
-  //     const _entryPrice = _position.entryPrice()
-  //     const _currentPrice = pool.token0Price
-
-  //     if (Number(pool.token0Price.toFixed(18)) < 1) {
-  //       return [_entryPrice.invert(), _currentPrice.invert(), _position]
-  //     } else {
-  //       return [_entryPrice, _currentPrice, _position]
-  //     }
+  //     return [details.inputAmount, details.startOutput, details.margin]
   //   } else {
   //     return [undefined, undefined, undefined]
   //   }
-  // }, [pool, details])
+  // }, [])
 
-  // /**
-  //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
-  //    */
-  // get token0Price(): Price<Token, Token>;
-  // /**
-  //  * Returns the current mid price of the pool in terms of token1, i.e. the ratio of token0 over token1
-  //  */
-  // get token1Price(): Price<Token, Token>;
+  const leverage = useMemo(() => (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin), [])
 
-  // console.log("position: ", position)
-
-  // const arrow = getDeltaArrow(Number(position?.PnL().toExact()), 18)
-  // const premiumRemaining =
-  //   Number(formatCurrencyAmount(position?.premiumLeft, NumberType.SwapTradeAmount)) -
-  //   Number(formatCurrencyAmount(position?.premiumOwed, NumberType.SwapTradeAmount))
-
-  // console.log('leverageFactor', leverageFactor, initialCollateral, totalDebtInput)
-
-  // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
     <div ref={ref} data-testid="token-table-row">
       <StyledLoadedRow>
@@ -614,80 +588,76 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <RowBetween>
                 <PositionInfo>
                   <GreenText>
-              {details?.isAdd? "Add Order": "Reduce Order"}
-
-                    {' '}
+                    {details?.isAdd ? 'Add Order' : 'Reduce Order'}{' '}
                     {/* x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.totalPosition.currency?.symbol}`} */}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
             </ClickableContent>
           }
-          value={
+          pair={
             <FlexStartRow>
-              <UnderlineText>
-
-                {/*{`${formatCurrencyAmount(details?.startOutput, NumberType.SwapTradeAmount)} 
-                ${
-                  position?.totalPosition.currency?.symbol
-                }
-                `
-              } */}
-              {details?.startOutput.toString()} 
-              </UnderlineText>
-              <Edit3 size={14} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                  <CurrencyLogo currency={token0} size="15px" />
+                  <>{token0?.symbol} /</>
+                </div>
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                  <CurrencyLogo currency={token1} size="15px" />
+                  <>{token1?.symbol} </>
+                </div>
+              </div>
             </FlexStartRow>
           }
-
-          PnL={
+          input={
             <FlexStartRow>
               <AutoRow>
                 <RowBetween>
-                  {/* <DeltaText delta={Number(position?.PnL().toExact())}>
-                    {`${formatCurrencyAmount(position?.PnL(), NumberType.SwapTradeAmount)} ${
-                      position?.margin.currency?.symbol
-                    }`}
-                  </DeltaText> */}
+                  <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    {details.inputAmount.toString()}
+                    <Edit3 size={14} />
+                  </UnderlineText>
                 </RowBetween>
               </AutoRow>
             </FlexStartRow>
           }
-          entryPrice={
+          output={
             <FlexStartRow>
-              <AutoColumn
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  justifyContent: 'center',
-                  lineHeight: 1.5,
-                }}
-              >
-                {/* {`${formatPrice(entryPrice)}/${formatPrice(currentPrice)} `}
-                <AutoColumn>{`${entryPrice?.baseCurrency.symbol}/${entryPrice?.quoteCurrency.symbol}`}</AutoColumn> */}
-              </AutoColumn>
+              <AutoRow>
+                <RowBetween>
+                  <UnderlineText>{details.startOutput.toString()}</UnderlineText>
+                </RowBetween>
+              </AutoRow>
             </FlexStartRow>
           }
-          remainingPremium={
+          leverage={
             <FlexStartRow>
-              <UnderlineText>
-                {/* {premiumRemaining > 0 ? (
-                  <GreenText>
-                    {Math.round(premiumRemaining * 1000) / 1000}
-                    {' ' + position?.margin.currency?.symbol}
-                  </GreenText>
-                ) : (
-                  <RedText>
-                    {Math.round(premiumRemaining * 1000) / 1000}
-                    {position?.margin.currency?.symbol}
-                  </RedText>
-                )}
-
-                {/*`${premiumRemaining} ${
-                  position?.margin.currency?.symbol
-                 }`*/}
-              </UnderlineText>
-              <Edit3 size={14} />
+              <AutoRow>
+                <RowBetween>
+                  <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    {leverage.toString()}
+                    <Edit3 size={14} />
+                  </UnderlineText>
+                </RowBetween>
+              </AutoRow>
+            </FlexStartRow>
+          }
+          buttons={
+            <FlexStartRow style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AutoRow>
+                <RowBetween>
+                  <ButtonPrimary
+                    style={{
+                      height: '15px',
+                      fontSize: '10px',
+                      width: '40px',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    Cancel
+                  </ButtonPrimary>
+                </RowBetween>
+              </AutoRow>
             </FlexStartRow>
           }
         />
