@@ -120,11 +120,11 @@ const ModalContentWrapper = styled.div`
 export default function SettingsTab({
   allowedSlippage,
   autoSlippedTick,
-  autoPremiumTolerance,
+  autoPremiumPercent,
 }: {
   allowedSlippage?: Percent
   autoSlippedTick?: Percent
-  autoPremiumTolerance?: Percent
+  autoPremiumPercent?: Percent
 }) {
   const { chainId } = useWeb3React()
 
@@ -208,7 +208,7 @@ export default function SettingsTab({
             </Text>
             <TransactionSettings
               placeholderSlippage={allowedSlippage}
-              placeholderPremium={autoPremiumTolerance}
+              placeholderPremium={autoPremiumPercent}
               placeholderSlippedTick={autoSlippedTick}
             />
           </AutoColumn>

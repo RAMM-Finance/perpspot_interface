@@ -1,9 +1,9 @@
-import { defaultAbiCoder } from '@ethersproject/abi'
 import { Provider } from '@ethersproject/providers'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { Route, SwapQuoter } from '@uniswap/v3-sdk'
 import { QUOTER_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { defaultAbiCoder } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
 
 export async function getOutputQuote(

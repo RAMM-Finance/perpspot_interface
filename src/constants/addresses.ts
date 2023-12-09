@@ -17,43 +17,44 @@ export const V2_ROUTER_ADDRESS: AddressMap = {
 }
 
 // LMT V2 CONSTANTS
-// factory address:   0xb83265E8019445F8185a6519a126F5Bc2f8c8631
-// deploying "Utils" (tx: 0x64108ddd2b302d1401e3044465fa547f853f794a4003c3c7e0259532c5b9728b)...: deployed at 0xa661dF942B08deDA0302BF2DC318dB2653F1b6D3 with 1554030 gas
-// deploying "MatchingEngine" (tx: 0x8d908ea5e6cc6b7af82b2dca8a080b94fe3d6dc1f2a9dcbbde5afb3565be33e7)...: deployed at 0x9A12179Ff1dC0e55843eF5cFf2E663E7ffF48E4e with 3617993 gas
-// deploying "PremiumComputer" (tx: 0x8d652b5b09b62e28937f85e84620b1d97783be659481be8529a2e0987ec49a9c)...: deployed at 0x0Ea6748498D9485cd06a90D33aEA06edbFe5D531 with 2800893 gas
-// deploying "MarginPositionHelper" (tx: 0x2ad7c519495efc17117f516e0b49e76e028ec6d72d65afeb28ade6f10560b21a)...: deployed at 0xb673839C2A3a652321aF273a170376BC2bf2A6Ef with 3876167 gas
-// deploying "PoolManager" (tx: 0x753aad6a3c83c92655d863d5055625c5b941ea3160ab7f119f13732ebe8526a0)...: deployed at 0x5c4bD5981ba20a56875baD04efC5412479C423AB with 5348331 gas
-// deploying "Executioner" (tx: 0x6eed1f681a169cddf2cd33d00a52a8b45e37ea362544b8a20deaf40baf106dee)...: deployed at 0x2154cefebAE3b05A238f85aBE0Ba6Ca89195D266 with 1553842 gas
-// deploying "MarginFacility" (tx: 0x8a41d32749f3ca667c71acde970fef09f640e950a9afb44c4ffa200a8e216355)...: deployed at 0x0Ca0F9aFa80b1A376EC517ca033885Df490aD2C0 with 5456843 gas
-// pool address
-// deploying "DataProvider" (tx: 0x0aca9ffbba416501716b6be87dbade78f14d5f55ccf5cbead48ffd932d17c80a)...: deployed at 0x51a190ba222BF09891a9602ef1E09E4F307Aa22D with 4799932 gas
-// deploying "NonfungiblePositionManager" (tx: 0xb3084c1dae53fc645cbd4db7d74355f27a20756956df0cb6ffc74a1da77df059)...: deployed at 0xCE24995F6720D241378346f36BFb9DD4A3eE5331 with 3913411 gas
-// router address 0x6c8CED42e0D2295e509482378D28DDe0D5899c7c
-// export const PS_QUOTER_V2 = '0xB404fB022653092e0Dc56A20CcFa53ADBB4c626F'
-//         export const PS_NONFUNGIBLE_POSITION_MANAGER = '0x51be10BAf3E867887a7C5aa008bEcb2b0686c02B'
+
+// Compiled 81 Solidity files successfully
+// UNISWAP_FACTORY= 0x0f4587359bd1df392BAc1A86D8d75DaE2A6EFE48
+// deploying "Utils" (tx: 0xd26d5046455302bf7e22e30386f64a94e41243f8a7997cc7a54dfba3d058442c)...: deployed at 0x6484A82B6F82dB2C63923c69aD8bC5E9cFCb54EF with 1554042 gas
+// deploying "MatchingEngine" (tx: 0x8558305a9cb0a6dab73992409f4c9cea54039dc293fe2237e38c468c44473e3c)...: deployed at 0x2797f1De1114eEb851313cCB1d1bd49cBe6FBF31 with 3617993 gas
+// deploying "PremiumComputer" (tx: 0x6c7788e3ab0e4c0cc90723b3d77283fa20a3f7805eb51dba08afa45956767c50)...: deployed at 0x6b399D7Bb12766F1dEED30e974aCD6839dB25B43 with 2800881 gas
+// deploying "MarginPositionHelper" (tx: 0xc7691879fef387f9c9069fc1d21d320c261893521ab4bba2bb05f49dbe0c5966)...: deployed at 0xD38DF657D9d379bc9A12A23B68940f4812E1191b with 3892975 gas
+// deploying "PoolManager" (tx: 0x83ada04a0443acb99014c2535d604b1f6852c085b644244b8add0016fc8c376a)...: deployed at 0x90fbf08459222695358e3Ee2C99a50B8b33D402A with 5388547 gas
+// deploying "Executioner" (tx: 0xfba74e2f3076b173fcc4867c412243315a9f11e00fd16fb79b0711a1ffadefc0)...: deployed at 0x49ed95f1B29100724eC08779d132F5e3dD59b95B with 1553842 gas
+// deploying "MarginFacility" (tx: 0x2f9f917ebc160678d6af6dcec8ff0e8c24b328b5aa0f1082de275864a9e952ac)...: deployed at 0x48fB8Ac1b069fFe5b6eeE882F2DbEC488e827f0d with 5338169 gas
+// deploying "DataProvider" (tx: 0xf5a388a842306df4e78f108ef1022a9214ab44ee18126358a469caf1a975368a)...: deployed at 0xc5616502a4Ce25FD380B086ff1DABF087b2d4a33 with 4787010 gas
+// deploying "NonfungiblePositionManager" (tx: 0x6fa36cf7f5aa67db9fc86205801480775b0108a3f0d90a8d12d792d59ccf9162)...: deployed at 0x2f59A5B9608Cf714b6918Ab1DFDd8cA97091b522 with 3913411 gas
+// router address 0xbF1413aD47aD3d110A0a4Bc1Ab667F07f4aA00e7
+// export const PS_QUOTER_V2 = '0x43Bc6FeD24aD1E2503A8360EaFA52424c14EFfdf'
+// export const PS_NONFUNGIBLE_POSITION_MANAGER = '0xFf33041417c7e298a5650F8fEe0C75957fb5a49a'
 
 export const POOL_INIT_CODE_HASH = '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54'
 
 export const SEPOLIA_TICK_LENS = '0x3608234ef94d0CCF4AC46284DFb102568aac2aB2'
 
-export const SEPOLIA_V3_POOL_FACTORY = '0xb83265E8019445F8185a6519a126F5Bc2f8c8631'
+export const SEPOLIA_V3_POOL_FACTORY = '0x0f4587359bd1df392BAc1A86D8d75DaE2A6EFE48'
 
-export const SEPOLIA_ROUTER = '0x95f1A9c011127Cc6d868F8791BFCE28D0484Cb0d'
+export const SEPOLIA_ROUTER = '0xaDba3e0661561C93517926a5B252D66c6b95A262'
 
-export const SEPOLIA_QUOTER_V2 = '0xB404fB022653092e0Dc56A20CcFa53ADBB4c626F'
+export const SEPOLIA_QUOTER_V2 = '0x43Bc6FeD24aD1E2503A8360EaFA52424c14EFfdf'
 
-export const SEPOLIA_NONFUNGIBLE_POSITION_MANAGER = '0x51be10BAf3E867887a7C5aa008bEcb2b0686c02B'
+export const SEPOLIA_NONFUNGIBLE_POSITION_MANAGER = '0xFf33041417c7e298a5650F8fEe0C75957fb5a49a'
 
 export const DATA_PROVIDER_ADDRESSES: AddressMap = {
-  [SupportedChainId.SEPOLIA]: '0x51a190ba222BF09891a9602ef1E09E4F307Aa22D',
+  [SupportedChainId.SEPOLIA]: '0xc5616502a4Ce25FD380B086ff1DABF087b2d4a33',
 }
 
 export const LMT_MARGIN_FACILITY: AddressMap = {
-  [SupportedChainId.SEPOLIA]: '0x0Ca0F9aFa80b1A376EC517ca033885Df490aD2C0',
+  [SupportedChainId.SEPOLIA]: '0x48fB8Ac1b069fFe5b6eeE882F2DbEC488e827f0d',
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {
-  [SupportedChainId.SEPOLIA]: '0xCE24995F6720D241378346f36BFb9DD4A3eE5331',
+  [SupportedChainId.SEPOLIA]: '0x2f59A5B9608Cf714b6918Ab1DFDd8cA97091b522',
 }
 
 export const LMT_BORROW_FACILITY: AddressMap = {
@@ -65,7 +66,7 @@ export const LMT_EXECUTIONER: AddressMap = {
 }
 
 export const LMT_POOL_MANAGER: AddressMap = {
-  [SupportedChainId.SEPOLIA]: '0x5c4bD5981ba20a56875baD04efC5412479C423AB',
+  [SupportedChainId.SEPOLIA]: '0x90fbf08459222695358e3Ee2C99a50B8b33D402A',
 }
 
 export const LMT_V2_PREMIUM_COMPUTER: AddressMap = {

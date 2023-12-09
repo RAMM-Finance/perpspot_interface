@@ -160,6 +160,7 @@ export function usePools(
       if (slot0Loading || liquidityLoading || addedPoolLoading) return [PoolState.LOADING, null]
       if (!slot0 || !liquidity) return [PoolState.NOT_EXISTS, null]
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null]
+      if (liquidity[0].eq(0)) return [PoolState.NOT_EXISTS, null]
 
       try {
         const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)

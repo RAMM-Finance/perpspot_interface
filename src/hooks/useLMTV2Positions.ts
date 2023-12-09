@@ -18,7 +18,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
 
   // make sure to have dataProvider provide the decimals for each token
   const { loading, error, result } = useSingleCallResult(dataProvider, 'getActiveMarginPositions', [account])
-  
+
   return useMemo(() => {
     return {
       loading,
@@ -55,7 +55,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         }
       }),
     }
-  }, [loading, error, result])
+  }, [loading, error, result, account])
 }
 
 // export interface MarginLimitOrder_ {
@@ -93,7 +93,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
 // }
 // export interface MarginLimitOrder {
 //   key: RawPoolKey,
-//   isAdd: boolean, 
+//   isAdd: boolean,
 //   positionIsToken0: boolean,
 //   auctionDeadline: number,
 //   auctionStartTime: number,
@@ -109,7 +109,7 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
 
   // make sure to have dataProvider provide the decimals for each token
   const { loading, error, result } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
-  
+
   return useMemo(() => {
     return {
       loading,
@@ -128,20 +128,18 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
             fee: order.key.fee,
           },
           isAdd: order.isAdd,
-          auctionDeadline: order.auctionDeadline, 
+          auctionDeadline: order.auctionDeadline,
           auctionStartTime: order.auctionStartTime,
-          startOutput: order.startOutput.toString(), 
-          minOutput: order.minOutput.toString(), 
-          inputAmount: order.inputAmount.toString(), 
-          decayRate: order.decayRate.toString(), 
-          margin: order.margin.toString(), 
-
+          startOutput: order.startOutput.toString(),
+          minOutput: order.minOutput.toString(),
+          inputAmount: order.inputAmount.toString(),
+          decayRate: order.decayRate.toString(),
+          margin: order.margin.toString(),
         }
       }),
     }
   }, [loading, error, result])
 }
-
 
 // function getFee(fee: number): FeeAmount {
 //   switch (fee) {
@@ -280,7 +278,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     }
     return {
       key: key.poolKey,
-      isAdd: result.isAdd, 
+      isAdd: result.isAdd,
       positionIsToken0: key.isToken0,
       auctionDeadline: result.auctionDeadline,
       auctionStartTime: result.auctionStartTime,

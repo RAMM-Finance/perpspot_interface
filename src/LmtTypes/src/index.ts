@@ -17,7 +17,6 @@ export type { ERC20 } from "./ERC20";
 export type { Executioner } from "./Executioner";
 export type { Facility } from "./Facility";
 export type { MarginFacility } from "./MarginFacility";
-export type { MarginFacilityBase } from "./MarginFacilityBase";
 export type { MarginPositionHelper } from "./MarginPositionHelper";
 export type { MatchingEngine } from "./MatchingEngine";
 export type { PoolManager } from "./PoolManager";

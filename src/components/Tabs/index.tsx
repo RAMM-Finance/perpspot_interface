@@ -35,11 +35,11 @@ const SettingWrapper = styled.div`
 export default function SwapTabHeader({
   autoSlippage,
   autoSlippedTick,
-  autoPremiumTolerance,
+  autoPremiumDepositPercent,
 }: {
   autoSlippage?: Percent
   autoSlippedTick?: Percent
-  autoPremiumTolerance?: Percent
+  autoPremiumDepositPercent?: Percent
 }) {
   const { activeTab } = useSwapState()
   const { onActiveTabChange } = useSwapActionHandlers()
@@ -98,7 +98,7 @@ export default function SwapTabHeader({
         <SettingsTab
           allowedSlippage={autoSlippage}
           autoSlippedTick={autoSlippedTick}
-          autoPremiumTolerance={autoPremiumTolerance}
+          autoPremiumPercent={autoPremiumDepositPercent}
         />
       </SettingWrapper>
     </div>

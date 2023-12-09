@@ -51,10 +51,8 @@ export type PositionStruct = {
   isToken0: PromiseOrValue<boolean>;
   totalDebtOutput: PromiseOrValue<BigNumberish>;
   totalDebtInput: PromiseOrValue<BigNumberish>;
-  recentPremium: PromiseOrValue<BigNumberish>;
   lastPremiumPaymentTime: PromiseOrValue<BigNumberish>;
   openTime: PromiseOrValue<BigNumberish>;
-  repayTime: PromiseOrValue<BigNumberish>;
   borrowInfo: LiquidityLoanStruct[];
 };
 
@@ -63,8 +61,6 @@ export type PositionStructOutput = [
   boolean,
   BigNumber,
   BigNumber,
-  BigNumber,
-  number,
   number,
   number,
   LiquidityLoanStructOutput[]
@@ -73,10 +69,8 @@ export type PositionStructOutput = [
   isToken0: boolean;
   totalDebtOutput: BigNumber;
   totalDebtInput: BigNumber;
-  recentPremium: BigNumber;
   lastPremiumPaymentTime: number;
   openTime: number;
-  repayTime: number;
   borrowInfo: LiquidityLoanStructOutput[];
 };
 

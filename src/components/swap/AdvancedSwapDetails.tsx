@@ -626,14 +626,14 @@ export function AdvancedMarginTradeDetails({
   return (
     <StyledCard>
       <AutoColumn gap="sm">
-        <ValueLabel
+        {/* <ValueLabel
           description="The premium you are expected to put down as a deposit to borrow the amount you are borrowing. 
           It will deplete at a faster rate when the prices are around your borrowed price range. This needs to be replenished(whether or not it has been utilized) every 48 hours or your position will be force closed."
           label="Additional premium to pay"
           value={formatCurrencyAmount(preTradeInfo?.premiumNecessary, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={preTradeInfo?.premiumNecessary ? inputCurrency?.symbol : ''}
-        />
+        /> */}
         <ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={existingPosition && existingPosition?.openTime > 0 ? 'Added Position' : 'Exp. Output'}

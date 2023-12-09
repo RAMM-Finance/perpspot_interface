@@ -56,7 +56,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange }: Discrete
         onChange={handleChange}
         valueLabelDisplay="auto"
         marks={marks}
-        step={1}
+        step={0.001}
         min={0}
         max={200}
         size="small"

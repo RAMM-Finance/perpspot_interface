@@ -8,17 +8,17 @@ import styled from 'styled-components/macro'
 type SwapHeaderProps = {
   allowedSlippage?: Percent
   autoSlippedTick?: Percent
-  autoPremiumTolerance?: Percent
+  autoPremiumDepositPercent?: Percent
 }
 
-export default function SwapHeader({ allowedSlippage, autoSlippedTick, autoPremiumTolerance }: SwapHeaderProps) {
+export default function SwapHeader({ allowedSlippage, autoSlippedTick, autoPremiumDepositPercent }: SwapHeaderProps) {
   // console.log(activeTab)
   return (
     <>
       <StyledSwapHeader>
         <SwapTabHeader
           autoSlippage={allowedSlippage}
-          autoPremiumTolerance={autoPremiumTolerance}
+          autoPremiumDepositPercent={autoPremiumDepositPercent}
           autoSlippedTick={autoSlippedTick}
         />
       </StyledSwapHeader>

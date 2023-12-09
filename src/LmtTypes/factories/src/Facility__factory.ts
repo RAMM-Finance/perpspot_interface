@@ -138,11 +138,6 @@ const _abi = [
                 type: "uint256",
               },
               {
-                internalType: "uint256",
-                name: "recentPremium",
-                type: "uint256",
-              },
-              {
                 internalType: "uint32",
                 name: "lastPremiumPaymentTime",
                 type: "uint32",
@@ -150,11 +145,6 @@ const _abi = [
               {
                 internalType: "uint32",
                 name: "openTime",
-                type: "uint32",
-              },
-              {
-                internalType: "uint32",
-                name: "repayTime",
                 type: "uint32",
               },
               {
@@ -481,6 +471,25 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes[]",
+        name: "data",
+        type: "bytes[]",
+      },
+    ],
+    name: "multicall",
+    outputs: [
+      {
+        internalType: "bytes[]",
+        name: "results",
+        type: "bytes[]",
+      },
+    ],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

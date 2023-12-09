@@ -22,7 +22,7 @@ import {
   updateUserDeadline,
   updateUserExpertMode,
   updateUserLocale,
-  updateUserPremiumTolerance,
+  updateUserPremiumDepositPercent,
   updateUserSlippageTolerance,
   updateUserSlippedTickTolerance,
 } from './reducer'
@@ -133,6 +133,42 @@ export function useUserSlippageTolerance(): [Percent | 'auto', (slippageToleranc
   )
 }
 
+export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumTolerance: Percent | 'auto') => void] {
+  const userPremiumDepositPercentRaw = useAppSelector((state) => {
+    return state.user.userPremiumDepositPercent
+  })
+  const userPremiumDepositPercent = useMemo(
+    () => (userPremiumDepositPercentRaw === 'auto' ? 'auto' : new Percent(userPremiumDepositPercentRaw, 10_000)),
+    [userPremiumDepositPercentRaw]
+  )
+
+  const dispatch = useAppDispatch()
+  const setUserPremiumDepositPercent = useCallback(
+    (userPremiumDepositPercent: Percent | 'auto') => {
+      let value: 'auto' | number
+      try {
+        value =
+          userPremiumDepositPercent === 'auto'
+            ? 'auto'
+            : JSBI.toNumber(userPremiumDepositPercent.multiply(10_000).quotient)
+      } catch (error) {
+        value = 'auto'
+      }
+      dispatch(
+        updateUserPremiumDepositPercent({
+          userPremiumDepositPercent: value,
+        })
+      )
+    },
+    [dispatch]
+  )
+
+  return useMemo(
+    () => [userPremiumDepositPercent, setUserPremiumDepositPercent],
+    [setUserPremiumDepositPercent, userPremiumDepositPercent]
+  )
+}
+
 export function useUserSlippedTickTolerance(): [Percent | 'auto', (slippageTolerance: Percent | 'auto') => void] {
   const userSlippedTickToleranceRaw = useAppSelector((state) => {
     return state.user.userSlippedTickTolerance
@@ -168,36 +204,6 @@ export function useUserSlippedTickTolerance(): [Percent | 'auto', (slippageToler
     () => [userSlippedTickTolerance, setUserSlippedTickTolerance],
     [setUserSlippedTickTolerance, userSlippedTickTolerance]
   )
-}
-
-export function useUserPremiumTolerance(): [Percent | 'auto', (premiumTolerance: Percent | 'auto') => void] {
-  const userPremiumToleranceRaw = useAppSelector((state) => {
-    return state.user.userPremiumTolerance
-  })
-  const userPremiumTolerance = useMemo(
-    () => (userPremiumToleranceRaw === 'auto' ? 'auto' : new Percent(userPremiumToleranceRaw, 10_000)),
-    [userPremiumToleranceRaw]
-  )
-
-  const dispatch = useAppDispatch()
-  const setUserPremiumTolerance = useCallback(
-    (userPremiumTolerance: Percent | 'auto') => {
-      let value: 'auto' | number
-      try {
-        value = userPremiumTolerance === 'auto' ? 'auto' : JSBI.toNumber(userPremiumTolerance.multiply(10_000).quotient)
-      } catch (error) {
-        value = 'auto'
-      }
-      dispatch(
-        updateUserPremiumTolerance({
-          userPremiumTolerance: value,
-        })
-      )
-    },
-    [dispatch]
-  )
-
-  return useMemo(() => [userPremiumTolerance, setUserPremiumTolerance], [setUserPremiumTolerance, userPremiumTolerance])
 }
 
 export function useUserHideClosedPositions(): [boolean, (newHideClosedPositions: boolean) => void] {

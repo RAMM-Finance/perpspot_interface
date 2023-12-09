@@ -6,7 +6,12 @@ import { DEFAULT_DEADLINE_FROM_NOW } from 'constants/misc'
 import ms from 'ms.macro'
 import { darken } from 'polished'
 import { useState } from 'react'
-import { useUserSlippageTolerance, useUserSlippedTickTolerance, useUserTransactionTTL } from 'state/user/hooks'
+import {
+  useUserPremiumDepositPercent,
+  useUserSlippageTolerance,
+  useUserSlippedTickTolerance,
+  useUserTransactionTTL,
+} from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { ThemedText } from '../../theme'
@@ -122,6 +127,7 @@ const DEFAULT_SLIPPED_TICK_TOLERANCE = new Percent(5, 1000) // 0.5%
 export default function TransactionSettings({
   placeholderSlippage,
   placeholderSlippedTick,
+  placeholderPremium,
 }: // placeholderPremium,
 TransactionSettingsProps) {
   const { chainId } = useWeb3React()
@@ -129,7 +135,7 @@ TransactionSettingsProps) {
 
   const [userSlippageTolerance, setUserSlippageTolerance] = useUserSlippageTolerance()
   const [userSlippedTickTolerance, setUserSlippedTickTolerance] = useUserSlippedTickTolerance()
-  // const [userPremiumTolerance, setUserPremiumTolerance] = useUserPremiumTolerance()
+  const [userPremiumDepositPercent, setUserPremiumDepositPercent] = useUserPremiumDepositPercent()
 
   const [deadline, setDeadline] = useUserTransactionTTL()
 
@@ -144,6 +150,8 @@ TransactionSettingsProps) {
 
   const [slippedTickInput, setSlippedTickInput] = useState('')
   const [slippedTickError, setSlippedTickError] = useState<SlippedTickError | false>(false)
+  const [premiumPercentInput, setPremiumPercentInput] = useState('')
+  const [premiumPercentError, setPremiumPercentError] = useState<SlippedTickError | false>(false)
 
   function parseSlippageInput(value: string) {
     // populate what the user typed and clear the error
@@ -212,28 +220,28 @@ TransactionSettingsProps) {
     }
   }
 
-  // function parsePremiumInput(value: string) {
-  //   // populate what the user typed and clear the error
-  //   setPremiumInput(value)
-  //   setPremiumError(false)
+  function parsePremiumInput(value: string) {
+    setPremiumPercentInput(value)
+    setPremiumPercentError(false)
 
-  //   if (value.length === 0) {
-  //     setUserPremiumTolerance('auto')
-  //   } else {
-  //     const parsed = Math.floor(Number.parseFloat(value) * 100)
+    if (value.length === 0) {
+      setUserPremiumDepositPercent('auto')
+    } else {
+      const parsed = Math.floor(Number.parseFloat(value) * 100)
 
-  //     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
-  //       setUserPremiumTolerance('auto')
-  //       if (value !== '.') {
-  //         setPremiumError(PremiumError.InvalidInput)
-  //       }
-  //     } else {
-  //       setUserPremiumTolerance(new Percent(parsed, 10_000))
-  //     }
-  //   }
-  // }
+      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
+        setUserPremiumDepositPercent('auto')
+        if (value !== '.') {
+          setPremiumPercentError(SlippedTickError.InvalidInput)
+        }
+      } else {
+        setUserPremiumDepositPercent(new Percent(parsed, 10_000))
+      }
+    }
+  }
 
-  // const premiumTooLow = userPremiumTolerance !== 'auto' && userPremiumTolerance.lessThan(new Percent(5, 10_000))
+  const premiumTooLow =
+    userPremiumDepositPercent !== 'auto' && userPremiumDepositPercent.lessThan(new Percent(5, 10_000))
 
   const showCustomDeadlineRow = Boolean(chainId && !L2_CHAIN_IDS.includes(chainId))
 
@@ -241,11 +249,11 @@ TransactionSettingsProps) {
 
   return (
     <AutoColumn gap="md">
-      {/* {placeholderPremium && (
+      {placeholderPremium && (
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Premium tolerance</Trans>
+              <Trans>Premium Deposit</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={<Trans>Your transaction will revert if the premium exceeds this percentage.</Trans>}
@@ -256,11 +264,11 @@ TransactionSettingsProps) {
               onClick={() => {
                 parsePremiumInput('')
               }}
-              active={userPremiumTolerance === 'auto'}
+              active={userPremiumDepositPercent === 'auto'}
             >
               <Trans>Auto</Trans>
             </Option>
-            <OptionCustom active={userPremiumTolerance !== 'auto'} warning={!!premiumError} tabIndex={-1}>
+            <OptionCustom active={userPremiumDepositPercent !== 'auto'} warning={!!premiumPercentError} tabIndex={-1}>
               <RowBetween>
                 {premiumTooLow ? (
                   <SlippageEmojiContainer>
@@ -272,32 +280,32 @@ TransactionSettingsProps) {
                 <Input
                   placeholder={placeholderPremium?.toFixed(2)}
                   value={
-                    premiumInput.length > 0
-                      ? premiumInput
-                      : userPremiumTolerance === 'auto'
+                    premiumPercentInput.length > 0
+                      ? premiumPercentInput
+                      : userPremiumDepositPercent === 'auto'
                       ? ''
-                      : userPremiumTolerance.toFixed(2)
+                      : userPremiumDepositPercent.toFixed(2)
                   }
                   onChange={(e) => parsePremiumInput(e.target.value)}
                   onBlur={() => {
-                    setPremiumInput('')
-                    setPremiumError(false)
+                    setPremiumPercentInput('')
+                    setPremiumPercentError(false)
                   }}
-                  color={premiumError ? 'red' : ''}
+                  color={premiumPercentError ? 'red' : ''}
                 />
                 %
               </RowBetween>
             </OptionCustom>
           </RowBetween>
-          {premiumError || premiumTooLow ? (
+          {premiumPercentError || premiumTooLow ? (
             <RowBetween
               style={{
                 fontSize: '14px',
                 paddingTop: '7px',
-                color: premiumError ? 'red' : '#F3841E',
+                color: premiumPercentError ? 'red' : '#F3841E',
               }}
             >
-              {premiumError ? (
+              {premiumPercentError ? (
                 <Trans>Enter a valid slippage percentage</Trans>
               ) : premiumTooLow ? (
                 <Trans>Your transaction may fail</Trans>
@@ -305,12 +313,12 @@ TransactionSettingsProps) {
             </RowBetween>
           ) : null}
         </AutoColumn>
-      )} */}
+      )}
       {placeholderSlippedTick && (
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Slipped Tick tolerance</Trans>
+              <Trans>Slipped tick tolerance</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={
@@ -340,7 +348,7 @@ TransactionSettingsProps) {
                       ? ''
                       : userSlippedTickTolerance.toFixed(2)
                   }
-                  onChange={(e) => parseSlippageInput(e.target.value)}
+                  onChange={(e) => parseSlippedTickInput(e.target.value)}
                   onBlur={() => {
                     setSlippageInput('')
                     setSlippageError(false)

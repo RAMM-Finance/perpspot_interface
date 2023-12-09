@@ -30,8 +30,8 @@ export interface UserState {
   // user defined slipped tick tolerance in bips, used in all txns
   userSlippedTickTolerance: number | 'auto'
 
-  // user defined premium tolerance in percentage of the margin/principal, used in all txns
-  userPremiumTolerance: number | 'auto'
+  // user defined premium deposited before txn, asa percentage of totalDebtInput
+  userPremiumDepositPercent: number | 'auto'
 
   // deadline set by user in minutes, used in all txns
   userDeadline: number
@@ -68,7 +68,8 @@ export const initialState: UserState = {
   userHideClosedPositions: false,
   userSlippageTolerance: 'auto',
   userSlippedTickTolerance: 'auto',
-  userPremiumTolerance: 'auto',
+  userPremiumDepositPercent: 'auto',
+  // userPremiumTolerance: 'auto',
   userSlippageToleranceHasBeenMigratedToAuto: true,
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
@@ -102,8 +103,8 @@ const userSlice = createSlice({
       state.userSlippedTickTolerance = action.payload.userSlippedTickTolerance
       state.timestamp = currentTimestamp()
     },
-    updateUserPremiumTolerance(state, action) {
-      state.userPremiumTolerance = action.payload.userPremiumTolerance
+    updateUserPremiumDepositPercent(state, action) {
+      state.userPremiumDepositPercent = action.payload.userPremiumDepositPercent
       state.timestamp = currentTimestamp()
     },
     updateUserDeadline(state, action) {
@@ -126,7 +127,6 @@ const userSlice = createSlice({
       state.tokens[serializedToken.chainId] = state.tokens[serializedToken.chainId] || {}
       state.tokens[serializedToken.chainId][serializedToken.address] = serializedToken
       state.timestamp = currentTimestamp()
-      console.log('addSerializedToken', serializedToken)
     },
     addSerializedPair(state, { payload: { serializedPair } }) {
       if (
@@ -165,8 +165,8 @@ const userSlice = createSlice({
         state.userSlippedTickTolerance = 'auto'
       }
 
-      if (!state.userPremiumTolerance) {
-        state.userPremiumTolerance = 'auto'
+      if (!state.userPremiumDepositPercent) {
+        state.userPremiumDepositPercent = 'auto'
       }
 
       // deadline isnt being tracked in local storage, reset to default
@@ -196,7 +196,7 @@ export const {
   updateUserLocale,
   updateUserSlippageTolerance,
   updateHideUniswapWalletBanner,
-  updateUserPremiumTolerance,
+  updateUserPremiumDepositPercent,
   updateUserSlippedTickTolerance,
 } = userSlice.actions
 export default userSlice.reducer

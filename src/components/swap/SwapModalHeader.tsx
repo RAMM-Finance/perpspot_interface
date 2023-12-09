@@ -398,7 +398,7 @@ export function LeverageModalHeader({
   // const [priceUpdate, setPriceUpdate] = useState<number | undefined>()
 
   const fiatValueInput = useUSDPrice(
-    trade?.margin && preTradeInfo?.premiumNecessary ? trade?.margin?.add(preTradeInfo?.premiumNecessary) : undefined
+    trade?.margin && preTradeInfo?.additionalPremium ? trade?.margin?.add(preTradeInfo?.additionalPremium) : undefined
   )
   const fiatValueTotalInput = useUSDPrice(
     trade?.margin && trade?.borrowAmount ? trade?.margin?.add(trade?.borrowAmount) : undefined
@@ -413,7 +413,7 @@ export function LeverageModalHeader({
             <RowFixed gap="0px">
               <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
-                {formatCurrencyAmount(preTradeInfo.premiumNecessary, NumberType.SwapTradeAmount)})
+                {formatCurrencyAmount(preTradeInfo.additionalPremium, NumberType.SwapTradeAmount)})
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">

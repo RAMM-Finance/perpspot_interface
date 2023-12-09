@@ -13,6 +13,7 @@ import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import { Input as NumericalInput } from 'components/NumericalInput'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowFixed, RowStart } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
@@ -127,6 +128,15 @@ export const OpacityHoverState = css`
   }) => `opacity ${duration.medium} ${timing.ease}`};
 `
 
+const StyledLeverageInput = styled(NumericalInput)`
+  width: 100%;
+  text-align: right;
+  padding-right: 5px;
+  height: 20px;
+  line-height: 12px;
+  font-size: 14px;
+`
+
 export const PriceToggleSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -236,6 +246,7 @@ const TradeTabContent = () => {
   } = useMarginTradingState()
 
   const pool = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
+
   const {
     trade,
     preTradeInfo,
@@ -245,6 +256,7 @@ const TradeTabContent = () => {
     allowedSlippage,
     allowedSlippedTick,
     contractError,
+    userPremiumPercent,
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
@@ -497,7 +509,11 @@ const TradeTabContent = () => {
         tradeErrorMessage={lmtErrorMessage}
         preTradeInfo={preTradeInfo}
       />
-      <SwapHeader allowedSlippage={allowedSlippage} autoSlippedTick={allowedSlippedTick} />
+      <SwapHeader
+        allowedSlippage={allowedSlippage}
+        autoSlippedTick={allowedSlippedTick}
+        autoPremiumDepositPercent={userPremiumPercent}
+      />
       <FilterWrapper>
         <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
           <Selector active={!isLimitOrder}>
@@ -612,7 +628,7 @@ const TradeTabContent = () => {
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
-              premium={preTradeInfo?.premiumNecessary}
+              premium={preTradeInfo?.additionalPremium}
               showPremium={false}
             />
           </Trace>
@@ -679,43 +695,33 @@ const TradeTabContent = () => {
                 </ThemedText.DeprecatedMain>
                 <RowBetween style={{ flexWrap: 'nowrap', justifyContent: 'end' }}>
                   <LeverageInputSection>
-                    <StyledNumericalInput
+                    <StyledLeverageInput
                       className="token-amount-input"
                       value={debouncedLeverageFactor ?? ''}
-                      placeholder="1"
+                      placeholder="1.5x"
                       onUserInput={(str: string) => {
-                        const isInteger = /^\d+$/.test(str)
                         if (str === '') {
                           onDebouncedLeverageFactor('')
-                        } else if (isInteger) {
-                          const intValue = parseInt(str, 10)
-                          if (intValue >= 1 && intValue <= 500) {
+                        } else if (!!str && Number(str) >= 0) {
+                          if (Number(str) > 500) {
+                            return
+                          }
+                          if (Number(str) >= 0) {
                             onDebouncedLeverageFactor(str)
                           }
                         }
                       }}
                       disabled={false}
                     />
-                    <span
-                      style={{
-                        position: 'relative',
-                        top: '57%',
-                        right: '11.5px',
-                        transform: 'translateY(-50%)',
-                        fontSize: '12px',
-                        opacity: '0.5',
-                        color: '#999',
-                      }}
-                    >
-                      x
-                    </span>
                   </LeverageInputSection>
                 </RowBetween>
               </RowBetween>
 
               <>
                 <DiscreteSliderMarks
-                  initialValue={debouncedLeverageFactor === '' ? 0 : parseInt(debouncedLeverageFactor, 10)}
+                  initialValue={
+                    debouncedLeverageFactor === '' ? 0 : Math.round(Number(debouncedLeverageFactor) * 1000) / 1000
+                  }
                   onChange={(val) => onDebouncedLeverageFactor(val.toString())}
                 />
               </>
@@ -827,6 +833,7 @@ const TradeTabContent = () => {
                 </ThemedText.BodyPrimary>
               </ButtonError>
             ))}
+
           {isLimitOrder &&
             (swapIsUnsupported ? (
               <ButtonPrimary disabled={true}>
@@ -892,9 +899,7 @@ const TradeTabContent = () => {
                 width="14"
                 padding=".25rem"
                 onClick={() => {
-                  setLimitState((currentState)=>({... currentState, showConfirm : true}))
-  
-                  // setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
+                  setLimitState((currentState) => ({ ...currentState, showConfirm: true }))
                 }}
                 id="leverage-button"
                 disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}

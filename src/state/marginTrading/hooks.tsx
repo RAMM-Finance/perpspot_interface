@@ -3,8 +3,10 @@ import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool, priceToClosestTick, Route } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
+import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useLmtPoolManagerContract, useMarginFacilityContract } from 'hooks/useContract'
 import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePoolParams } from 'hooks/usePools'
@@ -15,7 +17,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
+import { useUserPremiumDepositPercent, useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
@@ -128,10 +130,11 @@ export interface PreTradeInfo {
   // current premium deposit
   premiumDeposit: CurrencyAmount<Currency>
   // premium necessary for the transaction
-  premiumNecessary: CurrencyAmount<Currency>
+  // premiumNecessary: CurrencyAmount<Currency>
   // additional premium (necessary - deposit)
-  additionalPremium: CurrencyAmount<Currency>
+  // additionalPremium: CurrencyAmount<Currency>
   // how much to approve (margin + additional premium)
+  additionalPremium: CurrencyAmount<Currency>
   approvalAmount: CurrencyAmount<Currency>
 }
 
@@ -141,6 +144,7 @@ interface DerivedAddPositionResult {
   positionKey?: TraderPositionKey
   allowedSlippage: Percent
   allowedSlippedTick: Percent
+  userPremiumPercent: Percent
   // allowedPremiumTolerance?: Percent
   inputError?: ReactNode
   contractError?: ReactNode
@@ -220,6 +224,7 @@ export function useDerivedAddPositionInfo(
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
   const [userSlippedTickTolerance] = useUserSlippedTickTolerance()
+  const [userPremiumPercent] = useUserPremiumDepositPercent()
 
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
@@ -246,43 +251,7 @@ export function useDerivedAddPositionInfo(
     return outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
   }, [outputCurrency, inputCurrency])
 
-  const poolParams = usePoolParams(pool)
-
-  const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
-    if (
-      !existingPosition ||
-      !account ||
-      !inputCurrency ||
-      !outputCurrency ||
-      !parsedBorrowAmount ||
-      !poolParams ||
-      !parsedMargin
-    )
-      return undefined
-
-    // ( premium owed - premium deposit ) + (borrowAmount + existing total debt input) * min_prem_deposit.
-
-    // PremiumDeposit[getPositionId(vars.pool, param.trader, param.positionIsToken0)]
-    // < (param.borrowAmount + pos.base.totalDebtInput).mulDiv(vars.poolParam.MIN_PREMIUM_DEPOSIT, precision)
-    const _premiumNecessary = parsedBorrowAmount
-      .plus(existingPosition.totalDebtInput)
-      .times(poolParams.minimumPremiumDeposit)
-      .plus(existingPosition.premiumOwed)
-
-    // premium to approve
-    const _additionalPremium = _premiumNecessary.isGreaterThanOrEqualTo(existingPosition.premiumDeposit)
-      ? _premiumNecessary.minus(existingPosition.premiumDeposit)
-      : new BN(0)
-
-    const _approvalAmount = _additionalPremium.isGreaterThan(0) ? _additionalPremium.plus(parsedMargin) : parsedMargin
-
-    return {
-      premiumDeposit: BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency),
-      premiumNecessary: BnToCurrencyAmount(_premiumNecessary, inputCurrency),
-      additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-      approvalAmount: BnToCurrencyAmount(_approvalAmount, inputCurrency),
-    }
-  }, [existingPosition, account, inputCurrency, outputCurrency, parsedBorrowAmount, parsedMargin, poolParams])
+  // const poolParams = usePoolParams(pool)
 
   // TODO calculate slippage from the pool
   const allowedSlippage = useMemo(() => {
@@ -294,6 +263,42 @@ export function useDerivedAddPositionInfo(
     if (userSlippedTickTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
     else return userSlippedTickTolerance
   }, [userSlippedTickTolerance])
+
+  const rawUserPremiumPercent = useMemo(() => {
+    if (userPremiumPercent === 'auto') return new Percent(JSBI.BigInt(5), JSBI.BigInt(10000))
+    else return userPremiumPercent
+  }, [userPremiumPercent])
+
+  const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
+    if (!existingPosition || !account || !inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin)
+      return undefined
+
+    // premium to approve
+    const _additionalPremium = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
+    // console.log('additional premium', _additionalPremium.toString())
+    const _approvalAmount = _additionalPremium.isGreaterThan(0) ? _additionalPremium.plus(parsedMargin) : parsedMargin
+
+    return {
+      premiumDeposit: BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency),
+      additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
+      approvalAmount: BnToCurrencyAmount(_approvalAmount, inputCurrency),
+    }
+  }, [
+    existingPosition,
+    account,
+    inputCurrency,
+    outputCurrency,
+    parsedBorrowAmount,
+    parsedMargin,
+    rawUserPremiumPercent,
+  ])
+
+  const { chainId } = useWeb3React()
+
+  const [approvalState] = useApproveCallback(
+    preTradeInfo?.approvalAmount,
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
+  )
 
   // get fee params
   const inputError = useMemo(() => {
@@ -342,6 +347,7 @@ export function useDerivedAddPositionInfo(
   } = useSimulateMarginTrade(
     allowedSlippage,
     allowedSlippedTick,
+    rawUserPremiumPercent,
     pool,
     inputIsToken0,
     parsedMargin,
@@ -350,7 +356,8 @@ export function useDerivedAddPositionInfo(
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
     preTradeInfo?.additionalPremium ?? undefined,
-    inputError
+    inputError,
+    approvalState
   )
 
   return useMemo(
@@ -366,6 +373,7 @@ export function useDerivedAddPositionInfo(
       allowedSlippage,
       allowedSlippedTick,
       contractError,
+      userPremiumPercent: rawUserPremiumPercent,
     }),
     [
       currencies,
@@ -379,6 +387,7 @@ export function useDerivedAddPositionInfo(
       positionKey,
       allowedSlippedTick,
       contractError,
+      rawUserPremiumPercent,
     ]
   )
 }
@@ -518,23 +527,9 @@ export function useDerivedLimitAddPositionInfo(
 
   const existingLimitPosition = useMarginOrderPositionFromPositionId(orderKey)
 
-  const {
-    state,
-    contractError,
-    result: trade,
-  } = useSimulateAddLimitOrder(
-    orderKey,
-    parsedMargin,
-    parsedLeverageFactor,
-    parsedStartingPrice,
-    baseCurrencyIsInputToken,
-    pool,
-    allowedSlippage,
-    deadline,
-    inputCurrency,
-    outputCurrency,
-    existingLimitPosition,
-    preTradeInfo?.additionalPremium
+  const [approvalState] = useApproveCallback(
+    preTradeInfo?.approvalAmount,
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
   // get fee params
@@ -559,6 +554,10 @@ export function useDerivedLimitAddPositionInfo(
 
     if (!parsedLeverageFactor || parsedLeverageFactor.isZero()) {
       inputError = inputError ?? <Trans>Enter a leverage factor</Trans>
+    }
+
+    if (parsedLeverageFactor && parsedLeverageFactor.isLessThanOrEqualTo(1)) {
+      inputError = inputError ?? <Trans>Leverage factor must be greater than 1</Trans>
     }
 
     if (!parsedStartingPrice || parsedStartingPrice.isZero()) {
@@ -586,6 +585,27 @@ export function useDerivedLimitAddPositionInfo(
     parsedStartingPrice,
     existingLimitPosition,
   ])
+
+  const {
+    state,
+    contractError,
+    result: trade,
+  } = useSimulateAddLimitOrder(
+    orderKey,
+    parsedMargin,
+    parsedLeverageFactor,
+    parsedStartingPrice,
+    baseCurrencyIsInputToken,
+    pool,
+    allowedSlippage,
+    deadline,
+    inputCurrency,
+    outputCurrency,
+    existingLimitPosition,
+    preTradeInfo?.additionalPremium,
+    approvalState,
+    inputError
+  )
 
   return useMemo(
     () => ({
@@ -627,7 +647,9 @@ const useSimulateAddLimitOrder = (
   inputCurrency?: Currency,
   outputCurrency?: Currency,
   existingLimitPosition?: MarginLimitOrder,
-  additionalPremium?: CurrencyAmount<Currency>
+  additionalPremium?: CurrencyAmount<Currency>,
+  approvalState?: ApprovalState,
+  inputError?: ReactNode
 ): {
   state: LimitTradeState
   result?: AddLimitTrade
@@ -659,7 +681,9 @@ const useSimulateAddLimitOrder = (
         !inputCurrency ||
         !outputCurrency ||
         !marginFacility ||
-        !additionalPremium
+        !additionalPremium ||
+        !!inputError ||
+        approvalState !== ApprovalState.APPROVED
       ) {
         setTradeState(LimitTradeState.INVALID)
         setResult(undefined)
@@ -739,7 +763,8 @@ const useSimulateAddLimitOrder = (
         })
       } catch (err) {
         setTradeState(LimitTradeState.INVALID)
-        setSimulationError(err?.errorArgs[0])
+        console.log('limit simulation error', err)
+        setSimulationError(err?.errorArgs ? (err.errorArgs?.length > 0 ? err.errorArgs[0] : err.errorArgs) : err)
         setResult(undefined)
       }
       return
@@ -768,6 +793,8 @@ const useSimulateAddLimitOrder = (
     existingLimitPosition,
     baseCurrencyIsInputToken,
     additionalPremium,
+    inputError,
+    approvalState,
   ])
 
   const contractError = useMemo(() => {
@@ -792,6 +819,7 @@ const useSimulateAddLimitOrder = (
 const useSimulateMarginTrade = (
   allowedSlippage: Percent,
   slippedTickTolerance: Percent,
+  premiumPercent: Percent,
   pool?: Pool,
   inputIsToken0?: boolean,
   margin?: BN,
@@ -800,7 +828,8 @@ const useSimulateMarginTrade = (
   inputCurrency?: Currency,
   outputCurrency?: Currency,
   additionalPremium?: CurrencyAmount<Currency>,
-  inputError?: ReactNode
+  inputError?: ReactNode,
+  approvalState?: ApprovalState
 ): {
   state: LeverageTradeState
   result?: AddMarginTrade
@@ -813,11 +842,12 @@ const useSimulateMarginTrade = (
 
   const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
   const [result, setResult] = useState<AddMarginTrade>()
-  const [simulationError, setSimulationError] = useState<string>()
+  const [simulationError, setSimulationError] = useState()
   const { provider, chainId } = useWeb3React()
   const deadline = useTransactionDeadline()
 
   useEffect(() => {
+    // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
     const lagged = async () => {
       if (
         !account ||
@@ -839,7 +869,8 @@ const useSimulateMarginTrade = (
         !slippedTickTolerance ||
         !poolManager ||
         !deadline ||
-        inputIsToken0 === undefined
+        inputIsToken0 === undefined ||
+        approvalState !== ApprovalState.APPROVED
       ) {
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
@@ -862,12 +893,16 @@ const useSimulateMarginTrade = (
       // const bnAmountIn = margin.plus(borrowAmount).minus(margin.plus(borrowAmount).multipliedBy(feePercent))
       const bnAmountIn = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
 
+      // console.log('bnAmountIn', bnAmountIn.toString())
+
       const amountOut = await getOutputQuote(
         CurrencyAmount.fromRawAmount(inputCurrency, BnToCurrencyAmount(bnAmountIn, inputCurrency).quotient.toString()),
         swapRoute,
         provider,
         chainId
       )
+      // 115792089237316195423570985008687907853269984665640564039457584007913129639935
+      // 3963877391197344453575983046348115674221700746820753546331534351508065746944
 
       if (!amountOut) return
 
@@ -908,6 +943,18 @@ const useSimulateMarginTrade = (
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       const minimumOutput = bnAmountIn.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
+      // console.log('params', {
+      //   positionKey,
+      //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+      //   borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+      //   minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      //   deadline: deadline.toString(),
+      //   simulatedOutput: amountOut.toString(),
+      //   executionOption: 1,
+      //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+      //   slippedTickMin,
+      //   slippedTickMax,
+      // })
       // calldata
       const calldata = MarginFacilitySDK.addPositionParameters({
         positionKey,
@@ -924,6 +971,7 @@ const useSimulateMarginTrade = (
 
       try {
         setTradeState(LeverageTradeState.LOADING)
+
         const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
         const {
@@ -981,7 +1029,8 @@ const useSimulateMarginTrade = (
         console.log('error', err)
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
-        setSimulationError(err?.errorArgs[0])
+
+        setSimulationError(err)
       }
       return
     }
@@ -1006,6 +1055,7 @@ const useSimulateMarginTrade = (
     slippedTickTolerance,
     poolManager,
     deadline,
+    approvalState,
   ])
 
   const contractError = useMemo(() => {
