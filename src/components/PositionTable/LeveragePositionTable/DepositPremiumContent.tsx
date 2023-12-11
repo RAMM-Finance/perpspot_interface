@@ -210,6 +210,7 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
 
   const addTransaction = useTransactionAdder()
 
+  console.log(pool)
   // callback
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {

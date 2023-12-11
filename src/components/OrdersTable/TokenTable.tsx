@@ -6,7 +6,7 @@ import { useAtomValue, useResetAtom } from 'jotai/utils'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { MarginOrderDetails, MarginLimitOrder} from 'types/lmtv2position'
+import { MarginLimitOrder, MarginOrderDetails } from 'types/lmtv2position'
 
 import { TokenDataContainer } from './comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
@@ -182,6 +182,7 @@ export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; 
                 order.positionIsToken0
               }
               order={order}
+              loading={loading}
             />
           ))}
         </TokenDataContainer>

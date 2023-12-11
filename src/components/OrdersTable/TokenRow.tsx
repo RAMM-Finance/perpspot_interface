@@ -1,11 +1,15 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
-import Row, { AutoRow, RowBetween } from 'components/Row'
+import Row, { AutoRow, RowBetween, RowStart } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
+import { useMarginFacilityContract } from 'hooks/useContract'
+import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
@@ -42,7 +46,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
+  grid-template-columns: 1.5fr 2fr 3fr 3fr 3fr 0.5fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -73,15 +77,15 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
+    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 0.5fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
+    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 0.5fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 1.5fr;
+    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 0.5fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -537,14 +541,14 @@ const FlexStartRow = styled(Row)`
 
 interface LoadedRowProps {
   order: MarginLimitOrder
+  loading: boolean
 }
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
-  const { order: details } = props
-  console.log('orders', details)
+  const { order: details, loading } = props
 
   // const positionKey: OrderPositionKey = useMemo(() => {
   //   return {
@@ -562,10 +566,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     return [undefined, undefined]
   }, [details])
 
-  const token0 = useCurrency(token0Address)
-  const token1 = useCurrency(token1Address)
+  const inputCurrency = useCurrency(token0Address)
+  const outputCurrency = useCurrency(token1Address)
 
-  // const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.key.fee)
+  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, details?.key.fee)
+  const poolString = JSON.stringify(pool)
 
   // const [inputAmount, startOutput, margin] = useMemo(() => {
   //   if (pool) {
@@ -574,8 +579,35 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //     return [undefined, undefined, undefined]
   //   }
   // }, [])
+  console.log('details', details)
 
   const leverage = useMemo(() => (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin), [])
+
+  const { account, chainId, provider } = useWeb3React()
+
+  const marginFacility = useMarginFacilityContract(true)
+
+  const [attemptingTxn, setAttemptingTxn] = useState(false)
+
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      if (!account) throw new Error('missing account')
+      if (!poolString) throw new Error('missing pool')
+      if (!marginFacility) throw new Error('missing marginFacility contract')
+      if (!chainId) throw new Error('missing chainId')
+      if (!provider) throw new Error('missing provider')
+
+      const response = await marginFacility.cancelOrder(poolString, true, details.isAdd)
+      return response
+    } catch (err) {
+      console.log('cancel order error', err)
+      throw new Error('cancel order error')
+    }
+  }, [account, chainId, details, marginFacility, poolString, provider])
+
+  const handleCancel = useCallback(() => {
+    callback()
+  }, [callback])
 
   return (
     <div ref={ref} data-testid="token-table-row">
@@ -597,36 +629,52 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           pair={
             <FlexStartRow>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                  <CurrencyLogo currency={token0} size="15px" />
-                  <>{token0?.symbol} /</>
-                </div>
-                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                  <CurrencyLogo currency={token1} size="15px" />
-                  <>{token1?.symbol} </>
-                </div>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <>{inputCurrency?.symbol}/</>
+
+                <>{outputCurrency?.symbol} </>
               </div>
             </FlexStartRow>
           }
           input={
             <FlexStartRow>
               <AutoRow>
-                <RowBetween>
+                <RowStart>
                   <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    {details.inputAmount.toString()}
+                    {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
+                    {(Number(details.inputAmount) / 1e18).toString()}
                     <Edit3 size={14} />
                   </UnderlineText>
-                </RowBetween>
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                      <CurrencyLogo currency={inputCurrency} size="13px" />
+                      <>{inputCurrency?.symbol} /</>
+                    </div>
+                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                      <CurrencyLogo currency={outputCurrency} size="13px" />
+                      <>{outputCurrency?.symbol} </>
+                    </div>
+                  </div>
+                </RowStart>
               </AutoRow>
             </FlexStartRow>
           }
           output={
             <FlexStartRow>
               <AutoRow>
-                <RowBetween>
-                  <UnderlineText>{details.startOutput.toString()}</UnderlineText>
-                </RowBetween>
+                <RowStart>
+                  <UnderlineText>{(Number(details.startOutput) / 1e18).toString()}</UnderlineText>
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                      <CurrencyLogo currency={inputCurrency} size="13px" />
+                      <>{inputCurrency?.symbol} /</>
+                    </div>
+                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                      <CurrencyLogo currency={outputCurrency} size="13px" />
+                      <>{outputCurrency?.symbol} </>
+                    </div>
+                  </div>
+                </RowStart>
               </AutoRow>
             </FlexStartRow>
           }
@@ -647,6 +695,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <ButtonPrimary
+                    onClick={handleCancel}
                     style={{
                       height: '15px',
                       fontSize: '10px',
