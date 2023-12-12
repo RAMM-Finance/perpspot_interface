@@ -1,6 +1,4 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -8,7 +6,6 @@ import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPosition
 import Row, { AutoRow, RowBetween, RowStart } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
-import { useMarginFacilityContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -583,31 +580,31 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const leverage = useMemo(() => (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin), [])
 
-  const { account, chainId, provider } = useWeb3React()
+  // const { account, chainId, provider } = useWeb3React()
 
-  const marginFacility = useMarginFacilityContract(true)
+  // const marginFacility = useMarginFacilityContract(true)
 
-  const [attemptingTxn, setAttemptingTxn] = useState(false)
+  // const [attemptingTxn, setAttemptingTxn] = useState(false)
 
-  const callback = useCallback(async (): Promise<TransactionResponse> => {
-    try {
-      if (!account) throw new Error('missing account')
-      if (!poolString) throw new Error('missing pool')
-      if (!marginFacility) throw new Error('missing marginFacility contract')
-      if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+  // const callback = useCallback(async (): Promise<TransactionResponse> => {
+  //   try {
+  //     if (!account) throw new Error('missing account')
+  //     if (!poolString) throw new Error('missing pool')
+  //     if (!marginFacility) throw new Error('missing marginFacility contract')
+  //     if (!chainId) throw new Error('missing chainId')
+  //     if (!provider) throw new Error('missing provider')
 
-      const response = await marginFacility.cancelOrder(poolString, true, details.isAdd)
-      return response
-    } catch (err) {
-      console.log('cancel order error', err)
-      throw new Error('cancel order error')
-    }
-  }, [account, chainId, details, marginFacility, poolString, provider])
+  //     const response = await marginFacility.cancelOrder(poolString, true, details.isAdd)
+  //     return response
+  //   } catch (err) {
+  //     console.log('cancel order error', err)
+  //     throw new Error('cancel order error')
+  //   }
+  // }, [account, chainId, details, marginFacility, poolString, provider])
 
-  const handleCancel = useCallback(() => {
-    callback()
-  }, [callback])
+  // const handleCancel = useCallback(() => {
+  //   callback()
+  // }, [callback])
 
   return (
     <div ref={ref} data-testid="token-table-row">
@@ -695,7 +692,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <ButtonPrimary
-                    onClick={handleCancel}
+                    // onClick={handleCancel}
                     style={{
                       height: '15px',
                       fontSize: '10px',
