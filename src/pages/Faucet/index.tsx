@@ -131,9 +131,6 @@ export default function FaucetsPage() {
 
   return (
     <PageWrapper>
-      <AutoColumn>
-        <ThemedText.HeadlineLarge>Faucet</ThemedText.HeadlineLarge>
-      </AutoColumn>
       <FaucetsContainer>
         {account &&
           provider &&

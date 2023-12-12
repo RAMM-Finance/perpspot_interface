@@ -34,6 +34,7 @@ import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
+import LeaderboardPage from './Leaderboard'
 import MigrateV2 from './MigrateV2'
 import MigrateV2Pair from './MigrateV2/MigrateV2Pair'
 import NotFound from './NotFound'
@@ -106,6 +107,8 @@ function getCurrentPageFromLocation(locationPathname: string): InterfacePageName
       return InterfacePageName.POOL_PAGE
     case locationPathname.startsWith('/tokens'):
       return InterfacePageName.TOKENS_PAGE
+    case locationPathname.startsWith('/leaderboard'):
+      return InterfacePageName.LEADERBOARD_PAGE
     // case locationPathname.startsWith('/nfts/profile'):
     //   return InterfacePageName.NFT_PROFILE_PAGE
     // case locationPathname.startsWith('/nfts/asset'):
@@ -250,6 +253,7 @@ export default function App() {
                   <Route path="send" element={<RedirectPathToSwapOnly />} />
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
+                  <Route path="leaderboard" element={<LeaderboardPage />} />
                   <Route path="pool/v2/find" element={<PoolFinder />} />
                   <Route path="pool/v2" element={<PoolV2 />} />
                   <Route path="pool" element={<Pool />} />

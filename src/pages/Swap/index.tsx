@@ -199,6 +199,7 @@ const MiddleContainer = styled.div`
 
 const LiquidityDistibutionWrapper = styled.div`
   border: solid ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
