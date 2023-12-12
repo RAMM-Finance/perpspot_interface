@@ -60,7 +60,7 @@ const Header = styled.div`
   padding-top: 10px;
 `
 
-const LeaderboardPage = () => {
+export default function LeaderboardPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
@@ -125,5 +125,3 @@ const LeaderboardPage = () => {
     </PageWrapper>
   )
 }
-
-export default LeaderboardPage
