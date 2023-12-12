@@ -107,8 +107,8 @@ function getCurrentPageFromLocation(locationPathname: string): InterfacePageName
       return InterfacePageName.POOL_PAGE
     case locationPathname.startsWith('/tokens'):
       return InterfacePageName.TOKENS_PAGE
-    case locationPathname.startsWith('/leaderboard'):
-      return InterfacePageName.LEADERBOARD_PAGE
+    // case locationPathname.startsWith('/leaderboard'):
+    //   return InterfacePageName.LEADERBOARD_PAGE
     // case locationPathname.startsWith('/nfts/profile'):
     //   return InterfacePageName.NFT_PROFILE_PAGE
     // case locationPathname.startsWith('/nfts/asset'):
