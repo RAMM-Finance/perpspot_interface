@@ -17,19 +17,23 @@ import { ThemedText } from '../../theme'
 import { isAddress, shortenAddress } from '../../utils'
 import { FiatValue } from '../BaseSwapPanel/FiatValue'
 import { ButtonPrimary } from '../Button'
-import { LightCard } from '../Card'
+import Card from '../Card'
 import { AutoColumn } from '../Column'
 import CurrencyLogo from '../Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from '../Row'
 import TradePrice from '../swap/TradePrice'
-import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { SwapShowAcceptChanges, TruncatedText } from './styleds'
+
+const LightCard = styled(Card)`
+  background-color: ${({ theme }) => theme.surface1};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+`
 
 const ArrowWrapper = styled.div`
   padding: 4px;
   border-radius: 12px;
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   position: relative;
   margin-top: -18px;
   margin-bottom: -18px;
@@ -38,7 +42,7 @@ const ArrowWrapper = styled.div`
   justify-content: center;
   align-items: center;
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border: 4px solid;
+  border: 2px solid;
   border-color: ${({ theme }) => theme.backgroundModule};
   z-index: 2;
 `
@@ -104,19 +108,19 @@ export function AddLimitModalHeader({
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="sm">
+        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
           <RowBetween>
-            <ThemedText.DeprecatedMain>Margin</ThemedText.DeprecatedMain>
+            <ThemedText.DeprecatedMain fontSize={14}>Margin</ThemedText.DeprecatedMain>
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500}>
+              <TruncatedText fontSize={12} fontWeight={500}>
                 {trade.margin.toPrecision(6)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
+              <CurrencyLogo currency={inputCurrency} size="14px" style={{ marginRight: '2px' }} />
+              <Text fontSize={12} fontWeight={500}>
                 {inputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -125,19 +129,19 @@ export function AddLimitModalHeader({
             <FiatValue fiatValue={fiatValueMargin} />
           </RowBetween>
         </AutoColumn>
-        <AutoColumn gap="sm">
+        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
           <RowBetween>
-            <ThemedText.DeprecatedMain>Total Input</ThemedText.DeprecatedMain>
+            <ThemedText.DeprecatedMain fontSize={14}>Total Input</ThemedText.DeprecatedMain>
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500}>
+              <TruncatedText fontSize={12} fontWeight={500}>
                 {trade.inputAmount.toPrecision(6)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
+              <CurrencyLogo currency={inputCurrency} size="14px" style={{ marginRight: '2px' }} />
+              <Text fontSize={12} fontWeight={500}>
                 {inputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -148,22 +152,22 @@ export function AddLimitModalHeader({
         </AutoColumn>
       </LightCard>
       <ArrowWrapper>
-        <ArrowDown size="16" color={theme.textPrimary} />
+        <ArrowDown size="12" color={theme.textPrimary} />
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
         <AutoColumn gap="sm">
           <RowBetween>
-            <ThemedText.DeprecatedMain>Desired Output</ThemedText.DeprecatedMain>
+            <ThemedText.DeprecatedMain fontSize={14}>Desired Output</ThemedText.DeprecatedMain>
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500}>
+              <TruncatedText fontSize={12} fontWeight={500}>
                 {trade.minOutput.toPrecision(6)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
+              <CurrencyLogo currency={inputCurrency} size="14px" style={{ marginRight: '2px' }} />
+              <Text fontSize={12} fontWeight={500}>
                 {outputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -174,7 +178,7 @@ export function AddLimitModalHeader({
         </AutoColumn>
       </LightCard>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
-        <ThemedText.DeprecatedMain>Order Price</ThemedText.DeprecatedMain>
+        <ThemedText.DeprecatedMain fontSize={14}>Order Price</ThemedText.DeprecatedMain>
       </RowBetween>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         {limitPrice && <TradePrice price={limitPrice} />}

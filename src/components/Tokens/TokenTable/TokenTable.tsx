@@ -229,6 +229,7 @@ const PairInfoContainer = styled.div`
   margin-right: auto;
   // max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
   padding-bottom: 2rem;
+  padding-top: 1rem;
   justify-content: space-between;
 `
 
@@ -247,18 +248,21 @@ const HowTo = styled.div`
   padding: 0.75rem;
   border-radius: 10px;
   font-size: 0.8rem;
-  height: 8rem;
+  margin-left: 1rem;
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
 `
 
 function TVLInfoContainer() {
   return (
-    <div style={{ display: 'flex', gap: '1rem', paddingTop: '1rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <TVLInfo>
-        <ThemedText.SubHeaderSmall>Total CL TVL:</ThemedText.SubHeaderSmall>
+        <ThemedText.SubHeader fontSize={15}>TVL:</ThemedText.SubHeader>
       </TVLInfo>
       <TVLInfo>
-        <ThemedText.SubHeaderSmall>Limitless TV:</ThemedText.SubHeaderSmall>
+        <ThemedText.SubHeader fontSize={15}> Total Debt:</ThemedText.SubHeader>
+      </TVLInfo>
+      <TVLInfo>
+        <ThemedText.SubHeader fontSize={15}>Volume:</ThemedText.SubHeader>
       </TVLInfo>
     </div>
   )

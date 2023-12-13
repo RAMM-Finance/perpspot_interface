@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -6,6 +7,7 @@ import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPosition
 import Row, { AutoRow, RowBetween, RowStart } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
+import { useMarginFacilityContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -43,7 +45,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 1.5fr 2fr 3fr 3fr 3fr 0.5fr;
+  grid-template-columns: 1.5fr 1.5fr 3fr 3fr 2fr 2fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -74,15 +76,15 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 0.5fr;
+    grid-template-columns: 1.5fr 2fr 2fr 2fr 2fr 2fr 1fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 0.5fr;
+    grid-template-columns: 1.5fr 2fr 2fr 2fr 2fr 2fr 1fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1.5fr 1.5fr 3fr 3fr 3fr 0.5fr;
+    grid-template-columns: 1.5fr 2fr 2fr 2fr 2fr 2fr 1fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -342,6 +344,7 @@ const HEADER_DESCRIPTIONS: Record<OrderSortMethod, ReactNode | undefined> = {
   [OrderSortMethod.LEVERAGE]: <Trans>Leverage</Trans>,
   [OrderSortMethod.INPUT]: <Trans>Input</Trans>,
   [OrderSortMethod.OUTPUT]: <Trans>Output</Trans>,
+  [OrderSortMethod.DEADLINE]: <Trans>Valid For</Trans>,
 }
 
 const SortingEnabled = {
@@ -349,6 +352,7 @@ const SortingEnabled = {
   [OrderSortMethod.LEVERAGE]: false,
   [OrderSortMethod.INPUT]: false,
   [OrderSortMethod.OUTPUT]: false,
+  [OrderSortMethod.DEADLINE]: false,
 }
 
 /* Get singular header cell for header row */
@@ -397,6 +401,7 @@ function PositionRow({
   input,
   output,
   buttons,
+  deadline,
   ...rest
 }: {
   first?: boolean
@@ -410,6 +415,7 @@ function PositionRow({
   pair: ReactNode
   input: ReactNode
   output: ReactNode
+  deadline: ReactNode
   buttons: ReactNode
   leverage: ReactNode
   last?: boolean
@@ -468,6 +474,9 @@ function PositionRow({
       <PriceCell data-testid="premium-cell" sortable={header}>
         {leverage}
       </PriceCell>
+      <PriceCell data-testid="premium-cell" sortable={header}>
+        {deadline}
+      </PriceCell>
       {/* <ActionCell data-testid="action-cell" sortable={header}>
         {actions}
       </ActionCell> */}
@@ -494,6 +503,7 @@ export function HeaderRow() {
       input={<HeaderCell category={OrderSortMethod.INPUT} />}
       output={<HeaderCell category={OrderSortMethod.OUTPUT} />}
       leverage={<HeaderCell category={OrderSortMethod.LEVERAGE} />}
+      deadline={<HeaderCell category={OrderSortMethod.DEADLINE} />}
       buttons={<></>}
 
       // repaymentTime={<HeaderCell category={OrderSortMethod.REPAYTIME} />}
@@ -524,6 +534,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
       input={<LoadingBubble />}
       output={<LoadingBubble />}
       leverage={<LoadingBubble />}
+      deadline={<LoadingBubble />}
       buttons={<LoadingBubble />}
       {...props}
     />
@@ -567,7 +578,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const outputCurrency = useCurrency(token1Address)
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, details?.key.fee)
-  const poolString = JSON.stringify(pool)
+  const poolString = pool?.toString()
 
   // const [inputAmount, startOutput, margin] = useMemo(() => {
   //   if (pool) {
@@ -578,13 +589,25 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // }, [])
   console.log('details', details)
 
+  const nowInSeconds = Math.floor(Date.now() / 1000)
+  const duration = details.auctionDeadline + 24 * 60 * 60 - nowInSeconds
+
+  // Calculate hours and remaining minutes
+  const durationHours = Math.floor(duration / 3600)
+  const durationMinutes = Math.floor((duration % 3600) / 60)
+
+  // Create the formatted string
+  const formattedDuration = `${durationHours}hr ${durationMinutes}m`
+
   const leverage = useMemo(() => (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin), [])
 
-  // const { account, chainId, provider } = useWeb3React()
+  const { account, chainId, provider } = useWeb3React()
 
-  // const marginFacility = useMarginFacilityContract(true)
+  const marginFacility = useMarginFacilityContract(true)
 
-  // const [attemptingTxn, setAttemptingTxn] = useState(false)
+  const [attemptingTxn, setAttemptingTxn] = useState(false)
+
+  //CANCEL ORDER TO DO
 
   // const callback = useCallback(async (): Promise<TransactionResponse> => {
   //   try {
@@ -594,7 +617,13 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //     if (!chainId) throw new Error('missing chainId')
   //     if (!provider) throw new Error('missing provider')
 
-  //     const response = await marginFacility.cancelOrder(poolString, true, details.isAdd)
+  //     const response = await marginFacility.cancelOrder(
+  //       {
+  //         token0: details.key.token0Address,
+  //         token1: details.key.token1Address,
+  //         key: details.key.fee
+  //       }
+  //       , true, details.isAdd)
   //     return response
   //   } catch (err) {
   //     console.log('cancel order error', err)
@@ -683,6 +712,15 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     {leverage.toString()}
                     <Edit3 size={14} />
                   </UnderlineText>
+                </RowBetween>
+              </AutoRow>
+            </FlexStartRow>
+          }
+          deadline={
+            <FlexStartRow>
+              <AutoRow>
+                <RowBetween>
+                  {durationMinutes > 0 ? <GreenText>{formattedDuration}</GreenText> : <RedText>0h 0m</RedText>}
                 </RowBetween>
               </AutoRow>
             </FlexStartRow>

@@ -7,6 +7,7 @@ export enum OrderSortMethod {
   LEVERAGE = 'Leverage',
   INPUT = 'Input',
   OUTPUT = 'Output',
+  DEADLINE = 'Valid For',
 }
 
 export const filterStringAtom = atomWithReset<string>('')

@@ -689,14 +689,18 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     urate_ = 56.3
   }
   return (
-    <RowWrapper ref={ref} data-testid={`token-table-row-${token0.symbol}`}>
-      {/*<ClickableContent
-        // to={'/swap'}
-        // onClick={() =>{if(currency1&&currency0){
-        //     navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        // }
-      > */}
-
+    <RowWrapper
+      ref={ref}
+      data-testid={`token-table-row-${token0.symbol}`}
+      onClick={() => {
+        if (currency1 && currency0) {
+          navigate({
+            pathname: '/swap',
+            search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+          })
+        }
+      }}
+    >
       <TokenRow
         header={false}
         listNumber={sortRank}
@@ -863,4 +867,5 @@ const Symbol = styled.span`
 const RowWrapper = styled.div`
   border-top: 1px solid;
   border-color: ${({ theme }) => theme.backgroundOutline};
+  cursor: pointer;
 `

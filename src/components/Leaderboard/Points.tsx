@@ -7,11 +7,9 @@ import star from './star_616489.png'
 
 const Wrapper = styled.div`
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(1fr);
-  gap: 1rem;
+  display: flex;
+  gap: 6rem;
   margin-top: 10px;
-  padding: 10px;
 `
 const Point = styled.div`
   display: flex;
@@ -31,35 +29,35 @@ export default function Points() {
   return (
     <Wrapper>
       <Point>
-        <img src={coin} width={35} />
+        <img src={coin} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>1000.00</ThemedText.BodySecondary>
           <ThemedText.BodyPrimary fontWeight={300}>Trade Point</ThemedText.BodyPrimary>
         </Value>
       </Point>
       <Point>
-        <img src={star} width={35} />
+        <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>500.00</ThemedText.BodySecondary>
           <ThemedText.BodyPrimary fontWeight={300}>LP Point</ThemedText.BodyPrimary>
         </Value>
       </Point>
       <Point>
-        <img src={affiliate} width={35} />
+        <img src={affiliate} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>200.00</ThemedText.BodySecondary>
           <ThemedText.BodyPrimary fontWeight={300}>Referral Point</ThemedText.BodyPrimary>
         </Value>
       </Point>
       <Point>
-        <img src={star} width={35} />
+        <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>8000.00</ThemedText.BodySecondary>
           <ThemedText.BodyPrimary fontWeight={300}>Total Point</ThemedText.BodyPrimary>
         </Value>
       </Point>
       <Point>
-        <img src={star} width={35} />
+        <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}># 7</ThemedText.BodySecondary>
           <ThemedText.BodyPrimary fontWeight={300}>Rank</ThemedText.BodyPrimary>

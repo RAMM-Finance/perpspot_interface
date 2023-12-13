@@ -124,14 +124,14 @@ export default function AddLimitModalFooter({
 }) {
   return (
     <>
-      <AutoRow>
+      <AutoRow justify="center">
         <ButtonError
           onClick={onConfirm}
           disabled={disabledConfirm}
-          style={{ margin: '10px 0 0 0' }}
+          style={{ margin: '10px 0 0 0', width: 'fit-content', borderRadius: '10px' }}
           id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
         >
-          <Text fontSize={20} fontWeight={500}>
+          <Text fontSize={12} fontWeight={500}>
             <Trans>Confirm Limit Order</Trans>
           </Text>
         </ButtonError>

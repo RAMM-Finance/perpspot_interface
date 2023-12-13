@@ -20,7 +20,7 @@ import { isAddress, shortenAddress } from '../../utils'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'
 import { FiatValue } from '../BaseSwapPanel/FiatValue'
 import { ButtonPrimary } from '../Button'
-import { LightCard } from '../Card'
+import Card from '../Card'
 import { AutoColumn } from '../Column'
 import CurrencyLogo from '../Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from '../Row'
@@ -28,11 +28,16 @@ import TradePrice from '../swap/TradePrice'
 import { AdvancedBorrowSwapDetails, AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
 import { SwapShowAcceptChanges, TruncatedText } from './styleds'
 
+const LightCard = styled(Card)`
+  background-color: ${({ theme }) => theme.surface1};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+`
+
 const ArrowWrapper = styled.div`
-  padding: 4px;
+  padding: 2px;
   border-radius: 12px;
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   position: relative;
   margin-top: -18px;
   margin-bottom: -18px;
@@ -41,7 +46,7 @@ const ArrowWrapper = styled.div`
   justify-content: center;
   align-items: center;
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border: 4px solid;
+  border: 1px solid;
   border-color: ${({ theme }) => theme.backgroundModule};
   z-index: 2;
 `
@@ -411,17 +416,17 @@ export function LeverageModalHeader({
         <AutoColumn gap="sm">
           <RowBetween align="center">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
+              <TruncatedText fontSize={12} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
                 {formatCurrencyAmount(preTradeInfo.additionalPremium, NumberType.SwapTradeAmount)})
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="2px">
+              <Text fontSize={12} fontWeight={300} marginRight="6px">
                 Payment
               </Text>
-              <CurrencyLogo currency={trade?.margin?.currency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
+              <CurrencyLogo currency={trade?.margin?.currency} size="14px" style={{ marginRight: '4px' }} />
+              <Text fontSize={12} fontWeight={500}>
                 {trade?.margin?.currency.symbol}
               </Text>
             </RowFixed>
@@ -432,13 +437,13 @@ export function LeverageModalHeader({
         </AutoColumn>
       </LightCard>
       <ArrowWrapper>
-        <ArrowDown size="16" color={theme.textPrimary} />
+        <ArrowDown size="10" color={theme.textPrimary} />
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
         <AutoColumn gap="sm">
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
+              <TruncatedText fontSize={12} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(
                   trade?.borrowAmount && trade?.margin ? trade.borrowAmount.add(trade.margin) : null,
                   NumberType.SwapTradeAmount
@@ -446,17 +451,17 @@ export function LeverageModalHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="2px">
+              <Text fontSize={12} fontWeight={300} marginRight="6px">
                 Total Input
               </Text>
-              <CurrencyLogo currency={trade.margin?.currency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
+              <CurrencyLogo currency={trade.margin?.currency} size="14px" style={{ marginRight: '4px' }} />
+              <Text fontSize={12} fontWeight={500}>
                 {trade.margin?.currency.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
           <RowBetween>
-            <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
+            <ThemedText.DeprecatedBody fontSize={12} color={theme.textTertiary}>
               <FiatValue
                 fiatValue={fiatValueTotalInput}
                 priceImpact={computeFiatValuePriceImpact(fiatValueInput.data, fiatValueTotalInput.data)}
@@ -467,16 +472,16 @@ export function LeverageModalHeader({
         <AutoColumn gap="sm">
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500} color={theme.textSecondary}>
+              <TruncatedText fontSize={12} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="2px">
+              <Text fontSize={12} fontWeight={300} marginRight="6px">
                 Total Output
               </Text>
-              <CurrencyLogo currency={trade.swapOutput?.currency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
+              <CurrencyLogo currency={trade.swapOutput?.currency} size="14px" style={{ marginRight: '4px' }} />
+              <Text fontSize={12} fontWeight={500}>
                 {trade.swapOutput?.currency.symbol}
               </Text>
             </RowFixed>

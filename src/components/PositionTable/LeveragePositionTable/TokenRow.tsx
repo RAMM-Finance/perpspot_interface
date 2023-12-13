@@ -636,6 +636,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
+  console.log(margin)
+
   // /**
   //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
   //    */
@@ -727,17 +729,21 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <UnderlineText>
                 {premiumRemaining?.isGreaterThan(0) ? (
                   <GreenText>
-                    {formatBNToString(premiumRemaining, NumberType.SwapTradeAmount)}
-                    {' ' + position?.inputCurrency?.symbol}
+                    <div>
+                      {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
+                      {formatBNToString(premiumRemaining, NumberType.SwapTradeAmount)}
+                    </div>
+                    <div>
+                      {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
+                    </div>
                   </GreenText>
                 ) : (
                   <RedText>
-                    {formatBNToString(premiumRemaining, NumberType.SwapTradeAmount)}
-                    {position?.inputCurrency?.symbol}
+                    0
+                    <Edit3 size={14} />
                   </RedText>
                 )}
               </UnderlineText>
-              <Edit3 size={14} />
             </FlexStartRow>
           }
         />

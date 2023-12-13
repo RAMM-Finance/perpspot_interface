@@ -19,30 +19,38 @@ const LeaderboardWrapper = styled.div`
   border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  width: 60vw;
+  width: 100%;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
-  height: 700px;
+  height: 625px;
+  margin-top: 0.125rem;
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 `
 const AchievementsWrapper = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  // border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  width: 20vw;
+  width: 25%;
   margin-right: 0.25rem;
   margin-left: 0.25rem;
   padding: 5px;
-  height: fit-content;
+  height: fit-page;
   padding-bottom: 20px;
+  margin-top: 80px;
 `
 
 const PointsWrapper = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  display: flex;
+  // border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  width: 20vw;
+  width: 100%;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
+  margin-bottom: 0.125rem;
   padding: 5px;
   padding-bottom: 20px;
   height: fit-content;
@@ -60,6 +68,14 @@ const Header = styled.div`
   padding-top: 10px;
 `
 
+const LeftContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 75%;
+  margin-right: 0.25rem;
+`
+
 export default function LeaderboardPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
@@ -67,6 +83,37 @@ export default function LeaderboardPage() {
 
   return (
     <PageWrapper>
+      <LeftContainer>
+        <PointsWrapper>
+          <ThemedText.SubHeader>
+            <Header>Points</Header>
+          </ThemedText.SubHeader>
+          {showConnectAWallet ? (
+            <ErrorContainer>
+              <TraceEvent
+                events={[BrowserEvent.onClick]}
+                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                properties={{ received_swap_quote: false }}
+                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+              >
+                <ButtonPrimary
+                  style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                  onClick={toggleWalletDrawer}
+                >
+                  <Trans>
+                    <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
+                  </Trans>
+                </ButtonPrimary>
+              </TraceEvent>
+            </ErrorContainer>
+          ) : (
+            <Points />
+          )}
+        </PointsWrapper>
+        <LeaderboardWrapper>
+          <LeaderboardTable />
+        </LeaderboardWrapper>
+      </LeftContainer>
       <AchievementsWrapper>
         <ThemedText.SubHeader>
           <Header>Achievements</Header>
@@ -93,35 +140,6 @@ export default function LeaderboardPage() {
           <Achievements />
         )}
       </AchievementsWrapper>
-      <LeaderboardWrapper>
-        <LeaderboardTable />
-      </LeaderboardWrapper>
-      <PointsWrapper>
-        <ThemedText.SubHeader>
-          <Header>Points</Header>
-        </ThemedText.SubHeader>
-        {showConnectAWallet ? (
-          <ErrorContainer>
-            <TraceEvent
-              events={[BrowserEvent.onClick]}
-              name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-              properties={{ received_swap_quote: false }}
-              element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-            >
-              <ButtonPrimary
-                style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                onClick={toggleWalletDrawer}
-              >
-                <Trans>
-                  <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                </Trans>
-              </ButtonPrimary>
-            </TraceEvent>
-          </ErrorContainer>
-        ) : (
-          <Points />
-        )}
-      </PointsWrapper>
     </PageWrapper>
   )
 }

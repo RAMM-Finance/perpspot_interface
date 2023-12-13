@@ -108,7 +108,12 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const dataProvider = useDataProviderContract()
 
   // make sure to have dataProvider provide the decimals for each token
-  const { loading, error, result } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
+  const { loading: loadingAdd, error: errorAdd, result: resultAdd } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
+  const { loading: loadingReduce, error: errorReduce, result: resultReduce } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
+
+  const result = resultAdd?.concat(resultReduce)
+  const loading = loadingAdd && loadingReduce
+  const error = errorAdd && errorReduce
 
   return useMemo(() => {
     return {

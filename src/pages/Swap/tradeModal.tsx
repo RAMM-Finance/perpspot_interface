@@ -129,12 +129,13 @@ export const OpacityHoverState = css`
 `
 
 const StyledLeverageInput = styled(NumericalInput)`
-  width: 100%;
+  width: 2.5rem;
   text-align: right;
   padding-right: 5px;
   height: 20px;
   line-height: 12px;
   font-size: 14px;
+  border-radius: 10px;
 `
 
 export const PriceToggleSection = styled.div`
@@ -703,7 +704,7 @@ const TradeTabContent = () => {
                         if (str === '') {
                           onDebouncedLeverageFactor('')
                         } else if (!!str && Number(str) >= 0) {
-                          if (Number(str) > 500) {
+                          if (Number(str) > 100) {
                             return
                           }
                           if (Number(str) >= 0) {

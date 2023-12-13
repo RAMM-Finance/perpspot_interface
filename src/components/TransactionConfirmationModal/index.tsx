@@ -33,7 +33,7 @@ import AnimatedConfirmation from './AnimatedConfirmation'
 
 const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundFloating};
-  border-radius: 20px;
+  border-radius: 10px;
   outline: 1px solid ${({ theme }) => theme.backgroundOutline};
   width: 100%;
   padding: 1rem;
@@ -344,7 +344,7 @@ export function ConfirmationModalContent({
           <Text fontWeight={500} fontSize={16}>
             {title}
           </Text>
-          <CloseIcon onClick={onDismiss} data-cy="confirmation-close-icon" />
+          <CloseIcon style={{ width: '15px' }} onClick={onDismiss} data-cy="confirmation-close-icon" />
         </RowBetween>
         {topContent()}
       </Section>
