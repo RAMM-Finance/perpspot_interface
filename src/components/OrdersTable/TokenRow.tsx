@@ -607,7 +607,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const [attemptingTxn, setAttemptingTxn] = useState(false)
 
-  //CANCEL ORDER TO DO
+  // CANCEL ORDER TO DO
 
   // const callback = useCallback(async (): Promise<TransactionResponse> => {
   //   try {
@@ -617,13 +617,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //     if (!chainId) throw new Error('missing chainId')
   //     if (!provider) throw new Error('missing provider')
 
-  //     const response = await marginFacility.cancelOrder(
-  //       {
-  //         token0: details.key.token0Address,
-  //         token1: details.key.token1Address,
-  //         key: details.key.fee
-  //       }
-  //       , true, details.isAdd)
+  //     const response = await marginFacility.cancelOrder(poolString, true, details.isAdd)
   //     return response
   //   } catch (err) {
   //     console.log('cancel order error', err)
