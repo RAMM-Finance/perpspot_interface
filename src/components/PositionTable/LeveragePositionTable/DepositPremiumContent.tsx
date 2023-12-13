@@ -357,7 +357,7 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
         />
         <StyledCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
-            <ValueLabel
+            {/*<ValueLabel
               description="Current Premium Deposit"
               label="Current Premium Deposit"
               value={formatBNToString(position?.premiumDeposit, NumberType.SwapTradeAmount)}
@@ -370,7 +370,7 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
               value={formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount)}
               syncing={positionLoading}
               symbolAppend={inputCurrency?.symbol}
-            />
+            />*/}
             <ValueLabel
               description="Current Premium Left"
               label="Current Premium Left"

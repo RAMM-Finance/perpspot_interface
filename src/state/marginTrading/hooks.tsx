@@ -633,6 +633,7 @@ export interface AddLimitTrade {
   outputCurrencyId: string
   additionalPremium: BN
   limitPrice: BN
+  deadline?:string 
 }
 
 const useSimulateAddLimitOrder = (
@@ -760,6 +761,7 @@ const useSimulateAddLimitOrder = (
           outputCurrencyId: outputCurrency.wrapped.address,
           additionalPremium: new BN(additionalPremium.toExact()),
           limitPrice,
+          deadline:deadline.toString()
         })
       } catch (err) {
         setTradeState(LimitTradeState.INVALID)

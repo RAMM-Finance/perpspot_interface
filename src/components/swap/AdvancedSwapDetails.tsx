@@ -622,7 +622,7 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-  // console.log('trade', trade);
+  console.log('trade', trade, preTradeInfo);
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -634,13 +634,14 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={preTradeInfo?.premiumNecessary ? inputCurrency?.symbol : ''}
         /> */}
-        <ValueLabel
+
+        {/*<ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={existingPosition && existingPosition?.openTime > 0 ? 'Added Position' : 'Exp. Output'}
           value={formatCurrencyAmount(trade?.swapOutput, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? outputCurrency?.symbol : ''}
-        />
+        />*/}
         <ValueLabel
           description="Amount In / Amount Out"
           label="Execution Price"
@@ -648,10 +649,25 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />
         <ValueLabel
-          description="Swap fee + origination fee "
-          label="Borrow Rate per hour"
+          description="Initial Premium Deposit for this position, can be replenished in the position table. When deposit is depleted, your position will be force closed."
+          label="Initial Premium deposit"
+          value= {formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={trade ? inputCurrency?.symbol : ''}
+
+        />
+        <ValueLabel
+          description="Rate at which your premium deposit are depleted. Rate% * debt is rate of depletion  "
+          label="Borrow Rate % per hour"
           value="0"
           syncing={syncing}
+        />
+        <ValueLabel
+          description="The amount you borrow"
+          label= "Borrow Amount"
+          value={formatCurrencyAmount(trade?.borrowAmount, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <ValueLabel
           description="Slippage from spot price"

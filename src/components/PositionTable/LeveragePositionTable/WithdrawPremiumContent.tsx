@@ -337,7 +337,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
         />
         <StyledCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
-            <ValueLabel
+            {/*<ValueLabel
               description="Current Premium Deposit"
               label="Current Premium Deposit"
               value={formatBNToString(position?.premiumDeposit, NumberType.SwapTradeAmount)}
@@ -350,10 +350,17 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
               value={formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount)}
               syncing={positionLoading}
               symbolAppend={inputCurrency?.symbol}
+            />*/}
+            <ValueLabel
+              description="Current Premium Left In Deposit"
+              label="Premium Left"
+              value={formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}
+              syncing={positionLoading}
+              symbolAppend={inputCurrency?.symbol}
             />
             <ValueLabel
-              description="Current Premium Left"
-              label="Current Premium Left"
+              description="Maximum premium you can withdraw"
+              label="Max Withdrawable Premium"
               value={formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}
               syncing={positionLoading}
               symbolAppend={inputCurrency?.symbol}
@@ -393,7 +400,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
                   </RowFixed> */}
                 </StyledHeaderRow>
                 <AnimatedDropdown open={showDetails}>
-                  <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+                  {/*<AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
                     {!loading ? (
                       <AutoColumn gap="sm">
                         <RowBetween>
@@ -414,7 +421,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
                         </RowBetween>
                       </AutoColumn>
                     ) : null}
-                  </AutoColumn>
+                  </AutoColumn>*/}
                 </AnimatedDropdown>
               </AutoColumn>
             </Wrapper>

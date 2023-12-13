@@ -256,7 +256,7 @@ TransactionSettingsProps) {
               <Trans>Premium Deposit</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
-              text={<Trans>Your transaction will revert if the premium exceeds this percentage.</Trans>}
+              text={<Trans>When positions are added you are automatically supplying this amount of premium, as a percentage of borrowed amount.</Trans>}
             />
           </RowFixed>
           <RowBetween>
@@ -318,7 +318,7 @@ TransactionSettingsProps) {
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Slipped tick tolerance</Trans>
+              <Trans>Borrow Slippage Tolerance</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={
@@ -376,7 +376,7 @@ TransactionSettingsProps) {
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Slippage tolerance</Trans>
+              <Trans>Trade Slippage tolerance</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={

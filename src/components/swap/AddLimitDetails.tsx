@@ -66,6 +66,7 @@ export function AdvancedAddLimitDetails({
   //     priceImpact: trade ? computeRealizedPriceImpact(trade) : undefined,
   //   }
   // }, [trade])
+  // console.log('limit order',trade)
 
   return (
     <StyledCard>
@@ -81,18 +82,28 @@ export function AdvancedAddLimitDetails({
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
         />
         <MouseoverValueLabel
-          description="Borrow Amount"
+          description="Borrow Amount when order is filled"
           value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
           label={
             <Trans>
-              <ThemedText.BodySmall>Borrow Amount</ThemedText.BodySmall>
+              <ThemedText.BodySmall>Borrowing</ThemedText.BodySmall>
             </Trans>
           }
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
         />
         <MouseoverValueLabel
-          description="Amount of premiums to be held for order to be filled"
-          value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
+          description="Order will be not filled after this time"
+          value={ Math.round( ( Number(trade?.deadline) - Date.now()/1000)/60)}
+          label={
+            <Trans>
+              <ThemedText.BodySmall>Valid For</ThemedText.BodySmall>
+            </Trans>
+          }
+          appendSymbol={" min"}
+        />
+        <MouseoverValueLabel
+          description="Amount of premiums to be initially escrowed and held for order to be filled"
+          value={formatBNToString(trade?.additionalPremium, NumberType.SwapTradeAmount)}
           label={
             <Trans>
               <ThemedText.BodySmall>Premium Depositing</ThemedText.BodySmall>
@@ -100,20 +111,20 @@ export function AdvancedAddLimitDetails({
           }
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
         />
-        <MouseoverValueLabel
+        {/*<MouseoverValueLabel
           description="Order Price"
-          value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
+          value={formatBNToString(trade?.limitPrice, NumberType.SwapTradeAmount)}
           label={
             <Trans>
               <ThemedText.BodySmall>Order Price</ThemedText.BodySmall>
             </Trans>
           }
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
-        />
+        />*/}
         <Separator />
         <MouseoverValueLabel
-          description="The minimum amount you are guaranteed to receive. If the price slips any further, your transaction will revert."
-          label={<Trans>Minimum recieved</Trans>}
+          description="The amount added to your position when your order is filled"
+          label={<Trans>Added Position</Trans>}
           syncing={syncing}
           value={
             trade ? `${formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)} ${outputCurrency?.symbol}` : '-'
