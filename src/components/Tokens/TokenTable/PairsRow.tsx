@@ -52,7 +52,7 @@ const StyledTokenRow = styled.div<{
   background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
   font-size: 0.75rem;
-  grid-template-columns: 2.5fr 2.5fr 2.5fr 2fr 3fr 4fr 8fr;
+  grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 8fr;
   padding-left: 1rem;
   padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -483,7 +483,8 @@ function TokenRow({
               height: '30px',
               lineHeight: '1',
             }}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               if (currency1 && currency0) {
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
                   state: { currency0, currency1 },
@@ -503,7 +504,8 @@ function TokenRow({
               height: '30px',
               lineHeight: '1',
             }}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               if (currency1 && currency0) {
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
                   state: { currency0, currency1 },
@@ -691,7 +693,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   return (
     <RowWrapper
       ref={ref}
-      data-testid={`token-table-row-${token0.symbol}`}
       onClick={() => {
         if (currency1 && currency0) {
           navigate({
@@ -700,6 +701,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           })
         }
       }}
+      data-testid={`token-table-row-${token0.symbol}`}
     >
       <TokenRow
         header={false}
@@ -707,16 +709,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         currency0={currency0}
         currency1={currency1}
         tokenInfo={
-          <ClickableName
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-          >
+          <ClickableName>
             {/* <QueryTokenLogo token={token} /> */}
             <TokenInfoCell>
               <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={20} margin={true} />
@@ -729,16 +722,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           </ClickableName>
         }
         price={
-          <ClickableContent
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-          >
+          <ClickableContent>
             <PriceInfoCell>
               <Price>{currentPrice && fomatter.format(Number(priceRounded))}</Price>
               <span>{token0.symbol + '/' + token1.symbol}</span>
@@ -751,80 +735,25 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           </ClickableContent>
         }
         percentChange={
-          <ClickableContent
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-          >
+          <ClickableContent>
             <ArrowCell>{arrow}</ArrowCell>
             <DeltaText delta={delta}>{formattedDelta}</DeltaText>
           </ClickableContent>
         }
         tvl={
-          <ClickableContent
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-          >
+          <ClickableContent>
             {formatNumber(tvl_, NumberType.FiatTokenStats)}
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
         volume={
-          <ClickableContent
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-          >
+          <ClickableContent>
             {formatNumber(volume_, NumberType.FiatTokenStats)}{' '}
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
-        APR={
-          <ClickableRate
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-            rate={estimatedapr_}
-          >
-            {formatNumber(estimatedapr_) + '%'}
-          </ClickableRate>
-        }
-        UtilRate={
-          <ClickableRate
-            onClick={() => {
-              if (currency1 && currency0) {
-                navigate({
-                  pathname: '/swap',
-                  search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
-                })
-              }
-            }}
-            rate={urate_}
-          >
-            {formatNumber(urate_) + '%'}
-          </ClickableRate>
-        }
+        APR={<ClickableRate rate={estimatedapr_}>{formatNumber(estimatedapr_) + '%'}</ClickableRate>}
+        UtilRate={<ClickableRate rate={urate_}>{formatNumber(urate_) + '%'}</ClickableRate>}
         // sparkLine={
         //   <SparkLine>
         //     <ParentSize>

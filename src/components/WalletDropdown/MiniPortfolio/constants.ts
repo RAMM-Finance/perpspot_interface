@@ -186,6 +186,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Added Limit Order`,
     [TransactionStatus.Failed]: t`Add Limit Order failed`,
   },
+  [TransactionType.REMOVE_LIMIT_ORDER]: {
+    [TransactionStatus.Pending]: t`Removing Limit Order`,
+    [TransactionStatus.Confirmed]: t`Removed Limit Order`,
+    [TransactionStatus.Failed]: t`Remove Limit Order failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

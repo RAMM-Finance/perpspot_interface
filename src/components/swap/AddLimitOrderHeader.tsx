@@ -114,13 +114,13 @@ export function AddLimitModalHeader({
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={12} fontWeight={500}>
+              <TruncatedText fontSize={13} fontWeight={500}>
                 {trade.margin.toPrecision(6)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="14px" style={{ marginRight: '2px' }} />
-              <Text fontSize={12} fontWeight={500}>
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={500}>
                 {inputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -135,13 +135,13 @@ export function AddLimitModalHeader({
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={12} fontWeight={500}>
+              <TruncatedText fontSize={13} fontWeight={500}>
                 {trade.inputAmount.toPrecision(6)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="14px" style={{ marginRight: '2px' }} />
-              <Text fontSize={12} fontWeight={500}>
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={500}>
                 {inputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -157,17 +157,17 @@ export function AddLimitModalHeader({
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
         <AutoColumn gap="sm">
           <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={14}>Desired Output</ThemedText.DeprecatedMain>
+            <ThemedText.DeprecatedMain fontSize={13}>Desired Output</ThemedText.DeprecatedMain>
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={12} fontWeight={500}>
+              <TruncatedText fontSize={13} fontWeight={500}>
                 {trade.minOutput.toPrecision(6)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="14px" style={{ marginRight: '2px' }} />
-              <Text fontSize={12} fontWeight={500}>
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={500}>
                 {outputCurrency?.symbol}
               </Text>
             </RowFixed>

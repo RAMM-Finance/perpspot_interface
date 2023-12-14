@@ -56,6 +56,7 @@ export enum TransactionType {
   ADD_LMT_LIQUIDITY,
   REMOVE_LMT_LIQUIDITY,
   ADD_LIMIT_ORDER,
+  REMOVE_LIMIT_ORDER,
 }
 
 interface BaseTransactionInfo {
@@ -230,6 +231,12 @@ export interface AddLimitOrderTransactionInfo {
   outputCurrencyId: string
   margin: string
   startingPrice: string
+}
+
+export interface RemoveLimitOrderTransactionInfo {
+  type: TransactionType.REMOVE_LIMIT_ORDER
+  inputCurrencyId: string
+  outputCurrencyId: string
 }
 
 // type: TransactionType.REDUCE_LEVERAGE,

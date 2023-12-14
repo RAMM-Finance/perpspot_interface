@@ -22,11 +22,11 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { CHAIN_IDS_TO_NAMES } from 'constants/chains'
 import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
-import { useV3NFTPositionManagerContract } from 'hooks/useContract'
+import { useV3NFTPositionManagerContract, useLmtNFTPositionManager } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { PoolState, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
-import { useV3PositionFees } from 'hooks/useV3PositionFees'
+import { useV3PositionFees,useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
@@ -380,8 +380,8 @@ export function PositionPage() {
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
   // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
-  const { loading, position: lmtPositionDetails } = useLmtLpPositionFromTokenId(parsedTokenId)
-
+  const { loading, position: lmtPositionDetails, maxWithdrawable: maxWithdrawableValue } = useLmtLpPositionFromTokenId(parsedTokenId)
+  console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
   const {
     token0: token0Address,
     token1: token1Address,
@@ -391,6 +391,8 @@ export function PositionPage() {
     tickUpper,
     tokenId,
   } = lmtPositionDetails || {}
+
+  const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 
   const removed = liquidity?.eq(0)
 
@@ -415,6 +417,30 @@ export function PositionPage() {
     }
     return undefined
   }, [liquidity, pool, tickLower, tickUpper])
+
+  const maxWithdrawablePosition = useMemo(() => {
+    if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: maxWithdrawableLiquidity, tickLower, tickUpper })
+    }
+    return undefined
+  }, [maxWithdrawableLiquidity, pool, tickLower, tickUpper])
+
+  let maxWithdrawableToken0
+  let maxWithdrawableToken1
+  let maximumWithdrawablePercentage
+  if(maxWithdrawablePosition && position){
+    if(Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())){
+      maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
+      maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = Math.round(100* Number(maxWithdrawableLiquidity)/Number(liquidity?.toString()))
+    } else{
+      maxWithdrawableToken0 = position.amount0.toSignificant(4)
+      maxWithdrawableToken1 = position.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = 100
+    }
+
+  }
+  console.log('maxWithdrawableposition', maxWithdrawablePosition, position, maxWithdrawableLiquidity, liquidity?.toString() )
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -445,8 +471,9 @@ export function PositionPage() {
   }, [inverted, pool, priceLower, priceUpper])
 
   // fees
-  const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
-
+  // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
+  const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
+  console.log('feevalues', feeValue0?.greaterThan(0) , feeValue1?.greaterThan(0) )
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -483,6 +510,112 @@ export function PositionPage() {
 
   const addTransaction = useTransactionAdder()
   const positionManager = useV3NFTPositionManagerContract()
+  const lmtPositionManager = useLmtNFTPositionManager()
+
+
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+
+    try {
+      if (!account ||
+          !currency0ForFeeCollectionPurposes ||
+          !currency1ForFeeCollectionPurposes ||
+          !chainId ||
+          !lmtPositionManager ||
+          !account ||
+          !tokenId ||
+          !provider 
+        ) throw new Error('missing account')
+
+      const response = await lmtPositionManager.collect(
+        { 
+          tokenId: tokenId.toString(),
+          recipient: account
+        }
+      )
+      return response
+    } catch (err) {
+      console.log('collect order error', err)
+      throw new Error('cancel order error')
+    }
+  }, [
+    chainId,
+    feeValue0,
+    feeValue1,
+    currency0ForFeeCollectionPurposes,
+    currency1ForFeeCollectionPurposes,
+    positionManager,
+    account,
+    tokenId,
+    addTransaction,
+    provider
+  ])
+
+  const collectLMTFees = useCallback(() => {
+    if (
+      !currency0ForFeeCollectionPurposes ||
+      !currency1ForFeeCollectionPurposes ||
+      !chainId ||
+      !lmtPositionManager ||
+      !account ||
+      !tokenId ||
+      !provider
+    )
+      return
+    // setAttemptingTxn(true)
+
+    callback()
+      .then((response) => {
+        // setAttemptingTxn(false)
+        // setTxHash(response?.hash)
+        // setErrorMessage(undefined)
+        // addTransaction(response, {
+        //   type: TransactionType.COLLECT_FEES,
+        //   inputCurrencyId: inputCurrency.wrapped.address,
+        //   outputCurrencyId: outputCurrency.wrapped.address,
+        // })
+        setCollectMigrationHash(response.hash)
+        setCollecting(false)
+
+        sendEvent({
+          category: 'Liquidity',
+          action: 'CollectV3',
+          label: [currency0ForFeeCollectionPurposes.symbol, currency1ForFeeCollectionPurposes.symbol].join('/'),
+        })
+
+        addTransaction(response, {
+          type: TransactionType.COLLECT_FEES,
+          currencyId0: currencyId(currency0ForFeeCollectionPurposes),
+          currencyId1: currencyId(currency1ForFeeCollectionPurposes),
+          expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(currency0ForFeeCollectionPurposes, 0).toExact(),
+          expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(currency1ForFeeCollectionPurposes, 0).toExact(),
+        })
+
+
+        return response.hash
+      })
+      .catch((error) => {
+        console.error(error)
+        setCollecting(false)
+
+        // setAttemptingTxn(false)
+        // setTxHash(undefined)
+        // setErrorMessage(error.message)
+      })
+  }, [
+    chainId,
+    feeValue0,
+    feeValue1,
+    currency0ForFeeCollectionPurposes,
+    currency1ForFeeCollectionPurposes,
+    positionManager,
+    account,
+    tokenId,
+    addTransaction,
+    provider  
+  ])
+
+
+
   const collect = useCallback(() => {
     if (
       !currency0ForFeeCollectionPurposes ||
@@ -560,9 +693,11 @@ export function PositionPage() {
     provider,
   ])
 
-  const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
-  const ownsNFT = owner === account || lmtPositionDetails?.operator === account
+  // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
+  const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
+  const ownsNFT = owner === account || lmtPositionDetails?.operator === account
+  console.log('owner', ownsNFT, owner, account,lmtPositionDetails?.operator)
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
 
@@ -570,6 +705,7 @@ export function PositionPage() {
   const below = pool && typeof tickLower === 'number' ? pool.tickCurrent < tickLower : undefined
   const above = pool && typeof tickUpper === 'number' ? pool.tickCurrent >= tickUpper : undefined
   const inRange: boolean = typeof below === 'boolean' && typeof above === 'boolean' ? !below && !above : false
+
 
   function modalHeader() {
     return (
@@ -599,7 +735,7 @@ export function PositionPage() {
         <ThemedText.DeprecatedItalic>
           <Trans>Collecting fees will withdraw currently available fees for you.</Trans>
         </ThemedText.DeprecatedItalic>
-        <ButtonPrimary onClick={collect}>
+        <ButtonPrimary onClick={collectLMTFees}>
           <Trans>Collect</Trans>
         </ButtonPrimary>
       </AutoColumn>
@@ -842,7 +978,7 @@ export function PositionPage() {
                               <Trans>Maximum Withdrawable </Trans>
                               <Badge style={{ marginLeft: '10px' }}>
                                 <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
+                                  <Trans>{maximumWithdrawablePercentage}%</Trans>
                                 </ThemedText.DeprecatedLargeHeader>
                               </Badge>
                               {/*<RangeBadge removed={removed} inRange={inRange} />
@@ -887,7 +1023,7 @@ export function PositionPage() {
                             <LinkedCurrency chainId={chainId} currency={currencyQuote} />
                             <RowFixed>
                               <ThemedText.BodySmall color="textSecondary">
-                                {inverted ? position?.amount0.toSignificant(4) : position?.amount1.toSignificant(4)}
+                                {inverted ? maxWithdrawableToken0 : maxWithdrawableToken1}
                               </ThemedText.BodySmall>
                               {/*typeof ratio === 'number' && !removed ? (
                               <Badge style={{ marginLeft: '10px' }}>
@@ -902,7 +1038,7 @@ export function PositionPage() {
                             <LinkedCurrency chainId={chainId} currency={currencyBase} />
                             <RowFixed>
                               <ThemedText.BodySmall color="textSecondary">
-                                {inverted ? position?.amount1.toSignificant(4) : position?.amount0.toSignificant(4)}
+                                {inverted ? maxWithdrawableToken1 : maxWithdrawableToken0}
                               </ThemedText.BodySmall>
                               {/*typeof ratio === 'number' && !removed ? (
                               <Badge style={{ marginLeft: '10px' }}>

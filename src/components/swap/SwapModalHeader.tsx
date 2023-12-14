@@ -416,17 +416,17 @@ export function LeverageModalHeader({
         <AutoColumn gap="sm">
           <RowBetween align="center">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={12} fontWeight={500} color={theme.textSecondary}>
+              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
                 {formatCurrencyAmount(preTradeInfo.additionalPremium, NumberType.SwapTradeAmount)})
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="6px">
+              <Text fontSize={13} fontWeight={300} marginRight="6px">
                 Payment
               </Text>
-              <CurrencyLogo currency={trade?.margin?.currency} size="14px" style={{ marginRight: '4px' }} />
-              <Text fontSize={12} fontWeight={500}>
+              <CurrencyLogo currency={trade?.margin?.currency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={500}>
                 {trade?.margin?.currency.symbol}
               </Text>
             </RowFixed>
@@ -443,7 +443,7 @@ export function LeverageModalHeader({
         <AutoColumn gap="sm">
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={12} fontWeight={500} color={theme.textSecondary}>
+              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(
                   trade?.borrowAmount && trade?.margin ? trade.borrowAmount.add(trade.margin) : null,
                   NumberType.SwapTradeAmount
@@ -451,17 +451,17 @@ export function LeverageModalHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="6px">
+              <Text fontSize={13} fontWeight={300} marginRight="6px">
                 Total Input
               </Text>
-              <CurrencyLogo currency={trade.margin?.currency} size="14px" style={{ marginRight: '4px' }} />
-              <Text fontSize={12} fontWeight={500}>
+              <CurrencyLogo currency={trade.margin?.currency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={500}>
                 {trade.margin?.currency.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
           <RowBetween>
-            <ThemedText.DeprecatedBody fontSize={12} color={theme.textTertiary}>
+            <ThemedText.DeprecatedBody fontSize={13} color={theme.textTertiary}>
               <FiatValue
                 fiatValue={fiatValueTotalInput}
                 priceImpact={computeFiatValuePriceImpact(fiatValueInput.data, fiatValueTotalInput.data)}
@@ -472,16 +472,16 @@ export function LeverageModalHeader({
         <AutoColumn gap="sm">
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={12} fontWeight={500} color={theme.textSecondary}>
+              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
                 {formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="6px">
+              <Text fontSize={13} fontWeight={300} marginRight="6px">
                 Total Output
               </Text>
-              <CurrencyLogo currency={trade.swapOutput?.currency} size="14px" style={{ marginRight: '4px' }} />
-              <Text fontSize={12} fontWeight={500}>
+              <CurrencyLogo currency={trade.swapOutput?.currency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={500}>
                 {trade.swapOutput?.currency.symbol}
               </Text>
             </RowFixed>
@@ -517,7 +517,7 @@ export function LeverageModalHeader({
               </Text>
             </RowFixed>
             <ButtonPrimary
-              style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '12px' }}
+              style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '10px' }}
               onClick={onAcceptChanges}
             >
               <Trans>Accept</Trans>

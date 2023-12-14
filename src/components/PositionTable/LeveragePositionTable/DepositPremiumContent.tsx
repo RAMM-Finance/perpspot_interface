@@ -214,6 +214,8 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
 
   const inputCurrencyBalance = useCurrencyBalance(account, inputCurrency ?? undefined)
 
+  const marginFacility = useMarginFacilityContract(true)
+
   const addTransaction = useTransactionAdder()
   // callback
   const callback = useCallback(async (): Promise<TransactionResponse> => {

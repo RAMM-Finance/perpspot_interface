@@ -1,4 +1,6 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
+import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -6,6 +8,7 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { AutoRow, RowBetween, RowStart } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
@@ -16,6 +19,8 @@ import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionType } from 'state/transactions/types'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginLimitOrder, TraderPositionKey } from 'types/lmtv2position'
@@ -45,7 +50,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 16px;
-  grid-template-columns: 1.5fr 1.5fr 3fr 3fr 2fr 2fr 1fr;
+  grid-template-columns: 1.5fr 2.5fr 2.5fr 2.5fr 2.5fr 2.5fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -578,7 +583,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const outputCurrency = useCurrency(token1Address)
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, details?.key.fee)
-  const poolString = pool?.toString()
 
   // const [inputAmount, startOutput, margin] = useMemo(() => {
   //   if (pool) {
@@ -606,28 +610,66 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const marginFacility = useMarginFacilityContract(true)
 
   const [attemptingTxn, setAttemptingTxn] = useState(false)
+  const [txHash, setTxHash] = useState<string>()
+  const [errorMessage, setErrorMessage] = useState<string>()
+
+  const poolAddress = useMemo(() => {
+    if (chainId && pool) {
+      return computePoolAddress({
+        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+        tokenA: pool.token0,
+        tokenB: pool.token1,
+        fee: pool.fee,
+      }).toLowerCase()
+    }
+    return undefined
+  }, [chainId, pool])
 
   // CANCEL ORDER TO DO
 
-  // const callback = useCallback(async (): Promise<TransactionResponse> => {
-  //   try {
-  //     if (!account) throw new Error('missing account')
-  //     if (!poolString) throw new Error('missing pool')
-  //     if (!marginFacility) throw new Error('missing marginFacility contract')
-  //     if (!chainId) throw new Error('missing chainId')
-  //     if (!provider) throw new Error('missing provider')
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      if (!account) throw new Error('missing account')
+      if (!poolAddress) throw new Error('missing pool')
+      if (!marginFacility) throw new Error('missing marginFacility contract')
+      if (!chainId) throw new Error('missing chainId')
+      if (!provider) throw new Error('missing provider')
 
-  //     const response = await marginFacility.cancelOrder(poolString, true, details.isAdd)
-  //     return response
-  //   } catch (err) {
-  //     console.log('cancel order error', err)
-  //     throw new Error('cancel order error')
-  //   }
-  // }, [account, chainId, details, marginFacility, poolString, provider])
+      const response = await marginFacility.cancelOrder(poolAddress, details.positionIsToken0, details.isAdd)
+      return response
+    } catch (err) {
+      console.log('cancel order error', err)
+      throw new Error('cancel order error')
+    }
+  }, [account, chainId, details, marginFacility, poolAddress, provider])
 
-  // const handleCancel = useCallback(() => {
-  //   callback()
-  // }, [callback])
+  const addTransaction = useTransactionAdder()
+
+  const handleCancel = useCallback(() => {
+    if (!callback || !details || !inputCurrency || !outputCurrency) {
+      return
+    }
+    setAttemptingTxn(true)
+
+    callback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setErrorMessage(undefined)
+        addTransaction(response, {
+          type: TransactionType.PREMIUM_LEVERAGE_DEPOSIT,
+          inputCurrencyId: inputCurrency.wrapped.address,
+          outputCurrencyId: outputCurrency.wrapped.address,
+        })
+        return response.hash
+      })
+      .catch((error) => {
+        console.error(error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setErrorMessage(error.message)
+      })
+  }, [callback, details, inputCurrency, outputCurrency, addTransaction, setAttemptingTxn, setTxHash, setErrorMessage])
 
   return (
     <div ref={ref} data-testid="token-table-row">
@@ -663,18 +705,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
                     {(Number(details.inputAmount) / 1e18).toString()}
+                    <CurrencyLogo currency={inputCurrency} size="13px" />
+                    {inputCurrency?.symbol}
                     <Edit3 size={14} />
                   </UnderlineText>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                      <CurrencyLogo currency={inputCurrency} size="13px" />
-                      <>{inputCurrency?.symbol} /</>
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                      <CurrencyLogo currency={outputCurrency} size="13px" />
-                      <>{outputCurrency?.symbol} </>
-                    </div>
-                  </div>
                 </RowStart>
               </AutoRow>
             </FlexStartRow>
@@ -683,17 +717,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow>
               <AutoRow>
                 <RowStart>
-                  <UnderlineText>{(Number(details.startOutput) / 1e18).toString()}</UnderlineText>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                      <CurrencyLogo currency={inputCurrency} size="13px" />
-                      <>{inputCurrency?.symbol} /</>
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                      <CurrencyLogo currency={outputCurrency} size="13px" />
-                      <>{outputCurrency?.symbol} </>
-                    </div>
-                  </div>
+                  <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    {(Number(details.startOutput) / 1e18).toString()}
+                    <CurrencyLogo currency={outputCurrency} size="13px" />
+                    <>{outputCurrency?.symbol} </>
+                  </UnderlineText>
                 </RowStart>
               </AutoRow>
             </FlexStartRow>
@@ -724,7 +752,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <ButtonPrimary
-                    // onClick={handleCancel}
+                    onClick={handleCancel}
                     style={{
                       height: '15px',
                       fontSize: '10px',

@@ -1,9 +1,13 @@
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 const LiquidityDistributionTable = ({ currentPrice, bids }: { currentPrice: number; bids: number[][] }) => {
   return (
     <>
+      <Title>
+        <ThemedText.BodyPrimary>Borrowable Liquidity</ThemedText.BodyPrimary>
+      </Title>
       <LDHeaderRow>
         <LDHeaderCellIn>Price (fETH)</LDHeaderCellIn>
         <LDHeaderCellOut>Amount (fUSDC)</LDHeaderCellOut>
@@ -33,6 +37,10 @@ const LiquidityDistributionTable = ({ currentPrice, bids }: { currentPrice: numb
 }
 
 export default LiquidityDistributionTable
+
+const Title = styled.div`
+  margin-bottom: 15px;
+`
 
 const LDHeaderRow = styled.div`
   display: grid;

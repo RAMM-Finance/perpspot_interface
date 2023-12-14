@@ -108,12 +108,26 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const dataProvider = useDataProviderContract()
 
   // make sure to have dataProvider provide the decimals for each token
-  const { loading: loadingAdd, error: errorAdd, result: resultAdd } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
-  const { loading: loadingReduce, error: errorReduce, result: resultReduce } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
+  const {
+    loading: loadingAdd,
+    error: errorAdd,
+    result: resultAdd,
+  } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
+  const {
+    loading: loadingReduce,
+    error: errorReduce,
+    result: resultReduce,
+  } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
 
-  const result = resultAdd?.concat(resultReduce)
   const loading = loadingAdd && loadingReduce
   const error = errorAdd && errorReduce
+
+  const result = useMemo(() => {
+    if (!loading && !error) return resultAdd?.concat(resultReduce)
+    else return undefined
+  }, [loading, error, resultAdd, resultReduce])
+
+  console.log(result)
 
   return useMemo(() => {
     return {
@@ -140,6 +154,7 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
           inputAmount: order.inputAmount.toString(),
           decayRate: order.decayRate.toString(),
           margin: order.margin.toString(),
+          positionIsToken0: order.positionIsToken0,
         }
       }),
     }
