@@ -21,6 +21,7 @@ import {
   updateUserClientSideRouter,
   updateUserDeadline,
   updateUserExpertMode,
+  updateUserLimitDeadline,
   updateUserLocale,
   updateUserPremiumDepositPercent,
   updateUserSlippageTolerance,
@@ -243,6 +244,23 @@ export function useUserTransactionTTL(): [number, (slippage: number) => void] {
   const setUserDeadline = useCallback(
     (userDeadline: number) => {
       dispatch(updateUserDeadline({ userDeadline }))
+    },
+    [dispatch]
+  )
+
+  return [deadline, setUserDeadline]
+}
+
+export function useUserLimitOrderTransactionTTL(): [number, (deadline: number) => void] {
+  const { chainId } = useWeb3React()
+  const dispatch = useAppDispatch()
+  const userDeadline = useAppSelector((state) => state.user.userLimitDeadline)
+  const onL2 = Boolean(chainId && L2_CHAIN_IDS.includes(chainId))
+  const deadline = onL2 ? L2_DEADLINE_FROM_NOW : userDeadline
+
+  const setUserDeadline = useCallback(
+    (userLimitDeadline: number) => {
+      dispatch(updateUserLimitDeadline({ userLimitDeadline }))
     },
     [dispatch]
   )

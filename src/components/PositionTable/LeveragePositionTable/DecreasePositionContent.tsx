@@ -1,8 +1,10 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { Button } from '@mui/material'
-import { Percent, Price } from '@uniswap/sdk-core'
-import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
+import { NumberType } from '@uniswap/conedison/format'
+import { Currency, Percent, Price } from '@uniswap/sdk-core'
+import { computePoolAddress, Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
@@ -10,7 +12,7 @@ import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonError } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import { TextWrapper } from 'components/HoverInlineText'
+import HoverInlineText, { TextWrapper } from 'components/HoverInlineText'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import {
@@ -27,16 +29,19 @@ import { RowStart } from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
+import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import { TruncatedText } from 'components/swap/styleds'
 import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
+import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { StyledNumericalInput } from 'pages/Swap'
@@ -45,7 +50,7 @@ import { PriceToggleSection } from 'pages/Swap/tradeModal'
 import { LimitInputPrice, LimitInputRow, LimitInputWrapper } from 'pages/Swap/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
+import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
@@ -53,6 +58,9 @@ import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { LimitOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
 import { BaseFooter } from './DepositPremiumContent'
 import ConfirmModifyPositionModal from './TransactionModal'
@@ -94,30 +102,28 @@ function useDerivedReducePositionInfo(
   position: MarginPositionDetails | undefined,
   allowedSlippedTick: Percent,
   allowedSlippage: Percent,
-  setState: (state: DerivedInfoState) => void
+  setState: (state: DerivedInfoState) => void,
+  inputCurrency?: Currency,
+  outputCurrency?: Currency
 ): {
   txnInfo: DerivedReducePositionInfo | undefined
   inputError: ReactNode | undefined
 } {
   const marginFacility = useMarginFacilityContract()
-  const inputCurrency = useCurrency(
-    position?.isToken0 ? positionKey.poolKey.token1Address : positionKey.poolKey.token0Address
-  )
-  const outputCurrency = useCurrency(
-    position?.isToken0 ? positionKey.poolKey.token0Address : positionKey.poolKey.token1Address
-  )
 
   const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
   const [contractError, setContractError] = useState<React.ReactNode>()
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+
+  const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
   useEffect(() => {
     const lagged = async () => {
       if (
         !marginFacility ||
         !position ||
-        Number(reduceAmount) <= 0 ||
-        !reduceAmount ||
+        !parsedReduceAmount ||
+        parsedReduceAmount.isLessThanOrEqualTo(0) ||
         !pool ||
         !inputCurrency ||
         !outputCurrency
@@ -130,14 +136,14 @@ function useDerivedReducePositionInfo(
       setState(DerivedInfoState.LOADING)
 
       try {
-        const reducePercent = new BN(reduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
+        const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
         const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
         const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
         const minOutput = new BN(100)
           .minus(new BN(allowedSlippage.toFixed(18)))
           .div(100)
-          .times(reduceAmount)
+          .times(parsedReduceAmount)
           .times(price)
 
         //   struct ReduceReturn {
@@ -162,7 +168,7 @@ function useDerivedReducePositionInfo(
           reduceAmount: 0,
         }
 
-        console.log('simulation reduce param', reduceParam)
+        // console.log('simulation reduce param', reduceParam, positionKey.poolKey)
 
         const result = await marginFacility.callStatic.reducePosition(
           {
@@ -196,7 +202,7 @@ function useDerivedReducePositionInfo(
     setState,
     pool,
     marginFacility,
-    reduceAmount,
+    parsedReduceAmount,
     position,
     positionKey,
     inputCurrency,
@@ -208,12 +214,12 @@ function useDerivedReducePositionInfo(
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
 
-    if (reduceAmount === '') {
+    if (!parsedReduceAmount || parsedReduceAmount.isLessThanOrEqualTo(0)) {
       error = <Trans>Enter an amount</Trans>
     }
 
     return error
-  }, [reduceAmount])
+  }, [parsedReduceAmount])
 
   return useMemo(() => {
     return {
@@ -221,6 +227,125 @@ function useDerivedReducePositionInfo(
       inputError,
     }
   }, [txnInfo, inputError])
+}
+
+function useDerivedReduceLimitPositionInfo(
+  reduceAmount: string,
+  limitPrice: string,
+  positionKey: TraderPositionKey,
+  // position: MarginPositionDetails | undefined,
+  // allowedSlippedTick: Percent,
+  // allowedSlippage: Percent,
+  baseCurrencyIsInput: boolean,
+  setState: (state: DerivedInfoState) => void,
+  inputCurrency?: Currency,
+  outputCurrency?: Currency
+): {
+  // txnInfo: DerivedReducePositionInfo | undefined
+  inputError: ReactNode | undefined
+} {
+  const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
+  const [contractError, setContractError] = useState<React.ReactNode>()
+  // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+
+  const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
+  const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
+  const inputError = useMemo(() => {
+    let error: React.ReactNode | undefined
+
+    if (!parsedAmount || parsedAmount.isLessThanOrEqualTo(0)) {
+      error = error ?? <Trans>Enter an amount</Trans>
+    }
+
+    if (!parsedLimitPrice || parsedLimitPrice.isLessThanOrEqualTo(0)) {
+      error = error ?? <Trans>Enter a limit price</Trans>
+    }
+    return error
+  }, [parsedAmount, parsedLimitPrice])
+  const { chainId } = useWeb3React()
+
+  const deadline = useLimitTransactionDeadline()
+  const marginFacility = useMarginFacilityContract(true)
+
+  useEffect(() => {
+    const lagged = async () => {
+      if (
+        inputError ||
+        !parsedAmount ||
+        !parsedLimitPrice ||
+        !chainId ||
+        !inputCurrency ||
+        !outputCurrency ||
+        !deadline ||
+        !marginFacility
+      ) {
+        setState(DerivedInfoState.INVALID)
+        setTxnInfo(undefined)
+        return
+      }
+
+      setState(DerivedInfoState.LOADING)
+
+      try {
+        const price = baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
+
+        const startOutput = parsedAmount.times(price).shiftedBy(outputCurrency.decimals).toFixed(0)
+        const params: LimitOrderOptions = {
+          orderKey: {
+            poolKey: positionKey.poolKey,
+            trader: positionKey.trader,
+            isToken0: positionKey.isToken0,
+            isAdd: false,
+          },
+          margin: '0',
+          pool: computePoolAddress({
+            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+            tokenA: inputCurrency.wrapped,
+            tokenB: outputCurrency.wrapped,
+            fee: positionKey.poolKey.fee,
+          }),
+          deadline: deadline?.toString(),
+          inputAmount: parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+          startOutput,
+          minOutput: startOutput,
+          decayRate: '0',
+          isAdd: false,
+        }
+
+        const calldata = MarginFacilitySDK.submitLimitOrder(params)
+
+        await marginFacility.callStatic.multicall(calldata)
+        // setTxnInfo()
+        setState(DerivedInfoState.VALID)
+        setContractError(undefined)
+      } catch (err) {
+        console.log('reduce error', err)
+        setState(DerivedInfoState.INVALID)
+        setContractError(err)
+        setTxnInfo(undefined)
+      }
+    }
+
+    lagged()
+  }, [
+    inputError,
+    setState,
+    parsedAmount,
+    parsedLimitPrice,
+    chainId,
+    inputCurrency,
+    outputCurrency,
+    deadline,
+    marginFacility,
+    baseCurrencyIsInput,
+    positionKey,
+  ])
+
+  return useMemo(() => {
+    return {
+      inputError,
+    }
+  }, [inputError])
 }
 
 export default function DecreasePositionContent({ positionKey }: { positionKey: TraderPositionKey }) {
@@ -231,11 +356,12 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
   const [showDetails, setShowDetails] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
+  const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const { position } = useMarginLMTPositionFromPositionId(positionKey)
   const [errorMessage, setErrorMessage] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
   const [isLimit, setIsLimit] = useState(false)
-  const [limitToken, setLimitToken] = useState(false)
+  const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string>('')
 
   const inputCurrency = useCurrency(
@@ -270,9 +396,20 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     position,
     allowedSlippedTick,
     allowedSlippage,
-    setTradeState
+    setTradeState,
+    inputCurrency ?? undefined,
+    outputCurrency ?? undefined
   )
 
+  const { inputError: lmtInputError } = useDerivedReduceLimitPositionInfo(
+    reduceAmount,
+    limitPrice,
+    positionKey,
+    baseCurrencyIsInput,
+    setLmtTradeState,
+    inputCurrency ?? undefined,
+    outputCurrency ?? undefined
+  )
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
 
   const positionExists = useMemo(() => {
@@ -283,28 +420,31 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     }
   }, [existingPosition, positionLoading])
 
-  const reductionPercent = useMemo(() => {
-    return position?.totalPosition && reduceAmount !== ''
-      ? formatBNToString(new BN(reduceAmount).div(position?.totalPosition).times(100))
-      : '0'
-  }, [position, reduceAmount])
+  // const reductionPercent = useMemo(() => {
+  //   return position?.totalPosition && reduceAmount !== ''
+  //     ? formatBNToString(new BN(reduceAmount).div(position?.totalPosition).times(100))
+  //     : '0'
+  // }, [position, reduceAmount])
 
-  const marginFacility = useMarginFacilityContract(true)
+  // const marginFacility = useMarginFacilityContract(true)
 
   const addTransaction = useTransactionAdder()
 
   // callback
   const { account, provider, chainId } = useWeb3React()
+
+  const deadline = useTransactionDeadline()
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
       if (!provider) throw new Error('missing provider')
       if (!txnInfo) throw new Error('missing txn info')
-      if (!marginFacility) throw new Error('missing marginFacility contract')
+      // if (!marginFacility) throw new Error('missing marginFacility contract')
       if (!position) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
+      if (!deadline) throw new Error('missing deadline')
 
       // get reduce parameters
       const reducePercent = new BN(reduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
@@ -314,17 +454,6 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       const minOutput = new BN(reduceAmount)
         .times(price)
         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
-
-      //   struct ReduceReturn {
-      //     int256 amount0;
-      //     int256 amount1;
-      //     int256 PnL;
-      //     uint256 returnedAmount;
-      //     uint256 repaidDebt0;
-      //     uint256 repaidDebt1;
-      //     uint256 premium;
-      //     uint256 profitFee;
-      // }
 
       const reduceParam = {
         positionIsToken0: position.isToken0,
@@ -336,17 +465,37 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
         slippedTickMin,
         slippedTickMax,
         reduceAmount: 0,
+        deadline,
       }
 
-      console.log('reduce param', reduceParam)
+      const { calldata } = MarginFacilitySDK.reducePositionParameters({
+        positionKey,
+        ...reduceParam,
+      })
 
-      const poolKey = {
-        token0: positionKey.poolKey.token0Address,
-        token1: positionKey.poolKey.token1Address,
-        fee: positionKey.poolKey.fee,
+      const tx = {
+        from: account,
+        to: LMT_MARGIN_FACILITY[chainId],
+        data: MulticallSDK.encodeMulticall(calldata),
       }
-      const response: TransactionResponse = await marginFacility.reducePosition(poolKey, reduceParam)
 
+      let gasEstimate: BigNumber
+
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        console.log('gasError', gasError)
+        throw new Error('gasError')
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          return response
+        })
       return response
     } catch (err) {
       console.log('reduce callback error', err)
@@ -363,10 +512,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     tradeState,
     provider,
     chainId,
-    marginFacility,
+    // marginFacility,
     reduceAmount,
     allowedSlippage,
     allowedSlippedTick,
+    deadline,
   ])
 
   const handleReducePosition = useCallback(() => {
@@ -426,14 +576,14 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     setErrorMessage(undefined)
   }, [])
 
-  const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
+  // const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
 
-  const { baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
+  // const { baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
 
   const currentPrice = useMemo(() => {
     if (pool && inputCurrency && outputCurrency) {
       const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
-      const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
+      const baseIsToken0 = (baseCurrencyIsInput && inputIsToken0) || (!baseCurrencyIsInput && !inputIsToken0)
       if (baseIsToken0) {
         return formatBNToString(new BN(pool.token0Price.toFixed(18)))
       } else {
@@ -441,7 +591,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       }
     }
     return undefined
-  }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
+  }, [baseCurrencyIsInput, inputCurrency, pool, outputCurrency])
+
+  const [baseCurrency, quoteCurrency] = useMemo(() => {
+    return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
+  }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
   if (!positionExists) {
     return <PositionMissing />
@@ -504,13 +658,13 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                 <PriceToggleSection>
                   <div
                     style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
-                    onClick={() => setLimitToken(() => !limitToken)}
+                    onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}
                   >
                     <ToggleWrapper width="fit-content">
-                      <ToggleElement isActive={!limitToken}>
+                      <ToggleElement isActive={!baseCurrencyIsInput}>
                         <CurrencyLogo currency={outputCurrency} size="15px" />
                       </ToggleElement>
-                      <ToggleElement isActive={limitToken}>
+                      <ToggleElement isActive={baseCurrencyIsInput}>
                         <CurrencyLogo currency={inputCurrency} size="15px" />
                       </ToggleElement>
                     </ToggleWrapper>
@@ -520,13 +674,25 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
             </RowStart>
           </DynamicSection>
           <DynamicSection gap="md" disabled={false}>
+            <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
+              <Trans>
+                <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                  Current Price:
+                </ThemedText.DeprecatedMain>
+                <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
+                  {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
+                </ThemedText.DeprecatedBody>
+                {baseCurrency && (
+                  <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                    {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                  </ThemedText.DeprecatedBody>
+                )}
+              </Trans>
+            </AutoColumn>
             <LimitInputPrice>
               <Trans>
-                <ThemedText.BodySecondary>Order Price </ThemedText.BodySecondary>{' '}
+                <ThemedText.BodySecondary>Limit Price </ThemedText.BodySecondary>{' '}
               </Trans>
-              <div style={{ textAlign: 'end', gap: '5px' }}>
-                <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
-              </div>
               <LimitInputRow>
                 <StyledNumericalInput
                   onUserInput={setLimitPrice}
@@ -536,24 +702,13 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                 ></StyledNumericalInput>
                 <RowFixed>
                   {inputCurrency && (
-                    <Button sx={{ textTransform: 'none' }} onClick={() => setLimitToken(() => !limitToken)}>
+                    <Button
+                      sx={{ textTransform: 'none' }}
+                      onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}
+                    >
                       <ThemedText.BodySmall>
                         <div style={{ display: 'flex', gap: '4px' }}>
-                          {!limitToken ? (
-                            <>
-                              <CurrencyLogo currency={inputCurrency} size="15px" />
-                              {inputCurrency?.symbol} /
-                              <CurrencyLogo currency={outputCurrency} size="15px" />
-                              {outputCurrency?.symbol}
-                            </>
-                          ) : (
-                            <>
-                              <CurrencyLogo currency={outputCurrency} size="15px" />
-                              {outputCurrency?.symbol} /
-                              <CurrencyLogo currency={inputCurrency} size="15px" />
-                              {inputCurrency?.symbol}
-                            </>
-                          )}
+                          {quoteCurrency?.symbol} per {baseCurrency?.symbol}
                         </div>
                       </ThemedText.BodySmall>
                     </Button>
@@ -561,48 +716,13 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                 </RowFixed>
               </LimitInputRow>
             </LimitInputPrice>
-            {/* 
-                {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
-                  <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
-                    <Trans>
-                      <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
-                        Current Price:
-                      </ThemedText.DeprecatedMain>
-                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
-                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
-                      </ThemedText.DeprecatedBody>
-                      {baseCurrency && (
-                        <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                        </ThemedText.DeprecatedBody>
-                      )}
-                    </Trans>
-                  </AutoColumn>
-                )} */}
           </DynamicSection>
         </AnimatedDropdown>
       </LimitInputWrapper>
-      <AutoColumn style={{ marginTop: '10px', marginBottom: '10px' }}>
+      <AutoColumn gap="10px" style={{ width: '95%', marginLeft: '10px' }}>
         <Trans>
           <ThemedText.BodyPrimary fontWeight={400}>Debt Reduce Amount </ThemedText.BodyPrimary>
         </Trans>
-      </AutoColumn>
-      <AutoColumn gap="10px" style={{ width: '95%', marginLeft: '10px' }}>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <PercentSlider
-            initialValue={
-              position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0
-            }
-            onSlideChange={(val) =>
-              position &&
-              onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
-            }
-            onInputChange={(val) =>
-              position &&
-              onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
-            }
-          />
-        </div>
         <CurrencyInputPanel
           value={reduceAmount}
           id="reduce-position-input"
@@ -623,7 +743,23 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           }}
           hideBalance={true}
           currency={outputCurrency}
+          label={<Trans>Reduce Debt By:</Trans>}
         />
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <PercentSlider
+            initialValue={
+              position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0
+            }
+            onSlideChange={(val) =>
+              position &&
+              onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
+            }
+            onInputChange={(val) =>
+              position &&
+              onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
+            }
+          />
+        </div>
         <AutoColumn justify="center" style={{ width: '100%', marginTop: '5px' }}>
           <TransactionDetails>
             <Wrapper>
@@ -663,61 +799,31 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                 </StyledHeaderRow>
                 <AnimatedDropdown open={showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-                    {!loading && !isLimit ? (
+                    {!isLimit ? (
                       <StyledCard style={{ width: '100%' }}>
                         <AutoColumn gap="sm">
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Collateral Returned</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Profit and Loss</Trans>}>
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>PnL</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right">
-                                <TruncatedText>
-                                  <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
-                                  </DeltaText>
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip
-                                text={<Trans>The amount of premiums to be deducted from your premium deposit</Trans>}
-                              >
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Premium Owed</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
+                          <ValueLabel
+                            label="Premium Owed"
+                            description="Current amount of premium owed"
+                            value={formatBNToString(txnInfo?.premium, NumberType.SwapTradeAmount)}
+                            symbolAppend={inputCurrency?.symbol}
+                            syncing={loading}
+                          />
+                          <ValueLabel
+                            label="Collateral Returned"
+                            description="Amount of collateral returned"
+                            value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
+                            symbolAppend={inputCurrency?.symbol}
+                            syncing={loading}
+                          />
+                          <ValueLabel
+                            label="PnL"
+                            description="Profit and Loss"
+                            value={formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)}
+                            symbolAppend={inputCurrency?.symbol}
+                            syncing={loading}
+                            delta={true}
+                          />
                         </AutoColumn>
                       </StyledCard>
                     ) : (
@@ -790,7 +896,8 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                                 <TruncatedText>
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
                                     {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
-                                  </DeltaText>                                </TruncatedText>
+                                  </DeltaText>{' '}
+                                </TruncatedText>
                               </ThemedText.BodySmall>
                             </TextWithLoadingPlaceholder>
                           </RowBetween>

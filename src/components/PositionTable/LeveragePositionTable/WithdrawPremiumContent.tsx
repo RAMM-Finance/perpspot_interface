@@ -14,13 +14,11 @@ import {
   StyledCard,
   StyledPolling,
   StyledPollingDot,
-  TextWithLoadingPlaceholder,
   TransactionDetails,
 } from 'components/modalFooters/common'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
-import { CallbackError, TruncatedText } from 'components/swap/styleds'
-import { MouseoverTooltip } from 'components/Tooltip'
+import { CallbackError } from 'components/swap/styleds'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
@@ -29,6 +27,7 @@ import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Text } from 'rebass'
+import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useTheme } from 'styled-components/macro'
@@ -66,7 +65,7 @@ enum DerivedInfoState {
   SYNCING, // syncing means already loaded valid info, but updating to newest info
 }
 
-function useDerivedDepositPremiumInfo(
+function useDerivedWithdrawPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
@@ -89,13 +88,15 @@ function useDerivedDepositPremiumInfo(
 
   const { account } = useWeb3React()
 
+  const parsedAmount = useMemo(() => parseBN(amount), [amount])
+
   useEffect(() => {
     const lagged = async () => {
       if (
         !marginFacility ||
         !position ||
-        Number(amount) <= 0 ||
-        !amount ||
+        !parsedAmount ||
+        parsedAmount.isLessThanOrEqualTo(0) ||
         !pool ||
         !inputCurrency ||
         !outputCurrency ||
@@ -109,19 +110,18 @@ function useDerivedDepositPremiumInfo(
       setState(DerivedInfoState.LOADING)
 
       try {
-        await marginFacility.callStatic.depositPremium(
+        await marginFacility.callStatic.withdrawPremium(
           {
             token0: positionKey.poolKey.token0Address,
             token1: positionKey.poolKey.token1Address,
             fee: positionKey.poolKey.fee,
           },
-          account,
           positionKey.isToken0,
-          new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0)
+          parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0)
         )
 
         const info: DerivedDepositPremiumInfo = {
-          newDepositAmount: position.premiumDeposit.plus(amount),
+          newDepositAmount: position.premiumDeposit.plus(parsedAmount),
         }
 
         setTxnInfo(info)
@@ -136,17 +136,17 @@ function useDerivedDepositPremiumInfo(
     }
 
     lagged()
-  }, [setState, pool, marginFacility, account, amount, position, positionKey, inputCurrency, outputCurrency])
+  }, [setState, pool, marginFacility, account, parsedAmount, position, positionKey, inputCurrency, outputCurrency])
 
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
 
-    if (amount === '') {
+    if (!parsedAmount || parsedAmount.isLessThanOrEqualTo(0)) {
       error = <Trans>Enter an amount</Trans>
     }
 
     return error
-  }, [amount])
+  }, [parsedAmount])
 
   return useMemo(() => {
     return {
@@ -176,7 +176,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
-  const { txnInfo, inputError } = useDerivedDepositPremiumInfo(amount, positionKey, position, setTradeState)
+  const { txnInfo, inputError } = useDerivedWithdrawPremiumInfo(amount, positionKey, position, setTradeState)
   const { account, chainId, provider } = useWeb3React()
 
   const maxWithdrawAmount: BN | undefined = useMemo(() => {

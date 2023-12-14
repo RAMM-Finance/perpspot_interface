@@ -8,7 +8,7 @@ import { AddLimitTrade } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
-import { Multicall as MulticallSDK } from 'utils/lmtSDK/multicall'
+import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'

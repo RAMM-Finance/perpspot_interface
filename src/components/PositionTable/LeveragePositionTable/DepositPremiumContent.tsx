@@ -1,4 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
@@ -36,12 +37,15 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
 import { Text } from 'rebass'
+import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { DepositPremiumOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
 import ConfirmModifyPositionModal from './TransactionModal'
 
@@ -90,6 +94,10 @@ function useDerivedDepositPremiumInfo(
     position?.isToken0 ? positionKey.poolKey.token0Address : positionKey.poolKey.token1Address
   )
 
+  const parsedAmount = useMemo(() => {
+    return parseBN(amount)
+  }, [amount])
+
   const [txnInfo, setTxnInfo] = useState<DerivedDepositPremiumInfo>()
   const [contractError, setContractError] = useState<React.ReactNode>()
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
@@ -101,8 +109,8 @@ function useDerivedDepositPremiumInfo(
       if (
         !marginFacility ||
         !position ||
-        Number(amount) <= 0 ||
-        !amount ||
+        !parsedAmount ||
+        !parsedAmount.isGreaterThan(0) ||
         !pool ||
         !inputCurrency ||
         !outputCurrency ||
@@ -124,11 +132,11 @@ function useDerivedDepositPremiumInfo(
           },
           account,
           positionKey.isToken0,
-          new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0)
+          parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0)
         )
 
         const info: DerivedDepositPremiumInfo = {
-          newDepositAmount: position.premiumDeposit.plus(amount),
+          newDepositAmount: position.premiumDeposit.plus(parsedAmount),
         }
 
         setTxnInfo(info)
@@ -143,17 +151,17 @@ function useDerivedDepositPremiumInfo(
     }
 
     lagged()
-  }, [setState, pool, marginFacility, account, amount, position, positionKey, inputCurrency, outputCurrency])
+  }, [setState, pool, marginFacility, account, parsedAmount, position, positionKey, inputCurrency, outputCurrency])
 
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
 
-    if (amount === '') {
+    if (!parsedAmount || parsedAmount.isLessThanOrEqualTo(0)) {
       error = <Trans>Enter an amount</Trans>
     }
 
     return error
-  }, [amount])
+  }, [parsedAmount])
 
   return useMemo(() => {
     return {
@@ -206,10 +214,6 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
 
   const inputCurrencyBalance = useCurrencyBalance(account, inputCurrency ?? undefined)
 
-  const marginFacility = useMarginFacilityContract(true)
-
-  console.log(positionKey)
-
   const addTransaction = useTransactionAdder()
   // callback
   const callback = useCallback(async (): Promise<TransactionResponse> => {
@@ -218,22 +222,40 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
       if (!chainId) throw new Error('missing chainId')
       if (!provider) throw new Error('missing provider')
       if (!txnInfo) throw new Error('missing txn info')
-      if (!marginFacility) throw new Error('missing marginFacility contract')
       if (!position) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
 
-      const response = await marginFacility.depositPremium(
-        {
-          token0: positionKey.poolKey.token0Address,
-          token1: positionKey.poolKey.token1Address,
-          fee: positionKey.poolKey.fee,
-        },
-        account,
-        positionKey.isToken0,
-        new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0)
-      )
+      const params: DepositPremiumOptions = {
+        positionKey,
+        amount: new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0),
+      }
 
+      const { calldata } = MarginFacilitySDK.depositPremiumParameters(params)
+
+      const tx = {
+        from: account,
+        to: LMT_MARGIN_FACILITY[chainId],
+        data: calldata,
+      }
+
+      let gasEstimate: BigNumber
+
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        console.log('gasError', gasError)
+        throw new Error('gasError')
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          return response
+        })
       return response
     } catch (err) {
       console.log('reduce callback error', err)
@@ -244,7 +266,6 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
     chainId,
     provider,
     txnInfo,
-    marginFacility,
     position,
     pool,
     outputCurrency,

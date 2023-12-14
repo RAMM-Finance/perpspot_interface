@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { ConnectionType } from 'connection'
 import { SupportedLocale } from 'constants/locales'
 
-import { DEFAULT_DEADLINE_FROM_NOW } from '../../constants/misc'
+import { DEFAULT_DEADLINE_FROM_NOW, DEFAULT_LIMIT_DEADLINE_FROM_NOW } from '../../constants/misc'
 import { updateVersion } from '../global/actions'
 import { SerializedPair, SerializedToken } from './types'
 
@@ -32,6 +32,9 @@ export interface UserState {
 
   // user defined premium deposited before txn, asa percentage of totalDebtInput
   userPremiumDepositPercent: number | 'auto'
+
+  // minutes
+  userLimitDeadline: number
 
   // deadline set by user in minutes, used in all txns
   userDeadline: number
@@ -69,6 +72,7 @@ export const initialState: UserState = {
   userSlippageTolerance: 'auto',
   userSlippedTickTolerance: 'auto',
   userPremiumDepositPercent: 'auto',
+  userLimitDeadline: DEFAULT_LIMIT_DEADLINE_FROM_NOW,
   // userPremiumTolerance: 'auto',
   userSlippageToleranceHasBeenMigratedToAuto: true,
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
@@ -109,6 +113,10 @@ const userSlice = createSlice({
     },
     updateUserDeadline(state, action) {
       state.userDeadline = action.payload.userDeadline
+      state.timestamp = currentTimestamp()
+    },
+    updateUserLimitDeadline(state, action) {
+      state.userLimitDeadline = action.payload.userLimitDeadline
       state.timestamp = currentTimestamp()
     },
     updateUserClientSideRouter(state, action) {
@@ -178,6 +186,7 @@ const userSlice = createSlice({
         state.userDeadline > 180 * 60
       ) {
         state.userDeadline = DEFAULT_DEADLINE_FROM_NOW
+        state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
 
       state.lastUpdateVersionTimestamp = currentTimestamp()
@@ -198,5 +207,6 @@ export const {
   updateHideUniswapWalletBanner,
   updateUserPremiumDepositPercent,
   updateUserSlippedTickTolerance,
+  updateUserLimitDeadline,
 } = userSlice.actions
 export default userSlice.reducer

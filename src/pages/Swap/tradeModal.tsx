@@ -31,7 +31,6 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -476,7 +475,7 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, currencies])
 
-  const deadline = useTransactionDeadline()
+  // const deadline = useTransactionDeadline()
 
   return (
     <Wrapper>

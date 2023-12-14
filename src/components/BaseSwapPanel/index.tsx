@@ -55,7 +55,7 @@ const FixedContainer = styled.div`
 const Container = styled.div<{ hideInput: boolean; disabled: boolean }>`
   border-radius: ${({ hideInput }) => (hideInput ? '10px' : '10px')};
   background-color: ${({ hideInput }) => (hideInput ? 'transparent' : '#0a0f19')};
-  // border: 1px solid ${({ theme }) => theme.backgroundSurface};
+  border: 1px solid ${({ theme }) => theme.backgroundSurface};
 
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   ${({ theme, hideInput, disabled }) =>
@@ -219,6 +219,7 @@ export default function CurrencyInputPanel({
   hideInput = false,
   locked = false,
   loading = false,
+  label,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -245,6 +246,7 @@ export default function CurrencyInputPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput} disabled={!chainAllowed}>
+        <ThemedText.SubHeaderSmall style={{ userSelect: 'none' }}>{label}</ThemedText.SubHeaderSmall>
         <InputRow style={hideInput ? { padding: '0', borderRadius: '10px' } : {}} selected={!onCurrencySelect}>
           {!hideInput && (
             <StyledNumericalInput

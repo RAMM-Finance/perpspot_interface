@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
+import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
 import { useCurrency, useToken } from 'hooks/Tokens'
@@ -557,6 +558,7 @@ export function ValueLabel({
   syncing,
   symbolAppend,
   hideInfoTooltips = false,
+  delta,
 }: {
   description: string
   label: string
@@ -565,6 +567,7 @@ export function ValueLabel({
   syncing: boolean
   symbolAppend?: string
   hideInfoTooltips?: boolean
+  delta?: boolean
 }) {
   // const theme = useTheme()
 
@@ -577,9 +580,17 @@ export function ValueLabel({
       </RowFixed>
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65}>
-        <ThemedText.BodySmall color="textSecondary" textAlign="right">
-          {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
-        </ThemedText.BodySmall>
+        {!delta ? (
+          <ThemedText.BodySmall color="textSecondary" textAlign="right">
+            {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
+          </ThemedText.BodySmall>
+        ) : (
+          <ThemedText.BodySmall color="textSecondary" textAlign="right">
+            <DeltaText delta={Number(value)}>
+              {value ? `${Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}` : '-'}
+            </DeltaText>
+          </ThemedText.BodySmall>
+        )}
       </TextWithLoadingPlaceholder>
     </RowBetween>
   )
@@ -622,7 +633,7 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-  console.log('trade', trade, preTradeInfo);
+  console.log('trade', trade, preTradeInfo)
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -651,10 +662,9 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Initial Premium Deposit for this position, can be replenished in the position table. When deposit is depleted, your position will be force closed."
           label="Initial Premium deposit"
-          value= {formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
+          value={formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
-
         />
         <ValueLabel
           description="Rate at which your premium deposit are depleted. Rate% * debt is rate of depletion  "
@@ -664,7 +674,7 @@ export function AdvancedMarginTradeDetails({
         />
         <ValueLabel
           description="The amount you borrow"
-          label= "Borrow Amount"
+          label="Borrow Amount"
           value={formatCurrencyAmount(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}

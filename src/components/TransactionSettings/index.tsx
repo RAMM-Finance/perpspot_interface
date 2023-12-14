@@ -2,11 +2,12 @@ import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { L2_CHAIN_IDS } from 'constants/chains'
-import { DEFAULT_DEADLINE_FROM_NOW } from 'constants/misc'
+import { DEFAULT_DEADLINE_FROM_NOW, DEFAULT_LIMIT_DEADLINE_FROM_NOW } from 'constants/misc'
 import ms from 'ms.macro'
 import { darken } from 'polished'
 import { useState } from 'react'
 import {
+  useUserLimitOrderTransactionTTL,
   useUserPremiumDepositPercent,
   useUserSlippageTolerance,
   useUserSlippedTickTolerance,
@@ -116,6 +117,7 @@ interface TransactionSettingsProps {
   placeholderSlippage?: Percent // varies according to the context in which the settings dialog is placed
   placeholderSlippedTick?: Percent
   placeholderPremium?: Percent
+  isLimitOrder?: boolean
 }
 
 const THREE_DAYS_IN_SECONDS = ms`3 days` / 1000
@@ -128,6 +130,7 @@ export default function TransactionSettings({
   placeholderSlippage,
   placeholderSlippedTick,
   placeholderPremium,
+  isLimitOrder,
 }: // placeholderPremium,
 TransactionSettingsProps) {
   const { chainId } = useWeb3React()
@@ -136,6 +139,9 @@ TransactionSettingsProps) {
   const [userSlippageTolerance, setUserSlippageTolerance] = useUserSlippageTolerance()
   const [userSlippedTickTolerance, setUserSlippedTickTolerance] = useUserSlippedTickTolerance()
   const [userPremiumDepositPercent, setUserPremiumDepositPercent] = useUserPremiumDepositPercent()
+  const [limitDeadline, setLimitDeadline] = useUserLimitOrderTransactionTTL()
+  const [limitDeadlineInput, setLimitDeadlineInput] = useState('')
+  const [limitDeadlineError, setLimitDeadlineError] = useState<DeadlineError | false>(false)
 
   const [deadline, setDeadline] = useUserTransactionTTL()
 
@@ -240,6 +246,28 @@ TransactionSettingsProps) {
     }
   }
 
+  function parseLimitDeadlineInput(value: string) {
+    // populate what the user typed and clear the error
+    setLimitDeadlineInput(value)
+    setLimitDeadlineError(false)
+
+    if (value.length === 0) {
+      setLimitDeadline(DEFAULT_LIMIT_DEADLINE_FROM_NOW)
+    } else {
+      try {
+        const parsed: number = Math.floor(Number.parseFloat(value) * 60)
+        if (!Number.isInteger(parsed) || parsed < 60 || parsed > THREE_DAYS_IN_SECONDS) {
+          setLimitDeadlineError(DeadlineError.InvalidInput)
+        } else {
+          setLimitDeadline(parsed)
+        }
+      } catch (error) {
+        console.error(error)
+        setLimitDeadlineError(DeadlineError.InvalidInput)
+      }
+    }
+  }
+
   const premiumTooLow =
     userPremiumDepositPercent !== 'auto' && userPremiumDepositPercent.lessThan(new Percent(5, 10_000))
 
@@ -256,7 +284,12 @@ TransactionSettingsProps) {
               <Trans>Premium Deposit</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
-              text={<Trans>When positions are added you are automatically supplying this amount of premium, as a percentage of borrowed amount.</Trans>}
+              text={
+                <Trans>
+                  When positions are added you are automatically supplying this amount of premium, as a percentage of
+                  borrowed amount.
+                </Trans>
+              }
             />
           </RowFixed>
           <RowBetween>
@@ -312,6 +345,41 @@ TransactionSettingsProps) {
               ) : null}
             </RowBetween>
           ) : null}
+        </AutoColumn>
+      )}
+      {isLimitOrder && (
+        <AutoColumn gap="sm">
+          <RowFixed>
+            <ThemedText.DeprecatedBlack fontSize={14} fontWeight={400} color={theme.textSecondary}>
+              <Trans>Transaction deadline</Trans>
+            </ThemedText.DeprecatedBlack>
+            <QuestionHelper
+              text={<Trans>Your transaction will revert if it is pending for more than this period of time.</Trans>}
+            />
+          </RowFixed>
+          <RowFixed>
+            <OptionCustom style={{ width: '80px' }} warning={!!limitDeadlineError} tabIndex={-1}>
+              <Input
+                placeholder={(DEFAULT_LIMIT_DEADLINE_FROM_NOW / 60).toString()}
+                value={
+                  limitDeadlineInput.length > 0
+                    ? limitDeadlineInput
+                    : limitDeadline === DEFAULT_LIMIT_DEADLINE_FROM_NOW
+                    ? ''
+                    : (limitDeadline / 60).toString()
+                }
+                onChange={(e) => parseLimitDeadlineInput(e.target.value)}
+                onBlur={() => {
+                  parseLimitDeadlineInput('')
+                  setLimitDeadlineError(false)
+                }}
+                color={limitDeadlineError ? 'red' : ''}
+              />
+            </OptionCustom>
+            <ThemedText.DeprecatedBody style={{ paddingLeft: '8px' }} fontSize={14}>
+              <Trans>minutes</Trans>
+            </ThemedText.DeprecatedBody>
+          </RowFixed>
         </AutoColumn>
       )}
       {placeholderSlippedTick && (

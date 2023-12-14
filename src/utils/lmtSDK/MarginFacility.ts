@@ -1,11 +1,12 @@
-import { BigintIsh } from '@uniswap/sdk-core'
+// import { BigintIsh } from '@uniswap/sdk-core'
+import { BigNumber } from '@ethersproject/bignumber'
 import { MethodParameters, toHex } from '@uniswap/v3-sdk'
 import MarginFacilityJson from 'abis_v2/MarginFacility.json'
 import { Interface } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
 import { OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
-import { Multicall } from './multicall'
+import { MulticallSDK } from './multicall'
 
 export interface AddPositionOptions {
   positionKey: TraderPositionKey
@@ -21,18 +22,32 @@ export interface AddPositionOptions {
   depositPremium?: string
 }
 
+// struct ReduceParam {
+//   bool positionIsToken0;
+//   uint256 reducePercentage;
+//   uint256 minOutput;
+//   address trader;
+//   uint256 executionOption;
+//   bytes executionData;
+//   int24 slippedTickMin;
+//   int24 slippedTickMax;
+//   uint256 reduceAmount;
+// }
 export interface ReducePositionOptions {
   positionKey: TraderPositionKey
-  reducePercentage: JSBI // should be in wad
+  reducePercentage: string
   executionOption: number
-  maxSlippage: JSBI
-  deadline: BigintIsh
-  slippedPrice: JSBI
+  deadline: BigNumber
+  slippedTickMin: number
+  slippedTickMax: number
+  removePremium?: string
+  executionData: string
+  minOutput: string
 }
 
 export interface DepositPremiumOptions {
   positionKey: TraderPositionKey
-  amount: JSBI
+  amount: string
 }
 
 export interface WithdrawPremiumOptions {
@@ -50,7 +65,7 @@ export interface WithdrawPremiumOptions {
 //     uint256 decayRate,
 //     uint256 margin
 
-interface LimitOrderOptions {
+export interface LimitOrderOptions {
   orderKey: OrderPositionKey
   margin: string
   pool: string
@@ -163,6 +178,19 @@ export abstract class MarginFacilitySDK {
   public static reducePositionParameters(param: ReducePositionOptions): MethodParameters {
     const calldatas: string[] = []
 
+    if (param.removePremium) {
+      MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
+        {
+          token0: param.positionKey.poolKey.token0Address,
+          token1: param.positionKey.poolKey.token1Address,
+          fee: param.positionKey.poolKey.fee,
+        },
+        param.positionKey.trader,
+        param.positionKey.isToken0,
+        param.removePremium,
+      ])
+    }
+
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
         {
@@ -172,20 +200,20 @@ export abstract class MarginFacilitySDK {
         },
         {
           positionIsToken0: param.positionKey.isToken0,
-          reducePercentage: toHex(param.reducePercentage),
-          reduceAmount: toHex(0),
-          maxSlippage: toHex(param.maxSlippage),
+          reducePercentage: param.reducePercentage,
+          minOutput: param.minOutput,
           trader: param.positionKey.trader,
           executionOption: param.executionOption,
-          executionData: toHex(0),
-          slippedPrice: toHex(param.slippedPrice),
-          deadline: param.deadline,
+          executionData: param.executionData,
+          slippedTickMin: param.slippedTickMin,
+          slippedTickMax: param.slippedTickMax,
+          reduceAmount: toHex(0),
         },
       ])
     )
 
     return {
-      calldata: Multicall.encodeMulticall(calldatas),
+      calldata: MulticallSDK.encodeMulticall(calldatas),
       value: toHex(0),
     }
   }

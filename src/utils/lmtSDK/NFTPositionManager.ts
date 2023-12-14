@@ -6,7 +6,7 @@ import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
 
 import { ONE, ZERO } from './internalConstants'
-import { Multicall } from './multicall'
+import { MulticallSDK } from './multicall'
 
 // type guard
 function isMint(options: AddLiquidityOptions): options is MintOptions {
@@ -267,7 +267,7 @@ export abstract class NonfungiblePositionManager {
     }
 
     return {
-      calldata: Multicall.encodeMulticall(calldatas),
+      calldata: MulticallSDK.encodeMulticall(calldatas),
       value: toHex(0),
     }
   }
