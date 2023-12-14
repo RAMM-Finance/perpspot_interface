@@ -605,7 +605,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     [margin, totalDebtInput]
   )
 
-  const [entryPrice, currentPrice, baseToken, quoteToken, position, premiumRemaining] = useMemo(() => {
+  const [entryPrice, currentPrice, baseToken, quoteToken, position, existingDeposit] = useMemo(() => {
     if (pool) {
       const _position = new MarginPosition(pool, details)
 
@@ -619,7 +619,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           pool.token1,
           pool.token0,
           _position,
-          _position.premiumLeft.minus(_position.premiumOwed),
+          _position.premiumLeft.plus(_position.premiumOwed),
         ]
       } else {
         return [
@@ -628,7 +628,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           pool.token0,
           pool.token1,
           _position,
-          _position.premiumLeft.minus(_position.premiumOwed),
+          _position.premiumLeft.plus(_position.premiumOwed),
         ]
       }
     } else {
@@ -727,11 +727,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               <UnderlineText>
-                {premiumRemaining?.isGreaterThan(0) ? (
+                {existingDeposit?.isGreaterThan(0) ? (
                   <GreenText>
                     <div>
                       {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
-                      {formatBNToString(premiumRemaining, NumberType.SwapTradeAmount)}
+                      {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
                     </div>
                     <div>
                       {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
