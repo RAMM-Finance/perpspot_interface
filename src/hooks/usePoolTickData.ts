@@ -133,7 +133,7 @@ function useTicksFromTickLens(
               })
             )
             .sort((a, b) => a.tick - b.tick)
-          console.log('multicall4', latestTickData)
+          // console.log('multicall4', latestTickData)
           setLastSyncedBlock(currentBlock)
           setTickDataLatestSynced(latestTickData)
           setError(false)

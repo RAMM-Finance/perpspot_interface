@@ -1,10 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { BigNumber as BN } from 'bignumber.js'
 import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
-import { useMemo } from 'react'
+import {useEffect, useMemo , useState} from 'react'
 import { PositionDetails } from 'types/position'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 
-import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
+import { useDataProviderContract, useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
 
 interface UseV3PositionsResults {
   loading: boolean
@@ -273,6 +274,7 @@ function useV3PositionsFromTokenIds(tokenIds: BigNumber[] | undefined): UseV3Pos
 interface UseV3PositionResults {
   loading: boolean
   position: PositionDetails | undefined
+  maxWithdrawable?: BigNumber
 }
 
 export function useV3PositionFromTokenId(tokenId: BigNumber | undefined): UseV3PositionResults {
@@ -283,12 +285,63 @@ export function useV3PositionFromTokenId(tokenId: BigNumber | undefined): UseV3P
   }
 }
 
+
 export function useLmtLpPositionFromTokenId(tokenId: BigNumber | undefined): UseV3PositionResults {
   const position = useLmtLpPositionsFromTokenIds(tokenId ? [tokenId] : undefined)
-  return {
-    loading: position.loading,
-    position: position.positions?.[0],
-  }
+  const dataProvider = useDataProviderContract()
+  const blockNumber = useBlockNumber()
+   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  useEffect(()=>{
+    if ( loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+
+    const call = async()=>{
+      try{
+        setLoading(true)
+        const result = await dataProvider?.getMaxWithdrawable(
+          {
+            token0: position.positions?.[0]?.token0 as string, 
+            token1: position.positions?.[0]?.token1 as string, 
+            fee: position.positions?.[0]?.fee as number ,
+          }, 
+          position.positions?.[0]?.tickLower as number, 
+          position.positions?.[0]?.tickUpper as number, 
+        )
+        setData(result)
+        setLoading(false)
+        setBlockNumber(blockNumber)
+
+      } catch(error){
+        setError(error)
+        setLoading(false)
+        console.log('maxWithdrawableerr', error)
+      }
+    }
+    call()
+
+  }, [dataProvider, loading, lastBlockNumber,blockNumber, position.positions, ])
+
+
+  return useMemo(() =>{
+    if(!data || !position){
+      return{
+        loading: position.loading, 
+        position: position.positions?.[0], 
+        maxWithdrawable: data
+      }
+    }else{
+      return {
+        loading: position.loading,
+        position: position.positions?.[0],
+        maxWithdrawable: data
+      }
+    }
+
+  }, [ position.loading, error, data,  tokenId ])
 }
 
 export function useV3Positions(account: string | null | undefined): UseV3PositionsResults {
