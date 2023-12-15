@@ -816,14 +816,26 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                             symbolAppend={inputCurrency?.symbol}
                             syncing={loading}
                           />
-                          <ValueLabel
-                            label="PnL"
-                            description="Profit and Loss"
-                            value={formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)}
-                            symbolAppend={inputCurrency?.symbol}
-                            syncing={loading}
-                            delta={true}
-                          />
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip
+                                text={<Trans>Estimated PnL when position is closed at current market price</Trans>}
+                              >
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans> PnL</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                <TruncatedText>
+                                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                  </DeltaText>{' '}
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
                         </AutoColumn>
                       </StyledCard>
                     ) : (

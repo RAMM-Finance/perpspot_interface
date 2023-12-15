@@ -8,9 +8,102 @@ import { useEffect, useMemo, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 import { useToken } from './Tokens'
-import { useDataProviderContract, useMarginFacilityContract } from './useContract'
+import { useDataProviderContract, useMarginFacilityContract, useLmtPoolManagerContract } from './useContract'
 import { computeOrderId, computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
+
+
+// export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
+//   // getParams
+//   const poolManager = useLmtPoolManagerContract()
+//   const { chainId } = useWeb3React()
+
+//   const poolAddress = useMemo(() => {
+//     if (!pool) return undefined
+//     return PoolCache.getPoolAddress(
+//       V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
+//       pool.token0,
+//       pool.token1,
+//       pool.fee
+//     )
+//   }, [chainId, pool])
+//   const { loading, error, result } = useSingleCallResult(poolManager, 'PoolParams', [poolAddress])
+
+//   return useMemo(() => {
+//     if (!result || loading || error) {
+//       return undefined
+//     } else {
+//               console.log('huh',result.MIN_PREMIUM_DEPOSIT)
+
+//       return {
+//         minimumPremiumDeposit: convertToBN(result.MIN_PREMIUM_DEPOSIT, 18),
+//       }
+//     }
+//   }, [result, loading, error])
+// }
+
+
+
+export function useBulkBinData(
+  token0: string|undefined, 
+  token1: string|undefined, 
+  fee: number|undefined, 
+  currentTick: number|undefined
+): BinData[] | undefined {
+
+
+  const dataProvider = useDataProviderContract()
+  const blockNumber = useBlockNumber()
+  const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  useEffect(()=>{
+    if ( !currentTick ||loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    const tickRounded = Math.ceil(currentTick/100)*100
+
+    const call = async()=>{
+      try{
+        setLoading(true)
+
+        const result = await dataProvider?.getBinsDataInBulk(
+          {
+            token0: token0 as string, 
+            token1: token1 as string, 
+            fee: fee as number ,
+          }, 
+          (tickRounded - 3000) as number, 
+          (tickRounded + 3000) as number, 
+        )
+        setData(result)
+        setLoading(false)
+        setBlockNumber(blockNumber)
+
+      } catch(error){
+        setError(error)
+        setLoading(false)
+        console.log('maxWithdrawableerr', error)
+      }
+    }
+    call()
+
+  }, [dataProvider, loading, lastBlockNumber,blockNumber, token0, token1, fee, currentTick ])
+
+
+  return useMemo(() =>{
+    if(!data ){
+      return null    
+    }else{
+      return data
+    }
+
+  }, [ token0, token1, fee, currentTick, error, data ])
+}
+
+
+
 
 // fetches all leveraged LMT positions for a given account
 export function useLeveragedLMTPositions(account: string | undefined): UseLmtMarginPositionsResults {
@@ -52,6 +145,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
           token0Decimals: Number(position.token0Decimals.toString()),
           token1Decimals: Number(position.token1Decimals.toString()),
           trader: account,
+          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium,inputDecimals  ).toString()
         }
       }),
     }
@@ -267,6 +361,8 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
           trader: account,
           token0Decimals: Number(position.token0Decimals.toString()),
           token1Decimals: Number(position.token1Decimals.toString()),
+          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium,inputDecimals  ).toString()
+          // maxWithdrawablePremium: position.maxWithdrawablePremium.toString()
         },
       }
     }
@@ -310,7 +406,16 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     }
   }, [result, loading, error, key])
 }
-
+interface BinData{
+  price: string
+  token0Liquidity: string
+  token1Liquidity: string 
+  token0Borrowed: string
+  token1Borrowed: string
+}
+export interface BinDatas{
+  data: BinData[] | undefined
+}
 interface UseLmtMarginPositionsResults {
   loading: boolean
   error: any

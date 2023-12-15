@@ -361,7 +361,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
             <ValueLabel
               description="Maximum premium you can withdraw"
               label="Max Withdrawable Premium"
-              value={formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}
+              value={position?.maxWithdrawablePremium}
               syncing={positionLoading}
               symbolAppend={inputCurrency?.symbol}
             />
