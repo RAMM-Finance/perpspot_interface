@@ -42,7 +42,62 @@ import { convertToBN } from './useV3Positions'
 //   }, [result, loading, error])
 // }
 
+export function useInstantaeneousRate(
+  token0: string|undefined, 
+  token1: string|undefined, 
+  fee: number|undefined, 
+  trader: string|undefined, 
+  positionIsToken0: boolean|undefined
+): string |undefined{
 
+  const dataProvider = useDataProviderContract()
+  const blockNumber = useBlockNumber()
+  const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  useEffect(()=>{
+    if ( !trader ||loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if(positionIsToken0 == undefined) return
+    const call = async()=>{
+      try{
+        setLoading(true)
+        const result = await dataProvider?.getPostInstantaeneousRate(
+          {
+            token0: token0 as string, 
+            token1: token1 as string, 
+            fee: fee as number ,
+          }, 
+          trader as string, 
+          positionIsToken0 as boolean, 
+        )
+        setData(result)
+        setLoading(false)
+        setBlockNumber(blockNumber)
+
+      } catch(error){
+        setError(error)
+        setLoading(false)
+        console.log('instant rate', error)
+      }
+    }
+    call()
+
+  }, [dataProvider, loading, lastBlockNumber,blockNumber, token0, token1, fee, trader, positionIsToken0 ])
+
+
+  return useMemo(() =>{
+    if(!data ){
+      return null    
+    }else{
+      return data
+    }
+
+  }, [ token0, token1, fee, trader,positionIsToken0, error, data ])
+
+}
 
 export function useBulkBinData(
   token0: string|undefined, 

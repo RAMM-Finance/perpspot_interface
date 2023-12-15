@@ -8,6 +8,7 @@ import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceCh
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
+import {useInstantaeneousRate} from 'hooks/useLMTV2Positions'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -20,6 +21,7 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
+import { useWeb3React } from '@web3-react/core'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -578,6 +580,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
+  const { account } = useWeb3React()
 
   const positionKey: TraderPositionKey = useMemo(() => {
     return {
@@ -635,9 +638,16 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       return [undefined, undefined, undefined]
     }
   }, [pool, details])
-
   console.log(margin)
+  // const rate = useInstantaeneousRate(
+  //   position?.pool?.token0?.address,
+  //   position?.pool?.token1?.address, 
+  //   position?.pool?.fee, 
+  //   account, 
+  //   position?.isToken0
+  //   )
 
+  // console.log('position at table', position, rate)
   // /**
   //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
   //    */
