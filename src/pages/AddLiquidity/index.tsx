@@ -762,7 +762,7 @@ export default function AddLiquidity() {
                           {!noLiquidity ? (
                             <>
                               <RowBetween></RowBetween>
-                              <RowBetween>
+                              <RowBetween style={{ marginBottom: '30px' }}>
                                 <ThemedText.BodyPrimary>
                                   <Trans>Select Price Range</Trans>
                                 </ThemedText.BodyPrimary>

@@ -737,7 +737,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               <UnderlineText>
-                {existingDeposit?.isGreaterThan(0) ? (
+                {position?.premiumLeft.isGreaterThan(0) ? (
                   <GreenText>
                     <div>
                       {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/

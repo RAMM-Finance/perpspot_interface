@@ -319,6 +319,7 @@ export type TransactionInfo =
   | AddLeverageTransactionInfo
   | AddLmtLiquidityTransactionInfo
   | AddLimitOrderTransactionInfo
+  | RemoveLimitOrderTransactionInfo
 
 export interface TransactionDetails {
   hash: string
