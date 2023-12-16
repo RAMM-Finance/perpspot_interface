@@ -406,5 +406,7 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Add Limit Order Summary</Trans>
     case TransactionType.REMOVE_LIMIT_ORDER:
       return <Trans>Remove Limit Order Summary</Trans>
+    case TransactionType.REDUCE_LIMIT_ORDER:
+      return <Trans>Reduce Limit Order Summary</Trans>
   }
 }
