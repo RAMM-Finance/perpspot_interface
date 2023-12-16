@@ -56,7 +56,7 @@ export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
 
 export const CurrencyDropdown = styled(CurrencyInputPanel)`
   font-size: 14px;
-  transform: scale(1.1, 1.1);
+  transform: scale(1.2, 1.2);
 `
 
 export const StyledInput = styled(Input)`
@@ -121,7 +121,6 @@ export const LeftSection = styled(AutoColumn)`
 
 export const RightSection = styled(AutoColumn)`
   width: 40%;
-  margin-top: 50px;
 `
 
 export const StackedContainer = styled.div`
