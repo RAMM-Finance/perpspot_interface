@@ -404,5 +404,7 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <AddLmtLiquiditySummary info={info} />
     case TransactionType.ADD_LIMIT_ORDER:
       return <Trans>Add Limit Order Summary</Trans>
+    case TransactionType.REDUCE_LIMIT_ORDER:
+      return <Trans>Reduce Limit Order Summary</Trans>
   }
 }

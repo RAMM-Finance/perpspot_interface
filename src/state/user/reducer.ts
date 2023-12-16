@@ -169,6 +169,10 @@ const userSlice = createSlice({
         }
       }
 
+      if (!state.userLimitDeadline) {
+        state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
+      }
+
       if (!state.userSlippedTickTolerance) {
         state.userSlippedTickTolerance = 'auto'
       }

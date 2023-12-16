@@ -218,7 +218,7 @@ export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
     if (!result || loading || error) {
       return undefined
     } else {
-              console.log('huh',result.MIN_PREMIUM_DEPOSIT)
+      // console.log('huh',result.MIN_PREMIUM_DEPOSIT)
 
       return {
         minimumPremiumDeposit: convertToBN(result.MIN_PREMIUM_DEPOSIT, 18),
