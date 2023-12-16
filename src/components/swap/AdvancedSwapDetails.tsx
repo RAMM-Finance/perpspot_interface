@@ -633,7 +633,6 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-  console.log('trade', trade, preTradeInfo)
   return (
     <StyledCard>
       <AutoColumn gap="sm">

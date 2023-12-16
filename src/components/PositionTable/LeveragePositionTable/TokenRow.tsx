@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
+import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
@@ -8,7 +9,6 @@ import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceCh
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
-import {useInstantaeneousRate} from 'hooks/useLMTV2Positions'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -21,7 +21,6 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-import { useWeb3React } from '@web3-react/core'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -638,12 +637,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       return [undefined, undefined, undefined]
     }
   }, [pool, details])
-  console.log(margin)
   // const rate = useInstantaeneousRate(
   //   position?.pool?.token0?.address,
-  //   position?.pool?.token1?.address, 
-  //   position?.pool?.fee, 
-  //   account, 
+  //   position?.pool?.token1?.address,
+  //   position?.pool?.fee,
+  //   account,
   //   position?.isToken0
   //   )
 
@@ -707,9 +705,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <DeltaText delta={Number(position?.PnL().toNumber())}>
-                    {`${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} ${
-                      position?.inputCurrency?.symbol
-                    }`}
+                    {`${((Number(position?.PnL().toNumber()) / Number(position?.margin.toNumber())) * 100).toFixed(
+                      4
+                    )} % ${position?.inputCurrency?.symbol}`}
                   </DeltaText>
                 </RowBetween>
               </AutoRow>
@@ -736,24 +734,24 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           remainingPremium={
             <FlexStartRow>
-              <UnderlineText>
-                {position?.premiumLeft.isGreaterThan(0) ? (
-                  <GreenText>
-                    <div>
+              {position?.premiumLeft.isGreaterThan(0) ? (
+                <div>
+                  <UnderlineText>
+                    <GreenText>
                       {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
                       {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
-                    </div>
-                    <div>
-                      {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
-                    </div>
-                  </GreenText>
-                ) : (
-                  <RedText>
-                    0
-                    <Edit3 size={14} />
-                  </RedText>
-                )}
-              </UnderlineText>
+                    </GreenText>
+                  </UnderlineText>
+                  <div>
+                    {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
+                  </div>
+                </div>
+              ) : (
+                <RedText>
+                  0
+                  <Edit3 size={14} />
+                </RedText>
+              )}
             </FlexStartRow>
           }
         />

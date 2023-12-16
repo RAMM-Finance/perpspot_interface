@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
+import { Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -17,8 +18,10 @@ import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
 import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { useToken } from 'hooks/Tokens'
 import { useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
+import { usePool } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
@@ -216,6 +219,62 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     </Trans>
   )
 
+  const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
+
+  const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
+  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
+  const {
+    loading,
+    position: lmtPositionDetails,
+    maxWithdrawable: maxWithdrawableValue,
+  } = useLmtLpPositionFromTokenId(parsedTokenId)
+  const {
+    token0: token0Address,
+    token1: token1Address,
+    fee: feeAmount,
+    liquidity,
+    tickLower,
+    tickUpper,
+  } = lmtPositionDetails || {}
+
+  const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
+
+  const token0 = useToken(token0Address)
+  const token1 = useToken(token1Address)
+
+  // construct Position from details returned
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const position = useMemo(() => {
+    if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
+    }
+    return undefined
+  }, [liquidity, pool, tickLower, tickUpper])
+
+  const maxWithdrawablePosition = useMemo(() => {
+    if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: maxWithdrawableLiquidity, tickLower, tickUpper })
+    }
+    return undefined
+  }, [maxWithdrawableLiquidity, pool, tickLower, tickUpper])
+
+  let maxWithdrawableToken0
+  let maxWithdrawableToken1
+  let maximumWithdrawablePercentage
+  if (maxWithdrawablePosition && position) {
+    if (Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())) {
+      maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
+      maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = Math.round(
+        (100 * Number(maxWithdrawableLiquidity)) / Number(liquidity?.toString())
+      )
+    } else {
+      maxWithdrawableToken0 = position.amount0.toSignificant(4)
+      maxWithdrawableToken1 = position.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = 100
+    }
+  }
+
   function modalHeader() {
     return (
       <AutoColumn gap="sm" style={{ padding: '16px' }}>
@@ -317,7 +376,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                   <DoubleCurrencyLogo
                     currency0={liquidityValue0?.currency}
                     currency1={liquidityValue1?.currency}
-                    size={14}
+                    size={16}
                     margin={true}
                   />
                   <ThemedText.DeprecatedLabel
@@ -351,7 +410,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       </SmallMaxButton>
                     </AutoRow>
                   </RowBetween>
-                  <Slider value={percentForSlider} onChange={onPercentSelectForSlider} />
+                  <Slider
+                    max={maximumWithdrawablePercentage}
+                    value={percentForSlider}
+                    onChange={onPercentSelectForSlider}
+                  />
                 </AutoColumn>
               </DarkCardOutline>
               <DarkCardOutline>
@@ -424,7 +487,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               <div style={{ display: 'flex' }}>
                 <AutoColumn justify="center" gap="md" style={{ flex: '1' }}>
                   <ButtonConfirmed
-                    style={{ width: 'fit-content', borderRadius: '10px', height: '25px' }}
+                    style={{ width: 'fit-content', borderRadius: '10px', height: '25px', fontSize: '14px' }}
                     confirmed={false}
                     disabled={removed || percent === 0 || !liquidityValue0}
                     onClick={() => setShowConfirm(true)}

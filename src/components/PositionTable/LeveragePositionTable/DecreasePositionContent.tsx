@@ -929,7 +929,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                               <ThemedText.BodySmall textAlign="right" color="textSecondary">
                                 <TruncatedText>
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                    {txnInfo &&
+                                      `${(
+                                        (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
+                                        100
+                                      ).toFixed(4)} % ${inputCurrency?.symbol}`}
                                   </DeltaText>{' '}
                                 </TruncatedText>
                               </ThemedText.BodySmall>
@@ -940,13 +944,82 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                     ) : (
                       <StyledCard style={{ width: '100%' }}>
                         <AutoColumn gap="sm">
-                          <ValueLabel
-                            label="24h Price Change (TODO)"
-                            description="Current amount of premium owed"
-                            value={formatBNToString(txnInfo?.premium, NumberType.SwapTradeAmount)}
-                            symbolAppend={inputCurrency?.symbol}
-                            syncing={loading}
-                          />
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip text={<Trans>Amount of position reduced</Trans>}>
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>Reduced Position</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                <TruncatedText>
+                                  {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip text={<Trans>Your specified order price</Trans>}>
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>Order Price</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right">
+                                <TruncatedText>
+                                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                  </DeltaText>
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip
+                                text={<Trans>Amount the reduced position converts to, given your order price </Trans>}
+                              >
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>Desired Output</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                <TruncatedText>
+                                  {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
+                          <RowBetween>
+                            <RowFixed>
+                              <MouseoverTooltip
+                                text={<Trans>Estimated PnL when position is closed at specified price</Trans>}
+                              >
+                                <ThemedText.BodySmall color="textPrimary">
+                                  <Trans>Estimated PnL</Trans>
+                                </ThemedText.BodySmall>
+                              </MouseoverTooltip>
+                            </RowFixed>
+                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
+                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                                <TruncatedText>
+                                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                                    {txnInfo &&
+                                      `${(
+                                        (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
+                                        100
+                                      ).toFixed(4)} % ${inputCurrency?.symbol}`}
+                                  </DeltaText>{' '}
+                                </TruncatedText>
+                              </ThemedText.BodySmall>
+                            </TextWithLoadingPlaceholder>
+                          </RowBetween>
                         </AutoColumn>
                       </StyledCard>
                     )}

@@ -17,7 +17,6 @@ import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -458,6 +457,9 @@ export default function Swap({ className }: { className?: string }) {
   const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
+
+  console.log(binData)
+  console.log(pool)
 
   const [activePositionTable, setActiveTable] = useState(1)
 
