@@ -442,21 +442,26 @@ export default function AddLiquidity() {
   }`
 
   const [searchParams, setSearchParams] = useSearchParams()
+  console.log(searchParams)
 
   const handleSetRecommendedRange = useCallback(() => {
-    getSetFullRange()
-
     const minPrice = pricesAtLimit[Bound.LOWER]
-    if (minPrice) searchParams.set('minPrice', minPrice.toSignificant(5))
+    if (minPrice)
+      onLeftRangeInput(
+        (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * 0.9).toString()
+      )
     const maxPrice = pricesAtLimit[Bound.UPPER]
-    if (maxPrice) searchParams.set('maxPrice', maxPrice.toSignificant(5))
+    if (maxPrice)
+      onRightRangeInput(
+        (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * 1.1).toString()
+      )
     setSearchParams(searchParams)
 
     sendEvent({
       category: 'Liquidity',
-      action: 'Full Range Clicked',
+      action: 'Recommended Range Clicked',
     })
-  }, [getSetFullRange, pricesAtLimit, searchParams, setSearchParams])
+  }, [pricesAtLimit, searchParams, setSearchParams, invertPrice, price])
 
   const handleSetFullRange = useCallback(() => {
     getSetFullRange()
@@ -705,6 +710,9 @@ export default function AddLiquidity() {
                   </div>
                 </div>
               </AutoColumn>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <Buttons />
+              </div>
             </PositionPreviewWrapper>
           )}
           <Wrapper>
@@ -762,7 +770,7 @@ export default function AddLiquidity() {
                           {!noLiquidity ? (
                             <>
                               <RowBetween></RowBetween>
-                              <RowBetween>
+                              <RowBetween style={{ marginBottom: '30px' }}>
                                 <ThemedText.BodyPrimary>
                                   <Trans>Select Price Range</Trans>
                                 </ThemedText.BodyPrimary>
@@ -794,30 +802,33 @@ export default function AddLiquidity() {
                               {price && baseCurrency && quoteCurrency && !noLiquidity && (
                                 <AutoRow gap="4px" justify="left" style={{ marginTop: '0.5rem' }}>
                                   <Trans>
-                                    <ThemedText.DeprecatedMain
-                                      fontWeight={500}
-                                      textAlign="center"
-                                      fontSize={12}
-                                      color="text1"
-                                    >
-                                      Current Price:
-                                    </ThemedText.DeprecatedMain>
-                                    <ThemedText.DeprecatedBody
-                                      fontWeight={500}
-                                      textAlign="center"
-                                      fontSize={12}
-                                      color="text1"
-                                    >
-                                      <HoverInlineText
-                                        maxCharacters={20}
-                                        text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
-                                      />
-                                    </ThemedText.DeprecatedBody>
-                                    <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                                    <div style={{ display: 'flex', gap: '2px' }}>
+                                      <ThemedText.DeprecatedMain
+                                        fontWeight={500}
+                                        textAlign="center"
+                                        fontSize={12}
+                                        color="text1"
+                                      >
+                                        Current Price:
+                                      </ThemedText.DeprecatedMain>
+                                      <ThemedText.DeprecatedBody
+                                        fontWeight={500}
+                                        textAlign="center"
+                                        fontSize={12}
+                                        color="text1"
+                                      >
+                                        <HoverInlineText
+                                          maxCharacters={20}
+                                          text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
+                                        />
+                                      </ThemedText.DeprecatedBody>
+                                    </div>
+
+                                    <ThemedText.DeprecatedBody color="text2" fontSize={11}>
                                       {quoteCurrency?.symbol} per {baseCurrency.symbol}
                                     </ThemedText.DeprecatedBody>
                                   </Trans>
-                                  {!noLiquidity && <PresetsButtons onSetFullRange={handleSetRecommendedRange} />}
+                                  {!noLiquidity && <PresetsButtons onSetRecommendedRange={handleSetRecommendedRange} />}
                                 </AutoRow>
                               )}
 
@@ -944,6 +955,19 @@ export default function AddLiquidity() {
                                   <Trans>
                                     Your position will earn only premiums when out of range, but trading fees as well
                                     when in range.
+                                  </Trans>
+                                </ThemedText.DeprecatedLabel>
+                              </RowBetween>
+                            </YellowCard>
+                          ) : null}
+
+                          {Number(priceUpper?.toSignificant()) / Number(priceLower?.toSignificant()) > 2 ? (
+                            <YellowCard padding="8px 12px" $borderRadius="12px">
+                              <RowBetween>
+                                {/*<AlertTriangle stroke={theme.deprecated_primary2} size="16px" />*/}
+                                <ThemedText.DeprecatedLabel ml="12px" fontSize="12px">
+                                  <Trans>
+                                    Range is too wide, consider narrowing down to reduce gas costs or tx reverts
                                   </Trans>
                                 </ThemedText.DeprecatedLabel>
                               </RowBetween>
@@ -1270,11 +1294,7 @@ export default function AddLiquidity() {
                         </MediumOnly>
                       </RightContainer>
                     </>
-                  ) : (
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <Buttons />
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               </RightSection>
             </SectionWrapper>

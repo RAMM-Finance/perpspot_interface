@@ -7,23 +7,20 @@ import { ThemedText } from 'theme'
 const Button = styled(ButtonOutlined).attrs(() => ({
   padding: '8px',
   $borderRadius: '8px',
-
-
 }))`
   color: ${({ theme }) => theme.textPrimary};
   flex: 1;
   border-color: ${({ theme }) => theme.backgroundInteractive};
-
 `
 
 interface PresetsButtonsProps {
-  onSetFullRange: () => void
+  onSetRecommendedRange: () => void
 }
 
-export  function PresetsButtons({ onSetFullRange }: PresetsButtonsProps) {
+export function PresetsButtons({ onSetRecommendedRange }: PresetsButtonsProps) {
   return (
     <AutoRow gap="4px" width="auto">
-      <Button onClick={onSetFullRange}>
+      <Button onClick={onSetRecommendedRange}>
         <ThemedText.DeprecatedBody fontSize={12}>
           <Trans>Recommended Range</Trans>
         </ThemedText.DeprecatedBody>
@@ -31,10 +28,10 @@ export  function PresetsButtons({ onSetFullRange }: PresetsButtonsProps) {
     </AutoRow>
   )
 }
-export function PresetsButtonsFull({ onSetFullRange }: PresetsButtonsProps) {
+export function PresetsButtonsFull({ onSetRecommendedRange }: PresetsButtonsProps) {
   return (
     <AutoRow gap="4px" width="auto">
-      <Button onClick={onSetFullRange}>
+      <Button onClick={onSetRecommendedRange}>
         <ThemedText.DeprecatedBody fontSize={12}>
           <Trans>Full Range</Trans>
         </ThemedText.DeprecatedBody>

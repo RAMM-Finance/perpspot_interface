@@ -657,7 +657,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
         setTxHash(response?.hash)
         setErrorMessage(undefined)
         addTransaction(response, {
-          type: TransactionType.PREMIUM_LEVERAGE_DEPOSIT,
+          type: TransactionType.REMOVE_LIMIT_ORDER,
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
         })

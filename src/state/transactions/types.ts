@@ -327,6 +327,7 @@ export type TransactionInfo =
   | AddLmtLiquidityTransactionInfo
   | AddLimitOrderTransactionInfo
   | ReduceLimitOrderTransactionInfo
+  | RemoveLimitOrderTransactionInfo
 
 export interface TransactionDetails {
   hash: string
