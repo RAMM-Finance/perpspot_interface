@@ -443,7 +443,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     }
   }, [result, loading, error, key])
 }
-interface BinData {
+export interface BinData {
   price: string
   token0Liquidity: string
   token1Liquidity: string

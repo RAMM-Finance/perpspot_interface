@@ -454,12 +454,12 @@ export default function Swap({ className }: { className?: string }) {
     [1984, 870000],
     [1985, 770000],
   ]
-  const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
-  console.log(binData)
-  console.log(pool)
+  const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
+
+  const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
 
   const [activePositionTable, setActiveTable] = useState(1)
 
@@ -508,7 +508,7 @@ export default function Swap({ className }: { className?: string }) {
                   fee={pool?.fee}
                 />
                 <LiquidityDistibutionWrapper>
-                  <LiquidityDistributionTable currentPrice={fETHPrice} bids={fETH_fUSDC} />
+                  <LiquidityDistributionTable currentPrice={currentPrice} bin={binData} />
                 </LiquidityDistibutionWrapper>
               </MiddleContainer>
               <PositionsContainer>
