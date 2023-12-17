@@ -436,8 +436,6 @@ export default function Swap({ className }: { className?: string }) {
   const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
 
   const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
-  const token0 = pool?.token0
-  const token1 = pool?.token1
 
   const [activePositionTable, setActiveTable] = useState(1)
 
