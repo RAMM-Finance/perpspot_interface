@@ -22,11 +22,11 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { CHAIN_IDS_TO_NAMES } from 'constants/chains'
 import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
-import { useV3NFTPositionManagerContract, useLmtNFTPositionManager } from 'hooks/useContract'
+import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { PoolState, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
-import { useV3PositionFees,useLMTPositionFees } from 'hooks/useV3PositionFees'
+import { useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
@@ -380,7 +380,11 @@ export function PositionPage() {
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
   // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
-  const { loading, position: lmtPositionDetails, maxWithdrawable: maxWithdrawableValue } = useLmtLpPositionFromTokenId(parsedTokenId)
+  const {
+    loading,
+    position: lmtPositionDetails,
+    maxWithdrawable: maxWithdrawableValue,
+  } = useLmtLpPositionFromTokenId(parsedTokenId)
   console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
   const {
     token0: token0Address,
@@ -428,19 +432,26 @@ export function PositionPage() {
   let maxWithdrawableToken0
   let maxWithdrawableToken1
   let maximumWithdrawablePercentage
-  if(maxWithdrawablePosition && position){
-    if(Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())){
+  if (maxWithdrawablePosition && position) {
+    if (Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())) {
       maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
       maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
-      maximumWithdrawablePercentage = Math.round(100* Number(maxWithdrawableLiquidity)/Number(liquidity?.toString()))
-    } else{
+      maximumWithdrawablePercentage = Math.round(
+        (100 * Number(maxWithdrawableLiquidity)) / Number(liquidity?.toString())
+      )
+    } else {
       maxWithdrawableToken0 = position.amount0.toSignificant(4)
       maxWithdrawableToken1 = position.amount1.toSignificant(4)
       maximumWithdrawablePercentage = 100
     }
-
   }
-  console.log('maxWithdrawableposition', maxWithdrawablePosition, position, maxWithdrawableLiquidity, liquidity?.toString() )
+  console.log(
+    'maxWithdrawableposition',
+    maxWithdrawablePosition,
+    position,
+    maxWithdrawableLiquidity,
+    liquidity?.toString()
+  )
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -473,7 +484,7 @@ export function PositionPage() {
   // fees
   // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
-  console.log('feevalues', feeValue0?.greaterThan(0) , feeValue1?.greaterThan(0) )
+  console.log('feevalues', feeValue0?.greaterThan(0), feeValue1?.greaterThan(0))
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -512,26 +523,24 @@ export function PositionPage() {
   const positionManager = useV3NFTPositionManagerContract()
   const lmtPositionManager = useLmtNFTPositionManager()
 
-
   const callback = useCallback(async (): Promise<TransactionResponse> => {
-
     try {
-      if (!account ||
-          !currency0ForFeeCollectionPurposes ||
-          !currency1ForFeeCollectionPurposes ||
-          !chainId ||
-          !lmtPositionManager ||
-          !account ||
-          !tokenId ||
-          !provider 
-        ) throw new Error('missing account')
-
-      const response = await lmtPositionManager.collect(
-        { 
-          tokenId: tokenId.toString(),
-          recipient: account
-        }
+      if (
+        !account ||
+        !currency0ForFeeCollectionPurposes ||
+        !currency1ForFeeCollectionPurposes ||
+        !chainId ||
+        !lmtPositionManager ||
+        !account ||
+        !tokenId ||
+        !provider
       )
+        throw new Error('missing account')
+
+      const response = await lmtPositionManager.collect({
+        tokenId: tokenId.toString(),
+        recipient: account,
+      })
       return response
     } catch (err) {
       console.log('collect order error', err)
@@ -547,7 +556,7 @@ export function PositionPage() {
     account,
     tokenId,
     addTransaction,
-    provider
+    provider,
   ])
 
   const collectLMTFees = useCallback(() => {
@@ -590,7 +599,6 @@ export function PositionPage() {
           expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(currency1ForFeeCollectionPurposes, 0).toExact(),
         })
 
-
         return response.hash
       })
       .catch((error) => {
@@ -611,10 +619,8 @@ export function PositionPage() {
     account,
     tokenId,
     addTransaction,
-    provider  
+    provider,
   ])
-
-
 
   const collect = useCallback(() => {
     if (
@@ -697,7 +703,7 @@ export function PositionPage() {
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
   const ownsNFT = owner === account || lmtPositionDetails?.operator === account
-  console.log('owner', ownsNFT, owner, account,lmtPositionDetails?.operator)
+  console.log('owner', ownsNFT, owner, account, lmtPositionDetails?.operator)
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
 
@@ -705,7 +711,6 @@ export function PositionPage() {
   const below = pool && typeof tickLower === 'number' ? pool.tickCurrent < tickLower : undefined
   const above = pool && typeof tickUpper === 'number' ? pool.tickCurrent >= tickUpper : undefined
   const inRange: boolean = typeof below === 'boolean' && typeof above === 'boolean' ? !below && !above : false
-
 
   function modalHeader() {
     return (
@@ -715,29 +720,38 @@ export function PositionPage() {
             <RowBetween>
               <RowFixed>
                 <CurrencyLogo currency={feeValueUpper?.currency} size="14px" style={{ marginRight: '0.5rem' }} />
-                <ThemedText.DeprecatedMain>
+                <ThemedText.BodySmall color="textSecondary">
                   {feeValueUpper ? formatCurrencyAmount(feeValueUpper, 4) : '-'}
-                </ThemedText.DeprecatedMain>
+                </ThemedText.BodySmall>
               </RowFixed>
-              <ThemedText.DeprecatedMain>{feeValueUpper?.currency?.symbol}</ThemedText.DeprecatedMain>
+              <ThemedText.BodySmall color="textSecondary">{feeValueUpper?.currency?.symbol}</ThemedText.BodySmall>
             </RowBetween>
             <RowBetween>
               <RowFixed>
-                <CurrencyLogo currency={feeValueLower?.currency} size="20px" style={{ marginRight: '0.5rem' }} />
-                <ThemedText.DeprecatedMain>
+                <CurrencyLogo currency={feeValueLower?.currency} size="14px" style={{ marginRight: '0.5rem' }} />
+                <ThemedText.BodySmall color="textSecondary">
                   {feeValueLower ? formatCurrencyAmount(feeValueLower, 4) : '-'}
-                </ThemedText.DeprecatedMain>
+                </ThemedText.BodySmall>
               </RowFixed>
-              <ThemedText.DeprecatedMain>{feeValueLower?.currency?.symbol}</ThemedText.DeprecatedMain>
+              <ThemedText.BodySmall color="textSecondary">{feeValueLower?.currency?.symbol}</ThemedText.BodySmall>
             </RowBetween>
           </AutoColumn>
         </LightCard>
         <ThemedText.DeprecatedItalic>
           <Trans>Collecting fees will withdraw currently available fees for you.</Trans>
         </ThemedText.DeprecatedItalic>
-        <ButtonPrimary onClick={collectLMTFees}>
-          <Trans>Collect</Trans>
-        </ButtonPrimary>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <ButtonPrimary
+            padding="5px 6px"
+            width="fit-content"
+            style={{ marginRight: '8px', borderRadius: '10px' }}
+            onClick={collectLMTFees}
+          >
+            <ThemedText.BodySmall fontWeight={600} color="textSecondary">
+              <Trans>Collect</Trans>
+            </ThemedText.BodySmall>
+          </ButtonPrimary>
+        </div>
       </AutoColumn>
     )
   }
@@ -1075,7 +1089,7 @@ export function PositionPage() {
                         <RowBetween style={{ alignItems: 'flex-start' }}>
                           <AutoColumn gap="md">
                             <Label>
-                              <Trans>Unclaimed fees + premiums</Trans>
+                              <Trans>Unclaimed Fees + Premiums</Trans>
                             </Label>
                             {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
                               <ThemedText.DeprecatedLargeHeader
@@ -1100,27 +1114,27 @@ export function PositionPage() {
                             <ResponsiveButtonConfirmed
                               disabled={collecting || !!collectMigrationHash}
                               confirmed={!!collectMigrationHash && !isCollectPending}
+                              padding="5px 8px"
                               width="fit-content"
-                              style={{ borderRadius: '12px' }}
-                              padding="4px 8px"
+                              style={{ marginRight: '8px', borderRadius: '10px' }}
                               onClick={() => setShowConfirm(true)}
                             >
                               {!!collectMigrationHash && !isCollectPending ? (
-                                <ThemedText.DeprecatedMain color={theme.textPrimary}>
+                                <ThemedText.BodySmall fontWeight={600} color="textSecondary">
                                   <Trans> Collected</Trans>
-                                </ThemedText.DeprecatedMain>
+                                </ThemedText.BodySmall>
                               ) : isCollectPending || collecting ? (
-                                <ThemedText.DeprecatedMain color={theme.textPrimary}>
+                                <ThemedText.BodySmall fontWeight={600} color="textSecondary">
                                   {' '}
                                   <Dots>
                                     <Trans>Collecting</Trans>
                                   </Dots>
-                                </ThemedText.DeprecatedMain>
+                                </ThemedText.BodySmall>
                               ) : (
                                 <>
-                                  <ThemedText.DeprecatedMain color={theme.white}>
-                                    <Trans>Collect fees + premiums</Trans>
-                                  </ThemedText.DeprecatedMain>
+                                  <ThemedText.BodySmall fontWeight={600} color="textSecondary">
+                                    <Trans>Collect Fees + Premiums</Trans>
+                                  </ThemedText.BodySmall>
                                 </>
                               )}
                             </ResponsiveButtonConfirmed>
@@ -1130,33 +1144,21 @@ export function PositionPage() {
                       <DarkCardOutline padding="12px 16px">
                         <AutoColumn gap="md">
                           <RowBetween>
+                            <LinkedCurrency chainId={chainId} currency={currencyQuote} />
                             <RowFixed>
-                              <CurrencyLogo
-                                currency={feeValueUpper?.currency}
-                                size="20px"
-                                style={{ marginRight: '0.5rem' }}
-                              />
-                              <ThemedText.DeprecatedMain>{feeValueUpper?.currency?.symbol}</ThemedText.DeprecatedMain>
-                            </RowFixed>
-                            <RowFixed>
-                              <ThemedText.DeprecatedMain>
+                              <ThemedText.BodySmall color="textSecondary">
                                 {feeValueUpper ? formatCurrencyAmount(feeValueUpper, 4) : '-'}
-                              </ThemedText.DeprecatedMain>
+                              </ThemedText.BodySmall>
                             </RowFixed>
                           </RowBetween>
                           <RowBetween>
                             <RowFixed>
-                              <CurrencyLogo
-                                currency={feeValueLower?.currency}
-                                size="20px"
-                                style={{ marginRight: '0.5rem' }}
-                              />
-                              <ThemedText.DeprecatedMain>{feeValueLower?.currency?.symbol}</ThemedText.DeprecatedMain>
+                              <LinkedCurrency chainId={chainId} currency={currencyBase} />
                             </RowFixed>
                             <RowFixed>
-                              <ThemedText.DeprecatedMain>
+                              <ThemedText.BodySmall color="textSecondary">
                                 {feeValueLower ? formatCurrencyAmount(feeValueLower, 4) : '-'}
-                              </ThemedText.DeprecatedMain>
+                              </ThemedText.BodySmall>
                             </RowFixed>
                           </RowBetween>
                         </AutoColumn>

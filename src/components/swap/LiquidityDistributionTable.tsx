@@ -1,8 +1,20 @@
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { Currency } from '@uniswap/sdk-core'
+import { BinData } from 'hooks/useLMTV2Positions'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { formatDollar } from 'utils/formatNumbers'
 
-const LiquidityDistributionTable = ({ currentPrice, bids }: { currentPrice: number; bids: number[][] }) => {
+const LiquidityDistributionTable = ({
+  token0,
+  token1,
+  currentPrice,
+  bin,
+}: {
+  token0: Currency | undefined
+  token1: Currency | undefined
+  currentPrice: number
+  bin: BinData[] | undefined
+}) => {
   return (
     <>
       <Title>
@@ -10,33 +22,53 @@ const LiquidityDistributionTable = ({ currentPrice, bids }: { currentPrice: numb
       </Title>
       <LDHeaderRow>
         <LDHeaderCellIn>Price (fETH)</LDHeaderCellIn>
-        <LDHeaderCellOut>Amount (fUSDC)</LDHeaderCellOut>
+        <LDHeaderCellOut>Amount ({token0?.symbol})</LDHeaderCellOut>
       </LDHeaderRow>
-      {bids
-        .filter((bid) => bid[0] < currentPrice)
-        .map((higherBid) => (
-          <LDDataRow spread={(higherBid[1] / 100 / currentPrice) * 32.5} key={higherBid[0]}>
-            <LDDataCellIn>{formatNumber(higherBid[0], NumberType.FiatTokenPrice)}</LDDataCellIn>
-            <LDDataCellOut>{formatNumber(higherBid[1], NumberType.FiatTokenPrice)}</LDDataCellOut>
-          </LDDataRow>
-        ))}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
-        <p>{currentPrice}</p>
-        <p>{currentPrice}</p>
-      </div>
-      {bids
-        .filter((bid) => bid[0] > currentPrice)
-        .map((higherBid) => (
-          <LDDataRowNeg spread={(higherBid[1] / 100 / currentPrice) * 32.5} key={higherBid[0]}>
-            <LDDataCellInNeg>{formatNumber(higherBid[0], NumberType.FiatTokenPrice)}</LDDataCellInNeg>
-            <LDDataCellOutNeg>{formatNumber(higherBid[1], NumberType.FiatTokenPrice)}</LDDataCellOutNeg>
-          </LDDataRowNeg>
-        ))}
+      {bin &&
+        bin
+          .filter((y) => Number(y.price) / 1e18 > currentPrice && Number(y.token0Liquidity) / 1e18 > 0)
+          .map((x) => (
+            <LDDataRowNeg
+              spread={(Number(x.token0Liquidity) / 1e18 / 100 / currentPrice) * 32.5}
+              key={Number(x.price) / 1e18}
+            >
+              <LDDataCellInNeg>{(Number(x.price) / 1e18).toFixed(2)}</LDDataCellInNeg>
+              <LDDataCellOutNeg>{formatDollar({ num: Number(x.token0Liquidity) / 1e18 })}</LDDataCellOutNeg>
+            </LDDataRowNeg>
+          ))
+          .reverse()}
+      <PriceWrapper>
+        <ThemedText.BodyPrimary>{currentPrice.toFixed(2)}</ThemedText.BodyPrimary>
+        <ThemedText.BodyPrimary>{currentPrice.toFixed(2)}</ThemedText.BodyPrimary>
+      </PriceWrapper>
+      <LDHeaderRow>
+        <LDHeaderCellIn>Price (fETH)</LDHeaderCellIn>
+        <LDHeaderCellOut>Amount ({token1?.symbol})</LDHeaderCellOut>
+      </LDHeaderRow>
+      {bin &&
+        bin
+          .filter((y) => Number(y.price) / 1e18 < currentPrice && Number(y.token1Liquidity) / 1e18 > 0)
+          .map((x) => (
+            <LDDataRow
+              spread={(Number(x.token1Liquidity) / 1e18 / 100 / currentPrice) * 32.5}
+              key={Number(x.price) / 1e18}
+            >
+              <LDDataCellIn>{(Number(x.price) / 1e18).toFixed(2)}</LDDataCellIn>
+              <LDDataCellOut>{formatDollar({ num: Number(x.token1Liquidity) / 1e18 })}</LDDataCellOut>
+            </LDDataRow>
+          ))
+          .reverse()}
     </>
   )
 }
 
 export default LiquidityDistributionTable
+
+const PriceWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 7px;
+`
 
 const Title = styled.div`
   margin-bottom: 15px;

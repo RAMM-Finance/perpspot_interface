@@ -706,9 +706,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <DeltaText delta={Number(position?.PnL().toNumber())}>
-                    {`${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} ${
-                      position?.inputCurrency?.symbol
-                    }`}
+                    {`${((Number(position?.PnL().toNumber()) / Number(position?.margin.toNumber())) * 100).toFixed(
+                      4
+                    )} % ${position?.inputCurrency?.symbol}`}
                   </DeltaText>
                 </RowBetween>
               </AutoRow>
@@ -735,24 +735,24 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           remainingPremium={
             <FlexStartRow>
-              <UnderlineText>
-                {position?.premiumLeft.isGreaterThan(0) ? (
-                  <GreenText>
-                    <div>
+              {position?.premiumLeft.isGreaterThan(0) ? (
+                <div>
+                  <UnderlineText>
+                    <GreenText>
                       {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
                       {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
-                    </div>
-                    <div>
-                      {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
-                    </div>
-                  </GreenText>
-                ) : (
-                  <RedText>
-                    0
-                    <Edit3 size={14} />
-                  </RedText>
-                )}
-              </UnderlineText>
+                    </GreenText>
+                  </UnderlineText>
+                  <div>
+                    {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
+                  </div>
+                </div>
+              ) : (
+                <RedText>
+                  0
+                  <Edit3 size={14} />
+                </RedText>
+              )}
             </FlexStartRow>
           }
         />

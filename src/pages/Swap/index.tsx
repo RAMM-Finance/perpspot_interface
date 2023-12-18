@@ -17,7 +17,6 @@ import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -431,33 +430,12 @@ export default function Swap({ className }: { className?: string }) {
     setSwapQuoteReceivedDate,
   ])
 
-  //Mock Order Book data
-  const fETHPrice = 1976
-  const fETH_fUSDC = [
-    [1966, 132000],
-    [1967, 395000],
-    [1968, 444000],
-    [1969, 203000],
-    [1970, 780000],
-    [1971, 420000],
-    [1972, 756000],
-    [1973, 603000],
-    [1974, 556000],
-    [1975, 506000],
-
-    [1977, 177000],
-    [1978, 395000],
-    [1979, 310000],
-    [1980, 150000],
-    [1981, 900000],
-    [1982, 140000],
-    [1983, 500000],
-    [1984, 870000],
-    [1985, 770000],
-  ]
-  const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
+
+  const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
+
+  const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
 
   const [activePositionTable, setActiveTable] = useState(1)
 
@@ -506,7 +484,12 @@ export default function Swap({ className }: { className?: string }) {
                   fee={pool?.fee}
                 />
                 <LiquidityDistibutionWrapper>
-                  <LiquidityDistributionTable currentPrice={fETHPrice} bids={fETH_fUSDC} />
+                  <LiquidityDistributionTable
+                    token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
+                    token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
+                    currentPrice={currentPrice}
+                    bin={binData}
+                  />
                 </LiquidityDistibutionWrapper>
               </MiddleContainer>
               <PositionsContainer>

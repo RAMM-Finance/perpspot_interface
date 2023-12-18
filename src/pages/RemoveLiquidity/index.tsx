@@ -5,20 +5,23 @@ import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { Currency, Percent } from '@uniswap/sdk-core'
+import { Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { usePool } from 'hooks/usePools'
 import { useV2LiquidityTokenPermit } from 'hooks/useV2LiquidityTokenPermit'
+import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Plus } from 'react-feather'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useTheme } from 'styled-components/macro'
 
+import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import { ButtonConfirmed, ButtonError, ButtonLight, ButtonPrimary } from '../../components/Button'
 import { BlueCard, LightCard } from '../../components/Card'
 import { AutoColumn, ColumnCenter } from '../../components/Column'
-import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import DoubleCurrencyLogo from '../../components/DoubleLogo'
 import CurrencyLogo from '../../components/Logo/CurrencyLogo'
 import { AddRemoveTabs } from '../../components/NavigationTabs'
@@ -28,7 +31,7 @@ import Slider from '../../components/Slider'
 import { Dots } from '../../components/swap/styleds'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
-import { useCurrency } from '../../hooks/Tokens'
+import { useCurrency, useToken } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { usePairContract, useV2RouterContract } from '../../hooks/useContract'
 import useDebouncedChangeHandler from '../../hooks/useDebouncedChangeHandler'
@@ -288,6 +291,67 @@ export default function RemoveLiquidity() {
     }
   }
 
+  const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
+
+  const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
+  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
+  const {
+    loading,
+    position: lmtPositionDetails,
+    maxWithdrawable: maxWithdrawableValue,
+  } = useLmtLpPositionFromTokenId(parsedTokenId)
+  console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
+  const {
+    token0: token0Address,
+    token1: token1Address,
+    fee: feeAmount,
+    liquidity,
+    tickLower,
+    tickUpper,
+    tokenId,
+  } = lmtPositionDetails || {}
+
+  const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
+
+  const token0 = useToken(token0Address)
+  const token1 = useToken(token1Address)
+
+  // flag for receiving WETH
+  const [receiveWETH, setReceiveWETH] = useState(false)
+
+  // construct Position from details returned
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const position = useMemo(() => {
+    if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
+    }
+    return undefined
+  }, [liquidity, pool, tickLower, tickUpper])
+
+  const maxWithdrawablePosition = useMemo(() => {
+    if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: maxWithdrawableLiquidity, tickLower, tickUpper })
+    }
+    return undefined
+  }, [maxWithdrawableLiquidity, pool, tickLower, tickUpper])
+
+  let maxWithdrawableToken0
+  let maxWithdrawableToken1
+  let maximumWithdrawablePercentage
+  if (maxWithdrawablePosition && position) {
+    if (Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())) {
+      maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
+      maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = Math.round(
+        (100 * Number(maxWithdrawableLiquidity)) / Number(liquidity?.toString())
+      )
+    } else {
+      maxWithdrawableToken0 = position.amount0.toSignificant(4)
+      maxWithdrawableToken1 = position.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = 100
+    }
+  }
+
   function modalHeader() {
     return (
       <AutoColumn gap="md" style={{ marginTop: '20px' }}>
@@ -481,7 +545,11 @@ export default function RemoveLiquidity() {
                 </Row>
                 {!showDetailed && (
                   <>
-                    <Slider value={innerLiquidityPercentage} onChange={setInnerLiquidityPercentage} />
+                    <Slider
+                      max={maximumWithdrawablePercentage}
+                      value={innerLiquidityPercentage}
+                      onChange={setInnerLiquidityPercentage}
+                    />
                     <RowBetween>
                       <MaxButton onClick={() => onUserInput(Field.LIQUIDITY_PERCENT, '25')} width="20%">
                         25%
@@ -642,7 +710,7 @@ export default function RemoveLiquidity() {
                     disabled={approval !== ApprovalState.NOT_APPROVED || signatureData !== null}
                     mr="0.5rem"
                     fontWeight={500}
-                    fontSize={16}
+                    fontSize={12}
                   >
                     {approval === ApprovalState.PENDING ? (
                       <Dots>
@@ -661,7 +729,7 @@ export default function RemoveLiquidity() {
                     disabled={!isValid || (signatureData === null && approval !== ApprovalState.APPROVED)}
                     error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
                   >
-                    <Text fontSize={16} fontWeight={500}>
+                    <Text fontSize={12} fontWeight={500}>
                       {error || <Trans>Remove</Trans>}
                     </Text>
                   </ButtonError>
