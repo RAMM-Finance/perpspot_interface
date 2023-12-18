@@ -610,12 +610,26 @@ const TradeTabContent = () => {
       </LimitInputWrapper>
       <div style={{ display: 'relative' }}>
         <InputSection>
-          <InputHeader>
+          {/* <InputHeader>
             <ThemedText.BodySecondary fontWeight={400}>
               <Trans>Margin</Trans>
             </ThemedText.BodySecondary>
-          </InputHeader>
+          </InputHeader> */}
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
+            {/* <SwapCurrencyInputPanelV2
+              value={formattedMargin}
+              onUserInput={handleMarginInput}
+              showMaxButton={showMaxButton}
+              currency={currencies[Field.INPUT] ?? null}
+              onMax={handleMaxInput}
+              onCurrencySelect={handleInputSelect}
+              otherCurrency={currencies[Field.OUTPUT] ?? null}
+              showCommonBases={true}
+              id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
+              showCurrencyAmount={true}
+              fiatValue={fiatValueTradeMargin}
+              label="Margin"
+            /> */}
             <BaseSwapPanel
               value={formattedMargin}
               showMaxButton={showMaxButton}

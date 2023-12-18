@@ -16,6 +16,19 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "uint8",
+        name: "version",
+        type: "uint8",
+      },
+    ],
+    name: "Initialized",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "payer",
@@ -91,6 +104,24 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "pm",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "ex",
+        type: "address",
+      },
+    ],
+    name: "_initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -235,40 +266,6 @@ const _abi = [
       },
     ],
     name: "checkPositionExists",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "pool",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "borrower",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "borrowedToken1",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "minPremiumDepositPercentage",
-        type: "uint256",
-      },
-    ],
-    name: "checkPremiumCondition",
     outputs: [
       {
         internalType: "bool",
@@ -554,6 +551,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "executioner_",
+        type: "address",
+      },
+    ],
+    name: "setExecutioner",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bool",
         name: "forceClosePaused",
         type: "bool",
@@ -573,6 +583,19 @@ const _abi = [
       },
     ],
     name: "setOwner",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "poolManager_",
+        type: "address",
+      },
+    ],
+    name: "setPoolManager",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

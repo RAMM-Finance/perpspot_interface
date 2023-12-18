@@ -324,8 +324,6 @@ function useDerivedReduceLimitPositionInfo(
           isAdd: false,
         }
 
-        console.log('limit order params', price.toString(), params)
-
         const calldata = MarginFacilitySDK.submitLimitOrder(params)
 
         await marginFacility.callStatic.multicall(calldata)

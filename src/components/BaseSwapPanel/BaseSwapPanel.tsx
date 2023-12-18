@@ -273,9 +273,6 @@ export function BaseSwapPanel({
   disabled = false,
   locked = false,
   loading = false,
-  label,
-  premium,
-  showPremium,
   ...rest
 }: BaseSwapPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -302,67 +299,6 @@ export function BaseSwapPanel({
         </FixedContainer>
       )}
       <Container hideInput={hideInput}>
-        {Boolean(!hideInput && !hideBalance) && (
-          <FiatRow>
-            <RowBetween>
-              <LoadingOpacityContainer $loading={loading}>
-                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-              </LoadingOpacityContainer>
-              {account ? (
-                <AutoColumn>
-                  <RowFixed>
-                    <WalletBalance>
-                      <ThemedText.BodySmall>
-                        {!hideBalance && currency && selectedCurrencyBalance ? (
-                          renderBalance ? (
-                            renderBalance(selectedCurrencyBalance)
-                          ) : (
-                            <div style={{ display: 'flex', gap: '2px' }}>
-                              <Trans>Wallet-Balance:</Trans>
-                              <ThemedText.BodySmall>
-                                {formatCurrencyAmount(selectedCurrencyBalance, 4)}
-                              </ThemedText.BodySmall>
-                            </div>
-                          )
-                        ) : null}
-                      </ThemedText.BodySmall>
-                      {showMaxButton && selectedCurrencyBalance ? (
-                        <TraceEvent
-                          events={[BrowserEvent.onClick]}
-                          name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                          element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                        >
-                          <StyledBalanceMax onClick={onMax}>
-                            <Trans>Max</Trans>
-                          </StyledBalanceMax>
-                        </TraceEvent>
-                      ) : null}
-                    </WalletBalance>
-                  </RowFixed>
-                  {showPremium && (
-                    <RowFixed style={{ height: '17px' }}>
-                      <ThemedText.DeprecatedBody
-                        color={theme.textSecondary}
-                        fontWeight={400}
-                        fontSize={12}
-                        style={{ display: 'inline' }}
-                      >
-                        <div style={{ fontSize: '14px' }}>
-                          <Trans>
-                            Est. Premium: {!premium ? '0' : formatCurrencyAmount(premium, 4)}{' '}
-                            {premium?.currency.symbol ?? ''}
-                          </Trans>
-                        </div>
-                      </ThemedText.DeprecatedBody>
-                    </RowFixed>
-                  )}
-                </AutoColumn>
-              ) : (
-                <span />
-              )}
-            </RowBetween>
-          </FiatRow>
-        )}
         <InputRow>
           {/* <div style={{ marginRight: '10px', fontSize: '15px' }}>
             <Trans>{label}</Trans>
@@ -414,6 +350,50 @@ export function BaseSwapPanel({
             {/* {onCurrencySelect && <StyledDropDown selected={!!currency} />} */}
           </CurrencySelect>
         </InputRow>
+        {Boolean(!hideInput && !hideBalance) && (
+          <FiatRow>
+            <RowBetween>
+              <LoadingOpacityContainer $loading={loading}>
+                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+              </LoadingOpacityContainer>
+              {account ? (
+                <AutoColumn>
+                  <RowFixed>
+                    <WalletBalance>
+                      <ThemedText.BodySmall>
+                        {!hideBalance && currency && selectedCurrencyBalance ? (
+                          renderBalance ? (
+                            renderBalance(selectedCurrencyBalance)
+                          ) : (
+                            <div style={{ display: 'flex', gap: '2px' }}>
+                              <Trans>Wallet-Balance:</Trans>
+                              <ThemedText.BodySmall>
+                                {formatCurrencyAmount(selectedCurrencyBalance, 4)}
+                              </ThemedText.BodySmall>
+                            </div>
+                          )
+                        ) : null}
+                      </ThemedText.BodySmall>
+                      {showMaxButton && selectedCurrencyBalance ? (
+                        <TraceEvent
+                          events={[BrowserEvent.onClick]}
+                          name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+                          element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                        >
+                          <StyledBalanceMax onClick={onMax}>
+                            <Trans>Max</Trans>
+                          </StyledBalanceMax>
+                        </TraceEvent>
+                      ) : null}
+                    </WalletBalance>
+                  </RowFixed>
+                </AutoColumn>
+              ) : (
+                <span />
+              )}
+            </RowBetween>
+          </FiatRow>
+        )}
       </Container>
       {onCurrencySelect && (
         <CurrencySearchModal

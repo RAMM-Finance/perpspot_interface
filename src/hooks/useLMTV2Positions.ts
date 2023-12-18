@@ -8,10 +8,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 import { useToken } from './Tokens'
-import { useDataProviderContract, useMarginFacilityContract, useLmtPoolManagerContract } from './useContract'
+import { useDataProviderContract, useMarginFacilityContract } from './useContract'
 import { computeOrderId, computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
-
 
 // export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
 //   // getParams
@@ -43,122 +42,107 @@ import { convertToBN } from './useV3Positions'
 // }
 
 export function useInstantaeneousRate(
-  token0: string|undefined, 
-  token1: string|undefined, 
-  fee: number|undefined, 
-  trader: string|undefined, 
-  positionIsToken0: boolean|undefined
-): string |undefined{
-
+  token0: string | undefined,
+  token1: string | undefined,
+  fee: number | undefined,
+  trader: string | undefined,
+  positionIsToken0: boolean | undefined
+): string | undefined {
   const dataProvider = useDataProviderContract()
   const blockNumber = useBlockNumber()
   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
 
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<any>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
-  useEffect(()=>{
-    if ( !trader ||loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if(positionIsToken0 == undefined) return
-    const call = async()=>{
-      try{
+  useEffect(() => {
+    if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if (positionIsToken0 == undefined) return
+    const call = async () => {
+      try {
         setLoading(true)
         const result = await dataProvider?.getPostInstantaeneousRate(
           {
-            token0: token0 as string, 
-            token1: token1 as string, 
-            fee: fee as number ,
-          }, 
-          trader as string, 
-          positionIsToken0 as boolean, 
+            token0: token0 as string,
+            token1: token1 as string,
+            fee: fee as number,
+          },
+          trader as string,
+          positionIsToken0 as boolean
         )
         setData(result)
         setLoading(false)
         setBlockNumber(blockNumber)
-
-      } catch(error){
+      } catch (error) {
         setError(error)
         setLoading(false)
         console.log('instant rate', error)
       }
     }
     call()
+  }, [dataProvider, loading, lastBlockNumber, blockNumber, token0, token1, fee, trader, positionIsToken0])
 
-  }, [dataProvider, loading, lastBlockNumber,blockNumber, token0, token1, fee, trader, positionIsToken0 ])
-
-
-  return useMemo(() =>{
-    if(!data ){
-      return null    
-    }else{
+  return useMemo(() => {
+    if (!data) {
+      return null
+    } else {
       return data
     }
-
-  }, [ token0, token1, fee, trader,positionIsToken0, error, data ])
-
+  }, [token0, token1, fee, trader, positionIsToken0, error, data])
 }
 
 export function useBulkBinData(
-  token0: string|undefined, 
-  token1: string|undefined, 
-  fee: number|undefined, 
-  currentTick: number|undefined
+  token0: string | undefined,
+  token1: string | undefined,
+  fee: number | undefined,
+  currentTick: number | undefined
 ): BinData[] | undefined {
-
-
   const dataProvider = useDataProviderContract()
   const blockNumber = useBlockNumber()
   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
 
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<any>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
-  useEffect(()=>{
-    if ( !currentTick ||loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    const tickRounded = Math.ceil(currentTick/100)*100
+  useEffect(() => {
+    if (!currentTick || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    const tickRounded = Math.ceil(currentTick / 100) * 100
 
-    const call = async()=>{
-      try{
+    const call = async () => {
+      try {
         setLoading(true)
 
         const result = await dataProvider?.getBinsDataInBulk(
           {
-            token0: token0 as string, 
-            token1: token1 as string, 
-            fee: fee as number ,
-          }, 
-          (tickRounded - 3000) as number, 
-          (tickRounded + 3000) as number, 
+            token0: token0 as string,
+            token1: token1 as string,
+            fee: fee as number,
+          },
+          (tickRounded - 3000) as number,
+          (tickRounded + 3000) as number
         )
         setData(result)
         setLoading(false)
         setBlockNumber(blockNumber)
-
-      } catch(error){
+      } catch (error) {
         setError(error)
         setLoading(false)
         console.log('maxWithdrawableerr', error)
       }
     }
     call()
+  }, [dataProvider, loading, lastBlockNumber, blockNumber, token0, token1, fee, currentTick])
 
-  }, [dataProvider, loading, lastBlockNumber,blockNumber, token0, token1, fee, currentTick ])
-
-
-  return useMemo(() =>{
-    if(!data ){
-      return null    
-    }else{
+  return useMemo(() => {
+    if (!data) {
+      return null
+    } else {
       return data
     }
-
-  }, [ token0, token1, fee, currentTick, error, data ])
+  }, [token0, token1, fee, currentTick, error, data])
 }
-
-
-
 
 // fetches all leveraged LMT positions for a given account
 export function useLeveragedLMTPositions(account: string | undefined): UseLmtMarginPositionsResults {
@@ -200,58 +184,12 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
           token0Decimals: Number(position.token0Decimals.toString()),
           token1Decimals: Number(position.token1Decimals.toString()),
           trader: account,
-          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium,inputDecimals  ).toString()
+          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals).toString(),
         }
       }),
     }
   }, [loading, error, result, account])
 }
-
-// export interface MarginLimitOrder_ {
-//   key: RawPoolKey,
-//   isAdd: boolean ,
-//   positionIsToken0: boolean,
-//   auctionDeadline: number,
-//   auctionStartTime: number,
-//   startOutput: BN,
-//   minOutput: BN,
-//   inputAmount: BN,
-//   decayRate: BN,
-//   margin: BN
-// }
-
-// export interface BaseFacilityPositionDetails_ {
-//   poolKey: RawPoolKey
-//   isToken0: boolean
-//   totalDebtOutput: BN
-//   totalDebtInput: BN
-//   openTime: number
-//   repayTime: number
-//   isBorrow: boolean
-//   premiumOwed: BN // how much premium is owed since last repayment
-//   premiumDeposit: BN
-//   premiumLeft: BN
-//   trader: string
-//   token0Decimals: number
-//   token1Decimals: number
-// }
-
-// export interface MarginPositionDetails_ extends BaseFacilityPositionDetails_ {
-//   totalPosition: BN
-//   margin: BN
-// }
-// export interface MarginLimitOrder {
-//   key: RawPoolKey,
-//   isAdd: boolean,
-//   positionIsToken0: boolean,
-//   auctionDeadline: number,
-//   auctionStartTime: number,
-//   startOutput: BN,
-//   minOutput: BN,
-//   inputAmount: BN,
-//   decayRate: BN,
-//   margin: BN
-// }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const dataProvider = useDataProviderContract()
@@ -275,8 +213,6 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
     if (!loading && !error) return resultAdd?.concat(resultReduce)
     else return undefined
   }, [loading, error, resultAdd, resultReduce])
-
-  console.log(result)
 
   return useMemo(() => {
     return {
@@ -416,7 +352,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
           trader: account,
           token0Decimals: Number(position.token0Decimals.toString()),
           token1Decimals: Number(position.token1Decimals.toString()),
-          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium,inputDecimals  ).toString()
+          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals).toString(),
           // maxWithdrawablePremium: position.maxWithdrawablePremium.toString()
         },
       }
@@ -461,14 +397,14 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     }
   }, [result, loading, error, key])
 }
-interface BinData{
+interface BinData {
   price: string
   token0Liquidity: string
-  token1Liquidity: string 
+  token1Liquidity: string
   token0Borrowed: string
   token1Borrowed: string
 }
-export interface BinDatas{
+export interface BinDatas {
   data: BinData[] | undefined
 }
 interface UseLmtMarginPositionsResults {

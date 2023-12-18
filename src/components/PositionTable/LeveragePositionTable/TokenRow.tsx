@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
+import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
@@ -8,7 +9,6 @@ import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceCh
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
-import {useInstantaeneousRate} from 'hooks/useLMTV2Positions'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -21,7 +21,6 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-import { useWeb3React } from '@web3-react/core'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -638,12 +637,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       return [undefined, undefined, undefined]
     }
   }, [pool, details])
-  console.log(margin)
+  // console.log(margin)
   // const rate = useInstantaeneousRate(
   //   position?.pool?.token0?.address,
-  //   position?.pool?.token1?.address, 
-  //   position?.pool?.fee, 
-  //   account, 
+  //   position?.pool?.token1?.address,
+  //   position?.pool?.fee,
+  //   account,
   //   position?.isToken0
   //   )
 

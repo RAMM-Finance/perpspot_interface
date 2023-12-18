@@ -77,7 +77,8 @@ export type LiquidityLoanStructOutput = [
 
 export interface PremiumComputerInterface extends utils.Interface {
   functions: {
-    "computeInstantaeneousPremiumOwed(address,address,int24,uint32,(uint256,uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "computeInstantaeneousPremium(int24,(uint256,uint256,uint256,uint256,uint256,uint256),uint256,int24,int24)": FunctionFragment;
+    "computeInstantaeneousPremiumOwed(address,address,int24,(uint256,uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[],bool,bytes32)": FunctionFragment;
     "computePremium(address,address,bool,int24,uint32,(uint256,uint256,uint256,uint256,uint256,uint256),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getFeeGrowthInside(IUniswapV3Pool,int24,int24)": FunctionFragment;
     "getInitFeeGrowthInside(address,address,int24,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
@@ -88,6 +89,7 @@ export interface PremiumComputerInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "computeInstantaeneousPremium"
       | "computeInstantaeneousPremiumOwed"
       | "computePremium"
       | "getFeeGrowthInside"
@@ -98,14 +100,25 @@ export interface PremiumComputerInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
+    functionFragment: "computeInstantaeneousPremium",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      URateParamStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "computeInstantaeneousPremiumOwed",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
       URateParamStruct,
-      LiquidityLoanStruct[]
+      LiquidityLoanStruct[],
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BytesLike>
     ]
   ): string;
   encodeFunctionData(
@@ -155,6 +168,10 @@ export interface PremiumComputerInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "computeInstantaeneousPremium",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "computeInstantaeneousPremiumOwed",
     data: BytesLike
@@ -244,13 +261,23 @@ export interface PremiumComputer extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    computeInstantaeneousPremium(
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      urate: PromiseOrValue<BigNumberish>,
+      curTick: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     computeInstantaeneousPremiumOwed(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
-      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
+      alreadyBorrowed: PromiseOrValue<boolean>,
+      hashedKey: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { apr: BigNumber }>;
 
@@ -306,13 +333,23 @@ export interface PremiumComputer extends BaseContract {
     ): Promise<[number]>;
   };
 
+  computeInstantaeneousPremium(
+    tickDiscretization: PromiseOrValue<BigNumberish>,
+    param: URateParamStruct,
+    urate: PromiseOrValue<BigNumberish>,
+    curTick: PromiseOrValue<BigNumberish>,
+    referenceTick: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   computeInstantaeneousPremiumOwed(
     pool: PromiseOrValue<string>,
     poolManager: PromiseOrValue<string>,
     tickDiscretization: PromiseOrValue<BigNumberish>,
-    lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
     param: URateParamStruct,
     borrowInfo: LiquidityLoanStruct[],
+    alreadyBorrowed: PromiseOrValue<boolean>,
+    hashedKey: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -368,13 +405,23 @@ export interface PremiumComputer extends BaseContract {
   ): Promise<number>;
 
   callStatic: {
+    computeInstantaeneousPremium(
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      urate: PromiseOrValue<BigNumberish>,
+      curTick: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     computeInstantaeneousPremiumOwed(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
-      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
+      alreadyBorrowed: PromiseOrValue<boolean>,
+      hashedKey: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -459,13 +506,23 @@ export interface PremiumComputer extends BaseContract {
   };
 
   estimateGas: {
+    computeInstantaeneousPremium(
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      urate: PromiseOrValue<BigNumberish>,
+      curTick: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     computeInstantaeneousPremiumOwed(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
-      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
+      alreadyBorrowed: PromiseOrValue<boolean>,
+      hashedKey: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -517,13 +574,23 @@ export interface PremiumComputer extends BaseContract {
   };
 
   populateTransaction: {
+    computeInstantaeneousPremium(
+      tickDiscretization: PromiseOrValue<BigNumberish>,
+      param: URateParamStruct,
+      urate: PromiseOrValue<BigNumberish>,
+      curTick: PromiseOrValue<BigNumberish>,
+      referenceTick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     computeInstantaeneousPremiumOwed(
       pool: PromiseOrValue<string>,
       poolManager: PromiseOrValue<string>,
       tickDiscretization: PromiseOrValue<BigNumberish>,
-      lastPremiumPaymentTime: PromiseOrValue<BigNumberish>,
       param: URateParamStruct,
       borrowInfo: LiquidityLoanStruct[],
+      alreadyBorrowed: PromiseOrValue<boolean>,
+      hashedKey: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

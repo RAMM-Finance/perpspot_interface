@@ -239,11 +239,6 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "int24",
-            name: "tickUpper",
-            type: "int24",
-          },
-          {
             internalType: "uint256",
             name: "amount0Max",
             type: "uint256",

@@ -62,7 +62,6 @@ export declare namespace INonfungiblePositionManager {
 
   export type IncreaseLiquidityParamsStruct = {
     tokenId: PromiseOrValue<BigNumberish>;
-    tickUpper: PromiseOrValue<BigNumberish>;
     amount0Max: PromiseOrValue<BigNumberish>;
     amount1Max: PromiseOrValue<BigNumberish>;
     amount0Desired: PromiseOrValue<BigNumberish>;
@@ -74,7 +73,6 @@ export declare namespace INonfungiblePositionManager {
 
   export type IncreaseLiquidityParamsStructOutput = [
     BigNumber,
-    number,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -84,7 +82,6 @@ export declare namespace INonfungiblePositionManager {
     BigNumber
   ] & {
     tokenId: BigNumber;
-    tickUpper: number;
     amount0Max: BigNumber;
     amount1Max: BigNumber;
     amount0Desired: BigNumber;
@@ -148,7 +145,7 @@ export interface INonfungiblePositionManagerInterface extends utils.Interface {
     "collect((uint256,address))": FunctionFragment;
     "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "increaseLiquidity((uint256,int24,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,uint256,uint256,address,uint256))": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;

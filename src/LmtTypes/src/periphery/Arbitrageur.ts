@@ -246,10 +246,15 @@ export declare namespace Arbitrageur {
 
 export interface ArbitrageurInterface extends utils.Interface {
   functions: {
+    "canForceClose(address,address,bool)": FunctionFragment;
     "canForceCloseTradePosition((address,address,uint24),address,bool)": FunctionFragment;
     "fillAddOrder((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(uint256,uint256,uint256,bytes))": FunctionFragment;
+    "fillAddOrder_(address,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(uint256,uint256,uint256,bytes))": FunctionFragment;
     "fillReduceOrder((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256),(uint256,uint256,uint256,bytes))": FunctionFragment;
+    "fillReduceOrder_(address,(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256),(uint256,uint256,uint256,bytes))": FunctionFragment;
+    "findSimulatedOutput(address,uint256,bool)": FunctionFragment;
     "forceClose((address,address,uint24),(address,bool,uint256,int24,int24),uint256,bytes,uint256)": FunctionFragment;
+    "getTokens(address)": FunctionFragment;
     "makeSwapAmount(address,address,bool,int256,int24,address,address)": FunctionFragment;
     "setNewContracts(address,address,address)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
@@ -258,16 +263,29 @@ export interface ArbitrageurInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "canForceClose"
       | "canForceCloseTradePosition"
       | "fillAddOrder"
+      | "fillAddOrder_"
       | "fillReduceOrder"
+      | "fillReduceOrder_"
+      | "findSimulatedOutput"
       | "forceClose"
+      | "getTokens"
       | "makeSwapAmount"
       | "setNewContracts"
       | "setOwner"
       | "uniswapV3SwapCallback"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "canForceClose",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "canForceCloseTradePosition",
     values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
@@ -282,11 +300,36 @@ export interface ArbitrageurInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "fillAddOrder_",
+    values: [
+      PromiseOrValue<string>,
+      LiquidityLoanStruct[],
+      AddParamsStruct,
+      Arbitrageur.FillerAddParamsStruct
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "fillReduceOrder",
     values: [
       PoolKeyStruct,
       ReduceParamStruct,
       Arbitrageur.FillerReduceParamsStruct
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fillReduceOrder_",
+    values: [
+      PromiseOrValue<string>,
+      ReduceParamStruct,
+      Arbitrageur.FillerReduceParamsStruct
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "findSimulatedOutput",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(
@@ -298,6 +341,10 @@ export interface ArbitrageurInterface extends utils.Interface {
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTokens",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "makeSwapAmount",
@@ -333,6 +380,10 @@ export interface ArbitrageurInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "canForceClose",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "canForceCloseTradePosition",
     data: BytesLike
   ): Result;
@@ -341,10 +392,23 @@ export interface ArbitrageurInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "fillAddOrder_",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "fillReduceOrder",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "fillReduceOrder_",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "findSimulatedOutput",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "forceClose", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getTokens", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "makeSwapAmount",
     data: BytesLike
@@ -389,6 +453,13 @@ export interface Arbitrageur extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    canForceClose(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     canForceCloseTradePosition(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -404,10 +475,32 @@ export interface Arbitrageur extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    fillAddOrder_(
+      pool: PromiseOrValue<string>,
+      borrowInfo: LiquidityLoanStruct[],
+      addParam: AddParamsStruct,
+      param: Arbitrageur.FillerAddParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     fillReduceOrder(
       key: PoolKeyStruct,
       reduceParam: ReduceParamStruct,
       param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    fillReduceOrder_(
+      pool: PromiseOrValue<string>,
+      reduceParam: ReduceParamStruct,
+      param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    findSimulatedOutput(
+      pool: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -419,6 +512,11 @@ export interface Arbitrageur extends BaseContract {
       flashOption: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    getTokens(
+      pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[string, string]>;
 
     makeSwapAmount(
       pool: PromiseOrValue<string>,
@@ -451,6 +549,13 @@ export interface Arbitrageur extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  canForceClose(
+    pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   canForceCloseTradePosition(
     key: PoolKeyStruct,
     trader: PromiseOrValue<string>,
@@ -466,10 +571,32 @@ export interface Arbitrageur extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  fillAddOrder_(
+    pool: PromiseOrValue<string>,
+    borrowInfo: LiquidityLoanStruct[],
+    addParam: AddParamsStruct,
+    param: Arbitrageur.FillerAddParamsStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   fillReduceOrder(
     key: PoolKeyStruct,
     reduceParam: ReduceParamStruct,
     param: Arbitrageur.FillerReduceParamsStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  fillReduceOrder_(
+    pool: PromiseOrValue<string>,
+    reduceParam: ReduceParamStruct,
+    param: Arbitrageur.FillerReduceParamsStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  findSimulatedOutput(
+    pool: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    positionIsToken0: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -481,6 +608,11 @@ export interface Arbitrageur extends BaseContract {
     flashOption: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  getTokens(
+    pool: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<[string, string]>;
 
   makeSwapAmount(
     pool: PromiseOrValue<string>,
@@ -513,6 +645,13 @@ export interface Arbitrageur extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    canForceClose(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     canForceCloseTradePosition(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -528,12 +667,34 @@ export interface Arbitrageur extends BaseContract {
       overrides?: CallOverrides
     ): Promise<Arbitrageur.FillAddOrderReturnStructOutput>;
 
+    fillAddOrder_(
+      pool: PromiseOrValue<string>,
+      borrowInfo: LiquidityLoanStruct[],
+      addParam: AddParamsStruct,
+      param: Arbitrageur.FillerAddParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<Arbitrageur.FillAddOrderReturnStructOutput>;
+
     fillReduceOrder(
       key: PoolKeyStruct,
       reduceParam: ReduceParamStruct,
       param: Arbitrageur.FillerReduceParamsStruct,
       overrides?: CallOverrides
     ): Promise<Arbitrageur.FillReduceOrderReturnStructOutput>;
+
+    fillReduceOrder_(
+      pool: PromiseOrValue<string>,
+      reduceParam: ReduceParamStruct,
+      param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<Arbitrageur.FillReduceOrderReturnStructOutput>;
+
+    findSimulatedOutput(
+      pool: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber, number]>;
 
     forceClose(
       key: PoolKeyStruct,
@@ -543,6 +704,11 @@ export interface Arbitrageur extends BaseContract {
       flashOption: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<Arbitrageur.ForceCloseReturnStructOutput>;
+
+    getTokens(
+      pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[string, string]>;
 
     makeSwapAmount(
       pool: PromiseOrValue<string>,
@@ -578,6 +744,13 @@ export interface Arbitrageur extends BaseContract {
   filters: {};
 
   estimateGas: {
+    canForceClose(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     canForceCloseTradePosition(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -593,10 +766,32 @@ export interface Arbitrageur extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    fillAddOrder_(
+      pool: PromiseOrValue<string>,
+      borrowInfo: LiquidityLoanStruct[],
+      addParam: AddParamsStruct,
+      param: Arbitrageur.FillerAddParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     fillReduceOrder(
       key: PoolKeyStruct,
       reduceParam: ReduceParamStruct,
       param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    fillReduceOrder_(
+      pool: PromiseOrValue<string>,
+      reduceParam: ReduceParamStruct,
+      param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    findSimulatedOutput(
+      pool: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -607,6 +802,11 @@ export interface Arbitrageur extends BaseContract {
       executionData: PromiseOrValue<BytesLike>,
       flashOption: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getTokens(
+      pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     makeSwapAmount(
@@ -641,6 +841,13 @@ export interface Arbitrageur extends BaseContract {
   };
 
   populateTransaction: {
+    canForceClose(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     canForceCloseTradePosition(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -656,10 +863,32 @@ export interface Arbitrageur extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    fillAddOrder_(
+      pool: PromiseOrValue<string>,
+      borrowInfo: LiquidityLoanStruct[],
+      addParam: AddParamsStruct,
+      param: Arbitrageur.FillerAddParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     fillReduceOrder(
       key: PoolKeyStruct,
       reduceParam: ReduceParamStruct,
       param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    fillReduceOrder_(
+      pool: PromiseOrValue<string>,
+      reduceParam: ReduceParamStruct,
+      param: Arbitrageur.FillerReduceParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    findSimulatedOutput(
+      pool: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      positionIsToken0: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -670,6 +899,11 @@ export interface Arbitrageur extends BaseContract {
       executionData: PromiseOrValue<BytesLike>,
       flashOption: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getTokens(
+      pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     makeSwapAmount(

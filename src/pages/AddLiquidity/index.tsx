@@ -442,7 +442,6 @@ export default function AddLiquidity() {
   }`
 
   const [searchParams, setSearchParams] = useSearchParams()
-  console.log(searchParams)
 
   const handleSetRecommendedRange = useCallback(() => {
     const minPrice = pricesAtLimit[Bound.LOWER]

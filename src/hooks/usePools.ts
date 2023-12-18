@@ -119,16 +119,12 @@ export function usePools(
     })
   }, [chainId, poolKeys])
 
-  // console.log('poolTokens', poolTokens)
-
   const poolAddresses: (string | undefined)[] = useMemo(() => {
     const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
     if (!v3CoreFactoryAddress) return new Array(poolTokens.length)
 
     return poolTokens.map((value) => value && PoolCache.getPoolAddress(v3CoreFactoryAddress, ...value))
   }, [chainId, poolTokens])
-
-  // console.log('poolAddresses', poolAddresses)
 
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
@@ -141,6 +137,8 @@ export function usePools(
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
       const tokens = poolTokens[index]
+
+      // console.log('poolKey', _key, slot0s[index], liquidities[index], poolParams[index])
       if (!tokens) return [PoolState.INVALID, null]
       const [token0, token1, fee] = tokens
 
@@ -160,7 +158,6 @@ export function usePools(
       if (slot0Loading || liquidityLoading || addedPoolLoading) return [PoolState.LOADING, null]
       if (!slot0 || !liquidity) return [PoolState.NOT_EXISTS, null]
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null]
-      if (liquidity[0].eq(0)) return [PoolState.NOT_EXISTS, null]
 
       try {
         const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)

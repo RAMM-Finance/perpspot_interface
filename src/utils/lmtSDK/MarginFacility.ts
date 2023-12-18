@@ -4,6 +4,7 @@ import { MethodParameters, toHex } from '@uniswap/v3-sdk'
 import MarginFacilityJson from 'abis_v2/MarginFacility.json'
 import { Interface } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
+import { LiquidityLoan } from 'types/leveragePosition'
 import { OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 import { MulticallSDK } from './multicall'
@@ -261,14 +262,33 @@ export abstract class MarginFacilitySDK {
     totalInputDebt: JSBI
     totalOutputDebt: JSBI
     margin: JSBI
+    borrowInfo: LiquidityLoan[]
   } {
     const result = MarginFacilitySDK.INTERFACE.decodeFunctionResult('addPosition', rawBytes)[0]
+
+    //   tick: number
+    // liquidity: string
+    // premium: string
+    // feeGrowthInside0LastX128: string
+    // feeGrowthInside1LastX128: string
+    // lastGrowth: string
+    const borrowInfo: LiquidityLoan[] = result.base.borrowInfo.map((item: any) => {
+      return {
+        tick: item.tick,
+        liquidity: item.liquidity.toString(),
+        premium: item.premium.toString(),
+        feeGrowthInside0LastX128: item.feeGrowthInside0LastX128.toString(),
+        feeGrowthInside1LastX128: item.feeGrowthInside1LastX128.toString(),
+        lastGrowth: item.lastGrowth.toString(),
+      }
+    })
 
     return {
       totalPosition: JSBI.BigInt(result.totalPosition.toString()),
       totalInputDebt: JSBI.BigInt(result.base.totalDebtInput.toString()),
       totalOutputDebt: JSBI.BigInt(result.base.totalDebtOutput.toString()),
       margin: JSBI.BigInt(result.margin.toString()),
+      borrowInfo,
     }
   }
 }
