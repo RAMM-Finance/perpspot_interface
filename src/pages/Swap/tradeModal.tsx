@@ -13,6 +13,7 @@ import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowFixed, RowStart } from 'components/Row'
@@ -704,9 +705,29 @@ const TradeTabContent = () => {
           <LeverageGaugeSection>
             <AutoColumn gap="md">
               <RowBetween>
-                <ThemedText.DeprecatedMain fontWeight={400}>
-                  <Trans>Leverage</Trans>
-                </ThemedText.DeprecatedMain>
+                <div
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <ThemedText.DeprecatedMain fontWeight={400}>
+                    <Trans>Leverage</Trans>
+                  </ThemedText.DeprecatedMain>
+                  <RowBetween width="max-content">
+                    <ThemedText.DeprecatedBody marginRight="3px" fontWeight={400} fontSize={12} color="text2">
+                      <Trans>Max:</Trans>
+                    </ThemedText.DeprecatedBody>
+                    <TextWithLoadingPlaceholder syncing={false} width={50}>
+                      <ThemedText.BodySmall color="textSecondary" textAlign="right">
+                        {preTradeInfo
+                          ? `${formatBNToString(preTradeInfo.maxLeverage, NumberType.SwapTradeAmount)}`
+                          : '-'}
+                      </ThemedText.BodySmall>
+                    </TextWithLoadingPlaceholder>
+                  </RowBetween>
+                </div>
                 <RowBetween style={{ flexWrap: 'nowrap', justifyContent: 'end' }}>
                   <LeverageInputSection>
                     <StyledLeverageInput

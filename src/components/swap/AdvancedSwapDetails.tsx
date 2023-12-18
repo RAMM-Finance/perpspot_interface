@@ -562,7 +562,6 @@ export function ValueLabel({
 }: {
   description: string
   label: string
-
   value?: number | string
   syncing: boolean
   symbolAppend?: string
@@ -662,35 +661,39 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Initial Premium Deposit for this position, can be replenished in the position table. When deposit is depleted, your position will be force closed."
           label="Initial Premium deposit"
-          value={formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
+          value={formatCurrencyAmount(trade?.premium, NumberType.TokenNonTx)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <ValueLabel
           description="Rate at which your premium deposit are depleted. Rate% * debt is rate of depletion  "
-          label="Borrow Rate % per hour"
-          value="0"
+          label="Hourly Borrow Rate"
+          value={formatBNToString(trade?.borrowRate, NumberType.SwapTradeAmount)}
           syncing={syncing}
+          symbolAppend="%"
         />
         <ValueLabel
           description="The amount you borrow"
           label="Borrow Amount"
-          value={formatCurrencyAmount(trade?.borrowAmount, NumberType.SwapTradeAmount)}
+          value={formatCurrencyAmount(trade?.borrowAmount, NumberType.TokenNonTx)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <ValueLabel
           description="Slippage from spot price"
           label="Slippage"
-          value={trade?.allowedSlippage.toFixed(6)}
+          value={
+            trade ? formatBNToString(new BN(trade.allowedSlippage.toFixed(18)), NumberType.SwapTradeAmount) : undefined
+          }
           symbolAppend="%"
           syncing={syncing}
         />
         <ValueLabel
           description="Swap fee + origination fee "
           label="Total Fees"
-          value={formatCurrencyAmount(trade?.fees, NumberType.SwapTradeAmount)}
+          value={formatCurrencyAmount(trade?.fees, NumberType.TokenNonTx)}
           syncing={syncing}
+          symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <Separator />
         <RowBetween>

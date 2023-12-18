@@ -1056,7 +1056,10 @@ const useSimulateMarginTrade = (
           premium: additionalPremium,
           pool,
           inputIsToken0,
-          borrowRate: new BN(borrowRate.toString()).shiftedBy(-18),
+          borrowRate: new BN(borrowRate.toString())
+            .shiftedBy(-18)
+            .div(365 * 24)
+            .times(100),
         }
 
         setResult(simulation)
