@@ -836,7 +836,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           }}
           hideBalance={true}
           currency={outputCurrency}
-          label={<Trans>Reduce Position By:</Trans>}
+          label={
+            <ThemedText.BodySmall style={{ paddingTop: '10px', paddingLeft: '10px' }}>
+              <Trans>Reduce Position By:</Trans>
+            </ThemedText.BodySmall>
+          }
         />
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <PercentSlider
@@ -928,10 +932,10 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                                 <TruncatedText>
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
                                     {txnInfo &&
-                                      `${(
+                                      `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
                                         (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
                                         100
-                                      ).toFixed(4)} % ${inputCurrency?.symbol}`}
+                                      ).toFixed(2)}%) ${inputCurrency?.symbol}`}
                                   </DeltaText>{' '}
                                 </TruncatedText>
                               </ThemedText.BodySmall>
@@ -970,7 +974,11 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                               <ThemedText.BodySmall textAlign="right">
                                 <TruncatedText>
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo && `${Number(txnInfo?.PnL)}  ${inputCurrency?.symbol}`}
+                                    {txnInfo &&
+                                      `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
+                                        (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
+                                        100
+                                      ).toFixed(2)}%) ${inputCurrency?.symbol}`}
                                   </DeltaText>
                                 </TruncatedText>
                               </ThemedText.BodySmall>
@@ -1009,10 +1017,10 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                                 <TruncatedText>
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
                                     {txnInfo &&
-                                      `${(
+                                      `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
                                         (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
                                         100
-                                      ).toFixed(4)} % ${inputCurrency?.symbol}`}
+                                      ).toFixed(2)}%) ${inputCurrency?.symbol}`}
                                   </DeltaText>{' '}
                                 </TruncatedText>
                               </ThemedText.BodySmall>

@@ -33,7 +33,9 @@ const LiquidityDistributionTable = ({
               key={Number(x.price) / 1e18}
             >
               <LDDataCellInNeg>{(Number(x.price) / 1e18).toFixed(2)}</LDDataCellInNeg>
-              <LDDataCellOutNeg>{formatDollar({ num: Number(x.token0Liquidity) / 1e18 })}</LDDataCellOutNeg>
+              <LDDataCellOutNeg>
+                {formatDollar({ num: Number(x.token0Liquidity) / 1e18, dollarSign: false })}
+              </LDDataCellOutNeg>
             </LDDataRowNeg>
           ))
           .reverse()}
@@ -54,7 +56,9 @@ const LiquidityDistributionTable = ({
               key={Number(x.price) / 1e18}
             >
               <LDDataCellIn>{(Number(x.price) / 1e18).toFixed(2)}</LDDataCellIn>
-              <LDDataCellOut>{formatDollar({ num: Number(x.token1Liquidity) / 1e18 })}</LDDataCellOut>
+              <LDDataCellOut>
+                {formatDollar({ num: Number(x.token1Liquidity) / 1e18, dollarSign: false })}
+              </LDDataCellOut>
             </LDDataRow>
           ))
           .reverse()}

@@ -6,6 +6,7 @@ import { ButtonPrimary } from 'components/Button'
 import Achievements from 'components/Leaderboard/Achievements'
 import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
+import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -33,13 +34,19 @@ const AchievementsWrapper = styled.div`
   // border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  width: 25%;
-  margin-right: 0.25rem;
-  margin-left: 0.25rem;
+  width: 100%;
+  padding: 5px;
+  height: 250px;
+  padding-bottom: 20px;
+`
+const ReferralsWrapper = styled.div`
+  // border: solid ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border-radius: 10px;
+  width: 100%;
   padding: 5px;
   height: fit-page;
   padding-bottom: 20px;
-  margin-top: 80px;
 `
 
 const PointsWrapper = styled.div`
@@ -60,8 +67,9 @@ const ErrorContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 50%;
+  height: 100%;
   padding: 5px;
+  width: 100%;
 `
 const Header = styled.div`
   padding-left: 20px;
@@ -74,6 +82,12 @@ const LeftContainer = styled.div`
   height: 100%;
   width: 75%;
   margin-right: 0.25rem;
+`
+const RightContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 25%;
+  margin-left: 0.25rem;
 `
 
 export default function LeaderboardPage() {
@@ -89,7 +103,7 @@ export default function LeaderboardPage() {
             <Header>Points</Header>
           </ThemedText.SubHeader>
           {showConnectAWallet ? (
-            <ErrorContainer>
+            <ErrorContainer style={{ display: 'flex', justifyContent: 'center' }}>
               <TraceEvent
                 events={[BrowserEvent.onClick]}
                 name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
@@ -114,32 +128,60 @@ export default function LeaderboardPage() {
           <LeaderboardTable />
         </LeaderboardWrapper>
       </LeftContainer>
-      <AchievementsWrapper>
-        <ThemedText.SubHeader>
-          <Header>Achievements</Header>
-        </ThemedText.SubHeader>
-        {showConnectAWallet ? (
-          <ErrorContainer>
-            <TraceEvent
-              events={[BrowserEvent.onClick]}
-              name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-              properties={{ received_swap_quote: false }}
-              element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-            >
-              <ButtonPrimary
-                style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                onClick={toggleWalletDrawer}
+      <RightContainer>
+        <AchievementsWrapper>
+          <ThemedText.SubHeader>
+            <Header>Achievements</Header>
+          </ThemedText.SubHeader>
+          {showConnectAWallet ? (
+            <ErrorContainer>
+              <TraceEvent
+                events={[BrowserEvent.onClick]}
+                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                properties={{ received_swap_quote: false }}
+                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
               >
-                <Trans>
-                  <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                </Trans>
-              </ButtonPrimary>
-            </TraceEvent>
-          </ErrorContainer>
-        ) : (
-          <Achievements />
-        )}
-      </AchievementsWrapper>
+                <ButtonPrimary
+                  style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                  onClick={toggleWalletDrawer}
+                >
+                  <Trans>
+                    <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
+                  </Trans>
+                </ButtonPrimary>
+              </TraceEvent>
+            </ErrorContainer>
+          ) : (
+            <Achievements />
+          )}
+        </AchievementsWrapper>
+        <ReferralsWrapper>
+          <ThemedText.SubHeader>
+            <Header>Referrals</Header>
+          </ThemedText.SubHeader>
+          {showConnectAWallet ? (
+            <ErrorContainer style={{ paddingTop: '50px' }}>
+              <TraceEvent
+                events={[BrowserEvent.onClick]}
+                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                properties={{ received_swap_quote: false }}
+                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+              >
+                <ButtonPrimary
+                  style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                  onClick={toggleWalletDrawer}
+                >
+                  <Trans>
+                    <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
+                  </Trans>
+                </ButtonPrimary>
+              </TraceEvent>
+            </ErrorContainer>
+          ) : (
+            <Referrals />
+          )}
+        </ReferralsWrapper>
+      </RightContainer>
     </PageWrapper>
   )
 }

@@ -95,7 +95,7 @@ export const InputHeader = styled.div`
   padding-top: 3px;
 `
 
-const SwapSection = styled.div`
+export const SwapSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 16px;

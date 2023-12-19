@@ -46,6 +46,7 @@ interface FormatDollarArgs {
   lessPreciseStablecoinValues?: boolean
   digits?: number
   round?: boolean
+  dollarSign?: boolean
 }
 
 /**
@@ -67,6 +68,7 @@ export const formatDollar = ({
   lessPreciseStablecoinValues = false,
   digits = 2,
   round = true,
+  dollarSign = true,
 }: FormatDollarArgs): string => {
   // For USD dollar denominated prices.
   if (isPrice) {
@@ -97,6 +99,20 @@ export const formatDollar = ({
     }
     if (num >= 0.1 && num < 1.05) {
       return `$${num.toFixed(3)}`
+    }
+
+    if (!dollarSign) {
+      return numbro(num)
+        .formatCurrency({
+          average: round,
+          currencySymbol: ' ',
+          mantissa: num > 1000 ? 2 : digits,
+          abbreviations: {
+            million: 'M',
+            billion: 'B',
+          },
+        })
+        .toUpperCase()
     }
 
     return numbro(num)

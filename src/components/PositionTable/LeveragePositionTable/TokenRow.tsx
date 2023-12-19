@@ -48,7 +48,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 12px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.3fr 0.7fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -703,14 +703,15 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           PnL={
             <FlexStartRow>
-              <AutoRow>
-                <RowBetween>
-                  <DeltaText delta={Number(position?.PnL().toNumber())}>
-                    {`${((Number(position?.PnL().toNumber()) / Number(position?.margin.toNumber())) * 100).toFixed(
-                      4
-                    )} % ${position?.inputCurrency?.symbol}`}
-                  </DeltaText>
-                </RowBetween>
+              <AutoRow gap="2px" align="center">
+                <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
+                  {position &&
+                    `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} (${(
+                      (position?.PnL().toNumber() / position?.margin.toNumber()) *
+                      100
+                    ).toFixed(2)} %)`}{' '}
+                </DeltaText>
+                <div style={{ lineHeight: '1' }}>{' ' + position?.inputCurrency?.symbol}</div>
               </AutoRow>
             </FlexStartRow>
           }
@@ -736,17 +737,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               {position?.premiumLeft.isGreaterThan(0) ? (
-                <div>
+                <AutoColumn>
                   <UnderlineText>
-                    <GreenText>
+                    <GreenText style={{ display: 'flex', alignItems: 'center' }}>
                       {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
                       {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
                     </GreenText>
                   </UnderlineText>
                   <div>
-                    {' ' + position?.inputCurrency?.symbol} <Edit3 size={14} />
+                    {position?.inputCurrency?.symbol} <Edit3 size={14} />
                   </div>
-                </div>
+                </AutoColumn>
               ) : (
                 <RedText>
                   0

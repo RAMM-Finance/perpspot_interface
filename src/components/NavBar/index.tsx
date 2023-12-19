@@ -96,7 +96,7 @@ export const PageTabs = () => {
           <Trans>Faucets</Trans>
         </MenuItem>
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
-          <Trans>Leaderboard</Trans>
+          <Trans>Points</Trans>
         </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
