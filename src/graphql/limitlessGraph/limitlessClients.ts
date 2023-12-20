@@ -3,6 +3,21 @@ import { SupportedChainId } from 'constants/chains'
 
 import store from '../../state/index'
 import { useWeb3React } from '@web3-react/core'
+import { createClient, cacheExchange, fetchExchange } from '@urql/core'
+
+// import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+
+const APIURL = 'https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph'
+// const APIURL = 'https://api.studio.thegraph.com/query//limitless-subgraph/'
+
+
+export const client = createClient({
+  url: APIURL,
+  exchanges: [cacheExchange, fetchExchange],
+
+})
+
+
 
 const CHAIN_SUBGRAPH_URL: Record<number, string> = {
   [SupportedChainId.SEPOLIA]: 'https://api.studio.thegraph.com/query/40393/limitless-sepolia/version/latest',

@@ -21,7 +21,7 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-
+import{useInstantaeneousRate} from 'hooks/useLMTV2Positions'
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
@@ -347,7 +347,7 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.VALUE]: <Trans>Position Value</Trans>,
   [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited</Trans>,
-  [PositionSortMethod.REPAYTIME]: <Trans>Borrow rate per hour</Trans>,
+  [PositionSortMethod.REPAYTIME]: <Trans>Borrow rate per hour </Trans>,
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
   [PositionSortMethod.REMAINING]: (
@@ -638,13 +638,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
   // console.log(margin)
-  // const rate = useInstantaeneousRate(
-  //   position?.pool?.token0?.address,
-  //   position?.pool?.token1?.address,
-  //   position?.pool?.fee,
-  //   account,
-  //   position?.isToken0
-  //   )
+  const rate = useInstantaeneousRate(
+    position?.pool?.token0?.address,
+    position?.pool?.token1?.address,
+    position?.pool?.fee,
+    account,
+    position?.isToken0
+    )
+  // console.log('rate', rate?.toString())
 
   // console.log('position at table', position, rate)
   // /**
@@ -698,7 +699,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           repaymentTime={
             <FlexStartRow>
-              {position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>}
+
+                { rate&& String(100* Math.round( 10000000* Number(rate)/1e18/(365*24)  )/10000000) + " %"}
+              {/*position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>*/}
             </FlexStartRow>
           }
           PnL={

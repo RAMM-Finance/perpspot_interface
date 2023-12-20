@@ -18,3 +18,35 @@ query poolHourDatas($startTime: Int!, $address: String!) {
 }
 `
 
+
+export const AddOrderQuery = `
+  query {
+    orderAddeds {
+      pool
+      positionIsToken0
+      trader
+      isAdd
+      deadline
+      startOutput
+      minOutput
+      decayRate
+      margin
+      inputAmount
+      blockTimestamp
+    }
+  }
+`
+
+export const PoolAddedQuery = `
+  query {
+    poolAddeds {
+      id
+      pool
+      token0
+      token1
+      fee
+      tickDiscretization
+      blockTimestamp
+    }
+  }
+`

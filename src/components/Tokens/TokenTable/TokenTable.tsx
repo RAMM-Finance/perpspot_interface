@@ -8,6 +8,7 @@ import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useEffect, useMemo, useState } from 'react'
 
 // import {useToken} from 'hooks/Tokens'
 import { useToken } from '../../../hooks/Tokens'
@@ -15,6 +16,8 @@ import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
+import { client } from 'graphql/limitlessGraph/limitlessClients'
+import {PoolAddedQuery} from 'graphql/limitlessGraph/queries'
 
 const GridContainer = styled.div`
   display: flex;
@@ -140,6 +143,32 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
 export default function TokenTable() {
   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
+
+  const [data, setData] = useState<any>()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  useEffect(() => {
+    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if (!client || !PoolAddedQuery || loading|| error  ) return
+    const call = async () => {
+      try {
+        setLoading(true)
+
+        const poolQueryData = await client.query(PoolAddedQuery,{  }).toPromise()
+
+        setData(poolQueryData)
+        setLoading(false)
+      } catch (error) {
+        setError(error)
+        setLoading(false)
+      }
+    }
+    call()
+  }, [ ])
+  console.log('data', data?.data?.poolAddeds)
+
+
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
   //   const leverageManager = useLeverageManagerContract(value)
