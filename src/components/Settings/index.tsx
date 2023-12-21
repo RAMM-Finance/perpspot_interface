@@ -119,12 +119,14 @@ const ModalContentWrapper = styled.div`
 
 export default function SettingsTab({
   allowedSlippage,
-  autoSlippedTick,
+  // autoSlippedTick,
   autoPremiumPercent,
+  isLimitOrder,
 }: {
   allowedSlippage?: Percent
-  autoSlippedTick?: Percent
+  // autoSlippedTick?: Percent
   autoPremiumPercent?: Percent
+  isLimitOrder?: boolean
 }) {
   const { chainId } = useWeb3React()
 
@@ -209,7 +211,8 @@ export default function SettingsTab({
             <TransactionSettings
               placeholderSlippage={allowedSlippage}
               placeholderPremium={autoPremiumPercent}
-              placeholderSlippedTick={autoSlippedTick}
+              // placeholderSlippedTick={autoSlippedTick}
+              isLimitOrder={isLimitOrder}
             />
           </AutoColumn>
         </MenuFlyout>
@@ -220,15 +223,17 @@ export default function SettingsTab({
 
 export function LmtSettingsTab({
   allowedSlippage,
-  autoSlippedTick,
+  // autoSlippedTick,
+  isLimitOrder,
   autoPremiumTolerance,
   isOpen,
   onToggle,
 }: {
   allowedSlippage?: Percent
-  autoSlippedTick?: Percent
+  // autoSlippedTick?: Percent
   autoPremiumTolerance?: Percent
   isOpen: boolean
+  isLimitOrder: boolean
   onToggle: () => void
 }) {
   const { chainId } = useWeb3React()
@@ -310,7 +315,8 @@ export function LmtSettingsTab({
             <TransactionSettings
               placeholderSlippage={allowedSlippage}
               placeholderPremium={autoPremiumTolerance}
-              placeholderSlippedTick={autoSlippedTick}
+              isLimitOrder={isLimitOrder}
+              // placeholderSlippedTick={autoSlippedTick}
             />
           </AutoColumn>
         </MenuFlyout>

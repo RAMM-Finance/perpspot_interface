@@ -34,12 +34,14 @@ const SettingWrapper = styled.div`
 // currencyA is treated as the preferred base currency
 export default function SwapTabHeader({
   autoSlippage,
-  autoSlippedTick,
+  // autoSlippedTick,
   autoPremiumDepositPercent,
+  isLimitOrder,
 }: {
   autoSlippage?: Percent
-  autoSlippedTick?: Percent
+  // autoSlippedTick?: Percent
   autoPremiumDepositPercent?: Percent
+  isLimitOrder?: boolean
 }) {
   const { activeTab } = useSwapState()
   const { onActiveTabChange } = useSwapActionHandlers()
@@ -97,8 +99,9 @@ export default function SwapTabHeader({
       <SettingWrapper>
         <SettingsTab
           allowedSlippage={autoSlippage}
-          autoSlippedTick={autoSlippedTick}
+          // autoSlippedTick={autoSlippedTick}
           autoPremiumPercent={autoPremiumDepositPercent}
+          isLimitOrder={isLimitOrder}
         />
       </SettingWrapper>
     </div>

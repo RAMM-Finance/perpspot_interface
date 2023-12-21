@@ -6,6 +6,7 @@ import { LoadingRows } from 'components/Loader/styled'
 import { useCurrency } from 'hooks/Tokens'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import moment from 'moment'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
@@ -13,10 +14,24 @@ import styled, { useTheme } from 'styled-components/macro'
 import { Separator, ThemedText } from '../../theme'
 import { AutoColumn } from '../Column'
 import { MouseoverValueLabel } from './AdvancedSwapDetails'
-
 const StyledCard = styled(Card)`
   padding: 0;
 `
+export function formatDuration(seconds: any) {
+  const duration = moment.duration(seconds, 'seconds')
+  const hours = duration.hours()
+  const minutes = duration.minutes()
+
+  let formattedString = ''
+  if (hours > 0) {
+    formattedString += `${hours} h `
+  }
+  if (minutes > 0 || hours === 0) {
+    formattedString += `${minutes} m`
+  }
+
+  return formattedString.trim()
+}
 
 interface AdvancedAddLimitDetails {
   trade?: AddLimitTrade
@@ -93,13 +108,12 @@ export function AdvancedAddLimitDetails({
         />
         <MouseoverValueLabel
           description="Order will be not filled after this time"
-          value={ Math.round( ( Number(trade?.deadline) - Date.now()/1000)/60)}
+          value={trade ? `${formatDuration(Number(trade?.duration) - Date.now() / 1000)}` : '-'}
           label={
             <Trans>
               <ThemedText.BodySmall>Valid For</ThemedText.BodySmall>
             </Trans>
           }
-          appendSymbol={" min"}
         />
         <MouseoverValueLabel
           description="Amount of premiums to be initially escrowed and held for order to be filled"

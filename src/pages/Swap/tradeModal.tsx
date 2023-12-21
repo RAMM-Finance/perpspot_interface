@@ -11,12 +11,12 @@ import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
+import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
-import { RowBetween, RowFixed, RowStart } from 'components/Row'
+import Row, { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
@@ -255,9 +255,9 @@ const TradeTabContent = () => {
     inputError,
     existingPosition,
     allowedSlippage,
-    allowedSlippedTick,
     contractError,
     userPremiumPercent,
+    maxLeverage,
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
@@ -330,7 +330,8 @@ const TradeTabContent = () => {
     [tradeState]
   )
 
-  const lmtIsValid = useMemo(() => !inputError, [inputError])
+  const lmtIsValid = useMemo(() => limitTradeState === LimitTradeState.VALID, [limitTradeState])
+  const lmtIsLoading = useMemo(() => limitTradeState === LimitTradeState.LOADING, [limitTradeState])
 
   const handleConfirmDismiss = useCallback(() => {
     setTradeState((currentState) => ({
@@ -384,10 +385,14 @@ const TradeTabContent = () => {
 
   const stablecoinPriceImpact = useMemo(
     () =>
-      tradeIsLoading || !trade
+      !isLimitOrder
+        ? tradeIsLoading || !trade
+          ? undefined
+          : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data)
+        : lmtIsLoading || !limitTrade
         ? undefined
         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
-    [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade]
+    [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade, lmtIsLoading, limitTrade, isLimitOrder]
   )
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
@@ -407,7 +412,7 @@ const TradeTabContent = () => {
     }
   }, [currencies, baseCurrencyIsInputToken])
 
-  const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage, allowedSlippedTick)
+  const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage)
 
   const existingLimitOrder = useMarginOrderPositionFromPositionId(orderKey)
 
@@ -512,8 +517,8 @@ const TradeTabContent = () => {
       />
       <SwapHeader
         allowedSlippage={allowedSlippage}
-        autoSlippedTick={allowedSlippedTick}
         autoPremiumDepositPercent={userPremiumPercent}
+        isLimitOrder={isLimitOrder}
       />
       <FilterWrapper>
         <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
@@ -531,8 +536,8 @@ const TradeTabContent = () => {
       </FilterWrapper>
       <LimitInputWrapper>
         <AnimatedDropdown open={isLimitOrder}>
-          <DynamicSection justify="start" gap="md" disabled={false}>
-            <RowStart>
+          <DynamicSection gap="md" disabled={false}>
+            <Row gap="20px">
               {Boolean(baseCurrency && quoteCurrency) && (
                 <PriceToggleSection>
                   <PriceToggle
@@ -547,16 +552,28 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-            </RowStart>
-          </DynamicSection>
-          <DynamicSection gap="md" disabled={false}>
+              <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
+                <Trans>
+                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                    Current Price:
+                  </ThemedText.DeprecatedMain>
+                  <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
+                    <HoverInlineText maxCharacters={20} text={currentPrice ?? '-'} />
+                  </ThemedText.DeprecatedBody>
+                  {baseCurrency && (
+                    <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                      {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                    </ThemedText.DeprecatedBody>
+                  )}
+                </Trans>
+              </AutoColumn>
+            </Row>
+
             <LimitInputPrice>
               <Trans>
                 <ThemedText.BodySecondary>Limit Price </ThemedText.BodySecondary>{' '}
               </Trans>
-              <div style={{ textAlign: 'end', gap: '5px' }}>
-                <ThemedText.BodySmall>Current Price: {currentPrice}</ThemedText.BodySmall>
-              </div>
+
               <LimitInputRow>
                 <StyledNumericalInput
                   onUserInput={onPriceInput}
@@ -577,10 +594,11 @@ const TradeTabContent = () => {
                     >
                       <ThemedText.BodySmall>
                         <div style={{ display: 'flex', gap: '4px' }}>
-                          <CurrencyLogo currency={quoteCurrency} size="15px" />
-                          {quoteCurrency?.symbol} /
-                          <CurrencyLogo currency={baseCurrency} size="15px" />
-                          {baseCurrency?.symbol}
+                          {baseCurrency && (
+                            <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                              {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                            </ThemedText.DeprecatedBody>
+                          )}
                         </div>
                       </ThemedText.BodySmall>
                     </Button>
@@ -588,34 +606,16 @@ const TradeTabContent = () => {
                 </RowFixed>
               </LimitInputRow>
             </LimitInputPrice>
-            {/* 
-                {Boolean(currentPrice && baseCurrency && quoteCurrency) && (
-                  <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
-                    <Trans>
-                      <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
-                        Current Price:
-                      </ThemedText.DeprecatedMain>
-                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
-                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
-                      </ThemedText.DeprecatedBody>
-                      {baseCurrency && (
-                        <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                        </ThemedText.DeprecatedBody>
-                      )}
-                    </Trans>
-                  </AutoColumn>
-                )} */}
           </DynamicSection>
         </AnimatedDropdown>
       </LimitInputWrapper>
       <div style={{ display: 'relative' }}>
         <InputSection>
-          {/* <InputHeader>
+          <InputHeader>
             <ThemedText.BodySecondary fontWeight={400}>
               <Trans>Margin</Trans>
             </ThemedText.BodySecondary>
-          </InputHeader> */}
+          </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             {/* <SwapCurrencyInputPanelV2
               value={formattedMargin}
@@ -677,6 +677,30 @@ const TradeTabContent = () => {
               </ThemedText.BodySecondary>
             </InputHeader>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
+              {/* <SwapCurrencyInputPanelV2
+                value={
+                  !isLimitOrder
+                    ? tradeState !== LeverageTradeState.VALID || !trade
+                      ? '-'
+                      : formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)
+                    : limitTradeState !== LimitTradeState.VALID || !limitTrade
+                    ? '-'
+                    : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
+                }
+                onUserInput={() => 0}
+                showMaxButton={false}
+                hideBalance={false}
+                fiatValue={fiatValueTradeOutput}
+                priceImpact={stablecoinPriceImpact}
+                currency={currencies[Field.OUTPUT] ?? null}
+                onCurrencySelect={handleOutputSelect}
+                otherCurrency={currencies[Field.INPUT] ?? null}
+                showCommonBases={true}
+                id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
+                loading={!isLimitOrder ? tradeIsLoading : lmtIsLoading}
+                disabled={false}
+                label="Long"
+              /> */}
               <BaseSwapPanel
                 value={
                   !isLimitOrder
@@ -721,9 +745,7 @@ const TradeTabContent = () => {
                     </ThemedText.DeprecatedBody>
                     <TextWithLoadingPlaceholder syncing={false} width={50}>
                       <ThemedText.BodySmall color="textSecondary" textAlign="right">
-                        {preTradeInfo
-                          ? `${formatBNToString(preTradeInfo.maxLeverage, NumberType.SwapTradeAmount)}`
-                          : '-'}
+                        {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : '-'}
                       </ThemedText.BodySmall>
                     </TextWithLoadingPlaceholder>
                   </RowBetween>
@@ -937,7 +959,7 @@ const TradeTabContent = () => {
                   setLimitState((currentState) => ({ ...currentState, showConfirm: true }))
                 }}
                 id="leverage-button"
-                disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
+                disabled={!!limitInputError || !lmtIsValid || lmtIsLoading || !!limitContractError}
               >
                 <ThemedText.BodyPrimary fontWeight={600}>
                   {limitInputError ? (

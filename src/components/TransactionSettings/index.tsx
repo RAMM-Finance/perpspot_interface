@@ -10,7 +10,6 @@ import {
   useUserLimitOrderTransactionTTL,
   useUserPremiumDepositPercent,
   useUserSlippageTolerance,
-  useUserSlippedTickTolerance,
   useUserTransactionTTL,
 } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -115,29 +114,24 @@ const SlippageEmojiContainer = styled.span`
 
 interface TransactionSettingsProps {
   placeholderSlippage?: Percent // varies according to the context in which the settings dialog is placed
-  placeholderSlippedTick?: Percent
+  // placeholderSlippedTick?: Percent
   placeholderPremium?: Percent
   isLimitOrder?: boolean
 }
 
 const THREE_DAYS_IN_SECONDS = ms`3 days` / 1000
 
-const DEFAULT_AUTO_SLIPPAGE = new Percent(5, 1000) // 0.5%
-const DEFAULT_PREMIUM_TOLERANCE = new Percent(5, 1000) // 0.5%
-const DEFAULT_SLIPPED_TICK_TOLERANCE = new Percent(5, 1000) // 0.5%
-
 export default function TransactionSettings({
   placeholderSlippage,
-  placeholderSlippedTick,
+  // placeholderSlippedTick,
   placeholderPremium,
   isLimitOrder,
-}: // placeholderPremium,
-TransactionSettingsProps) {
+}: TransactionSettingsProps) {
   const { chainId } = useWeb3React()
   const theme = useTheme()
 
   const [userSlippageTolerance, setUserSlippageTolerance] = useUserSlippageTolerance()
-  const [userSlippedTickTolerance, setUserSlippedTickTolerance] = useUserSlippedTickTolerance()
+  // const [userSlippedTickTolerance, setUserSlippedTickTolerance] = useUserSlippedTickTolerance()
   const [userPremiumDepositPercent, setUserPremiumDepositPercent] = useUserPremiumDepositPercent()
   const [limitDeadline, setLimitDeadline] = useUserLimitOrderTransactionTTL()
   const [limitDeadlineInput, setLimitDeadlineInput] = useState('')
@@ -154,8 +148,8 @@ TransactionSettingsProps) {
   // const [premiumInput, setPremiumInput] = useState('')
   // const [premiumError, setPremiumError] = useState<PremiumError | false>(false)
 
-  const [slippedTickInput, setSlippedTickInput] = useState('')
-  const [slippedTickError, setSlippedTickError] = useState<SlippedTickError | false>(false)
+  // const [slippedTickInput, setSlippedTickInput] = useState('')
+  // const [slippedTickError, setSlippedTickError] = useState<SlippedTickError | false>(false)
   const [premiumPercentInput, setPremiumPercentInput] = useState('')
   const [premiumPercentError, setPremiumPercentError] = useState<SlippedTickError | false>(false)
 
@@ -205,26 +199,26 @@ TransactionSettingsProps) {
     }
   }
 
-  function parseSlippedTickInput(value: string) {
-    // populate what the user typed and clear the error
-    setSlippedTickInput(value)
-    setSlippedTickError(false)
+  // function parseSlippedTickInput(value: string) {
+  //   // populate what the user typed and clear the error
+  //   setSlippedTickInput(value)
+  //   setSlippedTickError(false)
 
-    if (value.length === 0) {
-      setUserSlippedTickTolerance('auto')
-    } else {
-      const parsed = Math.floor(Number.parseFloat(value) * 100)
+  //   if (value.length === 0) {
+  //     setUserSlippedTickTolerance('auto')
+  //   } else {
+  //     const parsed = Math.floor(Number.parseFloat(value) * 100)
 
-      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
-        setUserSlippedTickTolerance('auto')
-        if (value !== '.') {
-          setSlippedTickError(SlippedTickError.InvalidInput)
-        }
-      } else {
-        setUserSlippedTickTolerance(new Percent(parsed, 10_000))
-      }
-    }
-  }
+  //     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 5000) {
+  //       setUserSlippedTickTolerance('auto')
+  //       if (value !== '.') {
+  //         setSlippedTickError(SlippedTickError.InvalidInput)
+  //       }
+  //     } else {
+  //       setUserSlippedTickTolerance(new Percent(parsed, 10_000))
+  //     }
+  //   }
+  // }
 
   function parsePremiumInput(value: string) {
     setPremiumPercentInput(value)
@@ -351,7 +345,7 @@ TransactionSettingsProps) {
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontSize={14} fontWeight={400} color={theme.textSecondary}>
-              <Trans>Transaction deadline</Trans>
+              <Trans>Limit Order deadline</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={<Trans>Your transaction will revert if it is pending for more than this period of time.</Trans>}
@@ -382,11 +376,11 @@ TransactionSettingsProps) {
           </RowFixed>
         </AutoColumn>
       )}
-      {placeholderSlippedTick && (
+      {/* {placeholderSlippedTick && (
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Borrow Slippage Tolerance</Trans>
+              <Trans>Slipped Tick Tolerance</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={
@@ -439,7 +433,7 @@ TransactionSettingsProps) {
             </RowBetween>
           ) : null}
         </AutoColumn>
-      )}
+      )} */}
       {placeholderSlippage && (
         <AutoColumn gap="sm">
           <RowFixed>
