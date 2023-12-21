@@ -9,6 +9,9 @@ import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { client } from 'graphql/limitlessGraph/limitlessClients'
+import {AddQuery, ReduceQuery} from 'graphql/limitlessGraph/queries'
+import {useState, useEffect} from 'react'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -96,6 +99,32 @@ export default function LeaderboardPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
+
+
+  const [addData, setAddData] = useState<any>()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  useEffect(() => {
+    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if (!client || !AddQuery || loading|| error  ) return
+    const call = async () => {
+      try {
+        setLoading(true)
+
+        const addQueryData = await client.query(AddQuery,{  }).toPromise()
+
+        setAddData(addQueryData)
+        setLoading(false)
+      } catch (error) {
+        setError(error)
+        setLoading(false)
+      }
+    }
+    call()
+  }, [ ])
+  console.log('data', addData?.data)
+
 
   return (
     <PageWrapper>

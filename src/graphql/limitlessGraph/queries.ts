@@ -50,3 +50,61 @@ export const PoolAddedQuery = `
     }
   }
 `
+
+export const AddQuery = `
+  query {
+    marginPositionIncreaseds {
+      pool
+      positionIsToken0
+      trader
+      addedAmount      
+      blockTimestamp
+    }
+  }
+`
+export const ReduceQuery = `
+  query {
+    MarginPositionReduceds {
+      pool
+      positionIsToken0
+      trader
+      reduceAmount      
+      blockTimestamp
+    }
+  }
+`
+
+export const IncreaseLiquidityQuery = `
+  query {
+    increaseLiquidities {
+      tokenId
+      liquidity
+      amount0
+      amount1    
+      blockNumber  
+      blockTimestamp
+    }
+  }
+`
+export const DecreaseLiquidityQuery = `
+  query {
+    decreaseLiquidities {
+      tokenId
+      liquidity
+      amount0
+      amount1    
+      blockNumber  
+      blockTimestamp
+    }
+  }
+`
+
+export const CollectQuery = `
+  query {
+    collects {
+      tokenId
+      amount0
+      amount1
+    }
+  }
+`
