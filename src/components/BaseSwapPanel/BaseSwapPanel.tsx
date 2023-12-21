@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
+import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -13,7 +14,6 @@ import { ReactNode, useCallback, useState } from 'react'
 import { Lock } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { useCurrencyBalance } from '../../state/connection/hooks'
@@ -368,24 +368,24 @@ export function BaseSwapPanel({
                             <div style={{ display: 'flex', gap: '2px' }}>
                               <Trans>Wallet-Balance:</Trans>
                               <ThemedText.BodySmall>
-                                {formatCurrencyAmount(selectedCurrencyBalance, 4)}
+                                {formatCurrencyAmount(selectedCurrencyBalance, NumberType.TokenNonTx)}
                               </ThemedText.BodySmall>
                             </div>
                           )
                         ) : null}
                       </ThemedText.BodySmall>
-                      {showMaxButton && selectedCurrencyBalance ? (
-                        <TraceEvent
-                          events={[BrowserEvent.onClick]}
-                          name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
-                          element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
-                        >
-                          <StyledBalanceMax onClick={onMax}>
-                            <Trans>Max</Trans>
-                          </StyledBalanceMax>
-                        </TraceEvent>
-                      ) : null}
                     </WalletBalance>
+                    {showMaxButton && selectedCurrencyBalance ? (
+                      <TraceEvent
+                        events={[BrowserEvent.onClick]}
+                        name={SwapEventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}
+                        element={InterfaceElementName.MAX_TOKEN_AMOUNT_BUTTON}
+                      >
+                        <StyledBalanceMax onClick={onMax}>
+                          <Trans>Max</Trans>
+                        </StyledBalanceMax>
+                      </TraceEvent>
+                    ) : null}
                   </RowFixed>
                 </AutoColumn>
               ) : (

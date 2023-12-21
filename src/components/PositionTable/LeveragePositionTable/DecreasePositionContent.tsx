@@ -734,7 +734,8 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           isOpen={showSettings}
           onToggle={onToggle}
           allowedSlippage={allowedSlippage}
-          autoSlippedTick={allowedSlippedTick}
+          isLimitOrder={currentState.isLimit}
+          // autoSlippedTick={allowedSlippedTick}
         />
       </div>
       <LimitInputWrapper style={{ width: '95%', marginLeft: '10px' }}>

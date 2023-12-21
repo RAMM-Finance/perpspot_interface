@@ -54,6 +54,88 @@ const Container = styled.div<{ hideInput: boolean }>`
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
 `
 
+// const CurrencySelect = styled(ButtonGray)<{
+//   visible: boolean
+//   selected: boolean
+//   hideInput?: boolean
+//   disabled?: boolean
+//   animateShake?: boolean
+// }>`
+//   align-items: center;
+//   background-color: ${({ selected, theme }) => (selected ? theme.surface1 : theme.accentAction)};
+//   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
+//   color: ${({ selected, theme }) => (selected ? theme.textPrimary : theme.white)};
+//   cursor: pointer;
+//   height: 36px;
+//   border-radius: 18px;
+//   outline: none;
+//   user-select: none;
+//   border: 1px solid ${({ selected, theme }) => (selected ? theme.backgroundOutline : theme.backgroundOutline)};
+//   font-size: 24px;
+//   font-weight: 485;
+//   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
+//   padding: ${({ selected }) => (selected ? '4px 8px 4px 4px' : '6px 6px 6px 8px')};
+//   gap: 8px;
+//   justify-content: space-between;
+//   margin-left: ${({ hideInput }) => (hideInput ? '0' : '12px')};
+//   box-shadow: ${({ theme }) => theme.backgroundOutline};
+
+//   &:hover,
+//   &:active {
+//     background-color: ${({ theme, selected }) => (selected ? theme.backgroundOutline : theme.backgroundOutline)};
+//   }
+
+//   &:before {
+//     background-size: 100%;
+//     border-radius: inherit;
+
+//     position: absolute;
+//     top: 0;
+//     left: 0;
+
+//     width: 100%;
+//     height: 100%;
+//     content: '';
+//   }
+
+//   &:hover:before {
+//     background-color: ${({ theme }) => theme.backgroundOutline};
+//   }
+
+//   &:active:before {
+//     background-color: ${({ theme }) => theme.backgroundOutline};
+//   }
+
+//   visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
+
+//   @keyframes horizontal-shaking {
+//     0% {
+//       transform: translateX(0);
+//       animation-timing-function: ease-in-out;
+//     }
+//     20% {
+//       transform: translateX(10px);
+//       animation-timing-function: ease-in-out;
+//     }
+//     40% {
+//       transform: translateX(-10px);
+//       animation-timing-function: ease-in-out;
+//     }
+//     60% {
+//       transform: translateX(10px);
+//       animation-timing-function: ease-in-out;
+//     }
+//     80% {
+//       transform: translateX(-10px);
+//       animation-timing-function: ease-in-out;
+//     }
+//     100% {
+//       transform: translateX(0);
+//       animation-timing-function: ease-in-out;
+//     }
+//   }
+//   animation: ${({ animateShake }) => (animateShake ? 'horizontal-shaking 300ms' : 'none')};
+// `
 const CurrencySelect = styled(ButtonGray)<{
   visible: boolean
   selected: boolean
@@ -62,27 +144,26 @@ const CurrencySelect = styled(ButtonGray)<{
   animateShake?: boolean
 }>`
   align-items: center;
-  background-color: ${({ selected, theme }) => (selected ? theme.surface1 : theme.accentAction)};
   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
+  box-shadow: ${({ selected }) => (selected ? 'none' : '0px 6px 10px rgba(0, 0, 0, 0.075)')};
   color: ${({ selected, theme }) => (selected ? theme.textPrimary : theme.white)};
   cursor: pointer;
-  height: 36px;
-  border-radius: 18px;
+  height: unset;
+  border-radius: 8px;
   outline: none;
   user-select: none;
-  border: 1px solid ${({ selected, theme }) => (selected ? theme.backgroundOutline : theme.backgroundOutline)};
+  border: none;
   font-size: 24px;
-  font-weight: 485;
+  font-weight: 400;
+  background-color: transparent;
   width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
   padding: ${({ selected }) => (selected ? '4px 8px 4px 4px' : '6px 6px 6px 8px')};
-  gap: 8px;
+  gap: 12px;
   justify-content: space-between;
-  margin-left: ${({ hideInput }) => (hideInput ? '0' : '12px')};
-  box-shadow: ${({ theme }) => theme.backgroundOutline};
 
   &:hover,
   &:active {
-    background-color: ${({ theme, selected }) => (selected ? theme.backgroundOutline : theme.backgroundOutline)};
+    background-color: ${({ theme, selected }) => (selected ? theme.backgroundInteractive : theme.accentAction)};
   }
 
   &:before {
@@ -99,15 +180,14 @@ const CurrencySelect = styled(ButtonGray)<{
   }
 
   &:hover:before {
-    background-color: ${({ theme }) => theme.backgroundOutline};
+    background-color: ${({ theme }) => theme.stateOverlayHover};
   }
 
   &:active:before {
-    background-color: ${({ theme }) => theme.backgroundOutline};
+    background-color: ${({ theme }) => theme.stateOverlayPressed};
   }
 
   visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
-
   @keyframes horizontal-shaking {
     0% {
       transform: translateX(0);
@@ -344,6 +424,31 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                   <Aligner>
                     <RowFixed>
                       {pair ? (
+                        <span>
+                          <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
+                        </span>
+                      ) : currency ? (
+                        <CurrencyLogo currency={currency} size="15px" />
+                      ) : null}
+                      {pair ? (
+                        <StyledTokenName className="pair-name-container">
+                          {pair?.token0.symbol}:{pair?.token1.symbol}
+                        </StyledTokenName>
+                      ) : (
+                        <StyledTokenName
+                          className="token-symbol-container"
+                          active={Boolean(currency && currency.symbol)}
+                        >
+                          {(currency && currency.symbol && currency.symbol.length > 20
+                            ? currency.symbol.slice(0, 4) +
+                              '...' +
+                              currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                            : currency?.symbol) || <Trans>Select token</Trans>}
+                        </StyledTokenName>
+                      )}
+                    </RowFixed>
+                    {/* <RowFixed>
+                      {pair ? (
                         <span style={{ marginRight: '0.5rem' }}>
                           <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
                         </span>
@@ -366,7 +471,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                             : currency?.symbol) || <Trans>Select token</Trans>}
                         </StyledTokenName>
                       )}
-                    </RowFixed>
+                    </RowFixed> */}
                     {onCurrencySelect && <StyledDropDown selected={!!currency} />}
                   </Aligner>
                 </CurrencySelect>

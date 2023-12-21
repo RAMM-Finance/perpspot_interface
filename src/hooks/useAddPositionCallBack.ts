@@ -20,8 +20,7 @@ import useTransactionDeadline from './useTransactionDeadline'
 
 export function useAddPositionCallback(
   trade: AddMarginTrade | undefined,
-  allowedSlippage: Percent,
-  allowedSlippedTick: Percent
+  allowedSlippage: Percent
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const { account, chainId, provider } = useWeb3React()
@@ -44,8 +43,8 @@ export function useAddPositionCallback(
       if (!amountOut) throw new Error('unable to get trade output')
 
       // calculate max and minimum tick bounds (current price bounds)
-      const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippedTick.toFixed(18)) * 100))
-      const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippedTick.toFixed(18)) * 100))
+      const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
+      const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
       const minPrice = new Price(
         pool.token0,
         pool.token1,
@@ -111,7 +110,7 @@ export function useAddPositionCallback(
     } catch (error: any) {
       throw new Error('Contract Error')
     }
-  }, [allowedSlippedTick, deadline, account, chainId, provider, trade, allowedSlippage])
+  }, [deadline, account, chainId, provider, trade, allowedSlippage])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback) return null

@@ -153,7 +153,7 @@ export const IncreasePositionContent = ({ positionKey }: { positionKey: TraderPo
     inputError,
     existingPosition,
     allowedSlippage,
-    allowedSlippedTick,
+    // allowedSlippedTick,
     contractError,
   } = useDerivedAddPositionInfo(
     margin,
@@ -251,7 +251,7 @@ export const IncreasePositionContent = ({ positionKey }: { positionKey: TraderPo
     setLeverageFactor
   )
 
-  const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage, allowedSlippedTick)
+  const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage)
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
@@ -304,7 +304,8 @@ export const IncreasePositionContent = ({ positionKey }: { positionKey: TraderPo
         isOpen={showSettings}
         onToggle={onToggleSettings}
         allowedSlippage={allowedSlippage}
-        autoSlippedTick={allowedSlippedTick}
+        isLimitOrder={false}
+        // autoSlippedTick={allowedSlippedTick}
       />
       <div style={{ display: 'relative' }}>
         <InputSection>

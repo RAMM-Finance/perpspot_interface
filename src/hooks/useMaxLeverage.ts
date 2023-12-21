@@ -24,54 +24,41 @@ export function useMaxLeverage(
   // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
 
   const blockNumber = useBlockNumber()
-  const [state, setState] = useState<{
-    result?: any
-    loading: boolean
-    error?: any
-    blockNumber?: number
+  const [result, setResult] = useState<BN>()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+  const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+  const [lastParams, setLastParams] = useState<{
     margin?: string
     slippage?: Percent
     positionKey?: TraderPositionKey
-  }>({
-    result: undefined,
-    loading: false,
-    error: undefined,
-    blockNumber: undefined,
-    margin: undefined,
-    slippage: undefined,
-    positionKey: undefined,
-  })
+  }>({})
 
   useEffect(() => {
-    if (
-      (state.loading && state.margin === margin && state.slippage?.toFixed(18) === slippage?.toFixed(18)) ||
-      state.positionKey === positionKey
-    ) {
+    if (!blockNumber || !margin || !slippage || !positionKey || !dataProvider) {
+      setResult(undefined)
+      setLoading(false)
+      setError(undefined)
+      return
+    }
+
+    if (loading) {
       return
     }
 
     if (
-      !blockNumber ||
-      (state.blockNumber && state.blockNumber + 2 > blockNumber) ||
-      !margin ||
-      !slippage ||
-      !positionKey ||
-      !dataProvider
+      lastBlockNumber &&
+      lastBlockNumber + 1 > blockNumber &&
+      lastParams.margin === margin &&
+      lastParams.slippage === slippage &&
+      lastParams.positionKey === positionKey
     ) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: undefined,
-        margin: undefined,
-        slippage: undefined,
-        positionKey: undefined,
-      }))
       return
     }
 
     const call = async () => {
       try {
-        setState((prev) => ({ ...prev, loading: true }))
+        setLoading(true)
 
         const poolKey = {
           token0: positionKey.poolKey.token0Address,
@@ -87,37 +74,37 @@ export function useMaxLeverage(
           startingLeverage
         )
 
-        setState((prev) => ({
-          ...prev,
+        setResult(new BN(result.toString()))
+        setLoading(false)
+        setError(undefined)
+        setBlockNumber(blockNumber)
+        setLastParams({
           margin,
           slippage,
           positionKey,
-          blockNumber,
-          result: new BN(result.toString()),
-          loading: false,
-          error: undefined,
-        }))
+        })
       } catch (error) {
         console.log('maxLeverage error', error)
-        setState((prev) => ({
-          ...prev,
+        setResult(undefined)
+        setLoading(false)
+        setError(error)
+        setBlockNumber(blockNumber)
+        setLastParams({
           margin: undefined,
           slippage: undefined,
           positionKey: undefined,
-          loading: false,
-          error,
-        }))
+        })
       }
     }
 
     call()
-  }, [margin, positionKey, slippage, startingLeverage, blockNumber, dataProvider, state])
+  }, [margin, positionKey, slippage, startingLeverage, blockNumber, dataProvider, loading, lastBlockNumber, lastParams])
 
   return useMemo(() => {
     return {
-      loading: state.loading,
-      error: state.error,
-      result: state.result,
+      loading,
+      error,
+      result,
     }
-  }, [state])
+  }, [loading, error, result])
 }
