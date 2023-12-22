@@ -16,6 +16,7 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import TokenSafetyModal from 'components/TokenSafety/TokenSafetyModal'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
+import { useBestPool } from 'hooks/useBestPool'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
@@ -37,7 +38,7 @@ import { useCurrency, useDefaultActiveTokens } from '../../hooks/Tokens'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import useWrapCallback from '../../hooks/useWrapCallback'
 import { ActiveSwapTab, Field } from '../../state/swap/actions'
-import { useBestPool, useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapState } from '../../state/swap/hooks'
+import { useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapState } from '../../state/swap/hooks'
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 
@@ -353,7 +354,7 @@ export default function Swap({ className }: { className?: string }) {
   const [inputCurrency, outputCurrency] = useMemo(() => {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
   }, [currencies])
-  const pool = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
+  const [, pool] = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   // const theme = useTheme()
 
   // toggle wallet when disconnected

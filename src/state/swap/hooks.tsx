@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
+import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -239,20 +239,20 @@ export function useBestPoolAddress(
 }
 
 // deprecated
-export function useBestPool(
-  inputCurrency: Currency | undefined,
-  outputCurrency: Currency | undefined
-): Pool | undefined {
-  const { loading, routes } = useAllV3Routes(inputCurrency, outputCurrency)
-  const { chainId } = useWeb3React()
-  if (loading || routes.length === 0 || !chainId || routes[0].pools.length === 0) {
-    return undefined
-  }
+// export function useBestPool(
+//   inputCurrency: Currency | undefined,
+//   outputCurrency: Currency | undefined
+// ): [PoolState, Pool | undefined] {
+//   const { loading, routes } = useAllV3Routes(inputCurrency, outputCurrency)
+//   const { chainId } = useWeb3React()
+//   if (loading || routes.length === 0 || !chainId || routes[0].pools.length === 0) {
+//     return undefined
+//   }
 
-  const pool = routes[0].pools[0]
+//   const pool = routes[0].pools[0]
 
-  return pool
-}
+//   return pool
+// }
 
 // export function useDerivedBorrowCreationInfo({
 //   allowance: { input: inputAllowance, output: outputAllowance },
@@ -1101,24 +1101,24 @@ export function useDefaultsFromURLSearch(): SwapState {
   return parsedSwapState
 }
 
-export async function estimateSlippage(
-  token0: Currency | undefined | null,
-  token1: Currency | undefined | null,
-  borrowAmount: BN,
-  margin: BN
-) {
-  // margin, borrowamount. margin + borrow that swaps for some levered output. callstatic swap simulation of the pool you're using.
-  if (!token0 || !token1) {
-    return null
-  }
-  const poolToUse = useBestPool(token0, token1)
-  if (!poolToUse || !poolToUse.token0 || !poolToUse?.token1) {
-    return null
-  }
-  const poolAddress = Pool.getAddress(poolToUse?.token0, poolToUse?.token1, poolToUse?.fee)
+// export async function estimateSlippage(
+//   token0: Currency | undefined | null,
+//   token1: Currency | undefined | null,
+//   borrowAmount: BN,
+//   margin: BN
+// ) {
+//   // margin, borrowamount. margin + borrow that swaps for some levered output. callstatic swap simulation of the pool you're using.
+//   if (!token0 || !token1) {
+//     return null
+//   }
+//   const poolToUse = useBestPool(token0, token1)
+//   if (!poolToUse || !poolToUse.token0 || !poolToUse?.token1) {
+//     return null
+//   }
+//   const poolAddress = Pool.getAddress(poolToUse?.token0, poolToUse?.token1, poolToUse?.fee)
 
-  //discussion around getting estimation from simulation without approval
-  //use the equation
+//   //discussion around getting estimation from simulation without approval
+//   //use the equation
 
-  return new BN(1).plus(0.03).shiftedBy(18).toFixed(0)
-}
+//   return new BN(1).plus(0.03).shiftedBy(18).toFixed(0)
+// }

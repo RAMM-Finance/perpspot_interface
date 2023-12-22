@@ -273,47 +273,59 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   const [error, setError] = useState<any>()
   const [result, setResult] = useState<any>()
   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+  const [lastParams, setLastParams] = useState<{
+    pool: string
+    trader: string
+    isToken0: boolean
+  }>()
   const blockNumber = useBlockNumber()
   const { account } = useWeb3React()
 
   const params = useMemo(() => {
     if (token0 && token1 && chainId && key) {
-      return [
-        computePoolAddress({
+      return {
+        pool: computePoolAddress({
           factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
           tokenA: token0,
           tokenB: token1,
           fee: key?.poolKey.fee,
         }),
-        key.trader,
-        key.isToken0,
-      ]
+        trader: key.trader,
+        isToken0: key.isToken0,
+      }
     } else {
       return undefined
     }
   }, [token0, token1, chainId, key])
 
   useEffect(() => {
-    if (!params || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if (!params || loading || !blockNumber) return
 
+    if (
+      lastParams?.isToken0 === params.isToken0 &&
+      lastParams?.pool === params.pool &&
+      lastParams?.trader === params.trader &&
+      lastBlockNumber &&
+      lastBlockNumber + 1 > blockNumber
+    ) {
+      return
+    }
     const call = async () => {
       try {
         setLoading(true)
-        const result = await dataProvider?.callStatic.getMarginPosition(
-          params[0] as string,
-          params[1] as string,
-          params[2] as boolean
-        )
+        const result = await dataProvider?.callStatic.getMarginPosition(params.pool, params.trader, params.isToken0)
+        setLastParams(params)
         setResult(result)
         setLoading(false)
         setBlockNumber(blockNumber)
       } catch (error) {
         setError(error)
+        setLastParams(undefined)
         setLoading(false)
       }
     }
     call()
-  }, [dataProvider, params, blockNumber, lastBlockNumber, loading])
+  }, [dataProvider, params, blockNumber, lastBlockNumber, loading, lastParams])
 
   return useMemo(() => {
     if (!result || !key || !account) {

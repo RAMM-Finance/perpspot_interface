@@ -198,12 +198,14 @@ export function useDerivedAddPositionInfo(
   }, [parsedLeverageFactor, parsedMargin])
 
   const [positionKey, orderKey] = useMemo(() => {
-    const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
-    if (pool && account) {
+    if (outputCurrency && inputCurrency && account && pool) {
+      const isToken0 = outputCurrency?.wrapped.sortsBefore(inputCurrency?.wrapped)
+      const token0Address = isToken0 ? outputCurrency.wrapped.address : inputCurrency.wrapped.address
+      const token1Address = isToken0 ? inputCurrency.wrapped.address : outputCurrency.wrapped.address
       const _positionKey = {
         poolKey: {
-          token0Address: pool.token0.address,
-          token1Address: pool.token1.address,
+          token0Address,
+          token1Address,
           fee: pool.fee,
         },
         isToken0,
@@ -212,8 +214,8 @@ export function useDerivedAddPositionInfo(
       }
       const _order = {
         poolKey: {
-          token0Address: pool.token0.address,
-          token1Address: pool.token1.address,
+          token0Address,
+          token1Address,
           fee: pool.fee,
         },
         isToken0,
@@ -224,7 +226,7 @@ export function useDerivedAddPositionInfo(
     } else {
       return [undefined, undefined]
     }
-  }, [account, pool, outputCurrency])
+  }, [account, inputCurrency, outputCurrency, pool])
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
   const existingLimitPosition = useMarginOrderPositionFromPositionId(orderKey)
@@ -270,11 +272,7 @@ export function useDerivedAddPositionInfo(
     else return userPremiumPercent
   }, [userPremiumPercent])
 
-  const { result: maxLeverage } = useMaxLeverage(
-    positionKey,
-    parsedMargin && inputCurrency ? parsedMargin.shiftedBy(inputCurrency.decimals).toFixed(0) : undefined,
-    allowedSlippage
-  )
+  const { result: maxLeverage } = useMaxLeverage(positionKey, parsedMargin, inputCurrency ?? undefined, allowedSlippage)
 
   const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
     if (!existingPosition || !account || !inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin)
@@ -508,11 +506,7 @@ export function useDerivedLimitAddPositionInfo(
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(traderKey)
 
-  const { result: maxLeverage } = useMaxLeverage(
-    traderKey,
-    parsedMargin && inputCurrency ? parsedMargin.shiftedBy(inputCurrency.decimals).toFixed(0) : undefined,
-    allowedSlippage
-  )
+  const { result: maxLeverage } = useMaxLeverage(traderKey, parsedMargin, inputCurrency, allowedSlippage)
 
   const [userPremiumPercent] = useUserPremiumDepositPercent()
 
@@ -815,6 +809,7 @@ const useSimulateAddLimitOrder = (
       }
       return
     }
+
     if (existingLimitPosition && existingLimitPosition?.auctionStartTime > 0) {
       setTradeState(LimitTradeState.EXISTING_ORDER)
       return
@@ -866,6 +861,7 @@ const useSimulateAddLimitOrder = (
 const useSimulateMarginTrade = (
   allowedSlippage: Percent,
   premiumPercent: Percent,
+  // poolState?: PoolState,
   pool?: Pool,
   inputIsToken0?: boolean,
   margin?: BN,
@@ -893,10 +889,13 @@ const useSimulateMarginTrade = (
   const deadline = useTransactionDeadline()
 
   const dataProvider = useDataProviderContract()
-
+  // console.log('existingPosition', existingPosition, inputIsToken0)
   useEffect(() => {
     // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
     const lagged = async () => {
+      if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
+        return
+      }
       if (
         !account ||
         !pool ||
@@ -910,7 +909,6 @@ const useSimulateMarginTrade = (
         !additionalPremium ||
         !!inputError ||
         !marginFacility ||
-        !existingPosition ||
         !inputCurrency ||
         !outputCurrency ||
         !allowedSlippage ||
@@ -926,6 +924,7 @@ const useSimulateMarginTrade = (
       }
 
       try {
+        console.log('lmt: attempting call')
         setTradeState(LeverageTradeState.LOADING)
         const swapRoute = new Route(
           [pool],
@@ -992,6 +991,18 @@ const useSimulateMarginTrade = (
         const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
         const minimumOutput = bnAmountIn.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
+        // console.log('margin params', {
+        //   positionKey,
+        //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+        //   borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+        //   minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+        //   deadline: deadline.toString(),
+        //   simulatedOutput: amountOut.toString(),
+        //   executionOption: 1,
+        //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+        //   slippedTickMin,
+        //   slippedTickMax,
+        // })
         // calldata
         const calldata = MarginFacilitySDK.addPositionParameters({
           positionKey,
@@ -1048,6 +1059,28 @@ const useSimulateMarginTrade = (
         }
 
         const executionPrice = new Price<Currency, Currency>(inputCurrency, outputCurrency, swapInput, swapOutput)
+        // console.log('simulation', {
+        //   margin: BnToCurrencyAmount(margin, inputCurrency).toExact(), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
+        //   fees: BnToCurrencyAmount(margin, inputCurrency)
+        //     .subtract(CurrencyAmount.fromRawAmount(inputCurrency, _margin))
+        //     .toExact(),
+        //   minimumOutput: BnToCurrencyAmount(minimumOutput, outputCurrency).toExact(),
+        //   borrowAmount: CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount).toExact(),
+        //   swapInput: CurrencyAmount.fromRawAmount(inputCurrency, swapInput).toExact(),
+        //   swapOutput: CurrencyAmount.fromRawAmount(outputCurrency, swapOutput).toExact(),
+        //   executionPrice: executionPrice.toFixed(18),
+        //   allowedSlippage,
+        //   positionKey,
+        //   swapRoute,
+        //   premium: additionalPremium.toFixed(18),
+        //   pool,
+        //   inputIsToken0,
+        //   borrowRate: new BN(borrowRate.toString())
+        //     .shiftedBy(-18)
+        //     .div(365 * 24)
+        //     .times(100),
+        // })
+
         const simulation: AddMarginTrade = {
           margin: BnToCurrencyAmount(margin, inputCurrency), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
           fees: BnToCurrencyAmount(margin, inputCurrency).subtract(

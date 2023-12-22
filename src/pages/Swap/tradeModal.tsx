@@ -29,6 +29,7 @@ import { isSupportedChain, SupportedChainId } from 'constants/chains'
 import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
+import { useBestPool } from 'hooks/useBestPool'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
@@ -48,7 +49,7 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useBestPool, useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
+import { useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -246,7 +247,7 @@ const TradeTabContent = () => {
     baseCurrencyIsInputToken,
   } = useMarginTradingState()
 
-  const pool = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
+  const [, pool] = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
 
   const {
     trade,
@@ -873,7 +874,7 @@ const TradeTabContent = () => {
                   setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
                 }}
                 id="leverage-button"
-                disabled={!!inputError || !lmtIsValid || tradeIsLoading || invalidTrade}
+                disabled={!!inputError || tradeIsLoading || invalidTrade}
               >
                 <ThemedText.BodyPrimary fontWeight={600}>
                   {inputError ? (
@@ -970,6 +971,8 @@ const TradeTabContent = () => {
                     <Trans>Invalid Trade</Trans>
                   ) : limitTradeState === LimitTradeState.LOADING ? (
                     <Trans>Place Order</Trans>
+                  ) : limitTradeState === LimitTradeState.EXISTING_ORDER ? (
+                    <Trans>Existing Order</Trans>
                   ) : (
                     <Trans>Place Order</Trans>
                   )}

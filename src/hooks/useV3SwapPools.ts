@@ -22,6 +22,7 @@ export function useV3SwapPools(
   const { chainId } = useWeb3React()
 
   const allCurrencyCombinations = useAllCurrencyCombinations(currencyIn, currencyOut)
+  // console.log('allCurrencyCombinations', allCurrencyCombinations)
 
   const allCurrencyCombinationsWithAllFees: [Token, Token, FeeAmount][] = useMemo(
     () =>

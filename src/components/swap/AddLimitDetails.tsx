@@ -108,7 +108,7 @@ export function AdvancedAddLimitDetails({
         />
         <MouseoverValueLabel
           description="Order will be not filled after this time"
-          value={trade ? `${formatDuration(Number(trade?.duration) - Date.now() / 1000)}` : '-'}
+          value={trade ? `${formatDuration(Number(trade?.duration))}` : '-'}
           label={
             <Trans>
               <ThemedText.BodySmall>Valid For</ThemedText.BodySmall>

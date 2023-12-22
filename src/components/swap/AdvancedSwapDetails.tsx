@@ -675,7 +675,7 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="The amount you borrow"
           label="Borrow Amount"
-          value={formatCurrencyAmount(trade?.borrowAmount, NumberType.TokenNonTx)}
+          value={formatCurrencyAmount(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />

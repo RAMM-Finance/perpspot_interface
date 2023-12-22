@@ -20,5 +20,9 @@ export function tradeMeaningfullyDiffers(
 }
 
 export function marginTradeMeaningfullyDiffers(tradeA: AddMarginTrade, tradeB: AddMarginTrade): boolean {
-  return false
+  return (
+    !tradeA.borrowAmount.equalTo(tradeB.borrowAmount) ||
+    !tradeA.margin.equalTo(tradeB.margin) ||
+    !tradeA.minimumOutput.equalTo(tradeB.minimumOutput)
+  )
 }

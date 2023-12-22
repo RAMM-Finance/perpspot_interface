@@ -1,4 +1,4 @@
-import { Percent } from '@uniswap/sdk-core'
+import { Currency, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -11,7 +11,8 @@ const DEFAULT_MAX_LEVERAGE = '120'
 
 export function useMaxLeverage(
   positionKey: TraderPositionKey | undefined,
-  margin: string | undefined, // formatted to raw amount
+  margin: BN | undefined, // formatted to raw amount
+  inputCurrency: Currency | undefined,
   slippage: Percent | undefined,
   startingLeverage = DEFAULT_MAX_LEVERAGE
 ): { loading: boolean; error?: any; result?: BN } {
@@ -22,20 +23,19 @@ export function useMaxLeverage(
   // const [error, setError] = useState<any>()
   // const [result, setResult] = useState<any>()
   // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
-
   const blockNumber = useBlockNumber()
   const [result, setResult] = useState<BN>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
   const [lastParams, setLastParams] = useState<{
-    margin?: string
+    margin?: BN
     slippage?: Percent
     positionKey?: TraderPositionKey
   }>({})
 
   useEffect(() => {
-    if (!blockNumber || !margin || !slippage || !positionKey || !dataProvider) {
+    if (!blockNumber || !margin || !slippage || !positionKey || !dataProvider || !inputCurrency) {
       setResult(undefined)
       setLoading(false)
       setError(undefined)
@@ -43,6 +43,13 @@ export function useMaxLeverage(
     }
 
     if (loading) {
+      return
+    }
+
+    if (margin.isZero()) {
+      setResult(undefined)
+      setLoading(false)
+      setError(undefined)
       return
     }
 
@@ -68,7 +75,7 @@ export function useMaxLeverage(
 
         const result = await dataProvider.callStatic.findMaxLeverageWithEstimatedSlippage(
           poolKey,
-          margin,
+          margin.shiftedBy(inputCurrency.decimals).toFixed(0),
           positionKey.isToken0,
           new BN(999).shiftedBy(15).toFixed(0),
           startingLeverage
@@ -98,7 +105,18 @@ export function useMaxLeverage(
     }
 
     call()
-  }, [margin, positionKey, slippage, startingLeverage, blockNumber, dataProvider, loading, lastBlockNumber, lastParams])
+  }, [
+    margin,
+    positionKey,
+    inputCurrency,
+    slippage,
+    startingLeverage,
+    blockNumber,
+    dataProvider,
+    loading,
+    lastBlockNumber,
+    lastParams,
+  ])
 
   return useMemo(() => {
     return {

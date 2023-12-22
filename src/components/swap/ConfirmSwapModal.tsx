@@ -197,11 +197,11 @@ export function LeverageConfirmModal({
         existingPosition={existingPosition}
         recipient={null}
         allowedSlippage={allowedSlippage}
-        showAcceptChanges={false}
+        showAcceptChanges={true}
         onAcceptChanges={onAcceptChanges}
       />
     ) : null
-  }, [allowedSlippage, onAcceptChanges, trade, preTradeInfo, existingPosition])
+  }, [allowedSlippage, onAcceptChanges, trade, preTradeInfo, existingPosition, showAcceptChanges])
 
   const modalBottom = useCallback(() => {
     return trade ? (
