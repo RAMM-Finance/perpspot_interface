@@ -484,7 +484,7 @@ export function PositionPage() {
   // fees
   // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
-  console.log('feevalues', feeValue0?.greaterThan(0), feeValue1?.greaterThan(0))
+
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -540,7 +540,7 @@ export function PositionPage() {
       const response = await lmtPositionManager.collect({
         tokenId: tokenId.toString(),
         recipient: account,
-      })
+      }, {gasLimit: 20000000})
       return response
     } catch (err) {
       console.log('collect order error', err)
