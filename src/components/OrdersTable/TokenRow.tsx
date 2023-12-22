@@ -5,8 +5,8 @@ import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
-import Row, { AutoRow, RowBetween, RowStart } from 'components/Row'
+import { EditCell } from 'components/PositionTable/BorrowPositionTable/TokenRow'
+import Row, { AutoRow, RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
@@ -16,7 +16,7 @@ import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
+import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -594,7 +594,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   console.log('details', details)
 
   const nowInSeconds = Math.floor(Date.now() / 1000)
-  const duration = details.auctionDeadline + 24 * 60 * 60 - nowInSeconds
+  const duration = details.auctionStartTime + 24 * 60 * 60 - nowInSeconds
 
   // Calculate hours and remaining minutes
   const durationHours = Math.floor(duration / 3600)
@@ -700,42 +700,26 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           input={
             <FlexStartRow>
-              <AutoRow>
-                <RowStart>
-                  <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
-                    {(Number(details.inputAmount) / 1e18).toString()}
-                    <CurrencyLogo currency={inputCurrency} size="13px" />
-                    {inputCurrency?.symbol}
-                    <Edit3 size={14} />
-                  </UnderlineText>
-                </RowStart>
+              <AutoRow gap="2px">
+                {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
+                {(Number(details.inputAmount) / 1e18).toString()}
+                <CurrencyLogo currency={outputCurrency} size="13px" />
+                {outputCurrency?.symbol}
               </AutoRow>
             </FlexStartRow>
           }
           output={
             <FlexStartRow>
-              <AutoRow>
-                <RowStart>
-                  <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    {(Number(details.startOutput) / 1e18).toString()}
-                    <CurrencyLogo currency={outputCurrency} size="13px" />
-                    <>{outputCurrency?.symbol} </>
-                  </UnderlineText>
-                </RowStart>
+              <AutoRow gap="2px" justify="start">
+                {(Number(details.startOutput) / 1e18).toString()}
+                <CurrencyLogo currency={inputCurrency} size="13px" />
+                {inputCurrency?.symbol}
               </AutoRow>
             </FlexStartRow>
           }
           leverage={
             <FlexStartRow>
-              <AutoRow>
-                <RowBetween>
-                  <UnderlineText style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    {leverage.toString()}
-                    <Edit3 size={14} />
-                  </UnderlineText>
-                </RowBetween>
-              </AutoRow>
+              <AutoRow>{leverage.toString()}</AutoRow>
             </FlexStartRow>
           }
           deadline={

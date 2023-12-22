@@ -1,6 +1,6 @@
 import { SmallButtonPrimary } from 'components/Button'
 import { InputSection } from 'pages/Swap'
-import { OpacityHoverState } from 'pages/Swap/tradeModal'
+import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { useMemo, useRef, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -13,30 +13,7 @@ const Wrapper = styled.div`
   margin-top: 10px;
   padding: 10px;
 `
-const FilterWrapper = styled.div`
-  display: flex;
-  align-items: start;
-  margin-bottom: 6px;
-`
-const Filter = styled.div`
-  display: flex;
-  align-items: start;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-  width: fit-content;
-`
-const Selector = styled.div<{ active: boolean }>`
-  padding: 5px 7px;
-  border-radius: 10px;
-  background: ${({ active, theme }) => (active ? theme.accentActionSoft : 'none')};
-  cursor: pointer;
 
-  ${OpacityHoverState}
-`
-
-const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
-  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
-`
 const InputWrapper = styled(InputSection)`
   width: 95%;
   display: flex;

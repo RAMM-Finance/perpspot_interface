@@ -16,7 +16,7 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
-import Row, { RowBetween, RowFixed } from 'components/Row'
+import Row, { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
@@ -553,21 +553,23 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-              <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
+              <AutoRow align="start" gap="10px" style={{ marginTop: '0.5rem' }}>
                 <Trans>
                   <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
                     Current Price:
                   </ThemedText.DeprecatedMain>
-                  <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
-                    <HoverInlineText maxCharacters={20} text={currentPrice ?? '-'} />
-                  </ThemedText.DeprecatedBody>
-                  {baseCurrency && (
-                    <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                      {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="textSecondary">
+                      <HoverInlineText maxCharacters={20} text={currentPrice ?? '-'} />
                     </ThemedText.DeprecatedBody>
-                  )}
+                    {baseCurrency && (
+                      <ThemedText.DeprecatedBody color="text2" fontSize={10}>
+                        {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                      </ThemedText.DeprecatedBody>
+                    )}
+                  </div>
                 </Trans>
-              </AutoColumn>
+              </AutoRow>
             </Row>
 
             <LimitInputPrice>
@@ -639,7 +641,6 @@ const TradeTabContent = () => {
               onUserInput={handleMarginInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueTradeMargin}
-              onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
@@ -718,7 +719,6 @@ const TradeTabContent = () => {
                 fiatValue={fiatValueTradeOutput}
                 priceImpact={stablecoinPriceImpact}
                 currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT] ?? null}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}

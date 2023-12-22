@@ -7,11 +7,12 @@ import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
 import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { AddQuery } from 'graphql/limitlessGraph/queries'
+import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
-import {AddQuery, ReduceQuery} from 'graphql/limitlessGraph/queries'
-import {useState, useEffect} from 'react'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -23,7 +24,7 @@ const LeaderboardWrapper = styled.div`
   border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  width: 60%;
+  width: 70%;
   margin-right: 0.125rem;
   margin-top: 0.125rem;
   overflow-y: scroll;
@@ -46,7 +47,7 @@ const ReferralsWrapper = styled.div`
   border-radius: 10px;
   margin-left: 0.125rem;
   margin-top: 0.125rem;
-  width: 40%;
+  width: 70%;
 `
 
 // const PointsWrapper = styled.div`
@@ -77,9 +78,12 @@ const Header = styled.div`
 
 const Container = styled.div`
   display: flex;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
+  flex-direction: column;
+  gap: 5px;
   height: 85vh;
+  align-items: start;
+  padding-left: 20%;
+  padding-top: 5px;
 `
 const PointsWrapper = styled.div`
   display: flex;
@@ -99,7 +103,7 @@ export default function LeaderboardPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
-
+  const [leaderboard, setLeaderboard] = useState<boolean>(true)
 
   const [addData, setAddData] = useState<any>()
   const [loading, setLoading] = useState(false)
@@ -107,12 +111,12 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !AddQuery || loading|| error  ) return
+    if (!client || !AddQuery || loading || error) return
     const call = async () => {
       try {
         setLoading(true)
 
-        const addQueryData = await client.query(AddQuery,{  }).toPromise()
+        const addQueryData = await client.query(AddQuery, {}).toPromise()
 
         setAddData(addQueryData)
         setLoading(false)
@@ -122,9 +126,8 @@ export default function LeaderboardPage() {
       }
     }
     call()
-  }, [ ])
+  }, [])
   console.log('data', addData?.data)
-
 
   return (
     <PageWrapper>
@@ -132,9 +135,53 @@ export default function LeaderboardPage() {
         <Points />
       </PointsWrapper>
       <Container>
-        <LeaderboardWrapper>
-          <LeaderboardTable />
-        </LeaderboardWrapper>
+        <FilterWrapper>
+          <Filter onClick={() => setLeaderboard(!leaderboard)}>
+            <Selector active={leaderboard}>
+              <StyledSelectorText lineHeight="20px" active={leaderboard}>
+                Leaderboard
+              </StyledSelectorText>
+            </Selector>
+            <Selector active={!leaderboard}>
+              <StyledSelectorText lineHeight="20px" active={!leaderboard}>
+                Referrals
+              </StyledSelectorText>
+            </Selector>
+          </Filter>
+        </FilterWrapper>
+        {leaderboard ? (
+          <LeaderboardWrapper>
+            <LeaderboardTable />
+          </LeaderboardWrapper>
+        ) : (
+          <ReferralsWrapper>
+            <ThemedText.SubHeader>
+              <Header>Referrals</Header>
+            </ThemedText.SubHeader>
+            {showConnectAWallet ? (
+              <ErrorContainer style={{ paddingTop: '50px' }}>
+                <TraceEvent
+                  events={[BrowserEvent.onClick]}
+                  name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                  properties={{ received_swap_quote: false }}
+                  element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+                >
+                  <ButtonPrimary
+                    style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                    onClick={toggleWalletDrawer}
+                  >
+                    <Trans>
+                      <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
+                    </Trans>
+                  </ButtonPrimary>
+                </TraceEvent>
+              </ErrorContainer>
+            ) : (
+              <Referrals />
+            )}
+          </ReferralsWrapper>
+        )}
+
         {/* <AchievementsWrapper>
           <ThemedText.SubHeader>
             <Header>Achievements</Header>
@@ -161,32 +208,6 @@ export default function LeaderboardPage() {
             <Achievements />
           )}
         </AchievementsWrapper> */}
-        <ReferralsWrapper>
-          <ThemedText.SubHeader>
-            <Header>Referrals</Header>
-          </ThemedText.SubHeader>
-          {showConnectAWallet ? (
-            <ErrorContainer style={{ paddingTop: '50px' }}>
-              <TraceEvent
-                events={[BrowserEvent.onClick]}
-                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                properties={{ received_swap_quote: false }}
-                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-              >
-                <ButtonPrimary
-                  style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                  onClick={toggleWalletDrawer}
-                >
-                  <Trans>
-                    <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                  </Trans>
-                </ButtonPrimary>
-              </TraceEvent>
-            </ErrorContainer>
-          ) : (
-            <Referrals />
-          )}
-        </ReferralsWrapper>
       </Container>
     </PageWrapper>
   )

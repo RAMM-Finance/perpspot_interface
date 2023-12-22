@@ -430,7 +430,7 @@ function TokenRow({
 }: {
   first?: boolean
   header: boolean
-  listNumber: ReactNode
+  listNumber?: ReactNode
   loading?: boolean
   tvl: ReactNode
   price: ReactNode
@@ -586,8 +586,8 @@ interface LoadedRowProps {
   token0: Token
   token1: Token
   //token: NonNullable<TopToken>
-  sparklineMap: SparklineMap
-  sortRank: number
+  sparklineMap?: SparklineMap
+  sortRank?: number
 }
 
 /* Loaded State: row component with token information */
@@ -608,7 +608,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     token_address: token0.address,
     token_symbol: token0.symbol,
     token_list_index: tokenListIndex,
-    token_list_rank: sortRank,
+    // token_list_rank: sortRank,
     token_list_length: tokenListLength,
     time_frame: timePeriod,
     search_token_address_input: filterString,
@@ -705,7 +705,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     >
       <TokenRow
         header={false}
-        listNumber={sortRank}
+        // listNumber={sortRank}
         currency0={currency0}
         currency1={currency1}
         tokenInfo={
