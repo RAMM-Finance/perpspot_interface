@@ -3,12 +3,14 @@ import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
+import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { useEffect, useMemo, useState } from 'react'
 
 // import {useToken} from 'hooks/Tokens'
 import { useToken } from '../../../hooks/Tokens'
@@ -16,8 +18,6 @@ import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
-import {PoolAddedQuery} from 'graphql/limitlessGraph/queries'
 
 const GridContainer = styled.div`
   display: flex;
@@ -150,12 +150,12 @@ export default function TokenTable() {
 
   useEffect(() => {
     // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !PoolAddedQuery || loading|| error  ) return
+    if (!client || !PoolAddedQuery || loading || error) return
     const call = async () => {
       try {
         setLoading(true)
 
-        const poolQueryData = await client.query(PoolAddedQuery,{  }).toPromise()
+        const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
 
         setData(poolQueryData)
         setLoading(false)
@@ -165,9 +165,8 @@ export default function TokenTable() {
       }
     }
     call()
-  }, [ ])
+  }, [])
   console.log('data', data?.data?.poolAddeds)
-
 
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
@@ -195,6 +194,12 @@ export default function TokenTable() {
     const token1 = useToken(value[1])
     return { token0, token1 }
   })
+
+  const tok = data?.data?.poolAddeds.map((value: any) => {
+    return [value.token0, value.token1]
+  })
+
+  console.log(tok)
 
   const { chainId, account, provider } = useWeb3React()
 
