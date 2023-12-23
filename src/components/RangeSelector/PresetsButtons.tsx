@@ -19,7 +19,7 @@ interface PresetsButtonsProps {
 
 export function PresetsButtons({ onSetRecommendedRange }: PresetsButtonsProps) {
   return (
-    <AutoRow gap="4px" width="auto">
+    <AutoRow style={{ zIndex: '1' }} gap="4px" width="auto">
       <Button onClick={onSetRecommendedRange}>
         <ThemedText.DeprecatedBody fontSize={12}>
           <Trans>Recommended Range</Trans>
@@ -30,7 +30,7 @@ export function PresetsButtons({ onSetRecommendedRange }: PresetsButtonsProps) {
 }
 export function PresetsButtonsFull({ onSetRecommendedRange }: PresetsButtonsProps) {
   return (
-    <AutoRow gap="4px" width="auto">
+    <AutoRow style={{ zIndex: '1' }} gap="4px" width="auto">
       <Button onClick={onSetRecommendedRange}>
         <ThemedText.DeprecatedBody fontSize={12}>
           <Trans>Full Range</Trans>

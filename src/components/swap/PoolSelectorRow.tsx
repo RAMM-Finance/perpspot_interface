@@ -2,6 +2,7 @@ import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
+import { Dispatch, SetStateAction } from 'react'
 import { Field } from 'state/swap/actions'
 import { useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -55,10 +56,11 @@ const Logo = styled.img`
 
 interface PoolSelectorRowProps {
   currencyId: string[]
-  onCurrencySelect: (currencyIn: Currency, currencyOut: Currency) => void
+  onCurrencySelect: (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string) => void
+  setIsOpen: Dispatch<SetStateAction<boolean>>
 }
 
-export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolSelectorRowProps) {
+export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOpen }: PoolSelectorRowProps) {
   // const { chainId } = useWeb3React()
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -77,7 +79,8 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect }: PoolS
     <Container
       disabled={false}
       onClick={() => {
-        currencyIn && currencyOut && onCurrencySelect(currencyIn, currencyOut)
+        currencyIn && currencyOut && onCurrencySelect(currencyIn, currencyOut, currencyId[0], currencyId[1])
+        setIsOpen(() => false)
       }}
     >
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>

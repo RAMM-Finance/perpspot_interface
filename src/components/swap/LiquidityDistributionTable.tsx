@@ -18,7 +18,7 @@ const LiquidityDistributionTable = ({
   return (
     <>
       <Title>
-        <ThemedText.BodyPrimary>Borrowable Liquidity</ThemedText.BodyPrimary>
+        <ThemedText.BodySecondary>Borrowable Liquidity</ThemedText.BodySecondary>
       </Title>
       <LDHeaderRow>
         <LDHeaderCellIn>Price (fETH)</LDHeaderCellIn>
@@ -27,6 +27,7 @@ const LiquidityDistributionTable = ({
       {bin &&
         bin
           .filter((y) => Number(y.price) / 1e18 > currentPrice && Number(y.token0Liquidity) / 1e18 > 0)
+          .filter((z) => !(Number(z.token0Liquidity) / 1e18 > 0 && Number(z.token1Liquidity) / 1e18 > 0))
           .map((x) => (
             <LDDataRowNeg
               spread={(Number(x.token0Liquidity) / 1e18 / 100 / currentPrice) * 32.5}
@@ -34,7 +35,10 @@ const LiquidityDistributionTable = ({
             >
               <LDDataCellInNeg>{(Number(x.price) / 1e18).toFixed(2)}</LDDataCellInNeg>
               <LDDataCellOutNeg>
-                {formatDollar({ num: Number(x.token0Liquidity) / 1e18, dollarSign: false })}
+                {formatDollar({
+                  num: (Number(x.token0Liquidity) - Number(x.token0Borrowed)) / 1e18,
+                  dollarSign: false,
+                })}
               </LDDataCellOutNeg>
             </LDDataRowNeg>
           ))
@@ -50,6 +54,7 @@ const LiquidityDistributionTable = ({
       {bin &&
         bin
           .filter((y) => Number(y.price) / 1e18 < currentPrice && Number(y.token1Liquidity) / 1e18 > 0)
+          .filter((z) => !(Number(z.token0Liquidity) / 1e18 > 0 && Number(z.token1Liquidity) / 1e18 > 0))
           .map((x) => (
             <LDDataRow
               spread={(Number(x.token1Liquidity) / 1e18 / 100 / currentPrice) * 32.5}
@@ -57,7 +62,10 @@ const LiquidityDistributionTable = ({
             >
               <LDDataCellIn>{(Number(x.price) / 1e18).toFixed(2)}</LDDataCellIn>
               <LDDataCellOut>
-                {formatDollar({ num: Number(x.token1Liquidity) / 1e18, dollarSign: false })}
+                {formatDollar({
+                  num: (Number(x.token1Liquidity) - Number(x.token1Borrowed)) / 1e18,
+                  dollarSign: false,
+                })}
               </LDDataCellOut>
             </LDDataRow>
           ))

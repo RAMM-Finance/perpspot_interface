@@ -13,7 +13,6 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 // import {useToken} from 'hooks/Tokens'
-import { useToken } from '../../../hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
@@ -148,6 +147,17 @@ export default function TokenTable() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
+  interface Pool {
+    blockTimeStamp: string
+    fee: number
+    id: string
+    pool: string
+    tickDiscretization: number
+    token0: string
+    token1: string
+    __typename: string
+  }
+
   useEffect(() => {
     // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
     if (!client || !PoolAddedQuery || loading || error) return
@@ -157,7 +167,11 @@ export default function TokenTable() {
 
         const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
 
-        setData(poolQueryData)
+        setData(
+          poolQueryData.data.poolAddeds.map((val: Pool) => {
+            return [val.token0, val.token1]
+          })
+        )
         setLoading(false)
       } catch (error) {
         setError(error)
@@ -166,7 +180,7 @@ export default function TokenTable() {
     }
     call()
   }, [])
-  console.log('data', data?.data?.poolAddeds)
+  console.log('data', data)
 
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
@@ -184,22 +198,16 @@ export default function TokenTable() {
 
   //   return {token0, token1}
   // } )
-  const tokenAddresses = [
-    ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'],
-    ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
-    ['0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
-  ]
-  const _tokens = tokenAddresses.map((value: string[]) => {
-    const token0 = useToken(value[0])
-    const token1 = useToken(value[1])
-    return { token0, token1 }
-  })
-
-  const tok = data?.data?.poolAddeds.map((value: any) => {
-    return [value.token0, value.token1]
-  })
-
-  console.log(tok)
+  // const tokenAddresses = [
+  //   ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'],
+  //   ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
+  //   ['0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
+  // ]
+  // const _tokens = tokenAddresses.map((value: string[]) => {
+  //   const token0 = useToken(value[0])
+  //   const token1 = useToken(value[1])
+  //   return { token0, token1 }
+  // })
 
   const { chainId, account, provider } = useWeb3React()
 
@@ -235,21 +243,10 @@ export default function TokenTable() {
         <GridContainer>
           <PHeaderRow />
           <TokenDataContainer>
-            {_tokens.map(
-              ({ token0, token1 }) =>
-                token0?.address &&
-                token1?.address && (
-                  <PLoadedRow
-                    key={token0?.address}
-                    tokenListIndex={1}
-                    tokenListLength={1}
-                    token0={token0}
-                    token1={token1}
-                    sparklineMap={sparklines}
-                    sortRank={tokenSortRank[token0.address]}
-                  />
-                )
-            )}
+            {data &&
+              data.map((dat: string[]) => (
+                <PLoadedRow key={dat[0]} tokenListIndex={1} tokenListLength={1} tokenA={dat[0]} tokenB={dat[1]} />
+              ))}
           </TokenDataContainer>
         </GridContainer>
       </>
