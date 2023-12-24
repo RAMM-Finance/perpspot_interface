@@ -321,6 +321,7 @@ interface SwapCurrencyInputPanelProps {
     onDisabledClick?: () => void
     disabledTooltipBody?: ReactNode
   }
+  isPrice?: ReactNode
 }
 
 const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputPanelProps>(
@@ -347,6 +348,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     disabled = false,
     numericalInputSettings,
     label,
+    isPrice,
     ...rest
   }) => {
     const [modalOpen, setModalOpen] = useState(false)
@@ -477,6 +479,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                 </CurrencySelect>
               </Tooltip>
             </div>
+            <div>{isPrice ? <RowFixed>{isPrice}</RowFixed> : null}</div>
           </InputRow>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>

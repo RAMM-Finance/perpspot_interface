@@ -13,6 +13,19 @@ export const ToggleWrapper = styled.button<{ width?: string }>`
   box-sizing: border-box;
 `
 
+export const DarkToggleWrapper = styled.button<{ width?: string }>`
+  display: flex;
+  align-items: center;
+  width: ${({ width }) => width ?? '100%'};
+  padding: 0px;
+  background: ${({ theme }) => theme.backgroundSurface};
+  border-radius: 10px;
+  border: ${({ theme }) => '1px solid ' + theme.backgroundInteractive};
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+`
+
 export const ToggleElement = styled.span<{
   isActive?: number | boolean
 }>`

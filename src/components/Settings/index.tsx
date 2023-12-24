@@ -20,8 +20,8 @@ import TransactionSettings from '../TransactionSettings'
 
 const StyledMenuIcon = styled(Settings)`
   display: flex;
-  height: 13px;
-  width: 13px;
+  height: 20px;
+  width: 20px;
 
   > * {
     stroke: ${({ theme }) => theme.textPrimary};
@@ -251,7 +251,7 @@ export function LmtSettingsTab({
 
   return (
     <StyledMenu ref={node}>
-      <Modal isOpen={showConfirmation} onDismiss={() => setShowConfirmation(false)} maxHeight={100}>
+      <Modal isOpen={showConfirmation} onDismiss={() => setShowConfirmation(false)} maxHeight={300}>
         <ModalContentWrapper>
           <AutoColumn gap="lg">
             <RowBetween style={{ padding: '0 2rem' }}>

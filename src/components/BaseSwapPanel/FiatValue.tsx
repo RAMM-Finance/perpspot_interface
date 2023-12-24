@@ -35,7 +35,7 @@ export function FiatValue({
   }, [priceImpact, theme.accentSuccess, theme.accentFailure, theme.textTertiary, theme.deprecated_yellow1])
 
   return (
-    <ThemedText.DeprecatedBody fontSize={14} color={theme.textSecondary}>
+    <ThemedText.DeprecatedBody fontSize={12} color={theme.textSecondary}>
       {fiatValue?.isLoading ? (
         <FiatLoadingBubble />
       ) : (

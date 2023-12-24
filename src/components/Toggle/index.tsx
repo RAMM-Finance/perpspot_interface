@@ -4,7 +4,7 @@ import styled, { keyframes } from 'styled-components/macro'
 
 const Wrapper = styled.button<{ isActive?: boolean; activeElement?: boolean }>`
   align-items: center;
-  background: ${({ isActive, theme }) => (isActive ? theme.accentActionSoft : 'transparent')};
+  background: ${({ isActive, theme }) => (isActive ? theme.deprecated_primary2 : 'transparent')};
   border: ${({ theme, isActive }) => (isActive ? '1px solid transparent' : `1px solid ${theme.backgroundOutline}`)};
   border-radius: 20px;
   cursor: pointer;
@@ -42,8 +42,8 @@ const ToggleElementHoverStyle = (hasBgColor: boolean, theme: any, isActive?: boo
         opacity: '0.8',
       }
     : {
-        background: isActive ? darken(0.05, theme.accentAction) : darken(0.05, theme.deprecated_bg4),
-        color: isActive ? theme.white : theme.textTertiary,
+        background: isActive ? darken(0.05, theme.textPrimary) : darken(0.05, theme.textPrimary),
+        color: isActive ? theme.textPrimary : theme.textPrimary,
       }
 
 const ToggleElement = styled.span<{ isActive?: boolean; bgColor?: string; isInitialToggleLoad?: boolean }>`
@@ -51,7 +51,7 @@ const ToggleElement = styled.span<{ isActive?: boolean; bgColor?: string; isInit
     ${({ isActive, isInitialToggleLoad }) => (isInitialToggleLoad ? 'none' : isActive ? turnOnToggle : turnOffToggle)}
     ease-in;
   background: ${({ theme, bgColor, isActive }) =>
-    isActive ? bgColor ?? theme.accentAction : bgColor ? theme.deprecated_bg4 : theme.textTertiary};
+    isActive ? bgColor ?? theme.textPrimary : bgColor ? theme.textPrimary : theme.textPrimary};
   border-radius: 50%;
   height: 24px;
   :hover {

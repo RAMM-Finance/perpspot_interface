@@ -83,3 +83,45 @@ export default function RangeBadge({
     </BadgeWrapper>
   )
 }
+
+export function LmtBorrowRangeBadge({ removed, inRange }: { removed?: boolean; inRange?: boolean }) {
+  const theme = useTheme()
+  return (
+    <BadgeWrapper>
+      {removed ? (
+        <MouseoverTooltip text={<Trans>Your position has 0 borrowed liquidity</Trans>}>
+          <LabelText color={theme.textPrimary}>
+            <BadgeText>
+              <Trans>Closed</Trans>
+            </BadgeText>
+            <Slash width={12} height={12} />
+          </LabelText>
+        </MouseoverTooltip>
+      ) : inRange ? (
+        <MouseoverTooltip
+          text={
+            <Trans>
+              The price of this pool is within your selected range. You must reduce the position with a limit order.
+            </Trans>
+          }
+        >
+          <LabelText color={theme.accentSuccess}>
+            <BadgeText>
+              <Trans>In Range</Trans>
+            </BadgeText>
+            <AlertTriangle width={12} height={12} />
+          </LabelText>
+        </MouseoverTooltip>
+      ) : (
+        <MouseoverTooltip text={<Trans>The price of this pool is outside of your borrowed liquidity range.</Trans>}>
+          <LabelText color={theme.accentSuccess}>
+            <BadgeText>
+              <Trans>Out of range</Trans>
+            </BadgeText>
+            <ActiveDot />
+          </LabelText>
+        </MouseoverTooltip>
+      )}
+    </BadgeWrapper>
+  )
+}

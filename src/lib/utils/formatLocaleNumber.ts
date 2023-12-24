@@ -41,6 +41,11 @@ export default function formatLocaleNumber({
   return numberString.toLocaleString(localeArg, options)
 }
 
-export function formatBNToString(n: BN | undefined, type = NumberType.SwapTradeAmount): string {
+BN.config({ EXPONENTIAL_AT: 1e9 })
+
+export function formatBNToString(n: BN | undefined, type = NumberType.SwapTradeAmount, isPrice?: boolean): string {
+  if (isPrice) {
+    return n ? (!n.isNaN() ? formatNumberOrString(n?.toNumber(), type).split('$').join('') : '') : ''
+  }
   return n ? (!n.isNaN() ? formatNumberOrString(n?.toNumber(), type) : '') : ''
 }

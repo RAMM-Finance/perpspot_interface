@@ -16,7 +16,7 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
-import Row, { AutoRow, RowBetween, RowFixed } from 'components/Row'
+import Row, { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
 import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
@@ -355,7 +355,14 @@ const TradeTabContent = () => {
       onLeverageFactorChange('')
       onPriceInput('')
     }
-  }, [onUserInput, onMarginChange, onLeverageFactorChange, txHash, onPriceInput])
+
+    if (lmtTxHash) {
+      onUserInput(Field.INPUT, '')
+      onMarginChange('')
+      onLeverageFactorChange('')
+      onPriceInput('')
+    }
+  }, [onUserInput, onMarginChange, onLeverageFactorChange, lmtTxHash, txHash, onPriceInput])
 
   // const handleAcceptChanges = useCallback(() => {
   //   setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
@@ -372,17 +379,17 @@ const TradeTabContent = () => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
 
-  const handleInputSelect = useCallback(
-    (inputCurrency: Currency) => {
-      onCurrencySelection(Field.INPUT, inputCurrency)
-    },
-    [onCurrencySelection]
-  )
+  // const handleInputSelect = useCallback(
+  //   (inputCurrency: Currency) => {
+  //     onCurrencySelection(Field.INPUT, inputCurrency)
+  //   },
+  //   [onCurrencySelection]
+  // )
 
-  const handleOutputSelect = useCallback(
-    (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
-    [onCurrencySelection]
-  )
+  // const handleOutputSelect = useCallback(
+  //   (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
+  //   [onCurrencySelection]
+  // )
 
   const stablecoinPriceImpact = useMemo(
     () =>
@@ -474,9 +481,9 @@ const TradeTabContent = () => {
       const inputIsToken0 = inputCurrency.sortsBefore(outputCurrency)
       const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
       if (baseIsToken0) {
-        return formatBNToString(new BN(pool.token0Price.toFixed(18)))
+        return formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       } else {
-        return formatBNToString(new BN(pool.token1Price.toFixed(18)))
+        return formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       }
     }
     return undefined
@@ -537,7 +544,7 @@ const TradeTabContent = () => {
       </FilterWrapper>
       <LimitInputWrapper>
         <AnimatedDropdown open={isLimitOrder}>
-          <DynamicSection gap="md" disabled={false}>
+          <DynamicSection disabled={false}>
             <Row gap="20px">
               {Boolean(baseCurrency && quoteCurrency) && (
                 <PriceToggleSection>
@@ -553,23 +560,21 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-              <AutoRow align="start" gap="10px" style={{ marginTop: '0.5rem' }}>
-                <Trans>
-                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                    Current Price:
-                  </ThemedText.DeprecatedMain>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
-                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="textSecondary">
-                      <HoverInlineText maxCharacters={20} text={currentPrice ?? '-'} />
+              <Row justify="flex-end">
+                <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1" marginRight="10px">
+                  Current Price:
+                </ThemedText.DeprecatedMain>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+                  <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="textSecondary">
+                    <HoverInlineText maxCharacters={20} text={currentPrice ?? '-'} />
+                  </ThemedText.DeprecatedBody>
+                  {baseCurrency && (
+                    <ThemedText.DeprecatedBody color="text2" fontSize={10}>
+                      {quoteCurrency?.symbol} per {baseCurrency.symbol}
                     </ThemedText.DeprecatedBody>
-                    {baseCurrency && (
-                      <ThemedText.DeprecatedBody color="text2" fontSize={10}>
-                        {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                      </ThemedText.DeprecatedBody>
-                    )}
-                  </div>
-                </Trans>
-              </AutoRow>
+                  )}
+                </div>
+              </Row>
             </Row>
 
             <LimitInputPrice>

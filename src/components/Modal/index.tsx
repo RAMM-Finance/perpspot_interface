@@ -74,6 +74,44 @@ const StyledDialogContent = styled(AnimatedDialogContent)<StyledDialogProps>`
     }
   }
 `
+const LmtStyledDialogContent = styled(AnimatedDialogContent)<StyledDialogProps>`
+  overflow-y: auto;
+
+  &[data-reach-dialog-content] {
+    margin: auto;
+    background-color: ${({ theme }) => theme.backgroundSurface};
+    border: ${({ theme, $hideBorder }) => !$hideBorder && `1px solid ${theme.backgroundOutline}`};
+    box-shadow: ${({ theme }) => theme.deepShadow};
+    padding: 0px;
+    width: 60vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-width: ${({ $maxWidth }) => $maxWidth}px;
+    ${({ $maxHeight }) =>
+      $maxHeight &&
+      css`
+        max-height: ${$maxHeight}vh;
+      `}
+    ${({ $minHeight }) =>
+      $minHeight &&
+      css`
+        min-height: ${$minHeight}vh;
+      `}
+    display: ${({ $scrollOverlay }) => ($scrollOverlay ? 'inline-table' : 'flex')};
+    border-radius: 20px;
+
+    @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
+      width: 65vw;
+    }
+    @media screen and (max-width: ${({ theme }) => theme.breakpoint.sm}px) {
+      margin: 0;
+      width: 100vw;
+      border-radius: 20px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+`
 
 interface ModalProps {
   isOpen: boolean
@@ -149,6 +187,74 @@ export default function Modal({
                 {!initialFocusRef && isMobile ? <div tabIndex={1} /> : null}
                 {children}
               </StyledDialogContent>
+            </StyledDialogOverlay>
+          )
+      )}
+    </>
+  )
+}
+
+export function LmtModal({
+  isOpen,
+  onDismiss,
+  minHeight = false,
+  maxHeight = 90,
+  maxWidth = 420,
+  initialFocusRef,
+  children,
+  onSwipe = onDismiss,
+  $scrollOverlay,
+  hideBorder = false,
+}: ModalProps) {
+  const fadeTransition = useTransition(isOpen, {
+    config: { duration: 200 },
+    from: { opacity: 0 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+  })
+
+  const [{ y }, set] = useSpring(() => ({ y: 0, config: { mass: 1, tension: 210, friction: 20 } }))
+  const bind = useGesture({
+    onDrag: (state) => {
+      set({
+        y: state.down ? state.movement[1] : 0,
+      })
+      if (state.movement[1] > 300 || (state.velocity > 3 && state.direction[1] > 0)) {
+        onSwipe?.()
+      }
+    },
+  })
+
+  return (
+    <>
+      {fadeTransition(
+        ({ opacity }, item) =>
+          item && (
+            <StyledDialogOverlay
+              style={{ opacity: opacity.to({ range: [0.0, 1.0], output: [0, 1] }) }}
+              onDismiss={onDismiss}
+              initialFocusRef={initialFocusRef}
+              unstable_lockFocusAcrossFrames={false}
+              $scrollOverlay={$scrollOverlay}
+            >
+              <LmtStyledDialogContent
+                {...(isMobile
+                  ? {
+                      ...bind(),
+                      style: { transform: y.interpolate((y) => `translateY(${(y as number) > 0 ? y : 0}px)`) },
+                    }
+                  : {})}
+                aria-label="dialog"
+                $minHeight={minHeight}
+                $maxHeight={maxHeight}
+                $scrollOverlay={$scrollOverlay}
+                $hideBorder={hideBorder}
+                $maxWidth={maxWidth}
+              >
+                {/* prevents the automatic focusing of inputs on mobile by the reach dialog */}
+                {!initialFocusRef && isMobile ? <div tabIndex={1} /> : null}
+                {children}
+              </LmtStyledDialogContent>
             </StyledDialogOverlay>
           )
       )}

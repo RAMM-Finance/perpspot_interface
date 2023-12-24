@@ -81,7 +81,8 @@ function useDerivedDepositPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
-  setState: (state: DerivedInfoState) => void
+  setState: (state: DerivedInfoState) => void,
+  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   inputError: ReactNode | undefined
@@ -118,6 +119,7 @@ function useDerivedDepositPremiumInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
+        onPositionChange(undefined)
         return
       }
 
@@ -139,19 +141,72 @@ function useDerivedDepositPremiumInfo(
           newDepositAmount: position.premiumDeposit.plus(parsedAmount),
         }
 
+        // export interface BaseFacilityPositionDetails {
+        //   poolKey: RawPoolKey
+        //   isToken0: boolean
+        //   totalDebtOutput: BN
+        //   totalDebtInput: BN
+        //   openTime: number
+        //   repayTime: number
+        //   isBorrow: boolean
+        //   premiumOwed: BN // how much premium is owed since last repayment
+        //   premiumDeposit: BN
+        //   premiumLeft: BN
+        //   trader: string
+        //   token0Decimals: number
+        //   token1Decimals: number
+        //   maxWithdrawablePremium?: string
+        // }
+
+        // export interface MarginPositionDetails extends BaseFacilityPositionDetails {
+        //   totalPosition: BN
+        //   margin: BN
+        // }
+        const newPosition: MarginPositionDetails = {
+          totalPosition: position.totalPosition,
+          poolKey: position.poolKey,
+          isToken0: position.isToken0,
+          totalDebtOutput: position.totalDebtOutput,
+          totalDebtInput: position.totalDebtInput,
+          openTime: position.openTime,
+          repayTime: position.repayTime,
+          isBorrow: position.isBorrow,
+          premiumOwed: position.premiumOwed,
+          premiumLeft: position.premiumLeft,
+          trader: position.trader,
+          token0Decimals: position.token0Decimals,
+          token1Decimals: position.token1Decimals,
+          maxWithdrawablePremium: position.maxWithdrawablePremium,
+          margin: position.margin,
+          premiumDeposit: info.newDepositAmount,
+        }
+        onPositionChange(newPosition)
+
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
         setContractError(undefined)
       } catch (err) {
         console.log('reduce error', err)
         setState(DerivedInfoState.INVALID)
+        onPositionChange(undefined)
         setContractError(err)
         setTxnInfo(undefined)
       }
     }
 
     lagged()
-  }, [setState, pool, marginFacility, account, parsedAmount, position, positionKey, inputCurrency, outputCurrency])
+  }, [
+    onPositionChange,
+    setState,
+    pool,
+    marginFacility,
+    account,
+    parsedAmount,
+    position,
+    positionKey,
+    inputCurrency,
+    outputCurrency,
+  ])
 
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
@@ -171,7 +226,13 @@ function useDerivedDepositPremiumInfo(
   }, [txnInfo, inputError])
 }
 
-export function DepositPremiumContent({ positionKey }: { positionKey: TraderPositionKey }) {
+export function DepositPremiumContent({
+  positionKey,
+  onPositionChange,
+}: {
+  positionKey: TraderPositionKey
+  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void
+}) {
   // state inputs, derived, handlers for trade confirmation
   const [amount, setAmount] = useState('')
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -191,7 +252,13 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
-  const { txnInfo, inputError } = useDerivedDepositPremiumInfo(amount, positionKey, position, setTradeState)
+  const { txnInfo, inputError } = useDerivedDepositPremiumInfo(
+    amount,
+    positionKey,
+    position,
+    setTradeState,
+    onPositionChange
+  )
   const { account, chainId, provider } = useWeb3React()
 
   const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
@@ -342,6 +409,7 @@ export function DepositPremiumContent({ positionKey }: { positionKey: TraderPosi
               disabledConfirm={!!inputError || !txnInfo}
             />
           }
+          title="Confirm Deposit Premium"
           pendingText={<Trans>Depositing ...</Trans>}
           currencyToAdd={outputCurrency ?? undefined}
           recipient={account ?? null}

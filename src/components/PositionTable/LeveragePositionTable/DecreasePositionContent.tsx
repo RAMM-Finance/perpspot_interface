@@ -8,7 +8,7 @@ import { computePoolAddress, Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import CurrencyInputPanel from 'components/BaseSwapPanel'
+import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -25,12 +25,13 @@ import {
   TextWithLoadingPlaceholder,
   TransactionDetails,
 } from 'components/modalFooters/common'
-import { RowStart } from 'components/Row'
+import Row, { RowStart } from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import { TruncatedText } from 'components/swap/styleds'
+import Toggle from 'components/Toggle'
 import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -39,15 +40,15 @@ import { ethers } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
-import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
+import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { StyledNumericalInput } from 'pages/Swap'
+import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { DynamicSection } from 'pages/Swap/tradeModal'
 import { PriceToggleSection } from 'pages/Swap/tradeModal'
-import { LimitInputPrice, LimitInputRow, LimitInputWrapper } from 'pages/Swap/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { parseBN } from 'state/marginTrading/hooks'
@@ -57,19 +58,26 @@ import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/use
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
-import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { LimitOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
+import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from './ConfirmModalHeaders'
 import { BaseFooter } from './DepositPremiumContent'
 import ConfirmModifyPositionModal from './TransactionModal'
 
-interface DerivedReducePositionInfo {
+export interface DerivedReducePositionInfo {
   PnL: BN
   returnedAmount: BN
   premium: BN
   profitFee: BN
+  newPosition: MarginPositionDetails
+  minimumOutput: BN
+}
+
+export interface DerivedLimitReducePositionInfo {
+  newPosition: MarginPositionDetails
 }
 
 const Wrapper = styled.div`
@@ -97,12 +105,14 @@ enum DerivedInfoState {
 }
 
 function useDerivedReducePositionInfo(
+  isLimit: boolean,
   reduceAmount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
   allowedSlippedTick: Percent,
   allowedSlippage: Percent,
   setState: (state: DerivedInfoState) => void,
+  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
@@ -130,6 +140,7 @@ function useDerivedReducePositionInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
+        onPositionChange(undefined)
         return
       }
 
@@ -140,12 +151,11 @@ function useDerivedReducePositionInfo(
         const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
         const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
-        const minOutput = new BN(100)
-          .minus(new BN(allowedSlippage.toFixed(18)))
-          .div(100)
-          .times(parsedReduceAmount)
+        // reducePercentage * totalPosition multiplied(or divided) current price
+        const minOutput = parsedReduceAmount
           .times(price)
-
+          .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
+        console.log('minOutput', minOutput.toString(), price.toString())
         //   struct ReduceReturn {
         //     int256 amount0;
         //     int256 amount1;
@@ -159,7 +169,7 @@ function useDerivedReducePositionInfo(
         const reduceParam = {
           positionIsToken0: position.isToken0,
           reducePercentage: reducePercent,
-          minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+          minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
           trader: position.trader,
           executionOption: 1,
           executionData: ethers.constants.HashZero,
@@ -178,18 +188,46 @@ function useDerivedReducePositionInfo(
           },
           reduceParam
         )
+        const premium = new BN(result.premium.toString()).shiftedBy(-inputCurrency.decimals)
+        const reducePercentage = parsedReduceAmount.div(position.totalPosition)
+
+        const newPosition: MarginPositionDetails = {
+          totalPosition: position.totalPosition.minus(parsedReduceAmount), //.minus(parsedReduceAmount),
+          openTime: position.openTime,
+          trader: position.trader,
+          isToken0: position.isToken0,
+          poolKey: position.poolKey,
+          margin: position.margin.times(new BN(1).minus(reducePercentage)),
+          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
+          premiumDeposit: position.premiumDeposit.minus(premium),
+          premiumOwed: position.premiumOwed,
+          isBorrow: false,
+          repayTime: position.repayTime,
+          premiumLeft: position.premiumLeft,
+          token0Decimals: position.token0Decimals,
+          token1Decimals: position.token1Decimals,
+        }
 
         const info: DerivedReducePositionInfo = {
           PnL: new BN(result.PnL.toString()).shiftedBy(-inputCurrency.decimals),
           returnedAmount: new BN(result.returnedAmount.toString()).shiftedBy(-outputCurrency.decimals),
-          premium: new BN(result.premium.toString()).shiftedBy(-inputCurrency.decimals),
+          premium,
           profitFee: new BN(result.profitFee.toString()).shiftedBy(-inputCurrency.decimals),
+          newPosition,
+          minimumOutput: minOutput,
         }
 
+        // pos.base.totalDebtInput = pos.base.totalDebtInput.mulDiv(precision - reducePercentage, precision);
+        // pos.base.totalDebtOutput = pos.base.totalDebtOutput.mulDiv(precision - reducePercentage, precision);
+        // pos.margin = pos.margin.mulDiv(precision - reducePercentage, precision);
+
+        onPositionChange(newPosition)
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
         setContractError(undefined)
       } catch (err) {
+        onPositionChange(undefined)
         console.log('reduce error', err)
         setState(DerivedInfoState.INVALID)
         setContractError(err)
@@ -197,6 +235,11 @@ function useDerivedReducePositionInfo(
       }
     }
 
+    if (isLimit) {
+      setState(DerivedInfoState.INVALID)
+      setTxnInfo(undefined)
+      return
+    }
     lagged()
   }, [
     setState,
@@ -209,6 +252,8 @@ function useDerivedReducePositionInfo(
     outputCurrency,
     allowedSlippage,
     allowedSlippedTick,
+    isLimit,
+    onPositionChange,
   ])
 
   const inputError = useMemo(() => {
@@ -230,24 +275,25 @@ function useDerivedReducePositionInfo(
 }
 
 function useDerivedReduceLimitPositionInfo(
+  isLimit: boolean,
   reduceAmount: string,
   limitPrice: string,
-  positionKey: TraderPositionKey,
-  // position: MarginPositionDetails | undefined,
-  // allowedSlippedTick: Percent,
-  // allowedSlippage: Percent,
+  positionKey: OrderPositionKey,
   baseCurrencyIsInput: boolean,
   setState: (state: DerivedInfoState) => void,
+  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void,
+  position: MarginPositionDetails | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
+  txnInfo: DerivedLimitReducePositionInfo | undefined
   // txnInfo: DerivedReducePositionInfo | undefined
   inputError: ReactNode | undefined
 } {
-  const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
+  const [txnInfo, setTxnInfo] = useState<DerivedLimitReducePositionInfo>()
   const [contractError, setContractError] = useState<React.ReactNode>()
   // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
-
+  const existingLimitOrder = useMarginOrderPositionFromPositionId(positionKey)
   const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
   const inputError = useMemo(() => {
@@ -269,17 +315,6 @@ function useDerivedReduceLimitPositionInfo(
 
   useEffect(() => {
     const lagged = async () => {
-      // console.log(
-      //   'stuff',
-      //   !!inputError ||
-      //     !parsedAmount ||
-      //     !parsedLimitPrice ||
-      //     !chainId ||
-      //     !inputCurrency ||
-      //     !outputCurrency ||
-      //     !deadline ||
-      //     !marginFacility
-      // )
       if (
         !!inputError ||
         !parsedAmount ||
@@ -288,10 +323,22 @@ function useDerivedReduceLimitPositionInfo(
         !inputCurrency ||
         !outputCurrency ||
         !deadline ||
-        !marginFacility
+        !marginFacility ||
+        !existingLimitOrder ||
+        !position
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
+        onPositionChange(undefined)
+        setContractError(undefined)
+        return
+      }
+
+      if (existingLimitOrder.auctionStartTime === 0) {
+        setState(DerivedInfoState.INVALID)
+        setTxnInfo(undefined)
+        setContractError(undefined)
+        onPositionChange(undefined)
         return
       }
 
@@ -327,17 +374,48 @@ function useDerivedReduceLimitPositionInfo(
         const calldata = MarginFacilitySDK.submitLimitOrder(params)
 
         await marginFacility.callStatic.multicall(calldata)
-        // setTxnInfo()
+
+        const reduceAmount = parsedAmount
+        const reducePercentage = reduceAmount.div(position.totalPosition)
+
+        const newPosition: MarginPositionDetails = {
+          totalPosition: position.totalPosition.minus(reduceAmount),
+          openTime: position.openTime,
+          trader: position.trader,
+          isToken0: position.isToken0,
+          poolKey: position.poolKey,
+          margin: position.margin.times(new BN(1).minus(reducePercentage)),
+          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
+          premiumDeposit: position.premiumDeposit,
+          premiumOwed: position.premiumOwed,
+          isBorrow: false,
+          repayTime: position.repayTime,
+          premiumLeft: position.premiumLeft,
+          token0Decimals: position.token0Decimals,
+          token1Decimals: position.token1Decimals,
+        }
+
+        setTxnInfo({ newPosition })
+
+        onPositionChange(newPosition)
         setState(DerivedInfoState.VALID)
         setContractError(undefined)
       } catch (err) {
         console.log('reduce error', err)
+        onPositionChange(undefined)
         setState(DerivedInfoState.INVALID)
         setContractError(err)
         setTxnInfo(undefined)
       }
     }
 
+    if (!isLimit) {
+      setState(DerivedInfoState.INVALID)
+      setTxnInfo(undefined)
+      setContractError(undefined)
+      return
+    }
     lagged()
   }, [
     inputError,
@@ -351,16 +429,55 @@ function useDerivedReduceLimitPositionInfo(
     marginFacility,
     baseCurrencyIsInput,
     positionKey,
+    existingLimitOrder,
+    position,
+    isLimit,
+    onPositionChange,
   ])
 
   return useMemo(() => {
     return {
+      txnInfo,
       inputError,
     }
-  }, [inputError])
+  }, [inputError, txnInfo])
 }
 
-export default function DecreasePositionContent({ positionKey }: { positionKey: TraderPositionKey }) {
+// const InputHeader = styled.div`
+//   padding-left: 6px;
+//   padding-top: 3px;
+// `
+
+const InputSection = styled.div`
+  background-color: ${({ theme }) => theme.surface1};
+  margin-bottom: 10px;
+  padding: 10px;
+  margin-top: 5px;
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
+  }
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.textSecondary};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`
+
+const Hr = styled.hr`
+  background-color: ${({ theme }) => theme.backgroundOutline};
+  border: none;
+  height: 0.5px;
+  width: 90%;
+`
+
+export default function DecreasePositionContent({
+  positionKey,
+  onPositionChange,
+}: {
+  positionKey: TraderPositionKey
+  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void
+}) {
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
   // const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -378,6 +495,8 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     errorMessage: string | undefined
     limitErrorMessage: string | undefined
     isLimit: boolean
+    originalTrade: DerivedReducePositionInfo | undefined
+    originalLimitTrade: DerivedLimitReducePositionInfo | undefined
   }>({
     showModal: false,
     showLimitModal: false,
@@ -389,7 +508,18 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     errorMessage: undefined,
     limitErrorMessage: undefined,
     isLimit: false,
+    originalTrade: undefined,
+    originalLimitTrade: undefined,
   })
+
+  const orderKey: OrderPositionKey = useMemo(() => {
+    return {
+      poolKey: positionKey.poolKey,
+      trader: positionKey.trader,
+      isToken0: positionKey.isToken0,
+      isAdd: false,
+    }
+  }, [positionKey])
   const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const { position } = useMarginLMTPositionFromPositionId(positionKey)
@@ -425,23 +555,30 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     setShowSettings(!showSettings)
   }, [showSettings])
 
+  const [closePosition, setClosePosition] = useState(false)
+
   const { txnInfo, inputError } = useDerivedReducePositionInfo(
+    currentState.isLimit,
     reduceAmount,
     positionKey,
     position,
     allowedSlippedTick,
     allowedSlippage,
     setTradeState,
+    onPositionChange,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
 
-  const { inputError: lmtInputError } = useDerivedReduceLimitPositionInfo(
+  const { inputError: lmtInputError, txnInfo: lmtTxnInfo } = useDerivedReduceLimitPositionInfo(
+    currentState.isLimit,
     reduceAmount,
     limitPrice,
-    positionKey,
+    orderKey,
     baseCurrencyIsInput,
     setLmtTradeState,
+    onPositionChange,
+    position,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
@@ -454,12 +591,6 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       return true
     }
   }, [existingPosition, positionLoading])
-
-  // const reductionPercent = useMemo(() => {
-  //   return position?.totalPosition && reduceAmount !== ''
-  //     ? formatBNToString(new BN(reduceAmount).div(position?.totalPosition).times(100))
-  //     : '0'
-  // }, [position, reduceAmount])
 
   // const marginFacility = useMarginFacilityContract(true)
 
@@ -481,6 +612,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     baseCurrencyIsInput,
     lmtTradeState
   )
+
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
@@ -615,6 +747,40 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     // setErrorMessage,
   ])
 
+  const handleReduceLimitPosition = useCallback(() => {
+    if (!limitCallback || !inputCurrency || !outputCurrency) {
+      return
+    }
+    setCurrentState((prev) => ({ ...prev, attemptingLimitTxn: true }))
+    limitCallback()
+      .then((response) => {
+        setCurrentState((prev) => ({
+          ...prev,
+          attemptingLimitTxn: false,
+          limitTxHash: response?.hash,
+          limitErrorMessage: undefined,
+        }))
+        addTransaction(response, {
+          type: TransactionType.REDUCE_LIMIT_ORDER,
+          inputCurrencyId: inputCurrency.wrapped.address,
+          outputCurrencyId: outputCurrency.wrapped.address,
+        })
+        setReduceAmount('')
+        setLimitPrice('')
+      })
+      .catch((err) => {
+        console.log('limit error', err)
+        setCurrentState((prev) => ({
+          ...prev,
+          attemptingLimitTxn: false,
+          limitTxHash: undefined,
+          limitErrorMessage: err.message,
+        }))
+        setReduceAmount('')
+        setLimitPrice('')
+      })
+  }, [limitCallback, inputCurrency, outputCurrency, addTransaction])
+
   const [debouncedReduceAmount, onDebouncedReduceAmount] = useDebouncedChangeHandler(
     reduceAmount ?? '',
     setReduceAmount
@@ -632,10 +798,16 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       txHash: undefined,
       errorMessage: undefined,
     }))
-    // setShowModal(false)
-    // setAttemptingTxn(false)
-    // setTxHash(undefined)
-    // setErrorMessage(undefined)
+  }, [])
+
+  const handleDismissLimit = useCallback(() => {
+    setCurrentState((prev) => ({
+      ...prev,
+      showLimitModal: false,
+      attemptingLimitTxn: false,
+      limitTxHash: undefined,
+      limitErrorMessage: undefined,
+    }))
   }, [])
 
   // const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
@@ -649,9 +821,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
       const baseIsToken0 = (baseCurrencyIsInput && inputIsToken0) || (!baseCurrencyIsInput && !inputIsToken0)
       if (baseIsToken0) {
-        return formatBNToString(new BN(pool.token0Price.toFixed(18)))
+        return formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       } else {
-        return formatBNToString(new BN(pool.token1Price.toFixed(18)))
+        return formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       }
     }
     return undefined
@@ -661,6 +833,8 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
+  const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(reduceAmount, outputCurrency ?? undefined))
+
   if (!positionExists) {
     return <PositionMissing />
   }
@@ -668,14 +842,24 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
   // console.log('limitPrice', limitPrice)
 
   return (
-    <DarkCard style={{ paddingTop: '0px' }}>
+    <DarkCard width="fit-content" padding="0" margin="0">
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
           isOpen={currentState.showModal}
           attemptingTxn={currentState.attemptingTxn}
           txHash={currentState.txHash}
-          header={<Trans>Position Details here</Trans>}
+          header={
+            txnInfo ? (
+              <ConfirmReducePositionHeader
+                txnInfo={txnInfo}
+                inputCurrency={inputCurrency ?? undefined}
+                outputCurrency={outputCurrency ?? undefined}
+                showAcceptChanges={false}
+                onAcceptChanges={() => {}}
+              />
+            ) : null
+          }
           bottom={
             <BaseFooter
               errorMessage={<Trans>{currentState.errorMessage}</Trans>}
@@ -684,6 +868,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
               disabledConfirm={!!inputError || !txnInfo}
             />
           }
+          title="Confirm Reduce Position"
           pendingText={<Trans>Reducing Position ...</Trans>}
           currencyToAdd={outputCurrency ?? undefined}
           recipient={account ?? null}
@@ -692,16 +877,27 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
       )}
       {currentState.showLimitModal && (
         <ConfirmModifyPositionModal
-          onDismiss={handleDismiss}
+          onDismiss={handleDismissLimit}
+          title="Confirm Reduce Limit Order"
           isOpen={currentState.showLimitModal}
-          attemptingTxn={currentState.attemptingLimitTxn}
           txHash={currentState.limitTxHash}
-          header={<Trans>Limit Position Details here</Trans>}
+          attemptingTxn={currentState.attemptingLimitTxn}
+          header={
+            lmtTxnInfo ? (
+              <ConfirmLimitReducePositionHeader
+                txnInfo={lmtTxnInfo}
+                inputCurrency={inputCurrency ?? undefined}
+                outputCurrency={outputCurrency ?? undefined}
+                showAcceptChanges={false}
+                onAcceptChanges={() => {}}
+              />
+            ) : null
+          }
           bottom={
             <BaseFooter
               errorMessage={<Trans>{currentState.limitErrorMessage}</Trans>}
-              onConfirm={handleReducePosition}
-              confirmText="Confirm Reduce Position"
+              onConfirm={handleReduceLimitPosition}
+              confirmText="Confirm Reduce Limit Order"
               disabledConfirm={!!lmtInputError || lmtTradeState !== DerivedInfoState.VALID}
             />
           }
@@ -727,7 +923,6 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
               </Selector>
             </Filter>
           </FilterWrapper>
-          <ThemedText.BodySmall>Current Total Position:</ThemedText.BodySmall>
         </div>
 
         <LmtSettingsTab
@@ -735,135 +930,151 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           onToggle={onToggle}
           allowedSlippage={allowedSlippage}
           isLimitOrder={currentState.isLimit}
-          // autoSlippedTick={allowedSlippedTick}
         />
       </div>
-      <LimitInputWrapper style={{ width: '95%', marginLeft: '10px' }}>
+      <AutoColumn style={{ marginLeft: '10px', alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
-          <DynamicSection justify="start" gap="md" disabled={false}>
-            <RowStart>
-              {Boolean(inputCurrency && outputCurrency) && (
-                <PriceToggleSection>
-                  <div
-                    style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
-                    onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}
-                  >
-                    <ToggleWrapper width="fit-content">
-                      <ToggleElement isActive={!baseCurrencyIsInput}>
-                        <CurrencyLogo currency={outputCurrency} size="15px" />
-                      </ToggleElement>
-                      <ToggleElement isActive={baseCurrencyIsInput}>
-                        <CurrencyLogo currency={inputCurrency} size="15px" />
-                      </ToggleElement>
-                    </ToggleWrapper>
-                  </div>
-                </PriceToggleSection>
-              )}
-            </RowStart>
-          </DynamicSection>
-          <DynamicSection gap="md" disabled={false}>
-            <AutoColumn gap="2px" style={{ marginTop: '0.5rem' }}>
-              <Trans>
-                <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                  Current Price:
-                </ThemedText.DeprecatedMain>
-                <ThemedText.DeprecatedBody fontWeight={535} fontSize={20} color="text1">
-                  {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
-                </ThemedText.DeprecatedBody>
-                {baseCurrency && (
-                  <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                    {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                  </ThemedText.DeprecatedBody>
-                )}
-              </Trans>
-            </AutoColumn>
-            <LimitInputPrice>
-              <Trans>
-                <ThemedText.BodySecondary>Limit Price </ThemedText.BodySecondary>{' '}
-              </Trans>
-              <LimitInputRow>
-                <StyledNumericalInput
-                  onUserInput={setLimitPrice}
-                  value={limitPrice ?? ''}
-                  placeholder="0"
-                  className="limit-amount-input"
-                ></StyledNumericalInput>
-                <RowFixed>
-                  {inputCurrency && (
-                    <Button
-                      sx={{ textTransform: 'none' }}
-                      onClick={() => {
-                        setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
-                        const val = parseBN(limitPrice)
-                        if (val && !val?.isZero()) {
-                          setLimitPrice(formatBNToString(new BN(1).div(val), NumberType.SwapTradeAmount))
-                        }
-                      }}
+          <AutoColumn style={{ marginBottom: '20px' }}>
+            <DynamicSection justify="start" gap="md" disabled={false}>
+              <RowStart>
+                {Boolean(inputCurrency && outputCurrency) && (
+                  <PriceToggleSection>
+                    <div
+                      style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
+                      onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}
                     >
-                      <ThemedText.BodySmall>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                        </div>
-                      </ThemedText.BodySmall>
-                    </Button>
-                  )}
-                </RowFixed>
-              </LimitInputRow>
-            </LimitInputPrice>
+                      <ToggleWrapper width="fit-content">
+                        <ToggleElement isActive={!baseCurrencyIsInput}>
+                          <CurrencyLogo currency={outputCurrency} size="15px" />
+                        </ToggleElement>
+                        <ToggleElement isActive={baseCurrencyIsInput}>
+                          <CurrencyLogo currency={inputCurrency} size="15px" />
+                        </ToggleElement>
+                      </ToggleWrapper>
+                    </div>
+                  </PriceToggleSection>
+                )}
+                <Row justify="flex-end" align="start">
+                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
+                    Current Price:
+                  </ThemedText.DeprecatedMain>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', marginLeft: '10px' }}>
+                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="text1">
+                      {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
+                    </ThemedText.DeprecatedBody>
+                    {baseCurrency && (
+                      <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                        {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                      </ThemedText.DeprecatedBody>
+                    )}
+                  </div>
+                </Row>
+              </RowStart>
+            </DynamicSection>
+          </AutoColumn>
+
+          <DynamicSection gap="md" disabled={false}>
+            <InputSection>
+              <SwapCurrencyInputPanelV2
+                value={limitPrice}
+                onUserInput={(str: string) => {
+                  setLimitPrice(str)
+                }}
+                showMaxButton={false}
+                hideBalance={true}
+                // fiatValue={fiatValueReduceAmount}
+                // currency={outputCurrency}
+                label="Limit price"
+                id="limit-reduce-position-input"
+                isPrice={
+                  <Button
+                    sx={{ textTransform: 'none' }}
+                    onClick={() => {
+                      setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
+                      const val = parseBN(limitPrice)
+                      if (val && !val?.isZero()) {
+                        setLimitPrice(formatBNToString(new BN(1).div(val), NumberType.SwapTradeAmount))
+                      }
+                    }}
+                  >
+                    <ThemedText.DeprecatedBody>
+                      {quoteCurrency?.symbol} per {baseCurrency?.symbol}
+                    </ThemedText.DeprecatedBody>
+                  </Button>
+                }
+              />
+            </InputSection>
           </DynamicSection>
         </AnimatedDropdown>
-      </LimitInputWrapper>
-      <AutoColumn gap="10px" style={{ width: '95%', marginLeft: '10px' }}>
-        <Trans>
-          <ThemedText.BodyPrimary fontWeight={400}>Position Reduce Amount </ThemedText.BodyPrimary>
-        </Trans>
-        <CurrencyInputPanel
-          value={reduceAmount}
-          id="reduce-position-input"
-          onUserInput={(str: string) => {
-            if (position?.totalDebtInput) {
-              if (str === '') {
-                onDebouncedReduceAmount('')
-              } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
-                return
-              } else {
-                setReduceAmount(str)
+        <InputSection>
+          <SwapCurrencyInputPanelV2
+            value={reduceAmount}
+            onUserInput={(str: string) => {
+              if (closePosition) {
+                setClosePosition(false)
               }
-            }
-          }}
-          showMaxButton={true}
-          onMax={() => {
-            setReduceAmount(position?.totalPosition ? position?.totalPosition.toString(10) : '')
-          }}
-          hideBalance={true}
-          currency={outputCurrency}
-          label={
-            <ThemedText.BodySmall style={{ paddingTop: '10px', paddingLeft: '10px' }}>
-              <Trans>Reduce Position By:</Trans>
-            </ThemedText.BodySmall>
-          }
-        />
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <PercentSlider
-            initialValue={
-              position ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toNumber() : 0
-            }
-            onSlideChange={(val) =>
-              position &&
-              onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
-            }
-            onInputChange={(val) =>
-              position &&
-              onDebouncedReduceAmount(new BN(val.toString()).div(100).times(position?.totalPosition).toString())
-            }
+              if (position?.totalDebtInput) {
+                if (str === '') {
+                  onDebouncedReduceAmount('')
+                } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
+                  return
+                } else {
+                  setReduceAmount(str)
+                }
+              }
+            }}
+            showMaxButton={false}
+            hideBalance={true}
+            fiatValue={fiatValueReduceAmount}
+            currency={outputCurrency}
+            label="Reduce Amount"
+            id="reduce-position-input"
           />
-        </div>
+        </InputSection>
+        <PercentSlider
+          initialValue={
+            parseBN(debouncedReduceAmount) && position
+              ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toFixed(1)
+              : ''
+          }
+          onSlideChange={(val) => {
+            if (val > 100 || val < 0) return
+            position && onDebouncedReduceAmount(new BN(val).div(100).times(position?.totalPosition).toString())
+          }}
+          onInputChange={(val) => {
+            const valBN = parseBN(val)
+            if (!valBN) {
+              onDebouncedReduceAmount('')
+            } else if (position) {
+              if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
+              setReduceAmount(new BN(val).div(100).times(position.totalPosition).toString())
+            }
+          }}
+        />
+        <Row>
+          <Toggle
+            id="toggle-local-routing-button"
+            isActive={closePosition}
+            toggle={() => {
+              if (closePosition) {
+                setClosePosition(false)
+                setReduceAmount('')
+              } else {
+                setClosePosition(true)
+                position && setReduceAmount(position?.totalPosition.toString())
+              }
+            }}
+          />
+          <ThemedText.LabelSmall>Close Position</ThemedText.LabelSmall>
+        </Row>
+
+        <Hr />
         <AutoColumn justify="center" style={{ width: '100%', marginTop: '5px' }}>
           <TransactionDetails>
             <Wrapper>
               <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
                 <StyledHeaderRow
-                  onClick={() => setCurrentState((prev) => ({ ...prev, showDetails: prev.showDetails }))}
+                  onClick={() => setCurrentState((prev) => ({ ...prev, showDetails: !prev.showDetails }))}
                   disabled={false}
                   open={currentState.showDetails}
                 >
@@ -873,6 +1084,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                         <StyledPollingDot>
                           <Spinner />
                         </StyledPollingDot>
+                        ``
                       </StyledPolling>
                     ) : (
                       <HideSmall>
@@ -882,7 +1094,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
                     {position ? (
                       loading ? (
                         <ThemedText.BodySmall>
-                          <Trans>Fetching details...</Trans>
+                          <Trans>Finding Best Price...</Trans>
                         </ThemedText.BodySmall>
                       ) : currentState.isLimit ? (
                         <LoadingOpacityContainer $loading={loading}>
@@ -1048,9 +1260,9 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
           padding=".25rem"
           onClick={() => {
             if (!currentState.isLimit) {
-              setCurrentState((prev) => ({ ...prev, showModal: true }))
+              setCurrentState((prev) => ({ ...prev, showModal: true, originalTrade: txnInfo }))
             } else {
-              setCurrentState((prev) => ({ ...prev, showLimitModal: true }))
+              setCurrentState((prev) => ({ ...prev, showLimitModal: true, originalLimitTrade: lmtTxnInfo }))
             }
           }}
           id="leverage-button"
@@ -1072,7 +1284,7 @@ export default function DecreasePositionContent({ positionKey }: { positionKey: 
             ) : lmtInputError ? (
               lmtInputError
             ) : lmtTradeState === DerivedInfoState.INVALID ? (
-              <Trans>Invalid Trade</Trans>
+              <Trans>Invalid Order</Trans>
             ) : (
               <Trans>Execute</Trans>
             )}
@@ -1092,11 +1304,10 @@ function useReduceLimitOrderCallback(
   baseIsInput: boolean | undefined,
   tradeState: DerivedInfoState | undefined
 ): {
-  callback: null | (() => Promise<string>)
+  callback: null | (() => Promise<TransactionResponse>)
 } {
   const { account, provider, chainId } = useWeb3React()
   const deadline = useTransactionDeadline()
-  const addTransaction = useTransactionAdder()
   const addLimitOrder = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
@@ -1179,23 +1390,7 @@ function useReduceLimitOrderCallback(
     tradeState,
   ])
 
-  const callback = useMemo(() => {
-    if (tradeState === DerivedInfoState.VALID && inputCurrency && outputCurrency) {
-      return () =>
-        addLimitOrder().then((response) => {
-          addTransaction(response, {
-            type: TransactionType.REDUCE_LIMIT_ORDER,
-            inputCurrencyId: inputCurrency.wrapped.address,
-            outputCurrencyId: outputCurrency.wrapped.address,
-          })
-          return response.hash
-        })
-    } else {
-      return null
-    }
-  }, [inputCurrency, outputCurrency, tradeState, addLimitOrder, addTransaction])
-
-  return { callback }
+  return { callback: addLimitOrder }
 }
 
 export function getSlippedTicks(

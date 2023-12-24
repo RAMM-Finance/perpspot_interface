@@ -155,10 +155,7 @@ export function LeverageConfirmModal({
   txHash,
   preTradeInfo,
   existingPosition,
-}: // swapQuoteReceivedDate,
-// fiatValueInput,
-// fiatValueOutput,
-{
+}: {
   isOpen: boolean
   trade: AddMarginTrade | undefined
   originalTrade: AddMarginTrade | undefined
@@ -197,7 +194,7 @@ export function LeverageConfirmModal({
         existingPosition={existingPosition}
         recipient={null}
         allowedSlippage={allowedSlippage}
-        showAcceptChanges={true}
+        showAcceptChanges={showAcceptChanges}
         onAcceptChanges={onAcceptChanges}
       />
     ) : null

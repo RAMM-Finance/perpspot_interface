@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -219,8 +219,7 @@ export function MouseoverValueLabel({
       </RowFixed>
       <TextWithLoadingPlaceholder syncing={syncing ?? false} width={65}>
         <ThemedText.BodySmall color="textSecondary" textAlign="right">
-          {value}
-          {appendSymbol}
+          {`${value} ${appendSymbol ?? ''}`}
         </ThemedText.BodySmall>
       </TextWithLoadingPlaceholder>
     </RowBetween>
@@ -599,10 +598,10 @@ function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholde
   if (price) {
     if (price.greaterThan(1)) {
       const symbol = price.baseCurrency.symbol + '/' + price.quoteCurrency.symbol
-      return `${formatNumber(Number(price.toFixed(18)), NumberType.SwapTradeAmount)} ${symbol} `
+      return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol} `
     } else {
       const symbol = price?.quoteCurrency.symbol + '/' + price?.baseCurrency.symbol
-      return `${formatNumber(Number(price.invert().toFixed(18)), NumberType.SwapTradeAmount)} ${symbol}`
+      return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
     }
   } else {
     return placeholder

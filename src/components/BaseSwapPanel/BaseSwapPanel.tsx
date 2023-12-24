@@ -189,8 +189,8 @@ const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   ${loadingOpacityMixin};
   color: ${({ theme }) => theme.textSecondary};
   text-align: left;
-  font-size: 14px;
-  padding-left: 14px;
+  font-size: 16px;
+  padding-left: 10px;
 `
 
 // const StyledTrans = styled(Trans)`

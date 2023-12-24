@@ -69,7 +69,8 @@ function useDerivedWithdrawPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
-  setState: (state: DerivedInfoState) => void
+  setState: (state: DerivedInfoState) => void,
+  onPositionChange: (newPos: MarginPositionDetails | undefined) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   inputError: ReactNode | undefined
@@ -104,6 +105,7 @@ function useDerivedWithdrawPremiumInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
+        onPositionChange(undefined)
         return
       }
 
@@ -121,8 +123,13 @@ function useDerivedWithdrawPremiumInfo(
         )
 
         const info: DerivedDepositPremiumInfo = {
-          newDepositAmount: position.premiumDeposit.plus(parsedAmount),
+          newDepositAmount: position.premiumDeposit.minus(parsedAmount),
         }
+
+        onPositionChange({
+          ...position,
+          premiumDeposit: info.newDepositAmount,
+        })
 
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
@@ -132,11 +139,23 @@ function useDerivedWithdrawPremiumInfo(
         setState(DerivedInfoState.INVALID)
         setContractError(err)
         setTxnInfo(undefined)
+        onPositionChange(undefined)
       }
     }
 
     lagged()
-  }, [setState, pool, marginFacility, account, parsedAmount, position, positionKey, inputCurrency, outputCurrency])
+  }, [
+    setState,
+    onPositionChange,
+    pool,
+    marginFacility,
+    account,
+    parsedAmount,
+    position,
+    positionKey,
+    inputCurrency,
+    outputCurrency,
+  ])
 
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
@@ -156,7 +175,13 @@ function useDerivedWithdrawPremiumInfo(
   }, [txnInfo, inputError])
 }
 
-export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPositionKey }) {
+export function WithdrawPremiumContent({
+  positionKey,
+  onPositionChange,
+}: {
+  positionKey: TraderPositionKey
+  onPositionChange: (newPos: MarginPositionDetails | undefined) => void
+}) {
   // state inputs, derived, handlers for trade confirmation
   const [amount, setAmount] = useState('')
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -176,7 +201,13 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
-  const { txnInfo, inputError } = useDerivedWithdrawPremiumInfo(amount, positionKey, position, setTradeState)
+  const { txnInfo, inputError } = useDerivedWithdrawPremiumInfo(
+    amount,
+    positionKey,
+    position,
+    setTradeState,
+    onPositionChange
+  )
   const { account, chainId, provider } = useWeb3React()
 
   const maxWithdrawAmount: BN | undefined = useMemo(() => {
@@ -284,6 +315,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
     <DarkCard>
       {showModal && (
         <ConfirmModifyPositionModal
+          title="Confirm Withdraw Premium"
           onDismiss={handleDismiss}
           isOpen={showModal}
           attemptingTxn={attemptingTxn}
@@ -293,7 +325,7 @@ export function WithdrawPremiumContent({ positionKey }: { positionKey: TraderPos
             <BaseFooter
               errorMessage={<Trans>{errorMessage}</Trans>}
               onConfirm={handleWithdraw}
-              confirmText="Confirm Deposit"
+              confirmText="Confirm Withdrawal"
               disabledConfirm={!!inputError || !txnInfo}
             />
           }

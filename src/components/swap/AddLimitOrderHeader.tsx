@@ -115,7 +115,7 @@ export function AddLimitModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {trade.margin.toPrecision(6)}
+                {formatBNToString(trade.margin, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
@@ -136,7 +136,7 @@ export function AddLimitModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {trade.inputAmount.toPrecision(6)}
+                {formatBNToString(trade.inputAmount, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
@@ -162,7 +162,7 @@ export function AddLimitModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {trade.minOutput.toPrecision(6)}
+                {formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">

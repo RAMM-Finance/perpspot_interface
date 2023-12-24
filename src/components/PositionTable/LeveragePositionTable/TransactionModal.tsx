@@ -12,7 +12,7 @@ import { ReactNode, useCallback } from 'react'
 //   TransactionErrorContent,
 // } from '../TransactionConfirmationModal'
 
-export default function ConfirmModifyPositionModal({
+export default function ConfirmReducePositionModal({
   onDismiss,
   errorMessage,
   isOpen,
@@ -22,6 +22,7 @@ export default function ConfirmModifyPositionModal({
   txHash,
   pendingText,
   currencyToAdd,
+  title,
 }: {
   isOpen: boolean
   header: ReactNode | undefined
@@ -32,6 +33,7 @@ export default function ConfirmModifyPositionModal({
   currencyToAdd: Currency | undefined
   recipient: string | null
   errorMessage: ReactNode | undefined
+  title: string
   onDismiss: () => void
 }) {
   const onModalDismiss = useCallback(() => {
@@ -52,13 +54,13 @@ export default function ConfirmModifyPositionModal({
         <TransactionErrorContent onDismiss={onModalDismiss} message={errorMessage} />
       ) : (
         <ConfirmationModalContent
-          title={<Trans>Confirm Swap</Trans>}
+          title={<Trans>{title}</Trans>}
           onDismiss={onModalDismiss}
           topContent={modalHeader}
           bottomContent={modalBottom}
         />
       ),
-    [onModalDismiss, modalBottom, modalHeader, errorMessage]
+    [onModalDismiss, modalBottom, modalHeader, errorMessage, title]
   )
 
   return (

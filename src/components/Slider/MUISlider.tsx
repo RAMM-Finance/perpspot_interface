@@ -4,6 +4,7 @@ import MuiInput from '@mui/material/Input'
 import Slider from '@mui/material/Slider'
 import { styled } from '@mui/material/styles'
 import * as React from 'react'
+import { useTheme } from 'styled-components'
 
 interface DiscreteSliderMarksProps {
   initialValue: number
@@ -11,9 +12,9 @@ interface DiscreteSliderMarksProps {
 }
 
 interface DiscreteSliderInputMarksProps {
-  initialValue: number
+  initialValue: string
   onSlideChange: (val: number) => void
-  onInputChange: (val: number) => void
+  onInputChange: (val: string) => void
 }
 
 const marks = [
@@ -118,16 +119,29 @@ export function PercentSlider({ initialValue, onSlideChange, onInputChange }: Di
   const handleSlideChange = (event: Event, newValue: number | number[]) => {
     onSlideChange(newValue as number)
   }
+  // const [inputValue, setInputValue] = React.useState<string>(initialValue)
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onInputChange(event.target.value === '' ? 0 : Number(event.target.value))
+    // setInputValue(event.target.value)
+    onInputChange(event.target.value)
   }
+
+  const theme = useTheme()
 
   return (
     <Box sx={{ width: 400 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid item></Grid>
         <Grid item xs>
-          <Slider size="small" value={initialValue} onChange={handleSlideChange} aria-labelledby="input-slider" />
+          <Slider
+            size="small"
+            value={initialValue === '' ? 0 : Number(initialValue)}
+            onChange={handleSlideChange}
+            aria-labelledby="input-slider"
+            marks={percentMarks}
+            sx={{
+              color: theme.accentActive,
+            }}
+          />
         </Grid>
         <Grid item>
           <Input
@@ -139,6 +153,8 @@ export function PercentSlider({ initialValue, onSlideChange, onInputChange }: Di
               input: {
                 color: 'white',
               },
+              justifyContent: 'right',
+              width: '40px',
             }}
             inputProps={{
               min: 0,
@@ -146,8 +162,8 @@ export function PercentSlider({ initialValue, onSlideChange, onInputChange }: Di
               type: 'number',
               'aria-labelledby': 'input-slider',
             }}
-          />{' '}
-          % Reduction
+          />
+          %
         </Grid>
       </Grid>
     </Box>
