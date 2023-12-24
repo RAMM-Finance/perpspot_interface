@@ -2,6 +2,8 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { SearchInput } from 'components/SearchModal/styleds'
+import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
 import useDebounce from 'hooks/useDebounce'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
@@ -14,6 +16,7 @@ import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
 import { ChangeEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FixedSizeList } from 'react-window'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import { Field } from 'state/swap/actions'
@@ -21,7 +24,6 @@ import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
-import { currencyId } from 'utils/currencyId'
 
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
@@ -36,7 +38,8 @@ const PoolListContainer = styled.div`
   grid-template-columns: 0.5fr 3fr 1fr 1fr;
   width: 375px;
 `
-export const PoolSelector = () => {
+
+export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
   const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -128,16 +131,18 @@ export const PoolSelector = () => {
     native,
   ])
 
+  const location = useLocation()
+  const navigate = useNavigate()
+
   const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency) => {
+    (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string) => {
       onCurrencySelection(Field.INPUT, currencyIn)
       onCurrencySelection(Field.OUTPUT, currencyOut)
+      if (location.pathname !== '/swap') {
+        navigate(`/add/${currencyInAdd}/${currencyOutAdd}/${500}`)
+      }
     },
-    [inputCurrencyId, outputCurrencyId]
-  )
-
-  const filteredSearchCurrencies = searchCurrencies.filter((currency: any) =>
-    currency.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    []
   )
 
   const inputRef = useRef<HTMLInputElement>()
@@ -185,9 +190,53 @@ export const PoolSelector = () => {
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
+  const [data, setData] = useState<any>()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  interface Pool {
+    blockTimeStamp: string
+    fee: number
+    id: string
+    pool: string
+    tickDiscretization: number
+    token0: string
+    token1: string
+    __typename: string
+  }
+
+  useEffect(() => {
+    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if (!client || !PoolAddedQuery || loading || error) return
+    const call = async () => {
+      try {
+        setLoading(true)
+
+        const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
+
+        setData(poolQueryData)
+        setLoading(false)
+      } catch (error) {
+        setError(error)
+        setLoading(false)
+      }
+    }
+    call()
+  }, [])
+
+  const availablePools = useMemo(() => {
+    if (data) {
+      return data.data.poolAddeds.map((val: Pool) => {
+        return [val.token0, val.token1]
+      })
+    } else {
+      return undefined
+    }
+  }, [data])
+
   const dropdown = (
-    <NavDropdown ref={modalRef} style={{ height: '600px', overflowY: 'scroll', zIndex: '3' }}>
-      <Row flexDirection="column">
+    <NavDropdown ref={modalRef} style={{ height: 'fit-content', overflowY: 'scroll', zIndex: '3' }}>
+      <Row style={{ position: 'relative' }} flexDirection="column">
         <SearchInput
           type="text"
           id="token-search-input"
@@ -206,17 +255,17 @@ export const PoolSelector = () => {
       </Row>
       <Row>
         <Column paddingX="8">
-          {filteredSearchCurrencies.flatMap((currencyIn: Currency, i) =>
-            searchCurrencies
-              .slice(i + 1)
-              .map((currencyOut: Currency) => (
+          {availablePools &&
+            availablePools.map((curr: string[]) => {
+              return (
                 <PoolSelectorRow
-                  currencyId={[currencyId(currencyIn), currencyId(currencyOut)]}
+                  currencyId={[curr[0], curr[1]]}
                   onCurrencySelect={handleCurrencySelect}
-                  key={`${currencyId(currencyIn)}-${currencyId(currencyOut)}`}
+                  key={`${curr[0]}-${curr[1]}`}
+                  setIsOpen={setIsOpen}
                 />
-              ))
-          )}
+              )
+            })}
         </Column>
       </Row>
     </NavDropdown>
@@ -236,7 +285,11 @@ export const PoolSelector = () => {
         className={styles.ChainSelector}
         background={isOpen ? 'accentActiveSoft' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
-        style={{ width: '225px' }}
+        style={
+          largeWidth
+            ? { paddingLeft: '1vw', transform: 'scale(1.2,1.2)', width: '255px' }
+            : { paddingLeft: '1vw', width: '255px' }
+        }
       >
         <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={22} />
         <ThemedText.BodySmall color="secondary">{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>

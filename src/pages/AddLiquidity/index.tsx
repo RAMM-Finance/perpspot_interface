@@ -11,6 +11,7 @@ import { sendEvent } from 'components/analytics'
 import FeeSelector from 'components/FeeSelector'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import { PositionPreview } from 'components/PositionPreview'
+import { PoolSelector } from 'components/swap/PoolSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
@@ -64,7 +65,6 @@ import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { Dots } from '../Pool/styleds'
 import { Review } from './Review'
 import {
-  CurrencyDropdown,
   DynamicSection,
   LeftSection,
   MediumOnly,
@@ -727,7 +727,7 @@ export default function AddLiquidity() {
                           </ThemedText.BodyPrimary>
                         </RowBetween>
                         <RowBetween justify="start" gap="0px">
-                          <CurrencyDropdown
+                          {/* <CurrencyDropdown
                             value={formattedAmounts[Field.CURRENCY_A]}
                             onUserInput={onFieldAInput}
                             hideInput={true}
@@ -752,7 +752,8 @@ export default function AddLiquidity() {
                             currency={currencies[Field.CURRENCY_B] ?? null}
                             id="add-liquidity-input-tokenb"
                             showCommonBases
-                          />
+                          /> */}
+                          <PoolSelector largeWidth={true} />
                         </RowBetween>
                       </AutoColumn>{' '}
                     </>

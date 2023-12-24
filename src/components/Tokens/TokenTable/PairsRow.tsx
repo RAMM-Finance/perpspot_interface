@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
-import { Currency, Token } from '@uniswap/sdk-core'
+import { Currency } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
 
-import { useCurrency } from '../../../hooks/Tokens'
+import { useCurrency, useToken } from '../../../hooks/Tokens'
 import { Field } from '../../../state/swap/actions'
 import {
   useSwapActionHandlers,
@@ -583,8 +583,8 @@ export function PLoadingRow(props: { first?: boolean; last?: boolean }) {
 interface LoadedRowProps {
   tokenListIndex: number
   tokenListLength: number
-  token0: Token
-  token1: Token
+  tokenA: string
+  tokenB: string
   //token: NonNullable<TopToken>
   sparklineMap?: SparklineMap
   sortRank?: number
@@ -592,7 +592,7 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, token0, token1, sortRank } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
 
   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
@@ -603,10 +603,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const smallArrow = getDeltaArrow(delta, 14)
   const formattedDelta = formatDelta(delta)
 
+  const token0 = useToken(tokenA)
+  const token1 = useToken(tokenB)
+
   const exploreTokenSelectedEventProperties = {
     chain_id: chainId,
-    token_address: token0.address,
-    token_symbol: token0.symbol,
+    token_address: token0?.address,
+    token_symbol: token0?.symbol,
     token_list_index: tokenListIndex,
     // token_list_rank: sortRank,
     token_list_length: tokenListLength,
@@ -652,13 +655,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   currencies,
   //   // inputError: swapInputError,
   // } = useDerivedSwapInfo()
-  const currency0 = useCurrency(token0.address)
-  const currency1 = useCurrency(token1.address)
+  const currency0 = useCurrency(token0?.address)
+  const currency1 = useCurrency(token1?.address)
+  console.log(currency0)
   const [poolState, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, FeeAmount.LOW)
   // console.log('pools', token0.address, token1.address, pool)
   const currentPrice = pool?.token0Price.toSignificant(3)
   const priceRounded =
-    token1.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+    token1?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
       ? ((Math.round(1 / Number(currentPrice)) * 1000000) / 1000000).toString()
       : (Math.round(Number(currentPrice) * 1000000) / 1000000).toString()
   const fomatter = new Intl.NumberFormat(navigator.language)
@@ -669,16 +673,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   let urate_
 
   if (
-    token0.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-    token1.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
+    token0?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+    token1?.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
   ) {
     tvl_ = 2313000000
     volume_ = 1300000
     estimatedapr_ = 23.5
     urate_ = 42.32
   } else if (
-    token0.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-    token1.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+    token0?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+    token1?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
   ) {
     tvl_ = 1530000000
     volume_ = 210000
@@ -701,7 +705,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           })
         }
       }}
-      data-testid={`token-table-row-${token0.symbol}`}
+      data-testid={`token-table-row-${token0?.symbol}`}
     >
       <TokenRow
         header={false}
@@ -714,8 +718,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             <TokenInfoCell>
               <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={20} margin={true} />
               <TokenName data-cy="token-name">
-                <span>{token0.symbol}</span>
-                <span>{token1.symbol}</span>
+                <span>{token0?.symbol}</span>
+                <span>{token1?.symbol}</span>
               </TokenName>
               {/* <TokenSymbol>{token0.symbol}</TokenSymbol> */}
             </TokenInfoCell>
@@ -725,7 +729,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent>
             <PriceInfoCell>
               <Price>{currentPrice && fomatter.format(Number(priceRounded))}</Price>
-              <span>{token0.symbol + '/' + token1.symbol}</span>
+              <span>{token0?.symbol + '/' + token1?.symbol}</span>
               {/* {currentPrice && priceRounded + ' ' + token0.symbol + '/' + token1.symbol} */}
               {/*<PercentChangeInfoCell>
                   <ArrowCell>{smallArrow}</ArrowCell>

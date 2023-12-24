@@ -9,7 +9,6 @@ import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery } from 'graphql/limitlessGraph/queries'
-import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -24,7 +23,7 @@ const LeaderboardWrapper = styled.div`
   border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  width: 70%;
+  width: 100%;
   margin-right: 0.125rem;
   margin-top: 0.125rem;
   overflow-y: scroll;
@@ -47,7 +46,7 @@ const ReferralsWrapper = styled.div`
   border-radius: 10px;
   margin-left: 0.125rem;
   margin-top: 0.125rem;
-  width: 70%;
+  width: 100%;
 `
 
 // const PointsWrapper = styled.div`
@@ -80,23 +79,49 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  height: 85vh;
+  height: 82vh;
+  width: 92.5%;
   align-items: start;
-  padding-left: 20%;
+  padding-left: 7.5%;
   padding-top: 5px;
 `
 const PointsWrapper = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: start;
+  width: 90%;
   grid-column: span 2;
-  margin-bottom: 0.25rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  margin-bottom: 1rem;
+  margin-left: 7.5%;
+  // border: solid 1px ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 7px;
+`
+
+const Filter = styled.div`
+  display: flex;
+  align-items: end;
+  width: fit-content;
+  gap: 10px;
+`
+
+const FilterWrapper = styled.div`
+  display: flex;
+  margin-bottom: 6px;
+`
+
+const StyledSelectorText = styled.div<{ active: boolean }>`
+  font-size: ${({ active }) => (active ? '18px' : '17px')};
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
+  font-weight: ${({ active }) => (active ? '600' : '300')};
+`
+
+const Selector = styled.div<{ active: boolean }>`
+  font-color: ${({ active, theme }) => (active ? theme.background : 'none')};
+  cursor: pointer;
+  &:hover {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
 `
 
 export default function LeaderboardPage() {
@@ -136,16 +161,12 @@ export default function LeaderboardPage() {
       </PointsWrapper>
       <Container>
         <FilterWrapper>
-          <Filter onClick={() => setLeaderboard(!leaderboard)}>
-            <Selector active={leaderboard}>
-              <StyledSelectorText lineHeight="20px" active={leaderboard}>
-                Leaderboard
-              </StyledSelectorText>
+          <Filter>
+            <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
+              <StyledSelectorText active={leaderboard}>Leaderboard</StyledSelectorText>
             </Selector>
-            <Selector active={!leaderboard}>
-              <StyledSelectorText lineHeight="20px" active={!leaderboard}>
-                Referrals
-              </StyledSelectorText>
+            <Selector onClick={() => setLeaderboard(false)} active={!leaderboard}>
+              <StyledSelectorText active={!leaderboard}>Referrals</StyledSelectorText>
             </Selector>
           </Filter>
         </FilterWrapper>
@@ -155,9 +176,6 @@ export default function LeaderboardPage() {
           </LeaderboardWrapper>
         ) : (
           <ReferralsWrapper>
-            <ThemedText.SubHeader>
-              <Header>Referrals</Header>
-            </ThemedText.SubHeader>
             {showConnectAWallet ? (
               <ErrorContainer style={{ paddingTop: '50px' }}>
                 <TraceEvent
