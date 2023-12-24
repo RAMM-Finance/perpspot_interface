@@ -66,6 +66,23 @@ const InputWrapper = styled.div`
   height: 100%;
 `
 
+const InputSection = styled.div`
+  background-color: ${({ theme }) => theme.surface1};
+  margin-bottom: 10px;
+  padding: 10px;
+  margin-top: 5px;
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
+  }
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.textSecondary};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+`
+
 enum DerivedInfoState {
   LOADING,
   VALID,
@@ -343,30 +360,33 @@ export function WithdrawPremiumContent({
         />
       )}
       <InputWrapper>
-        <SwapCurrencyInputPanelV2
-          label="Withdraw Amount"
-          value={amount}
-          id="withdraw-premium-input"
-          onUserInput={(str: string) => {
-            if (inputCurrencyBalance) {
-              const balance = inputCurrencyBalance.toExact()
-              if (str === '') {
-                setAmount('')
-              } else if (Number(str) > Number(balance)) {
-                return
-              } else {
-                setAmount(str)
+        <InputSection>
+          <SwapCurrencyInputPanelV2
+            label="Withdraw Amount"
+            value={amount}
+            hideBalance={true}
+            id="withdraw-premium-input"
+            onUserInput={(str: string) => {
+              if (inputCurrencyBalance) {
+                const balance = inputCurrencyBalance.toExact()
+                if (str === '') {
+                  setAmount('')
+                } else if (Number(str) > Number(balance)) {
+                  return
+                } else {
+                  setAmount(str)
+                }
               }
-            }
-          }}
-          showMaxButton={true}
-          onMax={() => {
-            if (maxWithdrawAmount) {
-              setAmount(String(maxWithdrawAmount.toNumber()))
-            }
-          }}
-          currency={inputCurrency}
-        />
+            }}
+            showMaxButton={true}
+            onMax={() => {
+              if (maxWithdrawAmount) {
+                setAmount(String(maxWithdrawAmount.toNumber()))
+              }
+            }}
+            currency={inputCurrency}
+          />
+        </InputSection>
         {/* <CurrencyInputPanel
           value={amount}
           id="deposit-premium-input"
