@@ -4,7 +4,7 @@ import { NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import CurrencyInputPanel from 'components/BaseSwapPanel'
+import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -35,6 +35,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 
+import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
 
 interface DerivedDepositPremiumInfo {
@@ -58,6 +59,13 @@ const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
 `
 
+const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+`
+
 enum DerivedInfoState {
   LOADING,
   VALID,
@@ -70,7 +78,7 @@ function useDerivedWithdrawPremiumInfo(
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
   setState: (state: DerivedInfoState) => void,
-  onPositionChange: (newPos: MarginPositionDetails | undefined) => void
+  onPositionChange: (newPos: AlteredPositionProperties) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   inputError: ReactNode | undefined
@@ -105,7 +113,7 @@ function useDerivedWithdrawPremiumInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
-        onPositionChange(undefined)
+        onPositionChange({})
         return
       }
 
@@ -123,12 +131,11 @@ function useDerivedWithdrawPremiumInfo(
         )
 
         const info: DerivedDepositPremiumInfo = {
-          newDepositAmount: position.premiumDeposit.minus(parsedAmount),
+          newDepositAmount: position.premiumLeft.minus(parsedAmount),
         }
 
         onPositionChange({
-          ...position,
-          premiumDeposit: info.newDepositAmount,
+          premiumLeft: info.newDepositAmount,
         })
 
         setTxnInfo(info)
@@ -139,7 +146,7 @@ function useDerivedWithdrawPremiumInfo(
         setState(DerivedInfoState.INVALID)
         setContractError(err)
         setTxnInfo(undefined)
-        onPositionChange(undefined)
+        onPositionChange({})
       }
     }
 
@@ -180,7 +187,7 @@ export function WithdrawPremiumContent({
   onPositionChange,
 }: {
   positionKey: TraderPositionKey
-  onPositionChange: (newPos: MarginPositionDetails | undefined) => void
+  onPositionChange: (newPos: AlteredPositionProperties) => void
 }) {
   // state inputs, derived, handlers for trade confirmation
   const [amount, setAmount] = useState('')
@@ -312,7 +319,7 @@ export function WithdrawPremiumContent({
   }, [])
 
   return (
-    <DarkCard>
+    <DarkCard width="100%" padding="1rem">
       {showModal && (
         <ConfirmModifyPositionModal
           title="Confirm Withdraw Premium"
@@ -335,15 +342,32 @@ export function WithdrawPremiumContent({
           errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
         />
       )}
-      <AutoColumn>
-        <RowBetween style={{ marginBottom: '10px' }}>
-          <ThemedText.BodyPrimary fontWeight={400}>
-            <Trans>Withdraw Amount</Trans>
-          </ThemedText.BodyPrimary>
-        </RowBetween>
-      </AutoColumn>
-      <AutoColumn gap="10px" style={{ width: '95%', marginLeft: '10px' }}>
-        <CurrencyInputPanel
+      <InputWrapper>
+        <SwapCurrencyInputPanelV2
+          label="Withdraw Amount"
+          value={amount}
+          id="withdraw-premium-input"
+          onUserInput={(str: string) => {
+            if (inputCurrencyBalance) {
+              const balance = inputCurrencyBalance.toExact()
+              if (str === '') {
+                setAmount('')
+              } else if (Number(str) > Number(balance)) {
+                return
+              } else {
+                setAmount(str)
+              }
+            }
+          }}
+          showMaxButton={true}
+          onMax={() => {
+            if (maxWithdrawAmount) {
+              setAmount(String(maxWithdrawAmount.toNumber()))
+            }
+          }}
+          currency={inputCurrency}
+        />
+        {/* <CurrencyInputPanel
           value={amount}
           id="deposit-premium-input"
           onUserInput={(str: string) => {
@@ -366,7 +390,7 @@ export function WithdrawPremiumContent({
           }}
           hideBalance={true}
           currency={inputCurrency}
-        />
+        /> */}
         <StyledCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
             {/*<ValueLabel
@@ -459,7 +483,7 @@ export function WithdrawPremiumContent({
             </Wrapper>
           </TransactionDetails>
         </StyledCard>
-      </AutoColumn>
+      </InputWrapper>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         <ButtonError
           style={{ fontSize: '14px', borderRadius: '10px', width: 'fit-content', height: '15px' }}

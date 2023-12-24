@@ -60,11 +60,12 @@ import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { LimitOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
 import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from './ConfirmModalHeaders'
 import { BaseFooter } from './DepositPremiumContent'
+import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
 
 export interface DerivedReducePositionInfo {
@@ -72,12 +73,22 @@ export interface DerivedReducePositionInfo {
   returnedAmount: BN
   premium: BN
   profitFee: BN
-  newPosition: MarginPositionDetails
+  // newPosition: MarginPositionDetails
   minimumOutput: BN
+  executionPrice: Price<Currency, Currency>
+  amount0: BN
+  amount1: BN
+  margin: BN
+  totalPosition: BN
+  totalDebtInput: BN
+  totalDebtOutput: BN
 }
 
 export interface DerivedLimitReducePositionInfo {
-  newPosition: MarginPositionDetails
+  margin: BN
+  totalPosition: BN
+  totalDebtInput: BN
+  totalDebtOutput: BN
 }
 
 const Wrapper = styled.div`
@@ -112,7 +123,7 @@ function useDerivedReducePositionInfo(
   allowedSlippedTick: Percent,
   allowedSlippage: Percent,
   setState: (state: DerivedInfoState) => void,
-  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void,
+  onPositionChange: (newPosition: AlteredPositionProperties) => void,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
@@ -140,7 +151,7 @@ function useDerivedReducePositionInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
-        onPositionChange(undefined)
+        onPositionChange({})
         return
       }
 
@@ -155,79 +166,71 @@ function useDerivedReducePositionInfo(
         const minOutput = parsedReduceAmount
           .times(price)
           .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
-        console.log('minOutput', minOutput.toString(), price.toString())
-        //   struct ReduceReturn {
-        //     int256 amount0;
-        //     int256 amount1;
-        //     int256 PnL;
-        //     uint256 returnedAmount;
-        //     uint256 repaidDebt0;
-        //     uint256 repaidDebt1;
-        //     uint256 premium;
-        //     uint256 profitFee;
-        // }
-        const reduceParam = {
-          positionIsToken0: position.isToken0,
+
+        const isClose = parsedReduceAmount.isEqualTo(position.totalPosition)
+        const removePremium =
+          isClose && position.premiumLeft.isGreaterThan(0)
+            ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
+            : undefined
+
+        const params: ReducePositionOptions = {
+          positionKey,
           reducePercentage: reducePercent,
-          minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
-          trader: position.trader,
           executionOption: 1,
-          executionData: ethers.constants.HashZero,
           slippedTickMin,
           slippedTickMax,
-          reduceAmount: 0,
+          executionData: ethers.constants.HashZero,
+          minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
+          removePremium,
         }
 
-        // console.log('simulation reduce param', reduceParam, positionKey.poolKey)
+        const calldatas = MarginFacilitySDK.reducePositionParameters(params)
+        const bytes = await marginFacility.callStatic.multicall(calldatas)
 
-        const result = await marginFacility.callStatic.reducePosition(
-          {
-            token0: positionKey.poolKey.token0Address,
-            token1: positionKey.poolKey.token1Address,
-            fee: positionKey.poolKey.fee,
-          },
-          reduceParam
+        const result: any = MarginFacilitySDK.decodeReducePositionResult(isClose ? bytes[1] : bytes[0])
+
+        const amount0 = new BN(result.amount0.toString()).shiftedBy(
+          position.isToken0 ? -outputCurrency.decimals : -inputCurrency.decimals
+        )
+        const amount1 = new BN(result.amount1.toString()).shiftedBy(
+          position.isToken0 ? -inputCurrency.decimals : -outputCurrency.decimals
         )
         const premium = new BN(result.premium.toString()).shiftedBy(-inputCurrency.decimals)
         const reducePercentage = parsedReduceAmount.div(position.totalPosition)
-
-        const newPosition: MarginPositionDetails = {
-          totalPosition: position.totalPosition.minus(parsedReduceAmount), //.minus(parsedReduceAmount),
-          openTime: position.openTime,
-          trader: position.trader,
-          isToken0: position.isToken0,
-          poolKey: position.poolKey,
-          margin: position.margin.times(new BN(1).minus(reducePercentage)),
-          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
-          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
-          premiumDeposit: position.premiumDeposit.minus(premium),
-          premiumOwed: position.premiumOwed,
-          isBorrow: false,
-          repayTime: position.repayTime,
-          premiumLeft: position.premiumLeft,
-          token0Decimals: position.token0Decimals,
-          token1Decimals: position.token1Decimals,
-        }
+        const executionPrice = new Price(
+          outputCurrency,
+          inputCurrency,
+          position.isToken0 ? result.amount0.toString() : result.amount1.toString(),
+          position.isToken0 ? result.amount1.toString() : result.amount0.toString()
+        )
 
         const info: DerivedReducePositionInfo = {
           PnL: new BN(result.PnL.toString()).shiftedBy(-inputCurrency.decimals),
           returnedAmount: new BN(result.returnedAmount.toString()).shiftedBy(-outputCurrency.decimals),
           premium,
           profitFee: new BN(result.profitFee.toString()).shiftedBy(-inputCurrency.decimals),
-          newPosition,
           minimumOutput: minOutput,
+          executionPrice,
+          amount0,
+          amount1,
+          margin: position.margin.times(new BN(1).minus(reducePercentage)),
+          totalPosition: position.totalPosition.minus(parsedReduceAmount),
+          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
+          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
         }
 
-        // pos.base.totalDebtInput = pos.base.totalDebtInput.mulDiv(precision - reducePercentage, precision);
-        // pos.base.totalDebtOutput = pos.base.totalDebtOutput.mulDiv(precision - reducePercentage, precision);
-        // pos.margin = pos.margin.mulDiv(precision - reducePercentage, precision);
-
-        onPositionChange(newPosition)
+        onPositionChange({
+          margin: position.margin.times(new BN(1).minus(reducePercentage)),
+          totalPosition: position.totalPosition.minus(parsedReduceAmount),
+          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
+          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          premiumLeft: position.premiumLeft.minus(premium),
+        })
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
         setContractError(undefined)
       } catch (err) {
-        onPositionChange(undefined)
+        onPositionChange({})
         console.log('reduce error', err)
         setState(DerivedInfoState.INVALID)
         setContractError(err)
@@ -281,7 +284,7 @@ function useDerivedReduceLimitPositionInfo(
   positionKey: OrderPositionKey,
   baseCurrencyIsInput: boolean,
   setState: (state: DerivedInfoState) => void,
-  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void,
+  onPositionChange: (newPosition: AlteredPositionProperties) => void,
   position: MarginPositionDetails | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
@@ -329,7 +332,7 @@ function useDerivedReduceLimitPositionInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
-        onPositionChange(undefined)
+        onPositionChange({})
         setContractError(undefined)
         return
       }
@@ -338,7 +341,7 @@ function useDerivedReduceLimitPositionInfo(
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
         setContractError(undefined)
-        onPositionChange(undefined)
+        onPositionChange({})
         return
       }
 
@@ -378,32 +381,24 @@ function useDerivedReduceLimitPositionInfo(
         const reduceAmount = parsedAmount
         const reducePercentage = reduceAmount.div(position.totalPosition)
 
-        const newPosition: MarginPositionDetails = {
-          totalPosition: position.totalPosition.minus(reduceAmount),
-          openTime: position.openTime,
-          trader: position.trader,
-          isToken0: position.isToken0,
-          poolKey: position.poolKey,
+        setTxnInfo({
           margin: position.margin.times(new BN(1).minus(reducePercentage)),
-          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          totalPosition: position.totalPosition.minus(parsedAmount),
           totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
-          premiumDeposit: position.premiumDeposit,
-          premiumOwed: position.premiumOwed,
-          isBorrow: false,
-          repayTime: position.repayTime,
-          premiumLeft: position.premiumLeft,
-          token0Decimals: position.token0Decimals,
-          token1Decimals: position.token1Decimals,
-        }
+          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+        })
 
-        setTxnInfo({ newPosition })
-
-        onPositionChange(newPosition)
+        onPositionChange({
+          margin: position.margin.times(new BN(1).minus(reducePercentage)),
+          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
+          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          totalPosition: position.totalPosition.minus(parsedAmount),
+        })
         setState(DerivedInfoState.VALID)
         setContractError(undefined)
       } catch (err) {
         console.log('reduce error', err)
-        onPositionChange(undefined)
+        onPositionChange({})
         setState(DerivedInfoState.INVALID)
         setContractError(err)
         setTxnInfo(undefined)
@@ -476,7 +471,7 @@ export default function DecreasePositionContent({
   onPositionChange,
 }: {
   positionKey: TraderPositionKey
-  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void
+  onPositionChange: (newPosition: AlteredPositionProperties) => void
 }) {
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
@@ -619,14 +614,16 @@ export default function DecreasePositionContent({
       if (!chainId) throw new Error('missing chainId')
       if (!provider) throw new Error('missing provider')
       if (!txnInfo) throw new Error('missing txn info')
+      if (!parsedReduceAmount) throw new Error('missing reduce amount')
       // if (!marginFacility) throw new Error('missing marginFacility contract')
       if (!position) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
       if (!deadline) throw new Error('missing deadline')
+      if (!inputCurrency) throw new Error('missing input currency')
 
       // get reduce parameters
-      const reducePercent = new BN(reduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
+      const reducePercent = new BN(parsedReduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
       const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
       const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
@@ -634,23 +631,26 @@ export default function DecreasePositionContent({
         .times(price)
         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
-      const reduceParam = {
-        positionIsToken0: position.isToken0,
+      const isClose = parsedReduceAmount.isEqualTo(position.totalPosition)
+      const removePremium =
+        isClose && position.premiumLeft.isGreaterThan(0)
+          ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
+          : undefined
+
+      const reduceParam: ReducePositionOptions = {
+        positionKey,
         reducePercentage: reducePercent,
         minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        trader: position.trader,
         executionOption: 1,
         executionData: ethers.constants.HashZero,
         slippedTickMin,
         slippedTickMax,
-        reduceAmount: 0,
-        deadline,
+        removePremium,
       }
 
-      const { calldata } = MarginFacilitySDK.reducePositionParameters({
-        positionKey,
-        ...reduceParam,
-      })
+      const calldatas = MarginFacilitySDK.reducePositionParameters(reduceParam)
+
+      const calldata = MulticallSDK.encodeMulticall(calldatas)
 
       const tx = {
         from: account,
@@ -696,6 +696,7 @@ export default function DecreasePositionContent({
     allowedSlippage,
     allowedSlippedTick,
     deadline,
+    parsedReduceAmount,
   ])
 
   const handleReducePosition = useCallback(() => {
@@ -842,7 +843,7 @@ export default function DecreasePositionContent({
   // console.log('limitPrice', limitPrice)
 
   return (
-    <DarkCard width="fit-content" padding="0" margin="0">
+    <DarkCard width="fit-content" padding="1rem" margin="0">
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -932,7 +933,7 @@ export default function DecreasePositionContent({
           isLimitOrder={currentState.isLimit}
         />
       </div>
-      <AutoColumn style={{ marginLeft: '10px', alignItems: 'flex-start' }}>
+      <AutoColumn style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
           <AutoColumn style={{ marginBottom: '20px' }}>
             <DynamicSection justify="start" gap="md" disabled={false}>

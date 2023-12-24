@@ -82,7 +82,7 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  height: 100%;
+  width: 100%;
 `
 const ModalWrapper = styled.div`
   display: flex;
@@ -120,12 +120,29 @@ const Hr = styled.hr`
   width: 80%;
 `
 
+export interface AlteredPositionProperties {
+  totalPosition?: BN
+  margin?: BN
+  totalDebtOutput?: BN
+  totalDebtInput?: BN
+  repayTime?: number
+  premiumOwed?: BN // how much premium is owed since last repayment
+  premiumDeposit?: BN
+  premiumLeft?: BN
+}
+
 export function LeveragePositionModal(props: TradeModalProps) {
   const { isOpen, positionKey, onClose } = props
   const [activeTab, setActiveTab] = useState<TradeModalActiveTab>(
     props.selectedTab ?? TradeModalActiveTab.DECREASE_POSITION
   )
-  const [alteredPosition, setAlteredPosition] = useState<MarginPositionDetails>()
+  const [alteredPosition, setAlteredPosition] = useState<AlteredPositionProperties>({
+    totalPosition: undefined,
+    margin: undefined,
+    totalDebtInput: undefined,
+    totalDebtOutput: undefined,
+    premiumDeposit: undefined,
+  })
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
   // console.log('existingPosition', existingPosition?.premiumDeposit.toString())
   const inputCurrency = useCurrency(
@@ -212,7 +229,7 @@ function MarginPositionInfo({
   outputCurrency,
 }: {
   position: MarginPositionDetails | undefined
-  alteredPosition?: MarginPositionDetails | undefined
+  alteredPosition: AlteredPositionProperties
   loading: boolean
   inputCurrency?: Currency | undefined
   outputCurrency?: Currency | undefined

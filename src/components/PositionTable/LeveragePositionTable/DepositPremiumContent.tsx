@@ -7,7 +7,7 @@ import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
-import CurrencyInputPanel from 'components/BaseSwapPanel'
+import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError, ButtonPrimary } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -31,6 +31,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -47,6 +48,7 @@ import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { DepositPremiumOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
+import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
 
 interface DerivedDepositPremiumInfo {
@@ -57,7 +59,7 @@ const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
-const ContentWrapper = styled.div`
+const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -77,12 +79,37 @@ enum DerivedInfoState {
   SYNCING, // syncing means already loaded valid info, but updating to newest info
 }
 
+const InputSection = styled.div`
+  background-color: ${({ theme }) => theme.surface1};
+  margin-bottom: 10px;
+  padding: 10px;
+  margin-top: 5px;
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
+  }
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.textSecondary};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+`
+
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+`
+
 function useDerivedDepositPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
   setState: (state: DerivedInfoState) => void,
-  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void
+  onPositionChange: (newPosition: AlteredPositionProperties) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   inputError: ReactNode | undefined
@@ -119,7 +146,7 @@ function useDerivedDepositPremiumInfo(
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
-        onPositionChange(undefined)
+        onPositionChange({})
         return
       }
 
@@ -140,47 +167,9 @@ function useDerivedDepositPremiumInfo(
         const info: DerivedDepositPremiumInfo = {
           newDepositAmount: position.premiumDeposit.plus(parsedAmount),
         }
-
-        // export interface BaseFacilityPositionDetails {
-        //   poolKey: RawPoolKey
-        //   isToken0: boolean
-        //   totalDebtOutput: BN
-        //   totalDebtInput: BN
-        //   openTime: number
-        //   repayTime: number
-        //   isBorrow: boolean
-        //   premiumOwed: BN // how much premium is owed since last repayment
-        //   premiumDeposit: BN
-        //   premiumLeft: BN
-        //   trader: string
-        //   token0Decimals: number
-        //   token1Decimals: number
-        //   maxWithdrawablePremium?: string
-        // }
-
-        // export interface MarginPositionDetails extends BaseFacilityPositionDetails {
-        //   totalPosition: BN
-        //   margin: BN
-        // }
-        const newPosition: MarginPositionDetails = {
-          totalPosition: position.totalPosition,
-          poolKey: position.poolKey,
-          isToken0: position.isToken0,
-          totalDebtOutput: position.totalDebtOutput,
-          totalDebtInput: position.totalDebtInput,
-          openTime: position.openTime,
-          repayTime: position.repayTime,
-          isBorrow: position.isBorrow,
-          premiumOwed: position.premiumOwed,
-          premiumLeft: position.premiumLeft,
-          trader: position.trader,
-          token0Decimals: position.token0Decimals,
-          token1Decimals: position.token1Decimals,
-          maxWithdrawablePremium: position.maxWithdrawablePremium,
-          margin: position.margin,
-          premiumDeposit: info.newDepositAmount,
-        }
-        onPositionChange(newPosition)
+        onPositionChange({
+          premiumLeft: position.premiumLeft.minus(parsedAmount),
+        })
 
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
@@ -188,7 +177,7 @@ function useDerivedDepositPremiumInfo(
       } catch (err) {
         console.log('reduce error', err)
         setState(DerivedInfoState.INVALID)
-        onPositionChange(undefined)
+        onPositionChange({})
         setContractError(err)
         setTxnInfo(undefined)
       }
@@ -231,7 +220,7 @@ export function DepositPremiumContent({
   onPositionChange,
 }: {
   positionKey: TraderPositionKey
-  onPositionChange: (newPosition: MarginPositionDetails | undefined) => void
+  onPositionChange: (newPosition: AlteredPositionProperties) => void
 }) {
   // state inputs, derived, handlers for trade confirmation
   const [amount, setAmount] = useState('')
@@ -281,7 +270,7 @@ export function DepositPremiumContent({
 
   const inputCurrencyBalance = useCurrencyBalance(account, inputCurrency ?? undefined)
 
-  const marginFacility = useMarginFacilityContract(true)
+  // const marginFacility = useMarginFacilityContract(true)
 
   const addTransaction = useTransactionAdder()
   // callback
@@ -392,8 +381,10 @@ export function DepositPremiumContent({
     setErrorMessage(undefined)
   }, [])
 
+  const fiatDepositAmount = useUSDPrice(currencyAmount)
+
   return (
-    <DarkCard>
+    <DarkCard width="100%" padding="1rem" margin="0">
       {showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -416,36 +407,32 @@ export function DepositPremiumContent({
           errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
         />
       )}
-      <AutoColumn>
-        <RowBetween style={{ marginBottom: '10px' }}>
-          <ThemedText.BodyPrimary fontWeight={400}>
-            <Trans>Deposit Amount</Trans>
-          </ThemedText.BodyPrimary>
-        </RowBetween>
-      </AutoColumn>
-      <AutoColumn gap="10px" style={{ width: '95%', marginLeft: '10px' }}>
-        <CurrencyInputPanel
-          value={amount}
-          id="deposit-premium-input"
-          onUserInput={(str: string) => {
-            if (inputCurrencyBalance) {
-              const balance = inputCurrencyBalance.toExact()
-              if (str === '') {
-                setAmount('')
-              } else if (Number(str) > Number(balance)) {
-                return
-              } else {
-                setAmount(str)
+      <InputWrapper>
+        <InputSection>
+          <SwapCurrencyInputPanelV2
+            value={amount}
+            fiatValue={fiatDepositAmount}
+            onUserInput={(str: string) => {
+              if (inputCurrencyBalance) {
+                const balance = inputCurrencyBalance.toExact()
+                if (str === '') {
+                  setAmount('')
+                } else if (Number(str) > Number(balance)) {
+                  return
+                } else {
+                  setAmount(str)
+                }
               }
-            }
-          }}
-          showMaxButton={true}
-          onMax={() => {
-            inputCurrencyBalance && setAmount(inputCurrencyBalance.toExact())
-          }}
-          hideBalance={false}
-          currency={inputCurrency}
-        />
+            }}
+            showMaxButton={true}
+            onMax={() => {
+              inputCurrencyBalance && setAmount(inputCurrencyBalance.toExact())
+            }}
+            currency={inputCurrency ?? undefined}
+            label="Deposit Amount"
+            id="deposit-premium-input"
+          />
+        </InputSection>
         <StyledCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
             {/*<ValueLabel
@@ -530,7 +517,7 @@ export function DepositPremiumContent({
             </Wrapper>
           </TransactionDetails>
         </StyledCard>
-      </AutoColumn>
+      </InputWrapper>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         {!inputError && approvalState !== ApprovalState.APPROVED ? (
           <ButtonPrimary

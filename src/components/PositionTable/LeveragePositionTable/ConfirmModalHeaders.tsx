@@ -9,6 +9,7 @@ import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwapShowAcceptChanges, TruncatedText } from 'components/swap/styleds'
+import TradePrice from 'components/swap/TradePrice'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -79,9 +80,9 @@ export function ConfirmReducePositionHeader({
     if (inputCurrency) {
       return {
         PnL: BnToCurrencyAmount(txnInfo.PnL, inputCurrency),
-        margin: BnToCurrencyAmount(txnInfo.newPosition.margin, inputCurrency),
-        totalPosition: BnToCurrencyAmount(txnInfo.newPosition.totalPosition, inputCurrency),
-        totalDebtInput: BnToCurrencyAmount(txnInfo.newPosition.totalDebtInput, inputCurrency),
+        margin: BnToCurrencyAmount(txnInfo.margin, inputCurrency),
+        totalPosition: BnToCurrencyAmount(txnInfo.totalPosition, inputCurrency),
+        totalDebtInput: BnToCurrencyAmount(txnInfo.totalDebtInput, inputCurrency),
       }
     } else {
       return undefined
@@ -103,7 +104,7 @@ export function ConfirmReducePositionHeader({
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
                 <DeltaText delta={txnInfo.PnL.toNumber()}>
-                  {formatBNToString(txnInfo.newPosition.margin, NumberType.SwapTradeAmount)}
+                  {formatBNToString(txnInfo.margin, NumberType.SwapTradeAmount)}
                 </DeltaText>
               </TruncatedText>
             </RowFixed>
@@ -125,7 +126,7 @@ export function ConfirmReducePositionHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(txnInfo.newPosition.margin, NumberType.SwapTradeAmount)}
+                {formatBNToString(txnInfo.margin, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
@@ -146,7 +147,7 @@ export function ConfirmReducePositionHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(txnInfo.newPosition.totalPosition, NumberType.SwapTradeAmount)}
+                {formatBNToString(txnInfo.totalPosition, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
@@ -161,9 +162,9 @@ export function ConfirmReducePositionHeader({
           </RowBetween>
         </AutoColumn>
       </LightCard>
-      {/* <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
-        <TradePrice price={trade.executionPrice} />
-      </RowBetween> */}
+      <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
+        <TradePrice price={txnInfo.executionPrice} />
+      </RowBetween>
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
           <RowBetween>
@@ -227,9 +228,9 @@ export function ConfirmLimitReducePositionHeader({
     if (inputCurrency) {
       return {
         // PnL: BnToCurrencyAmount(txnInfo.PnL, inputCurrency),
-        margin: BnToCurrencyAmount(txnInfo.newPosition.margin, inputCurrency),
-        totalPosition: BnToCurrencyAmount(txnInfo.newPosition.totalPosition, inputCurrency),
-        totalDebtInput: BnToCurrencyAmount(txnInfo.newPosition.totalDebtInput, inputCurrency),
+        margin: BnToCurrencyAmount(txnInfo.margin, inputCurrency),
+        totalPosition: BnToCurrencyAmount(txnInfo.totalPosition, inputCurrency),
+        totalDebtInput: BnToCurrencyAmount(txnInfo.totalDebtInput, inputCurrency),
       }
     } else {
       return undefined
@@ -250,7 +251,7 @@ export function ConfirmLimitReducePositionHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(txnInfo.newPosition.margin, NumberType.SwapTradeAmount)}
+                {formatBNToString(txnInfo.margin, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
@@ -271,7 +272,7 @@ export function ConfirmLimitReducePositionHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(txnInfo.newPosition.totalPosition, NumberType.SwapTradeAmount)}
+                {formatBNToString(txnInfo.totalPosition, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">

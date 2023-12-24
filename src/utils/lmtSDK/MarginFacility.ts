@@ -1,13 +1,10 @@
 // import { BigintIsh } from '@uniswap/sdk-core'
-import { BigNumber } from '@ethersproject/bignumber'
 import { MethodParameters, toHex } from '@uniswap/v3-sdk'
 import MarginFacilityJson from 'abis_v2/MarginFacility.json'
 import { Interface } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
 import { LiquidityLoan } from 'types/leveragePosition'
 import { OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
-
-import { MulticallSDK } from './multicall'
 
 export interface AddPositionOptions {
   positionKey: TraderPositionKey
@@ -38,12 +35,12 @@ export interface ReducePositionOptions {
   positionKey: TraderPositionKey
   reducePercentage: string
   executionOption: number
-  deadline: BigNumber
+  // deadline: BigNumber
   slippedTickMin: number
   slippedTickMax: number
-  removePremium?: string
   executionData: string
   minOutput: string
+  removePremium?: string
 }
 
 export interface DepositPremiumOptions {
@@ -176,20 +173,22 @@ export abstract class MarginFacilitySDK {
     return calldatas
   }
 
-  public static reducePositionParameters(param: ReducePositionOptions): MethodParameters {
+  public static reducePositionParameters(param: ReducePositionOptions): string[] {
     const calldatas: string[] = []
 
     if (param.removePremium) {
-      MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
-        {
-          token0: param.positionKey.poolKey.token0Address,
-          token1: param.positionKey.poolKey.token1Address,
-          fee: param.positionKey.poolKey.fee,
-        },
-        param.positionKey.trader,
-        param.positionKey.isToken0,
-        param.removePremium,
-      ])
+      calldatas.push(
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
+          {
+            token0: param.positionKey.poolKey.token0Address,
+            token1: param.positionKey.poolKey.token1Address,
+            fee: param.positionKey.poolKey.fee,
+          },
+          param.positionKey.trader,
+          param.positionKey.isToken0,
+          param.removePremium,
+        ])
+      )
     }
 
     calldatas.push(
@@ -213,10 +212,7 @@ export abstract class MarginFacilitySDK {
       ])
     )
 
-    return {
-      calldata: MulticallSDK.encodeMulticall(calldatas),
-      value: toHex(0),
-    }
+    return calldatas
   }
 
   public static depositPremiumParameters(param: DepositPremiumOptions): MethodParameters {
@@ -255,6 +251,11 @@ export abstract class MarginFacilitySDK {
       calldata,
       value: toHex(0),
     }
+  }
+
+  public static decodeReducePositionResult(rawBytes: string): {} {
+    const result = MarginFacilitySDK.INTERFACE.decodeFunctionResult('reducePosition', rawBytes)
+    return result
   }
 
   public static decodeAddPositionResult(rawBytes: string): {
