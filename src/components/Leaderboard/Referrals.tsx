@@ -1,9 +1,19 @@
 import { SmallButtonPrimary } from 'components/Button'
 import { InputSection } from 'pages/Swap'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState,useCallback,useEffect } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { useWeb3React } from '@web3-react/core'
+import { useReferralContract } from 'hooks/useContract'
+import { keccak256 } from '@ethersproject/solidity'
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { TransactionType } from 'state/transactions/types'
+import {usePointExists} from 'hooks/usePointsInfo'
+import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { ethers } from 'ethers'
 
 const Wrapper = styled.div`
   display: flex;
@@ -38,18 +48,24 @@ const Input = styled.input`
   color: white;
 `
 
+
 const Referrals = () => {
   const [referral, setReferral] = useState<boolean>(false)
   //generate code
   const [createReferralCode, setCreateReferralCode] = useState<HTMLInputElement | string>()
   //referral code value
   const [referralCode, setReferralCode] = useState<HTMLInputElement | string>()
+  const [attemptingTxn, setAttemptingTxn] = useState(false)
+  const [txHash, setTxHash] = useState<string>()
+  const [errorMessage, setErrorMessage] = useState<string>()
+  const addTransaction = useTransactionAdder()
+  const { account, chainId, provider } = useWeb3React()
 
   console.log('createReferralCode', createReferralCode)
   console.log('referralCode', referralCode)
 
   const acceptedCreate = useMemo(() => {
-    if (createReferralCode === 'limitless') {
+    if (createReferralCode) {
       return true
     } else {
       return false
@@ -57,7 +73,7 @@ const Referrals = () => {
   }, [createReferralCode])
 
   const acceptedCode = useMemo(() => {
-    if (referralCode === 'limitless') {
+    if (referralCode && Number(referralCode)  >0) {
       return true
     } else {
       return false
@@ -67,6 +83,17 @@ const Referrals = () => {
   const userRef = useRef<HTMLInputElement>(null)
   const referralRef = useRef<HTMLInputElement>(null)
 
+  const [refGen, setRefGen] = useState('')
+  const [ref, setRef] = useState('')
+
+  const handleUserRefChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRefGen(event.target.value);
+  };
+
+  const handleCodeChange =  (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRef(event.target.value);
+  };
+
   const onButtonClick = () => {
     if (referral) {
       setCreateReferralCode(() => userRef?.current?.value)
@@ -74,6 +101,158 @@ const Referrals = () => {
       setReferralCode(() => referralRef?.current?.value)
     }
   }
+
+  const referralContract = useReferralContract()
+  const [activeCodes, setActiveCodes] = useState<string>()
+
+  useEffect(()=>{
+
+    if(!account || !referralContract) return 
+
+    const call = async()=>{
+      try{
+        const result = await referralContract.codesByOwners(account, 0)
+        const decoded = defaultAbiCoder.decode(['uint256'], result)
+        setActiveCodes(decoded.toString())
+        setCreateReferralCode(() => decoded.toString())
+      } catch(error){
+        setActiveCodes(undefined)
+        setCreateReferralCode(undefined)
+        console.log('codebyowners err')
+      }
+    }
+
+    call() 
+  }, [account])
+
+  console.log('active codes', activeCodes)
+
+
+  const [codeExists, setCodeExists] = useState(false)
+
+  useEffect(()=>{
+    const code = refGen ? defaultAbiCoder.encode(['uint256'], [refGen]).toString() : undefined; 
+
+    if(!account || !userRef?.current?.value || !code || !referralContract) return 
+
+    const call = async()=>{
+      try{
+        const result = await referralContract.codeOwners(code)
+        console.log('owner', result)
+        setCodeExists(result!= "0x0000000000000000000000000000000000000000")
+
+      } catch(error){
+        console.log('codeowner err')
+      }
+    }
+
+    call() 
+  }, [refGen, account])
+
+
+  const [codeUsing, setCodeUsing] = useState(false)
+
+  useEffect(()=>{
+
+    if(!account || !referralContract) return 
+
+    const call = async()=>{
+      try{
+        const result = await referralContract.userReferralCodes(account)
+        setCodeUsing(result!= ethers.constants.HashZero)
+        setReferralCode(() => defaultAbiCoder.decode(['uint256'], result).toString())
+
+      } catch(error){
+        console.log('codeowner err')
+
+      }
+
+
+      }
+    
+
+    call() 
+  }, [ account])
+
+
+
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+
+    try {
+      const bytes32 = defaultAbiCoder.encode(['uint256'], [refGen]).toString()
+      const response = await referralContract?.registerCode(bytes32)
+      return response as TransactionResponse
+    } catch (err) {
+      console.log('referr', err)
+      throw new Error('reff')
+    }
+  }, [account, chainId, referral, provider])
+
+  const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
+
+    try {
+      const bytes32 = defaultAbiCoder.encode(['uint256'], [ref]).toString()
+      const response = await referralContract?.setReferralCodeByUser(bytes32)
+      return response as TransactionResponse
+    } catch (err) {
+      console.log('referr', err)
+      throw new Error('reff')
+    }
+  }, [account, chainId, referral, provider])
+
+
+  const handleCreateReferral = useCallback(()=>{
+    if (!userRef?.current?.value || !account|| !referralContract || !chainId || !provider ) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    callback().then((response)=>{
+      setAttemptingTxn(false)
+      setTxHash(response?.hash)
+      setErrorMessage(undefined)
+      addTransaction(response, {
+        type: TransactionType.CREATE_REFERRAL,
+        inputCurrencyId: "", 
+        outputCurrencyId: ""
+      })
+      return response.hash
+    })
+    .catch((error) => {
+      console.error('referrr',error)
+      setAttemptingTxn(false)
+      setTxHash(undefined)
+      setErrorMessage(error.message)
+    })
+
+  }, [txHash, attemptingTxn, errorMessage])
+
+
+  const handleUseCode = useCallback(()=>{
+    if(!ref || !account|| !referralContract || !chainId || !provider){
+      return 
+    }
+    setAttemptingTxn(true)
+    useCodeCallback().then((response)=>{
+      setAttemptingTxn(false)
+      setTxHash(response?.hash)
+      setErrorMessage(undefined)
+      addTransaction(response, {
+        type: TransactionType.USE_REFERRAL,
+        inputCurrencyId: "", 
+        outputCurrencyId: ""
+      })
+      return response.hash
+    })
+    .catch((error) => {
+      console.error('referrr',error)
+      setAttemptingTxn(false)
+      setTxHash(undefined)
+      setErrorMessage(error.message)
+    })
+
+  }, [txHash, attemptingTxn, errorMessage])
 
   return (
     <Wrapper>
@@ -103,8 +282,11 @@ const Referrals = () => {
           <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
             Looks like you don't have a referral code to share. Create a new one and start earning rebates!
           </ThemedText.BodyPrimary>
-          <Input placeholder="Create referral code" id="refferal-code" ref={userRef}></Input>
-          <SmallButtonPrimary onClick={onButtonClick}>Enter Code</SmallButtonPrimary>
+          <Input placeholder="Create referral code" id="refferal-code" ref={userRef} onChange={handleUserRefChange}></Input>
+          {codeExists && (<ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
+            Code taken
+          </ThemedText.BodyPrimary>)}
+          {!codeExists && (<SmallButtonPrimary onClick={handleCreateReferral}>Enter Code</SmallButtonPrimary>)}
         </InputWrapper>
       )}{' '}
       {!referral && !acceptedCode && (
@@ -119,8 +301,8 @@ const Referrals = () => {
           <ThemedText.BodyPrimary style={{ paddingBottom: '15px' }}>
             Please input referral code to benefit from fee discounts.
           </ThemedText.BodyPrimary>
-          <Input placeholder=" Enter referral code" id="refferal-code" ref={referralRef}></Input>
-          <SmallButtonPrimary onClick={onButtonClick}>Enter Code</SmallButtonPrimary>
+          <Input placeholder=" Enter referral code" id="refferal-code" ref={referralRef} onChange = {handleCodeChange}></Input>
+          <SmallButtonPrimary onClick={handleUseCode}>Enter Code</SmallButtonPrimary>
         </InputWrapper>
       )}
       {referral && acceptedCreate && (
@@ -139,6 +321,22 @@ const Referrals = () => {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
                 <ThemedText.BodySmall> Trading Volume</ThemedText.BodySmall>
+                <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
+              </div>
+            </StyledCard>
+            <StyledCard>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
+              >
+                <ThemedText.BodySmall>LPs Referred</ThemedText.BodySmall>
+                <ThemedText.BodyPrimary>0</ThemedText.BodyPrimary>
+              </div>
+            </StyledCard>
+            <StyledCard>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
+              >
+                <ThemedText.BodySmall>Fees generated by Referees</ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
@@ -175,16 +373,25 @@ const Referrals = () => {
             <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Referral Code:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
+                <ThemedText.BodySmall color="textSecondary">{activeCodes}</ThemedText.BodySmall>
               </div>
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
-                <ThemedText.BodySmall>Total Volume:</ThemedText.BodySmall>
+                <ThemedText.BodySmall>Total Referee Volume:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
               </div>
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Traders Referred:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
               </div>
+              <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+                <ThemedText.BodySmall>Fees from referees:</ThemedText.BodySmall>
+                <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
+              </div>
+              <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+                <ThemedText.BodySmall>LPs Referred:</ThemedText.BodySmall>
+                <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
+              </div>
+
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Total Rebates:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
@@ -198,20 +405,20 @@ const Referrals = () => {
       )}
       {!referral && acceptedCode && (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr ', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px' }}>
             <StyledCard>
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
                 <ThemedText.BodySmall>Active Referral Code</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>12314-134dd-1244</ThemedText.BodyPrimary>
+                <ThemedText.BodyPrimary>{referralCode?.toString()}</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
             <StyledCard>
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
-                <ThemedText.BodySmall> Trading Volume</ThemedText.BodySmall>
+                <ThemedText.BodySmall>Trading Volume(this week)</ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
@@ -219,7 +426,16 @@ const Referrals = () => {
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
-                <ThemedText.BodySmall> Rebates</ThemedText.BodySmall>
+                <ThemedText.BodySmall>LP Amount(this week)</ThemedText.BodySmall>
+                <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
+              </div>
+            </StyledCard>
+
+            <StyledCard>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
+              >
+                <ThemedText.BodySmall>Rebates(this week)</ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
               </div>
             </StyledCard>

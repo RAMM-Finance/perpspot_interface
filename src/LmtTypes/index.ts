@@ -60,6 +60,8 @@ export type { ERC721Enumerable } from "./src/periphery/ERC721Enumerable";
 export { ERC721Enumerable__factory } from "./factories/src/periphery/ERC721Enumerable__factory";
 export type { NonfungiblePositionManager } from "./src/periphery/NonfungiblePositionManager";
 export { NonfungiblePositionManager__factory } from "./factories/src/periphery/NonfungiblePositionManager__factory";
+export type { ReferralSystem } from "./src/periphery/Registry.sol/ReferralSystem";
+export { ReferralSystem__factory } from "./factories/src/periphery/Registry.sol/ReferralSystem__factory";
 export type { PoolManager } from "./src/PoolManager";
 export { PoolManager__factory } from "./factories/src/PoolManager__factory";
 export type { PremiumComputer } from "./src/PremiumComputer";

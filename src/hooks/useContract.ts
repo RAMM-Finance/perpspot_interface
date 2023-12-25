@@ -31,12 +31,13 @@ import {
   TICK_LENS_ADDRESSES,
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
+  LMT_REFERRAL,
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
-
+import { abi as ReferralSystemABI} from "../abis_v2/ReferralSystem.json" 
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
 import { abi as MarginFacilityAbi } from '../abis_v2/MarginFacility.json'
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
@@ -48,6 +49,7 @@ import {
   MarginFacility,
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
   PoolManager as LmtPoolManager,
+  ReferralSystem
 } from '../LmtTypes'
 import { getContract } from '../utils'
 
@@ -79,6 +81,10 @@ export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
   return useContract<DataProvider>(DATA_PROVIDER_ADDRESSES, DataProviderABI, withSignerIfPossible)
+}
+
+export function useReferralContract(withSignerIfPossible?: boolean){
+  return useContract<ReferralSystem>(LMT_REFERRAL, ReferralSystemABI, withSignerIfPossible )
 }
 
 // returns null on errors
