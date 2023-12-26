@@ -1,6 +1,6 @@
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
+import {usePointsData} from "./data"
 interface Leader {
   rank: number
   tradePoint: number
@@ -11,6 +11,8 @@ interface Leader {
 }
 
 export default function LeaderboardTable() {
+  const tradePoints = usePointsData()
+  console.log('trade points', tradePoints)
   const leaderInfo = [
     {
       rank: 1,

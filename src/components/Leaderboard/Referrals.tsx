@@ -131,9 +131,11 @@ const Referrals = () => {
   const [codeExists, setCodeExists] = useState(false)
 
   useEffect(()=>{
-    const code = refGen ? defaultAbiCoder.encode(['uint256'], [refGen]).toString() : undefined; 
-
-    if(!account || !userRef?.current?.value || !code || !referralContract) return 
+    const code = referral
+      ? refGen ? defaultAbiCoder.encode(['uint256'], [refGen]).toString() : undefined
+      : ref ? defaultAbiCoder.encode(['uint256'], [ref]).toString() : undefined
+      console.log('code', code)
+    if(!account || !code || !referralContract) return 
 
     const call = async()=>{
       try{
@@ -147,8 +149,8 @@ const Referrals = () => {
     }
 
     call() 
-  }, [refGen, account])
-
+  }, [refGen, ref, account])
+  console.log('code exists', codeExists)
 
   const [codeUsing, setCodeUsing] = useState(false)
 
@@ -286,7 +288,7 @@ const Referrals = () => {
           {codeExists && (<ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
             Code taken
           </ThemedText.BodyPrimary>)}
-          {!codeExists && (<SmallButtonPrimary onClick={handleCreateReferral}>Enter Code</SmallButtonPrimary>)}
+          {!codeExists && (<SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>)}
         </InputWrapper>
       )}{' '}
       {!referral && !acceptedCode && (
@@ -302,7 +304,11 @@ const Referrals = () => {
             Please input referral code to benefit from fee discounts.
           </ThemedText.BodyPrimary>
           <Input placeholder=" Enter referral code" id="refferal-code" ref={referralRef} onChange = {handleCodeChange}></Input>
-          <SmallButtonPrimary onClick={handleUseCode}>Enter Code</SmallButtonPrimary>
+          {codeExists ? (<SmallButtonPrimary onClick={handleUseCode}>Use Code</SmallButtonPrimary>)
+          :  (<ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
+            Code does not exist
+          </ThemedText.BodyPrimary>)
+          }
         </InputWrapper>
       )}
       {referral && acceptedCreate && (
@@ -312,7 +318,7 @@ const Referrals = () => {
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
-                <ThemedText.BodySmall>Traders Referred</ThemedText.BodySmall>
+                <ThemedText.BodySmall>Users Referred</ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>0</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
@@ -328,7 +334,7 @@ const Referrals = () => {
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
-                <ThemedText.BodySmall>LPs Referred</ThemedText.BodySmall>
+                <ThemedText.BodySmall>Referral Points</ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>0</ThemedText.BodyPrimary>
               </div>
             </StyledCard>

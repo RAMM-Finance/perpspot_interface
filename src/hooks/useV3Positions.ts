@@ -433,8 +433,8 @@ export function useLmtLpPositions(account: string | null | undefined): UseV3Posi
 export function useLmtLpPositionsFromTokenIds(tokenIds: BigNumber[] | undefined): UseV3PositionsResults {
   const positionManager = useLmtNFTPositionManager()
   const inputs = useMemo(() => (tokenIds ? tokenIds.map((tokenId) => [BigNumber.from(tokenId)]) : []), [tokenIds])
+  console.log('inputs', tokenIds, inputs)
   const results = useSingleContractMultipleData(positionManager, 'positions', inputs)
-
   const loading = useMemo(() => results.some(({ loading }) => loading), [results])
   const error = useMemo(() => results.some(({ error }) => error), [results])
 
