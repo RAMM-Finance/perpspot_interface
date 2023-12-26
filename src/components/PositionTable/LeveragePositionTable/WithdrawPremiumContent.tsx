@@ -43,7 +43,11 @@ interface DerivedDepositPremiumInfo {
 }
 
 const Wrapper = styled.div`
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.surface1};
+`
+
+const StyledBGCard = styled(StyledCard)`
+  background: ${({ theme }) => theme.surface1};
 `
 
 const ContentWrapper = styled.div`
@@ -336,7 +340,7 @@ export function WithdrawPremiumContent({
   }, [])
 
   return (
-    <DarkCard width="100%" padding="1rem">
+    <DarkCard style={{ paddingTop: '5rem' }} width="100%" padding="1rem">
       {showModal && (
         <ConfirmModifyPositionModal
           title="Confirm Withdraw Premium"
@@ -411,7 +415,7 @@ export function WithdrawPremiumContent({
           hideBalance={true}
           currency={inputCurrency}
         /> */}
-        <StyledCard>
+        <StyledBGCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
             {/*<ValueLabel
               description="Current Premium Deposit"
@@ -502,7 +506,7 @@ export function WithdrawPremiumContent({
               </AutoColumn>
             </Wrapper>
           </TransactionDetails>
-        </StyledCard>
+        </StyledBGCard>
       </InputWrapper>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         <ButtonError

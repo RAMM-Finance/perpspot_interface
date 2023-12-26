@@ -39,7 +39,7 @@ const PoolListContainer = styled.div`
   width: 375px;
 `
 
-export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
+export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boolean }) => {
   const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -224,10 +224,12 @@ export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
     call()
   }, [])
 
+  console.log(data)
+
   const availablePools = useMemo(() => {
     if (data) {
       return data.data.poolAddeds.map((val: Pool) => {
-        return [val.token0, val.token1]
+        return { pool: [val.token0, val.token1], fee: val.fee }
       })
     } else {
       return undefined
@@ -235,8 +237,8 @@ export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
   }, [data])
 
   const dropdown = (
-    <NavDropdown ref={modalRef} style={{ height: 'fit-content', overflowY: 'scroll', zIndex: '3' }}>
-      <Row style={{ position: 'relative' }} flexDirection="column">
+    <NavDropdown ref={modalRef} style={{ height: 'fit-content', zIndex: '3' }}>
+      <Row flexDirection="column">
         <SearchInput
           type="text"
           id="token-search-input"
@@ -248,7 +250,7 @@ export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
         />
         <PoolListContainer>
           <PoolListHeader></PoolListHeader>
-          <PoolListHeader>Pool</PoolListHeader>
+          <PoolListHeader>Pool (fee)</PoolListHeader>
           <PoolListHeader>TVL</PoolListHeader>
           <PoolListHeader>24h Vol</PoolListHeader>
         </PoolListContainer>
@@ -256,12 +258,13 @@ export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
       <Row>
         <Column paddingX="8">
           {availablePools &&
-            availablePools.map((curr: string[]) => {
+            availablePools.map((curr: any) => {
               return (
                 <PoolSelectorRow
-                  currencyId={[curr[0], curr[1]]}
+                  currencyId={[curr.pool[0], curr.pool[1]]}
                   onCurrencySelect={handleCurrencySelect}
                   key={`${curr[0]}-${curr[1]}`}
+                  fee={curr?.fee}
                   setIsOpen={setIsOpen}
                 />
               )
@@ -283,7 +286,7 @@ export const PoolSelector = ({ largeWidth }: { largeWidth: boolean }) => {
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={isOpen ? 'accentActiveSoft' : 'none'}
+        background={isOpen ? 'accentActiveSoft' : bg ? 'accentActiveSoft' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
         style={
           largeWidth

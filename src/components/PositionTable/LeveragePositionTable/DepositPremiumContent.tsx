@@ -56,7 +56,11 @@ interface DerivedDepositPremiumInfo {
 }
 
 const Wrapper = styled.div`
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.surface1};
+`
+
+const StyledBGCard = styled(StyledCard)`
+  background: ${({ theme }) => theme.surface1};
 `
 
 const InputWrapper = styled.div`
@@ -384,7 +388,7 @@ export function DepositPremiumContent({
   const fiatDepositAmount = useUSDPrice(currencyAmount)
 
   return (
-    <DarkCard width="100%" padding="1rem" margin="0">
+    <DarkCard style={{ paddingTop: '5rem' }} width="100%" padding="1rem" margin="0">
       {showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -433,7 +437,7 @@ export function DepositPremiumContent({
             id="deposit-premium-input"
           />
         </InputSection>
-        <StyledCard>
+        <StyledBGCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
             {/*<ValueLabel
               description="Current Premium Deposit"
@@ -516,13 +520,14 @@ export function DepositPremiumContent({
               </AutoColumn>
             </Wrapper>
           </TransactionDetails>
-        </StyledCard>
+        </StyledBGCard>
       </InputWrapper>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         {!inputError && approvalState !== ApprovalState.APPROVED ? (
           <ButtonPrimary
             onClick={updateAllowance}
-            style={{ gap: 14 }}
+            style={{ fontSize: '12px', borderRadius: '10px', width: 'fit-content', height: '15px' }}
+            padding=".25rem"
             disabled={approvalState === ApprovalState.PENDING}
           >
             {approvalState === ApprovalState.PENDING ? (

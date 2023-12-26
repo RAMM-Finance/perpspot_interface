@@ -269,9 +269,9 @@ const StyledTokenName = styled.span<{ active?: boolean }>`
 const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
   background-color: transparent;
   border: none;
-  color: ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.accentTextLightPrimary};
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 535;
   opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
   padding: 4px 6px;
@@ -493,9 +493,9 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                   <RowFixed style={{ height: '16px' }}>
                     <ThemedText.DeprecatedBody
                       data-testid="balance-text"
-                      color={theme.backgroundOutline}
+                      color="textSecondary"
                       fontWeight={485}
-                      fontSize={14}
+                      fontSize={13}
                       style={{ display: 'inline' }}
                     >
                       {!hideBalance && currency && selectedCurrencyBalance ? (

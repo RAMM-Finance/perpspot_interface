@@ -95,6 +95,10 @@ const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
+const CloseText = styled(ThemedText.LabelSmall)<{ isActive: boolean }>`
+  color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textPrimary)};
+`
+
 const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -106,6 +110,10 @@ const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>
   padding: 0;
   align-items: center;
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
+`
+
+const StyledBGCard = styled(StyledCard)`
+  background: ${({ theme }) => theme.surface1};
 `
 
 enum DerivedInfoState {
@@ -843,7 +851,7 @@ export default function DecreasePositionContent({
   // console.log('limitPrice', limitPrice)
 
   return (
-    <DarkCard width="fit-content" padding="1rem" margin="0">
+    <DarkCard style={{ paddingTop: '3rem' }} width="fit-content" padding="1rem" margin="0">
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -960,11 +968,11 @@ export default function DecreasePositionContent({
                     Current Price:
                   </ThemedText.DeprecatedMain>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', marginLeft: '10px' }}>
-                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="text1">
+                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="textSecondary">
                       {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
                     </ThemedText.DeprecatedBody>
                     {baseCurrency && (
-                      <ThemedText.DeprecatedBody color="text2" fontSize={12}>
+                      <ThemedText.DeprecatedBody color="textSecondary" fontSize={12}>
                         {quoteCurrency?.symbol} per {baseCurrency.symbol}
                       </ThemedText.DeprecatedBody>
                     )}
@@ -990,6 +998,7 @@ export default function DecreasePositionContent({
                 isPrice={
                   <Button
                     sx={{ textTransform: 'none' }}
+                    style={{ display: 'flex', gap: '5px' }}
                     onClick={() => {
                       setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
                       const val = parseBN(limitPrice)
@@ -998,9 +1007,10 @@ export default function DecreasePositionContent({
                       }
                     }}
                   >
-                    <ThemedText.DeprecatedBody fontSize={14}>
-                      {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                    </ThemedText.DeprecatedBody>
+                    {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="15px" />}
+                    <ThemedText.DeprecatedBody fontSize={14}>{quoteCurrency?.symbol} per </ThemedText.DeprecatedBody>
+                    {baseCurrency && <CurrencyLogo currency={baseCurrency} size="15px" />}
+                    <ThemedText.DeprecatedBody fontSize={14}>{baseCurrency?.symbol}</ThemedText.DeprecatedBody>
                   </Button>
                 }
               />
@@ -1066,7 +1076,7 @@ export default function DecreasePositionContent({
               }
             }}
           />
-          <ThemedText.LabelSmall>Close Position</ThemedText.LabelSmall>
+          <CloseText isActive={closePosition}>Close Position</CloseText>
         </Row>
 
         <Hr />
@@ -1115,7 +1125,7 @@ export default function DecreasePositionContent({
                 <AnimatedDropdown open={currentState.showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
                     {!currentState.isLimit ? (
-                      <StyledCard style={{ width: '100%' }}>
+                      <StyledBGCard style={{ width: '100%' }}>
                         <AutoColumn gap="sm">
                           <ValueLabel
                             label="Premium Owed"
@@ -1156,9 +1166,9 @@ export default function DecreasePositionContent({
                             </TextWithLoadingPlaceholder>
                           </RowBetween>
                         </AutoColumn>
-                      </StyledCard>
+                      </StyledBGCard>
                     ) : (
-                      <StyledCard style={{ width: '100%' }}>
+                      <StyledBGCard style={{ width: '100%' }}>
                         <AutoColumn gap="sm">
                           <RowBetween>
                             <RowFixed>
@@ -1241,7 +1251,7 @@ export default function DecreasePositionContent({
                             </TextWithLoadingPlaceholder>
                           </RowBetween>
                         </AutoColumn>
-                      </StyledCard>
+                      </StyledBGCard>
                     )}
                   </AutoColumn>
                 </AnimatedDropdown>

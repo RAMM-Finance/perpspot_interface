@@ -9,6 +9,7 @@ import { AutoColumn } from 'components/Column'
 import { TextWrapper } from 'components/HoverInlineText'
 import { LmtModal } from 'components/Modal'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
+import { GreenText } from 'components/OrdersTable/TokenRow'
 import { DarkRateToggle } from 'components/RateToggle'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -65,12 +66,13 @@ const TabsWrapper = styled.div`
   margin: 20px;
   margin-top: 10px;
   flex-direction: row;
+  gap: 50px;
 `
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
-  width: 100%;
+  width: fit-content;
   height: 100%;
   background: ${({ theme }) => theme.backgroundSurface};
   border-radius: 20px;
@@ -81,7 +83,7 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  width: 100%;
+  min-width: 450px;
 `
 const ModalWrapper = styled.div`
   display: flex;
@@ -92,15 +94,16 @@ const ModalWrapper = styled.div`
 const PositionInfoWrapper = styled(LightCard)`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   border-radius: 20px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
   width: 100%;
   justify-content: flex-start;
   border: none;
-  border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
-  padding: 0;
+  background: ${({ theme }) => theme.backgroundSurface};
+  // border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 0.5rem;
 `
 
 const ActionsWrapper = styled.div`
@@ -109,7 +112,7 @@ const ActionsWrapper = styled.div`
   padding: 0.5rem;
   align-items: center;
   justify-content: flex-start;
-  min-width: 440px;
+  min-width: 600px;
 `
 
 const Hr = styled.hr`
@@ -170,7 +173,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
   useOnClickOutside(ref, () => onClose(), [modalRef])
 
   return positionKey ? (
-    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={1500} $scrollOverlay={true}>
+    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={800} $scrollOverlay={true}>
       <Wrapper ref={modalRef}>
         <ActionsWrapper>
           <TabsWrapper>
@@ -194,16 +197,18 @@ export function LeveragePositionModal(props: TradeModalProps) {
               Withdraw Premium
             </TabElement>
           </TabsWrapper>
-          <ContentWrapper>{displayedContent}</ContentWrapper>
+          <div style={{ display: 'flex', width: 'fit-content' }}>
+            <ContentWrapper>{displayedContent}</ContentWrapper>
+            <MarginPositionInfo
+              position={existingPosition}
+              alteredPosition={alteredPosition}
+              loading={false}
+              inputCurrency={inputCurrency ?? undefined}
+              outputCurrency={outputCurrency ?? undefined}
+            />
+          </div>
         </ActionsWrapper>
 
-        <MarginPositionInfo
-          position={existingPosition}
-          alteredPosition={alteredPosition}
-          loading={false}
-          inputCurrency={inputCurrency ?? undefined}
-          outputCurrency={outputCurrency ?? undefined}
-        />
         {/* <Row>
           <CloseIcon style={{ width: '12px' }} onClick={onClose} />
         </Row> */}
@@ -213,13 +218,20 @@ export function LeveragePositionModal(props: TradeModalProps) {
 }
 
 const PositionInfoHeader = styled(TextWrapper)`
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 20px;
-  padding-top: 0.5rem;
-  color: ${({ theme }) => theme.textSecondary};
+  padding: 1rem 0rem 0rem 0.5rem;
+  color: ${({ theme }) => theme.textPrimary};
   ${textFadeIn}
 `
+
+const PositionValueWrapper = styled(LightCard)`
+  background: ${({ theme }) => theme.surface1};
+  margin: 0.5rem;
+  width: 95%;
+`
+
 function MarginPositionInfo({
   position,
   alteredPosition,
@@ -239,58 +251,62 @@ function MarginPositionInfo({
   return (
     <PositionInfoWrapper>
       <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
-      <Hr />
-      <PositionValueLabel
-        title={<Trans>Total Position</Trans>}
-        syncing={loading}
-        value={position?.totalPosition}
-        newValue={alteredPosition?.totalPosition}
-        appendSymbol={outputCurrency?.symbol}
-        type={NumberType.TokenNonTx}
-      />
-      <PositionValueLabel
-        title={<Trans>Collateral</Trans>}
-        syncing={loading}
-        value={position?.margin}
-        newValue={alteredPosition?.margin}
-        appendSymbol={inputCurrency?.symbol}
-        type={NumberType.TokenNonTx}
-      />
-      <PositionValueLabel
-        title={<Trans>Total Debt (Input)</Trans>}
-        description={<Trans>{`Total liquidity borrowed in ${inputCurrency?.symbol}`}</Trans>}
-        syncing={loading}
-        value={position?.totalDebtInput}
-        newValue={alteredPosition?.totalDebtInput}
-        appendSymbol={inputCurrency?.symbol}
-        type={NumberType.TokenNonTx}
-      />
-      <PositionValueLabel
-        title={<Trans>Total Debt (Output)</Trans>}
-        description={<Trans>{`Total liquidity borrowed in ${outputCurrency?.symbol}`}</Trans>}
-        syncing={loading}
-        value={position?.totalDebtOutput}
-        newValue={alteredPosition?.totalDebtOutput}
-        appendSymbol={outputCurrency?.symbol}
-        type={NumberType.TokenNonTx}
-      />
-      <PositionValueLabel
-        title={<Trans>Premium Deposit</Trans>}
-        description={<Trans>Current premium deposit remaining</Trans>}
-        syncing={loading}
-        value={position?.premiumDeposit}
-        newValue={alteredPosition?.premiumDeposit}
-        appendSymbol={inputCurrency?.symbol}
-        type={NumberType.SwapTradeAmount}
-      />
-      <PositionValueLabelWrapper>
-        <MouseoverTooltip text="Position Health">Position Health</MouseoverTooltip>
-        <AutoColumn>
-          <TextWithLoadingPlaceholder syncing={false} width={65}>
-            <ValueWrapper margin={false}>HEALTHY</ValueWrapper>
-          </TextWithLoadingPlaceholder>
-        </AutoColumn>
-      </PositionValueLabelWrapper>
+      <PositionValueWrapper>
+        <PositionValueLabel
+          title={<Trans>Total Position</Trans>}
+          syncing={loading}
+          value={position?.totalPosition}
+          newValue={alteredPosition?.totalPosition}
+          appendSymbol={outputCurrency?.symbol}
+          type={NumberType.TokenNonTx}
+        />
+        <PositionValueLabel
+          title={<Trans>Collateral</Trans>}
+          syncing={loading}
+          value={position?.margin}
+          newValue={alteredPosition?.margin}
+          appendSymbol={inputCurrency?.symbol}
+          type={NumberType.TokenNonTx}
+        />
+        <PositionValueLabel
+          title={<Trans>Total Debt (Input)</Trans>}
+          description={<Trans>{`Total liquidity borrowed in ${inputCurrency?.symbol}`}</Trans>}
+          syncing={loading}
+          value={position?.totalDebtInput}
+          newValue={alteredPosition?.totalDebtInput}
+          appendSymbol={inputCurrency?.symbol}
+          type={NumberType.TokenNonTx}
+        />
+        <PositionValueLabel
+          title={<Trans>Total Debt (Output)</Trans>}
+          description={<Trans>{`Total liquidity borrowed in ${outputCurrency?.symbol}`}</Trans>}
+          syncing={loading}
+          value={position?.totalDebtOutput}
+          newValue={alteredPosition?.totalDebtOutput}
+          appendSymbol={outputCurrency?.symbol}
+          type={NumberType.TokenNonTx}
+        />
+        <PositionValueLabel
+          title={<Trans>Premium Deposit</Trans>}
+          description={<Trans>Current premium deposit remaining</Trans>}
+          syncing={loading}
+          value={position?.premiumDeposit}
+          newValue={alteredPosition?.premiumDeposit}
+          appendSymbol={inputCurrency?.symbol}
+          type={NumberType.SwapTradeAmount}
+        />
+        <PositionValueLabelWrapper>
+          <MouseoverTooltip text="Position Health">Position Health</MouseoverTooltip>
+          <AutoColumn>
+            <TextWithLoadingPlaceholder syncing={false} width={65}>
+              <ValueWrapper margin={false}>
+                <GreenText>HEALTHY</GreenText>
+                {/* toggle between red and green once health status is available */}
+              </ValueWrapper>
+            </TextWithLoadingPlaceholder>
+          </AutoColumn>
+        </PositionValueLabelWrapper>
+      </PositionValueWrapper>
       <BorrowLiquidityRangeSection position={position} pool={pool ?? undefined} />
     </PositionInfoWrapper>
   )
@@ -300,15 +316,16 @@ function MarginPositionInfo({
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Label = styled(({ end, ...props }) => <ThemedText.DeprecatedLabel {...props} />)<{ end?: boolean }>`
   display: flex;
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 300;
   justify-content: ${({ end }) => (end ? 'flex-end' : 'flex-start')};
-  align-items: center;
-  color: ${({ theme }) => theme.textSecondary};
+  align-items: start;
+  color: ${({ theme }) => theme.textPrimary};
 `
 
 const ExtentsText = styled.span`
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 14px;
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 12px;
   text-align: center;
   margin-right: 4px;
   font-weight: 535;
@@ -342,9 +359,9 @@ function CurrentPriceCard({
         <ExtentsText>
           <Trans>Current price</Trans>
         </ExtentsText>
-        <ThemedText.DeprecatedMediumHeader textAlign="center">
+        <ThemedText.BodySecondary textAlign="center">
           {formatPrice(inverted ? pool.token1Price : pool.token0Price, NumberType.TokenTx)}
-        </ThemedText.DeprecatedMediumHeader>
+        </ThemedText.BodySecondary>
         <ExtentsText>
           <Trans>
             {currencyQuote?.symbol} per {currencyBase?.symbol}
@@ -361,12 +378,12 @@ const BorrowLiquidityWrapper = styled(LightCard)`
   width: 100%;
   border-radius: 0px;
   border-bottom-right-radius: 10px;
-  padding: 1rem;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 const SecondLabel = styled(Card)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.deprecated_bg1};
+  background-color: ${({ theme }) => theme.surface1};
 `
 
 const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPositionDetails; pool?: Pool }) => {
@@ -403,7 +420,7 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
     <BorrowLiquidityWrapper>
       <AutoColumn gap="md">
         <AutoColumn gap="md">
-          <RowFixed>
+          <RowBetween>
             <Label display="flex" style={{ marginRight: '12px' }}>
               <Trans>Position Liquidity Range</Trans>
             </Label>
@@ -413,7 +430,7 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
                 <span style={{ width: '8px' }} />
               </>
             </HideExtraSmall>
-          </RowFixed>
+          </RowBetween>
           <RowFixed>
             {currencyBase && currencyQuote && (
               <DarkRateToggle
@@ -431,14 +448,14 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
               <ExtentsText>
                 <Trans>Min price</Trans>
               </ExtentsText>
-              <ThemedText.DeprecatedMediumHeader textAlign="center">
+              <ThemedText.BodySecondary textAlign="center">
                 {formatTickPrice({
                   price: priceLower,
                   atLimit: tickAtLimit,
                   direction: Bound.LOWER,
                   numberType: NumberType.TokenTx,
                 })}
-              </ThemedText.DeprecatedMediumHeader>
+              </ThemedText.BodySecondary>
               <ExtentsText>
                 {' '}
                 <Trans>
@@ -460,14 +477,14 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
               <ExtentsText>
                 <Trans>Max price</Trans>
               </ExtentsText>
-              <ThemedText.DeprecatedMediumHeader textAlign="center">
+              <ThemedText.BodySecondary textAlign="center">
                 {formatTickPrice({
                   price: priceUpper,
                   atLimit: tickAtLimit,
                   direction: Bound.UPPER,
                   numberType: NumberType.TokenTx,
                 })}
-              </ThemedText.DeprecatedMediumHeader>
+              </ThemedText.BodySecondary>
               <ExtentsText>
                 {' '}
                 <Trans>
@@ -490,12 +507,11 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
 }
 
 const PositionValueLabelWrapper = styled.div`
-  color: ${({ theme }) => theme.textTertiary};
+  color: ${({ theme }) => theme.textPrimary};
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  font-size: 14px;
+  justify-content: space-between;
+  font-size: 12px;
   min-width: 168px;
   margin-bottom: 0.5rem;
 `
@@ -505,9 +521,9 @@ const StyledArrow = styled(ArrowRightIcon)`
 `
 
 const ValueWrapper = styled(TextWrapper)`
-  font-size: 20px;
+  font-size: 12px;
   color: ${({ theme }) => theme.textSecondary};
-  align-items: right;
+  align-items: left;
 `
 
 function PositionValueLabel({
@@ -535,7 +551,7 @@ function PositionValueLabel({
       <AutoColumn>
         <TextWithLoadingPlaceholder syncing={syncing} width={65}>
           <ValueWrapper margin={false}>
-            <Row>
+            <Row padding="1px">
               {value ? `${formatBNToString(value, type)} ${appendSymbol ?? ''}` : '-'}
               {newValue ? <StyledArrow /> : null}
               {newValue ? `${formatBNToString(newValue, type)} ${appendSymbol ?? ''}` : null}
