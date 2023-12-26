@@ -40,6 +40,59 @@ import { convertToBN } from './useV3Positions'
 //     }
 //   }, [result, loading, error])
 // }
+export function useRateAndUtil(
+  token0: string | undefined,
+  token1: string | undefined,
+  fee: number | undefined, 
+  tickLower: number|undefined, 
+  tickUpper: number|undefined
+  ) {
+
+  const dataProvider = useDataProviderContract()
+  const blockNumber = useBlockNumber()
+  // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+
+  const [data, setData] = useState<any>()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<any>()
+
+  useEffect(()=>{
+    if (!token0||!token1||!fee||!tickLower||!tickUpper||loading  ) return
+    const call = async () => {
+      try {
+        setLoading(true)
+        const result = await dataProvider?.getUtilAndAPR(
+          {
+            token0: token0 as string,
+            token1: token1 as string,
+            fee: fee as number,
+          },
+          tickLower as number, 
+          tickUpper as number
+        )
+        setData(result)
+        setLoading(false)
+        // setBlockNumber(blockNumber)
+      } catch (error) {
+        setError(error)
+        setLoading(false)
+        console.log('instant rate', error)
+      }
+    }
+    call()
+
+
+  }, [dataProvider, loading, blockNumber, token0, token1, fee, tickLower, tickUpper])
+
+  return useMemo(() => {
+    if (!data) {
+      return null
+    } else {
+      return data
+    }
+  }, [token0, token1, fee, tickUpper, tickLower, error, data])
+
+}
 
 export function useInstantaeneousRate(
   token0: string | undefined,

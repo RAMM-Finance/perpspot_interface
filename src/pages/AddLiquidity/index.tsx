@@ -17,6 +17,7 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
 import usePrevious from 'hooks/usePrevious'
 import { useSingleCallResult } from 'lib/hooks/multicall'
+import {useRateAndUtil} from 'hooks/useLMTV2Positions'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -425,6 +426,22 @@ export default function AddLiquidity() {
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
+  
+  // if(baseCurrency&& quoteCurrency){
+  //   if ('address' in baseCurrency && 'address' in quoteCurrency){
+  //   const baseIsToken0 = baseCurrency.wrapped.sortsBefore(quoteCurrency.wrapped)
+  //   console.log('bae', baseCurrency)
+  //   const data =  useRateAndUtil(
+  //     baseIsToken0? baseCurrency?.address: quoteCurrency?.address,
+  //     baseIsToken0? quoteCurrency?.address: baseCurrency?.address, 
+  //     feeAmount, 
+  //     tickLower, 
+  //     tickUpper
+  //     )
+  //   console.log('data', data?.apr.toString(), data?.utilTotal.toString())
+  //   }
+
+  // }
 
   const { getDecrementLower, getIncrementLower, getDecrementUpper, getIncrementUpper, getSetFullRange } =
     useRangeHopCallbacks(baseCurrency ?? undefined, quoteCurrency ?? undefined, feeAmount, tickLower, tickUpper, pool)

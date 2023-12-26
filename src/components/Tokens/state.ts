@@ -8,7 +8,6 @@ export enum TokenSortMethod {
   PERCENT_CHANGE = 'Change',
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
-  // URate = "Utilization Rate"
 }
 
 export const filterStringAtom = atomWithReset<string>('')
