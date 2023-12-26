@@ -23,7 +23,7 @@ import { ArrowRightIcon } from 'nft/components/icons'
 import { ReactNode, useMemo, useRef, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 import styled, { useTheme } from 'styled-components/macro'
-import { HideExtraSmall, ThemedText } from 'theme'
+import { CloseIcon, HideExtraSmall, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { formatTickPrice } from 'utils/formatTickPrice'
@@ -84,6 +84,9 @@ const ContentWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   min-width: 450px;
+  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 `
 const ModalWrapper = styled.div`
   display: flex;
@@ -110,6 +113,7 @@ const ActionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 0.5rem;
+  padding-top: 0rem;
   align-items: center;
   justify-content: flex-start;
   min-width: 600px;
@@ -174,6 +178,9 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   return positionKey ? (
     <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={800} $scrollOverlay={true}>
+      <CloseWrapper>
+        <CloseIcon style={{ width: '15px' }} onClick={() => onClose()} />
+      </CloseWrapper>
       <Wrapper ref={modalRef}>
         <ActionsWrapper>
           <TabsWrapper>
@@ -216,6 +223,14 @@ export function LeveragePositionModal(props: TradeModalProps) {
     </LmtModal>
   ) : null
 }
+
+const CloseWrapper = styled.div`
+  display: flex;
+  justify-content: end;
+  margin-top: 8px;
+  margin-right: 8px;
+  padding: 0px;
+`
 
 const PositionInfoHeader = styled(TextWrapper)`
   font-size: 14px;
@@ -374,7 +389,6 @@ function CurrentPriceCard({
 
 const BorrowLiquidityWrapper = styled(LightCard)`
   border: 0;
-  border-top: 1px solid ${({ theme }) => theme.backgroundOutline};
   width: 100%;
   border-radius: 0px;
   border-bottom-right-radius: 10px;

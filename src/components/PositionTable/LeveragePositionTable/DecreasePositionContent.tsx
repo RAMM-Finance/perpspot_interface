@@ -851,7 +851,7 @@ export default function DecreasePositionContent({
   // console.log('limitPrice', limitPrice)
 
   return (
-    <DarkCard style={{ paddingTop: '3rem' }} width="fit-content" padding="1rem" margin="0">
+    <DarkCard width="fit-content" padding="1rem" margin="0">
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}

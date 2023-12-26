@@ -388,7 +388,7 @@ export function DepositPremiumContent({
   const fiatDepositAmount = useUSDPrice(currencyAmount)
 
   return (
-    <DarkCard style={{ paddingTop: '5rem' }} width="100%" padding="1rem" margin="0">
+    <DarkCard style={{ paddingTop: '2rem' }} width="100%" padding="1rem" margin="0">
       {showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}

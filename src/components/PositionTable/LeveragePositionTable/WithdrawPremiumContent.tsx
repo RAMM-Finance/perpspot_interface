@@ -340,7 +340,7 @@ export function WithdrawPremiumContent({
   }, [])
 
   return (
-    <DarkCard style={{ paddingTop: '5rem' }} width="100%" padding="1rem">
+    <DarkCard style={{ paddingTop: '2rem' }} width="100%" padding="1rem">
       {showModal && (
         <ConfirmModifyPositionModal
           title="Confirm Withdraw Premium"
