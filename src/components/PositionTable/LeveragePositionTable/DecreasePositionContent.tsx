@@ -998,7 +998,7 @@ export default function DecreasePositionContent({
                       }
                     }}
                   >
-                    <ThemedText.DeprecatedBody>
+                    <ThemedText.DeprecatedBody fontSize={14}>
                       {quoteCurrency?.symbol} per {baseCurrency?.symbol}
                     </ThemedText.DeprecatedBody>
                   </Button>
@@ -1052,7 +1052,7 @@ export default function DecreasePositionContent({
             }
           }}
         />
-        <Row>
+        <Row gap="5px">
           <Toggle
             id="toggle-local-routing-button"
             isActive={closePosition}

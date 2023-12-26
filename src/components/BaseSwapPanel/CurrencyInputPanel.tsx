@@ -262,7 +262,7 @@ const StyledDropDown = styled(DropDown)<{ selected: boolean }>`
 
 const StyledTokenName = styled.span<{ active?: boolean }>`
   ${({ active }) => (active ? '  margin: 0 0.25rem 0 0.25rem;' : '  margin: 0 0.25rem 0 0.25rem;')}
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 535;
 `
 
@@ -286,10 +286,10 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
   }
 `
 
-const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
+const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean; fontSize?: string }>`
   ${loadingOpacityMixin};
   text-align: left;
-  font-size: 36px;
+  font-size: 16px;
   font-weight: 485;
   max-height: 44px;
 `
@@ -389,7 +389,9 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
         )}
 
         <Container hideInput={hideInput}>
-          <ThemedText.SubHeaderSmall style={{ userSelect: 'none' }}>{label}</ThemedText.SubHeaderSmall>
+          <ThemedText.SubHeaderSmall style={{ userSelect: 'none', marginBottom: '10px' }}>
+            {label}
+          </ThemedText.SubHeaderSmall>
           <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
             {!hideInput && (
               <div style={{ display: 'flex', flexGrow: '1' }} onClick={handleDisabledNumericalInputClick}>

@@ -49,15 +49,14 @@ export enum TradeModalActiveTab {
 const TabElement = styled.button<{ isActive: boolean; first?: boolean; last?: boolean }>`
   padding: 0;
   border: none;
-  background: ${({ isActive, theme }) => (isActive ? theme.backgroundInteractive : theme.background)};
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 14px;
-  font-weight: 500;
+  background: ${({ theme }) => theme.backgroundSurface};
+  color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textPrimary)};
+  font-size: ${({ isActive }) => (isActive ? '15px' : '14px')};
+  font-weight: ${({ isActive }) => (isActive ? '800' : '500')};
   line-height: 1.2;
   cursor: pointer;
   padding: 0.25rem 0.25rem;
   outline: none;
-  border: ${({ isActive, theme }) => `1px solid ${theme.backgroundOutline}`};
 `
 
 const TabsWrapper = styled.div`
