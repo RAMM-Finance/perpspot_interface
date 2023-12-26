@@ -236,7 +236,7 @@ const PositionInfoHeader = styled(TextWrapper)`
   font-size: 14px;
   font-weight: 800;
   line-height: 20px;
-  padding: 1rem 0rem 0rem 0.5rem;
+  padding: 1rem 0rem 0rem 1rem;
   color: ${({ theme }) => theme.textPrimary};
   ${textFadeIn}
 `
