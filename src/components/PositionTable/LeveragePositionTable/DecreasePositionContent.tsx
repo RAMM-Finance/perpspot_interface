@@ -38,6 +38,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
+import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
@@ -120,10 +121,10 @@ function useDerivedReducePositionInfo(
   reduceAmount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
-  allowedSlippedTick: Percent,
   allowedSlippage: Percent,
   setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
+  inRange: boolean,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
@@ -138,13 +139,23 @@ function useDerivedReducePositionInfo(
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
+  const inputError = useMemo(() => {
+    let error: React.ReactNode | undefined
+
+    if (!parsedReduceAmount || parsedReduceAmount.isLessThanOrEqualTo(0)) {
+      error = <Trans>Enter an amount</Trans>
+    }
+
+    return error
+  }, [parsedReduceAmount])
+
   useEffect(() => {
     const lagged = async () => {
       if (
         !marginFacility ||
         !position ||
         !parsedReduceAmount ||
-        parsedReduceAmount.isLessThanOrEqualTo(0) ||
+        !!inputError ||
         !pool ||
         !inputCurrency ||
         !outputCurrency
@@ -159,7 +170,7 @@ function useDerivedReducePositionInfo(
 
       try {
         const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
-        const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
+        const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
         const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
         // reducePercentage * totalPosition multiplied(or divided) current price
@@ -187,8 +198,7 @@ function useDerivedReducePositionInfo(
         const calldatas = MarginFacilitySDK.reducePositionParameters(params)
         const bytes = await marginFacility.callStatic.multicall(calldatas)
 
-        const result: any = MarginFacilitySDK.decodeReducePositionResult(isClose ? bytes[1] : bytes[0])
-
+        const result = (MarginFacilitySDK.decodeReducePositionResult(bytes[0]) as any)[0]
         const amount0 = new BN(result.amount0.toString()).shiftedBy(
           position.isToken0 ? -outputCurrency.decimals : -inputCurrency.decimals
         )
@@ -224,7 +234,9 @@ function useDerivedReducePositionInfo(
           totalPosition: position.totalPosition.minus(parsedReduceAmount),
           totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
           totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
-          premiumLeft: position.premiumLeft.minus(premium),
+          premiumLeft: removePremium
+            ? position.premiumLeft.minus(new BN(removePremium).shiftedBy(-inputCurrency.decimals))
+            : undefined,
         })
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
@@ -238,7 +250,7 @@ function useDerivedReducePositionInfo(
       }
     }
 
-    if (isLimit) {
+    if (isLimit || inRange) {
       setState(DerivedInfoState.INVALID)
       setTxnInfo(undefined)
       return
@@ -254,20 +266,11 @@ function useDerivedReducePositionInfo(
     inputCurrency,
     outputCurrency,
     allowedSlippage,
-    allowedSlippedTick,
     isLimit,
     onPositionChange,
+    inputError,
+    inRange,
   ])
-
-  const inputError = useMemo(() => {
-    let error: React.ReactNode | undefined
-
-    if (!parsedReduceAmount || parsedReduceAmount.isLessThanOrEqualTo(0)) {
-      error = <Trans>Enter an amount</Trans>
-    }
-
-    return error
-  }, [parsedReduceAmount])
 
   return useMemo(() => {
     return {
@@ -337,7 +340,7 @@ function useDerivedReduceLimitPositionInfo(
         return
       }
 
-      if (existingLimitOrder.auctionStartTime === 0) {
+      if (existingLimitOrder.auctionStartTime > 0) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
         setContractError(undefined)
@@ -348,9 +351,9 @@ function useDerivedReduceLimitPositionInfo(
       setState(DerivedInfoState.LOADING)
 
       try {
+        // price should be input / output, if baseCurrencyIsInput then price is output / input
         const price = baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
-
-        const startOutput = parsedAmount.times(price).shiftedBy(outputCurrency.decimals).toFixed(0)
+        const startOutput = parsedAmount.times(price).shiftedBy(inputCurrency.decimals).toFixed(0)
 
         const params: LimitOrderOptions = {
           orderKey: {
@@ -367,7 +370,7 @@ function useDerivedReduceLimitPositionInfo(
             fee: positionKey.poolKey.fee,
           }),
           deadline: deadline?.toString(),
-          inputAmount: parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+          inputAmount: parsedAmount.shiftedBy(outputCurrency.decimals).toFixed(0),
           startOutput,
           minOutput: startOutput,
           decayRate: '0',
@@ -397,7 +400,7 @@ function useDerivedReduceLimitPositionInfo(
         setState(DerivedInfoState.VALID)
         setContractError(undefined)
       } catch (err) {
-        console.log('reduce error', err)
+        console.log('limit reduce error', err)
         onPositionChange({})
         setState(DerivedInfoState.INVALID)
         setContractError(err)
@@ -411,6 +414,7 @@ function useDerivedReduceLimitPositionInfo(
       setContractError(undefined)
       return
     }
+
     lagged()
   }, [
     inputError,
@@ -541,10 +545,14 @@ export default function DecreasePositionContent({
     else return userSlippageTolerance
   }, [userSlippageTolerance])
 
-  const allowedSlippedTick = useMemo(() => {
-    if (userSlippedTickTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
-    else return userSlippedTickTolerance
-  }, [userSlippedTickTolerance])
+  const borrowLiquidityRange = useBorrowedLiquidityRange(position, pool ?? undefined)
+  const inRange = useMemo(() => {
+    return borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE
+  }, [borrowLiquidityRange])
+  // const allowedSlippedTick = useMemo(() => {
+  //   if (userSlippedTickTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
+  //   else return userSlippedTickTolerance
+  // }, [userSlippedTickTolerance])
 
   const onToggle = useCallback(() => {
     setShowSettings(!showSettings)
@@ -557,10 +565,10 @@ export default function DecreasePositionContent({
     reduceAmount,
     positionKey,
     position,
-    allowedSlippedTick,
     allowedSlippage,
     setTradeState,
     onPositionChange,
+    inRange,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
@@ -624,10 +632,10 @@ export default function DecreasePositionContent({
 
       // get reduce parameters
       const reducePercent = new BN(parsedReduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
-      const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippedTick)
+      const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
       const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
-      const minOutput = new BN(reduceAmount)
+      const minOutput = new BN(parsedReduceAmount)
         .times(price)
         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
@@ -640,7 +648,7 @@ export default function DecreasePositionContent({
       const reduceParam: ReducePositionOptions = {
         positionKey,
         reducePercentage: reducePercent,
-        minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+        minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
         executionOption: 1,
         executionData: ethers.constants.HashZero,
         slippedTickMin,
@@ -668,7 +676,6 @@ export default function DecreasePositionContent({
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-
       const response = await provider
         .getSigner()
         .sendTransaction({ ...tx, gasLimit })
@@ -692,9 +699,7 @@ export default function DecreasePositionContent({
     provider,
     chainId,
     // marginFacility,
-    reduceAmount,
     allowedSlippage,
-    allowedSlippedTick,
     deadline,
     parsedReduceAmount,
   ])
@@ -839,8 +844,6 @@ export default function DecreasePositionContent({
   if (!positionExists) {
     return <PositionMissing />
   }
-
-  // console.log('limitPrice', limitPrice)
 
   return (
     <DarkCard width="fit-content" padding="1rem" margin="0">
@@ -1321,9 +1324,9 @@ function useReduceLimitOrderCallback(
       if (!reduceAmount) throw new Error('missing reduce amount')
       if (!limitPrice) throw new Error('missing limit price')
 
-      const price = baseIsInput ? limitPrice : new BN(1).div(limitPrice)
+      const price = baseIsInput ? new BN(1).div(limitPrice) : limitPrice
 
-      const startOutput = reduceAmount.times(price).shiftedBy(outputCurrency.decimals).toFixed(0)
+      const startOutput = reduceAmount.times(price).shiftedBy(inputCurrency.decimals).toFixed(0)
       const params: LimitOrderOptions = {
         orderKey: {
           poolKey: positionKey.poolKey,
@@ -1339,7 +1342,7 @@ function useReduceLimitOrderCallback(
           fee: positionKey.poolKey.fee,
         }),
         deadline: deadline?.toString(),
-        inputAmount: reduceAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+        inputAmount: reduceAmount.shiftedBy(outputCurrency.decimals).toFixed(0),
         startOutput,
         minOutput: startOutput,
         decayRate: '0',
@@ -1365,14 +1368,16 @@ function useReduceLimitOrderCallback(
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      return null as any
 
-      return response
+      // const response = await provider
+      //   .getSigner()
+      //   .sendTransaction({ ...tx, gasLimit })
+      //   .then((response) => {
+      //     return response
+      //   })
+
+      // return response
     } catch (err) {
       console.log('reduce limit callback error', err)
       throw new Error('reduce limit callback error')

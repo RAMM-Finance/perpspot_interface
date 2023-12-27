@@ -7,9 +7,7 @@ import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
-import { DEFAULT_ERC20_DECIMALS } from 'constants/tokens'
-import { useCurrency, useToken } from 'hooks/Tokens'
-import { usePool } from 'hooks/usePools'
+import { useCurrency } from 'hooks/Tokens'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
@@ -18,7 +16,6 @@ import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { LimitlessPositionDetails } from 'types/leveragePosition'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
 // import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
@@ -226,330 +223,6 @@ export function MouseoverValueLabel({
   )
 }
 
-export function ReduceLeveragePositionDetails({
-  leverageTrade, // user defined slippage.
-  loading,
-}: {
-  leverageTrade: LimitlessPositionDetails | undefined
-  loading: boolean
-}) {
-  // const theme = useTheme()
-  // const { chainId } = useWeb3React()
-  // const nativeCurrency = useNativeCurrency()
-  const token0 = useToken(leverageTrade?.token0Address)
-  const token1 = useToken(leverageTrade?.token1Address)
-  // console.log("leveragePositionClose", leverageTrade)
-
-  const inputIsToken0 = !leverageTrade?.isToken0
-
-  return (
-    <Card padding="0" marginTop="10px">
-      <AutoColumn gap="sm">
-        <MouseoverValueLabel
-          description="Total position size in the output token of the leverage trade"
-          label={<Trans>Added Position</Trans>}
-          syncing={loading}
-          value={`${leverageTrade?.totalPosition ?? '-'}`}
-          appendSymbol={inputIsToken0 ? token1?.symbol : token0?.symbol}
-        />
-        <MouseoverValueLabel
-          description="Total debt of the position"
-          label={<Trans>Debt</Trans>}
-          value={`${formatBNToString(leverageTrade?.totalDebtInput) ?? '-'}`}
-          appendSymbol={inputIsToken0 ? token0?.symbol : token1?.symbol}
-          syncing={loading}
-        />
-        <MouseoverValueLabel
-          description="Leverage Factor"
-          label={<Trans>Leverage</Trans>}
-          syncing={loading}
-          value={
-            leverageTrade?.totalDebtInput && leverageTrade?.initialCollateral
-              ? `${formatBNToString(
-                  (leverageTrade?.totalDebtInput)
-                    .plus(leverageTrade.initialCollateral)
-                    .div(leverageTrade?.initialCollateral)
-                )}x`
-              : '-'
-          }
-        />
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  Total position size in the output token of the leverage trade
-                </Trans>
-              }
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>Total Output Position</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={false} width={65}>
-            <StyledText textAlign="right" fontSize={14}>
-
-              <TruncatedText>
-                {
-                  `${leverageTrade?.totalPosition ?? "-"}`
-                }
-              </TruncatedText>
-              {inputIsToken0 ? token1?.symbol : token0?.symbol}
-            </StyledText>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={<Trans>Total debt of the position</Trans>}
-            // disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>Original Debt</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={false} width={50}>
-            <StyledText textAlign="right" fontSize={14}>
-              <TruncatedText>
-                {`${Number(leverageTrade?.totalDebtInput) ?? "-"}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`}
-              </TruncatedText>
-            </StyledText>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  Leverage Factor
-                </Trans>
-              }
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>Leverage</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={false} width={65}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-              <TruncatedText>
-                {leverageTrade?.totalDebtInput && leverageTrade?.initialCollateral
-                  ? `${(Number(leverageTrade?.totalDebtInput) + Number(leverageTrade.initialCollateral)) / Number(leverageTrade?.initialCollateral)}x`
-                  : '-'}
-              </TruncatedText>
-
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        <Separator />
-      </AutoColumn>
-    </Card>
-  )
-}
-
-export function BorrowPremiumPositionDetails({
-  position, // user defined slippage.
-  loading,
-}: {
-  position: LimitlessPositionDetails | undefined
-  loading: boolean
-  // allowedSlippage: Percent | undefined
-}) {
-  // const theme = useTheme()
-  // const { chainId } = useWeb3React()
-  // const nativeCurrency = useNativeCurrency()
-  const token0 = useToken(position?.token0Address)
-  const token1 = useToken(position?.token1Address)
-  // console.log("leveragePositionClose", leverageTrade)
-
-  const inputIsToken0 = position?.isToken0
-
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.poolFee)
-
-  const ltv = useMemo(() => {
-    if (position) {
-      const collateralIsToken0 = position.isToken0 // position.isToken0 === position.borrowBelow
-      const price = collateralIsToken0
-        ? pool?.token0Price.toFixed(DEFAULT_ERC20_DECIMALS)
-        : pool?.token1Price.toFixed(DEFAULT_ERC20_DECIMALS)
-      const ltv = new BN(position.totalDebtInput).div(
-        new BN(position.initialCollateral).multipliedBy(new BN(price ?? '0'))
-      )
-      return ltv.toNumber()
-    }
-    return undefined
-  }, [position, pool])
-
-  return (
-    <Card padding="0" marginTop="10px">
-      <AutoColumn gap="sm">
-        <MouseoverValueLabel
-          description="Total collateral amount"
-          label={<Trans>Total Collateral</Trans>}
-          syncing={false}
-          value={`${formatBNToString(position?.initialCollateral) ?? '-'}`}
-          appendSymbol={inputIsToken0 ? token0?.symbol : token1?.symbol}
-        />
-        <MouseoverValueLabel
-          description="Total debt of the position"
-          label={<Trans>Debt</Trans>}
-          syncing={false}
-          value={`${formatBNToString(position?.totalDebtInput) ?? '-'} `}
-          appendSymbol={inputIsToken0 ? token1?.symbol : token0?.symbol}
-        />
-        <MouseoverValueLabel
-          description="Loan-to-Value"
-          label={<Trans>LTV</Trans>}
-          syncing={false}
-          value={ltv ? `${formatBNToString(new BN(ltv * 100))}%` : '-'}
-        />
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  Total collateral amount
-                </Trans>
-              }
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>Total Collateral</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={false} width={65}>
-            <StyledText textAlign="right" fontSize={14}>
-
-              <TruncatedText>
-                {
-                  `${position?.initialCollateral ?? "-"}`
-                }
-              </TruncatedText>
-              {inputIsToken0 ? token0?.symbol : token1?.symbol}
-            </StyledText>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={<Trans>Total debt of the position</Trans>}
-            // disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>Debt</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={false} width={50}>
-
-            <StyledText textAlign="right" fontSize={14}>
-              <TruncatedText>
-                {`${Number(position?.totalDebtInput) ?? "-"} `}
-              </TruncatedText>
-              {inputIsToken0 ?  token1?.symbol : token0?.symbol}
-            </StyledText>
-
-
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  Loan-to-Value
-                </Trans>
-              }
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>LTV</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={false} width={65}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-              <TruncatedText>
-                {ltv ? `${new BN(ltv*100).toString()}%` : '-'}
-              </TruncatedText>
-
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        <Separator />
-      </AutoColumn>
-    </Card>
-  )
-}
-
-// function AddPremiumDetails({
-//   leverageTrade // user defined slippage.
-// }: {
-//   leverageTrade: LimitlessPositionDetails | undefined,
-//   // allowedSlippage: Percent | undefined
-// }) {
-//   const theme = useTheme()
-//   const { chainId } = useWeb3React()
-//   const nativeCurrency = useNativeCurrency()
-//   const token0 = useToken(leverageTrade?.token0Address)
-//   const token1 = useToken(leverageTrade?.token1Address)
-
-//   // console.log("leveragePositionClose", leverageTrade)
-
-//   const inputIsToken0 = !leverageTrade?.isToken0
-
-//   return (
-//     <StyledCard>
-//       <AutoColumn gap="sm">
-//         <RowBetween>
-//           <RowFixed>
-//             <MouseoverTooltip
-//               text={
-//                 <Trans>
-//                   Total position size in the output token of the leverage trade
-//                 </Trans>
-//               }
-//             // disableHover={hideInfoTooltips}
-//             >
-//               <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-//                 <Trans>Total Position</Trans>
-//               </ThemedText.DeprecatedSubHeader>
-//             </MouseoverTooltip>
-//           </RowFixed>
-//           <TextWithLoadingPlaceholder syncing={false} width={65}>
-//             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-//               {leverageTrade?.totalPosition
-//                 ? `${leverageTrade?.totalPosition}  ${inputIsToken0 ? token1?.symbol : token0?.symbol}`
-//                 : '-'}
-//             </ThemedText.DeprecatedBlack>
-//           </TextWithLoadingPlaceholder>
-//         </RowBetween>
-//         <RowBetween>
-//           <RowFixed>
-//             <MouseoverTooltip
-//               text={<Trans>Total debt of the position</Trans>}
-//             // disableHover={hideInfoTooltips}
-//             >
-//               <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-//                 <Trans>Total Debt</Trans>
-//               </ThemedText.DeprecatedSubHeader>
-//             </MouseoverTooltip>
-//           </RowFixed>
-//           <TextWithLoadingPlaceholder syncing={false} width={50}>
-//             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14}>
-//               {leverageTrade?.totalDebtInput
-//                 ? `${leverageTrade?.totalDebtInput ?? ""}  ${inputIsToken0 ? token0?.symbol : token1?.symbol}`
-//                 : '-'}
-//             </ThemedText.DeprecatedBlack>
-//           </TextWithLoadingPlaceholder>
-//         </RowBetween>
-//         <Separator />
-//       </AutoColumn>
-//     </StyledCard>
-//   )
-// }
-
 export function ValueLabel({
   label,
   description,
@@ -631,7 +304,6 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-  // console.log('trade', trade, preTradeInfo)
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -643,7 +315,6 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={preTradeInfo?.premiumNecessary ? inputCurrency?.symbol : ''}
         /> */}
-
         {/*<ValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
           label={existingPosition && existingPosition?.openTime > 0 ? 'Added Position' : 'Exp. Output'}
@@ -660,7 +331,7 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Initial Premium Deposit for this position, can be replenished in the position table. When deposit is depleted, your position will be force closed."
           label="Initial Premium deposit"
-          value={formatCurrencyAmount(trade?.premium, NumberType.TokenNonTx)}
+          value={formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
@@ -690,7 +361,7 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Swap fee + origination fee "
           label="Total Fees"
-          value={formatCurrencyAmount(trade?.fees, NumberType.TokenNonTx)}
+          value={formatCurrencyAmount(trade?.fees, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
@@ -726,30 +397,30 @@ export function AdvancedMarginTradeDetails({
   )
 }
 
-export function ReduceBorrowDetails({ position, loading }: { position?: LimitlessPositionDetails; loading: boolean }) {
-  const currency0 = useCurrency(position?.token0Address)
-  const currency1 = useCurrency(position?.token1Address)
-  return position ? (
-    <StyledCard marginTop="10px">
-      <AutoColumn gap="md">
-        <ValueLabel
-          description="Existing collateral amount for this position."
-          value={formatBNToString(position?.initialCollateral)}
-          label="Current Collateral Amount"
-          syncing={loading}
-          symbolAppend={position?.isToken0 ? currency0?.symbol : currency1?.symbol}
-        />
-        <ValueLabel
-          description="Existing borrowed amount for this position."
-          value={formatBNToString(position?.totalDebtInput)}
-          label="Current Borrowed Amount"
-          syncing={loading}
-          symbolAppend={position?.isToken0 ? currency1?.symbol : currency0?.symbol}
-        />
-      </AutoColumn>
-    </StyledCard>
-  ) : null
-}
+// export function ReduceBorrowDetails({ position, loading }: { position?: LimitlessPositionDetails; loading: boolean }) {
+//   const currency0 = useCurrency(position?.token0Address)
+//   const currency1 = useCurrency(position?.token1Address)
+//   return position ? (
+//     <StyledCard marginTop="10px">
+//       <AutoColumn gap="md">
+//         <ValueLabel
+//           description="Existing collateral amount for this position."
+//           value={formatBNToString(position?.initialCollateral)}
+//           label="Current Collateral Amount"
+//           syncing={loading}
+//           symbolAppend={position?.isToken0 ? currency0?.symbol : currency1?.symbol}
+//         />
+//         <ValueLabel
+//           description="Existing borrowed amount for this position."
+//           value={formatBNToString(position?.totalDebtInput)}
+//           label="Current Borrowed Amount"
+//           syncing={loading}
+//           symbolAppend={position?.isToken0 ? currency1?.symbol : currency0?.symbol}
+//         />
+//       </AutoColumn>
+//     </StyledCard>
+//   ) : null
+// }
 
 // export const DefaultBorrowDetails: BorrowCreationDetails = {
 //   collateralAmount: undefined,

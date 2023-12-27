@@ -111,6 +111,7 @@ export interface FacilityInterface extends utils.Interface {
     "approveTokens(address,address)": FunctionFragment;
     "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "checkPositionExists(address,address,bool)": FunctionFragment;
+    "checkPremiumCondition(address,address,bool,uint256)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "executioner()": FunctionFragment;
     "getBorrowInfo(address,address,bool)": FunctionFragment;
@@ -118,12 +119,9 @@ export interface FacilityInterface extends utils.Interface {
     "maxWithdrawablePremium((address,address,uint24),address,bool)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
-    "setAddPaused(bool)": FunctionFragment;
-    "setExecutioner(address)": FunctionFragment;
-    "setForceClosePaused(bool)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
-    "setPoolManager(address)": FunctionFragment;
-    "setReducePaused(bool)": FunctionFragment;
+    "setPauseConfig(bool,bool,bool)": FunctionFragment;
+    "setProtocolContracts(address,address)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
   };
 
@@ -134,6 +132,7 @@ export interface FacilityInterface extends utils.Interface {
       | "approveTokens"
       | "canForceClose"
       | "checkPositionExists"
+      | "checkPremiumCondition"
       | "depositPremium"
       | "executioner"
       | "getBorrowInfo"
@@ -141,12 +140,9 @@ export interface FacilityInterface extends utils.Interface {
       | "maxWithdrawablePremium"
       | "multicall"
       | "payPremium"
-      | "setAddPaused"
-      | "setExecutioner"
-      | "setForceClosePaused"
       | "setOwner"
-      | "setPoolManager"
-      | "setReducePaused"
+      | "setPauseConfig"
+      | "setProtocolContracts"
       | "withdrawPremium"
   ): FunctionFragment;
 
@@ -172,6 +168,15 @@ export interface FacilityInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<boolean>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "checkPremiumCondition",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
@@ -220,28 +225,20 @@ export interface FacilityInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "setAddPaused",
-    values: [PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setExecutioner",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setForceClosePaused",
-    values: [PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setOwner",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setPoolManager",
-    values: [PromiseOrValue<string>]
+    functionFragment: "setPauseConfig",
+    values: [
+      PromiseOrValue<boolean>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
-    functionFragment: "setReducePaused",
-    values: [PromiseOrValue<boolean>]
+    functionFragment: "setProtocolContracts",
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawPremium",
@@ -273,6 +270,10 @@ export interface FacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "checkPremiumCondition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "depositPremium",
     data: BytesLike
   ): Result;
@@ -294,25 +295,13 @@ export interface FacilityInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "payPremium", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setAddPaused",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setExecutioner",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setForceClosePaused",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setPoolManager",
+    functionFragment: "setPauseConfig",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setReducePaused",
+    functionFragment: "setProtocolContracts",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -422,6 +411,14 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    checkPremiumCondition(
+      pool: PromiseOrValue<string>,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -465,33 +462,21 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setAddPaused(
-      addPaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setExecutioner(
-      executioner_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setForceClosePaused(
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setPoolManager(
-      poolManager_: PromiseOrValue<string>,
+    setPauseConfig(
+      addPaused: PromiseOrValue<boolean>,
+      reducePaused: PromiseOrValue<boolean>,
+      forceClosePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setReducePaused(
-      reducePaused: PromiseOrValue<boolean>,
+    setProtocolContracts(
+      poolManager_: PromiseOrValue<string>,
+      executioner_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -529,6 +514,14 @@ export interface Facility extends BaseContract {
     pool: PromiseOrValue<string>,
     borrower: PromiseOrValue<string>,
     borrowedToken1: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  checkPremiumCondition(
+    pool: PromiseOrValue<string>,
+    borrower: PromiseOrValue<string>,
+    borrowedToken1: PromiseOrValue<boolean>,
+    minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -575,33 +568,21 @@ export interface Facility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setAddPaused(
-    addPaused: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setExecutioner(
-    executioner_: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setForceClosePaused(
-    forceClosePaused: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   setOwner(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setPoolManager(
-    poolManager_: PromiseOrValue<string>,
+  setPauseConfig(
+    addPaused: PromiseOrValue<boolean>,
+    reducePaused: PromiseOrValue<boolean>,
+    forceClosePaused: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setReducePaused(
-    reducePaused: PromiseOrValue<boolean>,
+  setProtocolContracts(
+    poolManager_: PromiseOrValue<string>,
+    executioner_: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -639,6 +620,14 @@ export interface Facility extends BaseContract {
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    checkPremiumCondition(
+      pool: PromiseOrValue<string>,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -685,33 +674,21 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    setAddPaused(
-      addPaused: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setExecutioner(
-      executioner_: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setForceClosePaused(
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setPoolManager(
-      poolManager_: PromiseOrValue<string>,
+    setPauseConfig(
+      addPaused: PromiseOrValue<boolean>,
+      reducePaused: PromiseOrValue<boolean>,
+      forceClosePaused: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setReducePaused(
-      reducePaused: PromiseOrValue<boolean>,
+    setProtocolContracts(
+      poolManager_: PromiseOrValue<string>,
+      executioner_: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -784,6 +761,14 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    checkPremiumCondition(
+      pool: PromiseOrValue<string>,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -827,33 +812,21 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setAddPaused(
-      addPaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setExecutioner(
-      executioner_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setForceClosePaused(
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setPoolManager(
-      poolManager_: PromiseOrValue<string>,
+    setPauseConfig(
+      addPaused: PromiseOrValue<boolean>,
+      reducePaused: PromiseOrValue<boolean>,
+      forceClosePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setReducePaused(
-      reducePaused: PromiseOrValue<boolean>,
+    setProtocolContracts(
+      poolManager_: PromiseOrValue<string>,
+      executioner_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -892,6 +865,14 @@ export interface Facility extends BaseContract {
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    checkPremiumCondition(
+      pool: PromiseOrValue<string>,
+      borrower: PromiseOrValue<string>,
+      borrowedToken1: PromiseOrValue<boolean>,
+      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -938,33 +919,21 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setAddPaused(
-      addPaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setExecutioner(
-      executioner_: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setForceClosePaused(
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setPoolManager(
-      poolManager_: PromiseOrValue<string>,
+    setPauseConfig(
+      addPaused: PromiseOrValue<boolean>,
+      reducePaused: PromiseOrValue<boolean>,
+      forceClosePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setReducePaused(
-      reducePaused: PromiseOrValue<boolean>,
+    setProtocolContracts(
+      poolManager_: PromiseOrValue<string>,
+      executioner_: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

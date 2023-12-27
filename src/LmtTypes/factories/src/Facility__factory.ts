@@ -279,6 +279,40 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "borrower",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowedToken1",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "minPremiumDepositPercentage",
+        type: "uint256",
+      },
+    ],
+    name: "checkPremiumCondition",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "address",
@@ -538,45 +572,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bool",
-        name: "addPaused",
-        type: "bool",
-      },
-    ],
-    name: "setAddPaused",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "executioner_",
-        type: "address",
-      },
-    ],
-    name: "setExecutioner",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bool",
-        name: "forceClosePaused",
-        type: "bool",
-      },
-    ],
-    name: "setForceClosePaused",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "newOwner",
         type: "address",
@@ -590,12 +585,22 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "poolManager_",
-        type: "address",
+        internalType: "bool",
+        name: "addPaused",
+        type: "bool",
+      },
+      {
+        internalType: "bool",
+        name: "reducePaused",
+        type: "bool",
+      },
+      {
+        internalType: "bool",
+        name: "forceClosePaused",
+        type: "bool",
       },
     ],
-    name: "setPoolManager",
+    name: "setPauseConfig",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -603,12 +608,17 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bool",
-        name: "reducePaused",
-        type: "bool",
+        internalType: "address",
+        name: "poolManager_",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "executioner_",
+        type: "address",
       },
     ],
-    name: "setReducePaused",
+    name: "setProtocolContracts",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

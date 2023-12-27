@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
-import { Pool } from '@uniswap/v3-sdk'
+import { Pool, tickToPrice } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { LmtBorrowRangeBadge } from 'components/Badge/RangeBadge'
 import Card, { LightCard } from 'components/Card'
@@ -13,6 +13,7 @@ import { DarkRateToggle } from 'components/RateToggle'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency, useToken } from 'hooks/Tokens'
+import { BorrowedLiquidityRange, getLiquidityTicks, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
@@ -21,8 +22,9 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
 import { ReactNode, useMemo, useRef, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
+import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { HideExtraSmall, ThemedText } from 'theme'
+import { CloseIcon, HideExtraSmall, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { formatTickPrice } from 'utils/formatTickPrice'
@@ -143,7 +145,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
     totalDebtOutput: undefined,
     premiumDeposit: undefined,
   })
-  const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
+  const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   // console.log('existingPosition', existingPosition?.premiumDeposit.toString())
   const inputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token1Address : positionKey?.poolKey.token0Address
@@ -197,17 +199,14 @@ export function LeveragePositionModal(props: TradeModalProps) {
           </TabsWrapper>
           <ContentWrapper>{displayedContent}</ContentWrapper>
         </ActionsWrapper>
-
         <MarginPositionInfo
           position={existingPosition}
           alteredPosition={alteredPosition}
           loading={false}
           inputCurrency={inputCurrency ?? undefined}
           outputCurrency={outputCurrency ?? undefined}
+          onClose={onClose}
         />
-        {/* <Row>
-          <CloseIcon style={{ width: '12px' }} onClick={onClose} />
-        </Row> */}
       </Wrapper>
     </LmtModal>
   ) : null
@@ -218,6 +217,9 @@ const PositionInfoHeader = styled(TextWrapper)`
   font-weight: 700;
   line-height: 20px;
   padding-top: 0.5rem;
+  align-self: center;
+  justify-self: center;
+  margin: 0 auto;
   color: ${({ theme }) => theme.textSecondary};
   ${textFadeIn}
 `
@@ -227,19 +229,26 @@ function MarginPositionInfo({
   loading,
   inputCurrency,
   outputCurrency,
+  onClose,
 }: {
   position: MarginPositionDetails | undefined
   alteredPosition: AlteredPositionProperties
   loading: boolean
   inputCurrency?: Currency | undefined
   outputCurrency?: Currency | undefined
+  onClose: () => void
 }) {
   const currency0 = useCurrency(position?.poolKey.token0Address)
   const currency1 = useCurrency(position?.poolKey.token1Address)
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
   return (
     <PositionInfoWrapper>
-      <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
+      <Row style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+        <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '20px' }}>
+          <CloseIcon style={{ width: '12px' }} onClick={onClose} />
+        </div>
+      </Row>
       <Hr />
       <PositionValueLabel
         title={<Trans>Total Position</Trans>}
@@ -279,8 +288,8 @@ function MarginPositionInfo({
         title={<Trans>Premium Deposit</Trans>}
         description={<Trans>Current premium deposit remaining</Trans>}
         syncing={loading}
-        value={position?.premiumDeposit}
-        newValue={alteredPosition?.premiumDeposit}
+        value={position?.premiumLeft && position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)}
+        newValue={alteredPosition?.premiumLeft}
         appendSymbol={inputCurrency?.symbol}
         type={NumberType.SwapTradeAmount}
       />
@@ -380,9 +389,19 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
   const currency1 = token1 ? unwrappedToken(token1) : undefined
   const theme = useTheme()
 
+  const borrowLiquidityRange = useBorrowedLiquidityRange(position, pool)
+  const { tickDiscretization } = useTickDiscretization(
+    currency0?.wrapped.address,
+    currency1?.wrapped.address,
+    pool?.fee
+  )
   const [tickLower, tickUpper] = useMemo(() => {
-    return [-100, 100]
-  }, [position])
+    if (position && tickDiscretization) {
+      return getLiquidityTicks(position.borrowInfo, tickDiscretization)
+    }
+
+    return [undefined, undefined]
+  }, [position, tickDiscretization])
 
   const tickAtLimit = useIsTickAtLimit(position?.poolKey.fee, tickLower, tickUpper)
 
@@ -390,12 +409,22 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
   const quoteCurrency = manuallyInverted ? currency1 : currency0
 
   const { inRange, priceUpper, priceLower } = useMemo(() => {
+    if (baseCurrency && quoteCurrency && tickLower && tickUpper) {
+      const pLower = tickToPrice(baseCurrency.wrapped, quoteCurrency.wrapped, tickLower)
+      const pUpper = tickToPrice(baseCurrency.wrapped, quoteCurrency.wrapped, tickUpper)
+      const inRange = borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE
+      return {
+        inRange,
+        priceUpper: pUpper,
+        priceLower: pLower,
+      }
+    }
     return {
       inRange: false,
       priceUpper: undefined,
       priceLower: undefined,
     }
-  }, [])
+  }, [baseCurrency, quoteCurrency, tickLower, tickUpper, borrowLiquidityRange])
   const removed = position?.totalPosition.isZero() ?? false
   const inverted = token1 ? baseCurrency?.equals(token1) : undefined
   const currencyQuote = inverted ? currency0 : currency1
@@ -425,7 +454,6 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
             )}
           </RowFixed>
         </AutoColumn>
-
         <RowBetween>
           <SecondLabel padding="12px" width="100%">
             <AutoColumn gap="sm" justify="center">
@@ -499,6 +527,7 @@ const PositionValueLabelWrapper = styled.div`
   font-size: 14px;
   min-width: 168px;
   margin-bottom: 0.5rem;
+  height: 40px;
 `
 
 const StyledArrow = styled(ArrowRightIcon)`
@@ -534,7 +563,7 @@ function PositionValueLabel({
     <PositionValueLabelWrapper>
       <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
       <AutoColumn>
-        <TextWithLoadingPlaceholder syncing={syncing} width={65}>
+        <TextWithLoadingPlaceholder height="20px" syncing={syncing} width={65}>
           <ValueWrapper margin={false}>
             <Row>
               {value ? `${formatBNToString(value, type)} ${appendSymbol ?? ''}` : '-'}

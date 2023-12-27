@@ -4,10 +4,10 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
+import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
 import { useEffect, useMemo, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
-import { useToken } from './Tokens'
 import { useDataProviderContract, useMarginFacilityContract } from './useContract'
 import { computeOrderId, computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
@@ -43,11 +43,10 @@ import { convertToBN } from './useV3Positions'
 export function useRateAndUtil(
   token0: string | undefined,
   token1: string | undefined,
-  fee: number | undefined, 
-  tickLower: number|undefined, 
-  tickUpper: number|undefined
-  ) {
-
+  fee: number | undefined,
+  tickLower: number | undefined,
+  tickUpper: number | undefined
+) {
   const dataProvider = useDataProviderContract()
   const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
@@ -56,8 +55,8 @@ export function useRateAndUtil(
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
-  useEffect(()=>{
-    if (!token0||!token1||!fee||!tickLower||!tickUpper||loading  ) return
+  useEffect(() => {
+    if (!token0 || !token1 || !fee || !tickLower || !tickUpper || loading) return
     const call = async () => {
       try {
         setLoading(true)
@@ -67,7 +66,7 @@ export function useRateAndUtil(
             token1: token1 as string,
             fee: fee as number,
           },
-          tickLower as number, 
+          tickLower as number,
           tickUpper as number
         )
         setData(result)
@@ -80,8 +79,6 @@ export function useRateAndUtil(
       }
     }
     call()
-
-
   }, [dataProvider, loading, blockNumber, token0, token1, fee, tickLower, tickUpper])
 
   return useMemo(() => {
@@ -91,7 +88,6 @@ export function useRateAndUtil(
       return data
     }
   }, [token0, token1, fee, tickUpper, tickLower, error, data])
-
 }
 
 export function useInstantaeneousRate(
@@ -238,6 +234,16 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
           token1Decimals: Number(position.token1Decimals.toString()),
           trader: account,
           maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals).toString(),
+          borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
+            return {
+              tick: info.tick,
+              liquidity: new BN(info.liquidity.toString()),
+              premium: convertToBN(info.premium, inputDecimals),
+              feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
+              feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
+              lastGrowth: new BN(info.lastGrowth.toString()),
+            }
+          }),
         }
       }),
     }
@@ -320,8 +326,8 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
 } {
   const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
-  const token0 = useToken(key?.poolKey.token0Address)
-  const token1 = useToken(key?.poolKey.token1Address)
+  // const token0 = useToken(key?.poolKey.token0Address)
+  // const token1 = useToken(key?.poolKey.token1Address)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
   const [result, setResult] = useState<any>()
@@ -335,13 +341,13 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   const { account } = useWeb3React()
 
   const params = useMemo(() => {
-    if (token0 && token1 && chainId && key) {
+    if (chainId && key) {
       return {
         pool: computePoolAddress({
           factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
-          tokenA: token0,
-          tokenB: token1,
-          fee: key?.poolKey.fee,
+          tokenA: key.poolKey.token0Address,
+          tokenB: key.poolKey.token1Address,
+          fee: key.poolKey.fee,
         }),
         trader: key.trader,
         isToken0: key.isToken0,
@@ -349,24 +355,24 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
     } else {
       return undefined
     }
-  }, [token0, token1, chainId, key])
+  }, [chainId, key])
 
   useEffect(() => {
-    if (!params || loading || !blockNumber) return
+    if (!params || loading || !blockNumber || !dataProvider) return
 
     if (
       lastParams?.isToken0 === params.isToken0 &&
       lastParams?.pool === params.pool &&
       lastParams?.trader === params.trader &&
       lastBlockNumber &&
-      lastBlockNumber + 1 > blockNumber
+      lastBlockNumber === blockNumber
     ) {
       return
     }
     const call = async () => {
       try {
         setLoading(true)
-        const result = await dataProvider?.callStatic.getMarginPosition(params.pool, params.trader, params.isToken0)
+        const result = await dataProvider.callStatic.getMarginPosition(params.pool, params.trader, params.isToken0)
         setLastParams(params)
         setResult(result)
         setLoading(false)
@@ -395,6 +401,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       const outputDecimals = position.isToken0
         ? Number(position.token0Decimals.toString())
         : Number(position.token1Decimals.toString())
+
       return {
         loading,
         error,
@@ -418,7 +425,16 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
           token0Decimals: Number(position.token0Decimals.toString()),
           token1Decimals: Number(position.token1Decimals.toString()),
           maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals).toString(),
-          // maxWithdrawablePremium: position.maxWithdrawablePremium.toString()
+          borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
+            return {
+              tick: info.tick,
+              liquidity: new BN(info.liquidity.toString()),
+              premium: convertToBN(info.premium, inputDecimals),
+              feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
+              feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
+              lastGrowth: new BN(info.lastGrowth.toString()),
+            }
+          }),
         },
       }
     }

@@ -1,16 +1,17 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
-import { computePoolAddress, Pool, priceToClosestTick, Route } from '@uniswap/v3-sdk'
+import { computePoolAddress, Pool, Route } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useDataProviderContract, useLmtPoolManagerContract, useMarginFacilityContract } from 'hooks/useContract'
+import { useLmtFeePercent } from 'hooks/useLmtFeePercent'
 import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useMaxLeverage } from 'hooks/useMaxLeverage'
-import { usePoolParams } from 'hooks/usePools'
 import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -160,6 +161,7 @@ interface DerivedAddPositionResult {
   state: LeverageTradeState
   existingLimitPosition?: MarginLimitOrder
   maxLeverage?: BN
+  userHasSpecifiedInputOutput: boolean
 }
 
 export function useDerivedAddPositionInfo(
@@ -317,10 +319,6 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Select a token</Trans>
     }
 
-    if (existingLimitPosition && existingLimitPosition.auctionStartTime > 0) {
-      inputError = inputError ?? <Trans>Active limit order must be filled</Trans>
-    }
-
     if (!parsedMargin || parsedMargin.isZero()) {
       inputError = inputError ?? <Trans>Enter a margin amount</Trans>
     }
@@ -347,16 +345,7 @@ export function useDerivedAddPositionInfo(
     }
 
     return inputError
-  }, [
-    account,
-    currencies,
-    maxLeverage,
-    existingLimitPosition,
-    parsedMargin,
-    currencyBalances,
-    parsedLeverageFactor,
-    preTradeInfo,
-  ])
+  }, [account, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, preTradeInfo])
 
   const {
     state,
@@ -377,6 +366,17 @@ export function useDerivedAddPositionInfo(
     approvalState
   )
 
+  const userHasSpecifiedInputOutput = useMemo(() => {
+    return Boolean(
+      inputCurrency &&
+        outputCurrency &&
+        parsedMargin?.gt(0) &&
+        parsedLeverageFactor?.gt(1) &&
+        maxLeverage &&
+        parsedLeverageFactor?.lt(maxLeverage)
+    )
+  }, [parsedMargin, parsedLeverageFactor, inputCurrency, outputCurrency, maxLeverage])
+
   return useMemo(
     () => ({
       currencies,
@@ -391,6 +391,7 @@ export function useDerivedAddPositionInfo(
       contractError,
       userPremiumPercent: rawUserPremiumPercent,
       maxLeverage,
+      userHasSpecifiedInputOutput,
     }),
     [
       currencies,
@@ -405,6 +406,7 @@ export function useDerivedAddPositionInfo(
       contractError,
       rawUserPremiumPercent,
       maxLeverage,
+      userHasSpecifiedInputOutput,
     ]
   )
 }
@@ -450,6 +452,7 @@ export function useDerivedLimitAddPositionInfo(
   preTradeInfo: PreTradeInfo | undefined
   orderKey: OrderPositionKey | undefined
   contractError?: ReactNode
+  userHasSpecifiedInputOutput: boolean
 } {
   const { account, provider, chainId } = useWeb3React()
   const [traderKey, orderKey] = useMemo(() => {
@@ -489,7 +492,7 @@ export function useDerivedLimitAddPositionInfo(
     [parsedMargin, parsedLeverageFactor]
   )
   const parsedStartingPrice = useMemo(() => parseBN(startingPrice), [startingPrice])
-  const poolParams = usePoolParams(pool)
+  // const poolParams = usePoolParams(pool)
 
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
@@ -628,6 +631,18 @@ export function useDerivedLimitAddPositionInfo(
     inputError
   )
 
+  const userHasSpecifiedInputOutput = useMemo(() => {
+    return Boolean(
+      inputCurrency &&
+        outputCurrency &&
+        parsedMargin?.gt(0) &&
+        parsedLeverageFactor?.gt(1) &&
+        maxLeverage &&
+        parsedLeverageFactor.lt(maxLeverage) &&
+        parsedStartingPrice?.gt(0)
+    )
+  }, [parsedMargin, parsedLeverageFactor, inputCurrency, outputCurrency, maxLeverage, parsedStartingPrice])
+
   return useMemo(
     () => ({
       inputError,
@@ -636,8 +651,9 @@ export function useDerivedLimitAddPositionInfo(
       contractError,
       preTradeInfo,
       trade,
+      userHasSpecifiedInputOutput,
     }),
-    [inputError, state, contractError, orderKey, preTradeInfo, trade]
+    [inputError, state, contractError, orderKey, preTradeInfo, trade, userHasSpecifiedInputOutput]
   )
 }
 
@@ -656,6 +672,7 @@ export interface AddLimitTrade {
   limitPrice: BN
   deadline: string
   duration: number
+  formattedLimitPrice: Price<Currency, Currency>
 }
 
 const useSimulateAddLimitOrder = (
@@ -688,6 +705,7 @@ const useSimulateAddLimitOrder = (
   const [result, setResult] = useState<AddLimitTrade>()
 
   const [orderDuration] = useUserLimitOrderTransactionTTL()
+  const feePercent = useLmtFeePercent(pool)
 
   useEffect(() => {
     const lagged = async () => {
@@ -709,7 +727,8 @@ const useSimulateAddLimitOrder = (
         !additionalPremium ||
         !!inputError ||
         approvalState !== ApprovalState.APPROVED ||
-        !orderDuration
+        !orderDuration ||
+        !feePercent
       ) {
         setTradeState(LimitTradeState.INVALID)
         setResult(undefined)
@@ -723,12 +742,12 @@ const useSimulateAddLimitOrder = (
           fee: pool.fee,
         })
 
-        const rawFeesResult = await poolManager.callStatic.getFeeParams({
-          token0: pool.token0.address,
-          token1: pool.token1.address,
-          fee: pool.fee,
-        })
-        const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
+        // const rawFeesResult = await poolManager.callStatic.getFeeParams({
+        //   token0: pool.token0.address,
+        //   token1: pool.token1.address,
+        //   fee: pool.fee,
+        // })
+        // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
 
         const totalInput = new BN(margin).times(leverageFactor)
         const totalInputWithFees = totalInput.times(new BN(1).minus(feePercent))
@@ -742,19 +761,6 @@ const useSimulateAddLimitOrder = (
         // decay rate defaults to zero
         const decayRate = new BN('0')
 
-        // console.log('limit stuff', {
-        //   orderKey,
-        //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   pool: poolAddress,
-        //   isAdd: true,
-        //   deadline: deadline.toString(),
-        //   startOutput: startOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        //   minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        //   inputAmount: totalInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   decayRate: decayRate.shiftedBy(18).toFixed(0),
-        //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-        // })
-
         const calldata = MarginFacilitySDK.submitLimitOrder({
           orderKey,
           margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
@@ -767,19 +773,6 @@ const useSimulateAddLimitOrder = (
           decayRate: decayRate.shiftedBy(18).toFixed(0),
           depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
         })
-
-        // console.log('limit calldata', {
-        //   orderKey,
-        //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   pool: poolAddress,
-        //   isAdd: true,
-        //   deadline: deadline.toString(),
-        //   startOutput: startOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        //   minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        //   inputAmount: totalInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   decayRate: decayRate.shiftedBy(18).toFixed(0),
-        //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-        // })
 
         setTradeState(LimitTradeState.LOADING)
         const multicallResult = await marginFacility.callStatic.multicall(calldata)
@@ -800,6 +793,12 @@ const useSimulateAddLimitOrder = (
           limitPrice,
           duration: orderDuration,
           deadline: deadline.toString(),
+          formattedLimitPrice: new Price(
+            outputCurrency,
+            inputCurrency,
+            limitPrice.shiftedBy(18).toFixed(0),
+            new BN(1).shiftedBy(18).toFixed(0)
+          ),
         })
       } catch (err) {
         setTradeState(LimitTradeState.INVALID)
@@ -837,6 +836,7 @@ const useSimulateAddLimitOrder = (
     inputError,
     approvalState,
     orderDuration,
+    feePercent,
   ])
 
   const contractError = useMemo(() => {
@@ -889,6 +889,8 @@ const useSimulateMarginTrade = (
   const deadline = useTransactionDeadline()
 
   const dataProvider = useDataProviderContract()
+
+  const feePercent = useLmtFeePercent(pool)
   // console.log('existingPosition', existingPosition, inputIsToken0)
   useEffect(() => {
     // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
@@ -896,6 +898,7 @@ const useSimulateMarginTrade = (
       if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
         return
       }
+
       if (
         !account ||
         !pool ||
@@ -916,7 +919,8 @@ const useSimulateMarginTrade = (
         !deadline ||
         inputIsToken0 === undefined ||
         approvalState !== ApprovalState.APPROVED ||
-        !dataProvider
+        !dataProvider ||
+        !feePercent
       ) {
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
@@ -924,7 +928,6 @@ const useSimulateMarginTrade = (
       }
 
       try {
-        console.log('lmt: attempting call')
         setTradeState(LeverageTradeState.LOADING)
         const swapRoute = new Route(
           [pool],
@@ -932,14 +935,13 @@ const useSimulateMarginTrade = (
           inputIsToken0 ? pool.token1 : pool.token0
         )
 
-        const rawFeesResult = await poolManager.callStatic.getFeeParams({
-          token0: pool.token0.address,
-          token1: pool.token1.address,
-          fee: pool.fee,
-        })
+        // const rawFeesResult = await poolManager.callStatic.getFeeParams({
+        //   token0: pool.token0.address,
+        //   token1: pool.token1.address,
+        //   fee: pool.fee,
+        // })
 
-        const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
-        // const bnAmountIn = margin.plus(borrowAmount).minus(margin.plus(borrowAmount).multipliedBy(feePercent))
+        // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
         const bnAmountIn = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
 
         const amountOut = await getOutputQuote(
@@ -954,27 +956,30 @@ const useSimulateMarginTrade = (
 
         if (!amountOut) return
 
-        const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
+        const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
 
-        const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
+        // const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
 
-        const minPrice = new Price(
-          pool.token0,
-          pool.token1,
-          JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-          JSBI.multiply(pool.token0Price.numerator, pullDown)
-        )
+        // const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
 
-        const maxPrice = new Price(
-          pool.token0,
-          pool.token1,
-          JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-          JSBI.multiply(pool.token0Price.numerator, pullUp)
-        )
+        // const minPrice = new Price(
+        //   pool.token0,
+        //   pool.token1,
+        //   JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
+        //   JSBI.multiply(pool.token0Price.numerator, pullDown)
+        // )
 
-        // get slipped min/max tick
-        const slippedTickMax = priceToClosestTick(maxPrice)
-        const slippedTickMin = priceToClosestTick(minPrice)
+        // const maxPrice = new Price(
+        //   pool.token0,
+        //   pool.token1,
+        //   JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
+        //   JSBI.multiply(pool.token0Price.numerator, pullUp)
+        // )
+
+        // // get slipped min/max tick
+        // const slippedTickMax = priceToClosestTick(maxPrice)
+        // const slippedTickMin = priceToClosestTick(minPrice)
+        // console.log('slipped ticks', { slippedTickMax, slippedTickMin }, otherMax, otherMin)
         const positionKey = {
           poolKey: {
             token0Address: pool.token0.address,
@@ -991,18 +996,6 @@ const useSimulateMarginTrade = (
         const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
         const minimumOutput = bnAmountIn.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
-        // console.log('margin params', {
-        //   positionKey,
-        //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        //   deadline: deadline.toString(),
-        //   simulatedOutput: amountOut.toString(),
-        //   executionOption: 1,
-        //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   slippedTickMin,
-        //   slippedTickMax,
-        // })
         // calldata
         const calldata = MarginFacilitySDK.addPositionParameters({
           positionKey,
@@ -1059,27 +1052,6 @@ const useSimulateMarginTrade = (
         }
 
         const executionPrice = new Price<Currency, Currency>(inputCurrency, outputCurrency, swapInput, swapOutput)
-        // console.log('simulation', {
-        //   margin: BnToCurrencyAmount(margin, inputCurrency).toExact(), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
-        //   fees: BnToCurrencyAmount(margin, inputCurrency)
-        //     .subtract(CurrencyAmount.fromRawAmount(inputCurrency, _margin))
-        //     .toExact(),
-        //   minimumOutput: BnToCurrencyAmount(minimumOutput, outputCurrency).toExact(),
-        //   borrowAmount: CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount).toExact(),
-        //   swapInput: CurrencyAmount.fromRawAmount(inputCurrency, swapInput).toExact(),
-        //   swapOutput: CurrencyAmount.fromRawAmount(outputCurrency, swapOutput).toExact(),
-        //   executionPrice: executionPrice.toFixed(18),
-        //   allowedSlippage,
-        //   positionKey,
-        //   swapRoute,
-        //   premium: additionalPremium.toFixed(18),
-        //   pool,
-        //   inputIsToken0,
-        //   borrowRate: new BN(borrowRate.toString())
-        //     .shiftedBy(-18)
-        //     .div(365 * 24)
-        //     .times(100),
-        // })
 
         const simulation: AddMarginTrade = {
           margin: BnToCurrencyAmount(margin, inputCurrency), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
@@ -1107,7 +1079,7 @@ const useSimulateMarginTrade = (
         setTradeState(LeverageTradeState.VALID)
         setSimulationError(undefined)
       } catch (err) {
-        console.log('error', err)
+        console.log('simulate margin error', err)
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
 
@@ -1138,6 +1110,7 @@ const useSimulateMarginTrade = (
     deadline,
     approvalState,
     dataProvider,
+    feePercent,
   ])
 
   const contractError = useMemo(() => {

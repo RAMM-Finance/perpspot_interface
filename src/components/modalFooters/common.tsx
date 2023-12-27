@@ -156,14 +156,16 @@ export function TextWithLoadingPlaceholder({
   syncing,
   width,
   children,
+  height = '15px',
 }: {
   syncing: boolean
   width: number
   children: JSX.Element
+  height?: string
 }) {
   return syncing ? (
     <LoadingRows>
-      <div style={{ height: '15px', width: `${width}px` }} />
+      <div style={{ height, width: `${width}px` }} />
     </LoadingRows>
   ) : (
     children

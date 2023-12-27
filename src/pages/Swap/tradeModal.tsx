@@ -34,7 +34,6 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useUSDPrice } from 'hooks/useUSDPrice'
-import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
@@ -259,6 +258,7 @@ const TradeTabContent = () => {
     contractError,
     userPremiumPercent,
     maxLeverage,
+    userHasSpecifiedInputOutput,
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
@@ -274,6 +274,7 @@ const TradeTabContent = () => {
     preTradeInfo: limitPreTradeInfo,
     state: limitTradeState,
     trade: limitTrade,
+    userHasSpecifiedInputOutput: limitUserHasSpecifiedInputOutput,
   } = useDerivedLimitAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
@@ -295,6 +296,10 @@ const TradeTabContent = () => {
     preTradeInfo?.approvalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
+
+  const noTradeInputError = useMemo(() => {
+    return !inputError
+  }, [inputError])
 
   // const { activeTab } = useSwapState()
 
@@ -408,10 +413,6 @@ const TradeTabContent = () => {
     onLeverageFactorChange
   )
 
-  const userHasSpecifiedInputOutput = Boolean(
-    currencies[Field.INPUT] && currencies[Field.OUTPUT] && trade?.margin.greaterThan(JSBI.BigInt(0))
-  )
-
   const [baseCurrency, quoteCurrency] = useMemo(() => {
     if (baseCurrencyIsInputToken) {
       return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
@@ -490,7 +491,7 @@ const TradeTabContent = () => {
   }, [baseCurrencyIsInputToken, pool, currencies])
 
   // const deadline = useTransactionDeadline()
-
+  // console.log('core', facilityApprovalState, trade, tradeState, inputError)
   return (
     <Wrapper>
       <LeverageConfirmModal
@@ -560,7 +561,7 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-              <Row justify="flex-end">
+              <Row justify="flex-end" align="flex-start">
                 <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1" marginRight="10px">
                   Current Price:
                 </ThemedText.DeprecatedMain>
@@ -834,7 +835,7 @@ const TradeTabContent = () => {
                   <Trans>Insufficient liquidity for this trade.</Trans>
                 </ThemedText.DeprecatedMain>
               </GrayCard>
-            ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
+            ) : noTradeInputError && facilityApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
                 onClick={updateLeverageAllowance}
                 style={{ fontSize: '14px', borderRadius: '10px' }}
@@ -879,7 +880,7 @@ const TradeTabContent = () => {
                   setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
                 }}
                 id="leverage-button"
-                disabled={!!inputError || tradeIsLoading || invalidTrade}
+                disabled={!noTradeInputError || tradeIsLoading || invalidTrade}
               >
                 <ThemedText.BodyPrimary fontWeight={600}>
                   {inputError ? (
@@ -914,13 +915,13 @@ const TradeTabContent = () => {
               >
                 <Trans>Connect Wallet</Trans>
               </ButtonLight>
-            ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
+            ) : tradeNotFound && limitUserHasSpecifiedInputOutput && !tradeIsLoading ? (
               <GrayCard style={{ textAlign: 'center' }}>
                 <ThemedText.DeprecatedMain mb="4px">
                   <Trans>Insufficient liquidity for this trade.</Trans>
                 </ThemedText.DeprecatedMain>
               </GrayCard>
-            ) : lmtIsValid && facilityApprovalState !== ApprovalState.APPROVED ? (
+            ) : !limitInputError && facilityApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
                 onClick={updateLeverageAllowance}
                 style={{ fontSize: '14px', borderRadius: '10px' }}

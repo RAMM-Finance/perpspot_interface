@@ -41,7 +41,7 @@ export interface ReferralSystemInterface extends utils.Interface {
     "setHandler(address,bool)": FunctionFragment;
     "setReferralCode(address,bytes32)": FunctionFragment;
     "setReferralCodeByUser(bytes32)": FunctionFragment;
-    "setTier(address,uint256)": FunctionFragment;
+    "setReferrerTier(address,uint256)": FunctionFragment;
     "userReferralCodes(address)": FunctionFragment;
   };
 
@@ -59,7 +59,7 @@ export interface ReferralSystemInterface extends utils.Interface {
       | "setHandler"
       | "setReferralCode"
       | "setReferralCodeByUser"
-      | "setTier"
+      | "setReferrerTier"
       | "userReferralCodes"
   ): FunctionFragment;
 
@@ -112,7 +112,7 @@ export interface ReferralSystemInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setTier",
+    functionFragment: "setReferrerTier",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -153,7 +153,10 @@ export interface ReferralSystemInterface extends utils.Interface {
     functionFragment: "setReferralCodeByUser",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setTier", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setReferrerTier",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "userReferralCodes",
     data: BytesLike
@@ -303,7 +306,7 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setTier(
+    setReferrerTier(
       _referrer: PromiseOrValue<string>,
       _tierId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -379,7 +382,7 @@ export interface ReferralSystem extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setTier(
+  setReferrerTier(
     _referrer: PromiseOrValue<string>,
     _tierId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -453,7 +456,7 @@ export interface ReferralSystem extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setTier(
+    setReferrerTier(
       _referrer: PromiseOrValue<string>,
       _tierId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -553,7 +556,7 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setTier(
+    setReferrerTier(
       _referrer: PromiseOrValue<string>,
       _tierId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -630,7 +633,7 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setTier(
+    setReferrerTier(
       _referrer: PromiseOrValue<string>,
       _tierId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }

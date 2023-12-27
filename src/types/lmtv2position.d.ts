@@ -3,6 +3,16 @@ import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import JSBI from 'jsbi'
 
+
+export interface LiquidityLoan {
+  tick: number
+  liquidity: BN
+  premium: BN
+  feeGrowthInside0LastX128: BN
+  feeGrowthInside1LastX128: BN
+  lastGrowth: BN
+}
+
 export interface BaseFacilityPositionDetails {
   poolKey: RawPoolKey
   isToken0: boolean
@@ -18,6 +28,7 @@ export interface BaseFacilityPositionDetails {
   token0Decimals: number
   token1Decimals: number
   maxWithdrawablePremium?: string
+  borrowInfo: LiquidityLoan[]
 }
 
 export interface MarginPositionDetails extends BaseFacilityPositionDetails {

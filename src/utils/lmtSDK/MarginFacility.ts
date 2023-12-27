@@ -176,21 +176,6 @@ export abstract class MarginFacilitySDK {
   public static reducePositionParameters(param: ReducePositionOptions): string[] {
     const calldatas: string[] = []
 
-    if (param.removePremium) {
-      calldatas.push(
-        MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
-          {
-            token0: param.positionKey.poolKey.token0Address,
-            token1: param.positionKey.poolKey.token1Address,
-            fee: param.positionKey.poolKey.fee,
-          },
-          param.positionKey.trader,
-          param.positionKey.isToken0,
-          param.removePremium,
-        ])
-      )
-    }
-
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
         {
@@ -211,6 +196,22 @@ export abstract class MarginFacilitySDK {
         },
       ])
     )
+
+    // remove after withdraw premium
+    if (param.removePremium) {
+      // (PoolKey calldata key, bool borrowToken1, uint256 amount)
+      calldatas.push(
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
+          {
+            token0: param.positionKey.poolKey.token0Address,
+            token1: param.positionKey.poolKey.token1Address,
+            fee: param.positionKey.poolKey.fee,
+          },
+          param.positionKey.isToken0,
+          param.removePremium,
+        ])
+      )
+    }
 
     return calldatas
   }

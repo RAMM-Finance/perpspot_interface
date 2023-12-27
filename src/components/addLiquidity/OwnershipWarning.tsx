@@ -43,4 +43,23 @@ const OwnershipWarning = ({ ownerAddress }: OwnershipWarningProps) => (
   </Wrapper>
 )
 
+export function InRangeLimitReduceWarning() {
+  return (
+    <Wrapper>
+      <TitleRow>
+        <AlertTriangle style={{ marginRight: '8px' }} />
+        <ThemedText.SubHeader color="accentWarning">
+          <Trans>Note</Trans>
+        </ThemedText.SubHeader>
+      </TitleRow>
+      <ExplainerText>
+        <Trans>
+          Your position's liquidity is currently in range of the pool's current price. In order to maintain system
+          solvency, You must reduce your position with a limit order.
+        </Trans>
+      </ExplainerText>
+    </Wrapper>
+  )
+}
+
 export default OwnershipWarning

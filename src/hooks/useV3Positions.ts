@@ -1,9 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { BigNumber as BN } from 'bignumber.js'
 import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
-import {useEffect, useMemo , useState} from 'react'
-import { PositionDetails } from 'types/position'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
+import { useEffect, useMemo, useState } from 'react'
+import { PositionDetails } from 'types/position'
 
 import { useDataProviderContract, useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
 
@@ -285,63 +285,58 @@ export function useV3PositionFromTokenId(tokenId: BigNumber | undefined): UseV3P
   }
 }
 
-
 export function useLmtLpPositionFromTokenId(tokenId: BigNumber | undefined): UseV3PositionResults {
   const position = useLmtLpPositionsFromTokenIds(tokenId ? [tokenId] : undefined)
   const dataProvider = useDataProviderContract()
   const blockNumber = useBlockNumber()
-   const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+  const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
 
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<any>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
-  useEffect(()=>{
-    if ( loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+  useEffect(() => {
+    if (loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
 
-    const call = async()=>{
-      try{
+    const call = async () => {
+      try {
         setLoading(true)
         const result = await dataProvider?.getMaxWithdrawable(
           {
-            token0: position.positions?.[0]?.token0 as string, 
-            token1: position.positions?.[0]?.token1 as string, 
-            fee: position.positions?.[0]?.fee as number ,
-          }, 
-          position.positions?.[0]?.tickLower as number, 
-          position.positions?.[0]?.tickUpper as number, 
+            token0: position.positions?.[0]?.token0 as string,
+            token1: position.positions?.[0]?.token1 as string,
+            fee: position.positions?.[0]?.fee as number,
+          },
+          position.positions?.[0]?.tickLower as number,
+          position.positions?.[0]?.tickUpper as number
         )
         setData(result)
         setLoading(false)
         setBlockNumber(blockNumber)
-
-      } catch(error){
+      } catch (error) {
         setError(error)
         setLoading(false)
         console.log('maxWithdrawableerr', error)
       }
     }
     call()
+  }, [dataProvider, loading, lastBlockNumber, blockNumber, position.positions])
 
-  }, [dataProvider, loading, lastBlockNumber,blockNumber, position.positions, ])
-
-
-  return useMemo(() =>{
-    if(!data || !position){
-      return{
-        loading: position.loading, 
-        position: position.positions?.[0], 
-        maxWithdrawable: data
-      }
-    }else{
+  return useMemo(() => {
+    if (!data || !position) {
       return {
         loading: position.loading,
         position: position.positions?.[0],
-        maxWithdrawable: data
+        maxWithdrawable: data,
+      }
+    } else {
+      return {
+        loading: position.loading,
+        position: position.positions?.[0],
+        maxWithdrawable: data,
       }
     }
-
-  }, [ position.loading, error, data,  tokenId ])
+  }, [position.loading, error, data, tokenId])
 }
 
 export function useV3Positions(account: string | null | undefined): UseV3PositionsResults {
@@ -433,7 +428,6 @@ export function useLmtLpPositions(account: string | null | undefined): UseV3Posi
 export function useLmtLpPositionsFromTokenIds(tokenIds: BigNumber[] | undefined): UseV3PositionsResults {
   const positionManager = useLmtNFTPositionManager()
   const inputs = useMemo(() => (tokenIds ? tokenIds.map((tokenId) => [BigNumber.from(tokenId)]) : []), [tokenIds])
-  console.log('inputs', tokenIds, inputs)
   const results = useSingleContractMultipleData(positionManager, 'positions', inputs)
   const loading = useMemo(() => results.some(({ loading }) => loading), [results])
   const error = useMemo(() => results.some(({ error }) => error), [results])

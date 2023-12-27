@@ -1,4 +1,3 @@
-import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import Card from 'components/Card'
@@ -13,7 +12,7 @@ import styled, { useTheme } from 'styled-components/macro'
 // import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
 import { AutoColumn } from '../Column'
-import { MouseoverValueLabel } from './AdvancedSwapDetails'
+import { ValueLabel } from './AdvancedSwapDetails'
 const StyledCard = styled(Card)`
   padding: 0;
 `
@@ -86,45 +85,34 @@ export function AdvancedAddLimitDetails({
   return (
     <StyledCard>
       <AutoColumn gap="sm">
-        <MouseoverValueLabel
+        <ValueLabel
           description="Amount of margin you are submitting"
           value={formatBNToString(trade?.margin, NumberType.SwapTradeAmount)}
-          label={
-            <Trans>
-              <ThemedText.BodySmall>Margin</ThemedText.BodySmall>
-            </Trans>
-          }
-          appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
+          label="Margin"
+          symbolAppend={inputCurrency ? inputCurrency.symbol : '-'}
+          syncing={syncing}
         />
-        <MouseoverValueLabel
+        <ValueLabel
           description="Borrow Amount when order is filled"
           value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
-          label={
-            <Trans>
-              <ThemedText.BodySmall>Borrowing</ThemedText.BodySmall>
-            </Trans>
-          }
-          appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
+          label="Borrowing"
+          symbolAppend={inputCurrency ? inputCurrency.symbol : '-'}
+          syncing={syncing}
         />
-        <MouseoverValueLabel
+        <ValueLabel
           description="Order will be not filled after this time"
           value={trade ? `${formatDuration(Number(trade?.duration))}` : '-'}
-          label={
-            <Trans>
-              <ThemedText.BodySmall>Valid For</ThemedText.BodySmall>
-            </Trans>
-          }
+          label="Valid For"
+          syncing={syncing}
         />
-        <MouseoverValueLabel
+        <ValueLabel
           description="Amount of premiums to be initially escrowed and held for order to be filled"
           value={formatBNToString(trade?.additionalPremium, NumberType.SwapTradeAmount)}
-          label={
-            <Trans>
-              <ThemedText.BodySmall>Premium Depositing</ThemedText.BodySmall>
-            </Trans>
-          }
-          appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
+          label="Premium Depositing"
+          symbolAppend={inputCurrency ? inputCurrency.symbol : '-'}
+          syncing={syncing}
         />
+
         {/*<MouseoverValueLabel
           description="Order Price"
           value={formatBNToString(trade?.limitPrice, NumberType.SwapTradeAmount)}
@@ -136,9 +124,9 @@ export function AdvancedAddLimitDetails({
           appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
         />*/}
         <Separator />
-        <MouseoverValueLabel
+        <ValueLabel
           description="The amount added to your position when your order is filled"
-          label={<Trans>Added Position</Trans>}
+          label="Added Position"
           syncing={syncing}
           value={
             trade ? `${formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)} ${outputCurrency?.symbol}` : '-'

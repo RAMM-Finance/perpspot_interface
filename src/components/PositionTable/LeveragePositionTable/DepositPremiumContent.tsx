@@ -2,8 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
-import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
-import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
@@ -32,7 +31,6 @@ import { useMarginFacilityContract } from 'hooks/useContract'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useUSDPrice } from 'hooks/useUSDPrice'
-import JSBI from 'jsbi'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -165,10 +163,10 @@ function useDerivedDepositPremiumInfo(
         )
 
         const info: DerivedDepositPremiumInfo = {
-          newDepositAmount: position.premiumDeposit.plus(parsedAmount),
+          newDepositAmount: position.premiumLeft.plus(parsedAmount),
         }
         onPositionChange({
-          premiumLeft: position.premiumLeft.minus(parsedAmount),
+          premiumLeft: position.premiumLeft.plus(parsedAmount),
         })
 
         setTxnInfo(info)
@@ -598,36 +596,4 @@ export function BaseFooter({
       </AutoRow>
     </>
   )
-}
-
-export function getSlippedTicks(
-  pool: Pool,
-  slippedTickTolerance: Percent
-): { slippedTickMin: number; slippedTickMax: number } {
-  const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(slippedTickTolerance.toFixed(18)) * 100))
-
-  const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(slippedTickTolerance.toFixed(18)) * 100))
-
-  const minPrice = new Price(
-    pool.token0,
-    pool.token1,
-    JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-    JSBI.multiply(pool.token0Price.numerator, pullDown)
-  )
-
-  const maxPrice = new Price(
-    pool.token0,
-    pool.token1,
-    JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-    JSBI.multiply(pool.token0Price.numerator, pullUp)
-  )
-
-  // get slipped min/max tick
-  const slippedTickMax = priceToClosestTick(maxPrice)
-  const slippedTickMin = priceToClosestTick(minPrice)
-
-  return {
-    slippedTickMax,
-    slippedTickMin,
-  }
 }

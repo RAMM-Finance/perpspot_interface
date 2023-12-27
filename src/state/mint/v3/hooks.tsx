@@ -542,7 +542,11 @@ export function useDerivedLmtMintInfo(
 
   const dependentField = independentField === Field.CURRENCY_A ? Field.CURRENCY_B : Field.CURRENCY_A
 
-  const { tickDiscretization } = useTickDiscretization(currencyA, currencyB, feeAmount)
+  const { tickDiscretization } = useTickDiscretization(
+    currencyA?.wrapped.address,
+    currencyB?.wrapped.address,
+    feeAmount
+  )
 
   // currencies
   const currencies: { [field in Field]?: Currency } = useMemo(
@@ -912,9 +916,9 @@ export function useDerivedLmtMintInfo(
   }
 }
 
-function useTickDiscretization(
-  currencyA: Currency | undefined,
-  currencyB: Currency | undefined,
+export function useTickDiscretization(
+  currencyA: string | undefined,
+  currencyB: string | undefined,
   fee: FeeAmount | undefined
 ): {
   tickDiscretization: number | undefined
@@ -924,9 +928,9 @@ function useTickDiscretization(
   const [token0, token1] = useMemo(
     () =>
       currencyA && currencyB
-        ? currencyA.wrapped.sortsBefore(currencyB.wrapped)
-          ? [currencyA.wrapped.address, currencyB.wrapped.address]
-          : [currencyB.wrapped.address, currencyA.wrapped.address]
+        ? currencyA.toLowerCase() < currencyB.toLowerCase()
+          ? [currencyA, currencyB]
+          : [currencyB, currencyA]
         : [undefined, undefined],
     [currencyA, currencyB]
   )
@@ -962,7 +966,11 @@ export function useRangeHopCallbacks(
   pool?: Pool | undefined | null
 ) {
   const dispatch = useAppDispatch()
-  const { tickDiscretization } = useTickDiscretization(baseCurrency, quoteCurrency, feeAmount)
+  const { tickDiscretization } = useTickDiscretization(
+    baseCurrency?.wrapped.address,
+    quoteCurrency?.wrapped.address,
+    feeAmount
+  )
 
   const baseToken = useMemo(() => baseCurrency?.wrapped, [baseCurrency])
   const quoteToken = useMemo(() => quoteCurrency?.wrapped, [quoteCurrency])

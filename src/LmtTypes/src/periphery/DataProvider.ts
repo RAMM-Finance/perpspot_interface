@@ -107,6 +107,7 @@ export declare namespace DataProvider {
     token0Decimals: PromiseOrValue<BigNumberish>;
     token1Decimals: PromiseOrValue<BigNumberish>;
     maxWithdrawablePremium: PromiseOrValue<BigNumberish>;
+    borrowInfo: LiquidityLoanStruct[];
   };
 
   export type MarginPositionInfoStructOutput = [
@@ -122,7 +123,8 @@ export declare namespace DataProvider {
     BigNumber,
     number,
     number,
-    BigNumber
+    BigNumber,
+    LiquidityLoanStructOutput[]
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
@@ -137,6 +139,7 @@ export declare namespace DataProvider {
     token0Decimals: number;
     token1Decimals: number;
     maxWithdrawablePremium: BigNumber;
+    borrowInfo: LiquidityLoanStructOutput[];
   };
 
   export type LimitOrderInfoStruct = {

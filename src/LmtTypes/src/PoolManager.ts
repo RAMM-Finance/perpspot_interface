@@ -152,9 +152,7 @@ export interface PoolManagerInterface extends utils.Interface {
     "collectFees((address,address,uint24),int24,int24)": FunctionFragment;
     "feeParams(bytes32)": FunctionFragment;
     "findAndWithdraw((address,address,uint24),uint256,uint256,bool,uint256)": FunctionFragment;
-    "findNearestInitializedBin(bytes32,int24,int24,int24,bool,uint256)": FunctionFragment;
     "findTicks((address,address,uint24),uint256,uint256,bool,uint256,uint160)": FunctionFragment;
-    "getFeeParams((address,address,uint24))": FunctionFragment;
     "getGrowth(address,int24,(uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "getHashedKey((address,address,uint24))": FunctionFragment;
     "getHashedPositionKey(int24,int24,address)": FunctionFragment;
@@ -163,7 +161,6 @@ export interface PoolManagerInterface extends utils.Interface {
     "getParams((address,address,uint24))": FunctionFragment;
     "getPool(address,address,uint24)": FunctionFragment;
     "getPoolList()": FunctionFragment;
-    "getProfitFee((address,address,uint24))": FunctionFragment;
     "initialize()": FunctionFragment;
     "marginFacility()": FunctionFragment;
     "minLiquidities(bytes32)": FunctionFragment;
@@ -181,7 +178,7 @@ export interface PoolManagerInterface extends utils.Interface {
     "tickDiscretizations(bytes32)": FunctionFragment;
     "uniswapV3MintCallback(uint256,uint256,bytes)": FunctionFragment;
     "updateCollectedFees((address,address,uint24),int24,int24,int24)": FunctionFragment;
-    "updateFeeParams((address,address,uint24),uint256,uint256,uint256,uint256)": FunctionFragment;
+    "updateFeeParams((address,address,uint24),uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
     "updatePoolParams(address,((uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256,uint256,uint16,uint256,uint256))": FunctionFragment;
     "withdrawDiscreteLiquidity((address,address,uint24),int24,int24,uint128)": FunctionFragment;
     "withdrawToBorrow((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
@@ -200,9 +197,7 @@ export interface PoolManagerInterface extends utils.Interface {
       | "collectFees"
       | "feeParams"
       | "findAndWithdraw"
-      | "findNearestInitializedBin"
       | "findTicks"
-      | "getFeeParams"
       | "getGrowth"
       | "getHashedKey"
       | "getHashedPositionKey"
@@ -211,7 +206,6 @@ export interface PoolManagerInterface extends utils.Interface {
       | "getParams"
       | "getPool"
       | "getPoolList"
-      | "getProfitFee"
       | "initialize"
       | "marginFacility"
       | "minLiquidities"
@@ -297,17 +291,6 @@ export interface PoolManagerInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "findNearestInitializedBin",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "findTicks",
     values: [
       PoolKeyStruct,
@@ -317,10 +300,6 @@ export interface PoolManagerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeeParams",
-    values: [PoolKeyStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "getGrowth",
@@ -375,10 +354,6 @@ export interface PoolManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getPoolList",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getProfitFee",
-    values: [PoolKeyStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
@@ -472,6 +447,7 @@ export interface PoolManagerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
@@ -522,15 +498,7 @@ export interface PoolManagerInterface extends utils.Interface {
     functionFragment: "findAndWithdraw",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "findNearestInitializedBin",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "findTicks", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeeParams",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "getGrowth", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getHashedKey",
@@ -552,10 +520,6 @@ export interface PoolManagerInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "getPool", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPoolList",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getProfitFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
@@ -835,11 +799,12 @@ export interface PoolManager extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         openFee: BigNumber;
         feeToPool: BigNumber;
         profitFee: BigNumber;
         profitFeeToPool: BigNumber;
+        LPFee: BigNumber;
       }
     >;
 
@@ -851,16 +816,6 @@ export interface PoolManager extends BaseContract {
       simulatedOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    findNearestInitializedBin(
-      id: PromiseOrValue<BytesLike>,
-      startingTick: PromiseOrValue<BigNumberish>,
-      finishTick: PromiseOrValue<BigNumberish>,
-      binSize: PromiseOrValue<BigNumberish>,
-      lte: PromiseOrValue<boolean>,
-      n: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[number, boolean] & { nextTick: number; success: boolean }>;
 
     findTicks(
       key: PoolKeyStruct,
@@ -876,11 +831,6 @@ export interface PoolManager extends BaseContract {
         borrowInfo: LiquidityLoanStructOutput[];
       }
     >;
-
-    getFeeParams(
-      key: PoolKeyStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     getGrowth(
       pool: PromiseOrValue<string>,
@@ -938,11 +888,6 @@ export interface PoolManager extends BaseContract {
     ): Promise<[string]>;
 
     getPoolList(overrides?: CallOverrides): Promise<[string[]]>;
-
-    getProfitFee(
-      key: PoolKeyStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1043,6 +988,7 @@ export interface PoolManager extends BaseContract {
       feeToPool: PromiseOrValue<BigNumberish>,
       profitFee: PromiseOrValue<BigNumberish>,
       profitFeeToPool: PromiseOrValue<BigNumberish>,
+      LPFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1163,11 +1109,12 @@ export interface PoolManager extends BaseContract {
     arg0: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
       openFee: BigNumber;
       feeToPool: BigNumber;
       profitFee: BigNumber;
       profitFeeToPool: BigNumber;
+      LPFee: BigNumber;
     }
   >;
 
@@ -1179,16 +1126,6 @@ export interface PoolManager extends BaseContract {
     simulatedOutput: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  findNearestInitializedBin(
-    id: PromiseOrValue<BytesLike>,
-    startingTick: PromiseOrValue<BigNumberish>,
-    finishTick: PromiseOrValue<BigNumberish>,
-    binSize: PromiseOrValue<BigNumberish>,
-    lte: PromiseOrValue<boolean>,
-    n: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<[number, boolean] & { nextTick: number; success: boolean }>;
 
   findTicks(
     key: PoolKeyStruct,
@@ -1204,11 +1141,6 @@ export interface PoolManager extends BaseContract {
       borrowInfo: LiquidityLoanStructOutput[];
     }
   >;
-
-  getFeeParams(
-    key: PoolKeyStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   getGrowth(
     pool: PromiseOrValue<string>,
@@ -1263,11 +1195,6 @@ export interface PoolManager extends BaseContract {
   ): Promise<string>;
 
   getPoolList(overrides?: CallOverrides): Promise<string[]>;
-
-  getProfitFee(
-    key: PoolKeyStruct,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   initialize(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1368,6 +1295,7 @@ export interface PoolManager extends BaseContract {
     feeToPool: PromiseOrValue<BigNumberish>,
     profitFee: PromiseOrValue<BigNumberish>,
     profitFeeToPool: PromiseOrValue<BigNumberish>,
+    LPFee: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1493,11 +1421,12 @@ export interface PoolManager extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
         openFee: BigNumber;
         feeToPool: BigNumber;
         profitFee: BigNumber;
         profitFeeToPool: BigNumber;
+        LPFee: BigNumber;
       }
     >;
 
@@ -1516,16 +1445,6 @@ export interface PoolManager extends BaseContract {
       }
     >;
 
-    findNearestInitializedBin(
-      id: PromiseOrValue<BytesLike>,
-      startingTick: PromiseOrValue<BigNumberish>,
-      finishTick: PromiseOrValue<BigNumberish>,
-      binSize: PromiseOrValue<BigNumberish>,
-      lte: PromiseOrValue<boolean>,
-      n: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[number, boolean] & { nextTick: number; success: boolean }>;
-
     findTicks(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -1540,11 +1459,6 @@ export interface PoolManager extends BaseContract {
         borrowInfo: LiquidityLoanStructOutput[];
       }
     >;
-
-    getFeeParams(
-      key: PoolKeyStruct,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
 
     getGrowth(
       pool: PromiseOrValue<string>,
@@ -1602,11 +1516,6 @@ export interface PoolManager extends BaseContract {
     ): Promise<string>;
 
     getPoolList(overrides?: CallOverrides): Promise<string[]>;
-
-    getProfitFee(
-      key: PoolKeyStruct,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
 
     initialize(overrides?: CallOverrides): Promise<void>;
 
@@ -1715,6 +1624,7 @@ export interface PoolManager extends BaseContract {
       feeToPool: PromiseOrValue<BigNumberish>,
       profitFee: PromiseOrValue<BigNumberish>,
       profitFeeToPool: PromiseOrValue<BigNumberish>,
+      LPFee: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1884,16 +1794,6 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    findNearestInitializedBin(
-      id: PromiseOrValue<BytesLike>,
-      startingTick: PromiseOrValue<BigNumberish>,
-      finishTick: PromiseOrValue<BigNumberish>,
-      binSize: PromiseOrValue<BigNumberish>,
-      lte: PromiseOrValue<boolean>,
-      n: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     findTicks(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -1902,11 +1802,6 @@ export interface PoolManager extends BaseContract {
       simulatedOutput: PromiseOrValue<BigNumberish>,
       finishPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getFeeParams(
-      key: PoolKeyStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     getGrowth(
@@ -1957,11 +1852,6 @@ export interface PoolManager extends BaseContract {
     ): Promise<BigNumber>;
 
     getPoolList(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getProfitFee(
-      key: PoolKeyStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
 
     initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2062,6 +1952,7 @@ export interface PoolManager extends BaseContract {
       feeToPool: PromiseOrValue<BigNumberish>,
       profitFee: PromiseOrValue<BigNumberish>,
       profitFeeToPool: PromiseOrValue<BigNumberish>,
+      LPFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2159,16 +2050,6 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    findNearestInitializedBin(
-      id: PromiseOrValue<BytesLike>,
-      startingTick: PromiseOrValue<BigNumberish>,
-      finishTick: PromiseOrValue<BigNumberish>,
-      binSize: PromiseOrValue<BigNumberish>,
-      lte: PromiseOrValue<boolean>,
-      n: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     findTicks(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -2177,11 +2058,6 @@ export interface PoolManager extends BaseContract {
       simulatedOutput: PromiseOrValue<BigNumberish>,
       finishPriceX96: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getFeeParams(
-      key: PoolKeyStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     getGrowth(
@@ -2232,11 +2108,6 @@ export interface PoolManager extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getPoolList(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getProfitFee(
-      key: PoolKeyStruct,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
 
     initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2337,6 +2208,7 @@ export interface PoolManager extends BaseContract {
       feeToPool: PromiseOrValue<BigNumberish>,
       profitFee: PromiseOrValue<BigNumberish>,
       profitFeeToPool: PromiseOrValue<BigNumberish>,
+      LPFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
