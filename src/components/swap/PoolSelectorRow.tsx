@@ -58,9 +58,10 @@ interface PoolSelectorRowProps {
   currencyId: string[]
   onCurrencySelect: (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
+  fee: number
 }
 
-export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOpen }: PoolSelectorRowProps) {
+export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOpen, fee }: PoolSelectorRowProps) {
   // const { chainId } = useWeb3React()
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -86,7 +87,7 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
       <div style={{ display: 'flex' }}>
         <DoubleCurrencyLogo currency0={currencyIn as Currency} currency1={currencyOut as Currency} size={22} margin />
-        <Label>{`${labelIn} - ${labelOut} (fee)`}</Label>
+        <Label>{`${labelIn} - ${labelOut} (${fee})`}</Label>
       </div>
 
       <p>Test</p>

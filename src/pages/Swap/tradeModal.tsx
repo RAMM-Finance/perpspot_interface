@@ -561,7 +561,7 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-              <Row justify="flex-end" align="flex-start">
+              <Row justify="flex-end" align="start">
                 <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1" marginRight="10px">
                   Current Price:
                 </ThemedText.DeprecatedMain>

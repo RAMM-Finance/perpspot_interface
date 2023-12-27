@@ -211,7 +211,7 @@ const PriceInfoCell = styled(Cell)`
   }
 `
 
-const GreenText = styled.span`
+export const GreenText = styled.span`
   color: ${({ theme }) => theme.accentSuccess};
 `
 

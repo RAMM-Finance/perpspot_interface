@@ -20,8 +20,8 @@ import TransactionSettings from '../TransactionSettings'
 
 const StyledMenuIcon = styled(Settings)`
   display: flex;
-  height: 20px;
-  width: 20px;
+  height: 15px;
+  width: 15px;
 
   > * {
     stroke: ${({ theme }) => theme.textPrimary};
