@@ -68,6 +68,7 @@ const InputWrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  width: 400px;
 `
 
 const InputSection = styled.div`
@@ -340,7 +341,7 @@ export function WithdrawPremiumContent({
   }, [])
 
   return (
-    <DarkCard style={{ paddingTop: '2rem' }} width="100%" padding="1rem">
+    <DarkCard width="100%" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
       {showModal && (
         <ConfirmModifyPositionModal
           title="Confirm Withdraw Premium"

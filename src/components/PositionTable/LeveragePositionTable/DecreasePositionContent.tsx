@@ -854,7 +854,7 @@ export default function DecreasePositionContent({
   }
 
   return (
-    <DarkCard width="fit-content" padding="1rem" margin="0">
+    <DarkCard width="100%" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
