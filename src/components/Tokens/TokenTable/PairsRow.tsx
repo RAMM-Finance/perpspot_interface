@@ -673,8 +673,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : (Math.round(Number(currentPrice) * 1000000) / 1000000).toString()
   const fomatter = new Intl.NumberFormat(navigator.language)
 
-  const tickLow = Number((Number(pool?.token0Price.toSignificant(6)) * 0.9).toFixed(0))
-  const tickHigh = Number((Number(pool?.token0Price.toSignificant(6)) * 1.1).toFixed(0))
+  const tickLow =
+    Math.round(
+      Math.log(Math.round(Math.round(Number(pool?.token0Price.toSignificant(6))) * 0.9)) / Math.log(1.0001) / 100
+    ) * 100
+  const tickHigh =
+    Math.round(
+      Math.log(Math.round(Math.round(Number(pool?.token0Price.toSignificant(6))) * 1.1)) / Math.log(1.0001) / 100
+    ) * 100
+  console.log(tickLow)
+  console.log(tickHigh)
 
   const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLow, tickHigh)
   console.log(data)
@@ -768,8 +776,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
-        APR={<ClickableRate rate={estimatedapr_}>{Number(data?.apr) / 1e18 + '%'}</ClickableRate>}
-        UtilRate={<ClickableRate rate={urate_}>{Number(data?.utilTotal) / 1e18 + '%'}</ClickableRate>}
+        APR={<ClickableRate rate={estimatedapr_}>{((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}</ClickableRate>}
+        UtilRate={
+          <ClickableRate rate={urate_}>{((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}</ClickableRate>
+        }
         // sparkLine={
         //   <SparkLine>
         //     <ParentSize>

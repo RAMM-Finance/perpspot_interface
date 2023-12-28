@@ -427,13 +427,9 @@ export default function AddLiquidity() {
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
 
-  const data = useRateAndUtil(
-    pool?.token0.address,
-    pool?.token1.address,
-    pool?.fee,
-    Number(priceLower?.toFixed(0)),
-    Number(priceUpper?.toFixed(0))
-  )
+  console.log(tickLower)
+
+  const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLower, tickUpper)
 
   console.log(data)
 
@@ -1308,11 +1304,16 @@ export default function AddLiquidity() {
                             <OutlineCard>
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
-                                <ThemedText.BodySmall> {Number(data?.apr) / 1e18 + '%'}</ThemedText.BodySmall>
+                                <ThemedText.BodySmall>
+                                  {' '}
+                                  {((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}
+                                </ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
-                                <ThemedText.BodySmall>{Number(data?.utilTotal) / 1e18 + '%'}</ThemedText.BodySmall>
+                                <ThemedText.BodySmall>
+                                  {((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}
+                                </ThemedText.BodySmall>
                               </RowBetween>
                             </OutlineCard>
                           </DynamicSection>
