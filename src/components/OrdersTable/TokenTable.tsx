@@ -1,12 +1,11 @@
 import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
-import { useDefaultActiveTokens } from 'hooks/Tokens'
-import { useAtomValue, useResetAtom } from 'jotai/utils'
-import { ReactNode, useEffect, useMemo } from 'react'
+import { useResetAtom } from 'jotai/utils'
+import { ReactNode, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { MarginLimitOrder, MarginOrderDetails } from 'types/lmtv2position'
+import { MarginLimitOrder } from 'types/lmtv2position'
 
 import { TokenDataContainer } from './comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
@@ -110,42 +109,42 @@ function findCurrency(address: string | undefined, tokens: { [address: string]: 
   return tokens[address]
 }
 
-function useFilteredOrders(orders: MarginOrderDetails[] | undefined) {
-  const filterString = useAtomValue(filterStringAtom)
-  const lowercaseFilterString = useMemo(() => filterString.toLowerCase(), [filterString])
-  const tokens = useDefaultActiveTokens()
+// function useFilteredOrders(orders: MarginOrderDetails[] | undefined) {
+//   const filterString = useAtomValue(filterStringAtom)
+//   const lowercaseFilterString = useMemo(() => filterString.toLowerCase(), [filterString])
+//   const tokens = useDefaultActiveTokens()
 
-  return useMemo(() => {
-    if (!orders) return undefined
-    let returnOrders = orders
-    if (lowercaseFilterString) {
-      returnOrders = returnOrders?.filter((order) => {
-        const token0 = findCurrency(order?.poolKey.token0Address, tokens)
-        const token1 = findCurrency(order?.poolKey.token1Address, tokens)
-        const addressIncludesFilterString = order?.poolKey.token0Address?.toLowerCase().includes(lowercaseFilterString)
-        const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
-        const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
-        const name1IncludesFilterString = token1?.name?.toLowerCase().includes(lowercaseFilterString)
-        const symbol1IncludesFilterString = token1?.symbol?.toLowerCase().includes(lowercaseFilterString)
-        return (
-          name0IncludesFilterString ||
-          symbol0IncludesFilterString ||
-          addressIncludesFilterString ||
-          name1IncludesFilterString ||
-          symbol1IncludesFilterString
-        )
-      })
-    }
-    return returnOrders
-  }, [orders, lowercaseFilterString, tokens])
-}
+//   return useMemo(() => {
+//     if (!orders) return undefined
+//     let returnOrders = orders
+//     if (lowercaseFilterString) {
+//       returnOrders = returnOrders?.filter((order) => {
+//         const token0 = findCurrency(order?.poolKey.token0Address, tokens)
+//         const token1 = findCurrency(order?.poolKey.token1Address, tokens)
+//         const addressIncludesFilterString = order?.poolKey.token0Address?.toLowerCase().includes(lowercaseFilterString)
+//         const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
+//         const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
+//         const name1IncludesFilterString = token1?.name?.toLowerCase().includes(lowercaseFilterString)
+//         const symbol1IncludesFilterString = token1?.symbol?.toLowerCase().includes(lowercaseFilterString)
+//         return (
+//           name0IncludesFilterString ||
+//           symbol0IncludesFilterString ||
+//           addressIncludesFilterString ||
+//           name1IncludesFilterString ||
+//           symbol1IncludesFilterString
+//         )
+//       })
+//     }
+//     return returnOrders
+//   }, [orders, lowercaseFilterString, tokens])
+// }
 
-function useSelectOrders(orders?: MarginOrderDetails[]) {
-  // const sortedPositions = useSortedPositions(positions)
+// function useSelectOrders(orders?: MarginOrderDetails[]) {
+//   // const sortedPositions = useSortedPositions(positions)
 
-  // const filteredPositions = useFilteredPositions(sortedPositions)
-  return { filteredOrders: orders }
-}
+//   // const filteredPositions = useFilteredPositions(sortedPositions)
+//   return { filteredOrders: orders }
+// }
 
 export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; loading: boolean }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)

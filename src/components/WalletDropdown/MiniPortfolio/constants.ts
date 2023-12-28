@@ -196,17 +196,21 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Reduced Limit Order`,
     [TransactionStatus.Failed]: t`Reduce Limit Order failed`,
   },
-  [TransactionType.CREATE_REFERRAL]:{
+  [TransactionType.CREATE_REFERRAL]: {
     [TransactionStatus.Pending]: t`Creating Referral Code`,
     [TransactionStatus.Confirmed]: t`Created Referral Code`,
     [TransactionStatus.Failed]: t`Creating Referral Code failed`,
-  }, 
-  [TransactionType.USE_REFERRAL]:{
+  },
+  [TransactionType.USE_REFERRAL]: {
     [TransactionStatus.Pending]: t`Using Referral Code`,
     [TransactionStatus.Confirmed]: t`Using Referral Code`,
     [TransactionStatus.Failed]: t`Using Referral Code failed`,
-  }
-
+  },
+  [TransactionType.CANCEL_LIMIT_ORDER]: {
+    [TransactionStatus.Pending]: t`Cancelling Limit Order`,
+    [TransactionStatus.Confirmed]: t`Cancelled Limit Order`,
+    [TransactionStatus.Failed]: t`Cancel Limit Order failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

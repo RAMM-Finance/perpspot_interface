@@ -626,20 +626,6 @@ const TradeTabContent = () => {
             </ThemedText.BodySecondary>
           </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
-            {/* <SwapCurrencyInputPanelV2
-              value={formattedMargin}
-              onUserInput={handleMarginInput}
-              showMaxButton={showMaxButton}
-              currency={currencies[Field.INPUT] ?? null}
-              onMax={handleMaxInput}
-              onCurrencySelect={handleInputSelect}
-              otherCurrency={currencies[Field.OUTPUT] ?? null}
-              showCommonBases={true}
-              id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
-              showCurrencyAmount={true}
-              fiatValue={fiatValueTradeMargin}
-              label="Margin"
-            /> */}
             <BaseSwapPanel
               value={formattedMargin}
               showMaxButton={showMaxButton}
@@ -685,30 +671,6 @@ const TradeTabContent = () => {
               </ThemedText.BodySecondary>
             </InputHeader>
             <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
-              {/* <SwapCurrencyInputPanelV2
-                value={
-                  !isLimitOrder
-                    ? tradeState !== LeverageTradeState.VALID || !trade
-                      ? '-'
-                      : formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)
-                    : limitTradeState !== LimitTradeState.VALID || !limitTrade
-                    ? '-'
-                    : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
-                }
-                onUserInput={() => 0}
-                showMaxButton={false}
-                hideBalance={false}
-                fiatValue={fiatValueTradeOutput}
-                priceImpact={stablecoinPriceImpact}
-                currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
-                otherCurrency={currencies[Field.INPUT] ?? null}
-                showCommonBases={true}
-                id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
-                loading={!isLimitOrder ? tradeIsLoading : lmtIsLoading}
-                disabled={false}
-                label="Long"
-              /> */}
               <BaseSwapPanel
                 value={
                   !isLimitOrder

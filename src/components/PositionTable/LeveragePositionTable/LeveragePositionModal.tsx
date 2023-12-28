@@ -513,7 +513,6 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
               )}
             </AutoColumn>
           </SecondLabel>
-
           <DoubleArrow>⟷</DoubleArrow>
           <SecondLabel padding="12px" width="100%">
             <AutoColumn gap="sm" justify="center">

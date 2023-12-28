@@ -77,6 +77,12 @@ export interface LimitOrderOptions {
   depositPremium?: string
 }
 
+export interface CancelOrderOptions {
+  pool: string
+  isToken0: boolean
+  isAdd: boolean
+}
+
 export abstract class MarginFacilitySDK {
   private constructor() {}
 
@@ -171,6 +177,17 @@ export abstract class MarginFacilitySDK {
     )
 
     return calldatas
+  }
+
+  public static cancelLimitOrder(param: CancelOrderOptions) {
+    // address pool, bool positionIsToken0, bool isAdd
+    const calldata: string = MarginFacilitySDK.INTERFACE.encodeFunctionData('cancelOrder', [
+      param.pool,
+      param.isToken0,
+      param.isAdd,
+    ])
+
+    return calldata
   }
 
   public static reducePositionParameters(param: ReducePositionOptions): string[] {

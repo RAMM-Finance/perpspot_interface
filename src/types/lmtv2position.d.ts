@@ -70,10 +70,3 @@ export interface OrderPositionKey {
   isToken0: boolean
   isAdd: boolean
 }
-
-export interface MarginOrderDetails {
-  //to do
-  poolKey: RawPoolKey,
-  isToken0: boolean,
-
-}

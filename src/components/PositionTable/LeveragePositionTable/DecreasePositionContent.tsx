@@ -37,7 +37,7 @@ import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
-import { useCurrency } from 'hooks/Tokens'
+import { useCurrency, useToken } from 'hooks/Tokens'
 import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
@@ -62,10 +62,19 @@ import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
+import {
+  CancelOrderOptions,
+  LimitOrderOptions,
+  MarginFacilitySDK,
+  ReducePositionOptions,
+} from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
-import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from './ConfirmModalHeaders'
+import {
+  ConfirmCancelOrderHeader,
+  ConfirmLimitReducePositionHeader,
+  ConfirmReducePositionHeader,
+} from './ConfirmModalHeaders'
 import { BaseFooter } from './DepositPremiumContent'
 import ExistingReduceOrderDetails from './DetailsContainer'
 import { AlteredPositionProperties } from './LeveragePositionModal'
@@ -539,6 +548,66 @@ const OrderHeader = styled(TextWrapper)`
   color: ${({ theme }) => theme.textPrimary};
 `
 
+const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
+  const { account, chainId, provider } = useWeb3React()
+  const token0 = useToken(key?.poolKey.token0Address)
+  const token1 = useToken(key?.poolKey.token1Address)
+
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      if (!account) throw new Error('missing account')
+      if (!chainId) throw new Error('missing chainId')
+      if (!provider) throw new Error('missing provider')
+      if (!key || !token0 || !token1) throw new Error('missing key')
+
+      const pool = computePoolAddress({
+        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+        tokenA: token0,
+        tokenB: token1,
+        fee: key.poolKey.fee,
+      })
+
+      const param: CancelOrderOptions = {
+        pool,
+        isAdd: key.isAdd,
+        isToken0: key.isToken0,
+      }
+      const calldata = MarginFacilitySDK.cancelLimitOrder(param)
+
+      const tx = {
+        from: account,
+        to: LMT_MARGIN_FACILITY[chainId],
+        data: MulticallSDK.encodeMulticall(calldata),
+      }
+
+      let gasEstimate: BigNumber
+
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        console.log('gasError', gasError)
+        throw new Error('gasError')
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          return response
+        })
+      return response
+    } catch (err) {
+      console.log('reduce callback error', err)
+      throw new Error('reduce callback error')
+    }
+  }, [account, chainId, provider, key, token0, token1])
+
+  return { callback }
+}
+
+// cancelOrder(address pool, bool positionIsToken0, bool isAdd
+
 const ExistingReduceOrderSection = ({
   order,
   pool,
@@ -550,8 +619,85 @@ const ExistingReduceOrderSection = ({
   inputCurrency: Currency
   outputCurrency: Currency
 }) => {
+  const { account } = useWeb3React()
+  const [attemptingTxn, setAttemptingTxn] = useState(false)
+  const [txHash, setTxHash] = useState<string>()
+  const [error, setError] = useState<string>()
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  const orderKey = useMemo(() => {
+    if (!account) return undefined
+    return {
+      poolKey: {
+        token0Address: pool.token0.address,
+        token1Address: pool.token1.address,
+        fee: pool.fee,
+      },
+      trader: account,
+      isToken0: order.positionIsToken0,
+      isAdd: false,
+    }
+  }, [order, pool, account])
+
+  const { callback: cancelCallback } = useCancelLimitOrderCallback(orderKey)
+  const addTransaction = useTransactionAdder()
+
+  const handleDismiss = useCallback(() => {
+    setShowConfirm(false)
+    setAttemptingTxn(false)
+    setTxHash(undefined)
+    setError(undefined)
+  }, [])
+
+  const handleCancel = useCallback(() => {
+    if (!cancelCallback) return
+
+    setAttemptingTxn(true)
+    cancelCallback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setError(undefined)
+        addTransaction(response, {
+          type: TransactionType.CANCEL_LIMIT_ORDER,
+          inputCurrencyId: inputCurrency.wrapped.address,
+          outputCurrencyId: outputCurrency.wrapped.address,
+        })
+      })
+      .catch((error) => {
+        console.log('cancel error', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setError(error.message)
+      })
+  }, [cancelCallback, addTransaction, inputCurrency, outputCurrency])
+
   return (
     <ReduceOrderWrapper>
+      {showConfirm && (
+        <ConfirmModifyPositionModal
+          onDismiss={handleDismiss}
+          isOpen={showConfirm}
+          attemptingTxn={attemptingTxn}
+          txHash={txHash}
+          header={
+            <ConfirmCancelOrderHeader order={order} inputCurrency={inputCurrency} outputCurrency={outputCurrency} />
+          }
+          bottom={
+            <BaseFooter
+              errorMessage={<Trans>{error}</Trans>}
+              onConfirm={handleCancel}
+              confirmText="Confirm Cancel Order"
+              disabledConfirm={false}
+            />
+          }
+          title="Confirm Cancel Order"
+          pendingText={<Trans>Cancelling Position ...</Trans>}
+          currencyToAdd={outputCurrency ?? undefined}
+          recipient={account ?? null}
+          errorMessage={error ? <Trans>{error}</Trans> : undefined}
+        />
+      )}
       <OrderHeader margin={false}>Existing Reduce Limit Order found</OrderHeader>
       <ExistingReduceOrderDetails
         order={order}
@@ -568,7 +714,9 @@ const ExistingReduceOrderSection = ({
             height: '15px',
           }}
           padding=".25rem"
-          onClick={() => {}}
+          onClick={() => {
+            setShowConfirm(true)
+          }}
         >
           <ThemedText.BodySmall fontWeight={600}>Remove</ThemedText.BodySmall>
         </ButtonError>

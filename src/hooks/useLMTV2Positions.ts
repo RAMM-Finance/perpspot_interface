@@ -456,8 +456,8 @@ export function getLimitOrderCurrentOutput(
       if (decayRate.isEqualTo(0)) {
         return startOutput
       }
-      // const decayed = decayRate.exponentiatedBy(now - auctionStartTime).multipliedBy(startOutput)
-      // return decayed.times(startOutput) < minOutput ? minOutput : decayed.times(startOutput)
+      const decayed = decayRate.exponentiatedBy(now - auctionStartTime)
+      return decayed.times(startOutput) < minOutput ? minOutput : decayed.times(startOutput)
     }
   }
   return new BN(0)
