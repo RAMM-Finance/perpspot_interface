@@ -9,6 +9,7 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { RowBetween } from 'components/Row'
 import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
+import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -207,6 +208,14 @@ export default function PositionListItem({
 
   const shouldHidePosition = hasURL(token0?.symbol) || hasURL(token1?.symbol)
 
+  const data = useRateAndUtil(
+    pool?.token0.address,
+    pool?.token1.address,
+    pool?.fee,
+    position?.tickLower,
+    position?.tickUpper
+  )
+
   if (shouldHidePosition) {
     return null
   }
@@ -298,7 +307,7 @@ export default function PositionListItem({
                    <Trans>Max:</Trans>
                  </ExtentsText> */}
               <Trans>
-                <span>-%</span>
+                <span>{((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}</span>
                 {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
                    <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
               </Trans>

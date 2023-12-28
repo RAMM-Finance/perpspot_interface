@@ -685,7 +685,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   console.log(tickHigh)
 
   const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLow, tickHigh)
-  console.log(data)
 
   let tvl_
   let volume_

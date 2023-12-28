@@ -427,11 +427,7 @@ export default function AddLiquidity() {
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
 
-  console.log(tickLower)
-
   const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLower, tickUpper)
-
-  console.log(data)
 
   // if(baseCurrency&& quoteCurrency){
   //   if ('address' in baseCurrency && 'address' in quoteCurrency){
