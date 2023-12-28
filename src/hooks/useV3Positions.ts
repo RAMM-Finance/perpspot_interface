@@ -444,7 +444,7 @@ export function useLmtLpPositionsFromTokenIds(tokenIds: BigNumber[] | undefined)
           feeGrowthInside1LastX128: result.feeGrowthInside1LastX128,
           liquidity: result.liquidity,
           nonce: BigNumber.from(0), // result.nonce,
-          operator: '', //result.operator,
+          operator: result.owner, //result.operator,
           tickLower: result.tickLower,
           tickUpper: result.tickUpper,
           token0: result.token0,

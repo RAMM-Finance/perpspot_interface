@@ -64,7 +64,7 @@ export const AddQuery = `
 `
 export const ReduceQuery = `
   query {
-    MarginPositionReduceds {
+    marginPositionReduceds {
       pool
       positionIsToken0
       trader
@@ -105,6 +105,9 @@ export const CollectQuery = `
       tokenId
       amount0
       amount1
+      recipient
+      blockNumber
+      blockTimestamp
     }
   }
 `

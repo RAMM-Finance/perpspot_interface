@@ -1,5 +1,5 @@
 import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery, ReduceQuery, IncreaseLiquidityQuery, DecreaseLiquidityQuery} from 'graphql/limitlessGraph/queries'
+import { AddQuery, ReduceQuery, IncreaseLiquidityQuery, DecreaseLiquidityQuery, CollectQuery} from 'graphql/limitlessGraph/queries'
 import { useReferralContract, useDataProviderContract,useLmtNFTPositionManager, usePoolContract } from 'hooks/useContract'
 import { ethers } from 'ethers'
 import { useMemo, useState,useEffect } from 'react'
@@ -13,90 +13,198 @@ import {useUSDPrice} from 'hooks/useUSDPrice'
 import {gql} from "@apollo/client"
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 
- 
+
 
 
 
 interface AddPositionData{
-	trader: string
+    trader: string
 
 }
 
 export function usePointsData() {
-  const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([]);
-  const {chainId} = useWeb3React()
-  const [addData, setAddData] = useState<any>()
-  const [addLiqData, setAddLiqData] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
-  const nfpm = useLmtNFTPositionManager()
-  // which tokens(address), by how much 
-  useEffect(() => {
-    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !AddQuery || loading || error) return
-    const call = async () => {
-      try {
-        setLoading(true)
+    const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
+    const [uniquePools, setUniquePools] = useState<any>([])
+    const [uniqueTokens, setUniqueTokens] = useState<any>()
+    const {chainId} = useWeb3React()
+    const [addData, setAddData] = useState<any>()
+    const [reduceData, setReduceData] = useState<any>()
 
-        const AddQueryData = await client.query(AddQuery, {}).toPromise()
-        const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
-        console.log('AddQuery', AddQueryData.data.marginPositionIncreaseds, 
-        	AddLiqQueryData)
-        
-		const uniqueTokenIds = new Set<string>(); 
-		AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any)=>{
-			if(!uniqueTokenIds.has(entry.tokenId)){
-				uniqueTokenIds.add(entry.tokenId)
-			}
-		})
-		const bigNumberTokenIds = Array.from(uniqueTokenIds).map(id => BigNumber.from(id))
-        setUniqueTokenIds(bigNumberTokenIds)
+    const [addLiqData, setAddLiqData] = useState<any>()
+    const [collectData, setCollectData] = useState<any>()
 
-        setAddData(AddQueryData.data.marginPositionIncreaseds)
-        setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<any>()
+    const nfpm = useLmtNFTPositionManager()
+    const dataProvider = useDataProviderContract()
+    const referralContract = useReferralContract()
+    
+    useEffect(() => {
 
-        setLoading(false)
-      } catch (error) {
-        setError(error)
-        setLoading(false)
-      }
-    }
-    call()
-  }, [])
+        if (!client || !AddQuery || loading || error) return
+            const call = async () => {
+                try {
+                    setLoading(true)
 
-  const { positions:lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds);
+                    const AddQueryData = await client.query(AddQuery, {}).toPromise()
+                    const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise() 
+                    const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
+                    const CollectQueryData = await client.query(CollectQuery, {}).toPromise() 
 
-  const token = useCurrency("0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9")
-  const { data: usdPrice } = useUSDPrice(token ? tryParseCurrencyAmount('1', token) : undefined)
-  console.log('token', token, usdPrice, tryParseCurrencyAmount('1', token?token:undefined) )
+                    console.log('AddQuery', AddQueryData.data.marginPositionIncreaseds, 
+                        AddLiqQueryData, CollectQueryData)
+                    
+                    const uniqueTokenIds = new Set<string>()
+                    AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any)=>{
+                        if(!uniqueTokenIds.has(entry.tokenId)){
+                            uniqueTokenIds.add(entry.tokenId)
+                        }
+                    })
 
-  // for all, only 7 days window 
+                    const pools = new Set<string>()
+                    AddQueryData?.data?.marginPositionIncreaseds.forEach((entry:any)=>{
+                        // const poolContract = usePoolContract(entry.pool)
+                        if(!pools.has(entry.pool)){
+                            pools.add(entry.pool)
+                        }
+                    })
 
-  // for both add and reduce: 
-  // {trader1: [[token, amount], [token, amount],[token, amount]] , 
-  	// trader2: [[token, amount], [token, amount],[token, amount]] }
+                    const bigNumberTokenIds = Array.from(uniqueTokenIds).map(id => BigNumber.from(id))
+                    setUniqueTokenIds(bigNumberTokenIds)
+                    setUniquePools(Array.from(pools))
+                    setAddData(AddQueryData.data.marginPositionIncreaseds)
+                    setReduceData(ReduceQueryData.data.marginPositionReduceds)
+                    setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
+                    setCollectData(CollectQueryData.data.collects)
+                    setLoading(false)
+                } catch (error) {
+                    setError(error)
+                    setLoading(false)
+                }
+            }
+            call()
+        }, [])
 
-  // for add liquidity: 
-  // {lp1: [[token0, token1, amount0*time, amount1*time,]]}
 
-// amountsum: 
-// added 1,1, + 72 hours, minused 0.5, 0.5 + 96 hours
-// -> 1,1 * 72 + 0.5,0.5* 96 = 72 + 48 = 120
 
-// add->trader, token traded(address), amount 
-// reduce-> trader, token traded, amount
-// addliq-> lp, token0, token1, amount0, amount1
-// reduceliq-> lp, token0, token1, amount0, amount1 
+    const [loaded, setLoaded] = useState(false)
+    useEffect(()=>{
 
-  return useMemo(() => {
-    return {
-      addData,
-      addLiqData,
-      lpPositions, // This includes loading, positions, etc.
-      // loading,
-      // error
-    };
-  }, [addData, addLiqData, lpPositions, loading, error])
+        const uniqueTokens_ = new Map<string, any>()
+
+        const call = async () => {
+            try{
+                const tokens  = (await Promise.all(uniquePools.map(async (pool:any)=> {
+                    const token = await dataProvider?.getPoolkeys(pool)
+                    if(token){
+                        if(!uniqueTokens_.has(pool)){
+                            uniqueTokens_.set(pool, [token[0], token[1]])
+                        }
+                        return {pool: (token[0], token[1])}
+                    } 
+                    else return null
+                }
+            )))
+            setUniqueTokens(uniqueTokens_)
+            setLoaded(true)
+
+            }catch(err){
+                console.log('tokens fetching ', err)
+            }
+
+        }
+        call()
+
+    }, [uniquePools, dataProvider])
+
+    const addDataProcessed = addData?.map((entry:any)=>({
+        token: entry.positionIsToken0? uniqueTokens?.get(entry.pool)?.[1]: uniqueTokens?.get(entry.pool)?.[0] ,
+        trader: entry.trader, 
+        amount: entry.addedAmount
+    }))
+    const reduceDataProcessed = reduceData?.map((entry:any)=>({
+        token: entry.positionIsToken0? uniqueTokens?.get(entry.pool)?.[0]: uniqueTokens?.get(entry.pool)?.[1] ,
+        trader: entry.trader, 
+        amount: entry.reduceAmount
+    }))
+    const tradeProcessedByTrader: { [key: string]: any } = {}
+    addDataProcessed?.forEach((entry:any)=>{
+        if(!tradeProcessedByTrader[entry.trader]){
+            tradeProcessedByTrader[entry.trader] = []
+        }
+        tradeProcessedByTrader[entry.trader].push(entry)
+    })
+    reduceDataProcessed?.forEach((entry:any)=>{
+        if(!tradeProcessedByTrader[entry.trader]){
+            tradeProcessedByTrader[entry.trader] = []
+        }
+        tradeProcessedByTrader[entry.trader].push(entry)
+    })
+
+
+    
+    const { positions:lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds);
+    console.log('Collects', addLiqData, collectData, lpPositions)
+
+
+    const uniqueLps = new Set<string>()
+    lpPositions?.forEach((entry: any)=>{
+        if(!uniqueLps.has(entry.operator)){
+            uniqueLps.add(entry.operator)
+        }
+    })
+    const lpPositionsByUniqueLps: { [key: string]: any } = {}
+    lpPositions?.forEach((entry: any)=>{
+        const sameTokenIdCollects = collectData.filter((collect:any)=>{
+            if(collect.tokenId == entry.tokenId.toString()){
+                return true
+            }
+            return false
+        })
+
+        var amount0Collected = 0
+        var amount1Collected = 0 
+        for (let i=0 ; i < sameTokenIdCollects.length; i++){
+            amount0Collected = amount0Collected+ Number(sameTokenIdCollects[i].amount0)
+            amount1Collected = amount1Collected+ Number(sameTokenIdCollects[i].amount1) 
+        }
+
+        if(!lpPositionsByUniqueLps[entry.operator]){
+            lpPositionsByUniqueLps[entry.operator] = []
+        }
+ 
+        // collectf
+        lpPositionsByUniqueLps[entry.operator].push({
+            token0: entry.token0, 
+            token1: entry.token1, 
+            tokenId: entry.tokenId.toString(), 
+            amount0Collected: amount0Collected, 
+            amount1Collected: amount1Collected
+        })
+    })
+
+    console.log('lppositions', lpPositionsByUniqueLps)
+
+    
+
+    const token = useCurrency("0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9")
+    const { data: usdPrice } = useUSDPrice(token ? tryParseCurrencyAmount('1', token) : undefined)
+    console.log('token', token, usdPrice, tryParseCurrencyAmount('1', token?token:undefined) )
+
+
+
+
+
+
+    return useMemo(() => {
+        return {
+            tradeProcessedByTrader,
+            lpPositionsByUniqueLps,
+             // This includes loading, positions, etc.
+            // loading,
+            // error
+        };
+    }, [addData, addLiqData, reduceData, collectData, lpPositions, loading, error])
 
 }
 
