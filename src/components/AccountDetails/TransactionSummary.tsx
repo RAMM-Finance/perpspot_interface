@@ -410,8 +410,9 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Reduce Limit Order Summary</Trans>
     case TransactionType.CREATE_REFERRAL:
       return <Trans>Created Referral Code</Trans>
-    case TransactionType.USE_REFERRAL: 
+    case TransactionType.USE_REFERRAL:
       return <Trans>Using Referral Code</Trans>
-
+    case TransactionType.CANCEL_LIMIT_ORDER:
+      return <Trans>Cancel Limit Order Summary</Trans>
   }
 }

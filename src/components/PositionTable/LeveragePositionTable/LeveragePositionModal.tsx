@@ -103,16 +103,16 @@ const ModalWrapper = styled.div`
 const PositionInfoWrapper = styled(LightCard)`
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: center;
   border-radius: 20px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
   border: none;
   background: ${({ theme }) => theme.backgroundSurface};
   // border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
-  padding: 0.5rem;
+  padding: 0.75rem;
 `
 
 const ActionsWrapper = styled.div`
@@ -245,7 +245,8 @@ const PositionInfoHeader = styled(TextWrapper)`
 
 const PositionValueWrapper = styled(LightCard)`
   background: ${({ theme }) => theme.surface1};
-  margin: 0.8rem;
+  margin-top: 15px;
+  padding: 0.5rem 1rem;
   width: 95%;
 `
 
@@ -512,7 +513,6 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
               )}
             </AutoColumn>
           </SecondLabel>
-
           <DoubleArrow>⟷</DoubleArrow>
           <SecondLabel padding="12px" width="100%">
             <AutoColumn gap="sm" justify="center">
@@ -592,9 +592,9 @@ function PositionValueLabel({
     <PositionValueLabelWrapper>
       <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
       <AutoColumn>
-        <TextWithLoadingPlaceholder height="20px" syncing={syncing} width={65}>
+        <TextWithLoadingPlaceholder syncing={syncing} width={65}>
           <ValueWrapper margin={false}>
-            <Row padding="5px">
+            <Row padding="5px" height="28px">
               {value ? `${formatBNToString(value, type)} ${appendSymbol ?? ''}` : '-'}
               {newValue ? <StyledArrow /> : null}
               {newValue ? `${formatBNToString(newValue, type)} ${appendSymbol ?? ''}` : null}

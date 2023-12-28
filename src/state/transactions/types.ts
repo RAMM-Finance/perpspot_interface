@@ -58,8 +58,9 @@ export enum TransactionType {
   ADD_LIMIT_ORDER,
   REMOVE_LIMIT_ORDER,
   REDUCE_LIMIT_ORDER,
-  CREATE_REFERRAL, 
-  USE_REFERRAL, 
+  CREATE_REFERRAL,
+  USE_REFERRAL,
+  CANCEL_LIMIT_ORDER,
 }
 
 interface BaseTransactionInfo {
@@ -242,18 +243,24 @@ export interface ReduceLimitOrderTransactionInfo {
   outputCurrencyId: string
 }
 
+export interface CancelLimitOrderTransactionInfo {
+  type: TransactionType.CANCEL_LIMIT_ORDER
+  inputCurrencyId: string
+  outputCurrencyId: string
+}
+
 export interface RemoveLimitOrderTransactionInfo {
   type: TransactionType.REMOVE_LIMIT_ORDER
   inputCurrencyId: string
   outputCurrencyId: string
 }
 
-export interface CreateReferralCodeTransactionInfo{
+export interface CreateReferralCodeTransactionInfo {
   type: TransactionType.CREATE_REFERRAL
   inputCurrencyId: string
   outputCurrencyId: string
 }
-export interface UseReferralCodeTransactionInfo{
+export interface UseReferralCodeTransactionInfo {
   type: TransactionType.USE_REFERRAL
   inputCurrencyId: string
   outputCurrencyId: string
@@ -343,6 +350,7 @@ export type TransactionInfo =
   | RemoveLimitOrderTransactionInfo
   | CreateReferralCodeTransactionInfo
   | UseReferralCodeTransactionInfo
+  | CancelLimitOrderTransactionInfo
 
 export interface TransactionDetails {
   hash: string

@@ -231,7 +231,7 @@ export function useDerivedAddPositionInfo(
   }, [account, inputCurrency, outputCurrency, pool])
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
-  const existingLimitPosition = useMarginOrderPositionFromPositionId(orderKey)
+  const { position: existingLimitPosition } = useMarginOrderPositionFromPositionId(orderKey)
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
   const [userPremiumPercent] = useUserPremiumDepositPercent()
@@ -544,7 +544,7 @@ export function useDerivedLimitAddPositionInfo(
 
   const deadline = useLimitTransactionDeadline()
 
-  const existingLimitPosition = useMarginOrderPositionFromPositionId(orderKey)
+  const { position: existingLimitPosition } = useMarginOrderPositionFromPositionId(orderKey)
 
   const [approvalState] = useApproveCallback(
     preTradeInfo?.approvalAmount,
