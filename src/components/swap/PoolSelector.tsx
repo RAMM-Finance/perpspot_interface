@@ -135,11 +135,11 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
   const navigate = useNavigate()
 
   const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string) => {
+    (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string, fee: number) => {
       onCurrencySelection(Field.INPUT, currencyIn)
       onCurrencySelection(Field.OUTPUT, currencyOut)
       if (location.pathname !== '/swap') {
-        navigate(`/add/${currencyInAdd}/${currencyOutAdd}/${500}`)
+        navigate(`/add/${currencyOutAdd}/${currencyInAdd}/${fee}`)
       }
     },
     []
@@ -223,8 +223,6 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
     }
     call()
   }, [])
-
-  console.log(data)
 
   const availablePools = useMemo(() => {
     if (data) {

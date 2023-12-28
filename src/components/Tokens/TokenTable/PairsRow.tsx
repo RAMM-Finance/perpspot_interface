@@ -7,6 +7,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
 import { TimePeriod } from 'graphql/data/util'
+import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
@@ -603,13 +604,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const smallArrow = getDeltaArrow(delta, 14)
   const formattedDelta = formatDelta(delta)
 
-  const token0 = useToken(tokenA)
-  const token1 = useToken(tokenB)
+  const currencyIda = useToken(tokenA)
+  const currencyIdb = useToken(tokenB)
 
   const exploreTokenSelectedEventProperties = {
     chain_id: chainId,
-    token_address: token0?.address,
-    token_symbol: token0?.symbol,
+    token_address: currencyIda?.address,
+    token_symbol: currencyIda?.symbol,
     token_list_index: tokenListIndex,
     // token_list_rank: sortRank,
     token_list_length: tokenListLength,
@@ -655,17 +656,28 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   currencies,
   //   // inputError: swapInputError,
   // } = useDerivedSwapInfo()
-  const currency0 = useCurrency(token0?.address)
-  const currency1 = useCurrency(token1?.address)
-  console.log(currency0)
-  const [poolState, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, FeeAmount.LOW)
+  const baseCurrency = useCurrency(currencyIda?.address)
+  const quoteCurrency = useCurrency(currencyIdb?.address)
+
+  const [token0, token1] =
+    baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
+      ? [baseCurrency, quoteCurrency]
+      : [quoteCurrency, baseCurrency]
+
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
   // console.log('pools', token0.address, token1.address, pool)
-  const currentPrice = pool?.token0Price.toSignificant(3)
+  const currentPrice = pool?.token0Price.toSignificant(6)
   const priceRounded =
-    token1?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+    currencyIdb?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
       ? ((Math.round(1 / Number(currentPrice)) * 1000000) / 1000000).toString()
       : (Math.round(Number(currentPrice) * 1000000) / 1000000).toString()
   const fomatter = new Intl.NumberFormat(navigator.language)
+
+  const tickLow = Number((Number(pool?.token0Price.toSignificant(6)) * 0.9).toFixed(0))
+  const tickHigh = Number((Number(pool?.token0Price.toSignificant(6)) * 1.1).toFixed(0))
+
+  const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLow, tickHigh)
+  console.log(data)
 
   let tvl_
   let volume_
@@ -673,16 +685,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   let urate_
 
   if (
-    token0?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-    token1?.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
+    currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+    currencyIdb?.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
   ) {
     tvl_ = 2313000000
     volume_ = 1300000
     estimatedapr_ = 23.5
     urate_ = 42.32
   } else if (
-    token0?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-    token1?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+    currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+    currencyIdb?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
   ) {
     tvl_ = 1530000000
     volume_ = 210000
@@ -698,25 +710,25 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     <RowWrapper
       ref={ref}
       onClick={() => {
-        if (currency1 && currency0) {
+        if (token0 && token1) {
           navigate({
             pathname: '/swap',
-            search: `?inputCurrency=${(currency0 as any)?.address}&outputCurrency=${(currency1 as any)?.address}`,
+            search: `?inputCurrency=${(token0 as any)?.address}&outputCurrency=${(token1 as any)?.address}`,
           })
         }
       }}
-      data-testid={`token-table-row-${token0?.symbol}`}
+      data-testid={`token-table-row-${currencyIda?.symbol}`}
     >
       <TokenRow
         header={false}
         // listNumber={sortRank}
-        currency0={currency0}
-        currency1={currency1}
+        currency0={token0}
+        currency1={token1}
         tokenInfo={
           <ClickableName>
             {/* <QueryTokenLogo token={token} /> */}
             <TokenInfoCell>
-              <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={20} margin={true} />
+              <DoubleCurrencyLogo currency0={token0} currency1={token1} size={20} margin={true} />
               <TokenName data-cy="token-name">
                 <span>{token0?.symbol}</span>
                 <span>{token1?.symbol}</span>
@@ -756,8 +768,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
-        APR={<ClickableRate rate={estimatedapr_}>{formatNumber(estimatedapr_) + '%'}</ClickableRate>}
-        UtilRate={<ClickableRate rate={urate_}>{formatNumber(urate_) + '%'}</ClickableRate>}
+        APR={<ClickableRate rate={estimatedapr_}>{Number(data?.apr) / 1e18 + '%'}</ClickableRate>}
+        UtilRate={<ClickableRate rate={urate_}>{Number(data?.utilTotal) / 1e18 + '%'}</ClickableRate>}
         // sparkLine={
         //   <SparkLine>
         //     <ParentSize>
@@ -778,9 +790,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         first={tokenListIndex === 0}
         last={tokenListIndex === tokenListLength - 1}
         // @ts-ignore
-        currency0={currency0?.address}
+        currency0={token0?.address}
         // @ts-ignore
-        currency1={currency1?.address}
+        currency1={token1?.address}
       />
 
       {/*</ClickableContent> */}

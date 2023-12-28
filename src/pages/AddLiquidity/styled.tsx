@@ -121,6 +121,7 @@ export const LeftSection = styled(AutoColumn)`
 
 export const RightSection = styled(AutoColumn)`
   width: 40%;
+  padding-top: 3vh;
 `
 
 export const StackedContainer = styled.div`
