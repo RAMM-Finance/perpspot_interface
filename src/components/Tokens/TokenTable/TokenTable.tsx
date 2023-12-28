@@ -180,7 +180,6 @@ export default function TokenTable() {
     }
     call()
   }, [])
-  console.log('data', data)
 
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{

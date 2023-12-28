@@ -56,7 +56,13 @@ const Logo = styled.img`
 
 interface PoolSelectorRowProps {
   currencyId: string[]
-  onCurrencySelect: (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string) => void
+  onCurrencySelect: (
+    currencyIn: Currency,
+    currencyOut: Currency,
+    currencyInAdd: string,
+    currencyOutAdd: string,
+    fee: number
+  ) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
   fee: number
 }
@@ -69,10 +75,16 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
   } = useSwapState()
 
   const active = currencyId[0] === inputCurrencyId && currencyId[1] === outputCurrencyId
-  const currencyIn = useCurrency(currencyId[0])
-  const labelIn = currencyIn?.symbol as string
-  const currencyOut = useCurrency(currencyId[1])
-  const labelOut = currencyOut?.symbol as string
+  const baseCurrency = useCurrency(currencyId[0])
+  const quoteCurrency = useCurrency(currencyId[1])
+  const [token0, token1] =
+    baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
+      ? [baseCurrency, quoteCurrency]
+      : [quoteCurrency, baseCurrency]
+  const labelIn = token0?.symbol as string
+  const labelOut = token1?.symbol as string
+
+  console.log(token0?.wrapped.address)
 
   const theme = useTheme()
 
@@ -80,13 +92,13 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
     <Container
       disabled={false}
       onClick={() => {
-        currencyIn && currencyOut && onCurrencySelect(currencyIn, currencyOut, currencyId[0], currencyId[1])
+        token0 && token1 && onCurrencySelect(token0, token1, token0?.wrapped.address, token1?.wrapped.address, fee)
         setIsOpen(() => false)
       }}
     >
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
       <div style={{ display: 'flex' }}>
-        <DoubleCurrencyLogo currency0={currencyIn as Currency} currency1={currencyOut as Currency} size={22} margin />
+        <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
         <Label>{`${labelIn} - ${labelOut} (${fee})`}</Label>
       </div>
 

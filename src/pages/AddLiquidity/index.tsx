@@ -15,6 +15,7 @@ import { PoolSelector } from 'components/swap/PoolSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
+import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import usePrevious from 'hooks/usePrevious'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -425,6 +426,16 @@ export default function AddLiquidity() {
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
+
+  const data = useRateAndUtil(
+    pool?.token0.address,
+    pool?.token1.address,
+    pool?.fee,
+    Number(priceLower?.toFixed(0)),
+    Number(priceUpper?.toFixed(0))
+  )
+
+  console.log(data)
 
   // if(baseCurrency&& quoteCurrency){
   //   if ('address' in baseCurrency && 'address' in quoteCurrency){
@@ -1296,10 +1307,12 @@ export default function AddLiquidity() {
                             <ThemedText.BodyPrimary style={{ marginBottom: '5px' }}>Details</ThemedText.BodyPrimary>
                             <OutlineCard>
                               <RowBetween style={{ marginBottom: '6px' }}>
-                                <ThemedText.BodySmall>APR:</ThemedText.BodySmall>
+                                <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
+                                <ThemedText.BodySmall> {Number(data?.apr) / 1e18 + '%'}</ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
+                                <ThemedText.BodySmall>{Number(data?.utilTotal) / 1e18 + '%'}</ThemedText.BodySmall>
                               </RowBetween>
                             </OutlineCard>
                           </DynamicSection>
