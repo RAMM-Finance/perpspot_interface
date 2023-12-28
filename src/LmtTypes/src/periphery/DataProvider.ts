@@ -153,6 +153,9 @@ export declare namespace DataProvider {
     inputAmount: PromiseOrValue<BigNumberish>;
     decayRate: PromiseOrValue<BigNumberish>;
     margin: PromiseOrValue<BigNumberish>;
+    currentOutput: PromiseOrValue<BigNumberish>;
+    token0Decimals: PromiseOrValue<BigNumberish>;
+    token1Decimals: PromiseOrValue<BigNumberish>;
   };
 
   export type LimitOrderInfoStructOutput = [
@@ -161,6 +164,9 @@ export declare namespace DataProvider {
     boolean,
     number,
     number,
+    BigNumber,
+    BigNumber,
+    BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -177,6 +183,9 @@ export declare namespace DataProvider {
     inputAmount: BigNumber;
     decayRate: BigNumber;
     margin: BigNumber;
+    currentOutput: BigNumber;
+    token0Decimals: BigNumber;
+    token1Decimals: BigNumber;
   };
 
   export type BinDataStruct = {
@@ -217,6 +226,7 @@ export interface DataProviderInterface extends utils.Interface {
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getMinMaxTicks((int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getOrder(address,address,bool,bool)": FunctionFragment;
+    "getOrderInfo(address,address,bool,bool)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
     "getPostInstantaeneousRate((address,address,uint24),address,bool)": FunctionFragment;
     "getPreInstantaeneousRate((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
@@ -242,6 +252,7 @@ export interface DataProviderInterface extends utils.Interface {
       | "getMaxWithdrawable"
       | "getMinMaxTicks"
       | "getOrder"
+      | "getOrderInfo"
       | "getPoolkeys"
       | "getPostInstantaeneousRate"
       | "getPreInstantaeneousRate"
@@ -327,6 +338,15 @@ export interface DataProviderInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getOrder",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<boolean>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getOrderInfo",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -432,6 +452,10 @@ export interface DataProviderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOrder", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getOrderInfo",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getPoolkeys",
     data: BytesLike
@@ -583,6 +607,18 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[OrderStructOutput] & { order: OrderStructOutput }>;
 
+    getOrderInfo(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<
+      [DataProvider.LimitOrderInfoStructOutput] & {
+        order: DataProvider.LimitOrderInfoStructOutput;
+      }
+    >;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -730,6 +766,14 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<OrderStructOutput>;
 
+  getOrderInfo(
+    pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    isAdd: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<DataProvider.LimitOrderInfoStructOutput>;
+
   getPoolkeys(
     pool: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -874,6 +918,14 @@ export interface DataProvider extends BaseContract {
       isAdd: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<OrderStructOutput>;
+
+    getOrderInfo(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<DataProvider.LimitOrderInfoStructOutput>;
 
     getPoolkeys(
       pool: PromiseOrValue<string>,
@@ -1025,6 +1077,14 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getOrderInfo(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPoolkeys(
       pool: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1162,6 +1222,14 @@ export interface DataProvider extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getOrder(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOrderInfo(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,

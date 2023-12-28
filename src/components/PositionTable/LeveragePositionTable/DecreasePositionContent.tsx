@@ -52,20 +52,22 @@ import { DynamicSection } from 'pages/Swap/tradeModal'
 import { PriceToggleSection } from 'pages/Swap/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertTriangle } from 'react-feather'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import { useUserSlippageTolerance, useUserSlippedTickTolerance } from 'state/user/hooks'
+import { useUserSlippageTolerance } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
-import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
+import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
 import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from './ConfirmModalHeaders'
 import { BaseFooter } from './DepositPremiumContent'
+import ExistingReduceOrderDetails from './DetailsContainer'
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
 
@@ -307,7 +309,7 @@ function useDerivedReduceLimitPositionInfo(
   const [txnInfo, setTxnInfo] = useState<DerivedLimitReducePositionInfo>()
   const [contractError, setContractError] = useState<React.ReactNode>()
   // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
-  const existingLimitOrder = useMarginOrderPositionFromPositionId(positionKey)
+  const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(positionKey)
   const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
   const inputError = useMemo(() => {
@@ -478,6 +480,103 @@ const Hr = styled.hr`
   width: 90%;
 `
 
+const ShowInRangeNote = styled(AutoColumn)`
+  background-color: ${({ theme }) => theme.surface1};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.textPrimary};
+  padding: 0.5rem;
+  border-radius: 12px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  margin-right: 8px;
+`
+
+const LabelText = styled.div<{ color: string }>`
+  align-items: center;
+  color: ${({ color }) => color};
+  display: flex;
+  flex-direction: row;
+`
+
+const InRangeLimitReduceWarning = () => {
+  const theme = useTheme()
+  return (
+    <ShowInRangeNote justify="flex-start" gap="0px">
+      <RowBetween>
+        <RowFixed>
+          <LabelText color={theme.accentWarning}>
+            <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
+          </LabelText>
+          <ThemedText.DeprecatedMain fontSize={14} color={theme.textSecondary}>
+            <Trans>Position liquidity in range, must be reduced with a limit order</Trans>
+          </ThemedText.DeprecatedMain>
+        </RowFixed>
+      </RowBetween>
+    </ShowInRangeNote>
+  )
+}
+
+const ReduceOrderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.5rem;
+  border-radius: 20px;
+  min-width: 370px;
+  justify-content: flex-start;
+  // background: ${({ theme }) => theme.backgroundSurface};
+  // border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 0.5rem;
+`
+
+const OrderHeader = styled(TextWrapper)`
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 20px;
+  padding-left: 1rem;
+  width: 100%;
+  // border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.textPrimary};
+`
+
+const ExistingReduceOrderSection = ({
+  order,
+  pool,
+  inputCurrency,
+  outputCurrency,
+}: {
+  order: MarginLimitOrder
+  pool: Pool
+  inputCurrency: Currency
+  outputCurrency: Currency
+}) => {
+  return (
+    <ReduceOrderWrapper>
+      <OrderHeader margin={false}>Existing Reduce Limit Order found</OrderHeader>
+      <ExistingReduceOrderDetails
+        order={order}
+        pool={pool}
+        inputCurrency={inputCurrency}
+        outputCurrency={outputCurrency}
+      />
+      <RowFixed>
+        <ButtonError
+          style={{
+            fontSize: '12px',
+            borderRadius: '10px',
+            width: 'fit-content',
+            height: '15px',
+          }}
+          padding=".25rem"
+          onClick={() => {}}
+        >
+          <ThemedText.BodySmall fontWeight={600}>Remove</ThemedText.BodySmall>
+        </ButtonError>
+      </RowFixed>
+    </ReduceOrderWrapper>
+  )
+}
+
 export default function DecreasePositionContent({
   positionKey,
   onPositionChange,
@@ -529,7 +628,23 @@ export default function DecreasePositionContent({
   }, [positionKey])
   const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  const { position } = useMarginLMTPositionFromPositionId(positionKey)
+  const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
+  const { position: orderPosition, loading: orderLoading } = useMarginOrderPositionFromPositionId(orderKey)
+
+  const existingOrderBool = useMemo(() => {
+    if (!orderPosition || !existingPosition) return undefined
+    if (orderPosition.auctionStartTime > 0) {
+      const reducePercent = orderPosition.inputAmount.div(existingPosition.totalPosition)
+      onPositionChange({
+        totalPosition: existingPosition.totalPosition.minus(orderPosition.inputAmount),
+        margin: existingPosition.margin.times(new BN(1).minus(reducePercent)),
+        totalDebtInput: existingPosition.totalDebtInput.times(new BN(1).minus(reducePercent)),
+        totalDebtOutput: existingPosition.totalDebtOutput.times(new BN(1).minus(reducePercent)),
+      })
+      return true
+    } else return false
+  }, [orderPosition, existingPosition, onPositionChange])
+
   // const [errorMessage, setErrorMessage] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
   // const [isLimit, setIsLimit] = useState(false)
@@ -537,30 +652,29 @@ export default function DecreasePositionContent({
   const [limitPrice, setLimitPrice] = useState<string>('')
 
   const inputCurrency = useCurrency(
-    position?.isToken0 ? position?.poolKey?.token1Address : position?.poolKey.token0Address
+    existingPosition?.isToken0 ? existingPosition?.poolKey?.token1Address : existingPosition?.poolKey.token0Address
   )
   const outputCurrency = useCurrency(
-    position?.isToken0 ? position?.poolKey?.token0Address : position?.poolKey.token1Address
+    existingPosition?.isToken0 ? existingPosition?.poolKey?.token0Address : existingPosition?.poolKey.token1Address
   )
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
-  const [userSlippedTickTolerance] = useUserSlippedTickTolerance()
+  // const [userSlippedTickTolerance] = useUserSlippedTickTolerance()
 
   const allowedSlippage = useMemo(() => {
     if (userSlippageTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
     else return userSlippageTolerance
   }, [userSlippageTolerance])
 
-  const borrowLiquidityRange = useBorrowedLiquidityRange(position, pool ?? undefined)
+  const borrowLiquidityRange = useBorrowedLiquidityRange(existingPosition, pool ?? undefined)
   const inRange = useMemo(() => {
+    if (borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE) {
+      setCurrentState((prev) => ({ ...prev, isLimit: true }))
+    }
     return borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE
   }, [borrowLiquidityRange])
-  // const allowedSlippedTick = useMemo(() => {
-  //   if (userSlippedTickTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
-  //   else return userSlippedTickTolerance
-  // }, [userSlippedTickTolerance])
 
   const onToggle = useCallback(() => {
     setShowSettings(!showSettings)
@@ -572,7 +686,7 @@ export default function DecreasePositionContent({
     currentState.isLimit,
     reduceAmount,
     positionKey,
-    position,
+    existingPosition,
     allowedSlippage,
     setTradeState,
     onPositionChange,
@@ -589,11 +703,10 @@ export default function DecreasePositionContent({
     baseCurrencyIsInput,
     setLmtTradeState,
     onPositionChange,
-    position,
+    existingPosition,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
-  const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
 
   const positionExists = useMemo(() => {
     if (!positionLoading && existingPosition?.openTime === 0) {
@@ -632,25 +745,25 @@ export default function DecreasePositionContent({
       if (!txnInfo) throw new Error('missing txn info')
       if (!parsedReduceAmount) throw new Error('missing reduce amount')
       // if (!marginFacility) throw new Error('missing marginFacility contract')
-      if (!position) throw new Error('missing position')
+      if (!existingPosition) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency) throw new Error('missing input currency')
 
       // get reduce parameters
-      const reducePercent = new BN(parsedReduceAmount).div(position.totalPosition).shiftedBy(18).toFixed(0)
+      const reducePercent = new BN(parsedReduceAmount).div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
       const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
-      const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+      const price = !existingPosition.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
       const minOutput = new BN(parsedReduceAmount)
         .times(price)
         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
-      const isClose = parsedReduceAmount.isEqualTo(position.totalPosition)
+      const isClose = parsedReduceAmount.isEqualTo(existingPosition.totalPosition)
       const removePremium =
-        isClose && position.premiumLeft.isGreaterThan(0)
-          ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
+        isClose && existingPosition.premiumLeft.isGreaterThan(0)
+          ? existingPosition.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
           : undefined
 
       const reduceParam: ReducePositionOptions = {
@@ -700,7 +813,6 @@ export default function DecreasePositionContent({
     inputCurrency,
     outputCurrency,
     pool,
-    position,
     positionKey,
     txnInfo,
     tradeState,
@@ -710,10 +822,11 @@ export default function DecreasePositionContent({
     allowedSlippage,
     deadline,
     parsedReduceAmount,
+    existingPosition,
   ])
 
   const handleReducePosition = useCallback(() => {
-    if (!callback || !position || !txnInfo || !inputCurrency || !outputCurrency) {
+    if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
       return
     }
     // setAttemptingTxn(true)
@@ -750,7 +863,6 @@ export default function DecreasePositionContent({
       })
   }, [
     callback,
-    position,
     txnInfo,
     inputCurrency,
     outputCurrency,
@@ -824,12 +936,6 @@ export default function DecreasePositionContent({
     }))
   }, [])
 
-  // const { onChangeTradeType, onPriceToggle, onPriceInput } = useMarginTradingActionHandlers()
-
-  // const { baseCurrencyIsInputToken, startingPrice } = useMarginTradingState()
-
-  // console.log('lmtTradeState', lmtTradeState)
-
   const currentPrice = useMemo(() => {
     if (pool && inputCurrency && outputCurrency) {
       const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
@@ -853,8 +959,21 @@ export default function DecreasePositionContent({
     return <PositionMissing />
   }
 
+  if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition) {
+    return (
+      <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
+        <ExistingReduceOrderSection
+          pool={pool}
+          inputCurrency={inputCurrency}
+          outputCurrency={outputCurrency}
+          order={orderPosition}
+        />
+      </DarkCard>
+    )
+  }
+
   return (
-    <DarkCard width="100%" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
+    <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -921,20 +1040,24 @@ export default function DecreasePositionContent({
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '100px', alignItems: 'center' }}>
-          <FilterWrapper>
-            <Filter onClick={() => setCurrentState((prev) => ({ ...prev, isLimit: !prev.isLimit }))}>
-              <Selector active={!currentState.isLimit}>
-                <StyledSelectorText lineHeight="20px" active={!currentState.isLimit}>
-                  Market
-                </StyledSelectorText>
-              </Selector>
-              <Selector active={currentState.isLimit}>
-                <StyledSelectorText lineHeight="20px" active={currentState.isLimit}>
-                  Limit
-                </StyledSelectorText>
-              </Selector>
-            </Filter>
-          </FilterWrapper>
+          {!inRange ? (
+            <FilterWrapper>
+              <Filter onClick={() => setCurrentState((prev) => ({ ...prev, isLimit: !prev.isLimit }))}>
+                <Selector active={!currentState.isLimit}>
+                  <StyledSelectorText lineHeight="20px" active={!currentState.isLimit}>
+                    Market
+                  </StyledSelectorText>
+                </Selector>
+                <Selector active={currentState.isLimit}>
+                  <StyledSelectorText lineHeight="20px" active={currentState.isLimit}>
+                    Limit
+                  </StyledSelectorText>
+                </Selector>
+              </Filter>
+            </FilterWrapper>
+          ) : (
+            <InRangeLimitReduceWarning />
+          )}
         </div>
 
         <LmtSettingsTab
@@ -944,9 +1067,9 @@ export default function DecreasePositionContent({
           isLimitOrder={currentState.isLimit}
         />
       </div>
-      <AutoColumn style={{ alignItems: 'flex-start' }}>
+      <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
-          <AutoColumn style={{ marginBottom: '20px' }}>
+          <AutoColumn style={{ marginBottom: '10px' }}>
             <DynamicSection justify="start" gap="md" disabled={false}>
               <RowStart>
                 {Boolean(inputCurrency && outputCurrency) && (
@@ -1027,10 +1150,10 @@ export default function DecreasePositionContent({
               if (closePosition) {
                 setClosePosition(false)
               }
-              if (position?.totalDebtInput) {
+              if (existingPosition?.totalDebtInput) {
                 if (str === '') {
                   onDebouncedReduceAmount('')
-                } else if (new BN(str).isGreaterThan(new BN(position?.totalPosition))) {
+                } else if (new BN(str).isGreaterThan(new BN(existingPosition?.totalPosition))) {
                   return
                 } else {
                   setReduceAmount(str)
@@ -1047,21 +1170,22 @@ export default function DecreasePositionContent({
         </InputSection>
         <PercentSlider
           initialValue={
-            parseBN(debouncedReduceAmount) && position
-              ? new BN(debouncedReduceAmount).div(position?.totalPosition).times(100).toFixed(1)
+            parseBN(debouncedReduceAmount) && existingPosition
+              ? new BN(debouncedReduceAmount).div(existingPosition?.totalPosition).times(100).toFixed(1)
               : ''
           }
           onSlideChange={(val) => {
             if (val > 100 || val < 0) return
-            position && onDebouncedReduceAmount(new BN(val).div(100).times(position?.totalPosition).toString())
+            existingPosition &&
+              onDebouncedReduceAmount(new BN(val).div(100).times(existingPosition?.totalPosition).toString())
           }}
           onInputChange={(val) => {
             const valBN = parseBN(val)
             if (!valBN) {
               onDebouncedReduceAmount('')
-            } else if (position) {
+            } else if (existingPosition) {
               if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
-              setReduceAmount(new BN(val).div(100).times(position.totalPosition).toString())
+              setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
             }
           }}
         />
@@ -1075,7 +1199,7 @@ export default function DecreasePositionContent({
                 setReduceAmount('')
               } else {
                 setClosePosition(true)
-                position && setReduceAmount(position?.totalPosition.toString())
+                existingPosition && setReduceAmount(existingPosition?.totalPosition.toString())
               }
             }}
           />
@@ -1105,7 +1229,7 @@ export default function DecreasePositionContent({
                         <StyledInfoIcon color={theme.deprecated_bg3} />
                       </HideSmall>
                     )}
-                    {position ? (
+                    {existingPosition ? (
                       loading ? (
                         <ThemedText.BodySmall>
                           <Trans>Finding Best Price...</Trans>
@@ -1160,7 +1284,8 @@ export default function DecreasePositionContent({
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
                                     {txnInfo &&
                                       `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                                        (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
+                                        (Number(txnInfo?.PnL.toNumber()) /
+                                          Number(existingPosition?.margin.toNumber())) *
                                         100
                                       ).toFixed(2)}%) ${inputCurrency?.symbol}`}
                                   </DeltaText>{' '}
@@ -1203,7 +1328,8 @@ export default function DecreasePositionContent({
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
                                     {txnInfo &&
                                       `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                                        (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
+                                        (Number(txnInfo?.PnL.toNumber()) /
+                                          Number(existingPosition?.margin.toNumber())) *
                                         100
                                       ).toFixed(2)}%) ${inputCurrency?.symbol}`}
                                   </DeltaText>
@@ -1245,7 +1371,8 @@ export default function DecreasePositionContent({
                                   <DeltaText delta={Number(txnInfo?.PnL)}>
                                     {txnInfo &&
                                       `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                                        (Number(txnInfo?.PnL.toNumber()) / Number(position?.margin.toNumber())) *
+                                        (Number(txnInfo?.PnL.toNumber()) /
+                                          Number(existingPosition?.margin.toNumber())) *
                                         100
                                       ).toFixed(2)}%) ${inputCurrency?.symbol}`}
                                   </DeltaText>{' '}
@@ -1262,7 +1389,7 @@ export default function DecreasePositionContent({
             </Wrapper>
           </TransactionDetails>
         </AutoColumn>
-      </AutoColumn>
+      </div>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         <ButtonError
           style={{

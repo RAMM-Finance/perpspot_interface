@@ -423,7 +423,7 @@ const TradeTabContent = () => {
 
   const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage)
 
-  const existingLimitOrder = useMarginOrderPositionFromPositionId(orderKey)
+  const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(orderKey)
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {

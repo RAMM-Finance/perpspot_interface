@@ -8,6 +8,7 @@ import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
 import { useEffect, useMemo, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
+import { useToken } from './Tokens'
 import { useDataProviderContract, useMarginFacilityContract } from './useContract'
 import { computeOrderId, computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
@@ -278,12 +279,24 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
       loading,
       error,
       Orders: result?.[0]?.map((order: any) => {
-        // const inputDecimals = position.isToken0
-        //   ? Number(position.token1Decimals.toString())
-        //   : Number(position.token0Decimals.toString())
-        // const outputDecimals = position.isToken0
-        //   ? Number(position.token0Decimals.toString())
-        //   : Number(position.token1Decimals.toString())
+        let inputDecimals = order.isToken0
+          ? Number(order.token1Decimals.toString())
+          : Number(order.token0Decimals.toString())
+        let outputDecimals = order.isToken0
+          ? Number(order.token0Decimals.toString())
+          : Number(order.token1Decimals.toString())
+        inputDecimals = order.isAdd ? inputDecimals : outputDecimals
+        outputDecimals = order.isAdd ? outputDecimals : inputDecimals
+        const startOutput = convertToBN(order.startOutput, outputDecimals) //new BN(order.startOutput.toString()).shiftedBy(-outputDecimals)
+        const decayRate = convertToBN(order.decayRate, 18) //new BN(order.decayRate.toString())
+        const minOutput = convertToBN(order.minOutput, outputDecimals) //new BN(order.minOutput.toString()).shiftedBy(-outputDecimals)
+        const currentOutput = getLimitOrderCurrentOutput(
+          order.auctionDeadline,
+          order.auctionStartTime,
+          decayRate,
+          startOutput,
+          minOutput
+        )
         return {
           key: {
             token0Address: order.key.token0,
@@ -293,30 +306,18 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
           isAdd: order.isAdd,
           auctionDeadline: order.auctionDeadline,
           auctionStartTime: order.auctionStartTime,
-          startOutput: order.startOutput.toString(),
-          minOutput: order.minOutput.toString(),
-          inputAmount: order.inputAmount.toString(),
+          startOutput: new BN(order.startOutput.toString()).shiftedBy(-outputDecimals),
+          minOutput: new BN(order.minOutput.toString()).shiftedBy(-outputDecimals),
+          inputAmount: new BN(order.inputAmount.toString()).shiftedBy(-inputDecimals),
           decayRate: order.decayRate.toString(),
-          margin: order.margin.toString(),
+          margin: new BN(order.margin.toString()).shiftedBy(-inputDecimals),
           positionIsToken0: order.positionIsToken0,
+          currentOutput,
         }
       }),
     }
   }, [loading, error, result])
 }
-
-// function getFee(fee: number): FeeAmount {
-//   switch (fee) {
-//     case FeeAmount.LOWEST:
-//       return FeeAmount.LOWEST
-//     case FeeAmount.MEDIUM:
-//       return FeeAmount.MEDIUM
-//     case FeeAmount.HIGH:
-//       return FeeAmount.HIGH
-//     default:
-//       return FeeAmount.MEDIUM
-//   }
-// }
 
 // fetches corresponding LMT position, if it exists then openTime > 0
 export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | undefined): {
@@ -441,10 +442,37 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   }, [loading, error, result, account, key])
 }
 
-export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): MarginLimitOrder | undefined {
+// TODO
+export function getLimitOrderCurrentOutput(
+  auctionDeadline: number,
+  auctionStartTime: number,
+  decayRate: BN,
+  startOutput: BN,
+  minOutput: BN
+): BN {
+  const now = Math.floor(Date.now() / 1000)
+  if (now > auctionDeadline) {
+    if (now > auctionStartTime) {
+      if (decayRate.isEqualTo(0)) {
+        return startOutput
+      }
+      // const decayed = decayRate.exponentiatedBy(now - auctionStartTime).multipliedBy(startOutput)
+      // return decayed.times(startOutput) < minOutput ? minOutput : decayed.times(startOutput)
+    }
+  }
+  return new BN(0)
+}
+
+export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): {
+  loading: boolean
+  error: any
+  position: MarginLimitOrder | undefined
+} {
   // address pool, address trader, bool positionIsToken0, bool isAdd
   const MarginFacility = useMarginFacilityContract()
   const { chainId } = useWeb3React()
+  const inputCurrency = useToken(key?.isToken0 ? key?.poolKey.token1Address : key?.poolKey.token0Address)
+  const outputCurrency = useToken(key?.isToken0 ? key?.poolKey.token0Address : key?.poolKey.token1Address)
   const orderId = useMemo(() => {
     if (key && chainId) {
       const pool = computePoolAddress({
@@ -461,22 +489,43 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
   const { loading, error, result } = useSingleCallResult(MarginFacility, 'orders', [orderId])
 
   return useMemo(() => {
-    if (loading || error || !result || !key) {
-      return undefined
+    if (loading || error || !result || !key || !inputCurrency || !outputCurrency) {
+      return {
+        loading,
+        error,
+        position: undefined,
+      }
     }
-    return {
+    const startOutput = convertToBN(result.startOutput, result.isAdd ? outputCurrency.decimals : inputCurrency.decimals)
+    const decayRate = convertToBN(result.decayRate, 18)
+    const minOutput = convertToBN(result.minOutput, result.isAdd ? outputCurrency.decimals : inputCurrency.decimals)
+    const currentOutput = getLimitOrderCurrentOutput(
+      result.auctionDeadline,
+      result.auctionStartTime,
+      decayRate,
+      startOutput,
+      minOutput
+    )
+
+    const position = {
       key: key.poolKey,
       isAdd: result.isAdd,
       positionIsToken0: key.isToken0,
       auctionDeadline: result.auctionDeadline,
       auctionStartTime: result.auctionStartTime,
-      startOutput: convertToBN(result.startOutput, 18),
-      minOutput: convertToBN(result.minOutput, 18),
-      inputAmount: convertToBN(result.inputAmount, 18),
-      decayRate: convertToBN(result.decayRate, 18),
-      margin: convertToBN(result.margin, 18),
+      startOutput,
+      minOutput,
+      inputAmount: convertToBN(result.inputAmount, result.isAdd ? inputCurrency.decimals : outputCurrency.decimals),
+      decayRate,
+      margin: convertToBN(result.margin, inputCurrency.decimals),
+      currentOutput,
     }
-  }, [result, loading, error, key])
+    return {
+      loading,
+      error,
+      position,
+    }
+  }, [result, loading, error, key, inputCurrency, outputCurrency])
 }
 export interface BinData {
   price: string

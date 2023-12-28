@@ -48,6 +48,7 @@ export interface MarginLimitOrder {
   inputAmount: BN,
   decayRate: BN,
   margin: BN
+  currentOutput: BN
 }
 
 export interface RawPoolKey {
