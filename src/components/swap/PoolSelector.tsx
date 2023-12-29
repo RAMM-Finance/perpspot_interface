@@ -35,8 +35,9 @@ const PoolListHeader = styled.h4`
 `
 const PoolListContainer = styled.div`
   display: grid;
-  grid-template-columns: 0.5fr 3fr 1fr 1fr;
+  grid-template-columns: 3fr 1fr 1fr 0.5fr;
   width: 375px;
+  padding-left: 1vw;
 `
 
 export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boolean }) => {
@@ -235,7 +236,14 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
   }, [data])
 
   const dropdown = (
-    <NavDropdown ref={modalRef} style={{ height: 'fit-content', zIndex: '3' }}>
+    <NavDropdown
+      ref={modalRef}
+      style={
+        largeWidth
+          ? { position: 'absolute', height: 'fit-content', zIndex: '3', marginRight: '1vw' }
+          : { position: 'absolute', height: 'fit-content', zIndex: '3' }
+      }
+    >
       <Row flexDirection="column">
         <SearchInput
           type="text"
@@ -247,10 +255,10 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
           onChange={handleInput}
         />
         <PoolListContainer>
-          <PoolListHeader></PoolListHeader>
           <PoolListHeader>Pool (fee)</PoolListHeader>
           <PoolListHeader>TVL</PoolListHeader>
           <PoolListHeader>24h Vol</PoolListHeader>
+          <PoolListHeader></PoolListHeader>
         </PoolListContainer>
       </Row>
       <Row>
@@ -279,7 +287,7 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
   }
 
   return (
-    <Box position="relative" padding="6" ref={ref}>
+    <Box position="relative" ref={ref}>
       <Row
         as="button"
         gap="8"
@@ -288,14 +296,27 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
         onClick={() => setIsOpen(!isOpen)}
         style={
           largeWidth
-            ? { paddingLeft: '1vw', transform: 'scale(1.2,1.2)', width: '255px' }
-            : { paddingLeft: '1vw', width: '255px' }
+            ? {
+                padding: '10px',
+                height: 'fit-content',
+                width: '325px',
+                display: 'flex',
+                justifyContent: 'space-around',
+              }
+            : { padding: '5px', width: '255px', display: 'flex', justifyContent: 'space-around' }
         }
       >
-        <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={22} />
-        <ThemedText.BodySmall color="secondary">{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
-        <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
-        {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
+        <Row gap="8">
+          <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={20} />
+          <ThemedText.BodySmall
+            fontSize={largeWidth ? '16px' : ''}
+            color="secondary"
+          >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+        </Row>
+        <Row gap="8">
+          <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
+          {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
+        </Row>
       </Row>
       {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
     </Box>

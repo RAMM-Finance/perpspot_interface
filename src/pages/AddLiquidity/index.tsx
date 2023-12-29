@@ -8,7 +8,6 @@ import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
-import FeeSelector from 'components/FeeSelector'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import { PositionPreview } from 'components/PositionPreview'
 import { PoolSelector } from 'components/swap/PoolSelector'
@@ -745,7 +744,7 @@ export default function AddLiquidity() {
                             <Trans>Select Pair</Trans>
                           </ThemedText.BodyPrimary>
                         </RowBetween>
-                        <RowBetween padding="1rem" justify="start" gap="0px">
+                        <RowBetween justify="start" gap="0px">
                           {/* <CurrencyDropdown
                             value={formattedAmounts[Field.CURRENCY_A]}
                             onUserInput={onFieldAInput}
@@ -1239,7 +1238,7 @@ export default function AddLiquidity() {
                 {/*</ResponsiveTwoColumns>*/}
               </LeftSection>
               <RightSection>
-                {!hasExistingPosition && (
+                {/* {!hasExistingPosition && (
                   <>
                     <FeeSelector
                       disabled={!quoteCurrency || !baseCurrency}
@@ -1249,7 +1248,7 @@ export default function AddLiquidity() {
                       currencyB={quoteCurrency ?? undefined}
                     />
                   </>
-                )}
+                )} */}
                 <div>
                   {!hasExistingPosition ? (
                     <>
@@ -1301,14 +1300,13 @@ export default function AddLiquidity() {
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {' '}
-                                  {((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}
+                                  {data && ((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}
+                                  {data && ((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                             </OutlineCard>

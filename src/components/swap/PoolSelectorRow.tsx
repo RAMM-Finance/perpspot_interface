@@ -17,7 +17,7 @@ const Container = styled.button<{ disabled: boolean }>`
   color: ${({ theme }) => theme.textPrimary};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns: 0.5fr 3fr 1fr 1fr;
+  grid-template-columns: 3fr 1fr 1fr 0.5fr;
   line-height: 24px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
   text-align: left;
@@ -74,7 +74,6 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-  const active = currencyId[0] === inputCurrencyId && currencyId[1] === outputCurrencyId
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])
   const [token0, token1] =
@@ -83,8 +82,9 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
       : [quoteCurrency, baseCurrency]
   const labelIn = token0?.symbol as string
   const labelOut = token1?.symbol as string
+  const active = token0?.wrapped.address === inputCurrencyId && token1?.wrapped.address === outputCurrencyId
 
-  console.log(token0?.wrapped.address)
+  console.log(active)
 
   const theme = useTheme()
 
@@ -96,14 +96,13 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
         setIsOpen(() => false)
       }}
     >
-      <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
       <div style={{ display: 'flex' }}>
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
-        <Label>{`${labelIn} - ${labelOut} (${fee})`}</Label>
+        <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
       </div>
-
       <p>Test</p>
       <p>Test</p>
+      <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )
 }
