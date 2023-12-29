@@ -83,8 +83,8 @@ const Referrals = () => {
   const userRef = useRef<HTMLInputElement>(null)
   const referralRef = useRef<HTMLInputElement>(null)
 
-  const [refGen, setRefGen] = useState('')
-  const [ref, setRef] = useState('')
+  const [refGen, setRefGen] = useState('0')
+  const [ref, setRef] = useState('0')
 
   const handleUserRefChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRefGen(event.target.value);
@@ -134,17 +134,18 @@ const Referrals = () => {
     const code = referral
       ? refGen ? defaultAbiCoder.encode(['uint256'], [refGen]).toString() : undefined
       : ref ? defaultAbiCoder.encode(['uint256'], [ref]).toString() : undefined
-      console.log('code', code)
     if(!account || !code || !referralContract) return 
 
     const call = async()=>{
       try{
+        console.log('code', code,referral? refGen: ref)
+
         const result = await referralContract.codeOwners(code)
         console.log('owner', result)
         setCodeExists(result!= "0x0000000000000000000000000000000000000000")
 
       } catch(error){
-        console.log('codeowner err')
+        console.log('codeowner err',error)
       }
     }
 
@@ -179,16 +180,15 @@ const Referrals = () => {
 
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
-
     try {
+      console.log('what', refGen)
       const bytes32 = defaultAbiCoder.encode(['uint256'], [refGen]).toString()
       const response = await referralContract?.registerCode(bytes32)
       return response as TransactionResponse
     } catch (err) {
-      console.log('referr', err)
       throw new Error('reff')
     }
-  }, [account, chainId, referral, provider])
+  }, [account, chainId, referral, provider, refGen])
 
   const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
 
@@ -200,7 +200,7 @@ const Referrals = () => {
       console.log('referr', err)
       throw new Error('reff')
     }
-  }, [account, chainId, referral, provider])
+  }, [account, chainId, referral, provider, ref])
 
 
   const handleCreateReferral = useCallback(()=>{
@@ -228,7 +228,7 @@ const Referrals = () => {
       setErrorMessage(error.message)
     })
 
-  }, [txHash, attemptingTxn, errorMessage])
+  }, [callback, account, referralContract, chainId, provider, userRef, txHash, attemptingTxn, errorMessage])
 
 
   const handleUseCode = useCallback(()=>{
@@ -254,7 +254,7 @@ const Referrals = () => {
       setErrorMessage(error.message)
     })
 
-  }, [txHash, attemptingTxn, errorMessage])
+  }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
   return (
     <Wrapper>

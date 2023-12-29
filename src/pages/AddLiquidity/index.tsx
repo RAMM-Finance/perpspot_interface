@@ -232,7 +232,7 @@ export default function AddLiquidity() {
 
   async function onAdd() {
     if (!chainId || !provider || !account) return
-
+      console.log(lmtPositionManager, baseCurrency, quoteCurrency, approvalAmountA, approvalAmountB, pool)
     if (!lmtPositionManager || !baseCurrency || !quoteCurrency || !approvalAmountA || !approvalAmountB || !pool) {
       return
     }

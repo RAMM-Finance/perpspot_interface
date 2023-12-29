@@ -61,7 +61,7 @@ export const LMT_V2_PREMIUM_COMPUTER: AddressMap = {
 }
 
 export const LMT_REFERRAL: AddressMap = {
-  [SupportedChainId.SEPOLIA]: '0x6eE766b8dD8014EbD9771EF13E77501C24cCfA66',
+  [SupportedChainId.SEPOLIA]: '0x32ae1b5826D1b7285753452FA7243614867A08B9',
 }
 
 // celo v3 addresses

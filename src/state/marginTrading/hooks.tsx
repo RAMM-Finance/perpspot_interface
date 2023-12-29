@@ -1080,6 +1080,7 @@ const useSimulateMarginTrade = (
         setSimulationError(undefined)
       } catch (err) {
         console.log('simulate margin error', err)
+        console.log('existing position', existingPosition)
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
 
