@@ -3,6 +3,7 @@ import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
+import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -17,6 +18,7 @@ import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import usePrevious from 'hooks/usePrevious'
 import { useSingleCallResult } from 'lib/hooks/multicall'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -1288,13 +1290,13 @@ export default function AddLiquidity() {
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {data && ((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}
+                                  {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %`}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {data && ((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}
+                                  {`${formatBNToString(aprUtil?.util, NumberType.TokenNonTx)} %`}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                             </OutlineCard>
