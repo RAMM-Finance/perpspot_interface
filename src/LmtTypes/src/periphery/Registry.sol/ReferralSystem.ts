@@ -41,6 +41,7 @@ export interface ReferralSystemInterface extends utils.Interface {
     "registerCodeAdmin(bytes32,address)": FunctionFragment;
     "registerCodes(bytes32[])": FunctionFragment;
     "setHandler(address,bool)": FunctionFragment;
+    "setMaxCode(uint256)": FunctionFragment;
     "setReferralCode(address,bytes32)": FunctionFragment;
     "setReferralCodeByUser(bytes32)": FunctionFragment;
     "setTier(address,uint256)": FunctionFragment;
@@ -61,6 +62,7 @@ export interface ReferralSystemInterface extends utils.Interface {
       | "registerCodeAdmin"
       | "registerCodes"
       | "setHandler"
+      | "setMaxCode"
       | "setReferralCode"
       | "setReferralCodeByUser"
       | "setTier"
@@ -116,6 +118,10 @@ export interface ReferralSystemInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
+    functionFragment: "setMaxCode",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setReferralCode",
     values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
   ): string;
@@ -162,6 +168,7 @@ export interface ReferralSystemInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setHandler", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setMaxCode", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setReferralCode",
     data: BytesLike
@@ -319,6 +326,11 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setMaxCode(
+      max: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setReferralCode(
       _account: PromiseOrValue<string>,
       _code: PromiseOrValue<BytesLike>,
@@ -405,6 +417,11 @@ export interface ReferralSystem extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  setMaxCode(
+    max: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   setReferralCode(
     _account: PromiseOrValue<string>,
     _code: PromiseOrValue<BytesLike>,
@@ -486,6 +503,11 @@ export interface ReferralSystem extends BaseContract {
     setHandler(
       _auth: PromiseOrValue<string>,
       _isActive: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMaxCode(
+      max: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -599,6 +621,11 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    setMaxCode(
+      max: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     setReferralCode(
       _account: PromiseOrValue<string>,
       _code: PromiseOrValue<BytesLike>,
@@ -683,6 +710,11 @@ export interface ReferralSystem extends BaseContract {
     setHandler(
       _auth: PromiseOrValue<string>,
       _isActive: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMaxCode(
+      max: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

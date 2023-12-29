@@ -8,11 +8,6 @@ import type { Facility, FacilityInterface } from "../../src/Facility";
 
 const _abi = [
   {
-    inputs: [],
-    name: "exceedMaxWithdrawablePremium",
-    type: "error",
-  },
-  {
     anonymous: false,
     inputs: [
       {
@@ -279,40 +274,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "pool",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "borrower",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "borrowedToken1",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "minPremiumDepositPercentage",
-        type: "uint256",
-      },
-    ],
-    name: "checkPremiumCondition",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         components: [
           {
             internalType: "address",
@@ -453,52 +414,6 @@ const _abi = [
         internalType: "uint32",
         name: "",
         type: "uint32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "token0",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "token1",
-            type: "address",
-          },
-          {
-            internalType: "uint24",
-            name: "fee",
-            type: "uint24",
-          },
-        ],
-        internalType: "struct PoolKey",
-        name: "key",
-        type: "tuple",
-      },
-      {
-        internalType: "address",
-        name: "borrower",
-        type: "address",
-      },
-      {
-        internalType: "bool",
-        name: "borrowedToken1",
-        type: "bool",
-      },
-    ],
-    name: "maxWithdrawablePremium",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
       },
     ],
     stateMutability: "view",

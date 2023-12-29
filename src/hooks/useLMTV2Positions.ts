@@ -13,77 +13,72 @@ import { useDataProviderContract, useMarginFacilityContract } from './useContrac
 import { computeOrderId, computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
 
-// export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
-//   // getParams
-//   const poolManager = useLmtPoolManagerContract()
-//   const { chainId } = useWeb3React()
-
-//   const poolAddress = useMemo(() => {
-//     if (!pool) return undefined
-//     return PoolCache.getPoolAddress(
-//       V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
-//       pool.token0,
-//       pool.token1,
-//       pool.fee
-//     )
-//   }, [chainId, pool])
-//   const { loading, error, result } = useSingleCallResult(poolManager, 'PoolParams', [poolAddress])
-
-//   return useMemo(() => {
-//     if (!result || loading || error) {
-//       return undefined
-//     } else {
-//               console.log('huh',result.MIN_PREMIUM_DEPOSIT)
-
-//       return {
-//         minimumPremiumDeposit: convertToBN(result.MIN_PREMIUM_DEPOSIT, 18),
-//       }
-//     }
-//   }, [result, loading, error])
-// }
 export function useRateAndUtil(
   token0: string | undefined,
   token1: string | undefined,
   fee: number | undefined,
   tickLower: number | undefined,
   tickUpper: number | undefined
-) {
+): { loading: boolean; error: any; result: { apr: BN; util: BN } | undefined } {
   const dataProvider = useDataProviderContract()
-  const [data, setData] = useState<any>()
+  const blockNumber = useBlockNumber()
+  const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
+
+  const [data, setData] = useState<{ apr: BN; util: BN }>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
   useEffect(() => {
-    if (!token0 || !token1 || !fee || !tickLower || !tickUpper || loading) return
+    if (loading) return
+
+    if (!token0 || !token1 || !fee || !tickLower || !tickUpper || !dataProvider || !blockNumber) {
+      setData(undefined)
+      setError(undefined)
+      return
+    }
+
+    if (lastBlockNumber && lastBlockNumber === blockNumber) return
 
     const call = async () => {
       try {
         setLoading(true)
-        const result = await dataProvider?.getUtilAndAPR(
-          { token0: token0, token1: token1, fee: fee },
-          tickLower,
-          tickUpper
+        const result = await dataProvider.callStatic.getUtilAndAPR(
+          {
+            token0: token0 as string,
+            token1: token1 as string,
+            fee: fee as number,
+          },
+          tickLower as number,
+          tickUpper as number
         )
-        if (result !== data) {
-          setData(result)
-        }
+        const apr = new BN(result[0].toString()).shiftedBy(-18)
+        const util = new BN(result[1].toString()).shiftedBy(-18)
+        setData({
+          apr,
+          util,
+        })
         setLoading(false)
+        setBlockNumber(blockNumber)
       } catch (error) {
         if (error !== error) {
           setError(error)
         }
         setLoading(false)
+        setData(undefined)
         console.log('instant rate', error)
       }
     }
 
     call()
+  }, [dataProvider, loading, blockNumber, token0, lastBlockNumber, token1, fee, tickLower, tickUpper])
 
-    return () => {
+  return useMemo(() => {
+    return {
+      result: data,
+      loading,
+      error,
     }
-  }, [dataProvider, token0, token1, fee, tickLower, tickUpper])
-
-  return data
+  }, [data, loading, error])
 }
 
 export function useInstantaeneousRate(
@@ -102,12 +97,13 @@ export function useInstantaeneousRate(
   const [error, setError] = useState<any>()
 
   useEffect(() => {
-    if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+    if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber) || !dataProvider)
+      return
     if (positionIsToken0 == undefined) return
     const call = async () => {
       try {
         setLoading(true)
-        const result = await dataProvider?.getPostInstantaeneousRate(
+        const result = await dataProvider.getPostInstantaeneousRate(
           {
             token0: token0 as string,
             token1: token1 as string,
@@ -134,7 +130,7 @@ export function useInstantaeneousRate(
     } else {
       return data
     }
-  }, [token0, token1, fee, trader, positionIsToken0, error, data])
+  }, [data])
 }
 
 export function useBulkBinData(
@@ -420,7 +416,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
           trader: account,
           token0Decimals: Number(position.token0Decimals.toString()),
           token1Decimals: Number(position.token1Decimals.toString()),
-          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals).toString(),
+          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
           borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
             return {
               tick: info.tick,

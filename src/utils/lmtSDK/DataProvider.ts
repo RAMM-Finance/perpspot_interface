@@ -2,7 +2,7 @@
 
 import DataProviderJson from 'abis_v2/DataProvider.json'
 import { Interface } from 'ethers/lib/utils'
-import { TraderPositionKey } from 'types/lmtv2position'
+import { RawPoolKey, TraderPositionKey } from 'types/lmtv2position'
 
 export abstract class DataProviderSDK {
   private constructor() {}
@@ -37,5 +37,33 @@ export abstract class DataProviderSDK {
       fee: key.poolKey.fee,
     }
     return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', [poolKey, key.trader, key.isToken0])
+  }
+
+  public static decodeFindTicks(data: string): [string, string] {
+    const decoded = DataProviderSDK.INTERFACE.decodeFunctionResult('findTicks', data)
+    return [decoded[0], decoded[1]]
+  }
+
+  public static findTicks(
+    key: RawPoolKey,
+    margin: string,
+    borrowAmount: string,
+    positionIsToken0: boolean,
+    simulatedOutput: string,
+    sqrtPriceX160: string
+  ): string {
+    const poolKey = {
+      token0: key.token0Address,
+      token1: key.token1Address,
+      fee: key.fee,
+    }
+    return DataProviderSDK.INTERFACE.encodeFunctionData('findTicks', [
+      poolKey,
+      margin,
+      borrowAmount,
+      positionIsToken0,
+      simulatedOutput,
+      sqrtPriceX160,
+    ])
   }
 }

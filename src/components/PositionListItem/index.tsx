@@ -1,5 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
+import { NumberType } from '@uniswap/conedison/format'
 import { Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -11,6 +12,7 @@ import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
@@ -208,7 +210,7 @@ export default function PositionListItem({
 
   const shouldHidePosition = hasURL(token0?.symbol) || hasURL(token1?.symbol)
 
-  const data = useRateAndUtil(
+  const { result: data } = useRateAndUtil(
     pool?.token0.address,
     pool?.token1.address,
     pool?.fee,
@@ -307,7 +309,7 @@ export default function PositionListItem({
                    <Trans>Max:</Trans>
                  </ExtentsText> */}
               <Trans>
-                <span>{((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}</span>
+                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%'}</span>
                 {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
                    <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
               </Trans>

@@ -111,12 +111,10 @@ export interface FacilityInterface extends utils.Interface {
     "approveTokens(address,address)": FunctionFragment;
     "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "checkPositionExists(address,address,bool)": FunctionFragment;
-    "checkPremiumCondition(address,address,bool,uint256)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "executioner()": FunctionFragment;
     "getBorrowInfo(address,address,bool)": FunctionFragment;
     "getLastRepayTime(address,address,bool)": FunctionFragment;
-    "maxWithdrawablePremium((address,address,uint24),address,bool)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
@@ -132,12 +130,10 @@ export interface FacilityInterface extends utils.Interface {
       | "approveTokens"
       | "canForceClose"
       | "checkPositionExists"
-      | "checkPremiumCondition"
       | "depositPremium"
       | "executioner"
       | "getBorrowInfo"
       | "getLastRepayTime"
-      | "maxWithdrawablePremium"
       | "multicall"
       | "payPremium"
       | "setOwner"
@@ -171,15 +167,6 @@ export interface FacilityInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "checkPremiumCondition",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "depositPremium",
     values: [
       PoolKeyStruct,
@@ -207,10 +194,6 @@ export interface FacilityInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<boolean>
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "maxWithdrawablePremium",
-    values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "multicall",
@@ -270,10 +253,6 @@ export interface FacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "checkPremiumCondition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "depositPremium",
     data: BytesLike
   ): Result;
@@ -287,10 +266,6 @@ export interface FacilityInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getLastRepayTime",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "maxWithdrawablePremium",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
@@ -411,14 +386,6 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    checkPremiumCondition(
-      pool: PromiseOrValue<string>,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -442,13 +409,6 @@ export interface Facility extends BaseContract {
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<[number]>;
-
-    maxWithdrawablePremium(
-      key: PoolKeyStruct,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -517,14 +477,6 @@ export interface Facility extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  checkPremiumCondition(
-    pool: PromiseOrValue<string>,
-    borrower: PromiseOrValue<string>,
-    borrowedToken1: PromiseOrValue<boolean>,
-    minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   depositPremium(
     key: PoolKeyStruct,
     trader: PromiseOrValue<string>,
@@ -548,13 +500,6 @@ export interface Facility extends BaseContract {
     borrowedToken1: PromiseOrValue<boolean>,
     overrides?: CallOverrides
   ): Promise<number>;
-
-  maxWithdrawablePremium(
-    key: PoolKeyStruct,
-    borrower: PromiseOrValue<string>,
-    borrowedToken1: PromiseOrValue<boolean>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   multicall(
     data: PromiseOrValue<BytesLike>[],
@@ -623,14 +568,6 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    checkPremiumCondition(
-      pool: PromiseOrValue<string>,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -654,13 +591,6 @@ export interface Facility extends BaseContract {
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<number>;
-
-    maxWithdrawablePremium(
-      key: PoolKeyStruct,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -761,14 +691,6 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    checkPremiumCondition(
-      pool: PromiseOrValue<string>,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -788,13 +710,6 @@ export interface Facility extends BaseContract {
 
     getLastRepayTime(
       pool: PromiseOrValue<string>,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    maxWithdrawablePremium(
-      key: PoolKeyStruct,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
@@ -868,14 +783,6 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    checkPremiumCondition(
-      pool: PromiseOrValue<string>,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      minPremiumDepositPercentage: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -895,13 +802,6 @@ export interface Facility extends BaseContract {
 
     getLastRepayTime(
       pool: PromiseOrValue<string>,
-      borrower: PromiseOrValue<string>,
-      borrowedToken1: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    maxWithdrawablePremium(
-      key: PoolKeyStruct,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
