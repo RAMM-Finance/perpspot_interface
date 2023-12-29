@@ -42,6 +42,8 @@ export type { INonfungiblePositionManager } from "./src/interfaces/INonfungibleP
 export { INonfungiblePositionManager__factory } from "./factories/src/interfaces/INonfungiblePositionManager__factory";
 export type { IPoolManager } from "./src/interfaces/IPoolManager";
 export { IPoolManager__factory } from "./factories/src/interfaces/IPoolManager__factory";
+export type { IQuoterV2 } from "./src/interfaces/IQuoterV2";
+export { IQuoterV2__factory } from "./factories/src/interfaces/IQuoterV2__factory";
 export type { ISwapper } from "./src/interfaces/ISwapper";
 export { ISwapper__factory } from "./factories/src/interfaces/ISwapper__factory";
 export type { IWETH9 } from "./src/interfaces/IWETH9";

@@ -308,6 +308,7 @@ function useDerivedReduceLimitPositionInfo(
   setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
   position: MarginPositionDetails | undefined,
+  pool: Pool | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
@@ -331,8 +332,55 @@ function useDerivedReduceLimitPositionInfo(
     if (!parsedLimitPrice || parsedLimitPrice.isLessThanOrEqualTo(0)) {
       error = error ?? <Trans>Enter a limit price</Trans>
     }
+
+    if (parsedLimitPrice && pool) {
+      /**
+       * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
+       * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
+       *
+       * isToken0 -> output is t0, input is t1
+       * !isToken0 -> output is t1, input is t0
+       * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
+       */
+      const baseIsToken0 =
+        (baseCurrencyIsInput && !positionKey.isToken0) || (!baseCurrencyIsInput && positionKey.isToken0)
+
+      /**
+       *
+       * if baseIsToken0 then limitPrice is in t1 / t0
+       * if !baseIsToken0 then limitPrice is in t0 / t1
+       *
+       * if baseIsT0 and isToken0 then no flip
+       * if baseIsT0 and !isToken0 then flip
+       * if !baseIsT0 and isToken0 then flip
+       * if !baseIsT0 and !isToken0 then no flip
+       */
+      const flippedPrice = (baseIsToken0 && !positionKey.isToken0) || (!baseIsToken0 && positionKey.isToken0)
+      const price = flippedPrice ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
+
+      if (positionKey.isToken0) {
+        const currentPrice = new BN(pool.token0Price.toFixed(18))
+        if (!price.gte(currentPrice)) {
+          if (baseIsToken0) {
+            error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+          } else {
+            error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+          }
+        }
+      } else {
+        const currentPrice = new BN(pool.token1Price.toFixed(18))
+        if (!price.gte(currentPrice)) {
+          if (baseIsToken0) {
+            error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+          } else {
+            error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+          }
+        }
+      }
+    }
+
     return error
-  }, [parsedAmount, parsedLimitPrice])
+  }, [parsedAmount, parsedLimitPrice, baseCurrencyIsInput, pool, positionKey])
   const { chainId } = useWeb3React()
 
   const deadline = useLimitTransactionDeadline()
@@ -518,6 +566,24 @@ const InRangeLimitReduceWarning = () => {
           </LabelText>
           <ThemedText.DeprecatedMain fontSize={14} color={theme.textSecondary}>
             <Trans>Position liquidity in range, must be reduced with a limit order</Trans>
+          </ThemedText.DeprecatedMain>
+        </RowFixed>
+      </RowBetween>
+    </ShowInRangeNote>
+  )
+}
+
+const BelowRangeLimitReduceNote = () => {
+  const theme = useTheme()
+  return (
+    <ShowInRangeNote justify="flex-start" gap="0px">
+      <RowBetween>
+        <RowFixed>
+          <LabelText color={theme.accentWarning}>
+            <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
+          </LabelText>
+          <ThemedText.DeprecatedMain fontSize={14} color={theme.textSecondary}>
+            <Trans>Position does not need limit order for reduction</Trans>
           </ThemedText.DeprecatedMain>
         </RowFixed>
       </RowBetween>
@@ -734,10 +800,6 @@ export default function DecreasePositionContent({
 }) {
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
-  // const [attemptingTxn, setAttemptingTxn] = useState(false)
-  // const [txHash, setTxHash] = useState<string>()
-  // const [showDetails, setShowDetails] = useState(true)
-  // const [showModal, setShowModal] = useState(false)
   const [currentState, setCurrentState] = useState<{
     showModal: boolean
     showLimitModal: boolean
@@ -751,6 +813,7 @@ export default function DecreasePositionContent({
     isLimit: boolean
     originalTrade: DerivedReducePositionInfo | undefined
     originalLimitTrade: DerivedLimitReducePositionInfo | undefined
+    limitAvailable: boolean
   }>({
     showModal: false,
     showLimitModal: false,
@@ -764,6 +827,7 @@ export default function DecreasePositionContent({
     isLimit: false,
     originalTrade: undefined,
     originalLimitTrade: undefined,
+    limitAvailable: true,
   })
 
   const orderKey: OrderPositionKey = useMemo(() => {
@@ -793,9 +857,7 @@ export default function DecreasePositionContent({
     } else return false
   }, [orderPosition, existingPosition, onPositionChange])
 
-  // const [errorMessage, setErrorMessage] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
-  // const [isLimit, setIsLimit] = useState(false)
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string>('')
 
@@ -818,11 +880,18 @@ export default function DecreasePositionContent({
 
   const borrowLiquidityRange = useBorrowedLiquidityRange(existingPosition, pool ?? undefined)
   const inRange = useMemo(() => {
-    if (borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE) {
+    if (
+      (positionKey.isToken0 && borrowLiquidityRange === BorrowedLiquidityRange.BELOW_RANGE) ||
+      (!positionKey.isToken0 && borrowLiquidityRange === BorrowedLiquidityRange.ABOVE_RANGE)
+    ) {
+      setCurrentState((prev) => ({ ...prev, isLimit: false, limitAvailable: false }))
+    } else if (borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE) {
       setCurrentState((prev) => ({ ...prev, isLimit: true }))
+    } else {
+      setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
     }
     return borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE
-  }, [borrowLiquidityRange])
+  }, [borrowLiquidityRange, positionKey.isToken0])
 
   const onToggle = useCallback(() => {
     setShowSettings(!showSettings)
@@ -852,6 +921,7 @@ export default function DecreasePositionContent({
     setLmtTradeState,
     onPositionChange,
     existingPosition,
+    pool ?? undefined,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
@@ -1071,6 +1141,7 @@ export default function DecreasePositionContent({
       attemptingTxn: false,
       txHash: undefined,
       errorMessage: undefined,
+      originalTrade: undefined,
     }))
   }, [])
 
@@ -1188,7 +1259,9 @@ export default function DecreasePositionContent({
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '100px', alignItems: 'center' }}>
-          {!inRange ? (
+          {inRange ? (
+            <InRangeLimitReduceWarning />
+          ) : currentState.limitAvailable ? (
             <FilterWrapper>
               <Filter onClick={() => setCurrentState((prev) => ({ ...prev, isLimit: !prev.isLimit }))}>
                 <Selector active={!currentState.isLimit}>
@@ -1204,7 +1277,7 @@ export default function DecreasePositionContent({
               </Filter>
             </FilterWrapper>
           ) : (
-            <InRangeLimitReduceWarning />
+            <BelowRangeLimitReduceNote />
           )}
         </div>
 

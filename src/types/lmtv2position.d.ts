@@ -27,7 +27,7 @@ export interface BaseFacilityPositionDetails {
   trader: string
   token0Decimals: number
   token1Decimals: number
-  maxWithdrawablePremium?: string
+  maxWithdrawablePremium: BN
   borrowInfo: LiquidityLoan[]
 }
 

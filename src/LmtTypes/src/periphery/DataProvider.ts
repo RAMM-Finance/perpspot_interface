@@ -7,6 +7,8 @@ import type {
   BigNumberish,
   BytesLike,
   CallOverrides,
+  ContractTransaction,
+  Overrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -93,6 +95,28 @@ export type OrderStructOutput = [
 };
 
 export declare namespace DataProvider {
+  export type MaxLeverageParamsStruct = {
+    poolKey: PoolKeyStruct;
+    isToken0: PromiseOrValue<boolean>;
+    margin: PromiseOrValue<BigNumberish>;
+    startingLeverage: PromiseOrValue<BigNumberish>;
+    stepSize: PromiseOrValue<BigNumberish>;
+  };
+
+  export type MaxLeverageParamsStructOutput = [
+    PoolKeyStructOutput,
+    boolean,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    poolKey: PoolKeyStructOutput;
+    isToken0: boolean;
+    margin: BigNumber;
+    startingLeverage: BigNumber;
+    stepSize: BigNumber;
+  };
+
   export type MarginPositionInfoStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
@@ -213,6 +237,7 @@ export declare namespace DataProvider {
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
+    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256))": FunctionFragment;
     "findMaxLeverageWithEstimatedSlippage((address,address,uint24),uint256,bool,uint256,uint256)": FunctionFragment;
     "findTicks((address,address,uint24),uint256,uint256,bool,uint256,uint160)": FunctionFragment;
     "getActiveMarginPositions(address)": FunctionFragment;
@@ -230,15 +255,13 @@ export interface DataProviderInterface extends utils.Interface {
     "getPoolkeys(address)": FunctionFragment;
     "getPostInstantaeneousRate((address,address,uint24),address,bool)": FunctionFragment;
     "getPreInstantaeneousRate((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
-    "getRangeCondition(address,address,bool)": FunctionFragment;
-    "getRangeConditions((int24,uint128,uint256,uint256,uint256,uint256)[],bool,int24,int24)": FunctionFragment;
     "getReduceOrders(address)": FunctionFragment;
     "getUtilAndAPR((address,address,uint24),int24,int24)": FunctionFragment;
-    "rangeConditions(bool,int24,int24,int24,int24)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "computeMaxLeverage"
       | "findMaxLeverageWithEstimatedSlippage"
       | "findTicks"
       | "getActiveMarginPositions"
@@ -256,13 +279,14 @@ export interface DataProviderInterface extends utils.Interface {
       | "getPoolkeys"
       | "getPostInstantaeneousRate"
       | "getPreInstantaeneousRate"
-      | "getRangeCondition"
-      | "getRangeConditions"
       | "getReduceOrders"
       | "getUtilAndAPR"
-      | "rangeConditions"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "computeMaxLeverage",
+    values: [DataProvider.MaxLeverageParamsStruct]
+  ): string;
   encodeFunctionData(
     functionFragment: "findMaxLeverageWithEstimatedSlippage",
     values: [
@@ -367,23 +391,6 @@ export interface DataProviderInterface extends utils.Interface {
     values: [PoolKeyStruct, LiquidityLoanStruct[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRangeCondition",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getRangeConditions",
-    values: [
-      LiquidityLoanStruct[],
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getReduceOrders",
     values: [PromiseOrValue<string>]
   ): string;
@@ -395,17 +402,11 @@ export interface DataProviderInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>
     ]
   ): string;
-  encodeFunctionData(
-    functionFragment: "rangeConditions",
-    values: [
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "computeMaxLeverage",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "findMaxLeverageWithEstimatedSlippage",
     data: BytesLike
@@ -469,23 +470,11 @@ export interface DataProviderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRangeCondition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getRangeConditions",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getReduceOrders",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getUtilAndAPR",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "rangeConditions",
     data: BytesLike
   ): Result;
 
@@ -519,6 +508,11 @@ export interface DataProvider extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    computeMaxLeverage(
+      params: DataProvider.MaxLeverageParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     findMaxLeverageWithEstimatedSlippage(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -639,21 +633,6 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getRangeCondition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    getRangeConditions(
-      borrowInfo: LiquidityLoanStruct[],
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     getReduceOrders(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -667,16 +646,12 @@ export interface DataProvider extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & { apr: BigNumber; utilTotal: BigNumber }
     >;
-
-    rangeConditions(
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      maxTick: PromiseOrValue<BigNumberish>,
-      minTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
   };
+
+  computeMaxLeverage(
+    params: DataProvider.MaxLeverageParamsStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   findMaxLeverageWithEstimatedSlippage(
     key: PoolKeyStruct,
@@ -794,21 +769,6 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getRangeCondition(
-    pool: PromiseOrValue<string>,
-    trader: PromiseOrValue<string>,
-    positionIsToken0: PromiseOrValue<boolean>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getRangeConditions(
-    borrowInfo: LiquidityLoanStruct[],
-    positionIsToken0: PromiseOrValue<boolean>,
-    curTick: PromiseOrValue<BigNumberish>,
-    tickDiscretization: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   getReduceOrders(
     trader: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -821,16 +781,12 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber] & { apr: BigNumber; utilTotal: BigNumber }>;
 
-  rangeConditions(
-    positionIsToken0: PromiseOrValue<boolean>,
-    curTick: PromiseOrValue<BigNumberish>,
-    maxTick: PromiseOrValue<BigNumberish>,
-    minTick: PromiseOrValue<BigNumberish>,
-    tickDiscretization: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   callStatic: {
+    computeMaxLeverage(
+      params: DataProvider.MaxLeverageParamsStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     findMaxLeverageWithEstimatedSlippage(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -947,21 +903,6 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getRangeCondition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getRangeConditions(
-      borrowInfo: LiquidityLoanStruct[],
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getReduceOrders(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -975,20 +916,16 @@ export interface DataProvider extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & { apr: BigNumber; utilTotal: BigNumber }
     >;
-
-    rangeConditions(
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      maxTick: PromiseOrValue<BigNumberish>,
-      minTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   filters: {};
 
   estimateGas: {
+    computeMaxLeverage(
+      params: DataProvider.MaxLeverageParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     findMaxLeverageWithEstimatedSlippage(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -1103,21 +1040,6 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getRangeCondition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getRangeConditions(
-      borrowInfo: LiquidityLoanStruct[],
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getReduceOrders(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1127,20 +1049,16 @@ export interface DataProvider extends BaseContract {
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    rangeConditions(
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      maxTick: PromiseOrValue<BigNumberish>,
-      minTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    computeMaxLeverage(
+      params: DataProvider.MaxLeverageParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     findMaxLeverageWithEstimatedSlippage(
       key: PoolKeyStruct,
       margin: PromiseOrValue<BigNumberish>,
@@ -1255,21 +1173,6 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getRangeCondition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getRangeConditions(
-      borrowInfo: LiquidityLoanStruct[],
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getReduceOrders(
       trader: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1279,15 +1182,6 @@ export interface DataProvider extends BaseContract {
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    rangeConditions(
-      positionIsToken0: PromiseOrValue<boolean>,
-      curTick: PromiseOrValue<BigNumberish>,
-      maxTick: PromiseOrValue<BigNumberish>,
-      minTick: PromiseOrValue<BigNumberish>,
-      tickDiscretization: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

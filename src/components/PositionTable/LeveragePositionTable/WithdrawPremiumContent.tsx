@@ -1,6 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
@@ -237,6 +238,7 @@ export function WithdrawPremiumContent({
     setTradeState,
     onPositionChange
   )
+
   const { account, chainId, provider } = useWeb3React()
 
   const maxWithdrawAmount: BN | undefined = useMemo(() => {
@@ -369,7 +371,9 @@ export function WithdrawPremiumContent({
           <SwapCurrencyInputPanelV2
             label="Withdraw Amount"
             value={amount}
-            hideBalance={true}
+            renderBalance={(x: CurrencyAmount<Currency>) => (
+              <Trans>{formatBNToString(position?.maxWithdrawablePremium, NumberType.SwapTradeAmount)}</Trans>
+            )}
             id="withdraw-premium-input"
             onUserInput={(str: string) => {
               if (inputCurrencyBalance) {
@@ -418,20 +422,6 @@ export function WithdrawPremiumContent({
         /> */}
         <StyledBGCard>
           <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
-            {/*<ValueLabel
-              description="Current Premium Deposit"
-              label="Current Premium Deposit"
-              value={formatBNToString(position?.premiumDeposit, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />
-            <ValueLabel
-              description="Current Premium Owed"
-              label="Current Premium Owed"
-              value={formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />*/}
             <ValueLabel
               description="Current Premium Left In Deposit"
               label="Premium Left"
@@ -442,7 +432,7 @@ export function WithdrawPremiumContent({
             <ValueLabel
               description="Maximum premium you can withdraw"
               label="Max Withdrawable Premium"
-              value={position?.maxWithdrawablePremium}
+              value={formatBNToString(position?.maxWithdrawablePremium, NumberType.SwapTradeAmount)}
               syncing={positionLoading}
               symbolAppend={inputCurrency?.symbol}
             />

@@ -12,7 +12,8 @@ import { usePool } from 'hooks/usePools'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { atomWithReset } from 'jotai/utils'
-import { ForwardedRef, forwardRef } from 'react'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import {
   useCallback,
@@ -21,8 +22,10 @@ import {
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
+import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency, useToken } from '../../../hooks/Tokens'
 import { Field } from '../../../state/swap/actions'
@@ -665,26 +668,24 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
-  // console.log('pools', token0.address, token1.address, pool)
-  const currentPrice = pool?.token0Price.toSignificant(6)
-  const priceRounded =
-    currencyIdb?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
-      ? ((Math.round(1 / Number(currentPrice)) * 1000000) / 1000000).toString()
-      : (Math.round(Number(currentPrice) * 1000000) / 1000000).toString()
-  const fomatter = new Intl.NumberFormat(navigator.language)
+  const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
+  const [tickLower, tickUpper] = useMemo(() => {
+    if (pool && tickDiscretization) {
+      return [
+        roundToBin(pool.tickCurrent, tickDiscretization, true),
+        roundToBin(pool.tickCurrent, tickDiscretization, false),
+      ]
+    }
+    return [undefined, undefined]
+  }, [pool, tickDiscretization])
 
-  const tickLow =
-    Math.round(
-      Math.log(Math.round(Math.round(Number(pool?.token0Price.toSignificant(6))) * 0.9)) / Math.log(1.0001) / 100
-    ) * 100
-  const tickHigh =
-    Math.round(
-      Math.log(Math.round(Math.round(Number(pool?.token0Price.toSignificant(6))) * 1.1)) / Math.log(1.0001) / 100
-    ) * 100
-  console.log(tickLow)
-  console.log(tickHigh)
-
-  const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLow, tickHigh)
+  const { result: rateUtilData } = useRateAndUtil(
+    pool?.token0.address,
+    pool?.token1.address,
+    pool?.fee,
+    tickLower,
+    tickUpper
+  )
 
   let tvl_
   let volume_
@@ -747,13 +748,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         price={
           <ClickableContent>
             <PriceInfoCell>
-              <Price>{currentPrice && fomatter.format(Number(priceRounded))}</Price>
+              <Price>1000.00</Price>
               <span>{token0?.symbol + '/' + token1?.symbol}</span>
-              {/* {currentPrice && priceRounded + ' ' + token0.symbol + '/' + token1.symbol} */}
-              {/*<PercentChangeInfoCell>
-                  <ArrowCell>{smallArrow}</ArrowCell>
-                  <DeltaText delta={delta}>{formattedDelta}</DeltaText>
-                </PercentChangeInfoCell>*/}
             </PriceInfoCell>
           </ClickableContent>
         }
@@ -775,10 +771,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
-        APR={<ClickableRate rate={estimatedapr_}>{((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}</ClickableRate>}
-        UtilRate={
-          <ClickableRate rate={urate_}>{((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}</ClickableRate>
+        APR={
+          <ClickableRate rate={estimatedapr_}>{`${formatBNToString(
+            rateUtilData?.apr.times(100),
+            NumberType.TokenNonTx
+          )} %`}</ClickableRate>
         }
+        UtilRate={<ClickableRate rate={urate_}>{`${formatBNToString(rateUtilData?.util.times(100))} %`}</ClickableRate>}
         // sparkLine={
         //   <SparkLine>
         //     <ParentSize>

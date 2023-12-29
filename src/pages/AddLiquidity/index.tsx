@@ -3,6 +3,7 @@ import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
+import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -17,6 +18,7 @@ import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import usePrevious from 'hooks/usePrevious'
 import { useSingleCallResult } from 'lib/hooks/multicall'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -426,23 +428,11 @@ export default function AddLiquidity() {
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
 
-  const data = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLower, tickUpper)
-
-  // if(baseCurrency&& quoteCurrency){
-  //   if ('address' in baseCurrency && 'address' in quoteCurrency){
-  //   const baseIsToken0 = baseCurrency.wrapped.sortsBefore(quoteCurrency.wrapped)
-  //   console.log('bae', baseCurrency)
-  //   const data =  useRateAndUtil(
-  //     baseIsToken0? baseCurrency?.address: quoteCurrency?.address,
-  //     baseIsToken0? quoteCurrency?.address: baseCurrency?.address,
-  //     feeAmount,
-  //     tickLower,
-  //     tickUpper
-  //     )
-  //   console.log('data', data?.apr.toString(), data?.utilTotal.toString())
-  //   }
-
-  // }
+  const {
+    result: aprUtil,
+    loading,
+    error,
+  } = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLower, tickUpper)
 
   const { getDecrementLower, getIncrementLower, getDecrementUpper, getIncrementUpper, getSetFullRange } =
     useRangeHopCallbacks(baseCurrency ?? undefined, quoteCurrency ?? undefined, feeAmount, tickLower, tickUpper, pool)
@@ -478,7 +468,7 @@ export default function AddLiquidity() {
       category: 'Liquidity',
       action: 'Recommended Range Clicked',
     })
-  }, [pricesAtLimit, searchParams, setSearchParams, invertPrice, price])
+  }, [pricesAtLimit, searchParams, setSearchParams, invertPrice, price, onLeftRangeInput, onRightRangeInput])
 
   const handleSetFullRange = useCallback(() => {
     getSetFullRange()
@@ -1300,13 +1290,13 @@ export default function AddLiquidity() {
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {data && ((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}
+                                  {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %`}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {data && ((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}
+                                  {`${formatBNToString(aprUtil?.util, NumberType.TokenNonTx)} %`}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                             </OutlineCard>

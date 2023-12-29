@@ -274,7 +274,8 @@ export function useDerivedAddPositionInfo(
     else return userPremiumPercent
   }, [userPremiumPercent])
 
-  const { result: maxLeverage } = useMaxLeverage(positionKey, parsedMargin, inputCurrency ?? undefined, allowedSlippage)
+  // const { result: maxLeverage } = useMaxLeverage(positionKey, parsedMargin, inputCurrency ?? undefined, allowedSlippage)
+  const { result: maxLeverage } = useMaxLeverage(positionKey, parsedMargin, inputCurrency ?? undefined)
 
   const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
     if (!existingPosition || !account || !inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin)
@@ -331,7 +332,7 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Leverage factor must be greater than 1</Trans>
     }
 
-    if (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.isGreaterThanOrEqualTo(maxLeverage)) {
+    if (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) {
       inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
     }
 
@@ -354,6 +355,7 @@ export function useDerivedAddPositionInfo(
   } = useSimulateMarginTrade(
     allowedSlippage,
     rawUserPremiumPercent,
+    positionKey,
     pool,
     inputIsToken0,
     parsedMargin,
@@ -509,7 +511,8 @@ export function useDerivedLimitAddPositionInfo(
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(traderKey)
 
-  const { result: maxLeverage } = useMaxLeverage(traderKey, parsedMargin, inputCurrency, allowedSlippage)
+  // const { result: maxLeverage } = useMaxLeverage(traderKey, parsedMargin, inputCurrency, allowedSlippage)
+  const { result: maxLeverage } = useMaxLeverage(traderKey, parsedMargin, inputCurrency ?? undefined)
 
   const [userPremiumPercent] = useUserPremiumDepositPercent()
 
@@ -579,7 +582,7 @@ export function useDerivedLimitAddPositionInfo(
       inputError = inputError ?? <Trans>Leverage factor must be greater than 1</Trans>
     }
 
-    if (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.isGreaterThanOrEqualTo(maxLeverage)) {
+    if (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) {
       inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
     }
 
@@ -706,6 +709,13 @@ const useSimulateAddLimitOrder = (
 
   const [orderDuration] = useUserLimitOrderTransactionTTL()
   const feePercent = useLmtFeePercent(pool)
+  const [lastUserParams, setLastUserParams] = useState<{
+    margin: BN
+    leverageFactor: BN
+    startingPrice: BN
+    orderKey: OrderPositionKey
+    allowedSlippage: Percent
+  }>()
 
   useEffect(() => {
     const lagged = async () => {
@@ -732,6 +742,7 @@ const useSimulateAddLimitOrder = (
       ) {
         setTradeState(LimitTradeState.INVALID)
         setResult(undefined)
+        setLastUserParams(undefined)
         return
       }
       try {
@@ -775,7 +786,7 @@ const useSimulateAddLimitOrder = (
         })
 
         setTradeState(LimitTradeState.LOADING)
-        const multicallResult = await marginFacility.callStatic.multicall(calldata)
+        await marginFacility.callStatic.multicall(calldata)
         setTradeState(LimitTradeState.VALID)
         setSimulationError(undefined)
         setResult({
@@ -800,11 +811,19 @@ const useSimulateAddLimitOrder = (
             new BN(1).shiftedBy(18).toFixed(0)
           ),
         })
+        setLastUserParams({
+          margin,
+          leverageFactor,
+          startingPrice,
+          orderKey,
+          allowedSlippage,
+        })
       } catch (err) {
         setTradeState(LimitTradeState.INVALID)
         console.log('limit simulation error', err)
         setSimulationError(err?.errorArgs ? (err.errorArgs?.length > 0 ? err.errorArgs[0] : err.errorArgs) : err)
         setResult(undefined)
+        setLastUserParams(undefined)
       }
       return
     }
@@ -850,18 +869,49 @@ const useSimulateAddLimitOrder = (
   }, [simulationError])
 
   return useMemo(() => {
-    return {
-      state: tradeState,
-      contractError,
-      result,
+    if (!margin || !leverageFactor || !startingPrice || !orderKey) {
+      return {
+        state: LimitTradeState.INVALID,
+        contractError,
+        result: undefined,
+      }
+    } else if (
+      lastUserParams &&
+      lastUserParams.margin.eq(margin) &&
+      lastUserParams.leverageFactor.eq(leverageFactor) &&
+      lastUserParams.startingPrice.eq(startingPrice) &&
+      lastUserParams.orderKey === orderKey &&
+      lastUserParams.allowedSlippage === allowedSlippage
+    ) {
+      return {
+        state: tradeState,
+        contractError,
+        result,
+      }
+    } else {
+      return {
+        state: tradeState,
+        contractError,
+        result: undefined,
+      }
     }
-  }, [tradeState, contractError, result])
+  }, [
+    tradeState,
+    contractError,
+    result,
+    margin,
+    leverageFactor,
+    startingPrice,
+    orderKey,
+    lastUserParams,
+    allowedSlippage,
+  ])
 }
 
 const useSimulateMarginTrade = (
   allowedSlippage: Percent,
   premiumPercent: Percent,
-  // poolState?: PoolState,
+  positionKey?: TraderPositionKey,
   pool?: Pool,
   inputIsToken0?: boolean,
   margin?: BN,
@@ -889,11 +939,17 @@ const useSimulateMarginTrade = (
   const deadline = useTransactionDeadline()
 
   const dataProvider = useDataProviderContract()
-
   const feePercent = useLmtFeePercent(pool)
-  // console.log('existingPosition', existingPosition, inputIsToken0)
+  const [lastUserParams, setLastUserParams] = useState<{
+    margin: BN
+    borrowAmount: BN
+    positionKey: TraderPositionKey
+    allowedSlippage: Percent
+  }>()
+  // console.log('simulate params', margin?.toString(), borrowAmount?.toString(), tradeState)
   useEffect(() => {
     // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
+
     const lagged = async () => {
       if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
         return
@@ -920,10 +976,14 @@ const useSimulateMarginTrade = (
         inputIsToken0 === undefined ||
         approvalState !== ApprovalState.APPROVED ||
         !dataProvider ||
-        !feePercent
+        !feePercent ||
+        !provider ||
+        !chainId ||
+        !positionKey
       ) {
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
+        setLastUserParams(undefined)
         return
       }
 
@@ -934,12 +994,6 @@ const useSimulateMarginTrade = (
           inputIsToken0 ? pool.token0 : pool.token1,
           inputIsToken0 ? pool.token1 : pool.token0
         )
-
-        // const rawFeesResult = await poolManager.callStatic.getFeeParams({
-        //   token0: pool.token0.address,
-        //   token1: pool.token1.address,
-        //   fee: pool.fee,
-        // })
 
         // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
         const bnAmountIn = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
@@ -957,39 +1011,6 @@ const useSimulateMarginTrade = (
         if (!amountOut) return
 
         const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
-
-        // const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
-
-        // const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
-
-        // const minPrice = new Price(
-        //   pool.token0,
-        //   pool.token1,
-        //   JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-        //   JSBI.multiply(pool.token0Price.numerator, pullDown)
-        // )
-
-        // const maxPrice = new Price(
-        //   pool.token0,
-        //   pool.token1,
-        //   JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-        //   JSBI.multiply(pool.token0Price.numerator, pullUp)
-        // )
-
-        // // get slipped min/max tick
-        // const slippedTickMax = priceToClosestTick(maxPrice)
-        // const slippedTickMin = priceToClosestTick(minPrice)
-        // console.log('slipped ticks', { slippedTickMax, slippedTickMin }, otherMax, otherMin)
-        const positionKey = {
-          poolKey: {
-            token0Address: pool.token0.address,
-            token1Address: pool.token1.address,
-            fee: pool.fee,
-          },
-          isToken0: !inputIsToken0,
-          isBorrow: false,
-          trader: account,
-        }
 
         // min output = (margin + borrowAmount) * current price * (1 - slippage)
         const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
@@ -1025,7 +1046,20 @@ const useSimulateMarginTrade = (
           fee: pool.fee,
         }
 
-        const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, borrowInfo)
+        const newBorrowInfo: any[] = borrowInfo.map(borrowItem => {
+          const existingItem = existingPosition.borrowInfo.find(item => item.tick === borrowItem.tick)
+          const liquidityDifference = existingItem ? new BN(borrowItem.liquidity).minus(existingItem.liquidity) : new BN(borrowItem.liquidity)
+
+          return {
+            tick: borrowItem.tick,
+            liquidity: liquidityDifference.toString(),
+            premium: "0", 
+            feeGrowthInside0LastX128: "0",
+            feeGrowthInside1LastX128: "0",
+            lastGrowth: "0"
+          }
+        })        
+        const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
 
         // compute the added output amount + the execution price. (margin + borrowAmount - fees) / outputAmount
         let swapInput: JSBI
@@ -1078,12 +1112,17 @@ const useSimulateMarginTrade = (
         setResult(simulation)
         setTradeState(LeverageTradeState.VALID)
         setSimulationError(undefined)
+        setLastUserParams({
+          margin,
+          borrowAmount,
+          positionKey,
+          allowedSlippage,
+        })
       } catch (err) {
         console.log('simulate margin error', err)
-        console.log('existing position', existingPosition)
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
-
+        setLastUserParams(undefined)
         setSimulationError(err)
       }
       return
@@ -1092,6 +1131,7 @@ const useSimulateMarginTrade = (
     lagged()
   }, [
     blockNumber,
+    positionKey,
     allowedSlippage,
     marginFacility,
     account,
@@ -1106,7 +1146,6 @@ const useSimulateMarginTrade = (
     margin,
     provider,
     chainId,
-    // slippedTickTolerance,
     poolManager,
     deadline,
     approvalState,
@@ -1125,12 +1164,32 @@ const useSimulateMarginTrade = (
   }, [simulationError])
 
   return useMemo(() => {
-    return {
-      result,
-      state: tradeState,
-      contractError,
+    if (!margin || !borrowAmount || !positionKey) {
+      return {
+        state: LeverageTradeState.INVALID,
+        contractError,
+        result: undefined,
+      }
+    } else if (
+      lastUserParams &&
+      lastUserParams.margin.eq(margin) &&
+      lastUserParams.borrowAmount.eq(borrowAmount) &&
+      lastUserParams.positionKey === positionKey &&
+      lastUserParams.allowedSlippage === allowedSlippage
+    ) {
+      return {
+        state: tradeState,
+        contractError,
+        result,
+      }
+    } else {
+      return {
+        state: tradeState,
+        contractError,
+        result: undefined,
+      }
     }
-  }, [result, tradeState, contractError])
+  }, [result, tradeState, contractError, borrowAmount, positionKey, lastUserParams, margin, allowedSlippage])
 }
 
 export const BnToJSBI = (x: BN, currency: Currency): JSBI => {

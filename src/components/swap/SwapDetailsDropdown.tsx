@@ -234,7 +234,7 @@ export function LeverageDetailsDropdown({
               )}
               {loading ? (
                 <ThemedText.DeprecatedMain fontSize={14}>
-                  <Trans>Simulating position ...</Trans>
+                  <Trans>Finding best price ...</Trans>
                 </ThemedText.DeprecatedMain>
               ) : (
                 <LoadingOpacityContainer $loading={loading}>
@@ -315,7 +315,7 @@ export function AddLimitDetailsDropdown({
               )}
               {loading ? (
                 <ThemedText.DeprecatedMain fontSize={14}>
-                  <Trans>Simulating position ...</Trans>
+                  <Trans>Finding best price ...</Trans>
                 </ThemedText.DeprecatedMain>
               ) : (
                 <LoadingOpacityContainer $loading={loading}>
