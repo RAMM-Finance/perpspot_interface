@@ -19,11 +19,10 @@ import { useCurrency, useToken } from 'hooks/Tokens'
 import { BorrowedLiquidityRange, getLiquidityTicks, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
-import { ReactNode, useMemo, useRef, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -178,13 +177,9 @@ export function LeveragePositionModal(props: TradeModalProps) {
     )
   }, [positionKey, activeTab])
 
-  const ref = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(ref, () => onClose(), [modalRef])
-
   return positionKey ? (
-    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={800} $scrollOverlay={true}>
-      <Wrapper ref={modalRef}>
+    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={800} $scrollOverlay={true} onDismiss={() => onClose()}>
+      <Wrapper>
         <ActionsWrapper>
           <TabsWrapper>
             <TabElement
@@ -218,9 +213,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
           outputCurrency={outputCurrency ?? undefined}
           onClose={onClose}
         />
-        {/* <Row>
-          <CloseIcon style={{ width: '12px' }} onClick={onClose} />
-        </Row> */}
       </Wrapper>
     </LmtModal>
   ) : null

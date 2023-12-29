@@ -800,10 +800,6 @@ export default function DecreasePositionContent({
 }) {
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
-  // const [attemptingTxn, setAttemptingTxn] = useState(false)
-  // const [txHash, setTxHash] = useState<string>()
-  // const [showDetails, setShowDetails] = useState(true)
-  // const [showModal, setShowModal] = useState(false)
   const [currentState, setCurrentState] = useState<{
     showModal: boolean
     showLimitModal: boolean
@@ -861,9 +857,7 @@ export default function DecreasePositionContent({
     } else return false
   }, [orderPosition, existingPosition, onPositionChange])
 
-  // const [errorMessage, setErrorMessage] = useState<string>()
   const [showSettings, setShowSettings] = useState(false)
-  // const [isLimit, setIsLimit] = useState(false)
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string>('')
 
@@ -1147,6 +1141,7 @@ export default function DecreasePositionContent({
       attemptingTxn: false,
       txHash: undefined,
       errorMessage: undefined,
+      originalTrade: undefined,
     }))
   }, [])
 

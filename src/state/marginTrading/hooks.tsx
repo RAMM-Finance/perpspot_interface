@@ -714,6 +714,7 @@ const useSimulateAddLimitOrder = (
     leverageFactor: BN
     startingPrice: BN
     orderKey: OrderPositionKey
+    allowedSlippage: Percent
   }>()
 
   useEffect(() => {
@@ -815,6 +816,7 @@ const useSimulateAddLimitOrder = (
           leverageFactor,
           startingPrice,
           orderKey,
+          allowedSlippage,
         })
       } catch (err) {
         setTradeState(LimitTradeState.INVALID)
@@ -878,7 +880,8 @@ const useSimulateAddLimitOrder = (
       lastUserParams.margin.eq(margin) &&
       lastUserParams.leverageFactor.eq(leverageFactor) &&
       lastUserParams.startingPrice.eq(startingPrice) &&
-      lastUserParams.orderKey === orderKey
+      lastUserParams.orderKey === orderKey &&
+      lastUserParams.allowedSlippage === allowedSlippage
     ) {
       return {
         state: tradeState,
@@ -892,7 +895,17 @@ const useSimulateAddLimitOrder = (
         result: undefined,
       }
     }
-  }, [tradeState, contractError, result, margin, leverageFactor, startingPrice, orderKey, lastUserParams])
+  }, [
+    tradeState,
+    contractError,
+    result,
+    margin,
+    leverageFactor,
+    startingPrice,
+    orderKey,
+    lastUserParams,
+    allowedSlippage,
+  ])
 }
 
 const useSimulateMarginTrade = (
@@ -931,6 +944,7 @@ const useSimulateMarginTrade = (
     margin: BN
     borrowAmount: BN
     positionKey: TraderPositionKey
+    allowedSlippage: Percent
   }>()
   // console.log('simulate params', margin?.toString(), borrowAmount?.toString(), tradeState)
   useEffect(() => {
@@ -1089,6 +1103,7 @@ const useSimulateMarginTrade = (
           margin,
           borrowAmount,
           positionKey,
+          allowedSlippage,
         })
       } catch (err) {
         console.log('simulate margin error', err)
@@ -1146,7 +1161,8 @@ const useSimulateMarginTrade = (
       lastUserParams &&
       lastUserParams.margin.eq(margin) &&
       lastUserParams.borrowAmount.eq(borrowAmount) &&
-      lastUserParams.positionKey === positionKey
+      lastUserParams.positionKey === positionKey &&
+      lastUserParams.allowedSlippage === allowedSlippage
     ) {
       return {
         state: tradeState,
@@ -1160,7 +1176,7 @@ const useSimulateMarginTrade = (
         result: undefined,
       }
     }
-  }, [result, tradeState, contractError, borrowAmount, positionKey, lastUserParams, margin])
+  }, [result, tradeState, contractError, borrowAmount, positionKey, lastUserParams, margin, allowedSlippage])
 }
 
 export const BnToJSBI = (x: BN, currency: Currency): JSBI => {
