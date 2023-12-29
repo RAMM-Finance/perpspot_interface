@@ -3,13 +3,11 @@ import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
-import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
-import FeeSelector from 'components/FeeSelector'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import { PositionPreview } from 'components/PositionPreview'
 import { PoolSelector } from 'components/swap/PoolSelector'
@@ -19,7 +17,6 @@ import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import usePrevious from 'hooks/usePrevious'
 import { useSingleCallResult } from 'lib/hooks/multicall'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -735,7 +732,7 @@ export default function AddLiquidity() {
                             <Trans>Select Pair</Trans>
                           </ThemedText.BodyPrimary>
                         </RowBetween>
-                        <RowBetween padding="1rem" justify="start" gap="0px">
+                        <RowBetween justify="start" gap="0px">
                           {/* <CurrencyDropdown
                             value={formattedAmounts[Field.CURRENCY_A]}
                             onUserInput={onFieldAInput}
@@ -1229,7 +1226,7 @@ export default function AddLiquidity() {
                 {/*</ResponsiveTwoColumns>*/}
               </LeftSection>
               <RightSection>
-                {!hasExistingPosition && (
+                {/* {!hasExistingPosition && (
                   <>
                     <FeeSelector
                       disabled={!quoteCurrency || !baseCurrency}
@@ -1239,7 +1236,7 @@ export default function AddLiquidity() {
                       currencyB={quoteCurrency ?? undefined}
                     />
                   </>
-                )}
+                )} */}
                 <div>
                   {!hasExistingPosition ? (
                     <>
@@ -1291,14 +1288,13 @@ export default function AddLiquidity() {
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {' '}
-                                  {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %`}
+                                  {data && ((Number(data?.apr) / 1e18) * 100).toFixed(2) + '%'}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {`${formatBNToString(aprUtil?.util, NumberType.TokenNonTx)} %`}
+                                  {data && ((Number(data?.utilTotal) / 1e18) * 100).toFixed(2) + '%'}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                             </OutlineCard>

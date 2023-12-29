@@ -111,13 +111,16 @@ const FilterWrapper = styled.div`
 `
 
 const StyledSelectorText = styled.div<{ active: boolean }>`
-  font-size: ${({ active }) => (active ? '18px' : '17px')};
+  font-size: 16px;
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   font-weight: ${({ active }) => (active ? '600' : '300')};
 `
 
 const Selector = styled.div<{ active: boolean }>`
   font-color: ${({ active, theme }) => (active ? theme.background : 'none')};
+  border-radius: 10px;
+  padding: 8px;
+  background-color: ${({ active, theme }) => (active ? theme.accentActiveSoft : 'none')};
   cursor: pointer;
   &:hover {
     opacity: ${({ theme }) => theme.opacity.hover};
