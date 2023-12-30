@@ -62,6 +62,7 @@ import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { DecodedError } from 'utils/ethersErrorHandler/types'
 import {
   CancelOrderOptions,
   LimitOrderOptions,
@@ -69,6 +70,7 @@ import {
   ReducePositionOptions,
 } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { LmtErrorMessage, parseContractError } from 'utils/lmtSDK/parseContractError'
 
 import {
   ConfirmCancelOrderHeader,
@@ -149,11 +151,12 @@ function useDerivedReducePositionInfo(
 ): {
   txnInfo: DerivedReducePositionInfo | undefined
   inputError: ReactNode | undefined
+  contractError: ReactNode | undefined
 } {
   const marginFacility = useMarginFacilityContract()
 
   const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
-  const [contractError, setContractError] = useState<React.ReactNode>()
+  const [error, setError] = useState<DecodedError>()
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
@@ -182,6 +185,7 @@ function useDerivedReducePositionInfo(
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
         onPositionChange({})
+        setError(undefined)
         return
       }
 
@@ -259,12 +263,12 @@ function useDerivedReducePositionInfo(
         })
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
-        setContractError(undefined)
+        setError(undefined)
       } catch (err) {
         onPositionChange({})
         console.log('reduce error', err)
         setState(DerivedInfoState.INVALID)
-        setContractError(err)
+        setError(parseContractError(err))
         setTxnInfo(undefined)
       }
     }
@@ -291,12 +295,21 @@ function useDerivedReducePositionInfo(
     inRange,
   ])
 
+  const contractError = useMemo(() => {
+    let message: ReactNode | undefined
+    if (error) {
+      message = <Trans>{LmtErrorMessage(error)}</Trans>
+    }
+    return message
+  }, [error])
+
   return useMemo(() => {
     return {
       txnInfo,
       inputError,
+      contractError,
     }
-  }, [txnInfo, inputError])
+  }, [txnInfo, inputError, contractError])
 }
 
 function useDerivedReduceLimitPositionInfo(
@@ -315,9 +328,10 @@ function useDerivedReduceLimitPositionInfo(
   txnInfo: DerivedLimitReducePositionInfo | undefined
   // txnInfo: DerivedReducePositionInfo | undefined
   inputError: ReactNode | undefined
+  contractError: ReactNode | undefined
 } {
   const [txnInfo, setTxnInfo] = useState<DerivedLimitReducePositionInfo>()
-  const [contractError, setContractError] = useState<React.ReactNode>()
+  const [error, setError] = useState<DecodedError>()
   // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
   const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(positionKey)
   const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
@@ -403,14 +417,14 @@ function useDerivedReduceLimitPositionInfo(
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
         onPositionChange({})
-        setContractError(undefined)
+        setError(undefined)
         return
       }
 
       if (existingLimitOrder.auctionStartTime > 0) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
-        setContractError(undefined)
+        setError(undefined)
         onPositionChange({})
         return
       }
@@ -465,12 +479,12 @@ function useDerivedReduceLimitPositionInfo(
           totalPosition: position.totalPosition.minus(parsedAmount),
         })
         setState(DerivedInfoState.VALID)
-        setContractError(undefined)
+        setError(undefined)
       } catch (err) {
         console.log('limit reduce error', err)
         onPositionChange({})
         setState(DerivedInfoState.INVALID)
-        setContractError(err)
+        setError(parseContractError(err))
         setTxnInfo(undefined)
       }
     }
@@ -478,7 +492,7 @@ function useDerivedReduceLimitPositionInfo(
     if (!isLimit) {
       setState(DerivedInfoState.INVALID)
       setTxnInfo(undefined)
-      setContractError(undefined)
+      setError(undefined)
       return
     }
 
@@ -501,12 +515,22 @@ function useDerivedReduceLimitPositionInfo(
     onPositionChange,
   ])
 
+  const contractError = useMemo(() => {
+    let message: ReactNode | undefined
+
+    if (error) {
+      message = <Trans>{LmtErrorMessage(error)}</Trans>
+    }
+    return message
+  }, [error])
+
   return useMemo(() => {
     return {
       txnInfo,
       inputError,
+      contractError,
     }
-  }, [inputError, txnInfo])
+  }, [inputError, txnInfo, contractError])
 }
 
 // const InputHeader = styled.div`

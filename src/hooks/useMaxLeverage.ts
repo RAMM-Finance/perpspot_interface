@@ -1,11 +1,12 @@
 // import { SupportedChainId } from '@looksrare/sdk'
 import { Currency } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
-import { useEffect, useMemo, useState } from 'react'
+import { DATA_PROVIDER_ADDRESSES } from 'constants/addresses'
+import { useMemo } from 'react'
 import { TraderPositionKey } from 'types/lmtv2position'
+import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 
-import { useDataProviderContract } from './useContract'
+import { useContractCall } from './useContractCall'
 
 const DEFAULT_MAX_LEVERAGE = '120'
 
@@ -141,92 +142,149 @@ export function useMaxLeverage(
   startingLeverage = 120,
   stepSize = 5
 ) {
-  const [result, setResult] = useState<BN>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
-  const [lastBlockNumber, setBlockNumber] = useState<number>()
-  const blockNumber = useBlockNumber()
-  const [lastParams, setLastParams] = useState<{
-    margin: BN
-    positionKey: TraderPositionKey
-  }>()
+  const calldata = useMemo(() => {
+    if (!positionKey || !margin || !inputCurrency) return undefined
+    const params = [
+      {
+        poolKey: {
+          token0: positionKey.poolKey.token0Address,
+          token1: positionKey.poolKey.token1Address,
+          fee: positionKey.poolKey.fee,
+        },
+        isToken0: positionKey.isToken0,
+        margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+        startingLeverage: new BN(startingLeverage).shiftedBy(18).toFixed(0),
+        stepSize: new BN(stepSize).shiftedBy(18).toFixed(0),
+      },
+    ]
+    return DataProviderSDK.INTERFACE.encodeFunctionData('computeMaxLeverage', params)
+  }, [positionKey, margin, inputCurrency, startingLeverage, stepSize])
 
-  const dataProvider = useDataProviderContract()
-  useEffect(() => {
-    if (loading) {
-      return
-    }
-
-    if (!margin || !inputCurrency || !positionKey || !dataProvider || !blockNumber || margin.isZero()) {
-      setResult(undefined)
-      setError(undefined)
-      setBlockNumber(undefined)
-      setLastParams(undefined)
-      return
-    }
-
-    if (
-      lastBlockNumber &&
-      lastBlockNumber === blockNumber &&
-      lastParams?.margin === margin &&
-      lastParams?.positionKey === positionKey
-    ) {
-      return
-    }
-
-    const call = async () => {
-      try {
-        setLoading(true)
-        const result = await dataProvider.callStatic.computeMaxLeverage({
-          poolKey: {
-            token0: positionKey.poolKey.token0Address,
-            token1: positionKey.poolKey.token1Address,
-            fee: positionKey.poolKey.fee,
-          },
-          isToken0: positionKey.isToken0,
-          margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-          startingLeverage: new BN(startingLeverage).shiftedBy(18).toFixed(0),
-          stepSize: new BN(stepSize).shiftedBy(18).toFixed(0),
-        })
-
-        setResult(new BN(result.toString()).shiftedBy(-18))
-        setLoading(false)
-        setBlockNumber(blockNumber)
-        setLastParams({
-          margin,
-          positionKey,
-        })
-        setError(undefined)
-      } catch (err) {
-        console.log('err', err)
-        setResult(undefined)
-        setLoading(false)
-        setLastParams(undefined)
-        setError(err)
-      }
-    }
-
-    call()
-  }, [
-    margin,
-    positionKey,
-    inputCurrency,
-    startingLeverage,
-    stepSize,
-    blockNumber,
-    dataProvider,
-    loading,
-    lastBlockNumber,
-    lastParams,
-  ])
-
+  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     return {
       loading,
       error,
-      result,
+      result: result
+        ? new BN(DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result).toString()).shiftedBy(-18)
+        : undefined,
     }
   }, [loading, error, result])
+
+  // console.log(
+  //   'MX:Call',
+  //   await provider?.call({
+  //     to: '0x7FaCb714F3023Ff0A67F2F92c05eA10fe1D9301C',
+  //     data: DataProviderSDK.INTERFACE.encodeFunctionData('computeMaxLeverage', [
+  //       {
+  //         poolKey: {
+  //           token0: positionKey.poolKey.token0Address,
+  //           token1: positionKey.poolKey.token1Address,
+  //           fee: positionKey.poolKey.fee,
+  //         },
+  //         isToken0: positionKey.isToken0,
+  //         margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         startingLeverage: new BN(startingLeverage).shiftedBy(18).toFixed(0),
+  //         stepSize: new BN(stepSize).shiftedBy(18).toFixed(0),
+  //       },
+  //     ]),
+  //   })
+  // )
+
+  // const [result, setResult] = useState<BN>()
+  // const [loading, setLoading] = useState(false)
+  // const [error, setError] = useState<DecodedError>()
+  // const [lastBlockNumber, setBlockNumber] = useState<number>()
+  // const blockNumber = useBlockNumber()
+  // const { provider } = useWeb3React()
+  // const [lastParams, setLastParams] = useState<{
+  //   margin: BN
+  //   positionKey: TraderPositionKey
+  // }>()
+
+  // const dataProvider = useDataProviderContract()
+  // useEffect(() => {
+  //   if (loading) {
+  //     return
+  //   }
+
+  //   if (!margin || !inputCurrency || !positionKey || !dataProvider || !blockNumber || margin.isZero()) {
+  //     setResult(undefined)
+  //     setError(undefined)
+  //     setBlockNumber(undefined)
+  //     setLastParams(undefined)
+  //     return
+  //   }
+
+  //   if (
+  //     lastBlockNumber &&
+  //     lastBlockNumber === blockNumber &&
+  //     lastParams?.margin === margin &&
+  //     lastParams?.positionKey === positionKey
+  //   ) {
+  //     return
+  //   }
+
+  //   if (lastBlockNumber && lastBlockNumber === blockNumber && error) {
+  //     return
+  //   }
+
+  //   const call = async () => {
+
+  //     try {
+  //       setLoading(true)
+  //       setBlockNumber(blockNumber)
+  //       const result = await dataProvider.callStatic.computeMaxLeverage({
+  //         poolKey: {
+  //           token0: positionKey.poolKey.token0Address,
+  //           token1: positionKey.poolKey.token1Address,
+  //           fee: positionKey.poolKey.fee,
+  //         },
+  //         isToken0: positionKey.isToken0,
+  //         margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         startingLeverage: new BN(startingLeverage).shiftedBy(18).toFixed(0),
+  //         stepSize: new BN(stepSize).shiftedBy(18).toFixed(0),
+  //       })
+  //       console.log('MX:result', result)
+
+  //       setResult(new BN(result.toString()).shiftedBy(-18))
+  //       setLoading(false)
+  //       setLastParams({
+  //         margin,
+  //         positionKey,
+  //       })
+  //       setError(undefined)
+  //     } catch (err) {
+  //       console.log('MX:err', err)
+  //       setResult(undefined)
+  //       setLoading(false)
+  //       setLastParams(undefined)
+  //       setError(decodeError(err))
+  //     }
+  //   }
+
+  //   call()
+  // }, [
+  //   margin,
+  //   positionKey,
+  //   inputCurrency,
+  //   startingLeverage,
+  //   stepSize,
+  //   blockNumber,
+  //   dataProvider,
+  //   loading,
+  //   lastBlockNumber,
+  //   lastParams,
+  //   error,
+  // ])
+
+  // return useMemo(() => {
+  //   return {
+  //     loading,
+  //     error,
+  //     result,
+  //   }
+  // }, [loading, error, result])
 }
 // export async function computeMaxLeverage(
 //   positionKey?: TraderPositionKey,

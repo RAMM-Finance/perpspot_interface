@@ -34,7 +34,7 @@ export function useBestPool(
             return best
           }
         },
-        [PoolState.LOADING, undefined]
+        [PoolState.NOT_EXISTS, undefined]
       )
   }, [pools])
 }

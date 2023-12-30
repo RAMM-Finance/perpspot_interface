@@ -582,7 +582,6 @@ export function useDerivedLmtMintInfo(
   // pool
   const [poolState, pool] = usePool(currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B], feeAmount)
   const noLiquidity = poolState === PoolState.NOT_EXISTS
-  // console.log('poolState', poolState)
 
   // note to parse inputs in reverse
   const invertPrice = Boolean(baseToken && token0 && !baseToken.equals(token0))

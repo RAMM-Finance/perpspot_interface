@@ -33,6 +33,7 @@ import { useBestPool } from 'hooks/useBestPool'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
+import { PoolState } from 'hooks/usePools'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
@@ -246,8 +247,8 @@ const TradeTabContent = () => {
     baseCurrencyIsInputToken,
   } = useMarginTradingState()
 
-  const [, pool] = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
-
+  const [poolState, pool] = useBestPool(currencies[Field.INPUT] ?? undefined, currencies[Field.OUTPUT] ?? undefined)
+  const poolNotFound = poolState !== PoolState.EXISTS
   const {
     trade,
     preTradeInfo,
@@ -316,6 +317,11 @@ const TradeTabContent = () => {
   const fiatValueTradeOutput = useUSDPrice(trade?.swapOutput)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.equalTo(maxInputAmount))
+  /**
+   * the approval state is NOT_APPROVED + pool with no liquidity, approvalAmount
+   * if pool doesn't exist then should show up that there's no liquidity
+   */
+  // console.log('trade modal', facilityApprovalState, preTradeInfo, poolState, swapIsUnsupported)
 
   const [formattedMargin, formattedPosition, formattedLeverageFactor] = useMemo(() => {
     return [
@@ -369,10 +375,6 @@ const TradeTabContent = () => {
     }
   }, [onUserInput, onMarginChange, onLeverageFactorChange, lmtTxHash, txHash, onPriceInput])
 
-  // const handleAcceptChanges = useCallback(() => {
-  //   setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade }))
-  // }, [trade])
-
   const handleMarginInput = useCallback(
     (value: string) => {
       onMarginChange(value)
@@ -383,18 +385,6 @@ const TradeTabContent = () => {
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
-
-  // const handleInputSelect = useCallback(
-  //   (inputCurrency: Currency) => {
-  //     onCurrencySelection(Field.INPUT, inputCurrency)
-  //   },
-  //   [onCurrencySelection]
-  // )
-
-  // const handleOutputSelect = useCallback(
-  //   (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
-  //   [onCurrencySelection]
-  // )
 
   const stablecoinPriceImpact = useMemo(
     () =>
@@ -491,7 +481,6 @@ const TradeTabContent = () => {
   }, [baseCurrencyIsInputToken, pool, currencies])
 
   // const deadline = useTransactionDeadline()
-  // console.log('core', facilityApprovalState, trade, tradeState, inputError)
   return (
     <Wrapper>
       <LeverageConfirmModal
@@ -791,6 +780,12 @@ const TradeTabContent = () => {
               >
                 <Trans>Connect Wallet</Trans>
               </ButtonLight>
+            ) : poolNotFound ? (
+              <GrayCard style={{ textAlign: 'center' }}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Insufficient liquidity for this trade.</Trans>
+                </ThemedText.DeprecatedMain>
+              </GrayCard>
             ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
               <GrayCard style={{ textAlign: 'center' }}>
                 <ThemedText.DeprecatedMain mb="4px">
@@ -877,6 +872,12 @@ const TradeTabContent = () => {
               >
                 <Trans>Connect Wallet</Trans>
               </ButtonLight>
+            ) : poolNotFound ? (
+              <GrayCard style={{ textAlign: 'center' }}>
+                <ThemedText.DeprecatedMain mb="4px">
+                  <Trans>Insufficient liquidity for this trade.</Trans>
+                </ThemedText.DeprecatedMain>
+              </GrayCard>
             ) : tradeNotFound && limitUserHasSpecifiedInputOutput && !tradeIsLoading ? (
               <GrayCard style={{ textAlign: 'center' }}>
                 <ThemedText.DeprecatedMain mb="4px">

@@ -36,12 +36,20 @@ export abstract class DataProviderSDK {
       token1: key.poolKey.token1Address,
       fee: key.poolKey.fee,
     }
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', [poolKey, key.trader, key.isToken0])
+    return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaeneousRate', [
+      poolKey,
+      key.trader,
+      key.isToken0,
+    ])
   }
 
   public static decodeFindTicks(data: string): [string, string] {
     const decoded = DataProviderSDK.INTERFACE.decodeFunctionResult('findTicks', data)
     return [decoded[0], decoded[1]]
+  }
+
+  public static encodeGetActiveMarginPositions(trader: string): string {
+    return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [trader])
   }
 
   public static findTicks(

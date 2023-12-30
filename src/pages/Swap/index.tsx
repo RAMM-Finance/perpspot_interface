@@ -434,7 +434,7 @@ export default function Swap({ className }: { className?: string }) {
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
-  const binData = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
+  const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
 
   const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
 

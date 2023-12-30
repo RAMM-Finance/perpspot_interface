@@ -25,7 +25,9 @@ import {
   useUserSlippageTolerance,
 } from 'state/user/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
+import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { LmtErrorMessage, parseContractError } from 'utils/lmtSDK/parseContractError'
 
 import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
@@ -172,17 +174,6 @@ export function useDerivedAddPositionInfo(
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
-
-  // const {
-  //   [MarginField.MARGIN]: margin,
-  //   [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-  //   isLimitOrder,
-  // } = useMarginTradingState()
-
-  // const {
-  //   [Field.INPUT]: { currencyId: inputCurrencyId },
-  //   [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  // } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -704,7 +695,7 @@ const useSimulateAddLimitOrder = (
   const poolManager = useLmtPoolManagerContract()
 
   const [tradeState, setTradeState] = useState<LimitTradeState>(LimitTradeState.INVALID)
-  const [simulationError, setSimulationError] = useState<string>()
+  const [error, setError] = useState<DecodedError>()
   const [result, setResult] = useState<AddLimitTrade>()
 
   const [orderDuration] = useUserLimitOrderTransactionTTL()
@@ -788,7 +779,7 @@ const useSimulateAddLimitOrder = (
         setTradeState(LimitTradeState.LOADING)
         await marginFacility.callStatic.multicall(calldata)
         setTradeState(LimitTradeState.VALID)
-        setSimulationError(undefined)
+        setError(undefined)
         setResult({
           orderKey,
           margin,
@@ -820,8 +811,7 @@ const useSimulateAddLimitOrder = (
         })
       } catch (err) {
         setTradeState(LimitTradeState.INVALID)
-        console.log('limit simulation error', err)
-        setSimulationError(err?.errorArgs ? (err.errorArgs?.length > 0 ? err.errorArgs[0] : err.errorArgs) : err)
+        setError(parseContractError(err))
         setResult(undefined)
         setLastUserParams(undefined)
       }
@@ -859,14 +849,14 @@ const useSimulateAddLimitOrder = (
   ])
 
   const contractError = useMemo(() => {
-    let error: ReactNode | undefined
+    let message: ReactNode | undefined
 
-    if (simulationError === 'rounded ticks overlap') {
-      error = <Trans>Leverage Too High</Trans>
+    if (error) {
+      message = <Trans>{LmtErrorMessage(error)}</Trans>
     }
 
-    return error
-  }, [simulationError])
+    return message
+  }, [error])
 
   return useMemo(() => {
     if (!margin || !leverageFactor || !startingPrice || !orderKey) {
@@ -934,7 +924,7 @@ const useSimulateMarginTrade = (
 
   const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
   const [result, setResult] = useState<AddMarginTrade>()
-  const [simulationError, setSimulationError] = useState()
+  const [error, setError] = useState<DecodedError>()
   const { provider, chainId } = useWeb3React()
   const deadline = useTransactionDeadline()
 
@@ -951,6 +941,7 @@ const useSimulateMarginTrade = (
     // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
 
     const lagged = async () => {
+      console.log('MT: call')
       if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
         return
       }
@@ -988,6 +979,7 @@ const useSimulateMarginTrade = (
       }
 
       try {
+        console.log('MT: execute')
         setTradeState(LeverageTradeState.LOADING)
         const swapRoute = new Route(
           [pool],
@@ -1046,19 +1038,21 @@ const useSimulateMarginTrade = (
           fee: pool.fee,
         }
 
-        const newBorrowInfo: any[] = borrowInfo.map(borrowItem => {
-          const existingItem = existingPosition.borrowInfo.find(item => item.tick === borrowItem.tick)
-          const liquidityDifference = existingItem ? new BN(borrowItem.liquidity).minus(existingItem.liquidity) : new BN(borrowItem.liquidity)
+        const newBorrowInfo: any[] = borrowInfo.map((borrowItem) => {
+          const existingItem = existingPosition.borrowInfo.find((item) => item.tick === borrowItem.tick)
+          const liquidityDifference = existingItem
+            ? new BN(borrowItem.liquidity).minus(existingItem.liquidity)
+            : new BN(borrowItem.liquidity)
 
           return {
             tick: borrowItem.tick,
             liquidity: liquidityDifference.toString(),
-            premium: "0", 
-            feeGrowthInside0LastX128: "0",
-            feeGrowthInside1LastX128: "0",
-            lastGrowth: "0"
+            premium: '0',
+            feeGrowthInside0LastX128: '0',
+            feeGrowthInside1LastX128: '0',
+            lastGrowth: '0',
           }
-        })        
+        })
         const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
 
         // compute the added output amount + the execution price. (margin + borrowAmount - fees) / outputAmount
@@ -1111,7 +1105,7 @@ const useSimulateMarginTrade = (
 
         setResult(simulation)
         setTradeState(LeverageTradeState.VALID)
-        setSimulationError(undefined)
+        setError(undefined)
         setLastUserParams({
           margin,
           borrowAmount,
@@ -1119,11 +1113,10 @@ const useSimulateMarginTrade = (
           allowedSlippage,
         })
       } catch (err) {
-        console.log('simulate margin error', err)
         setTradeState(LeverageTradeState.INVALID)
         setResult(undefined)
         setLastUserParams(undefined)
-        setSimulationError(err)
+        setError(parseContractError(err))
       }
       return
     }
@@ -1154,14 +1147,20 @@ const useSimulateMarginTrade = (
   ])
 
   const contractError = useMemo(() => {
-    let error: ReactNode | undefined
+    let message: ReactNode | undefined
 
-    if (simulationError === 'rounded ticks overlap') {
-      error = <Trans>Leverage Too High</Trans>
+    if (error) {
+      const { error: reason } = error
+
+      if (reason === 'paused') {
+        message = message ?? <Trans>Trading Paused</Trans>
+      }
+
+      message = message ?? <Trans>{LmtErrorMessage(error)}</Trans>
     }
 
-    return error
-  }, [simulationError])
+    return message
+  }, [error])
 
   return useMemo(() => {
     if (!margin || !borrowAmount || !positionKey) {

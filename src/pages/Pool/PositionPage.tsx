@@ -537,10 +537,13 @@ export function PositionPage() {
       )
         throw new Error('missing account')
 
-      const response = await lmtPositionManager.collect({
-        tokenId: tokenId.toString(),
-        recipient: account,
-      }, {gasLimit: 20000000})
+      const response = await lmtPositionManager.collect(
+        {
+          tokenId: tokenId.toString(),
+          recipient: account,
+        },
+        { gasLimit: 20000000 }
+      )
       return response
     } catch (err) {
       console.log('collect order error', err)
@@ -703,7 +706,7 @@ export function PositionPage() {
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
   const ownsNFT = owner === account || lmtPositionDetails?.operator === account
-  console.log('owner', ownsNFT, owner, account, lmtPositionDetails?.operator)
+  // console.log('owner', ownsNFT, owner, account, lmtPositionDetails?.operator)
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
 

@@ -8,6 +8,7 @@ import Row, { AutoRow, RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
+import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -21,7 +22,7 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-import{useInstantaeneousRate} from 'hooks/useLMTV2Positions'
+
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
@@ -638,13 +639,13 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
   // console.log(margin)
-  const rate = useInstantaeneousRate(
+  const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
     position?.pool?.token1?.address,
     position?.pool?.fee,
     account,
     position?.isToken0
-    )
+  )
   // console.log('rate', rate?.toString())
 
   // console.log('position at table', position, rate)
@@ -699,8 +700,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           repaymentTime={
             <FlexStartRow>
-
-                { rate&& String(100* Math.round( 10000000* Number(rate)/1e18/(365*24)  )/10000000) + " %"}
+              {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + ' %'}
               {/*position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>*/}
             </FlexStartRow>
           }

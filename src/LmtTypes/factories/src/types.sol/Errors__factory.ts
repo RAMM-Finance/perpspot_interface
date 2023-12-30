@@ -44,7 +44,17 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "insufficientBorrowLiquidity",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "insufficientPremiumDeposit",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "invalidStartingPrice",
     type: "error",
   },
   {
@@ -79,6 +89,16 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "outOfBoundsPrice",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "roundedTicksOverlap",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "wrongAmountRepay",
     type: "error",
   },
@@ -95,7 +115,7 @@ const _abi = [
 ] as const;
 
 const _bytecode =
-  "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122066d42dae7c695441d7e85877736ef7567d99ea1aff121257d25e9fb0a1a774a064736f6c63430008120033";
+  "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209e228a22fc8f81545a7206f36ae4609c8e99d92654eb02c806d4404c97aae45d64736f6c63430008120033";
 
 type ErrorsConstructorParams =
   | [signer?: Signer]

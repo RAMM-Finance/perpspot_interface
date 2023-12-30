@@ -253,7 +253,7 @@ export interface DataProviderInterface extends utils.Interface {
     "getOrder(address,address,bool,bool)": FunctionFragment;
     "getOrderInfo(address,address,bool,bool)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
-    "getPostInstantaeneousRate((address,address,uint24),address,bool)": FunctionFragment;
+    "getPostInstantaneousRate((address,address,uint24),address,bool)": FunctionFragment;
     "getPreInstantaeneousRate((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getReduceOrders(address)": FunctionFragment;
     "getUtilAndAPR((address,address,uint24),int24,int24)": FunctionFragment;
@@ -277,7 +277,7 @@ export interface DataProviderInterface extends utils.Interface {
       | "getOrder"
       | "getOrderInfo"
       | "getPoolkeys"
-      | "getPostInstantaeneousRate"
+      | "getPostInstantaneousRate"
       | "getPreInstantaeneousRate"
       | "getReduceOrders"
       | "getUtilAndAPR"
@@ -383,7 +383,7 @@ export interface DataProviderInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getPostInstantaeneousRate",
+    functionFragment: "getPostInstantaneousRate",
     values: [PoolKeyStruct, PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
@@ -462,7 +462,7 @@ export interface DataProviderInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPostInstantaeneousRate",
+    functionFragment: "getPostInstantaneousRate",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -620,7 +620,7 @@ export interface DataProvider extends BaseContract {
       [string, string, number] & { token0: string; token1: string; fee: number }
     >;
 
-    getPostInstantaeneousRate(
+    getPostInstantaneousRate(
       poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,
@@ -756,7 +756,7 @@ export interface DataProvider extends BaseContract {
     [string, string, number] & { token0: string; token1: string; fee: number }
   >;
 
-  getPostInstantaeneousRate(
+  getPostInstantaneousRate(
     poolKey: PoolKeyStruct,
     trader: PromiseOrValue<string>,
     positionIsToken0: PromiseOrValue<boolean>,
@@ -890,7 +890,7 @@ export interface DataProvider extends BaseContract {
       [string, string, number] & { token0: string; token1: string; fee: number }
     >;
 
-    getPostInstantaeneousRate(
+    getPostInstantaneousRate(
       poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,
@@ -1027,7 +1027,7 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPostInstantaeneousRate(
+    getPostInstantaneousRate(
       poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,
@@ -1160,7 +1160,7 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getPostInstantaeneousRate(
+    getPostInstantaneousRate(
       poolKey: PoolKeyStruct,
       trader: PromiseOrValue<string>,
       positionIsToken0: PromiseOrValue<boolean>,

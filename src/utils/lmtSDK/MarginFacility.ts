@@ -6,6 +6,8 @@ import JSBI from 'jsbi'
 import { LiquidityLoan } from 'types/leveragePosition'
 import { OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
+// const errorParser = require('ethers-decode-error')
+
 export interface AddPositionOptions {
   positionKey: TraderPositionKey
   margin: string

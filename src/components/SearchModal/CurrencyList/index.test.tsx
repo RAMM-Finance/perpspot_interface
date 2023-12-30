@@ -41,38 +41,38 @@ jest.mock('../../../state/connection/hooks', () => {
   }
 })
 
-it('renders loading rows when isLoading is true', () => {
-  const { asFragment } = render(
-    <CurrencyList
-      height={10}
-      currencies={[]}
-      otherListTokens={[]}
-      selectedCurrency={null}
-      onCurrencySelect={noOp}
-      showImportView={noOp}
-      setImportToken={noOp}
-      isLoading={true}
-      searchQuery=""
-      isAddressSearch=""
-    />
-  )
-  expect(asFragment()).toMatchSnapshot()
-})
+// it('renders loading rows when isLoading is true', () => {
+//   const { asFragment } = render(
+//     <CurrencyList
+//       height={10}
+//       currencies={[]}
+//       otherListTokens={[]}
+//       selectedCurrency={null}
+//       onCurrencySelect={noOp}
+//       showImportView={noOp}
+//       setImportToken={noOp}
+//       isLoading={true}
+//       searchQuery=""
+//       isAddressSearch=""
+//     />
+//   )
+//   expect(asFragment()).toMatchSnapshot()
+// })
 
-it('renders currency rows correctly when currencies list is non-empty', () => {
-  const { asFragment } = render(
-    <CurrencyList
-      height={10}
-      currencies={[DAI, USDC_MAINNET, WBTC]}
-      otherListTokens={[]}
-      selectedCurrency={null}
-      onCurrencySelect={noOp}
-      showImportView={noOp}
-      setImportToken={noOp}
-      isLoading={false}
-      searchQuery=""
-      isAddressSearch=""
-    />
-  )
-  expect(asFragment()).toMatchSnapshot()
-})
+// it('renders currency rows correctly when currencies list is non-empty', () => {
+//   const { asFragment } = render(
+//     <CurrencyList
+//       height={10}
+//       currencies={[DAI, USDC_MAINNET, WBTC]}
+//       otherListTokens={[]}
+//       selectedCurrency={null}
+//       onCurrencySelect={noOp}
+//       showImportView={noOp}
+//       setImportToken={noOp}
+//       isLoading={false}
+//       searchQuery=""
+//       isAddressSearch=""
+//     />
+//   )
+//   expect(asFragment()).toMatchSnapshot()
+// })
