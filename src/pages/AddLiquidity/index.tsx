@@ -1288,7 +1288,7 @@ export default function AddLiquidity() {
                             <ThemedText.BodyPrimary style={{ marginBottom: '5px' }}>Details</ThemedText.BodyPrimary>
                             <OutlineCard>
                               <RowBetween style={{ marginBottom: '6px' }}>
-                                <ThemedText.BodySmall>APR: </ThemedText.BodySmall>
+                                <ThemedText.BodySmall>Estimated APR: </ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
                                   {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %`}
                                 </ThemedText.BodySmall>

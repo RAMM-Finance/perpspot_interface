@@ -1507,8 +1507,9 @@ export default function DecreasePositionContent({
                             syncing={loading}
                           />
                           <ValueLabel
-                            label="Collateral Returned"
-                            description="Amount of collateral returned"
+                            label="Premium Returned"
+                            description="Position will automatically withdraw your remaining 
+                              premium deposit and refund you."
                             value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
                             symbolAppend={inputCurrency?.symbol}
                             syncing={loading}

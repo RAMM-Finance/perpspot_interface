@@ -672,8 +672,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const [tickLower, tickUpper] = useMemo(() => {
     if (pool && tickDiscretization) {
       return [
-        roundToBin(pool.tickCurrent, tickDiscretization, true),
-        roundToBin(pool.tickCurrent, tickDiscretization, false),
+        roundToBin(pool.tickCurrent-1000, tickDiscretization, true),
+        roundToBin(pool.tickCurrent+1000, tickDiscretization, false),
       ]
     }
     return [undefined, undefined]
@@ -773,11 +773,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         }
         APR={
           <ClickableRate rate={estimatedapr_}>{`${formatBNToString(
-            rateUtilData?.apr.times(100),
+            rateUtilData?.apr.times(1),
             NumberType.TokenNonTx
           )} %`}</ClickableRate>
         }
-        UtilRate={<ClickableRate rate={urate_}>{`${formatBNToString(rateUtilData?.util.times(100))} %`}</ClickableRate>}
+        UtilRate={<ClickableRate rate={urate_}>{`${formatBNToString(rateUtilData?.util.times(1))} %`}</ClickableRate>}
         // sparkLine={
         //   <SparkLine>
         //     <ParentSize>

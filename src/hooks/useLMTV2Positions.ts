@@ -22,7 +22,7 @@ export function useRateAndUtil(
   tickUpper: number | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined } {
   const calldata = useMemo(() => {
-    if (!token0 || !token1 || !fee || !tickLower || !tickUpper) return undefined
+    if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower==tickUpper) return undefined
     const params = [
       {
         token0,
@@ -32,7 +32,14 @@ export function useRateAndUtil(
       tickLower,
       tickUpper,
     ]
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
+    let data
+    console.log('ticks', tickLower, tickUpper)
+    try{
+      data = DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
+    } catch(err){
+      console.log('getutilerr',err)
+    }
+    return data 
   }, [token0, token1, fee, tickLower, tickUpper])
 
   const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
@@ -45,8 +52,9 @@ export function useRateAndUtil(
       }
     } else {
       const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getUtilAndAPR', result)
-      const apr = new BN(parsed[0].toString()).shiftedBy(-18)
-      const util = new BN(parsed[1].toString()).shiftedBy(-18)
+      console.log('printparsed', parsed[0].toString(), parsed[1].toString())
+      const apr = new BN(parsed[0].toString()).shiftedBy(-16)
+      const util = new BN(parsed[1].toString()).shiftedBy(-16)
       return {
         loading,
         error,
