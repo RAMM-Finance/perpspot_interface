@@ -1514,6 +1514,20 @@ export default function DecreasePositionContent({
                             symbolAppend={inputCurrency?.symbol}
                             syncing={loading}
                           />
+                          <ValueLabel
+                            label="Slippage"
+                            description="Slippage"
+                            value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
+                            symbolAppend={inputCurrency?.symbol}
+                            syncing={loading}
+                          />
+                          <ValueLabel
+                            label="Execution Price"
+                            description="Trade execution price"
+                            value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
+                            symbolAppend={inputCurrency?.symbol}
+                            syncing={loading}
+                          />                                                    
                           <RowBetween>
                             <RowFixed>
                               <MouseoverTooltip
