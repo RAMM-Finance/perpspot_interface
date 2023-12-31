@@ -7,18 +7,22 @@ import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/parseContractError'
 
+/**
+ * @returns loading: true when fetching data for new params, syncing: true when fetching data for old params, block updates only
+ */
 export function useContractCall(
   address?: string | AddressMap,
   calldata?: string,
   useSigner = false,
   blocksPerFetch = 0
-): { result: string | undefined; error: DecodedError | undefined; loading: boolean } {
+): { result: string | undefined; error: DecodedError | undefined; loading: boolean; syncing: boolean } {
   const [result, setResult] = useState<string>()
   const [error, setError] = useState<DecodedError>()
   const [lastParams, setLastParams] = useState<{
     to: string
     calldata: string
   }>()
+  const [syncing, setSyncing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [lastBlockNumber, setBlockNumber] = useState<number>()
   const blockNumber = useBlockNumber()
@@ -67,7 +71,7 @@ export function useContractCall(
       return
     }
 
-    if (loading) {
+    if (loading || syncing) {
       return
     }
 
@@ -76,7 +80,12 @@ export function useContractCall(
     }
     // note down the blockNumber of the last attempt
     setBlockNumber(blockNumber)
-    setLoading(true)
+    if (lastParams && paramsUnchanged) {
+      setSyncing(true)
+    } else {
+      setLoading(true)
+    }
+
     fetch()
       .then((data) => {
         if (!data) {
@@ -88,20 +97,22 @@ export function useContractCall(
           setLastParams(undefined)
           setResult(undefined)
           setLoading(false)
+          setSyncing(false)
         } else {
           const { data: result, to, calldata } = data
           setResult(result)
           setLastParams({ to, calldata })
           setError(undefined)
           setLoading(false)
+          setSyncing(false)
         }
       })
       .catch((err) => {
-        console.log('CT:error', err)
         setError(parseContractError(err))
         setLastParams(undefined)
         setResult(undefined)
         setLoading(false)
+        setSyncing(false)
       })
   }, [
     calldata,
@@ -115,6 +126,7 @@ export function useContractCall(
     blocksPerFetch,
     lastParams,
     address,
+    syncing,
   ])
 
   return useMemo(() => {

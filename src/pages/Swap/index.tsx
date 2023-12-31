@@ -431,7 +431,13 @@ export default function Swap({ className }: { className?: string }) {
     setSwapQuoteReceivedDate,
   ])
 
-  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  const {
+    loading: leverageLoading,
+    positions: leveragePositions,
+    error,
+    syncing: leverageSyncing,
+  } = useLeveragedLMTPositions(account)
+
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)

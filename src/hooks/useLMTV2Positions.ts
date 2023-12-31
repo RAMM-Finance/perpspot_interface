@@ -20,9 +20,9 @@ export function useRateAndUtil(
   fee: number | undefined,
   tickLower: number | undefined,
   tickUpper: number | undefined
-): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined } {
+): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined; syncing: boolean } {
   const calldata = useMemo(() => {
-    if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower==tickUpper) return undefined
+    if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower == tickUpper) return undefined
     const params = [
       {
         token0,
@@ -34,21 +34,22 @@ export function useRateAndUtil(
     ]
     let data
     console.log('ticks', tickLower, tickUpper)
-    try{
+    try {
       data = DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
-    } catch(err){
-      console.log('getutilerr',err)
+    } catch (err) {
+      console.log('getutilerr', err)
     }
-    return data 
+    return data
   }, [token0, token1, fee, tickLower, tickUpper])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     if (!result) {
       return {
         loading,
         error,
         result: undefined,
+        syncing,
       }
     } else {
       const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getUtilAndAPR', result)
@@ -62,9 +63,10 @@ export function useRateAndUtil(
           apr,
           util,
         },
+        syncing,
       }
     }
-  }, [result, loading, error])
+  }, [result, loading, error, syncing])
   // const dataProvider = useDataProviderContract()
   // const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
@@ -175,7 +177,7 @@ export function useInstantaeneousRate(
     return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', params)
   }, [token0, token1, fee, trader, positionIsToken0])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
     if (!result) {
@@ -183,6 +185,7 @@ export function useInstantaeneousRate(
         loading,
         error,
         result: undefined,
+        syncing,
       }
     } else {
       const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getPostInstantaneousRate', result)
@@ -190,9 +193,10 @@ export function useInstantaeneousRate(
         loading,
         error,
         result: parsed.toString(),
+        syncing,
       }
     }
-  }, [result, loading, error])
+  }, [result, loading, error, syncing])
 
   // const dataProvider = useDataProviderContract()
   // const blockNumber = useBlockNumber()
@@ -257,7 +261,7 @@ export function useBulkBinData(
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
   }, [token0, token1, fee, currentTick])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
     if (!result) {
@@ -265,6 +269,7 @@ export function useBulkBinData(
         result: undefined,
         loading,
         error,
+        syncing,
       }
     } else {
       const parsed: BinData[] = DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
@@ -272,9 +277,10 @@ export function useBulkBinData(
         result: parsed,
         loading,
         error,
+        syncing,
       }
     }
-  }, [result, loading, error])
+  }, [result, loading, error, syncing])
 
   // const dataProvider = useDataProviderContract()
   // const blockNumber = useBlockNumber()
@@ -329,12 +335,13 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
     if (!result) {
       return {
         loading,
+        syncing,
         error,
         positions: undefined,
       }
@@ -386,9 +393,10 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         loading,
         error,
         positions,
+        syncing,
       }
     }
-  }, [result, loading, error, account])
+  }, [result, loading, error, account, syncing])
 
   // const dataProvider = useDataProviderContract()
   // const [lastBlockNumber, setLastBlockNumber] = useState<number>()
@@ -574,7 +582,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
     ])
   }, [key, chainId])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
     if (!result || !key) {
@@ -582,6 +590,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         loading,
         error,
         position: undefined,
+        syncing,
       }
     } else {
       const position = DataProviderSDK.INTERFACE.decodeFunctionResult('getMarginPosition', result)[0]
@@ -595,6 +604,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       return {
         loading,
         error,
+        syncing,
         position: {
           poolKey: key.poolKey,
           positionId: new BN(0),
@@ -628,7 +638,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         },
       }
     }
-  }, [result, loading, error, key])
+  }, [result, loading, error, key, syncing])
 
   // const { chainId } = useWeb3React()
   // const dataProvider = useDataProviderContract()
@@ -769,6 +779,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
   loading: boolean
   error: any
   position: MarginLimitOrder | undefined
+  syncing: boolean
 } {
   const { chainId } = useWeb3React()
   const calldata = useMemo(() => {
@@ -785,13 +796,14 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
     return DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])
   }, [key, chainId])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     if (!result || !key) {
       return {
         loading,
         error,
         position: undefined,
+        syncing,
       }
     } else {
       const position = DataProviderSDK.INTERFACE.decodeFunctionResult('getOrderInfo', result)[0]
@@ -821,9 +833,10 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
           margin: convertToBN(position.margin, inputDecimals),
           currentOutput: convertToBN(position.currentOutput, position.isAdd ? outputDecimals : inputDecimals),
         },
+        syncing,
       }
     }
-  }, [result, loading, error, key])
+  }, [result, loading, error, key, syncing])
   // address pool, address trader, bool positionIsToken0, bool isAdd
   // const MarginFacility = useMarginFacilityContract()
   // const { chainId } = useWeb3React()
@@ -883,6 +896,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
   //   }
   // }, [result, loading, error, key, inputCurrency, outputCurrency])
 }
+
 export interface BinData {
   price: string
   token0Liquidity: string
@@ -897,6 +911,7 @@ interface UseLmtMarginPositionsResults {
   loading: boolean
   error: any
   positions: MarginPositionDetails[] | undefined
+  syncing: boolean
 }
 interface UseLmtOrdersResults {
   loading: boolean

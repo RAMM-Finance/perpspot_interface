@@ -451,7 +451,6 @@ function PositionRow({
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
   }, [])
-
   const rowCells = (
     <>
       <LeveragePositionModal

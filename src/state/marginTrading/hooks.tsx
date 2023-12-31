@@ -941,7 +941,6 @@ const useSimulateMarginTrade = (
     // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
 
     const lagged = async () => {
-      console.log('MT: call')
       if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
         return
       }
@@ -979,7 +978,6 @@ const useSimulateMarginTrade = (
       }
 
       try {
-        console.log('MT: execute')
         setTradeState(LeverageTradeState.LOADING)
         const swapRoute = new Route(
           [pool],
