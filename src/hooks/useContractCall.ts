@@ -131,12 +131,12 @@ export function useContractCall(
 
   return useMemo(() => {
     if (!address || !calldata || !chainId) {
-      return { result: undefined, error, loading }
+      return { result: undefined, error, loading, syncing }
     }
     const _to = typeof address === 'string' ? address : address[chainId] ?? ZERO_ADDRESS
     if (result && lastParams && lastParams.calldata === calldata && lastParams.to === _to) {
-      return { result, error, loading }
+      return { result, error, loading, syncing }
     }
-    return { result: undefined, error, loading }
-  }, [loading, error, result, lastParams, address, chainId, calldata])
+    return { result: undefined, error, loading, syncing }
+  }, [loading, error, result, lastParams, address, chainId, calldata, syncing])
 }
