@@ -249,7 +249,7 @@ export default function Pool() {
                   data-cy="join-pool-button"
                   id="join-pool-button"
                   as={Link}
-                  to="/add/ETH"
+                  to="/add/"
                 >
                   <Trans>Add New Position</Trans>
                 </ButtonPrimary>

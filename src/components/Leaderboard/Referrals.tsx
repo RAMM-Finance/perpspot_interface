@@ -1,19 +1,15 @@
-import { SmallButtonPrimary } from 'components/Button'
-import { InputSection } from 'pages/Swap'
-import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
-import { useMemo, useRef, useState,useCallback,useEffect } from 'react'
-import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
-import { useTransactionAdder } from 'state/transactions/hooks'
+import { defaultAbiCoder } from '@ethersproject/abi'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
-import { useReferralContract } from 'hooks/useContract'
-import { keccak256 } from '@ethersproject/solidity'
-import { defaultAbiCoder } from '@ethersproject/abi'
-import { TransactionType } from 'state/transactions/types'
-import {usePointExists} from 'hooks/usePointsInfo'
-import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { SmallButtonPrimary } from 'components/Button'
 import { ethers } from 'ethers'
+import { useReferralContract } from 'hooks/useContract'
+import { InputSection } from 'pages/Swap'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionType } from 'state/transactions/types'
+import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 const Wrapper = styled.div`
   display: flex;
@@ -48,6 +44,34 @@ const Input = styled.input`
   color: white;
 `
 
+const Filter = styled.div`
+  display: flex;
+  align-items: end;
+  width: fit-content;
+  gap: 10px;
+`
+
+const FilterWrapper = styled.div`
+  display: flex;
+  margin-bottom: 6px;
+`
+
+const StyledSelectorText = styled.div<{ active: boolean }>`
+  font-size: 14px;
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
+  font-weight: ${({ active }) => (active ? '600' : '300')};
+`
+
+const Selector = styled.div<{ active: boolean }>`
+  font-color: ${({ active, theme }) => (active ? theme.background : 'none')};
+  border-radius: 10px;
+  padding: 8px;
+  background-color: ${({ active, theme }) => (active ? theme.accentActiveSoft : 'none')};
+  cursor: pointer;
+  &:hover {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+`
 
 const Referrals = () => {
   const [referral, setReferral] = useState<boolean>(false)
@@ -73,7 +97,7 @@ const Referrals = () => {
   }, [createReferralCode])
 
   const acceptedCode = useMemo(() => {
-    if (referralCode && Number(referralCode)  >0) {
+    if (referralCode && Number(referralCode) > 0) {
       return true
     } else {
       return false
@@ -87,12 +111,12 @@ const Referrals = () => {
   const [ref, setRef] = useState('0')
 
   const handleUserRefChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRefGen(event.target.value);
-  };
+    setRefGen(event.target.value)
+  }
 
-  const handleCodeChange =  (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRef(event.target.value);
-  };
+  const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRef(event.target.value)
+  }
 
   const onButtonClick = () => {
     if (referral) {
@@ -105,79 +129,72 @@ const Referrals = () => {
   const referralContract = useReferralContract()
   const [activeCodes, setActiveCodes] = useState<string>()
 
-  useEffect(()=>{
+  useEffect(() => {
+    if (!account || !referralContract) return
 
-    if(!account || !referralContract) return 
-
-    const call = async()=>{
-      try{
+    const call = async () => {
+      try {
         const result = await referralContract.codesByOwners(account, 0)
         const decoded = defaultAbiCoder.decode(['uint256'], result)
         setActiveCodes(decoded.toString())
         setCreateReferralCode(() => decoded.toString())
-      } catch(error){
+      } catch (error) {
         setActiveCodes(undefined)
         setCreateReferralCode(undefined)
         console.log('codebyowners err')
       }
     }
 
-    call() 
+    call()
   }, [account])
 
   console.log('active codes', activeCodes)
 
-
   const [codeExists, setCodeExists] = useState(false)
 
-  useEffect(()=>{
+  useEffect(() => {
     const code = referral
-      ? refGen ? defaultAbiCoder.encode(['uint256'], [refGen]).toString() : undefined
-      : ref ? defaultAbiCoder.encode(['uint256'], [ref]).toString() : undefined
-    if(!account || !code || !referralContract) return 
+      ? refGen
+        ? defaultAbiCoder.encode(['uint256'], [refGen]).toString()
+        : undefined
+      : ref
+      ? defaultAbiCoder.encode(['uint256'], [ref]).toString()
+      : undefined
+    if (!account || !code || !referralContract) return
 
-    const call = async()=>{
-      try{
-        console.log('code', code,referral? refGen: ref)
+    const call = async () => {
+      try {
+        console.log('code', code, referral ? refGen : ref)
 
         const result = await referralContract.codeOwners(code)
         console.log('owner', result)
-        setCodeExists(result!= "0x0000000000000000000000000000000000000000")
-
-      } catch(error){
-        console.log('codeowner err',error)
+        setCodeExists(result != '0x0000000000000000000000000000000000000000')
+      } catch (error) {
+        console.log('codeowner err', error)
       }
     }
 
-    call() 
+    call()
   }, [refGen, ref, account])
   console.log('code exists', codeExists)
 
   const [codeUsing, setCodeUsing] = useState(false)
 
-  useEffect(()=>{
+  useEffect(() => {
+    if (!account || !referralContract) return
 
-    if(!account || !referralContract) return 
-
-    const call = async()=>{
-      try{
+    const call = async () => {
+      try {
         const result = await referralContract.userReferralCodes(account)
-        setCodeUsing(result!= ethers.constants.HashZero)
+        setCodeUsing(result != ethers.constants.HashZero)
         setReferralCode(() => defaultAbiCoder.decode(['uint256'], result).toString())
-
-      } catch(error){
+      } catch (error) {
         console.log('codeowner err')
-
       }
+    }
 
-
-      }
-    
-
-    call() 
-  }, [ account])
-
-
+    call()
+  }, [account])
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -191,7 +208,6 @@ const Referrals = () => {
   }, [account, chainId, referral, provider, refGen])
 
   const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
-
     try {
       const bytes32 = defaultAbiCoder.encode(['uint256'], [ref]).toString()
       const response = await referralContract?.setReferralCodeByUser(bytes32)
@@ -202,58 +218,56 @@ const Referrals = () => {
     }
   }, [account, chainId, referral, provider, ref])
 
-
-  const handleCreateReferral = useCallback(()=>{
-    if (!userRef?.current?.value || !account|| !referralContract || !chainId || !provider ) {
+  const handleCreateReferral = useCallback(() => {
+    if (!userRef?.current?.value || !account || !referralContract || !chainId || !provider) {
       return
     }
 
     setAttemptingTxn(true)
 
-    callback().then((response)=>{
-      setAttemptingTxn(false)
-      setTxHash(response?.hash)
-      setErrorMessage(undefined)
-      addTransaction(response, {
-        type: TransactionType.CREATE_REFERRAL,
-        inputCurrencyId: "", 
-        outputCurrencyId: ""
+    callback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setErrorMessage(undefined)
+        addTransaction(response, {
+          type: TransactionType.CREATE_REFERRAL,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        return response.hash
       })
-      return response.hash
-    })
-    .catch((error) => {
-      console.error('referrr',error)
-      setAttemptingTxn(false)
-      setTxHash(undefined)
-      setErrorMessage(error.message)
-    })
-
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setErrorMessage(error.message)
+      })
   }, [callback, account, referralContract, chainId, provider, userRef, txHash, attemptingTxn, errorMessage])
 
-
-  const handleUseCode = useCallback(()=>{
-    if(!ref || !account|| !referralContract || !chainId || !provider){
-      return 
+  const handleUseCode = useCallback(() => {
+    if (!ref || !account || !referralContract || !chainId || !provider) {
+      return
     }
     setAttemptingTxn(true)
-    useCodeCallback().then((response)=>{
-      setAttemptingTxn(false)
-      setTxHash(response?.hash)
-      setErrorMessage(undefined)
-      addTransaction(response, {
-        type: TransactionType.USE_REFERRAL,
-        inputCurrencyId: "", 
-        outputCurrencyId: ""
+    useCodeCallback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setErrorMessage(undefined)
+        addTransaction(response, {
+          type: TransactionType.USE_REFERRAL,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        return response.hash
       })
-      return response.hash
-    })
-    .catch((error) => {
-      console.error('referrr',error)
-      setAttemptingTxn(false)
-      setTxHash(undefined)
-      setErrorMessage(error.message)
-    })
-
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setErrorMessage(error.message)
+      })
   }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
   return (
@@ -261,14 +275,10 @@ const Referrals = () => {
       <FilterWrapper>
         <Filter onClick={() => setReferral(!referral)}>
           <Selector active={referral}>
-            <StyledSelectorText lineHeight="20px" active={referral}>
-              User
-            </StyledSelectorText>
+            <StyledSelectorText active={referral}>User</StyledSelectorText>
           </Selector>
           <Selector active={!referral}>
-            <StyledSelectorText lineHeight="20px" active={!referral}>
-              Referrer
-            </StyledSelectorText>
+            <StyledSelectorText active={!referral}>Referrer</StyledSelectorText>
           </Selector>
         </Filter>
       </FilterWrapper>
@@ -284,11 +294,18 @@ const Referrals = () => {
           <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
             Looks like you don't have a referral code to share. Create a new one and start earning rebates!
           </ThemedText.BodyPrimary>
-          <Input placeholder="Create referral code" id="refferal-code" ref={userRef} onChange={handleUserRefChange}></Input>
-          {codeExists && (<ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-            Code taken
-          </ThemedText.BodyPrimary>)}
-          {!codeExists && (<SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>)}
+          <Input
+            placeholder="Create referral code"
+            id="refferal-code"
+            ref={userRef}
+            onChange={handleUserRefChange}
+          ></Input>
+          {codeExists && (
+            <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
+              Code taken
+            </ThemedText.BodyPrimary>
+          )}
+          {!codeExists && <SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>}
         </InputWrapper>
       )}{' '}
       {!referral && !acceptedCode && (
@@ -303,12 +320,19 @@ const Referrals = () => {
           <ThemedText.BodyPrimary style={{ paddingBottom: '15px' }}>
             Please input referral code to benefit from fee discounts.
           </ThemedText.BodyPrimary>
-          <Input placeholder=" Enter referral code" id="refferal-code" ref={referralRef} onChange = {handleCodeChange}></Input>
-          {codeExists ? (<SmallButtonPrimary onClick={handleUseCode}>Use Code</SmallButtonPrimary>)
-          :  (<ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-            Code does not exist
-          </ThemedText.BodyPrimary>)
-          }
+          <Input
+            placeholder=" Enter referral code"
+            id="refferal-code"
+            ref={referralRef}
+            onChange={handleCodeChange}
+          ></Input>
+          {codeExists ? (
+            <SmallButtonPrimary onClick={handleUseCode}>Use Code</SmallButtonPrimary>
+          ) : (
+            <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
+              Code does not exist
+            </ThemedText.BodyPrimary>
+          )}
         </InputWrapper>
       )}
       {referral && acceptedCreate && (

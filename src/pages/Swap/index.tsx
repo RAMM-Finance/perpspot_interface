@@ -41,9 +41,11 @@ import { ActiveSwapTab, Field } from '../../state/swap/actions'
 import { useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapState } from '../../state/swap/hooks'
 import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
+import SwapTabContent from './swapModal'
+import TradeTabContent from './tradeModal'
 
-const TradeTabContent = React.lazy(() => import('./tradeModal'))
-const SwapTabContent = React.lazy(() => import('./swapModal'))
+// const TradeTabContent = React.lazy(() => import('./tradeModal'))
+// const SwapTabContent = React.lazy(() => import('./swapModal'))
 
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
 

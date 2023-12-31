@@ -87,6 +87,7 @@ import {
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
 export default function AddLiquidity() {
+  const [selectPair, setSelectPair] = useState(true)
   const navigate = useNavigate()
   const {
     currencyIdA,
@@ -119,6 +120,7 @@ export default function AddLiquidity() {
 
   const baseCurrency = useCurrency(currencyIdA)
   const currencyB = useCurrency(currencyIdB)
+
   // prevent an error if they input ETH/WETH
   const quoteCurrency =
     baseCurrency && currencyB && baseCurrency.wrapped.equals(currencyB.wrapped) ? undefined : currencyB
@@ -422,6 +424,7 @@ export default function AddLiquidity() {
     onLeftRangeInput('')
     onRightRangeInput('')
     navigate(`/add`)
+    setSelectPair(() => true)
   }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
 
   // get value and prices at ticks
@@ -728,12 +731,12 @@ export default function AddLiquidity() {
                 <AutoColumn gap="lg">
                   {!hasExistingPosition && (
                     <>
-                      <AutoColumn gap="md">
-                        <RowBetween paddingBottom="20px">
+                      <AutoColumn style={{ paddingBottom: '15px' }} gap="md">
+                        {/* <RowBetween paddingBottom="20px">
                           <ThemedText.BodyPrimary>
                             <Trans>Select Pair</Trans>
                           </ThemedText.BodyPrimary>
-                        </RowBetween>
+                        </RowBetween> */}
                         <RowBetween justify="start" gap="0px">
                           {/* <CurrencyDropdown
                             value={formattedAmounts[Field.CURRENCY_A]}
@@ -761,7 +764,12 @@ export default function AddLiquidity() {
                             id="add-liquidity-input-tokenb"
                             showCommonBases
                           /> */}
-                          <PoolSelector bg={true} largeWidth={true} />
+                          <PoolSelector
+                            selectPair={selectPair}
+                            setSelectPair={setSelectPair}
+                            bg={true}
+                            largeWidth={true}
+                          />
                         </RowBetween>
                       </AutoColumn>{' '}
                     </>

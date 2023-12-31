@@ -15,6 +15,7 @@ import { Portal } from 'nft/components/common/Portal'
 import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
 import { ChangeEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FixedSizeList } from 'react-window'
@@ -40,7 +41,17 @@ const PoolListContainer = styled.div`
   padding-left: 1vw;
 `
 
-export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boolean }) => {
+export const PoolSelector = ({
+  largeWidth,
+  bg,
+  selectPair,
+  setSelectPair,
+}: {
+  largeWidth: boolean
+  bg?: boolean
+  selectPair?: boolean
+  setSelectPair?: Dispatch<SetStateAction<boolean>>
+}) => {
   const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -272,6 +283,8 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
                   key={`${curr[0]}-${curr[1]}`}
                   fee={curr?.fee}
                   setIsOpen={setIsOpen}
+                  setSelectPair={setSelectPair}
+                  selectPair={selectPair}
                 />
               )
             })}
@@ -286,25 +299,62 @@ export const PoolSelector = ({ largeWidth, bg }: { largeWidth: boolean; bg?: boo
     color: theme.textSecondary,
   }
 
-  return (
+  return largeWidth ? (
     <Box position="relative" ref={ref}>
       <Row
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={isOpen ? 'accentActiveSoft' : bg ? 'accentActiveSoft' : 'none'}
+        background={selectPair ? 'accentActive' : isOpen ? 'accentActiveSoft' : 'accentActiveSoft'}
         onClick={() => setIsOpen(!isOpen)}
-        style={
-          largeWidth
-            ? {
-                padding: '10px',
-                height: 'fit-content',
-                width: '325px',
-                display: 'flex',
-                justifyContent: 'space-around',
-              }
-            : { padding: '5px', width: '255px', display: 'flex', justifyContent: 'space-around' }
-        }
+        style={{
+          padding: '10px',
+          height: 'fit-content',
+          width: '325px',
+          display: 'flex',
+          justifyContent: 'start',
+        }}
+      >
+        {selectPair ? (
+          <>
+            <Row style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }} gap="8">
+              <ThemedText.BodySmall fontSize={largeWidth ? '16px' : ''} color="secondary">
+                Select a Pair
+              </ThemedText.BodySmall>
+              <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Row style={{ paddingLeft: '10px' }} gap="8">
+              <DoubleCurrencyLogo
+                currency0={inputCurrency as Currency}
+                currency1={outputCurrency as Currency}
+                size={20}
+              />
+              <ThemedText.BodySmall
+                fontSize={largeWidth ? '16px' : ''}
+                color="secondary"
+              >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+            </Row>
+            <Row gap="8">
+              <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
+              {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
+            </Row>
+          </>
+        )}
+      </Row>
+      {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
+    </Box>
+  ) : (
+    <Box position="relative" ref={ref}>
+      <Row
+        as="button"
+        gap="8"
+        className={styles.ChainSelector}
+        background={isOpen ? 'accentActiveSoft' : 'none'}
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ padding: '5px', width: '255px', display: 'flex', justifyContent: 'space-around' }}
       >
         <Row gap="8">
           <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={20} />
