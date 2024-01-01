@@ -1,5 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
+import { t } from '@lingui/macro'
 import { Percent, Price } from '@uniswap/sdk-core'
 import { priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -11,12 +12,21 @@ import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
 import { AddMarginTrade } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
 import useTransactionDeadline from './useTransactionDeadline'
+
+class ModifiedAddPositionError extends Error {
+  constructor() {
+    super(
+      t`Your swap was modified through your wallet. If this was a mistake, please cancel immediately or risk losing your funds.`
+    )
+  }
+}
 
 export function useAddPositionCallback(
   trade: AddMarginTrade | undefined,
@@ -94,8 +104,7 @@ export function useAddPositionCallback(
       try {
         gasEstimate = await provider.estimateGas(tx)
       } catch (gasError) {
-        console.log('gasError', gasError)
-        throw new Error('gasError')
+        throw new GasEstimationError()
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
@@ -104,11 +113,16 @@ export function useAddPositionCallback(
         .getSigner()
         .sendTransaction({ ...tx, gasLimit })
         .then((response) => {
+          if (tx.data !== response.data) {
+            if (!response.data || response.data.length === 0 || response.data === '0x') {
+              throw new ModifiedAddPositionError()
+            }
+          }
           return response
         })
       return response
-    } catch (error: any) {
-      throw new Error('Contract Error')
+    } catch (error: unknown) {
+      throw new Error(getErrorMessage(parseContractError(error)))
     }
   }, [deadline, account, chainId, provider, trade, allowedSlippage])
 

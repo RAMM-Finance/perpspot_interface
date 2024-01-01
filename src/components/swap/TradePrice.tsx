@@ -34,6 +34,21 @@ const StyledPriceContainer = styled.button`
   padding: 8px 0;
   user-select: text;
 `
+const LmtStyledPriceContainer = styled.button`
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  grid-template-columns: 1fr auto;
+  grid-gap: 0.25rem;
+  display: flex;
+  flex-direction: row;
+  text-align: left;
+  flex-wrap: wrap;
+  user-select: text;
+`
 
 export default function TradePrice({ price }: TradePriceProps) {
   const [showInverted, setShowInverted] = useState<boolean>(false)
@@ -96,7 +111,7 @@ export function LmtTradePrice({ price, showInverted, setShowInverted }: LmtTrade
   const text = `${'1 ' + labelInverted + ' = ' + formattedPrice ?? '-'} ${label}`
 
   return (
-    <StyledPriceContainer
+    <LmtStyledPriceContainer
       onClick={(e) => {
         e.stopPropagation() // dont want this click to affect dropdowns / hovers
         flipPrice()
@@ -111,6 +126,6 @@ export function LmtTradePrice({ price, showInverted, setShowInverted }: LmtTrade
           <Trans>({formatNumber(usdPrice, NumberType.FiatTokenPrice)})</Trans>
         </ThemedText.DeprecatedDarkGray>
       )}
-    </StyledPriceContainer>
+    </LmtStyledPriceContainer>
   )
 }

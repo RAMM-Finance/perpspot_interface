@@ -65,9 +65,18 @@ interface PoolSelectorRowProps {
   ) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
   fee: number
+  setSelectPair?: Dispatch<SetStateAction<boolean>>
+  selectPair?: boolean
 }
 
-export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOpen, fee }: PoolSelectorRowProps) {
+export default function ChainSelectorRow({
+  currencyId,
+  onCurrencySelect,
+  setIsOpen,
+  fee,
+  setSelectPair,
+  selectPair,
+}: PoolSelectorRowProps) {
   // const { chainId } = useWeb3React()
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -84,8 +93,6 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
   const labelOut = token1?.symbol as string
   const active = token0?.wrapped.address === inputCurrencyId && token1?.wrapped.address === outputCurrencyId
 
-  console.log(active)
-
   const theme = useTheme()
 
   return (
@@ -94,6 +101,7 @@ export default function ChainSelectorRow({ currencyId, onCurrencySelect, setIsOp
       onClick={() => {
         token0 && token1 && onCurrencySelect(token0, token1, token0?.wrapped.address, token1?.wrapped.address, fee)
         setIsOpen(() => false)
+        setSelectPair && setSelectPair(() => false)
       }}
     >
       <div style={{ display: 'flex' }}>

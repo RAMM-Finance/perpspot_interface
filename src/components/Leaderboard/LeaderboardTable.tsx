@@ -1,6 +1,10 @@
+import { MouseoverTooltip } from 'components/Tooltip'
+import { useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import {usePointsData} from "./data"
+import { formatDollar } from 'utils/formatNumbers'
+
+import { usePointsData } from './data'
 interface Leader {
   rank: number
   tradePoint: number
@@ -13,179 +17,169 @@ interface Leader {
 export default function LeaderboardTable() {
   const tradePoints = usePointsData()
   console.log('trade points', tradePoints)
-  const leaderInfo = [
-    {
-      rank: 1,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 2,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 3,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 4,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 5,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 6,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 7,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 8,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 9,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 10,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 11,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 12,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 13,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 14,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 15,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 16,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 17,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-    {
-      rank: 18,
-      tradePoint: 12231.24,
-      lpPoint: 15231.23,
-      referralPoint: 8231.19,
-      totalPoint: 25245.41,
-      wallet: '0x34314dcsxcd',
-    },
-  ]
+
+  function extractUsers(obj: any) {
+    const allUserObjects = Object.values(obj)
+    const allUsersArrays = allUserObjects.map((point: any) => {
+      if (point === null || point === undefined) {
+        return
+      } else {
+        return Object.keys(point)
+      }
+    })
+    const flattenedUsers = allUsersArrays.flat(1)
+    const uniqueUsers = [...new Set(flattenedUsers)]
+    return uniqueUsers
+  }
+
+  function createUserDataObj(usersArr: any, obj: any) {
+    const usersArrLP = usersArr.map((user: string) => {
+      if (Object.keys(obj.lpPositionsByUniqueLps).find((lpUser) => lpUser === user)) {
+        return {
+          trader: user,
+          lpPoints: obj.lpPositionsByUniqueLps[user].reduce(
+            (accum: number, tok: any) => accum + (tok.amount0Collected + tok.amount1Collected),
+            0
+          ),
+        }
+      } else {
+        return {
+          trader: user,
+          lpPoints: 0,
+        }
+      }
+    })
+
+    const usersArrRP = usersArrLP.map((rpUser: any) => {
+      if (obj.refereeActivity && Object.keys(obj.refereeActivity).find((rUser) => rUser === rpUser.trader)) {
+        return {
+          ...rpUser,
+          rPoints: obj.refereeActivity[rpUser.trader].lpAmount + obj.refereeActivity[rpUser.trader].tradeVolume,
+        }
+      } else {
+        return {
+          ...rpUser,
+          rPoints: 0,
+        }
+      }
+    })
+
+    const usersArrTP = usersArrRP.map((tpUser: any) => {
+      if (Object.keys(obj.tradeProcessedByTrader).find((tUser) => tUser === tpUser.trader)) {
+        return {
+          ...tpUser,
+          tPoints: obj.tradeProcessedByTrader[tpUser.trader].reduce((accum: number, tok: any) => accum + tok.amount, 0),
+        }
+      } else {
+        return {
+          ...tpUser,
+          tPoints: 0,
+        }
+      }
+    })
+
+    const usersArrTotal = usersArrTP.map((totalUser: any) => {
+      return {
+        ...totalUser,
+        totalPoints: totalUser.lpPoints + totalUser.rPoints + totalUser.tPoints,
+      }
+    })
+
+    const sortedArr = usersArrTotal.sort((a: any, b: any) => b.totalPoints - a.totalPoints)
+    const sortedArrRanked = sortedArr.map((user: any, index: number) => {
+      return {
+        ...user,
+        rank: index + 1,
+      }
+    })
+
+    return sortedArrRanked
+  }
+
+  const usersArr = useMemo(() => {
+    return extractUsers(tradePoints)
+  }, [tradePoints])
+
+  const userData = useMemo(() => {
+    return createUserDataObj(usersArr, tradePoints)
+  }, [usersArr, tradePoints])
+
+  function LeaderboardHeader() {
+    return (
+      <HeaderCellWrapper>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+            Rank
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+            User
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+            Trade Point
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+            LP Point
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+            Referral Point
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+            Total Point
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+      </HeaderCellWrapper>
+    )
+  }
+
+  const formatWallet = (wallet: string) => {
+    return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
+  }
   return (
     <>
       <LeaderboardHeader />
-      {leaderInfo.map((userData) => {
+
+      {userData.map((user: any) => {
         return (
-          <>
-            <LoadedCellWrapper>
-              <LoadedCell>
-                <ThemedText.BodyPrimary>{userData.rank}</ThemedText.BodyPrimary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodyPrimary>{userData.wallet}</ThemedText.BodyPrimary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodyPrimary>{userData.tradePoint}</ThemedText.BodyPrimary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodyPrimary>{userData.lpPoint}</ThemedText.BodyPrimary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodyPrimary>{userData.referralPoint}</ThemedText.BodyPrimary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodyPrimary>{userData.totalPoint}</ThemedText.BodyPrimary>
-              </LoadedCell>
-            </LoadedCellWrapper>
-          </>
+          <LoadedCellWrapper key={user.trader}>
+            <LoadedCell>
+              <ThemedText.BodySecondary>{user.rank}</ThemedText.BodySecondary>
+            </LoadedCell>
+            <LoadedCell>
+              <MouseoverTooltip text={user.trader}>
+                <ThemedText.BodySecondary>{user.trader && formatWallet(user.trader)}</ThemedText.BodySecondary>
+              </MouseoverTooltip>
+            </LoadedCell>
+            <LoadedCell>
+              <ThemedText.BodySecondary>
+                {formatDollar({ num: user.tPoints, dollarSign: false })}
+              </ThemedText.BodySecondary>
+            </LoadedCell>
+            <LoadedCell>
+              <ThemedText.BodySecondary>
+                {formatDollar({ num: user.lpPoints, dollarSign: false })}
+              </ThemedText.BodySecondary>
+            </LoadedCell>
+            <LoadedCell>
+              <ThemedText.BodySecondary>
+                {formatDollar({ num: user.rPoints, dollarSign: false })}
+              </ThemedText.BodySecondary>
+            </LoadedCell>
+            <LoadedCell>
+              <ThemedText.BodySecondary>
+                {formatDollar({ num: user.totalPoints, dollarSign: false })}
+              </ThemedText.BodySecondary>
+            </LoadedCell>
+          </LoadedCellWrapper>
         )
       })}
     </>
@@ -198,7 +192,7 @@ const LoadedCell = styled.div`
 
 const LoadedCellWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1.5fr 3fr 3fr 3fr 3fr 3fr;
+  grid-template-columns: 0.75fr 3fr 3fr 3fr 3fr 3fr;
   padding: 10px;
   border-radius: 10px;
   :hover {
@@ -210,32 +204,7 @@ const LoadedCellWrapper = styled.div`
 const HeaderCell = styled.div``
 const HeaderCellWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1.5fr 3fr 3fr 3fr 3fr 3fr;
+  grid-template-columns: 0.75fr 3fr 3fr 3fr 3fr 3fr;
   border-bottom: solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
 `
-
-function LeaderboardHeader() {
-  return (
-    <HeaderCellWrapper>
-      <HeaderCell>
-        <ThemedText.SubHeaderSmall fontSize={12}>Rank</ThemedText.SubHeaderSmall>
-      </HeaderCell>
-      <HeaderCell>
-        <ThemedText.SubHeaderSmall fontSize={12}>User</ThemedText.SubHeaderSmall>
-      </HeaderCell>
-      <HeaderCell>
-        <ThemedText.SubHeaderSmall fontSize={12}>Trade Point</ThemedText.SubHeaderSmall>
-      </HeaderCell>
-      <HeaderCell>
-        <ThemedText.SubHeaderSmall fontSize={12}>LP Point</ThemedText.SubHeaderSmall>
-      </HeaderCell>
-      <HeaderCell>
-        <ThemedText.SubHeaderSmall fontSize={12}>Referral Point</ThemedText.SubHeaderSmall>
-      </HeaderCell>
-      <HeaderCell>
-        <ThemedText.SubHeaderSmall fontSize={12}>Total Point</ThemedText.SubHeaderSmall>
-      </HeaderCell>
-    </HeaderCellWrapper>
-  )
-}

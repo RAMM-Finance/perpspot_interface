@@ -531,7 +531,7 @@ export function LeverageModalHeader({
           <Trans>
             Output is estimated. You will receive at least{' '}
             <b>
-              {formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)} {trade.swapOutput.currency.symbol}
+              {formatCurrencyAmount(trade.minimumOutput, NumberType.SwapTradeAmount)} {trade.swapOutput.currency.symbol}
             </b>{' '}
             or the transaction will revert.
           </Trans>

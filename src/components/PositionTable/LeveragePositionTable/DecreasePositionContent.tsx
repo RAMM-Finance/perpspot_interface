@@ -31,6 +31,7 @@ import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import { TruncatedText } from 'components/swap/styleds'
+import { LmtTradePrice } from 'components/swap/TradePrice'
 import Toggle from 'components/Toggle'
 import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
@@ -59,10 +60,11 @@ import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageTolerance } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
-import { HideSmall, ThemedText } from 'theme'
+import { HideSmall, Separator, ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
+import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import {
   CancelOrderOptions,
   LimitOrderOptions,
@@ -70,13 +72,8 @@ import {
   ReducePositionOptions,
 } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
-import { LmtErrorMessage, parseContractError } from 'utils/lmtSDK/parseContractError'
 
-import {
-  ConfirmCancelOrderHeader,
-  ConfirmLimitReducePositionHeader,
-  ConfirmReducePositionHeader,
-} from './ConfirmModalHeaders'
+import { ConfirmCancelOrderHeader, ConfirmReducePositionHeader } from './ConfirmModalHeaders'
 import { BaseFooter } from './DepositPremiumContent'
 import ExistingReduceOrderDetails from './DetailsContainer'
 import { AlteredPositionProperties } from './LeveragePositionModal'
@@ -99,10 +96,16 @@ export interface DerivedReducePositionInfo {
 }
 
 export interface DerivedLimitReducePositionInfo {
-  margin: BN
-  totalPosition: BN
-  totalDebtInput: BN
-  totalDebtOutput: BN
+  // margin: BN
+  // totalPosition: BN
+  // totalDebtInput: BN
+  // totalDebtOutput: BN
+
+  // orderLifetime: number
+  positionReduceAmount: BN
+  startingDebtReduceAmount: BN
+  minimumDebtReduceAmount: BN
+  startingTriggerPrice: Price<Currency, Currency> // input / output
 }
 
 const Wrapper = styled.div`
@@ -298,7 +301,7 @@ function useDerivedReducePositionInfo(
   const contractError = useMemo(() => {
     let message: ReactNode | undefined
     if (error) {
-      message = <Trans>{LmtErrorMessage(error)}</Trans>
+      message = <Trans>{getErrorMessage(error)}</Trans>
     }
     return message
   }, [error])
@@ -329,6 +332,10 @@ function useDerivedReduceLimitPositionInfo(
   // txnInfo: DerivedReducePositionInfo | undefined
   inputError: ReactNode | undefined
   contractError: ReactNode | undefined
+  boundaryPrice: {
+    price: BN | undefined
+    isMax: boolean
+  }
 } {
   const [txnInfo, setTxnInfo] = useState<DerivedLimitReducePositionInfo>()
   const [error, setError] = useState<DecodedError>()
@@ -336,6 +343,43 @@ function useDerivedReduceLimitPositionInfo(
   const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(positionKey)
   const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
+
+  // holy fuck so hack
+  const boundaryPrice: {
+    price: BN | undefined
+    isMax: boolean
+  } = useMemo(() => {
+    const baseIsToken0 =
+      (baseCurrencyIsInput && !positionKey.isToken0) || (!baseCurrencyIsInput && positionKey.isToken0)
+    let isMax
+
+    if (baseCurrencyIsInput) {
+      if (baseIsToken0) {
+        isMax = false
+      } else {
+        isMax = true
+      }
+    } else {
+      if (baseIsToken0) {
+        isMax = true
+      } else {
+        isMax = false
+      }
+    }
+    if (pool && inputCurrency && outputCurrency && position) {
+      let price
+
+      if (baseCurrencyIsInput) {
+        price = parsedAmount?.div(position.totalDebtInput)
+      } else {
+        price = parsedAmount ? position.totalDebtInput.div(parsedAmount) : undefined
+      }
+      return { price, isMax }
+    }
+
+    return { price: undefined, isMax }
+  }, [pool, inputCurrency, outputCurrency, position, parsedAmount, baseCurrencyIsInput, positionKey])
+
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
 
@@ -347,7 +391,7 @@ function useDerivedReduceLimitPositionInfo(
       error = error ?? <Trans>Enter a limit price</Trans>
     }
 
-    if (parsedLimitPrice && pool) {
+    if (parsedLimitPrice && pool && position && parsedAmount) {
       /**
        * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
        * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
@@ -374,6 +418,7 @@ function useDerivedReduceLimitPositionInfo(
 
       if (positionKey.isToken0) {
         const currentPrice = new BN(pool.token0Price.toFixed(18))
+        const maximumPrice = new BN(position.totalDebtInput.div(parsedAmount))
         if (!price.gte(currentPrice)) {
           if (baseIsToken0) {
             error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
@@ -381,20 +426,36 @@ function useDerivedReduceLimitPositionInfo(
             error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
           }
         }
+        if (price.gte(maximumPrice)) {
+          if (baseIsToken0) {
+            error = error ?? <Trans>Order Price must be less than or equal to the maximum limit price.</Trans>
+          } else {
+            error = error ?? <Trans>Order Price must be greater than or equal to the minimum limit price.</Trans>
+          }
+        }
       } else {
         const currentPrice = new BN(pool.token1Price.toFixed(18))
+        const maximumPrice = new BN(position.totalDebtOutput.div(parsedAmount))
         if (!price.gte(currentPrice)) {
           if (baseIsToken0) {
             error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
           } else {
             error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+          }
+
+          if (price.gte(maximumPrice)) {
+            if (baseIsToken0) {
+              error = error ?? <Trans>Order Price must be greater than or equal to the minimum limit price.</Trans>
+            } else {
+              error = error ?? <Trans>Order Price must be less than or equal to the maximum limit price.</Trans>
+            }
           }
         }
       }
     }
 
     return error
-  }, [parsedAmount, parsedLimitPrice, baseCurrencyIsInput, pool, positionKey])
+  }, [parsedAmount, parsedLimitPrice, baseCurrencyIsInput, pool, positionKey, position])
   const { chainId } = useWeb3React()
 
   const deadline = useLimitTransactionDeadline()
@@ -466,10 +527,15 @@ function useDerivedReduceLimitPositionInfo(
         const reducePercentage = reduceAmount.div(position.totalPosition)
 
         setTxnInfo({
-          margin: position.margin.times(new BN(1).minus(reducePercentage)),
-          totalPosition: position.totalPosition.minus(parsedAmount),
-          totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
-          totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          positionReduceAmount: parsedAmount,
+          startingDebtReduceAmount: parsedAmount.times(price),
+          minimumDebtReduceAmount: parsedAmount.times(price),
+          startingTriggerPrice: new Price(
+            outputCurrency,
+            inputCurrency,
+            new BN(1).shiftedBy(18).toFixed(0),
+            price.shiftedBy(18).toFixed(0)
+          ),
         })
 
         onPositionChange({
@@ -519,7 +585,7 @@ function useDerivedReduceLimitPositionInfo(
     let message: ReactNode | undefined
 
     if (error) {
-      message = <Trans>{LmtErrorMessage(error)}</Trans>
+      message = <Trans>{getErrorMessage(error)}</Trans>
     }
     return message
   }, [error])
@@ -529,8 +595,9 @@ function useDerivedReduceLimitPositionInfo(
       txnInfo,
       inputError,
       contractError,
+      boundaryPrice,
     }
-  }, [inputError, txnInfo, contractError])
+  }, [inputError, txnInfo, contractError, boundaryPrice])
 }
 
 // const InputHeader = styled.div`
@@ -815,6 +882,11 @@ const ExistingReduceOrderSection = ({
   )
 }
 
+const PriceSection = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
 export default function DecreasePositionContent({
   positionKey,
   onPositionChange,
@@ -923,7 +995,7 @@ export default function DecreasePositionContent({
 
   const [closePosition, setClosePosition] = useState(false)
 
-  const { txnInfo, inputError } = useDerivedReducePositionInfo(
+  const { txnInfo, inputError, contractError } = useDerivedReducePositionInfo(
     currentState.isLimit,
     reduceAmount,
     positionKey,
@@ -936,7 +1008,12 @@ export default function DecreasePositionContent({
     outputCurrency ?? undefined
   )
 
-  const { inputError: lmtInputError, txnInfo: lmtTxnInfo } = useDerivedReduceLimitPositionInfo(
+  const {
+    inputError: lmtInputError,
+    txnInfo: lmtTxnInfo,
+    contractError: lmtContractError,
+    boundaryPrice,
+  } = useDerivedReduceLimitPositionInfo(
     currentState.isLimit,
     reduceAmount,
     limitPrice,
@@ -950,23 +1027,12 @@ export default function DecreasePositionContent({
     outputCurrency ?? undefined
   )
 
-  const positionExists = useMemo(() => {
-    if (!positionLoading && existingPosition?.openTime === 0) {
-      return false
-    } else {
-      return true
-    }
-  }, [existingPosition, positionLoading])
-
   // const marginFacility = useMarginFacilityContract(true)
 
   const addTransaction = useTransactionAdder()
 
   // callback
-  const { account, provider, chainId } = useWeb3React()
-
-  const deadline = useTransactionDeadline()
-
+  const { account } = useWeb3React()
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
   const { callback: limitCallback } = useReduceLimitOrderCallback(
@@ -979,93 +1045,16 @@ export default function DecreasePositionContent({
     lmtTradeState
   )
 
-  const callback = useCallback(async (): Promise<TransactionResponse> => {
-    try {
-      if (!account) throw new Error('missing account')
-      if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
-      if (!txnInfo) throw new Error('missing txn info')
-      if (!parsedReduceAmount) throw new Error('missing reduce amount')
-      // if (!marginFacility) throw new Error('missing marginFacility contract')
-      if (!existingPosition) throw new Error('missing position')
-      if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
-      if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
-      if (!deadline) throw new Error('missing deadline')
-      if (!inputCurrency) throw new Error('missing input currency')
-
-      // get reduce parameters
-      const reducePercent = new BN(parsedReduceAmount).div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
-      const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
-      const price = !existingPosition.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
-
-      const minOutput = new BN(parsedReduceAmount)
-        .times(price)
-        .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
-
-      const isClose = parsedReduceAmount.isEqualTo(existingPosition.totalPosition)
-      const removePremium =
-        isClose && existingPosition.premiumLeft.isGreaterThan(0)
-          ? existingPosition.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
-          : undefined
-
-      const reduceParam: ReducePositionOptions = {
-        positionKey,
-        reducePercentage: reducePercent,
-        minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
-        executionOption: 1,
-        executionData: ethers.constants.HashZero,
-        slippedTickMin,
-        slippedTickMax,
-        removePremium,
-      }
-
-      const calldatas = MarginFacilitySDK.reducePositionParameters(reduceParam)
-
-      const calldata = MulticallSDK.encodeMulticall(calldatas)
-
-      const tx = {
-        from: account,
-        to: LMT_MARGIN_FACILITY[chainId],
-        data: MulticallSDK.encodeMulticall(calldata),
-      }
-
-      let gasEstimate: BigNumber
-
-      try {
-        gasEstimate = await provider.estimateGas(tx)
-      } catch (gasError) {
-        console.log('gasError', gasError)
-        throw new Error('gasError')
-      }
-
-      const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
-      return response
-    } catch (err) {
-      console.log('reduce callback error', err)
-      throw new Error('reduce callback error')
-    }
-  }, [
-    account,
-    inputCurrency,
-    outputCurrency,
-    pool,
+  const callback = useReducePositionCallback(
     positionKey,
-    txnInfo,
-    tradeState,
-    provider,
-    chainId,
-    // marginFacility,
-    allowedSlippage,
-    deadline,
     parsedReduceAmount,
     existingPosition,
-  ])
+    pool ?? undefined,
+    inputCurrency ?? undefined,
+    outputCurrency ?? undefined,
+    tradeState,
+    allowedSlippage
+  )
 
   const handleReducePosition = useCallback(() => {
     if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
@@ -1088,32 +1077,16 @@ export default function DecreasePositionContent({
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
         })
-        setReduceAmount('')
       })
       .catch((error) => {
         console.error(error)
         setCurrentState((prev) => ({
           ...prev,
-          attemptingTxn: false,
-          txHash: undefined,
           errorMessage: error.message,
+          attemptingTxn: false,
         }))
-        // setAttemptingTxn(false)
-        // setTxHash(undefined)
-        // setErrorMessage(error.message)
-        setReduceAmount('')
       })
-  }, [
-    callback,
-    txnInfo,
-    inputCurrency,
-    outputCurrency,
-    reduceAmount,
-    addTransaction,
-    // setAttemptingTxn,
-    // setTxHash,
-    // setErrorMessage,
-  ])
+  }, [callback, txnInfo, inputCurrency, outputCurrency, reduceAmount, addTransaction])
 
   const handleReduceLimitPosition = useCallback(() => {
     if (!limitCallback || !inputCurrency || !outputCurrency) {
@@ -1159,6 +1132,9 @@ export default function DecreasePositionContent({
   const loading = useMemo(() => tradeState === DerivedInfoState.LOADING, [tradeState])
 
   const handleDismiss = useCallback(() => {
+    if (currentState.txHash) {
+      setReduceAmount('')
+    }
     setCurrentState((prev) => ({
       ...prev,
       showModal: false,
@@ -1167,9 +1143,13 @@ export default function DecreasePositionContent({
       errorMessage: undefined,
       originalTrade: undefined,
     }))
-  }, [])
+  }, [currentState])
 
   const handleDismissLimit = useCallback(() => {
+    if (currentState.limitTxHash) {
+      setReduceAmount('')
+      setLimitPrice('')
+    }
     setCurrentState((prev) => ({
       ...prev,
       showLimitModal: false,
@@ -1177,7 +1157,7 @@ export default function DecreasePositionContent({
       limitTxHash: undefined,
       limitErrorMessage: undefined,
     }))
-  }, [])
+  }, [currentState])
 
   const currentPrice = useMemo(() => {
     if (pool && inputCurrency && outputCurrency) {
@@ -1197,10 +1177,6 @@ export default function DecreasePositionContent({
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
   const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(reduceAmount, outputCurrency ?? undefined))
-
-  if (!positionExists) {
-    return <PositionMissing />
-  }
 
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition) {
     return (
@@ -1257,15 +1233,16 @@ export default function DecreasePositionContent({
           txHash={currentState.limitTxHash}
           attemptingTxn={currentState.attemptingLimitTxn}
           header={
-            lmtTxnInfo ? (
-              <ConfirmLimitReducePositionHeader
-                txnInfo={lmtTxnInfo}
-                inputCurrency={inputCurrency ?? undefined}
-                outputCurrency={outputCurrency ?? undefined}
-                showAcceptChanges={false}
-                onAcceptChanges={() => {}}
-              />
-            ) : null
+            lmtTxnInfo
+              ? null
+              : // <ConfirmLimitReducePositionHeader
+                //   txnInfo={lmtTxnInfo}
+                //   inputCurrency={inputCurrency ?? undefined}
+                //   outputCurrency={outputCurrency ?? undefined}
+                //   showAcceptChanges={false}
+                //   onAcceptChanges={() => {}}
+                // />
+                null
           }
           bottom={
             <BaseFooter
@@ -1334,21 +1311,43 @@ export default function DecreasePositionContent({
                     </div>
                   </PriceToggleSection>
                 )}
-                <Row justify="flex-end" align="start">
-                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1">
-                    Current Price:
-                  </ThemedText.DeprecatedMain>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', marginLeft: '10px' }}>
-                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={14} color="textSecondary">
-                      {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
-                    </ThemedText.DeprecatedBody>
-                    {baseCurrency && (
-                      <ThemedText.DeprecatedBody color="textSecondary" fontSize={12}>
-                        {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                <PriceSection>
+                  <Row justify="flex-start" align="center" padding="0" marginBottom="5px">
+                    <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                      Current Price:
+                    </ThemedText.DeprecatedMain>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', marginLeft: '10px' }}>
+                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
+                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
                       </ThemedText.DeprecatedBody>
-                    )}
-                  </div>
-                </Row>
+                      {baseCurrency && (
+                        <ThemedText.DeprecatedBody color="textSecondary" fontSize={12}>
+                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                        </ThemedText.DeprecatedBody>
+                      )}
+                    </div>
+                  </Row>
+                  <Row justify="flex-start" align="center">
+                    <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                      {boundaryPrice.isMax ? <Trans>Max Price:</Trans> : <Trans>Min Price:</Trans>}
+                    </ThemedText.DeprecatedMain>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', marginLeft: '10px' }}>
+                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
+                        {boundaryPrice.price ? (
+                          <HoverInlineText
+                            maxCharacters={20}
+                            text={formatBNToString(boundaryPrice.price, NumberType.FiatGasPrice, true)}
+                          />
+                        ) : null}
+                      </ThemedText.DeprecatedBody>
+                      {baseCurrency && (
+                        <ThemedText.DeprecatedBody color="textSecondary" fontSize={12}>
+                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                        </ThemedText.DeprecatedBody>
+                      )}
+                    </div>
+                  </Row>
+                </PriceSection>
               </RowStart>
             </DynamicSection>
           </AutoColumn>
@@ -1467,7 +1466,6 @@ export default function DecreasePositionContent({
                         <StyledPollingDot>
                           <Spinner />
                         </StyledPollingDot>
-                        ``
                       </StyledPolling>
                     ) : (
                       <HideSmall>
@@ -1497,151 +1495,21 @@ export default function DecreasePositionContent({
                 <AnimatedDropdown open={currentState.showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
                     {!currentState.isLimit ? (
-                      <StyledBGCard style={{ width: '100%' }}>
-                        <AutoColumn gap="sm">
-                          <ValueLabel
-                            label="Premium Owed"
-                            description="Current amount of premium owed"
-                            value={formatBNToString(txnInfo?.premium, NumberType.SwapTradeAmount)}
-                            symbolAppend={inputCurrency?.symbol}
-                            syncing={loading}
-                          />
-                          <ValueLabel
-                            label="Premium Returned"
-                            description="Position will automatically withdraw your remaining 
-                              premium deposit and refund you."
-                            value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-                            symbolAppend={inputCurrency?.symbol}
-                            syncing={loading}
-                          />
-                          <ValueLabel
-                            label="Slippage"
-                            description="Slippage"
-                            value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-                            symbolAppend={inputCurrency?.symbol}
-                            syncing={loading}
-                          />
-                          <ValueLabel
-                            label="Execution Price"
-                            description="Trade execution price"
-                            value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-                            symbolAppend={inputCurrency?.symbol}
-                            syncing={loading}
-                          />                                                    
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip
-                                text={<Trans>Estimated PnL when position is closed at current market price</Trans>}
-                              >
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans> PnL</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo &&
-                                      `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                                        (Number(txnInfo?.PnL.toNumber()) /
-                                          Number(existingPosition?.margin.toNumber())) *
-                                        100
-                                      ).toFixed(2)}%) ${inputCurrency?.symbol}`}
-                                  </DeltaText>{' '}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                        </AutoColumn>
-                      </StyledBGCard>
+                      <DecreasePositionDetails
+                        txnInfo={txnInfo}
+                        inputCurrency={inputCurrency ?? undefined}
+                        loading={loading}
+                        existingPosition={existingPosition}
+                      />
                     ) : (
-                      <StyledBGCard style={{ width: '100%' }}>
-                        <AutoColumn gap="sm">
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Amount of position reduced</Trans>}>
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Reduced Position</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.returnedAmount)}  ${outputCurrency?.symbol}`}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip text={<Trans>Your specified order price</Trans>}>
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Order Price</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right">
-                                <TruncatedText>
-                                  <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo &&
-                                      `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                                        (Number(txnInfo?.PnL.toNumber()) /
-                                          Number(existingPosition?.margin.toNumber())) *
-                                        100
-                                      ).toFixed(2)}%) ${inputCurrency?.symbol}`}
-                                  </DeltaText>
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip
-                                text={<Trans>Amount the reduced position converts to, given your order price </Trans>}
-                              >
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Desired Output</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  {txnInfo && `${Number(txnInfo?.premium)}  ${inputCurrency?.symbol}`}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                          <RowBetween>
-                            <RowFixed>
-                              <MouseoverTooltip
-                                text={<Trans>Estimated PnL when position is closed at specified price</Trans>}
-                              >
-                                <ThemedText.BodySmall color="textPrimary">
-                                  <Trans>Estimated PnL</Trans>
-                                </ThemedText.BodySmall>
-                              </MouseoverTooltip>
-                            </RowFixed>
-                            <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                              <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                                <TruncatedText>
-                                  <DeltaText delta={Number(txnInfo?.PnL)}>
-                                    {txnInfo &&
-                                      `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                                        (Number(txnInfo?.PnL.toNumber()) /
-                                          Number(existingPosition?.margin.toNumber())) *
-                                        100
-                                      ).toFixed(2)}%) ${inputCurrency?.symbol}`}
-                                  </DeltaText>{' '}
-                                </TruncatedText>
-                              </ThemedText.BodySmall>
-                            </TextWithLoadingPlaceholder>
-                          </RowBetween>
-                        </AutoColumn>
-                      </StyledBGCard>
+                      <DecreasePositionLimitDetails
+                        txnInfo={lmtTxnInfo}
+                        loading={loading}
+                        existingPosition={existingPosition}
+                        inputCurrency={inputCurrency ?? undefined}
+                        outputCurrency={outputCurrency ?? undefined}
+                        pool={pool ?? undefined}
+                      />
                     )}
                   </AutoColumn>
                 </AnimatedDropdown>
@@ -1677,6 +1545,8 @@ export default function DecreasePositionContent({
             {!currentState.isLimit ? (
               inputError ? (
                 inputError
+              ) : contractError ? (
+                contractError
               ) : tradeState === DerivedInfoState.INVALID ? (
                 <Trans>Invalid Trade</Trans>
               ) : (
@@ -1684,6 +1554,8 @@ export default function DecreasePositionContent({
               )
             ) : lmtInputError ? (
               lmtInputError
+            ) : lmtContractError ? (
+              lmtContractError
             ) : lmtTradeState === DerivedInfoState.INVALID ? (
               <Trans>Invalid Order</Trans>
             ) : (
@@ -1694,6 +1566,332 @@ export default function DecreasePositionContent({
       </div>
     </DarkCard>
   )
+}
+
+function DecreasePositionDetails({
+  txnInfo,
+  inputCurrency,
+  loading,
+  existingPosition,
+}: {
+  txnInfo?: DerivedReducePositionInfo
+  inputCurrency?: Currency
+  loading: boolean
+  existingPosition?: MarginPositionDetails
+}) {
+  return (
+    <StyledBGCard style={{ width: '100%' }}>
+      <AutoColumn gap="sm">
+        <ValueLabel
+          label="Premium Owed"
+          description="Current amount of premium owed"
+          value={formatBNToString(txnInfo?.premium, NumberType.SwapTradeAmount)}
+          symbolAppend={inputCurrency?.symbol}
+          syncing={loading}
+        />
+        <ValueLabel
+          label="Premium Returned"
+          description="Position will automatically withdraw your remaining 
+              premium deposit and refund you."
+          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
+          symbolAppend={inputCurrency?.symbol}
+          syncing={loading}
+        />
+        <ValueLabel
+          label="Slippage"
+          description="Slippage"
+          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
+          symbolAppend={inputCurrency?.symbol}
+          syncing={loading}
+        />
+        <ValueLabel
+          label="Execution Price"
+          description="Trade execution price"
+          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
+          symbolAppend={inputCurrency?.symbol}
+          syncing={loading}
+        />
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans> PnL</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65}>
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <TruncatedText>
+                <DeltaText delta={Number(txnInfo?.PnL)}>
+                  {txnInfo &&
+                    `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
+                      (Number(txnInfo?.PnL.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                      100
+                    ).toFixed(2)}%) ${inputCurrency?.symbol}`}
+                </DeltaText>{' '}
+              </TruncatedText>
+            </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
+      </AutoColumn>
+    </StyledBGCard>
+  )
+}
+
+const Underlined = styled.div`
+  text-decoration: ${({ theme }) => `underline dashed ${theme.textTertiary}`};
+`
+
+function DecreasePositionLimitDetails({
+  txnInfo,
+  loading,
+  existingPosition,
+  inputCurrency,
+  outputCurrency,
+  pool,
+}: {
+  txnInfo?: DerivedLimitReducePositionInfo
+  loading: boolean
+  existingPosition?: MarginPositionDetails
+  inputCurrency?: Currency
+  outputCurrency?: Currency
+  pool?: Pool
+}) {
+  const currentPrice = useMemo(() => {
+    // should start as input / output
+    if (existingPosition && pool) {
+      if (existingPosition.isToken0) {
+        return pool.token0Price
+      } else {
+        return pool.token1Price
+      }
+    }
+    return undefined
+  }, [existingPosition, pool])
+  const [invertedPrice, setInverted] = useState(false)
+
+  return (
+    <StyledBGCard style={{ width: '100%' }}>
+      <AutoColumn gap="sm">
+        {/* <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Current Price</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Current Price</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          {currentPrice ? (
+            <LmtTradePrice setShowInverted={setInverted} price={currentPrice} showInverted={invertedPrice} />
+          ) : (
+            '-'
+          )}
+        </RowBetween> */}
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Initial execution price of the limit order</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Starting Trigger Price</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          {txnInfo ? (
+            <Underlined>
+              <LmtTradePrice
+                setShowInverted={setInverted}
+                price={txnInfo.startingTriggerPrice}
+                showInverted={invertedPrice}
+              />
+            </Underlined>
+          ) : (
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              -
+            </ThemedText.BodySmall>
+          )}
+        </RowBetween>
+        <Separator />
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Reduce Position Amount</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Reduced Position</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65}>
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <TruncatedText>
+                {txnInfo
+                  ? `${formatBNToString(txnInfo?.positionReduceAmount, NumberType.SwapTradeAmount, false)} ${
+                      outputCurrency?.symbol
+                    }`
+                  : '-'}
+              </TruncatedText>
+            </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Maximum Debt Reduction</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Desired Debt Reduction</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65}>
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <TruncatedText>
+                {txnInfo
+                  ? `${formatBNToString(txnInfo?.startingDebtReduceAmount, NumberType.SwapTradeAmount, false)} ${
+                      inputCurrency?.symbol
+                    } ${
+                      txnInfo && existingPosition
+                        ? `(${formatBNToString(
+                            txnInfo.startingDebtReduceAmount.div(existingPosition.totalDebtInput).times(100),
+                            NumberType.TokenNonTx,
+                            false,
+                            '-'
+                          )} %)`
+                        : ''
+                    }`
+                  : '-'}
+              </TruncatedText>
+            </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Amount the reduced position converts to, given your order price </Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Minimum Debt Reduction</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65}>
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <TruncatedText>
+                {txnInfo
+                  ? `${formatBNToString(txnInfo?.minimumDebtReduceAmount, NumberType.SwapTradeAmount)} ${
+                      inputCurrency?.symbol
+                    } ${
+                      txnInfo && existingPosition
+                        ? `(${formatBNToString(
+                            txnInfo.minimumDebtReduceAmount.div(existingPosition.totalDebtInput).times(100),
+                            NumberType.TokenNonTx,
+                            false,
+                            '-'
+                          )} %)`
+                        : ''
+                    }`
+                  : '-'}
+              </TruncatedText>
+            </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
+      </AutoColumn>
+    </StyledBGCard>
+  )
+}
+
+function useReducePositionCallback(
+  positionKey: TraderPositionKey,
+  parsedReduceAmount: BN | undefined,
+  existingPosition: MarginPositionDetails | undefined,
+  pool: Pool | undefined,
+  inputCurrency: Currency | undefined,
+  outputCurrency: Currency | undefined,
+  tradeState: DerivedInfoState | undefined,
+  allowedSlippage: Percent
+) {
+  const { account, chainId, provider } = useWeb3React()
+
+  const deadline = useTransactionDeadline()
+
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      if (!account) throw new Error('missing account')
+      if (!chainId) throw new Error('missing chainId')
+      if (!provider) throw new Error('missing provider')
+      if (!parsedReduceAmount) throw new Error('missing reduce amount')
+      // if (!marginFacility) throw new Error('missing marginFacility contract')
+      if (!existingPosition) throw new Error('missing position')
+      if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
+      if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
+      if (!deadline) throw new Error('missing deadline')
+      if (!inputCurrency) throw new Error('missing input currency')
+
+      // get reduce parameters
+      const reducePercent = new BN(parsedReduceAmount).div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
+      const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
+      const price = !existingPosition.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+
+      const minOutput = new BN(parsedReduceAmount)
+        .times(price)
+        .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
+
+      const isClose = parsedReduceAmount.isEqualTo(existingPosition.totalPosition)
+      const removePremium =
+        isClose && existingPosition.premiumLeft.isGreaterThan(0)
+          ? existingPosition.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
+          : undefined
+
+      const reduceParam: ReducePositionOptions = {
+        positionKey,
+        reducePercentage: reducePercent,
+        minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
+        executionOption: 1,
+        executionData: ethers.constants.HashZero,
+        slippedTickMin,
+        slippedTickMax,
+        removePremium,
+      }
+
+      const calldatas = MarginFacilitySDK.reducePositionParameters(reduceParam)
+
+      const calldata = MulticallSDK.encodeMulticall(calldatas)
+
+      const tx = {
+        from: account,
+        to: LMT_MARGIN_FACILITY[chainId],
+        data: MulticallSDK.encodeMulticall(calldata),
+      }
+
+      let gasEstimate: BigNumber
+
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        throw new GasEstimationError()
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          return response
+        })
+      return response
+    } catch (err) {
+      throw new Error(getErrorMessage(parseContractError(err)))
+    }
+  }, [
+    account,
+    inputCurrency,
+    outputCurrency,
+    pool,
+    positionKey,
+    tradeState,
+    provider,
+    chainId,
+    // marginFacility,
+    allowedSlippage,
+    deadline,
+    parsedReduceAmount,
+    existingPosition,
+  ])
+
+  return callback
 }
 
 function useReduceLimitOrderCallback(
@@ -1708,7 +1906,7 @@ function useReduceLimitOrderCallback(
   callback: null | (() => Promise<TransactionResponse>)
 } {
   const { account, provider, chainId } = useWeb3React()
-  const deadline = useTransactionDeadline()
+  const deadline = useLimitTransactionDeadline()
   const addLimitOrder = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
@@ -1765,19 +1963,16 @@ function useReduceLimitOrderCallback(
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      return null as any
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          return response
+        })
 
-      // const response = await provider
-      //   .getSigner()
-      //   .sendTransaction({ ...tx, gasLimit })
-      //   .then((response) => {
-      //     return response
-      //   })
-
-      // return response
+      return response
     } catch (err) {
-      console.log('reduce limit callback error', err)
-      throw new Error('reduce limit callback error')
+      throw new Error(getErrorMessage(parseContractError(err)))
     }
   }, [
     account,
@@ -1826,18 +2021,4 @@ export function getSlippedTicks(
     slippedTickMax,
     slippedTickMin,
   }
-}
-
-export function PositionMissing() {
-  return (
-    <AutoColumn gap="lg" justify="center">
-      <AutoColumn gap="md" style={{ width: '100%' }}>
-        <TextWrapper margin={false}>
-          <ThemedText.BodySecondary color="neutral2" textAlign="center">
-            <Trans>Missing Position</Trans>
-          </ThemedText.BodySecondary>
-        </TextWrapper>
-      </AutoColumn>
-    </AutoColumn>
-  )
 }

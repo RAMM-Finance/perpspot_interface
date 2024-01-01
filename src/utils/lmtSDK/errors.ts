@@ -1,3 +1,4 @@
+import { t } from '@lingui/macro'
 import ErrorJson from 'abis_v2/Errors.json'
 import { decodeError } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
@@ -6,7 +7,13 @@ export function parseContractError(error: any): DecodedError {
   return decodeError(error, ErrorJson.abi)
 }
 
-export function LmtErrorMessage(err: DecodedError): string {
+export class GasEstimationError extends Error {
+  constructor() {
+    super(t`Your transaction is expected to fail.`)
+  }
+}
+
+export function getErrorMessage(err: DecodedError): string {
   const { error: reason } = err
 
   switch (reason) {
@@ -53,6 +60,6 @@ export function LmtErrorMessage(err: DecodedError): string {
     case 'outOfBoundsPrice':
       return 'Out Of Bounds Price'
     default:
-      return 'Contract Error'
+      return reason
   }
 }

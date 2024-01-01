@@ -5,7 +5,7 @@ import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useCurrency } from 'hooks/Tokens'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -142,7 +142,8 @@ export default function ConfirmSwapModal({
     </Trace>
   )
 }
-export function LeverageConfirmModal({
+
+export function AddMarginPositionConfirmModal({
   trade,
   originalTrade,
   onAcceptChanges,
@@ -155,6 +156,7 @@ export function LeverageConfirmModal({
   txHash,
   preTradeInfo,
   existingPosition,
+  onCancel,
 }: {
   isOpen: boolean
   trade: AddMarginTrade | undefined
@@ -168,6 +170,7 @@ export function LeverageConfirmModal({
   tradeErrorMessage: ReactNode | undefined
   onDismiss: () => void
   existingPosition: MarginPositionDetails | undefined
+  onCancel: () => void
 
   // swapQuoteReceivedDate: Date | undefined
   // fiatValueInput: { data?: number; isLoading: boolean }
@@ -180,6 +183,12 @@ export function LeverageConfirmModal({
     () => Boolean(trade && originalTrade && marginTradeMeaningfullyDiffers(trade, originalTrade)),
     [originalTrade, trade]
   )
+
+  useEffect(() => {
+    if (tradeErrorMessage === 'User has rejected the transaction') {
+      onCancel()
+    }
+  }, [tradeErrorMessage, onCancel])
 
   const onModalDismiss = useCallback(() => {
     if (isOpen) setShouldLogModalCloseEvent(true)

@@ -94,13 +94,13 @@ export function AdvancedSwapDetails({
       <AutoColumn gap="sm">
         <MouseoverValueLabel
           description="The amount you expect to receive at the current market price. You may receive less or more if the market price changes while your transaction is pending."
-          value={trade?.outputAmount.toFixed(3)}
+          value={formatCurrencyAmount(trade?.outputAmount, NumberType.SwapTradeAmount)}
           label={
             <Trans>
               <ThemedText.BodySmall>Output</ThemedText.BodySmall>
             </Trans>
           }
-          appendSymbol={trade ? trade.outputAmount.currency.symbol : '-'}
+          appendSymbol={trade?.outputAmount.currency.symbol}
         />
         <MouseoverValueLabel
           description="The impact your trade has on the market price of this pool."
@@ -127,7 +127,7 @@ export function AdvancedSwapDetails({
           syncing={syncing}
           value={
             !trade
-              ? '-'
+              ? undefined
               : trade.tradeType === TradeType.EXACT_INPUT
               ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
               : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`
@@ -216,7 +216,7 @@ export function MouseoverValueLabel({
       </RowFixed>
       <TextWithLoadingPlaceholder syncing={syncing ?? false} width={65}>
         <ThemedText.BodySmall color="textSecondary" textAlign="right">
-          {`${value} ${appendSymbol ?? ''}`}
+          {`${value ?? '-'} ${appendSymbol ?? ''}`}
         </ThemedText.BodySmall>
       </TextWithLoadingPlaceholder>
     </RowBetween>
