@@ -4,7 +4,13 @@ import { SupportedChainId } from 'constants/chains'
 import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
+import { PoolAddedQuery,
+  AddQuery,
+  CollectQuery,
+  DecreaseLiquidityQuery,
+  IncreaseLiquidityQuery,
+  ReduceQuery,
+ } from 'graphql/limitlessGraph/queries'
 import { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
@@ -17,7 +23,8 @@ import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
-
+import {usdValue} from "hooks/useContract"
+import {usePoolsData} from "hooks/useLMTPools"
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -180,6 +187,9 @@ export default function TokenTable() {
     }
     call()
   }, [])
+
+  const poolData = usePoolsData()
+  console.log('poolData', poolData)
 
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
