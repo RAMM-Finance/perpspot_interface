@@ -9,6 +9,7 @@ export const formatPriceImpact = (priceImpact: Percent) => `${priceImpact.multip
  * Formatted version of price impact text with warning colors
  */
 export default function FormattedPriceImpact({ priceImpact }: { priceImpact?: Percent }) {
+	console.log('priceimpac2t', priceImpact)
   return (
     <ErrorText fontWeight={500} fontSize={14} severity={warningSeverity(priceImpact)}>
       {priceImpact ? formatPriceImpact(priceImpact) : '-'}

@@ -176,7 +176,7 @@ export default function TokenTable() {
 
         setData(
           poolQueryData.data.poolAddeds.map((val: Pool) => {
-            return [val.token0, val.token1]
+            return [val.token0, val.token1, val.fee]
           })
         )
         setLoading(false)
@@ -189,7 +189,7 @@ export default function TokenTable() {
   }, [])
 
   const poolData = usePoolsData()
-  console.log('poolData', poolData)
+  console.log('poolData', poolData, data)
 
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{

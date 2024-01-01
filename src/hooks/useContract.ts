@@ -75,6 +75,21 @@ export const usdValue = new Proxy<PricesMap>(usdValueData, {
   get: (target, address: string) => (address in target ? target[address] : 0),
 })
 
+
+type DecimalMap = { [address: string]: number }
+const DecimalValues: DecimalMap = {
+  // feth
+  '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9': 18,
+  // fusdc
+  '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A': 18,
+}
+
+export const tokenDecimal = new Proxy<DecimalMap>(DecimalValues, {
+  get: (target, address: string) => (address in target ? target[address] : 18),
+})
+
+
+
 // LMT V2
 export function useLmtNFTPositionManager(withSignerIfPossible?: boolean) {
   return useContract<LmtNonfungiblePositionManager>(

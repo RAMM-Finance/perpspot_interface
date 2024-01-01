@@ -18,6 +18,8 @@ import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/h
 import styled, { useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
+
+
 // import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
 import { computeRealizedPriceImpact } from '../../utils/prices'
@@ -72,6 +74,11 @@ function TextWithLoadingPlaceholder({
   )
 }
 
+
+const formatPriceImpact = (priceImpact: Percent) => `${priceImpact.multiply(-1).toFixed(2)}%`
+
+
+
 export function AdvancedSwapDetails({
   trade,
   allowedSlippage,
@@ -104,7 +111,7 @@ export function AdvancedSwapDetails({
         />
         <MouseoverValueLabel
           description="The impact your trade has on the market price of this pool."
-          value={<FormattedPriceImpact priceImpact={priceImpact} />}
+          value={priceImpact&& formatPriceImpact(priceImpact)}
           label={
             <Trans>
               <ThemedText.BodySmall>Price Impact</ThemedText.BodySmall>
@@ -301,7 +308,7 @@ export function AdvancedMarginTradeDetails({
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
-
+  console.log('trade', trade, preTradeInfo)
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
   return (

@@ -10,7 +10,7 @@ import {
   ReduceQuery,
 } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
-import { useDataProviderContract, useLmtNFTPositionManager, useReferralContract } from 'hooks/useContract'
+import { useDataProviderContract, useLmtNFTPositionManager, useReferralContract, tokenDecimal } from 'hooks/useContract'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -178,7 +178,7 @@ export function usePointsData() {
       tradeProcessedByTrader[trader] = []
     }
     const newEntry = entry
-    newEntry.amount = usdValue[entry.token] * entry.amount
+    newEntry.amount = usdValue[entry.token] * entry.amount/ 10**tokenDecimal[entry.token]
     tradeProcessedByTrader[trader].push(newEntry)
   })
   reduceDataProcessed?.forEach((entry: any) => {
@@ -188,7 +188,7 @@ export function usePointsData() {
       tradeProcessedByTrader[trader] = []
     }
     const newEntry = entry
-    newEntry.amount = usdValue[entry.token] * entry.amount
+    newEntry.amount = usdValue[entry.token] * entry.amount /10**tokenDecimal[entry.token]
 
     tradeProcessedByTrader[trader].push(newEntry)
   })
@@ -239,8 +239,8 @@ export function usePointsData() {
       token0: entry.token0,
       token1: entry.token1,
       tokenId: entry.tokenId.toString(),
-      amount0Collected: usdValue[entry.token0] * amount0Collected,
-      amount1Collected: usdValue[entry.token1] * amount1Collected,
+      amount0Collected: usdValue[entry.token0] * amount0Collected / 10**tokenDecimal[entry.token0],
+      amount1Collected: usdValue[entry.token1] * amount1Collected/ 10**tokenDecimal[entry.token0],
     })
   })
   console.log('lpPositionsByUniqueLps', lpPositionsByUniqueLps)
