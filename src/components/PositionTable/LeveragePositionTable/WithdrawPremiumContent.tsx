@@ -35,6 +35,7 @@ import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
@@ -263,7 +264,6 @@ export function WithdrawPremiumContent({
       if (!position) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
-      // (PoolKey calldata key, bool borrowToken1, uint256 amount)
       const response = await marginFacility.withdrawPremium(
         {
           token0: positionKey.poolKey.token0Address,
@@ -276,8 +276,7 @@ export function WithdrawPremiumContent({
 
       return response
     } catch (err) {
-      console.log('reduce callback error', err)
-      throw new Error('reduce callback error')
+      throw new Error(getErrorMessage(parseContractError(err)))
     }
   }, [
     account,
@@ -314,10 +313,9 @@ export function WithdrawPremiumContent({
       })
       .catch((error) => {
         console.error(error)
-        setAttemptingTxn(false)
-        setTxHash(undefined)
         setErrorMessage(error.message)
-        setAmount('')
+        setTxHash(undefined)
+        setAttemptingTxn(false)
       })
   }, [
     callback,
@@ -336,11 +334,14 @@ export function WithdrawPremiumContent({
   const loading = useMemo(() => tradeState === DerivedInfoState.LOADING, [tradeState])
 
   const handleDismiss = useCallback(() => {
+    if (txHash) {
+      setAmount('')
+    }
     setShowModal(false)
     setAttemptingTxn(false)
     setTxHash(undefined)
     setErrorMessage(undefined)
-  }, [])
+  }, [txHash])
 
   return (
     <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -521,6 +522,8 @@ export function WithdrawPremiumContent({
     </DarkCard>
   )
 }
+
+// function PremiumDepositTxnDetails(): ReactNode {}
 
 function BaseFooter({
   onConfirm,

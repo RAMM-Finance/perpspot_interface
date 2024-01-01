@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceModalName } from '@uniswap/analytics-events'
-import { ReactNode, useCallback } from 'react'
+import { ReactNode, useCallback, useEffect } from 'react'
 import { AddLimitTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 
 import TransactionConfirmationModal, {
@@ -23,6 +23,7 @@ export function ConfirmAddLimitOrderModal({
   attemptingTxn,
   txHash,
   preTradeInfo,
+  onCancel,
 }: // existingPosition,
 // swapQuoteReceivedDate,
 // fiatValueInput,
@@ -39,11 +40,18 @@ export function ConfirmAddLimitOrderModal({
   onConfirm: () => void
   tradeErrorMessage: ReactNode | undefined
   onDismiss: () => void
+  onCancel: () => void
 }) {
   const onModalDismiss = useCallback(() => {
     // if (isOpen) setShouldLogModalCloseEvent(true)
     onDismiss()
   }, [onDismiss])
+
+  useEffect(() => {
+    if (tradeErrorMessage === 'User has rejected the transaction') {
+      onCancel()
+    }
+  }, [onCancel, tradeErrorMessage])
 
   const modalHeader = useCallback(() => {
     return trade && preTradeInfo ? (

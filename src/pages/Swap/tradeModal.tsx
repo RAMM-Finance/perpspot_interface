@@ -19,7 +19,7 @@ import PriceToggle from 'components/PriceToggle/PriceToggle'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
-import { LeverageConfirmModal } from 'components/swap/ConfirmSwapModal'
+import { AddMarginPositionConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { AddLimitDetailsDropdown, LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
 import SwapHeader from 'components/swap/SwapHeader'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -345,6 +345,23 @@ const TradeTabContent = () => {
   const lmtIsValid = useMemo(() => limitTradeState === LimitTradeState.VALID, [limitTradeState])
   const lmtIsLoading = useMemo(() => limitTradeState === LimitTradeState.LOADING, [limitTradeState])
 
+  const handleCancel = useCallback(() => {
+    setTradeState((currentState) => ({
+      ...currentState,
+      showConfirm: false,
+      tradeErrorMessage: undefined,
+      txHash: undefined,
+      attemptingTxn: false,
+    }))
+    setLimitState((currentState) => ({
+      ...currentState,
+      showConfirm: false,
+      errorMessage: undefined,
+      txHash: undefined,
+      attemptingTxn: false,
+    }))
+  }, [])
+
   const handleConfirmDismiss = useCallback(() => {
     setTradeState((currentState) => ({
       ...currentState,
@@ -426,7 +443,6 @@ const TradeTabContent = () => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
       })
       .catch((error) => {
-        console.log('callback', error.message)
         setTradeState((currentState) => ({
           ...currentState,
           attemptingTxn: false,
@@ -447,7 +463,6 @@ const TradeTabContent = () => {
         setLimitState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
       })
       .catch((error) => {
-        console.log('callback', error.message)
         setLimitState((currentState) => ({
           ...currentState,
           attemptingTxn: false,
@@ -483,7 +498,7 @@ const TradeTabContent = () => {
   // const deadline = useTransactionDeadline()
   return (
     <Wrapper>
-      <LeverageConfirmModal
+      <AddMarginPositionConfirmModal
         isOpen={showConfirm}
         originalTrade={tradeToConfirm}
         trade={trade}
@@ -493,11 +508,12 @@ const TradeTabContent = () => {
         onAcceptChanges={() => {
           return
         }}
+        onCancel={handleCancel}
         existingPosition={existingPosition}
         attemptingTxn={attemptingTxn}
         txHash={txHash}
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
-        tradeErrorMessage={tradeErrorMessage}
+        tradeErrorMessage={tradeErrorMessage ? <Trans>{tradeErrorMessage}</Trans> : undefined}
       />
       <ConfirmAddLimitOrderModal
         isOpen={lmtShowConfirm}
@@ -508,9 +524,10 @@ const TradeTabContent = () => {
         onAcceptChanges={() => {
           return
         }}
+        onCancel={handleCancel}
         attemptingTxn={lmtAttemptingTxn}
         txHash={lmtTxHash}
-        tradeErrorMessage={lmtErrorMessage}
+        tradeErrorMessage={lmtErrorMessage ? <Trans>{lmtErrorMessage}</Trans> : undefined}
         preTradeInfo={preTradeInfo}
       />
       <SwapHeader

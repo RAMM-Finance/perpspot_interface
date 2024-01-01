@@ -7,6 +7,7 @@ import { AddLimitTrade } from 'state/marginTrading/hooks'
 // import { AddMarginTrade } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
@@ -77,7 +78,7 @@ export function useAddLimitOrderCallback(
         })
       return response
     } catch (error: any) {
-      throw new Error('Contract Error')
+      throw new Error(getErrorMessage(parseContractError(error)))
     }
   }, [deadline, account, chainId, provider, trade, inputCurrency, outputCurrency])
 

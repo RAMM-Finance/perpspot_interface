@@ -26,8 +26,8 @@ import {
 } from 'state/user/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
-import { LmtErrorMessage, parseContractError } from 'utils/lmtSDK/parseContractError'
 
 import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
@@ -852,7 +852,7 @@ const useSimulateAddLimitOrder = (
     let message: ReactNode | undefined
 
     if (error) {
-      message = <Trans>{LmtErrorMessage(error)}</Trans>
+      message = <Trans>{getErrorMessage(error)}</Trans>
     }
 
     return message
@@ -1154,7 +1154,7 @@ const useSimulateMarginTrade = (
         message = message ?? <Trans>Trading Paused</Trans>
       }
 
-      message = message ?? <Trans>{LmtErrorMessage(error)}</Trans>
+      message = message ?? <Trans>{getErrorMessage(error)}</Trans>
     }
 
     return message

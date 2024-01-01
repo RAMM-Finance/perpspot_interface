@@ -5,7 +5,7 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
-import { parseContractError } from 'utils/lmtSDK/parseContractError'
+import { parseContractError } from 'utils/lmtSDK/errors'
 
 /**
  * @returns loading: true when fetching data for new params, syncing: true when fetching data for old params, block updates only

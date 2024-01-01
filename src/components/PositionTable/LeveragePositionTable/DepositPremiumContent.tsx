@@ -39,11 +39,11 @@ import { Text } from 'rebass'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { DepositPremiumOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
 import { AlteredPositionProperties } from './LeveragePositionModal'
@@ -319,8 +319,7 @@ export function DepositPremiumContent({
         })
       return response
     } catch (err) {
-      console.log('reduce callback error', err)
-      throw new Error('reduce callback error')
+      throw new Error(getErrorMessage(parseContractError(err)))
     }
   }, [
     account,
@@ -359,7 +358,6 @@ export function DepositPremiumContent({
         setAttemptingTxn(false)
         setTxHash(undefined)
         setErrorMessage(error.message)
-        setAmount('')
       })
   }, [
     callback,
@@ -373,16 +371,19 @@ export function DepositPremiumContent({
     setErrorMessage,
   ])
 
-  const theme = useTheme()
+  // const theme = useTheme()
 
   const loading = useMemo(() => tradeState === DerivedInfoState.LOADING, [tradeState])
 
   const handleDismiss = useCallback(() => {
+    if (txHash) {
+      setAmount('')
+    }
     setShowModal(false)
     setAttemptingTxn(false)
     setTxHash(undefined)
     setErrorMessage(undefined)
-  }, [])
+  }, [setShowModal, setAttemptingTxn, setTxHash, setErrorMessage, setAmount, txHash])
 
   const fiatDepositAmount = useUSDPrice(currencyAmount)
 
@@ -394,10 +395,10 @@ export function DepositPremiumContent({
           isOpen={showModal}
           attemptingTxn={attemptingTxn}
           txHash={txHash}
-          header={<Trans>Premium Position Details here</Trans>}
+          header={<Trans>Position Details here</Trans>}
           bottom={
             <BaseFooter
-              errorMessage={<Trans>{errorMessage}</Trans>}
+              errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
               onConfirm={handleDeposit}
               confirmText="Confirm Deposit"
               disabledConfirm={!!inputError || !txnInfo}
@@ -558,7 +559,9 @@ export function DepositPremiumContent({
           <ButtonError
             style={{ fontSize: '12px', borderRadius: '10px', width: 'fit-content', height: '15px' }}
             padding=".25rem"
-            onClick={handleDeposit}
+            onClick={() => {
+              setShowModal(true)
+            }}
             id="leverage-button"
             disabled={!!inputError || tradeState !== DerivedInfoState.VALID}
           >
@@ -577,6 +580,9 @@ export function DepositPremiumContent({
     </DarkCard>
   )
 }
+
+// deposit amount, new deposit, fiat values, old position health, new position health
+function DepositPremiumHeader() {}
 
 export function BaseFooter({
   onConfirm,

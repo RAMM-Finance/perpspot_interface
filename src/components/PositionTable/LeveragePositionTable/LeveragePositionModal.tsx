@@ -177,6 +177,18 @@ export function LeveragePositionModal(props: TradeModalProps) {
     )
   }, [positionKey, activeTab])
 
+  const positionExists = useMemo(() => {
+    if (!positionLoading && existingPosition?.openTime === 0) {
+      return false
+    } else {
+      return true
+    }
+  }, [existingPosition, positionLoading])
+
+  if (!positionExists) {
+    return <PositionMissing />
+  }
+
   return positionKey ? (
     <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={800} $scrollOverlay={true} onDismiss={() => onClose()}>
       <Wrapper>
@@ -595,5 +607,19 @@ function PositionValueLabel({
         </TextWithLoadingPlaceholder>
       </AutoColumn>
     </PositionValueLabelWrapper>
+  )
+}
+
+export function PositionMissing() {
+  return (
+    <AutoColumn gap="lg" justify="center">
+      <AutoColumn gap="md" style={{ width: '100%' }}>
+        <TextWrapper margin={false}>
+          <ThemedText.BodySecondary color="neutral2" textAlign="center">
+            <Trans>Missing Position</Trans>
+          </ThemedText.BodySecondary>
+        </TextWrapper>
+      </AutoColumn>
+    </AutoColumn>
   )
 }
