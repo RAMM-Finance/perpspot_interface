@@ -153,13 +153,9 @@ export default function AddLiquidity() {
     quoteCurrency ?? undefined,
     feeAmount,
     baseCurrency ?? undefined,
+    quoteCurrency ?? undefined,
     existingPosition
   )
-
-  // console.log("baseCurrency: ", baseCurrency)
-  // console.log("quoteCurrency: ", quoteCurrency)
-  // console.log("pool1: ", usePool(baseCurrency?? undefined , quoteCurrency ?? undefined, feeAmount))
-  // console.log('pool: ', pool)
 
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
     useV3MintActionHandlers(noLiquidity)
@@ -210,14 +206,8 @@ export default function AddLiquidity() {
   const argentWalletContract = useArgentWalletContract()
 
   const [approvalAmountA, approvalAmountB] = useMemo(() => {
-    if (baseCurrency && quoteCurrency) {
-      return [
-        parsedAmounts[Field.CURRENCY_A]?.add(CurrencyAmount.fromRawAmount(baseCurrency, '100')),
-        parsedAmounts[Field.CURRENCY_B]?.add(CurrencyAmount.fromRawAmount(quoteCurrency, '100')),
-      ]
-    }
-    return [undefined, undefined]
-  }, [baseCurrency, quoteCurrency, parsedAmounts])
+    return [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
+  }, [parsedAmounts])
 
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(
@@ -237,39 +227,27 @@ export default function AddLiquidity() {
   async function onAdd() {
     if (!chainId || !provider || !account) return
 
-    if (!lmtPositionManager || !baseCurrency || !quoteCurrency || !approvalAmountA || !approvalAmountB || !pool) {
+    if (!lmtPositionManager || !baseCurrency || !quoteCurrency || !pool) {
       return
     }
 
     if (position && account && deadline) {
       const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
 
-      const baseIsToken0 = baseCurrency.wrapped.sortsBefore(quoteCurrency.wrapped)
+      // const baseIsToken0 = baseCurrency.wrapped.sortsBefore(quoteCurrency.wrapped)
       const { calldata, value } =
         hasExistingPosition && tokenId
-          ? LmtNFTPositionManager.addCallParameters(
-              position,
-              {
-                tokenId,
-                slippageTolerance: allowedSlippage,
-                deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-                useNative,
-              },
-              baseIsToken0 ? approvalAmountA.quotient : approvalAmountB.quotient,
-              baseIsToken0 ? approvalAmountB.quotient : approvalAmountA.quotient
-            )
-          : LmtNFTPositionManager.addCallParameters(
-              position,
-              {
-                slippageTolerance: allowedSlippage,
-                recipient: account,
-                deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-                // useNative,
-                // createPool: noLiquidity,
-              },
-              baseIsToken0 ? approvalAmountA.quotient : approvalAmountB.quotient,
-              baseIsToken0 ? approvalAmountB.quotient : approvalAmountA.quotient
-            )
+          ? LmtNFTPositionManager.addCallParameters(position, {
+              tokenId,
+              slippageTolerance: allowedSlippage,
+              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+              useNative,
+            })
+          : LmtNFTPositionManager.addCallParameters(position, {
+              slippageTolerance: allowedSlippage,
+              recipient: account,
+              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+            })
 
       let txn: { to: string; data: string; value: string } = {
         to: LMT_NFT_POSITION_MANAGER[chainId],

@@ -709,7 +709,6 @@ const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
   const { account, chainId, provider } = useWeb3React()
   const token0 = useToken(key?.poolKey.token0Address)
   const token1 = useToken(key?.poolKey.token1Address)
-
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
@@ -730,7 +729,7 @@ const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
         isToken0: key.isToken0,
       }
       const calldata = MarginFacilitySDK.cancelLimitOrder(param)
-
+      console.log('param for cancel limit', param)
       const tx = {
         from: account,
         to: LMT_MARGIN_FACILITY[chainId],
@@ -782,8 +781,8 @@ const ExistingReduceOrderSection = ({
   const [error, setError] = useState<string>()
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const orderKey = useMemo(() => {
-    if (!account) return undefined
+  const orderKey: OrderPositionKey | undefined = useMemo(() => {
+    if (!account || !order) return undefined
     return {
       poolKey: {
         token0Address: pool.token0.address,
@@ -938,7 +937,6 @@ export default function DecreasePositionContent({
   const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const { position: orderPosition, loading: orderLoading } = useMarginOrderPositionFromPositionId(orderKey)
-
   const existingOrderBool = useMemo(() => {
     if (!orderPosition || !existingPosition) return undefined
     if (orderPosition.auctionStartTime > 0) {

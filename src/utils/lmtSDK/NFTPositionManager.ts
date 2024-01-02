@@ -2,6 +2,7 @@ import { Interface } from '@ethersproject/abi'
 import { BigintIsh, Currency, CurrencyAmount, Percent, validateAndParseAddress } from '@uniswap/sdk-core'
 import { AddLiquidityOptions, MethodParameters, MintOptions, NFTPermitOptions, Position, toHex } from '@uniswap/v3-sdk'
 import NonfungiblePositionManagerJson from 'abis_v2/NonfungiblePositionManager.json'
+import { BigNumber as BN } from 'bignumber.js'
 import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
 
@@ -126,52 +127,26 @@ export abstract class NonfungiblePositionManager {
     return calldatas
   }
 
-  public static addCallParameters(
-    position: Position,
-    options: AddLiquidityOptions,
-    amount0Max: JSBI,
-    amount1Max: JSBI
-  ): MethodParameters {
+  public static addCallParameters(position: Position, options: AddLiquidityOptions): MethodParameters {
     // get amounts
-    const { amount0: amount0Desired, amount1: amount1Desired } = position.mintAmounts
+    const { amount0: amount0Max, amount1: amount1Max } = position.mintAmounts
 
     // adjust for slippage
     const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
-    const amount0Min = minimumAmounts.amount0.toString()
-    const amount1Min = minimumAmounts.amount1.toString()
 
     const deadline = toHex(options.deadline)
     let calldata: string
-
+    const amount0Desired = new BN(amount0Max.toString()).times(1000).div(1001).toFixed(0)
+    const amount1Desired = new BN(amount1Max.toString()).times(1000).div(1001).toFixed(0)
+    const amount0Min = new BN(minimumAmounts.amount0.toString()).gt(amount0Desired)
+      ? amount0Desired
+      : minimumAmounts.amount0.toString()
+    const amount1Min = new BN(minimumAmounts.amount1.toString()).gt(amount1Desired)
+      ? amount1Desired
+      : minimumAmounts.amount1.toString()
     // mint
     if (isMint(options)) {
       const recipient: string = validateAndParseAddress(options.recipient)
-      // address token0;
-      // address token1;
-      // uint24 fee;
-      // // ticks
-      // int24 tickLower;
-      // int24 tickUpper;
-      // uint256 amount0Desired;
-      // uint256 amount1Desired;
-      // uint256 amount0Min;
-      // uint256 amount1Min;
-      // address recipient;
-      // uint256 deadline;
-
-      // console.log('params', {
-      //   token0: position.pool.token0.address,
-      //   token1: position.pool.token1.address,
-      //   fee: position.pool.fee,
-      //   tickLower: position.tickLower,
-      //   tickUpper: position.tickUpper,
-      //   amount0Desired: amount0Desired.toString(),
-      //   amount1Desired: amount1Desired.toString(),
-      //   amount0Min,
-      //   amount1Min,
-      //   recipient,
-      //   deadline,
-      // })
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('mint', [
         {
           token0: position.pool.token0.address,
@@ -179,10 +154,10 @@ export abstract class NonfungiblePositionManager {
           fee: position.pool.fee,
           tickLower: position.tickLower,
           tickUpper: position.tickUpper,
-          amount0Desired: amount0Desired.toString(),
-          amount1Desired: amount1Desired.toString(),
-          amount0Max: amount0Max.toString(),
-          amount1Max: amount1Max.toString(),
+          amount0Desired,
+          amount1Desired,
+          amount0Max,
+          amount1Max,
           amount0Min,
           amount1Min,
           recipient,
@@ -194,10 +169,10 @@ export abstract class NonfungiblePositionManager {
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('increaseLiquidity', [
         {
           tokenId: toHex(options.tokenId),
-          amount0Max: amount0Max.toString(),
-          amount1Max: amount1Max.toString(),
-          amount0Desired: toHex(amount0Desired),
-          amount1Desired: toHex(amount1Desired),
+          amount0Max,
+          amount1Max,
+          amount0Desired,
+          amount1Desired,
           amount0Min,
           amount1Min,
           deadline,

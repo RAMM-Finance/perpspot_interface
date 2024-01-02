@@ -234,7 +234,7 @@ export const PoolSelector = ({
       }
     }
     call()
-  }, [])
+  }, [error, loading])
 
   const availablePools = useMemo(() => {
     if (data) {

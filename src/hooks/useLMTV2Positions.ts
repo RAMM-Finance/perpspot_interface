@@ -343,10 +343,10 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         syncing,
         error,
         positions: undefined,
-      };
+      }
     } else {
       try {
-        const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0];
+        const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
         const positions: MarginPositionDetails[] = parsed.map((position: any) => {
           const inputDecimals = position.isToken0
             ? Number(position.token1Decimals.toString())
@@ -389,26 +389,26 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
             }),
           }
         })
-      
+
         // Return the processed positions
         return {
           loading,
           error,
           positions, // assuming positions is processed from parsed data
           syncing,
-        };
+        }
       } catch (decodeError) {
         // Handle the error from decoding
-        console.error('Error decoding result:', decodeError);
+        console.error('Error decoding result:', decodeError)
         return {
           loading,
           syncing,
           error: decodeError,
           positions: undefined,
-        };
+        }
       }
     }
-  }, [result, loading, error, account, syncing]);
+  }, [result, loading, error, account, syncing])
 
   // return useMemo(() => {
   //   if (!result) {
@@ -589,9 +589,8 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
 
   const loading = loadingAdd && loadingReduce
   const error = errorAdd && errorReduce
-
   const result = useMemo(() => {
-    if (!loading && !error) return resultAdd?.concat(resultReduce)
+    if (!loading && !error && resultAdd && resultReduce) return [...resultAdd[0], ...resultReduce[0]]
     else return undefined
   }, [loading, error, resultAdd, resultReduce])
 
@@ -599,11 +598,11 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
     return {
       loading,
       error,
-      Orders: result?.[0]?.map((order: any) => {
-        let inputDecimals = order.isToken0
+      Orders: result?.map((order: any) => {
+        let inputDecimals = order.positionIsToken0
           ? Number(order.token1Decimals.toString())
           : Number(order.token0Decimals.toString())
-        let outputDecimals = order.isToken0
+        let outputDecimals = order.positionIsToken0
           ? Number(order.token0Decimals.toString())
           : Number(order.token1Decimals.toString())
         inputDecimals = order.isAdd ? inputDecimals : outputDecimals
@@ -880,10 +879,10 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
       }
     } else {
       const position = DataProviderSDK.INTERFACE.decodeFunctionResult('getOrderInfo', result)[0]
-      const inputDecimals = position.isToken0
+      const inputDecimals = position.positionIsToken0
         ? Number(position.token1Decimals.toString())
         : Number(position.token0Decimals.toString())
-      const outputDecimals = position.isToken0
+      const outputDecimals = position.positionIsToken0
         ? Number(position.token0Decimals.toString())
         : Number(position.token1Decimals.toString())
       const startOutput = convertToBN(position.startOutput, position.isAdd ? outputDecimals : inputDecimals)
@@ -896,7 +895,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
         position: {
           key: key.poolKey,
           isAdd: position.isAdd,
-          positionIsToken0: position.isToken0,
+          positionIsToken0: position.positionIsToken0,
           auctionDeadline: position.auctionDeadline,
           auctionStartTime: position.auctionStartTime,
           startOutput,

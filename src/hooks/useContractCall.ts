@@ -59,25 +59,20 @@ export function useContractCall(
     const isStr = typeof address === 'string'
     const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
 
-    try {
-      let data;
-      if (useSigner) {
-        data = await provider.getSigner()?.call({
-          to,
-          data: calldata,
-        });
-      } else {
-        data = await provider.call({
-          to,
-          data: calldata,
-        });
-      }
-
-      return { data, to, calldata }
-    } catch (err) {
-
-      return undefined
+    let data
+    if (useSigner) {
+      data = await provider.getSigner()?.call({
+        to,
+        data: calldata,
+      })
+    } else {
+      data = await provider.call({
+        to,
+        data: calldata,
+      })
     }
+
+    return { data, to, calldata }
   }, [provider, address, calldata, useSigner, chainId])
 
   /**
