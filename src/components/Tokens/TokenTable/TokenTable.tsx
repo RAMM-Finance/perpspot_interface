@@ -221,7 +221,7 @@ export default function TokenTable() {
   const { chainId, account, provider } = useWeb3React()
 
   /* loading and error state */
-  if (chainId !== SupportedChainId.SEPOLIA || !account || !provider) {
+  if (chainId !== SupportedChainId.ARBITRUM_ONE || !account || !provider) {
     return (
       <GridContainer>
         <Trans>Connect Wallet to Sepolia</Trans>

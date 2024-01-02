@@ -325,7 +325,6 @@ export default function Swap({ className }: { className?: string }) {
 
   // dismiss warning if all imported tokens are in active lists
   const defaultTokens = useDefaultActiveTokens()
-
   const importTokensNotInDefault = useMemo(
     () =>
       urlLoadedTokens &&

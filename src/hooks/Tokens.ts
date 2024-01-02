@@ -2,7 +2,7 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
-import { getFakeTokensMap } from 'constants/fake-tokens'
+import { getFakeTokensMap ,getDefaultTokensMap} from 'constants/fake-tokens'
 import { DEFAULT_INACTIVE_LIST_URLS, DEFAULT_LIST_OF_LISTS } from 'constants/lists'
 import { useCurrencyFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
@@ -41,7 +41,7 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
 
   const userAddedTokens = useUserAddedTokens()
   return useMemo(() => {
-    return getFakeTokensMap(chainId ?? 80001)
+    return getDefaultTokensMap(chainId ?? 80001)
     // userAddedTokens
     //   // reduce into all ALL_TOKENS filtered by the current chain
     //   .reduce<{ [address: string]: Token }>(

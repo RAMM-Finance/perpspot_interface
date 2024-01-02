@@ -103,10 +103,10 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
           background={isOpen ? 'accentActiveSoft' : 'none'}
           onClick={() =>
             //setIsOpen(!isOpen)
-            onSelectChain(11155111)
+            onSelectChain(42161)
           }
         >
-          {chainId == 11155111 ? '' : 'Connect to Sepolia'}
+          {chainId == 42161 ? '' : 'Connect to Arbitrum'}
 
           {!isSupported ? (
             <AlertTriangle size={18} color={theme.textSecondary} />

@@ -34,34 +34,42 @@ export const SEPOLIA_TICK_LENS = '0x3608234ef94d0CCF4AC46284DFb102568aac2aB2'
 
 export const DATA_PROVIDER_ADDRESSES: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_DATA_PROVIDER,
+  [SupportedChainId.ARBITRUM_ONE] :"0xfdA3E8c8134685c42f22f4B75e275949a6BbA454"
 }
 
 export const LMT_MARGIN_FACILITY: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_MARGIN_FACILITY,
+  [SupportedChainId.ARBITRUM_ONE] :"0x3611CD2B957514222a94C93e1A9a5be66b0b2841"
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_NFPM,
+  [SupportedChainId.ARBITRUM_ONE] : "0xB8EEc6875E1807A189D7fa58081230b7493Ad6c1"
 }
 
 export const LMT_POOL_MANAGER: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_POOL_MANAGER,
+  [SupportedChainId.ARBITRUM_ONE] :"0x536801AaE40cb214c08f178c6727d7594a7c655b"
 }
 
 export const LMT_BORROW_FACILITY: AddressMap = {
   [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.ARBITRUM_ONE] :''
 }
 
 export const LMT_EXECUTIONER: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x805D7593093c112dc8652958FA302472a03fce44',
+  [SupportedChainId.ARBITRUM_ONE] :"0x3956684648BC0860e251e315c3988a20f6963931"
 }
 
 export const LMT_V2_PREMIUM_COMPUTER: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x352905c495dba0454e7686226C565Ae4F3474d26',
+  [SupportedChainId.ARBITRUM_ONE]: "0xCEe547fb51BBb75e313C22A9b1d25CfEDDdFB94A"
 }
 
 export const LMT_REFERRAL: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x32ae1b5826D1b7285753452FA7243614867A08B9',
+  [SupportedChainId.ARBITRUM_ONE]: '0xd6787Ac04C1012558bd371eA39F943aebc1E5255',
 }
 
 // celo v3 addresses
@@ -129,6 +137,7 @@ export const SEPOLIA_GlOBAL_STORAGE_ADDRESS = '0xC646146DeDdE36EAF9DC63316F36260
 export const ROUTER_ADDRESSES: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_ROUTER,
   [SupportedChainId.POLYGON_MUMBAI]: MUMBAI_ROUTER,
+  [SupportedChainId.ARBITRUM_ONE]: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 }
 
 export const LEVERAGE_MANAGER_FACTORY_ADDRESSES: AddressMap = {
