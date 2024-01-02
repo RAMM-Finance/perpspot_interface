@@ -308,7 +308,7 @@ export function AdvancedMarginTradeDetails({
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
-  console.log('trade', trade, preTradeInfo)
+
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
   return (

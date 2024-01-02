@@ -414,7 +414,6 @@ const TradeTabContent = () => {
         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
     [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade, lmtIsLoading, limitTrade, isLimitOrder]
   )
-  console.log('stablecoinPriceImpact', stablecoinPriceImpact)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',

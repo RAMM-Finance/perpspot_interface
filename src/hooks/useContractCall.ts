@@ -27,7 +27,30 @@ export function useContractCall(
   const [lastBlockNumber, setBlockNumber] = useState<number>()
   const blockNumber = useBlockNumber()
   const { provider, chainId } = useWeb3React()
+  // const fetch = useCallback(async () => {
+  //   if (!provider || !address || !calldata || !chainId) {
+  //     return undefined
+  //   }
 
+  //   const isStr = typeof address === 'string'
+  //   const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
+
+  //   if (useSigner) {
+  //     const data = await provider.getSigner()?.call({
+  //       to,
+  //       data: calldata,
+  //     })
+
+  //     return { data, to, calldata }
+  //   } else {
+  //     const data = await provider.call({
+  //       to,
+  //       data: calldata,
+  //     })
+
+  //     return { data, to, calldata }
+  //   }
+  // }, [provider, address, calldata, useSigner, chainId])
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
       return undefined
@@ -36,20 +59,24 @@ export function useContractCall(
     const isStr = typeof address === 'string'
     const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
 
-    if (useSigner) {
-      const data = await provider.getSigner()?.call({
-        to,
-        data: calldata,
-      })
+    try {
+      let data;
+      if (useSigner) {
+        data = await provider.getSigner()?.call({
+          to,
+          data: calldata,
+        });
+      } else {
+        data = await provider.call({
+          to,
+          data: calldata,
+        });
+      }
 
       return { data, to, calldata }
-    } else {
-      const data = await provider.call({
-        to,
-        data: calldata,
-      })
+    } catch (err) {
 
-      return { data, to, calldata }
+      return undefined
     }
   }, [provider, address, calldata, useSigner, chainId])
 

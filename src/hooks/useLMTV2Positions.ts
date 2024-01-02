@@ -336,7 +336,6 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
   }, [account])
 
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
-
   return useMemo(() => {
     if (!result) {
       return {
@@ -344,59 +343,133 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         syncing,
         error,
         positions: undefined,
-      }
+      };
     } else {
-      const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
-      const positions: MarginPositionDetails[] = parsed.map((position: any) => {
-        const inputDecimals = position.isToken0
-          ? Number(position.token1Decimals.toString())
-          : Number(position.token0Decimals.toString())
-        const outputDecimals = position.isToken0
-          ? Number(position.token0Decimals.toString())
-          : Number(position.token1Decimals.toString())
+      try {
+        const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0];
+        const positions: MarginPositionDetails[] = parsed.map((position: any) => {
+          const inputDecimals = position.isToken0
+            ? Number(position.token1Decimals.toString())
+            : Number(position.token0Decimals.toString())
+          const outputDecimals = position.isToken0
+            ? Number(position.token0Decimals.toString())
+            : Number(position.token1Decimals.toString())
+          return {
+            poolKey: {
+              token0Address: position.poolKey.token0,
+              token1Address: position.poolKey.token1,
+              fee: position.poolKey.fee,
+            },
+            isToken0: position.isToken0,
+            totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
+            totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
+            openTime: position.openTime,
+            repayTime: position.repayTime,
+            premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
+            totalPosition: convertToBN(position.totalPosition, outputDecimals),
+            margin: convertToBN(position.margin, inputDecimals),
+            premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
+            isBorrow: false,
+            premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
+              convertToBN(position.premiumOwed, inputDecimals)
+            ),
+            token0Decimals: Number(position.token0Decimals.toString()),
+            token1Decimals: Number(position.token1Decimals.toString()),
+            trader: account,
+            maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
+            borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
+              return {
+                tick: info.tick,
+                liquidity: new BN(info.liquidity.toString()),
+                premium: convertToBN(info.premium, inputDecimals),
+                feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
+                feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
+                lastGrowth: new BN(info.lastGrowth.toString()),
+              }
+            }),
+          }
+        })
+      
+        // Return the processed positions
         return {
-          poolKey: {
-            token0Address: position.poolKey.token0,
-            token1Address: position.poolKey.token1,
-            fee: position.poolKey.fee,
-          },
-          isToken0: position.isToken0,
-          totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
-          totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
-          openTime: position.openTime,
-          repayTime: position.repayTime,
-          premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
-          totalPosition: convertToBN(position.totalPosition, outputDecimals),
-          margin: convertToBN(position.margin, inputDecimals),
-          premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
-          isBorrow: false,
-          premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
-            convertToBN(position.premiumOwed, inputDecimals)
-          ),
-          token0Decimals: Number(position.token0Decimals.toString()),
-          token1Decimals: Number(position.token1Decimals.toString()),
-          trader: account,
-          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
-          borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
-            return {
-              tick: info.tick,
-              liquidity: new BN(info.liquidity.toString()),
-              premium: convertToBN(info.premium, inputDecimals),
-              feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
-              feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
-              lastGrowth: new BN(info.lastGrowth.toString()),
-            }
-          }),
-        }
-      })
-      return {
-        loading,
-        error,
-        positions,
-        syncing,
+          loading,
+          error,
+          positions, // assuming positions is processed from parsed data
+          syncing,
+        };
+      } catch (decodeError) {
+        // Handle the error from decoding
+        console.error('Error decoding result:', decodeError);
+        return {
+          loading,
+          syncing,
+          error: decodeError,
+          positions: undefined,
+        };
       }
     }
-  }, [result, loading, error, account, syncing])
+  }, [result, loading, error, account, syncing]);
+
+  // return useMemo(() => {
+  //   if (!result) {
+  //     return {
+  //       loading,
+  //       syncing,
+  //       error,
+  //       positions: undefined,
+  //     }
+  //   } else {
+  //     const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+  //     const positions: MarginPositionDetails[] = parsed.map((position: any) => {
+  //       const inputDecimals = position.isToken0
+  //         ? Number(position.token1Decimals.toString())
+  //         : Number(position.token0Decimals.toString())
+  //       const outputDecimals = position.isToken0
+  //         ? Number(position.token0Decimals.toString())
+  //         : Number(position.token1Decimals.toString())
+  //       return {
+  //         poolKey: {
+  //           token0Address: position.poolKey.token0,
+  //           token1Address: position.poolKey.token1,
+  //           fee: position.poolKey.fee,
+  //         },
+  //         isToken0: position.isToken0,
+  //         totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
+  //         totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
+  //         openTime: position.openTime,
+  //         repayTime: position.repayTime,
+  //         premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
+  //         totalPosition: convertToBN(position.totalPosition, outputDecimals),
+  //         margin: convertToBN(position.margin, inputDecimals),
+  //         premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
+  //         isBorrow: false,
+  //         premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
+  //           convertToBN(position.premiumOwed, inputDecimals)
+  //         ),
+  //         token0Decimals: Number(position.token0Decimals.toString()),
+  //         token1Decimals: Number(position.token1Decimals.toString()),
+  //         trader: account,
+  //         maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
+  //         borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
+  //           return {
+  //             tick: info.tick,
+  //             liquidity: new BN(info.liquidity.toString()),
+  //             premium: convertToBN(info.premium, inputDecimals),
+  //             feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
+  //             feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
+  //             lastGrowth: new BN(info.lastGrowth.toString()),
+  //           }
+  //         }),
+  //       }
+  //     })
+  //     return {
+  //       loading,
+  //       error,
+  //       positions,
+  //       syncing,
+  //     }
+  //   }
+  // }, [result, loading, error, account, syncing])
 
   // const dataProvider = useDataProviderContract()
   // const [lastBlockNumber, setLastBlockNumber] = useState<number>()
