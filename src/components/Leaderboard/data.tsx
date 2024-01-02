@@ -10,7 +10,7 @@ import {
   ReduceQuery,
 } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
-import { useDataProviderContract, useLmtNFTPositionManager, useReferralContract, tokenDecimal } from 'hooks/useContract'
+import { useDataProviderContract, useLmtNFTPositionManager, useReferralContract, tokenDecimal, usdValue } from 'hooks/useContract'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -20,17 +20,7 @@ interface AddPositionData {
   trader: string
 }
 
-type PricesMap = { [address: string]: number }
-const usdValueData: PricesMap = {
-  // feth
-  '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9': 2000,
-  // fusdc
-  '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A': 1,
-}
 
-export const usdValue = new Proxy<PricesMap>(usdValueData, {
-  get: (target, address: string) => (address in target ? target[address] : 0),
-})
 //usdValue[address] * amount = usdAmount
 
 export function usePointsData() {
@@ -89,6 +79,13 @@ export function usePointsData() {
           }
         })
 
+        let codeUsers
+        try {
+          codeUsers = await referralContract?.getReferees(account)
+        } catch (err) {}
+   
+
+        setCodeUsers(codeUsers)
         const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
         setUniqueTokenIds(bigNumberTokenIds)
         setUniqueReferrers(Array.from(uniqueTraders))
@@ -138,20 +135,20 @@ export function usePointsData() {
 
     const call = async () => {
       try {
-        // await Promise.all(
-        //   uniqueReferrers.map(async (referrer: any) => {
-        //     let codeUsers
-        //     try {
-        //       codeUsers = await referralContract?.codeUsers(referrer)
-        //     } catch (err) {}
-        //     if (codeUsers) {
-        //       if (!codesUsers[referrer]) codesUsers[referrer] = []
-        //       codeUsers.forEach((user: string) => {
-        //         codesUsers[referrer].push(user)
-        //       })
-        //     }
-        //   })
-        // )
+        await Promise.all(
+          uniqueReferrers.map(async (referrer: any) => {
+            let codeUsers
+            try {
+              codeUsers = await referralContract?.getReferees(referrer)
+            } catch (err) {}
+            if (codeUsers) {
+              if (!codesUsers[referrer]) codesUsers[referrer] = []
+              codeUsers.forEach((user: string) => {
+                codesUsers[referrer].push(user)
+              })
+            }
+          })
+        )
         setCodeUserPerReferrer(codesUsers)
       } catch (err) {
         console.log('codeusererr', err)
@@ -271,24 +268,15 @@ export function usePointsData() {
     return result
   }, [codeUsers, codeUserPerReferrer, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  ///[referee1: [trading volume,  ]]
-  /// referrals: get everyone who used your code,
-  /// get all trading volume and collected tokens for these addresses
-  /// get referral multiplier * scaling* tradingvolume + scaling * collectvolume
-  ///
-  // console.log('lppositions',  lpPositionsByUniqueLps,tradeProcessedByTrader)
-  // console.log('gett', lpPositionsByUniqueLps?.[codeUsers[0]],
-  //   tradeProcessedByTrader?.[codeUsers[0]] )
+  let refererData:any 
 
-  const token = useCurrency('0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9')
-  const { data: usdPrice } = useUSDPrice(token ? tryParseCurrencyAmount('1', token) : undefined)
-  // console.log('token', token, usdPrice, tryParseCurrencyAmount('1', token?token:undefined))
-
+  console.log('codeusers', codeUsers)
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
       lpPositionsByUniqueLps,
       refereeActivity,
+      refererData
       // This includes loading, positions, etc.
       // loading,
       // error

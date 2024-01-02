@@ -69,6 +69,12 @@ const usdValueData: PricesMap = {
   '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9': 2000,
   // fusdc
   '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A': 1,
+
+  // wbtc -arb
+  '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f':40000, 
+  // weth -arb
+  '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1':2000,
+
 }
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
@@ -82,6 +88,11 @@ const DecimalValues: DecimalMap = {
   '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9': 18,
   // fusdc
   '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A': 18,
+
+  // wbtc -arb
+  '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f':8, 
+  // weth -arb
+  '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1':18,
 }
 
 export const tokenDecimal = new Proxy<DecimalMap>(DecimalValues, {

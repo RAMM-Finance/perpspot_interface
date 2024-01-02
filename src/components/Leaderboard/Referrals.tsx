@@ -10,7 +10,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
+import{usePointsData} from "./data"
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -74,6 +74,9 @@ const Selector = styled.div<{ active: boolean }>`
 `
 
 const Referrals = () => {
+  const points = usePointsData()
+  console.log('points', points)
+
   const [referral, setReferral] = useState<boolean>(false)
   //generate code
   const [createReferralCode, setCreateReferralCode] = useState<HTMLInputElement | string>()
@@ -337,6 +340,17 @@ const Referrals = () => {
       )}
       {referral && acceptedCreate && (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                borderBottom: 'solid 1px gray',
+                paddingBottom: '10px',
+                alignItems: 'center',
+              }}
+            >
+              <ThemedText.BodySmall>Referral Codes: Tier 1 (5% Rebate)</ThemedText.BodySmall>{' '}
+            </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr ', gap: '10px' }}>
             <StyledCard>
               <div
@@ -388,19 +402,8 @@ const Referrals = () => {
             </StyledCard>{' '}
           </div>
           <StyledCard style={{ padding: '15px' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                borderBottom: 'solid 1px gray',
-                paddingBottom: '10px',
-                alignItems: 'center',
-              }}
-            >
-              <ThemedText.BodySmall>Referral Codes: Tier 1 (5% Rebate)</ThemedText.BodySmall>{' '}
-              <SmallButtonPrimary>Create</SmallButtonPrimary>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
+
+            {/*<div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Referral Code:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">{activeCodes}</ThemedText.BodySmall>
@@ -426,7 +429,7 @@ const Referrals = () => {
                 <ThemedText.BodySmall>Total Rebates:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
               </div>
-            </div>
+            </div>*/}
           </StyledCard>
           <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px' }}>
             <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
