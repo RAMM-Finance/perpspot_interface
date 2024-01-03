@@ -18,11 +18,11 @@ export const feth_s = '0x4e3f175b38098326a34f2c8b2d07af5ffdfc6fa9'
 // console.log(fdai < fusdc)
 // console.log(fusdc < feth)
 // console.log(fdai < feth)
-export const weth = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
-export const wbtc = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+export const weth_a = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+export const wbtc_a = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
 
-export const WETH_ARBITRUM = new Token(42161, weth, 18, 'wETH', 'Wrapped ETH')
-export const WBTC_ARBITRUM = new Token(42161, wbtc, 8, 'wBTC', 'Wrapped BTC')
+export const WETH_ARBITRUM = new Token(42161, weth_a, 18, 'wETH', 'Wrapped ETH')
+export const WBTC_ARBITRUM = new Token(42161, wbtc_a, 8, 'wBTC', 'Wrapped BTC')
 
 export const FETH_SEPOLIA = new Token(11155111, feth_s, 18, 'fETH', 'Fake ETH')
 export const FUSDC_SEPOLIA = new Token(11155111, fusdc_s, 18, 'fUSDC', 'Fake USDC')
@@ -209,6 +209,10 @@ export const getFakePool = (chainId: number, token0?: string, token1?: string): 
     } else if (token0 === fusdc_m && token1 === fwbtc_m) {
       return '0x99ac8ca7087fa4a2a1fb6357269965a2014abc35'
     }
+  } else {
+    if(token0 === wbtc_a && token1 === weth_a){
+      return '0x4585fe77225b41b697c938b018e2ac67ac5a20c0'
+    } 
   }
   return undefined
 }

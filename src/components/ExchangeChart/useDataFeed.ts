@@ -47,12 +47,12 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           onResolveErrorCallback: any,
           extension: any
         ) => {
-          // console.log('[resolveSymbol]: Method call', symbolName)
+          console.log('[resolveSymbol]: Method call', symbolName)
           if (symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
           const { baseSymbol, quoteSymbol, poolAddress, invertPrice, useUniswapSubgraph } = JSON.parse(symbolName)
-
+          console.log('symbols', baseSymbol, quoteSymbol, poolAddress, invertPrice, useUniswapSubgraph)
           // console.log("resolveSymbol", symbolName)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,

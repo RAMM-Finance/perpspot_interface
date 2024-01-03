@@ -15,7 +15,7 @@ import { IChartingLibraryWidget, LanguageCode, widget } from 'public/charting_li
 import { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
-
+import {V3_CORE_FACTORY_ADDRESSES} from "../../constants/addresses"
 import { defaultChartProps } from './constants'
 import useDatafeed from './useDataFeed'
 
@@ -77,6 +77,10 @@ export const PoolDataChart = ({
   const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
   const [, pool] = usePool(token0, token1, fee)
+  const currency0 = useCurrency(token0?.address) 
+  const currency1 = useCurrency(token1?.address) 
+  const [uniswapPoolExists, setUniswapPoolExists] = useState(false)
+  const [uniswapToken0Price, setUniswapToken0Price] = useState<number | undefined>(0)
 
   useEffect(() => {
     // if longer than 1 seconds w/o update, reload
@@ -86,24 +90,23 @@ export const PoolDataChart = ({
   })
 
   const uniswapPoolAddress = useMemo(() => {
+
     if (chainId && token0 && token1) {
+      setUniswapPoolExists(true)
+
       // console.log('getFakePool', getFakePool(token0.address.toLowerCase(), token1.address.toLowerCase()))
       if (isFakePair(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())) {
         return getFakePool(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())
+      }else{
+        return getFakePool(chainId, token0.address, token1.address)
+  
       }
 
-      // return computePoolAddress({
-      // 	factoryAddress: UNISWAP_FACTORIES[1],
-      // 	tokenA: token0,
-      // 	tokenB: token1,
-      // 	fee,
-      // 	initCodeHashManualOverride: UNISWAP_POOL_INIT_CODE_HASH
-      // }).toLowerCase()
     }
     return undefined
   }, [chainId, token0, token1])
 
-  // console.log("uniswapPoolAddress", uniswapPoolAddress)
+  // console.log("uniswapPoolAddress",chainId, token0, token1, uniswapPoolAddress)
 
   const limitlessPoolAddress = useMemo(() => {
     if (chainId && token0 && token1 && fee) {
@@ -120,10 +123,9 @@ export const PoolDataChart = ({
 
   // const uniswapPoolContract = useContract(uniswapPoolAddress, POOL_STATE_INTERFACE)
 
-  const [uniswapPoolExists, setUniswapPoolExists] = useState(false)
-  const [uniswapToken0Price, setUniswapToken0Price] = useState<number | undefined>()
-  const currency0 = useCurrency(token0?.address)
-  const currency1 = useCurrency(token1?.address)
+
+  // const currency0 = useCurrency(token0?.address)
+  // const currency1 = useCurrency(token1?.address)
   const [poolState, limitlessPool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
   const [symbol, setSymbol] = useState('missing pool')
   const [stats, setStats] = useState<{
@@ -223,33 +225,53 @@ export const PoolDataChart = ({
   ])
 
   useEffect(() => {
-    if (token0 && token1 && isFakePair(chainId, token0?.address.toLowerCase(), token1?.address.toLowerCase())) {
-      setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
-    } else if (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress) {
+
+    if(uniswapPoolExists && uniswapToken0Price!= null){
       const token0IsBase = uniswapToken0Price > 1
       setSymbol(
         JSON.stringify({
           poolAddress: uniswapPoolAddress,
           baseSymbol: token0IsBase ? token0?.symbol : token1?.symbol,
           quoteSymbol: token0IsBase ? token1?.symbol : token0?.symbol,
-          invertPrice: !token0IsBase,
+          invertPrice: false,
           useUniswapSubgraph: true,
         })
       )
-    } else if (!uniswapPoolExists && limitlessPoolAddress && limitlessPool) {
-      const token0IsBase = limitlessPool.token0Price.greaterThan(1)
-      setSymbol(
-        JSON.stringify({
-          poolAddress: limitlessPoolAddress,
-          baseSymbol: token0IsBase ? token0?.symbol : token1?.symbol,
-          quoteSymbol: token0IsBase ? token1?.symbol : token0?.symbol,
-          invertPrice: !token0IsBase,
-          useUniswapSubgraph: false,
-        })
-      )
-    } else {
+    }else{
       setSymbol('missing pool')
     }
+    // if (token0 && token1 && isFakePair(chainId, token0?.address.toLowerCase(), token1?.address.toLowerCase())) {
+    //   console.log("b", uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress)
+
+    //   setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
+    // } else if (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress) {
+    //   const token0IsBase = uniswapToken0Price > 1
+    //   console.log("a", uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress)
+    //   setSymbol(
+    //     JSON.stringify({
+    //       poolAddress: uniswapPoolAddress,
+    //       baseSymbol: token0IsBase ? token0?.symbol : token1?.symbol,
+    //       quoteSymbol: token0IsBase ? token1?.symbol : token0?.symbol,
+    //       invertPrice: !token0IsBase,
+    //       useUniswapSubgraph: true,
+    //     })
+    //   )
+    // } else if (!uniswapPoolExists && limitlessPoolAddress && limitlessPool) {
+    //   const token0IsBase = limitlessPool.token0Price.greaterThan(1)
+    //   setSymbol(
+    //     JSON.stringify({
+    //       poolAddress: uniswapPoolAddress,
+    //       baseSymbol: token0IsBase ? token0?.symbol : token1?.symbol,
+    //       quoteSymbol: token0IsBase ? token1?.symbol : token0?.symbol,
+    //       invertPrice: token0IsBase,
+    //       useUniswapSubgraph: true,
+    //     })
+    //   )
+    // } else {
+    //   console.log('c', uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress, 
+    //     (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress))
+    //   setSymbol('missing pool')
+    // }
   }, [
     token0,
     token1,
