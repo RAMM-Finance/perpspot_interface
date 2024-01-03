@@ -12,6 +12,7 @@ import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { formatDollar } from 'utils/formatNumbers'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
@@ -308,7 +309,7 @@ const PairInfoContainer = styled.div`
 `
 
 const TVLInfo = styled.div`
-  width: 15rem;
+  width: 12rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 0.75rem;
   border-radius: 10px;
@@ -330,17 +331,11 @@ const HowTo = styled.div`
 
 function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div style={{ display: 'flex', gap: '2rem' }}>
       <TVLInfo>
         <ThemedText.SubHeader fontSize={15}>TVL:</ThemedText.SubHeader>
         <ThemedText.SubHeader color="textSecondary" fontSize={15}>
-          {poolsInfo.tvl ? poolsInfo.tvl : '0'}
-        </ThemedText.SubHeader>
-      </TVLInfo>
-      <TVLInfo>
-        <ThemedText.SubHeader fontSize={15}> Total Debt:</ThemedText.SubHeader>
-        <ThemedText.SubHeader color="textSecondary" fontSize={15}>
-          {poolsInfo.debt ? poolsInfo.debt : '0'}
+          {poolsInfo.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
         </ThemedText.SubHeader>
       </TVLInfo>
       <TVLInfo>

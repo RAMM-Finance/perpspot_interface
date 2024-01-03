@@ -6,6 +6,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { Field } from 'state/swap/actions'
 import { useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
+import { formatDollar } from 'utils/formatNumbers'
 
 const LOGO_SIZE = 20
 
@@ -56,6 +57,8 @@ const Logo = styled.img`
 
 interface PoolSelectorRowProps {
   currencyId: string[]
+  tvl: number
+  volume: number
   onCurrencySelect: (
     currencyIn: Currency,
     currencyOut: Currency,
@@ -76,6 +79,8 @@ export default function ChainSelectorRow({
   fee,
   setSelectPair,
   selectPair,
+  tvl,
+  volume,
 }: PoolSelectorRowProps) {
   // const { chainId } = useWeb3React()
   const {
@@ -108,8 +113,8 @@ export default function ChainSelectorRow({
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
         <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
       </div>
-      <p>Test</p>
-      <p>Test</p>
+      <p>{formatDollar({ num: tvl, digits: 0 })}</p>
+      <p>{volume}</p>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )

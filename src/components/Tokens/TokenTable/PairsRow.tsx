@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
+import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency, useToken } from '../../../hooks/Tokens'
@@ -651,6 +652,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
+  const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / 1e10
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const [tickLower, tickUpper] = useMemo(() => {
     if (pool && tickDiscretization) {
@@ -732,7 +734,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         price={
           <ClickableContent>
             <PriceInfoCell>
-              <Price>1000.00</Price>
+              <Price>{formatDollarAmount(currentPrice)}</Price>
               <span>{token0?.symbol + '/' + token1?.symbol}</span>
             </PriceInfoCell>
           </ClickableContent>
@@ -745,7 +747,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         }
         tvl={
           <ClickableContent>
-            {formatNumber(tvl, NumberType.FiatTokenStats)}
+            {formatDollar({ num: tvl, digits: 0 })}
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
