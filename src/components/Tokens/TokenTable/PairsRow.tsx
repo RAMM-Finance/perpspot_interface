@@ -643,9 +643,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   currencies,
   //   // inputError: swapInputError,
   // } = useDerivedSwapInfo()
+
   const baseCurrency = useCurrency(currencyIda?.address)
   const quoteCurrency = useCurrency(currencyIdb?.address)
-
   const [token0, token1] =
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
       ? [baseCurrency, quoteCurrency]

@@ -183,7 +183,7 @@ export default function TokenTable() {
   }, [])
 
   const poolData = usePoolsData()
-  console.log('poolData', poolData, data)
+  console.log('poolData', poolData)
 
   const poolsInfo = useMemo(() => {
     if (poolData) {

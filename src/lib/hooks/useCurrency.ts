@@ -82,10 +82,9 @@ type TokenMap = { [address: string]: Token }
 export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string | null): Token | null | undefined {
   // console.log('tokenAddress', tokenAddress)
   const address = isAddress(tokenAddress)
+  if(address=="0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1") return useTokenFromActiveNetwork(address)
   const token: Token | undefined = address ? tokens[address] : undefined
-  // console.log('token', token)
   const tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
-
   return tokenFromNetwork ?? token
 }
 
