@@ -41,6 +41,8 @@ const PoolListContainer = styled.div`
   padding-left: 1vw;
 `
 
+const SelectorRow = styled(Row)``
+
 export const PoolSelector = ({
   largeWidth,
   bg,
@@ -305,14 +307,14 @@ export const PoolSelector = ({
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={selectPair ? 'accentActive' : isOpen ? 'accentActiveSoft' : 'accentActiveSoft'}
+        background={selectPair ? 'accentActive' : isOpen ? 'accentActiveSoft' : 'none'}
         onClick={() => setIsOpen(!isOpen)}
         style={{
           padding: '10px',
           height: 'fit-content',
           width: '325px',
           display: 'flex',
-          justifyContent: 'start',
+          justifyContent: 'space-between',
         }}
       >
         {selectPair ? (

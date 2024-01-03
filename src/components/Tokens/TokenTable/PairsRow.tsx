@@ -56,7 +56,7 @@ const StyledTokenRow = styled.div<{
   background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
   font-size: 0.75rem;
-  grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 8fr;
+  grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 5fr;
   padding-left: 1rem;
   padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -430,6 +430,7 @@ function TokenRow({
   sparkLine,
   currency0,
   currency1,
+  fee,
   ...rest
 }: {
   first?: boolean
@@ -448,6 +449,7 @@ function TokenRow({
   currency1?: string
   last?: boolean
   style?: CSSProperties
+  fee?: number
 }) {
   const navigate = useNavigate()
 
@@ -479,7 +481,6 @@ function TokenRow({
         <ButtonCell data-testid="volume-cell" sortable={header}>
           <ButtonPrimary
             style={{
-              marginLeft: '20px',
               padding: '.5rem',
               width: 'fit-content',
               fontSize: '0.7rem',
@@ -490,34 +491,13 @@ function TokenRow({
             onClick={(e) => {
               e.stopPropagation()
               if (currency1 && currency0) {
-                navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
+                navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },
                 })
               }
             }}
           >
             <Trans>Provide</Trans>
-          </ButtonPrimary>
-          <ButtonPrimary
-            style={{
-              marginLeft: '20px',
-              padding: '.5rem',
-              width: 'fit-content',
-              fontSize: '0.7rem',
-              borderRadius: '10px',
-              height: '30px',
-              lineHeight: '1',
-            }}
-            onClick={(e) => {
-              e.stopPropagation()
-              if (currency1 && currency0) {
-                navigate('/add/' + currency0 + '/' + currency1 + '/' + '500', {
-                  state: { currency0, currency1 },
-                })
-              }
-            }}
-          >
-            <Trans>Withdraw</Trans>
           </ButtonPrimary>
         </ButtonCell>
       )}
@@ -592,11 +572,14 @@ interface LoadedRowProps {
   //token: NonNullable<TopToken>
   sparklineMap?: SparklineMap
   sortRank?: number
+  fee: number
+  tvl?: number
+  volume?: number
 }
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume } = props
   const filterString = useAtomValue(filterStringAtom)
 
   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
@@ -672,8 +655,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const [tickLower, tickUpper] = useMemo(() => {
     if (pool && tickDiscretization) {
       return [
-        roundToBin(pool.tickCurrent-1000, tickDiscretization, true),
-        roundToBin(pool.tickCurrent+1000, tickDiscretization, false),
+        roundToBin(pool.tickCurrent - 1000, tickDiscretization, true),
+        roundToBin(pool.tickCurrent + 1000, tickDiscretization, false),
       ]
     }
     return [undefined, undefined]
@@ -728,6 +711,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       data-testid={`token-table-row-${currencyIda?.symbol}`}
     >
       <TokenRow
+        fee={pool?.fee}
         header={false}
         // listNumber={sortRank}
         currency0={token0}
@@ -761,13 +745,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         }
         tvl={
           <ClickableContent>
-            {formatNumber(tvl_, NumberType.FiatTokenStats)}
+            {formatNumber(tvl, NumberType.FiatTokenStats)}
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
         volume={
           <ClickableContent>
-            {formatNumber(volume_, NumberType.FiatTokenStats)}{' '}
+            {formatNumber(volume, NumberType.FiatTokenStats)}{' '}
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
           </ClickableContent>
         }
