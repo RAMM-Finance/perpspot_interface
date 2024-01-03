@@ -4,27 +4,21 @@ import { SupportedChainId } from 'constants/chains'
 import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { PoolAddedQuery,
-  AddQuery,
-  CollectQuery,
-  DecreaseLiquidityQuery,
-  IncreaseLiquidityQuery,
-  ReduceQuery,
- } from 'graphql/limitlessGraph/queries'
-import { ReactNode } from 'react'
+import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
+import { usePoolsData } from 'hooks/useLMTPools'
+import { ReactNode, useMemo } from 'react'
 import { useEffect, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { formatDollar } from 'utils/formatNumbers'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
-import {usdValue} from "hooks/useContract"
-import {usePoolsData} from "hooks/useLMTPools"
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -176,7 +170,7 @@ export default function TokenTable() {
 
         setData(
           poolQueryData.data.poolAddeds.map((val: Pool) => {
-            return [val.token0, val.token1, val.fee]
+            return { token0: val.token0, token1: val.token1, fee: val.fee }
           })
         )
         setLoading(false)
@@ -190,6 +184,39 @@ export default function TokenTable() {
 
   const poolData = usePoolsData()
   console.log('poolData', poolData, data)
+
+  const poolsInfo = useMemo(() => {
+    if (poolData) {
+      return {
+        tvl: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0),
+        volume: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+      }
+    } else {
+      return null
+    }
+  }, [poolData])
+
+  const dataInfo = useMemo(() => {
+    if (poolData && data) {
+      const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
+
+      return data.map((pool: any) => {
+        if (Object.keys(lowerCasePool).find((pair: any) => `${pair.token0}-${pair.token1}-${pair.fee}`)) {
+          return {
+            ...pool,
+            tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
+            volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
+          }
+        } else {
+          return pool
+        }
+      })
+    } else {
+      return null
+    }
+  }, [poolData, data])
+
+  console.log('dataInfo', dataInfo)
 
   const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
@@ -246,15 +273,23 @@ export default function TokenTable() {
     return (
       <>
         <PairInfoContainer>
-          <TVLInfoContainer />
+          <TVLInfoContainer poolsInfo={poolsInfo} />
           <HowToDetails />
         </PairInfoContainer>
         <GridContainer>
           <PHeaderRow />
           <TokenDataContainer>
-            {data &&
-              data.map((dat: string[]) => (
-                <PLoadedRow key={dat[0]} tokenListIndex={1} tokenListLength={1} tokenA={dat[0]} tokenB={dat[1]} />
+            {dataInfo &&
+              dataInfo.map((dat: any) => (
+                <PLoadedRow
+                  key={`${dat.token0}-${dat.token1}-${dat.fee}`}
+                  tokenListIndex={1}
+                  tokenListLength={1}
+                  tokenA={dat.token0}
+                  tokenB={dat.token1}
+                  fee={dat.fee}
+                  tvl={dat.tvl}
+                />
               ))}
           </TokenDataContainer>
         </GridContainer>
@@ -274,13 +309,15 @@ const PairInfoContainer = styled.div`
 `
 
 const TVLInfo = styled.div`
-  width: 15rem;
+  width: 12rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 0.75rem;
   border-radius: 10px;
   font-size: 0.8rem;
   height: 2.5rem;
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  display: flex;
+  justify-content: space-between;
 `
 const HowTo = styled.div`
   width: 35rem;
@@ -292,17 +329,20 @@ const HowTo = styled.div`
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
 `
 
-function TVLInfoContainer() {
+function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div style={{ display: 'flex', gap: '2rem' }}>
       <TVLInfo>
         <ThemedText.SubHeader fontSize={15}>TVL:</ThemedText.SubHeader>
-      </TVLInfo>
-      <TVLInfo>
-        <ThemedText.SubHeader fontSize={15}> Total Debt:</ThemedText.SubHeader>
+        <ThemedText.SubHeader color="textSecondary" fontSize={15}>
+          {poolsInfo.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
+        </ThemedText.SubHeader>
       </TVLInfo>
       <TVLInfo>
         <ThemedText.SubHeader fontSize={15}>Volume:</ThemedText.SubHeader>
+        <ThemedText.SubHeader color="textSecondary" fontSize={15}>
+          {poolsInfo.volume ? poolsInfo.volume : '0'}
+        </ThemedText.SubHeader>
       </TVLInfo>
     </div>
   )

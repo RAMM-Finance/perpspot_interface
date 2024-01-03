@@ -83,7 +83,6 @@ export function usePointsData() {
         try {
           codeUsers = await referralContract?.getReferees(account)
         } catch (err) {}
-   
 
         setCodeUsers(codeUsers)
         const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
@@ -130,16 +129,19 @@ export function usePointsData() {
   }, [uniquePools, dataProvider])
 
   const [codeUserPerReferrer, setCodeUserPerReferrer] = useState<any>()
+  const [referralMultipliers, setReferralMultipliers] = useState<any>()
   useEffect(() => {
     const codesUsers: { [key: string]: any } = {}
-
+    const referralMultipliers: { [key: string]: any } = {}
     const call = async () => {
       try {
         await Promise.all(
           uniqueReferrers.map(async (referrer: any) => {
             let codeUsers
+            let referralMultiplier
             try {
               codeUsers = await referralContract?.getReferees(referrer)
+              referralMultiplier = await referralContract?.referralMultipliers(referrer)
             } catch (err) {}
             if (codeUsers) {
               if (!codesUsers[referrer]) codesUsers[referrer] = []
@@ -147,9 +149,13 @@ export function usePointsData() {
                 codesUsers[referrer].push(user)
               })
             }
+            if(referralMultiplier){
+              referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
+            }
           })
         )
         setCodeUserPerReferrer(codesUsers)
+        setReferralMultipliers(referralMultipliers)
       } catch (err) {
         console.log('codeusererr', err)
       }
@@ -242,9 +248,25 @@ export function usePointsData() {
   })
   console.log('lpPositionsByUniqueLps', lpPositionsByUniqueLps)
 
+let refererData:any 
   const refereeActivity = useMemo(() => {
     if (!codeUserPerReferrer) return
     const result: { [key: string]: any } = {}
+    // let refereeActivity: any
+    // let collectAmount = 0
+    // let tradeAmount = 0
+    // codeUsers.forEach((referee:string)=>{
+    //   lpPositionsByUniqueLps?.[referee]?.forEach((position: any) => {
+    //     collectAmount += Number(position.amount0Collected) // TODO use position.token0 and get prices
+    //     collectAmount += Number(position.amount1Collected) // TODO use position.token1 and get prices
+    //   })
+
+    //   tradeProcessedByTrader?.[referee]?.forEach((trade: any) => {
+    //     tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
+    //   })      
+    // })
+    // refereeActivity = {tradeVolume: tradeAmount, lpAmount: collectAmount, usersReferred: codeUsers.length, 
+    //     point: tradeAmount+ collectAmount, }
 
     Object.keys(codeUserPerReferrer).forEach((referrer: string) => {
       const codeUsers = codeUserPerReferrer[referrer]
@@ -262,21 +284,23 @@ export function usePointsData() {
           tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
         })
       })
-      result[referrer] = { lpAmount: collectAmount, tradeVolume: tradeAmount }
+      result[referrer] = { lpAmount: collectAmount, tradeVolume: tradeAmount, usersReferred: codeUsers.length, 
+      point: referralMultipliers[referrer]* (tradeAmount+ collectAmount) }
     })
 
     return result
-  }, [codeUsers, codeUserPerReferrer, lpPositionsByUniqueLps, tradeProcessedByTrader])
+  }, [account,codeUsers, codeUserPerReferrer, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  let refererData:any 
-
-  console.log('codeusers', codeUsers)
+  
+  const refereesForUniqueReferrers = refereeActivity?.result 
+  const refereesForConnectedAccount = refereeActivity?.refereeActivity
+  console.log('codeusers', codeUsers, referralMultipliers)
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
       lpPositionsByUniqueLps,
-      refereeActivity,
-      refererData
+      refereesForUniqueReferrers,
+      
       // This includes loading, positions, etc.
       // loading,
       // error
