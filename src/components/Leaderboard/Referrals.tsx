@@ -10,7 +10,8 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import{usePointsData} from "./data"
+
+import { usePointsData } from './data'
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -285,7 +286,7 @@ const Referrals = () => {
           </Selector>
         </Filter>
       </FilterWrapper>
-      {referral && !acceptedCreate && (
+      {!referral && !acceptedCreate && (
         <InputWrapper>
           <ThemedText.BodyPrimary
             style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
@@ -300,7 +301,7 @@ const Referrals = () => {
           <Input
             placeholder="Create referral code"
             id="refferal-code"
-            ref={userRef}
+            ref={referralRef}
             onChange={handleUserRefChange}
           ></Input>
           {codeExists && (
@@ -311,7 +312,7 @@ const Referrals = () => {
           {!codeExists && <SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>}
         </InputWrapper>
       )}{' '}
-      {!referral && !acceptedCode && (
+      {referral && !acceptedCode && (
         <InputWrapper>
           <ThemedText.BodyPrimary
             style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
@@ -326,7 +327,7 @@ const Referrals = () => {
           <Input
             placeholder=" Enter referral code"
             id="refferal-code"
-            ref={referralRef}
+            ref={userRef}
             onChange={handleCodeChange}
           ></Input>
           {codeExists ? (
@@ -338,19 +339,19 @@ const Referrals = () => {
           )}
         </InputWrapper>
       )}
-      {referral && acceptedCreate && (
+      {!referral && acceptedCreate && (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                borderBottom: 'solid 1px gray',
-                paddingBottom: '10px',
-                alignItems: 'center',
-              }}
-            >
-              <ThemedText.BodySmall>Referral Codes: Tier 1 (5% Rebate)</ThemedText.BodySmall>{' '}
-            </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              borderBottom: 'solid 1px gray',
+              paddingBottom: '10px',
+              alignItems: 'center',
+            }}
+          >
+            <ThemedText.BodySmall>Referral Codes: Tier 1 (5% Rebate)</ThemedText.BodySmall>{' '}
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr ', gap: '10px' }}>
             <StyledCard>
               <div
@@ -402,7 +403,6 @@ const Referrals = () => {
             </StyledCard>{' '}
           </div>
           <StyledCard style={{ padding: '15px' }}>
-
             {/*<div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Referral Code:</ThemedText.BodySmall>
@@ -436,7 +436,7 @@ const Referrals = () => {
           </StyledCard>
         </div>
       )}
-      {!referral && acceptedCode && (
+      {referral && acceptedCode && (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px' }}>
             <StyledCard>

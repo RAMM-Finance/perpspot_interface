@@ -6,6 +6,7 @@ import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
 import useDebounce from 'hooks/useDebounce'
+import { usePoolsData } from 'hooks/useLMTPools'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
@@ -40,6 +41,8 @@ const PoolListContainer = styled.div`
   width: 375px;
   padding-left: 1vw;
 `
+
+const SelectorRow = styled(Row)``
 
 export const PoolSelector = ({
   largeWidth,
@@ -239,12 +242,34 @@ export const PoolSelector = ({
   const availablePools = useMemo(() => {
     if (data) {
       return data.data.poolAddeds.map((val: Pool) => {
-        return { pool: [val.token0, val.token1], fee: val.fee }
+        return { token0: val.token0, token1: val.token1, fee: val.fee }
       })
     } else {
       return undefined
     }
   }, [data])
+
+  const poolData = usePoolsData()
+
+  const dataInfo = useMemo(() => {
+    if (poolData && data) {
+      const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
+
+      return availablePools.map((pool: any) => {
+        if (Object.keys(lowerCasePool).find((pair: any) => `${pair.token0}-${pair.token1}-${pair.fee}`)) {
+          return {
+            ...pool,
+            tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
+            volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
+          }
+        } else {
+          return pool
+        }
+      })
+    } else {
+      return null
+    }
+  }, [poolData, data])
 
   const dropdown = (
     <NavDropdown
@@ -274,17 +299,19 @@ export const PoolSelector = ({
       </Row>
       <Row>
         <Column paddingX="8">
-          {availablePools &&
-            availablePools.map((curr: any) => {
+          {dataInfo &&
+            dataInfo.map((curr: any) => {
               return (
                 <PoolSelectorRow
-                  currencyId={[curr.pool[0], curr.pool[1]]}
+                  currencyId={[curr.token0, curr.token1]}
                   onCurrencySelect={handleCurrencySelect}
-                  key={`${curr[0]}-${curr[1]}`}
+                  key={`${curr.token0}-${curr.token1}-${curr.fee}`}
                   fee={curr?.fee}
                   setIsOpen={setIsOpen}
                   setSelectPair={setSelectPair}
                   selectPair={selectPair}
+                  tvl={curr.tvl}
+                  volume={curr.volume}
                 />
               )
             })}
@@ -305,14 +332,14 @@ export const PoolSelector = ({
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={selectPair ? 'accentActive' : isOpen ? 'accentActiveSoft' : 'accentActiveSoft'}
+        background={selectPair ? 'accentActiveSoft' : isOpen ? 'accentActiveSoft' : 'accentActive'}
         onClick={() => setIsOpen(!isOpen)}
         style={{
           padding: '10px',
           height: 'fit-content',
           width: '325px',
           display: 'flex',
-          justifyContent: 'start',
+          justifyContent: 'space-between',
         }}
       >
         {selectPair ? (

@@ -1232,7 +1232,10 @@ export default function AddLiquidity() {
                         <Buttons />
                       </HideMedium> */}
                       <RightContainer gap="lg">
-                        <DynamicSection disabled={!feeAmount || invalidPool || (noLiquidity && !startPriceTypedValue)}>
+                        <DynamicSection
+                          gap="md"
+                          disabled={!feeAmount || invalidPool || (noLiquidity && !startPriceTypedValue)}
+                        >
                           <ThemedText.BodyPrimary style={{ marginBottom: '10px', marginTop: '10px' }}>
                             {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
                           </ThemedText.BodyPrimary>
