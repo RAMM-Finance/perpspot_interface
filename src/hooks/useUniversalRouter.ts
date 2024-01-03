@@ -56,6 +56,7 @@ export function useUniversalRouterSwapCallback(
       'swap.send',
       async ({ setTraceData, setTraceStatus, setTraceError }) => {
         try {
+
           if (!account) throw new Error('missing account')
           if (!chainId) throw new Error('missing chainId')
           if (!provider) throw new Error('missing provider')
@@ -68,7 +69,6 @@ export function useUniversalRouterSwapCallback(
             inputTokenPermit: options.permit,
             fee: options.feeOptions,
           })
-
           const tx = {
             from: account,
             to: ROUTER_ADDRESSES[chainId],

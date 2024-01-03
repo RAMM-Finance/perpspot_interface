@@ -4,7 +4,7 @@ import { Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { useToken } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
-import { useV3PositionFees } from 'hooks/useV3PositionFees'
+import { useV3PositionFees , useLMTPositionFees} from 'hooks/useV3PositionFees'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PositionDetails } from 'types/position'
@@ -70,7 +70,7 @@ export function useDerivedV3BurnInfo(
       : undefined
 
   const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, position?.tokenId, asWETH)
-
+  console.log('feesearnedwtf', feeValue0, feeValue0?.toString(), feeValue1?.toString())
   const outOfRange =
     pool && position ? pool.tickCurrent < position.tickLower || pool.tickCurrent > position.tickUpper : false
 
@@ -145,7 +145,7 @@ export function useDerivedLmtBurnInfo(
       ? CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), discountedAmount1)
       : undefined
 
-  const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, position?.tokenId, asWETH)
+  const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, position?.tokenId, asWETH)
 
   const outOfRange =
     pool && position ? pool.tickCurrent < position.tickLower || pool.tickCurrent > position.tickUpper : false

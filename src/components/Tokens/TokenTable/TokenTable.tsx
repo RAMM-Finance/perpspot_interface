@@ -251,7 +251,7 @@ export default function TokenTable() {
   if (chainId !== SupportedChainId.ARBITRUM_ONE || !account || !provider) {
     return (
       <GridContainer>
-        <Trans>Connect Wallet to Sepolia</Trans>
+        <Trans>Connect Wallet to Arbitrum</Trans>
       </GridContainer>
     )
   } else if (loadingTokens && !tokens) {

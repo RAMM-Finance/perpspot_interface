@@ -42,7 +42,6 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
     tradeType,
     routerPreference,
   })
-
   const {
     isLoading,
     isError,
@@ -72,7 +71,6 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
         trade: undefined,
       }
     }
-
     if (isLoading && !quoteResult) {
       // only on first hook render
       return {
@@ -91,7 +89,6 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
         otherAmount = CurrencyAmount.fromRawAmount(currencyIn, quoteResult.quote)
       }
     }
-
     if (isError || !otherAmount || !route || route.length === 0 || !queryArgs) {
       return {
         state: TradeState.NO_ROUTE_FOUND,

@@ -133,7 +133,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     //     recipient: account,
     //   },
     // })
-
     const { calldata, value } = LmtNFTPositionManager.removeCallParameters(positionSDK, {
       tokenId: tokenId.toString(),
       liquidityPercentage,
@@ -303,11 +302,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
         {feeValue0?.greaterThan(0) || feeValue1?.greaterThan(0) ? (
           <>
             <ThemedText.DeprecatedItalic fontSize={12} color={theme.textSecondary} textAlign="left" padding="8px 0 0 0">
-              <Trans>You will also collect fees earned from this position.</Trans>
+              <Trans>You will also collect fees + premiums earned from this position.</Trans>
             </ThemedText.DeprecatedItalic>
             <RowBetween>
               <Text fontSize={16} fontWeight={500}>
-                <Trans>{feeValue0?.currency?.symbol} Fees Earned:</Trans>
+                <Trans>{feeValue0?.currency?.symbol} Earned:</Trans>
               </Text>
               <RowFixed>
                 <Text fontSize={16} fontWeight={500} marginLeft="6px">
@@ -318,7 +317,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
             </RowBetween>
             <RowBetween>
               <Text fontSize={16} fontWeight={500}>
-                <Trans>{feeValue1?.currency?.symbol} Fees Earned:</Trans>
+                <Trans>{feeValue1?.currency?.symbol} Earned:</Trans>
               </Text>
               <RowFixed>
                 <Text fontSize={16} fontWeight={500} marginLeft="6px">
@@ -344,7 +343,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
         WRAPPED_NATIVE_CURRENCY[liquidityValue0.currency.chainId]?.equals(liquidityValue0.currency.wrapped) ||
         WRAPPED_NATIVE_CURRENCY[liquidityValue1.currency.chainId]?.equals(liquidityValue1.currency.wrapped))
   )
-  console.log(feeValue0)
   return (
     <AutoColumn>
       <TransactionConfirmationModal
@@ -446,7 +444,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       <Break />
                       <RowBetween>
                         <Text fontSize={16} fontWeight={500}>
-                          <Trans>{feeValue0?.currency?.symbol} Fees Earned:</Trans>
+                          <Trans>{feeValue0?.currency?.symbol} Earned:</Trans>
                         </Text>
                         <RowFixed>
                           <Text fontSize={16} fontWeight={500} marginLeft="6px">
@@ -457,7 +455,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       </RowBetween>
                       <RowBetween>
                         <Text fontSize={16} fontWeight={500}>
-                          <Trans>{feeValue1?.currency?.symbol} Fees Earned:</Trans>
+                          <Trans>{feeValue1?.currency?.symbol} Earned:</Trans>
                         </Text>
                         <RowFixed>
                           <Text fontSize={16} fontWeight={500} marginLeft="6px">
@@ -471,7 +469,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                 </AutoColumn>
               </DarkCardOutline>
 
-              {showCollectAsWeth && (
+              {false&&showCollectAsWeth && (
                 <RowBetween>
                   <ThemedText.DeprecatedMain>
                     <Trans>Collect as {nativeWrappedSymbol}</Trans>

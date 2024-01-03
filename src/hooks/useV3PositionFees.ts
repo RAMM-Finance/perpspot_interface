@@ -37,6 +37,7 @@ export function useLMTPositionFees(
           { from: owner } // need to simulate the call as the owner
         )
         .then((results) => {
+
           setAmounts([results.tokensOwed0, results.tokensOwed1])
         })
     }
@@ -84,6 +85,7 @@ export function useV3PositionFees(
           { from: owner } // need to simulate the call as the owner
         )
         .then((results) => {
+          console.log('resultsv3',results.amount0.toString(), results.amount1.toString(), owner )
           setAmounts([results.amount0, results.amount1])
         })
     }

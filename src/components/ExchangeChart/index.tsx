@@ -80,6 +80,9 @@ export const PoolDataSection = ({
       // console.log('getFakePool', getFakePool(token0.address.toLowerCase(), token1.address.toLowerCase()))
       if (isFakePair(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())) {
         return getFakePool(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())
+      }else{
+        return getFakePool(chainId, token0.address, token1.address)
+  
       }
 
       // return computePoolAddress({

@@ -33,9 +33,17 @@ export default function Points() {
         <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}># 7</ThemedText.BodySecondary>
-          <ThemedText.BodySmall fontWeight={300}>Rank</ThemedText.BodySmall>
+          <ThemedText.BodySmall fontWeight={300}>My Rank</ThemedText.BodySmall>
         </Value>
       </Point>
+      <Point>
+        <img src={affiliate} width={30} />
+        <Value>
+          <ThemedText.BodySecondary fontWeight={900}>8000.00</ThemedText.BodySecondary>
+          <ThemedText.BodySmall fontWeight={300}>My Tier</ThemedText.BodySmall>
+        </Value>
+      </Point>
+
       <Point>
         <img src={coin} width={30} />
         <Value>
@@ -57,13 +65,7 @@ export default function Points() {
           <ThemedText.BodySmall fontWeight={300}>Referral Point</ThemedText.BodySmall>
         </Value>
       </Point>
-      <Point>
-        <img src={star} width={30} />
-        <Value>
-          <ThemedText.BodySecondary fontWeight={900}>8000.00</ThemedText.BodySecondary>
-          <ThemedText.BodySmall fontWeight={300}>Total Point</ThemedText.BodySmall>
-        </Value>
-      </Point>
+
     </Wrapper>
   )
 }

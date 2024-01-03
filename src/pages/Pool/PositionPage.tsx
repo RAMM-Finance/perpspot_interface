@@ -1002,13 +1002,14 @@ export function PositionPage() {
                             <span style={{ width: '8px' }} /> */}
                             </Label>
 
-                            {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
+                            {//fiatValueOfFees?.greaterThan(new Fraction(1, 100))
+                            false ? (
                               <ThemedText.DeprecatedLargeHeader
                                 color={theme.accentSuccess}
                                 fontSize="36px"
                                 fontWeight={500}
                               >
-                                <Trans>${fiatValueOfFees.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
                               </ThemedText.DeprecatedLargeHeader>
                             ) : (
                               <ThemedText.DeprecatedLargeHeader
@@ -1069,7 +1070,7 @@ export function PositionPage() {
                         </AutoColumn>
                       </DarkCardOutline>
 
-                      {showCollectAsWeth && (
+                      {false && showCollectAsWeth && (
                         <AutoColumn gap="md">
                           <RowBetween>
                             <ThemedText.DeprecatedMain>
@@ -1094,13 +1095,15 @@ export function PositionPage() {
                             <Label>
                               <Trans>Unclaimed Fees + Premiums</Trans>
                             </Label>
-                            {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
+                            {false
+                             // fiatValueOfFees?.greaterThan(new Fraction(1, 100)) 
+                              ? (
                               <ThemedText.DeprecatedLargeHeader
                                 color={theme.accentSuccess}
                                 fontSize="36px"
                                 fontWeight={500}
                               >
-                                <Trans>${fiatValueOfFees.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
                               </ThemedText.DeprecatedLargeHeader>
                             ) : (
                               <ThemedText.DeprecatedLargeHeader
@@ -1166,7 +1169,7 @@ export function PositionPage() {
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
-                      {showCollectAsWeth && (
+                      {false && showCollectAsWeth && (
                         <AutoColumn gap="md">
                           <RowBetween>
                             <ThemedText.DeprecatedMain>

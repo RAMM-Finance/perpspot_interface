@@ -233,7 +233,7 @@ export const PoolDataChart = ({
           poolAddress: uniswapPoolAddress,
           baseSymbol: token0IsBase ? token0?.symbol : token1?.symbol,
           quoteSymbol: token0IsBase ? token1?.symbol : token0?.symbol,
-          invertPrice: false,
+          invertPrice: true,
           useUniswapSubgraph: true,
         })
       )
@@ -246,7 +246,6 @@ export const PoolDataChart = ({
     //   setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
     // } else if (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress) {
     //   const token0IsBase = uniswapToken0Price > 1
-    //   console.log("a", uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress)
     //   setSymbol(
     //     JSON.stringify({
     //       poolAddress: uniswapPoolAddress,
@@ -268,7 +267,6 @@ export const PoolDataChart = ({
     //     })
     //   )
     // } else {
-    //   console.log('c', uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress, 
     //     (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress))
     //   setSymbol('missing pool')
     // }
