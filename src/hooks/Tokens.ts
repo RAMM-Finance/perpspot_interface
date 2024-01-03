@@ -2,7 +2,7 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
-import { getFakeTokensMap ,getDefaultTokensMap} from 'constants/fake-tokens'
+import { getFakeTokensMap } from 'constants/fake-tokens'
 import { DEFAULT_INACTIVE_LIST_URLS, DEFAULT_LIST_OF_LISTS } from 'constants/lists'
 import { useCurrencyFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
@@ -36,24 +36,26 @@ export function useAllTokensMultichain(): TokenAddressMap {
 export function useDefaultActiveTokens(): { [address: string]: Token } {
   const defaultListTokens = useCombinedActiveList()
   const tokensFromMap = useTokensFromMap(defaultListTokens)
-  // const fakeTokens = FakeTokensMap
-  const { chainId } = useWeb3React()
 
+  const { chainId } = useWeb3React()
+  const fakeTokens = getFakeTokensMap(chainId)
   const userAddedTokens = useUserAddedTokens()
+
   return useMemo(() => {
-    return getDefaultTokensMap(chainId ?? 80001)
-    // userAddedTokens
-    //   // reduce into all ALL_TOKENS filtered by the current chain
-    //   .reduce<{ [address: string]: Token }>(
-    //     (tokenMap, token) => {
-    //       tokenMap[token.address] = token
-    //       return tokenMap
-    //     },
-    //     // must make a copy because reduce modifies the map, and we do not
-    //     // want to make a copy in every iteration
-    //     { ...tokensFromMap },
-    //   )
-  }, [tokensFromMap, userAddedTokens])
+    return (
+      userAddedTokens
+        // reduce into all ALL_TOKENS filtered by the current chain
+        .reduce<{ [address: string]: Token }>(
+          (tokenMap, token) => {
+            tokenMap[token.address] = token
+            return tokenMap
+          },
+          // must make a copy because reduce modifies the map, and we do not
+          // want to make a copy in every iteration
+          { ...tokensFromMap, ...fakeTokens }
+        )
+    )
+  }, [tokensFromMap, userAddedTokens, fakeTokens])
 }
 
 type BridgeInfo = Record<
@@ -176,6 +178,5 @@ export function useToken(tokenAddress?: string | null): Token | null | undefined
 
 export function useCurrency(currencyId?: string | null): Currency | null | undefined {
   const tokens = useDefaultActiveTokens()
-  // console.log('tokens', tokens)
   return useCurrencyFromMap(tokens, currencyId)
 }

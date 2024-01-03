@@ -234,7 +234,7 @@ export default function AddLiquidity() {
     if (position && account && deadline) {
       const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
 
-      // const baseIsToken0 = baseCurrency.wrapped.sortsBefore(quoteCurrency.wrapped)
+      // const baseIsToken0 = baseCurrency.wrapped.syortsBefore(quoteCurrency.wrapped)
       const { calldata, value } =
         hasExistingPosition && tokenId
           ? LmtNFTPositionManager.addCallParameters(position, {

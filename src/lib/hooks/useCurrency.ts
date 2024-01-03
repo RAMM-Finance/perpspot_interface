@@ -82,7 +82,6 @@ type TokenMap = { [address: string]: Token }
 export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string | null): Token | null | undefined {
   // console.log('tokenAddress', tokenAddress)
   const address = isAddress(tokenAddress)
-  // console.log('address', address, tokens)
   const token: Token | undefined = address ? tokens[address] : undefined
   // console.log('token', token)
   const tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
@@ -105,7 +104,6 @@ export function useCurrencyFromMap(tokens: TokenMap, currencyId?: string | null)
   }, [chainId, currencyId])
 
   const token = useTokenFromMapOrNetwork(tokens, isNative ? undefined : shorthandMatchAddress ?? currencyId)
-
   if (currencyId === null || currencyId === undefined || !isSupportedChain(chainId)) return null
 
   // this case so we use our builtin wrapped token instead of wrapped tokens on token lists

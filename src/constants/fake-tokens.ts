@@ -18,8 +18,8 @@ export const feth_s = '0x4e3f175b38098326a34f2c8b2d07af5ffdfc6fa9'
 // console.log(fdai < fusdc)
 // console.log(fusdc < feth)
 // console.log(fdai < feth)
-export const weth = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
-export const wbtc = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+export const weth = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+export const wbtc = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
 
 export const WETH_ARBITRUM = new Token(42161, weth, 18, 'wETH', 'Wrapped ETH')
 export const WBTC_ARBITRUM = new Token(42161, wbtc, 8, 'wBTC', 'Wrapped BTC')
@@ -39,10 +39,10 @@ export const FakeTokens_SEPOLIA: Token[] = [FETH_SEPOLIA, FUSDC_SEPOLIA, FWBTC_S
 export const FakeTokens_MUMBAI: Token[] = [FETH_MUMBAI, FUSDC_MUMBAI, FWBTC_MUMBAI, FDAI_MUMBAI]
 
 export const FakeTokensMapSepolia: { [address: string]: Token } = {
-  [FETH_SEPOLIA.address]: FETH_SEPOLIA,
-  [FUSDC_SEPOLIA.address]: FUSDC_SEPOLIA,
-  [FWBTC_SEPOLIA.address]: FWBTC_SEPOLIA,
-  [FDAI_SEPOLIA.address]: FDAI_SEPOLIA,
+  [FETH_SEPOLIA.address.toUpperCase()]: FETH_SEPOLIA,
+  [FUSDC_SEPOLIA.address.toUpperCase()]: FUSDC_SEPOLIA,
+  [FWBTC_SEPOLIA.address.toUpperCase()]: FWBTC_SEPOLIA,
+  [FDAI_SEPOLIA.address.toUpperCase()]: FDAI_SEPOLIA,
 }
 
 export const FakeTokensMapMumbai: { [address: string]: Token } = {
@@ -52,21 +52,20 @@ export const FakeTokensMapMumbai: { [address: string]: Token } = {
   [FDAI_MUMBAI.address]: FDAI_MUMBAI,
 }
 
-
 export const TokensArbitrum: { [address: string]: Token } = {
   [WETH_ARBITRUM.address]: WETH_ARBITRUM,
   [WBTC_ARBITRUM.address]: WBTC_ARBITRUM,
-
 }
 
-export const getFakeTokensMap = (chainId: number): { [address: string]: Token } => {
+export const getFakeTokensMap = (chainId?: number): { [address: string]: Token } => {
   if (chainId === SupportedChainId.SEPOLIA) {
     return FakeTokensMapSepolia
+  } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return TokensArbitrum
   } else {
     return FakeTokensMapMumbai
   }
 }
-
 
 export const getDefaultTokensMap = (chainId: number): { [address: string]: Token } => {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
