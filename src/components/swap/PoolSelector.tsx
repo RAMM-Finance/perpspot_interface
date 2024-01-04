@@ -256,7 +256,7 @@ export const PoolSelector = ({
     if (poolData && data) {
       const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
 
-      return availablePools.map((pool: any) => {
+      return availablePools?.map((pool: any) => {
         if (
           Object.keys(lowerCasePool).find(
             (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`

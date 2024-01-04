@@ -9,17 +9,19 @@ import {
   IncreaseLiquidityQuery,
   ReduceQuery,
 } from 'graphql/limitlessGraph/queries'
-import { useCurrency } from 'hooks/Tokens'
-import { useDataProviderContract, useLmtNFTPositionManager, useReferralContract, tokenDecimal, usdValue } from 'hooks/useContract'
-import { useUSDPrice } from 'hooks/useUSDPrice'
+import {
+  tokenDecimal,
+  usdValue,
+  useDataProviderContract,
+  useLmtNFTPositionManager,
+  useReferralContract,
+} from 'hooks/useContract'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
-import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useEffect, useMemo, useState } from 'react'
 
 interface AddPositionData {
   trader: string
 }
-
 
 export function usePointsData() {
   const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
@@ -115,7 +117,7 @@ export function usePointsData() {
         const codesUsers: { [key: string]: any } = {}
         const referralMultipliers: { [key: string]: any } = {}
 
-        const uniqueReferrers = Array.from(uniqueTraders).concat(["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"])
+        const uniqueReferrers = Array.from(uniqueTraders).concat(['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
         try {
           await Promise.all(
             uniqueReferrers.map(async (referrer: any) => {
@@ -131,7 +133,7 @@ export function usePointsData() {
                   codesUsers[referrer].push(user)
                 })
               }
-              if(referralMultiplier){
+              if (referralMultiplier) {
                 referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
               }
             })
@@ -161,7 +163,7 @@ export function usePointsData() {
     call()
   }, [account, referralContract])
 
-  const PointsData = useMemo(()=>{
+  const PointsData = useMemo(() => {
     const addDataProcessed = addData?.map((entry: any) => ({
       token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
       trader: entry.trader,
@@ -181,7 +183,7 @@ export function usePointsData() {
         tradeProcessedByTrader[trader] = []
       }
       const newEntry = entry
-      newEntry.amount = usdValue[entry.token] * entry.amount/ 10**tokenDecimal[entry.token]
+      newEntry.amount = (usdValue[entry.token] * entry.amount) / 10 ** tokenDecimal[entry.token]
       tradeProcessedByTrader[trader].push(newEntry)
     })
     reduceDataProcessed?.forEach((entry: any) => {
@@ -191,7 +193,7 @@ export function usePointsData() {
         tradeProcessedByTrader[trader] = []
       }
       const newEntry = entry
-      newEntry.amount = usdValue[entry.token] * entry.amount /10**tokenDecimal[entry.token]
+      newEntry.amount = (usdValue[entry.token] * entry.amount) / 10 ** tokenDecimal[entry.token]
 
       tradeProcessedByTrader[trader].push(newEntry)
     })
@@ -232,16 +234,29 @@ export function usePointsData() {
         token0: entry.token0,
         token1: entry.token1,
         tokenId: entry.tokenId.toString(),
-        amount0Collected: usdValue[entry.token0] * amount0Collected / 10**tokenDecimal[entry.token0],
-        amount1Collected: usdValue[entry.token1] * amount1Collected/ 10**tokenDecimal[entry.token1],
+        amount0Collected: (usdValue[entry.token0] * amount0Collected) / 10 ** tokenDecimal[entry.token0],
+        amount1Collected: (usdValue[entry.token1] * amount1Collected) / 10 ** tokenDecimal[entry.token1],
       })
     })
 
-    return{
-      tradeProcessedByTrader: tradeProcessedByTrader, 
-      lpPositionsByUniqueLps: lpPositionsByUniqueLps, 
+    return {
+      tradeProcessedByTrader,
+      lpPositionsByUniqueLps,
     }
-  }, [account,uniqueLps, uniqueTokens, addData, reduceData, addLiqData, lpPositions,decreaseLiqData, collectData, codeUsers, codeUserPerReferrer, referralMultipliers])
+  }, [
+    account,
+    uniqueLps,
+    uniqueTokens,
+    addData,
+    reduceData,
+    addLiqData,
+    lpPositions,
+    decreaseLiqData,
+    collectData,
+    codeUsers,
+    codeUserPerReferrer,
+    referralMultipliers,
+  ])
 
   const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
   const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps
@@ -265,15 +280,24 @@ export function usePointsData() {
           tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
         })
       })
-      result[referrer] = { lpAmount: collectAmount, tradeVolume: tradeAmount, usersReferred: codeUsers.length, 
-      point: referralMultipliers[referrer]* (tradeAmount+ collectAmount) , tier: referralMultipliers[referrer]}
+      result[referrer] = {
+        lpAmount: collectAmount,
+        tradeVolume: tradeAmount,
+        usersReferred: codeUsers && codeUsers.length,
+        point: referralMultipliers[referrer] * (tradeAmount + collectAmount),
+        tier: referralMultipliers[referrer],
+      }
     })
 
     return result
-  }, [account,codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
+  }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-
-  console.log('codeusers', codeUsers, referralMultipliers, refereeActivity?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"])
+  console.log(
+    'codeusers',
+    codeUsers,
+    referralMultipliers,
+    refereeActivity?.['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5']
+  )
   return useMemo(() => {
     return {
       tradeProcessedByTrader,

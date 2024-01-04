@@ -80,14 +80,14 @@ const WalletDropdownWrapper = styled.div<{ open: boolean }>`
   position: fixed;
   top: ${DRAWER_MARGIN};
   right: ${({ open }) => (open ? DRAWER_MARGIN : '-' + DRAWER_WIDTH)};
-  z-index: ${Z_INDEX.fixed};
+  z-index: ${2000};
 
   overflow: hidden;
 
   height: calc(100% - 2 * ${DRAWER_MARGIN});
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
-    z-index: ${Z_INDEX.modal};
+    z-index: ${2000};
     top: unset;
     left: 0;
     right: 0;

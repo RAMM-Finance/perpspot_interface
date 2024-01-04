@@ -8,6 +8,7 @@ import { useTheme } from 'styled-components'
 
 interface DiscreteSliderMarksProps {
   initialValue: number
+  max?: number
   onChange: (val: number) => void
 }
 
@@ -17,37 +18,37 @@ interface DiscreteSliderInputMarksProps {
   onInputChange: (val: string) => void
 }
 
-const marks = [
-  // {
-  //   value: 2,
-  //   label: '2',
-  // },
-  {
-    value: 10,
-    label: '10x',
-  },
-  {
-    value: 25,
-    label: '25x',
-  },
-  {
-    value: 50,
-    label: '50x',
-  },
-  {
-    value: 75,
-    label: '75x',
-  },
-  {
-    value: 100,
-    label: '100x',
-  },
-]
-
-export default function DiscreteSliderMarks({ initialValue, onChange }: DiscreteSliderMarksProps) {
+export default function DiscreteSliderMarks({ initialValue, onChange, max }: DiscreteSliderMarksProps) {
   const handleChange = (event: Event, newValue: number | number[]) => {
     onChange(newValue as number)
   }
+
+  const marks = [
+    // {
+    //   value: 2,
+    //   label: '2',
+    // },
+    {
+      value: max ? max * 0.1 : 10,
+      label: `${max ? max * 0.1 : 10}x`,
+    },
+    {
+      value: max ? max * 0.25 : 25,
+      label: `${max ? max * 0.1 : 25}x`,
+    },
+    {
+      value: max ? max * 0.5 : 50,
+      label: `${max ? max * 0.1 : 50}x`,
+    },
+    {
+      value: max ? max * 0.75 : 75,
+      label: `${max ? max * 0.1 : 75}x`,
+    },
+    {
+      value: max ? max * 1 : 100,
+      label: `${max ? max * 0.1 : 100}x`,
+    },
+  ]
 
   return (
     <Box sx={{ width: 250 }}>
@@ -59,7 +60,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange }: Discrete
         marks={marks}
         step={0.001}
         min={0}
-        max={100}
+        max={max ? max : 100}
         size="small"
         sx={{
           '& .MuiSlider-markLabel': {
