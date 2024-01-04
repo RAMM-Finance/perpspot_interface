@@ -233,7 +233,7 @@ export function usePointsData() {
         token1: entry.token1,
         tokenId: entry.tokenId.toString(),
         amount0Collected: usdValue[entry.token0] * amount0Collected / 10**tokenDecimal[entry.token0],
-        amount1Collected: usdValue[entry.token1] * amount1Collected/ 10**tokenDecimal[entry.token0],
+        amount1Collected: usdValue[entry.token1] * amount1Collected/ 10**tokenDecimal[entry.token1],
       })
     })
 

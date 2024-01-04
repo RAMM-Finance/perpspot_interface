@@ -383,7 +383,7 @@ const Referrals = () => {
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
-                <ThemedText.BodySmall> Trading Volume</ThemedText.BodySmall>
+                <ThemedText.BodySmall>Volume by Referees </ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>${refereeActivity && account&& (refereeActivity[account]?.tradeVolume)}</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
@@ -391,7 +391,7 @@ const Referrals = () => {
               <div
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
-                <ThemedText.BodySmall>Referral Points</ThemedText.BodySmall>
+                <ThemedText.BodySmall>My Total Referral Points</ThemedText.BodySmall>
                 <ThemedText.BodyPrimary>{refereeActivity && account&& (refereeActivity[account]?.point)}</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
