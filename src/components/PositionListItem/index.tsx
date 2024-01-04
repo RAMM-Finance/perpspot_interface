@@ -283,12 +283,12 @@ export default function PositionListItem({
       </RowBetween>
       {priceLower && priceUpper ? (
         <>
-          <RangeLineItem>
+          {/*<RangeLineItem>
             Accumulated Fees:
             <RangeText>
               {/*<ExtentsText>
               <Trans>Min: </Trans>
-            </ExtentsText> */}
+            </ExtentsText> 
               <Trans>
                 <span>-</span>
                 <HoverInlineText text={currencyQuote?.symbol} /> +
@@ -298,7 +298,7 @@ export default function PositionListItem({
                 <HoverInlineText text={currencyBase?.symbol} />
               </Trans>
             </RangeText>
-          </RangeLineItem>
+          </RangeLineItem>*/}
           <RangeLineItem>
             <HideSmall>Estimated APR:</HideSmall>
             <SmallOnly>
@@ -309,7 +309,7 @@ export default function PositionListItem({
                    <Trans>Max:</Trans>
                  </ExtentsText> */}
               <Trans>
-                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%'}</span>
+                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + '+ swap fees'}</span>
                 {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
                    <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
               </Trans>

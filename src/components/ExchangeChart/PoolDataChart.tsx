@@ -22,7 +22,7 @@ import useDatafeed from './useDataFeed'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const ChartContiner = styled.div`
-  height: 450px;
+  height: 550px;
   margin-bottom: 5px;
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
@@ -233,7 +233,7 @@ export const PoolDataChart = ({
           poolAddress: uniswapPoolAddress,
           baseSymbol: token0IsBase ? token0?.symbol : token1?.symbol,
           quoteSymbol: token0IsBase ? token1?.symbol : token0?.symbol,
-          invertPrice: false,
+          invertPrice: true,
           useUniswapSubgraph: true,
         })
       )
@@ -246,7 +246,6 @@ export const PoolDataChart = ({
     //   setSymbol(getFakeSymbol(chainId, token0.address.toLowerCase(), token1.address.toLowerCase()) as string)
     // } else if (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress) {
     //   const token0IsBase = uniswapToken0Price > 1
-    //   console.log("a", uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress)
     //   setSymbol(
     //     JSON.stringify({
     //       poolAddress: uniswapPoolAddress,
@@ -268,7 +267,6 @@ export const PoolDataChart = ({
     //     })
     //   )
     // } else {
-    //   console.log('c', uniswapPoolExists, uniswapToken0Price, uniswapPoolAddress, 
     //     (uniswapPoolExists && uniswapToken0Price && uniswapPoolAddress))
     //   setSymbol('missing pool')
     // }
@@ -334,7 +332,7 @@ export const PoolDataChart = ({
       <div
         style={{
           padding: '5px',
-          height: '435px',
+          height: '535px',
           border: 'solid #98A1C03d',
           borderWidth: '0 0 0 0',
         }}

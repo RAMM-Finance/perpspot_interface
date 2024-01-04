@@ -143,7 +143,7 @@ export function useMaxLeverage(
   stepSize = 5
 ) {
   const calldata = useMemo(() => {
-    if (!positionKey || !margin || !inputCurrency) return undefined
+    if (!positionKey || margin?.isZero() || !margin || !inputCurrency) return undefined
     const params = [
       {
         poolKey: {

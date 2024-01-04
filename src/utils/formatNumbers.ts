@@ -91,6 +91,9 @@ export const formatDollar = ({
   else {
     if (num === 0) return '0.00'
     if (!num) return '-'
+    if (num < 0.000001 && !dollarSign) {
+      return '0.00'
+    }
     if (num < 0.000001) {
       return '$<0.000001'
     }

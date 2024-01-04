@@ -10,6 +10,7 @@ import { LATEST_POOL_DAY_QUERY, LATEST_POOL_INFO_QUERY } from 'graphql/limitless
 import { uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
+import { usePoolsData } from 'hooks/useLMTPools'
 import { usePool } from 'hooks/usePools'
 import moment from 'moment'
 import { LanguageCode } from 'public/charting_library'
@@ -80,6 +81,8 @@ export const PoolDataSection = ({
       // console.log('getFakePool', getFakePool(token0.address.toLowerCase(), token1.address.toLowerCase()))
       if (isFakePair(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())) {
         return getFakePool(chainId, token0.address.toLowerCase(), token1.address.toLowerCase())
+      } else {
+        return getFakePool(chainId, token0.address, token1.address)
       }
 
       // return computePoolAddress({
@@ -126,10 +129,14 @@ export const PoolDataSection = ({
     invertPrice: boolean
     token1Reserve: number
     token0Reserve: number
+    tvl: number | undefined
+    volume: number | undefined
   }>()
 
   const token0Contract = useTokenContract(token0?.address)
   const token1Contract = useTokenContract(token1?.address)
+
+  const poolData = usePoolsData()
 
   useEffect(() => {
     if (token0 && token1) {
@@ -160,7 +167,7 @@ export const PoolDataSection = ({
 
             // console.log("priceQuery", priceQuery, result)
 
-            if (!result.error && !result.loading && !priceQuery.error && !priceQuery.loading) {
+            if (!result.error && !result.loading && !priceQuery.error && !priceQuery.loading && poolData) {
               const data = result.data.poolDayDatas
 
               let price = priceQuery.data.pool.token0Price
@@ -182,6 +189,15 @@ export const PoolDataSection = ({
                 price24hLow = Number(low)
               }
 
+              let tvl
+              let volume
+              if (Object.keys(poolData).find((pair: any) => `${token0?.address}-${token1?.address}-${pool?.fee}`)) {
+                {
+                  tvl = poolData[`${token0?.address}-${token1?.address}-${pool?.fee}`].totalValueLocked
+                  volume = poolData[`${token0?.address}-${token1?.address}-${pool?.fee}`].volume
+                }
+              }
+
               setStats({
                 price: Number(price),
                 delta,
@@ -190,6 +206,8 @@ export const PoolDataSection = ({
                 invertPrice,
                 token0Reserve: new BN(token0Reserve.toString()).shiftedBy(-18).toNumber(),
                 token1Reserve: new BN(token1Reserve.toString()).shiftedBy(-18).toNumber(),
+                tvl: Number(tvl),
+                volume: Number(volume),
               })
             }
           }
@@ -211,6 +229,7 @@ export const PoolDataSection = ({
     token1Contract,
     token0,
     token1,
+    poolData,
   ])
 
   useEffect(() => {

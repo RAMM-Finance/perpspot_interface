@@ -998,7 +998,6 @@ const useSimulateMarginTrade = (
 
         // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
         const bnAmountIn = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
-
         const amountOut = await getOutputQuote(
           CurrencyAmount.fromRawAmount(
             inputCurrency,
@@ -1031,6 +1030,7 @@ const useSimulateMarginTrade = (
           slippedTickMin,
           slippedTickMax,
         })
+
 
         const multicallResult = await marginFacility.callStatic.multicall(calldata)
 

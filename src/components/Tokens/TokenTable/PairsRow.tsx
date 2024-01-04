@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
-import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
+import { formatDollar } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency, useToken } from '../../../hooks/Tokens'
@@ -453,6 +453,9 @@ function TokenRow({
   fee?: number
 }) {
   const navigate = useNavigate()
+  const { onCurrencySelection } = useSwapActionHandlers()
+  const token0 = useCurrency(currency0)
+  const token1 = useCurrency(currency1)
 
   const rowCells = (
     <>
@@ -491,7 +494,9 @@ function TokenRow({
             }}
             onClick={(e) => {
               e.stopPropagation()
-              if (currency1 && currency0) {
+              if (currency1 && currency0 && token0 && token1) {
+                onCurrencySelection(Field.INPUT, token0)
+                onCurrencySelection(Field.OUTPUT, token1)
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },
                 })
@@ -643,9 +648,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   currencies,
   //   // inputError: swapInputError,
   // } = useDerivedSwapInfo()
+
   const baseCurrency = useCurrency(currencyIda?.address)
   const quoteCurrency = useCurrency(currencyIdb?.address)
-
   const [token0, token1] =
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
       ? [baseCurrency, quoteCurrency]
@@ -734,7 +739,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         price={
           <ClickableContent>
             <PriceInfoCell>
-              <Price>{formatDollarAmount(currentPrice)}</Price>
+              <Price>{formatDollar({ num: currentPrice, dollarSign: false })}</Price>
               <span>{token0?.symbol + '/' + token1?.symbol}</span>
             </PriceInfoCell>
           </ClickableContent>
@@ -758,10 +763,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           </ClickableContent>
         }
         APR={
-          <ClickableRate rate={estimatedapr_}>{`${formatBNToString(
-            rateUtilData?.apr.times(1),
-            NumberType.TokenNonTx
-          )} %`}</ClickableRate>
+          <>
+            <ClickableRate rate={estimatedapr_}>{`${formatBNToString(
+              rateUtilData?.apr.times(1),
+              NumberType.TokenNonTx
+            )} %`}</ClickableRate>
+            <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span>
+          </>
         }
         UtilRate={<ClickableRate rate={urate_}>{`${formatBNToString(rateUtilData?.util.times(1))} %`}</ClickableRate>}
         // sparkLine={

@@ -199,7 +199,7 @@ export default function TokenTable() {
       const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
 
       return data.map((pool: any) => {
-        if (Object.keys(lowerCasePool).find((pair: any) => `${pair.token0}-${pair.token1}-${pair.fee}`)) {
+        if (Object.keys(lowerCasePool).find((pair: any) => `${pool.token0}-${pool.token1}-${pool.fee}`)) {
           return {
             ...pool,
             tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
@@ -246,7 +246,7 @@ export default function TokenTable() {
   if (!chainId || !account || !provider) {
     return (
       <GridContainer>
-        <Trans>Connect Wallet to Sepolia</Trans>
+        <Trans>Connect Wallet to Arbitrum</Trans>
       </GridContainer>
     )
   } else if (loadingTokens && !tokens) {
@@ -301,21 +301,26 @@ const PairInfoContainer = styled.div`
   padding-bottom: 2rem;
   padding-top: 1rem;
   justify-content: space-between;
+  align-items: center;
 `
 
-const TVLInfo = styled.div`
+interface TVLInfoProps {
+  first: boolean
+}
+
+const TVLInfo = styled.div<TVLInfoProps>`
   width: 12rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 0.75rem;
-  border-radius: 10px;
   font-size: 0.8rem;
-  height: 2.5rem;
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  border-right: ${({ first, theme }) => (first ? `1px solid ${theme.backgroundOutline}` : 'none')};
 `
 const HowTo = styled.div`
-  width: 35rem;
+  width: 40rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 0.75rem;
   border-radius: 10px;
@@ -324,22 +329,30 @@ const HowTo = styled.div`
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
 `
 
+const TVLInfoWrapper = styled.div`
+  display: flex;
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  height: 7rem;
+  padding: 0.5rem;
+`
+
 function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
   return (
-    <div style={{ display: 'flex', gap: '2rem' }}>
-      <TVLInfo>
-        <ThemedText.SubHeader fontSize={15}>TVL:</ThemedText.SubHeader>
-        <ThemedText.SubHeader color="textSecondary" fontSize={15}>
+    <TVLInfoWrapper>
+      <TVLInfo first={true}>
+        <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
+        <ThemedText.HeadlineMedium color="textSecondary">
           {poolsInfo.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
-        </ThemedText.SubHeader>
+        </ThemedText.HeadlineMedium>
       </TVLInfo>
-      <TVLInfo>
-        <ThemedText.SubHeader fontSize={15}>Volume:</ThemedText.SubHeader>
-        <ThemedText.SubHeader color="textSecondary" fontSize={15}>
+      <TVLInfo first={false}>
+        <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
+        <ThemedText.HeadlineMedium color="textSecondary">
           {poolsInfo.volume ? poolsInfo.volume : '0'}
-        </ThemedText.SubHeader>
+        </ThemedText.HeadlineMedium>
       </TVLInfo>
-    </div>
+    </TVLInfoWrapper>
   )
 }
 

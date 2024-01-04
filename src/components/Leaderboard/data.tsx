@@ -21,8 +21,6 @@ interface AddPositionData {
 }
 
 
-//usdValue[address] * amount = usdAmount
-
 export function usePointsData() {
   const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
   const [uniquePools, setUniquePools] = useState<any>([])
@@ -35,11 +33,22 @@ export function usePointsData() {
   const [codeUsers, setCodeUsers] = useState<any>([])
   const [uniqueReferrers, setUniqueReferrers] = useState<any>([])
   const [collectData, setCollectData] = useState<any>()
+  const [codeUserPerReferrer, setCodeUserPerReferrer] = useState<any>()
+  const [referralMultipliers, setReferralMultipliers] = useState<any>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
   const nfpm = useLmtNFTPositionManager()
   const dataProvider = useDataProviderContract()
   const referralContract = useReferralContract()
+
+  const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
+
+  const uniqueLps = new Set<string>()
+  lpPositions?.forEach((entry: any) => {
+    if (!uniqueLps.has(ethers.utils.getAddress(entry.operator))) {
+      uniqueLps.add(ethers.utils.getAddress(entry.operator))
+    }
+  })
 
   useEffect(() => {
     if (!client || !AddQuery || loading || error || !referralContract || !account) return
@@ -84,11 +93,60 @@ export function usePointsData() {
           codeUsers = await referralContract?.getReferees(account)
         } catch (err) {}
 
+        const uniquePools = Array.from(pools)
+        const uniqueTokens_ = new Map<string, any>()
+        try {
+          const tokens = await Promise.all(
+            Array.from(pools).map(async (pool: any) => {
+              const token = await dataProvider?.getPoolkeys(pool)
+              if (token) {
+                if (!uniqueTokens_.has(pool)) {
+                  uniqueTokens_.set(pool, [token[0], token[1]])
+                }
+                return { pool: (token[0], token[1]) }
+              } else return null
+            })
+          )
+          setUniqueTokens(uniqueTokens_)
+        } catch (err) {
+          console.log('tokens fetching ', err)
+        }
+
+        const codesUsers: { [key: string]: any } = {}
+        const referralMultipliers: { [key: string]: any } = {}
+
+        const uniqueReferrers = Array.from(uniqueTraders).concat(["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"])
+        try {
+          await Promise.all(
+            uniqueReferrers.map(async (referrer: any) => {
+              let codeUsers
+              let referralMultiplier
+              try {
+                codeUsers = await referralContract?.getReferees(referrer)
+                referralMultiplier = await referralContract?.referralMultipliers(referrer)
+              } catch (err) {}
+              if (codeUsers) {
+                if (!codesUsers[referrer]) codesUsers[referrer] = []
+                codeUsers.forEach((user: string) => {
+                  codesUsers[referrer].push(user)
+                })
+              }
+              if(referralMultiplier){
+                referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
+              }
+            })
+          )
+          setCodeUserPerReferrer(codesUsers)
+          setReferralMultipliers(referralMultipliers)
+        } catch (err) {
+          console.log('codeusererr', err)
+        }
+
         setCodeUsers(codeUsers)
         const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
         setUniqueTokenIds(bigNumberTokenIds)
-        setUniqueReferrers(Array.from(uniqueTraders))
-        setUniquePools(Array.from(pools))
+        setUniqueReferrers(uniqueReferrers)
+        setUniquePools(uniquePools)
         setAddData(AddQueryData.data.marginPositionIncreaseds)
         setReduceData(ReduceQueryData.data.marginPositionReduceds)
         setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
@@ -103,172 +161,95 @@ export function usePointsData() {
     call()
   }, [account, referralContract])
 
-  const [loaded, setLoaded] = useState(false)
-  useEffect(() => {
-    const uniqueTokens_ = new Map<string, any>()
-    const call = async () => {
-      try {
-        const tokens = await Promise.all(
-          uniquePools.map(async (pool: any) => {
-            const token = await dataProvider?.getPoolkeys(pool)
-            if (token) {
-              if (!uniqueTokens_.has(pool)) {
-                uniqueTokens_.set(pool, [token[0], token[1]])
-              }
-              return { pool: (token[0], token[1]) }
-            } else return null
-          })
-        )
-        setUniqueTokens(uniqueTokens_)
-        setLoaded(true)
-      } catch (err) {
-        console.log('tokens fetching ', err)
+  const PointsData = useMemo(()=>{
+    const addDataProcessed = addData?.map((entry: any) => ({
+      token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+      trader: entry.trader,
+      amount: entry.addedAmount,
+    }))
+    const reduceDataProcessed = reduceData?.map((entry: any) => ({
+      token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+      trader: entry.trader,
+      amount: entry.reduceAmount,
+    }))
+
+    const tradeProcessedByTrader: { [key: string]: any } = {}
+
+    addDataProcessed?.forEach((entry: any) => {
+      const trader = ethers.utils.getAddress(entry.trader)
+      if (!tradeProcessedByTrader[trader]) {
+        tradeProcessedByTrader[trader] = []
       }
-    }
-    call()
-  }, [uniquePools, dataProvider])
+      const newEntry = entry
+      newEntry.amount = usdValue[entry.token] * entry.amount/ 10**tokenDecimal[entry.token]
+      tradeProcessedByTrader[trader].push(newEntry)
+    })
+    reduceDataProcessed?.forEach((entry: any) => {
+      const trader = ethers.utils.getAddress(entry.trader)
 
-  const [codeUserPerReferrer, setCodeUserPerReferrer] = useState<any>()
-  const [referralMultipliers, setReferralMultipliers] = useState<any>()
-  useEffect(() => {
-    const codesUsers: { [key: string]: any } = {}
-    const referralMultipliers: { [key: string]: any } = {}
-    const call = async () => {
-      try {
-        await Promise.all(
-          uniqueReferrers.map(async (referrer: any) => {
-            let codeUsers
-            let referralMultiplier
-            try {
-              codeUsers = await referralContract?.getReferees(referrer)
-              referralMultiplier = await referralContract?.referralMultipliers(referrer)
-            } catch (err) {}
-            if (codeUsers) {
-              if (!codesUsers[referrer]) codesUsers[referrer] = []
-              codeUsers.forEach((user: string) => {
-                codesUsers[referrer].push(user)
-              })
-            }
-            if(referralMultiplier){
-              referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
-            }
-          })
-        )
-        setCodeUserPerReferrer(codesUsers)
-        setReferralMultipliers(referralMultipliers)
-      } catch (err) {
-        console.log('codeusererr', err)
+      if (!tradeProcessedByTrader[trader]) {
+        tradeProcessedByTrader[trader] = []
       }
-    }
-    call()
-  }, [uniqueReferrers, referralContract])
+      const newEntry = entry
+      newEntry.amount = usdValue[entry.token] * entry.amount /10**tokenDecimal[entry.token]
 
-  console.log('codeuserperreffer', codeUserPerReferrer)
-  const addDataProcessed = addData?.map((entry: any) => ({
-    token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-    trader: entry.trader,
-    amount: entry.addedAmount,
-  }))
-  const reduceDataProcessed = reduceData?.map((entry: any) => ({
-    token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-    trader: entry.trader,
-    amount: entry.reduceAmount,
-  }))
-  const tradeProcessedByTrader: { [key: string]: any } = {}
-  addDataProcessed?.forEach((entry: any) => {
-    const trader = ethers.utils.getAddress(entry.trader)
-    if (!tradeProcessedByTrader[trader]) {
-      tradeProcessedByTrader[trader] = []
-    }
-    const newEntry = entry
-    newEntry.amount = usdValue[entry.token] * entry.amount/ 10**tokenDecimal[entry.token]
-    tradeProcessedByTrader[trader].push(newEntry)
-  })
-  reduceDataProcessed?.forEach((entry: any) => {
-    const trader = ethers.utils.getAddress(entry.trader)
-
-    if (!tradeProcessedByTrader[trader]) {
-      tradeProcessedByTrader[trader] = []
-    }
-    const newEntry = entry
-    newEntry.amount = usdValue[entry.token] * entry.amount /10**tokenDecimal[entry.token]
-
-    tradeProcessedByTrader[trader].push(newEntry)
-  })
-
-  const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
-  console.log('Collects', addLiqData, collectData, lpPositions)
-
-  const uniqueLps = new Set<string>()
-  lpPositions?.forEach((entry: any) => {
-    if (!uniqueLps.has(ethers.utils.getAddress(entry.operator))) {
-      uniqueLps.add(ethers.utils.getAddress(entry.operator))
-    }
-  })
-  const lpPositionsByUniqueLps: { [key: string]: any } = {}
-  lpPositions?.forEach((entry: any) => {
-    const sameTokenIdCollects = collectData.filter((collect: any) => {
-      if (collect.tokenId == entry.tokenId.toString()) {
-        return true
-      }
-      return false
+      tradeProcessedByTrader[trader].push(newEntry)
     })
 
-    const sameTokenIdDecreases = decreaseLiqData.filter((decrease: any) => {
-      if (decrease.tokenId == entry.tokenId.toString()) {
-        return true
+    const lpPositionsByUniqueLps: { [key: string]: any } = {}
+    lpPositions?.forEach((entry: any) => {
+      const sameTokenIdCollects = collectData.filter((collect: any) => {
+        if (collect.tokenId == entry.tokenId.toString()) {
+          return true
+        }
+        return false
+      })
+
+      const sameTokenIdDecreases = decreaseLiqData.filter((decrease: any) => {
+        if (decrease.tokenId == entry.tokenId.toString()) {
+          return true
+        }
+        return false
+      })
+
+      let amount0Collected = 0
+      let amount1Collected = 0
+      for (let i = 0; i < sameTokenIdCollects.length; i++) {
+        amount0Collected = amount0Collected + Number(sameTokenIdCollects[i].amount0)
+        amount1Collected = amount1Collected + Number(sameTokenIdCollects[i].amount1)
       }
-      return false
+      for (let i = 0; i < sameTokenIdDecreases.length; i++) {
+        amount0Collected = amount0Collected - Number(sameTokenIdDecreases[i].amount0)
+        amount1Collected = amount1Collected - Number(sameTokenIdDecreases[i].amount1)
+      }
+
+      const lpAddress = ethers.utils.getAddress(entry.operator)
+      if (!lpPositionsByUniqueLps[lpAddress]) {
+        lpPositionsByUniqueLps[lpAddress] = []
+      }
+
+      lpPositionsByUniqueLps[lpAddress].push({
+        token0: entry.token0,
+        token1: entry.token1,
+        tokenId: entry.tokenId.toString(),
+        amount0Collected: usdValue[entry.token0] * amount0Collected / 10**tokenDecimal[entry.token0],
+        amount1Collected: usdValue[entry.token1] * amount1Collected/ 10**tokenDecimal[entry.token1],
+      })
     })
 
-    let amount0Collected = 0
-    let amount1Collected = 0
-    for (let i = 0; i < sameTokenIdCollects.length; i++) {
-      amount0Collected = amount0Collected + Number(sameTokenIdCollects[i].amount0)
-      amount1Collected = amount1Collected + Number(sameTokenIdCollects[i].amount1)
+    return{
+      tradeProcessedByTrader: tradeProcessedByTrader, 
+      lpPositionsByUniqueLps: lpPositionsByUniqueLps, 
     }
-    for (let i = 0; i < sameTokenIdDecreases.length; i++) {
-      amount0Collected = amount0Collected - Number(sameTokenIdDecreases[i].amount0)
-      amount1Collected = amount1Collected - Number(sameTokenIdDecreases[i].amount1)
-    }
+  }, [account,uniqueLps, uniqueTokens, addData, reduceData, addLiqData, lpPositions,decreaseLiqData, collectData, codeUsers, codeUserPerReferrer, referralMultipliers])
 
-    console.log('amounts collectedtotal', amount0Collected, amount1Collected)
-    if (!lpPositionsByUniqueLps[ethers.utils.getAddress(entry.operator)]) {
-      lpPositionsByUniqueLps[ethers.utils.getAddress(entry.operator)] = []
-    }
+  const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
+  const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps
 
-    // collectf
-    lpPositionsByUniqueLps[ethers.utils.getAddress(entry.operator)].push({
-      token0: entry.token0,
-      token1: entry.token1,
-      tokenId: entry.tokenId.toString(),
-      amount0Collected: usdValue[entry.token0] * amount0Collected / 10**tokenDecimal[entry.token0],
-      amount1Collected: usdValue[entry.token1] * amount1Collected/ 10**tokenDecimal[entry.token0],
-    })
-  })
-  console.log('lpPositionsByUniqueLps', lpPositionsByUniqueLps)
-
-let refererData:any 
   const refereeActivity = useMemo(() => {
     if (!codeUserPerReferrer) return
     const result: { [key: string]: any } = {}
-    // let refereeActivity: any
-    // let collectAmount = 0
-    // let tradeAmount = 0
-    // codeUsers.forEach((referee:string)=>{
-    //   lpPositionsByUniqueLps?.[referee]?.forEach((position: any) => {
-    //     collectAmount += Number(position.amount0Collected) // TODO use position.token0 and get prices
-    //     collectAmount += Number(position.amount1Collected) // TODO use position.token1 and get prices
-    //   })
-
-    //   tradeProcessedByTrader?.[referee]?.forEach((trade: any) => {
-    //     tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
-    //   })      
-    // })
-    // refereeActivity = {tradeVolume: tradeAmount, lpAmount: collectAmount, usersReferred: codeUsers.length, 
-    //     point: tradeAmount+ collectAmount, }
-
-    Object.keys(codeUserPerReferrer).forEach((referrer: string) => {
+    uniqueReferrers.forEach((referrer: string) => {
       const codeUsers = codeUserPerReferrer[referrer]
       let collectAmount = 0
       let tradeAmount = 0
@@ -285,25 +266,19 @@ let refererData:any
         })
       })
       result[referrer] = { lpAmount: collectAmount, tradeVolume: tradeAmount, usersReferred: codeUsers.length, 
-      point: referralMultipliers[referrer]* (tradeAmount+ collectAmount) }
+      point: referralMultipliers[referrer]* (tradeAmount+ collectAmount) , tier: referralMultipliers[referrer]}
     })
 
     return result
-  }, [account,codeUsers, codeUserPerReferrer, lpPositionsByUniqueLps, tradeProcessedByTrader])
+  }, [account,codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  
-  const refereesForUniqueReferrers = refereeActivity?.result 
-  const refereesForConnectedAccount = refereeActivity?.refereeActivity
-  console.log('codeusers', codeUsers, referralMultipliers)
+
+  console.log('codeusers', codeUsers, referralMultipliers, refereeActivity?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"])
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
       lpPositionsByUniqueLps,
-      refereesForUniqueReferrers,
-      
-      // This includes loading, positions, etc.
-      // loading,
-      // error
+      refereeActivity,
     }
-  }, [addData, addLiqData, reduceData, collectData, lpPositions, loading, error])
+  }, [account, addData, addLiqData, reduceData, collectData, lpPositions, loading, error])
 }

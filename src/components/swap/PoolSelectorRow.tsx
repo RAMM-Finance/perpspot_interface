@@ -62,8 +62,7 @@ interface PoolSelectorRowProps {
   onCurrencySelect: (
     currencyIn: Currency,
     currencyOut: Currency,
-    currencyInAdd: string,
-    currencyOutAdd: string,
+
     fee: number
   ) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
@@ -104,7 +103,7 @@ export default function ChainSelectorRow({
     <Container
       disabled={false}
       onClick={() => {
-        token0 && token1 && onCurrencySelect(token0, token1, token0?.wrapped.address, token1?.wrapped.address, fee)
+        token0 && token1 && onCurrencySelect(token0, token1, fee)
         setIsOpen(() => false)
         setSelectPair && setSelectPair(() => false)
       }}
@@ -113,8 +112,8 @@ export default function ChainSelectorRow({
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
         <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
       </div>
-      <p>{formatDollar({ num: tvl, digits: 0 })}</p>
-      <p>{volume}</p>
+      <p>{formatDollar({ num: tvl, digits: 1 })}</p>
+      <p>{formatDollar({ num: volume, digits: 1 })}</p>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )

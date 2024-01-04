@@ -346,11 +346,11 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 // `
 
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
-  [PositionSortMethod.VALUE]: <Trans>Position Value</Trans>,
-  [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited</Trans>,
-  [PositionSortMethod.REPAYTIME]: <Trans>Borrow rate per hour </Trans>,
+  [PositionSortMethod.VALUE]: <Trans>Position Value. If your position asset goes up by x%, your PnL goes up by your leverage * x%, denominated in your margin.</Trans>,
+  [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited. Your PnL is denominated in your margin.</Trans>,
+  [PositionSortMethod.REPAYTIME]: <Trans>Borrow rate per hour, continuously spent from your deposit. </Trans>,
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
-  [PositionSortMethod.PNL]: <Trans>Profit/Loss excluding slippage+fees, loss may be greater than collateral</Trans>,
+  [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees</Trans>,
   [PositionSortMethod.REMAINING]: (
     <Trans>Remaining Premium that maintains this position. Position is forced closed when this becomes 0 </Trans>
   ),

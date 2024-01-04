@@ -308,7 +308,7 @@ function MarginPositionInfo({
           value={position?.totalPosition}
           newValue={alteredPosition?.totalPosition}
           appendSymbol={outputCurrency?.symbol}
-          type={NumberType.TokenNonTx}
+          type={NumberType.SwapTradeAmount}
         />
         <PositionValueLabel
           title={<Trans>Collateral</Trans>}
@@ -316,18 +316,18 @@ function MarginPositionInfo({
           value={position?.margin}
           newValue={alteredPosition?.margin}
           appendSymbol={inputCurrency?.symbol}
-          type={NumberType.TokenNonTx}
+          type={NumberType.SwapTradeAmount}
         />
         <PositionValueLabel
-          title={<Trans>Total Debt (Input)</Trans>}
+          title={<Trans>Total Debt</Trans>}
           description={<Trans>{`Total liquidity borrowed in ${inputCurrency?.symbol}`}</Trans>}
           syncing={loading}
           value={position?.totalDebtInput}
           newValue={alteredPosition?.totalDebtInput}
           appendSymbol={inputCurrency?.symbol}
-          type={NumberType.TokenNonTx}
+          type={NumberType.SwapTradeAmount}
         />
-        <PositionValueLabel
+        {/*<PositionValueLabel
           title={<Trans>Total Debt (Output)</Trans>}
           description={<Trans>{`Total liquidity borrowed in ${outputCurrency?.symbol}`}</Trans>}
           syncing={loading}
@@ -335,7 +335,7 @@ function MarginPositionInfo({
           newValue={alteredPosition?.totalDebtOutput}
           appendSymbol={outputCurrency?.symbol}
           type={NumberType.TokenNonTx}
-        />
+        />*/}
         <PositionValueLabel
           title={<Trans>Premium Deposit</Trans>}
           description={<Trans>Current premium deposit remaining</Trans>}
@@ -491,7 +491,7 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
         <AutoColumn gap="md">
           <RowBetween>
             <Label display="flex" style={{ marginRight: '12px' }}>
-              <Trans>Position Liquidity Range</Trans>
+              <Trans>Position Borrowed Range</Trans>
             </Label>
             <HideExtraSmall>
               <>

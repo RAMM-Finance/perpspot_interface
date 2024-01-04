@@ -178,7 +178,6 @@ export function usePoolsData() {
     const processEntry = (entry: any) => {
       const usdValueOfToken = usdValue[entry.token] || 0
       const totalValue = (usdValueOfToken * entry.amount) / 10 ** tokenDecimal[entry.token]
-
       if (uniqueTokens.get(entry.key)) {
         const tokens = uniqueTokens?.get(entry.key)
         const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`

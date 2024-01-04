@@ -193,7 +193,7 @@ export abstract class NonfungiblePositionManager {
     // construct a partial position with a percentage of liquidity
     const partialPosition = new Position({
       pool: position.pool,
-      liquidity: options.liquidityPercentage.multiply(position.liquidity).quotient,
+      liquidity: options.liquidityPercentage.multiply(position.liquidity).subtract(100).quotient, // subtract 100 for min liquidity in poolmanager
       tickLower: position.tickLower,
       tickUpper: position.tickUpper,
     })
@@ -234,6 +234,7 @@ export abstract class NonfungiblePositionManager {
     )
 
     if (options.liquidityPercentage.equalTo(ONE)) {
+      console.log('options burn', options.burnToken)
       if (options.burnToken) {
         calldatas.push(NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [tokenId]))
       }
