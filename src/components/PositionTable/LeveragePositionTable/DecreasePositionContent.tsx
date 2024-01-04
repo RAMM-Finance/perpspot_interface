@@ -246,6 +246,7 @@ function useDerivedReducePositionInfo(
             ? new BN(result.amount1.toString()).times(-1).toFixed(0)
             : new BN(result.amount0.toString()).times(-1).toFixed(0)
         )
+        console.log('wtf', result.amount0, result.amount0.toString(), result.amount1.toString())
 
         const info: DerivedReducePositionInfo = {
           PnL: new BN(result.PnL.toString()).shiftedBy(-inputCurrency.decimals),

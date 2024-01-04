@@ -751,6 +751,7 @@ const TradeTabContent = () => {
 
               <>
                 <DiscreteSliderMarks
+                  max={parseInt(`${Number(formatBNToString(maxLeverage, NumberType.SwapTradeAmount))}`, 10)}
                   initialValue={
                     debouncedLeverageFactor === '' ? 0 : Math.round(Number(debouncedLeverageFactor) * 1000) / 1000
                   }

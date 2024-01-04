@@ -258,7 +258,9 @@ export default function App() {
                   <Route path="pool/v2" element={<PoolV2 />} />
                   <Route path="pool" element={<Pool />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
-
+                  <Route path="pool/:tokenId" element={<PositionPage />} />
+                  <Route path="join" element={<Navigate to="/swap" />} />
+                  <Route path="join/:id" element={<Swap />} />
                   <Route path="pools/v2/find" element={<PoolFinder />} />
                   <Route path="pools/v2" element={<PoolV2 />} />
                   <Route path="pools" element={<Pool />} />

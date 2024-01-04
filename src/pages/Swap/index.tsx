@@ -24,7 +24,7 @@ import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
@@ -43,6 +43,7 @@ import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
+import JoinModal from 'pages/Join'
 
 // const TradeTabContent = React.lazy(() => import('./tradeModal'))
 // const SwapTabContent = React.lazy(() => import('./swapModal'))
@@ -168,6 +169,7 @@ const PositionsContainer = styled.div`
   margin-left: 0.25rem;
   margin-right: 0.25rem;
   height: calc(100vh - 582px);
+  min-height: 150px;
   border-radius: 10px;
   overflow-y: scroll;
   ::-webkit-scrollbar {
@@ -257,7 +259,7 @@ const SwapHeaderWrapper = styled.div`
 
 const MainWrapper = styled.article`
   width: 100%;
-  height: 100%;
+  // height: 100%;
   display: flex;
 `
 
@@ -446,6 +448,8 @@ export default function Swap({ className }: { className?: string }) {
 
   const [activePositionTable, setActiveTable] = useState(1)
 
+  const location = useLocation()
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
@@ -536,6 +540,7 @@ export default function Swap({ className }: { className?: string }) {
               </PositionsContainer>
             </LeftContainer>
           </MainWrapper>
+          {(location.pathname.substring(0, 6 ) === '/join/')? <JoinModal/> : null}
         </PageWrapper>
         {!swapIsUnsupported ? null : (
           <UnsupportedCurrencyFooter

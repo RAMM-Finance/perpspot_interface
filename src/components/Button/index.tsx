@@ -78,7 +78,7 @@ export const ButtonPrimary = styled(BaseButton)`
     background-color: ${({ theme }) => darken(0.05, theme.accentAction)};
   }
   &:hover {
-    background-color: ${({ theme }) => darken(0.05, theme.accentAction)};
+    background-color: ${({ theme }) => darken(0.1, theme.accentAction)};
   }
   &:active {
     box-shadow: 0 0 0 1pt ${({ theme }) => darken(0.1, theme.accentAction)};

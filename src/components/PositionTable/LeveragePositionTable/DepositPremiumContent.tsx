@@ -262,7 +262,7 @@ export function DepositPremiumContent({
   const { account, chainId, provider } = useWeb3React()
 
   const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
-    if (!amount || !inputCurrency) return undefined
+    if (!amount || !inputCurrency || isNaN(Number(amount))) return undefined
     return CurrencyAmount.fromRawAmount(inputCurrency, new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0))
   }, [amount, inputCurrency])
 

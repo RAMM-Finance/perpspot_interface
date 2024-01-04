@@ -591,10 +591,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   //     return [undefined, undefined, undefined]
   //   }
   // }, [])
-  console.log('details', details)
-
   const nowInSeconds = Math.floor(Date.now() / 1000)
-  const duration = details.auctionStartTime + 24 * 60 * 60 - nowInSeconds
+
+  console.log('details', details, nowInSeconds)
+
+  const duration = details.auctionDeadline - nowInSeconds
 
   // Calculate hours and remaining minutes
   const durationHours = Math.floor(duration / 3600)
@@ -702,7 +703,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow>
               <AutoRow gap="2px">
                 {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
-                {(Number(details.inputAmount) / 1e18).toString()}
+                {(Number(details.inputAmount) ).toString()}
                 <CurrencyLogo currency={outputCurrency} size="13px" />
                 {outputCurrency?.symbol}
               </AutoRow>
@@ -711,7 +712,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           output={
             <FlexStartRow>
               <AutoRow gap="2px" justify="start">
-                {(Number(details.startOutput) / 1e18).toString()}
+                {(Number(details.startOutput) ).toString()}
                 <CurrencyLogo currency={inputCurrency} size="13px" />
                 {inputCurrency?.symbol}
               </AutoRow>
@@ -719,7 +720,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           leverage={
             <FlexStartRow>
-              <AutoRow>{leverage.toString()}</AutoRow>
+              <AutoRow>{(Math.round(leverage*100)/100).toString()}</AutoRow>
             </FlexStartRow>
           }
           deadline={

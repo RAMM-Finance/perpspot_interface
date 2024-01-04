@@ -168,7 +168,7 @@ export default function TokenTable() {
         const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
 
         setData(
-          poolQueryData.data.poolAddeds.map((val: Pool) => {
+          poolQueryData.data?.poolAddeds.map((val: Pool) => {
             return { token0: val.token0, token1: val.token1, fee: val.fee }
           })
         )
@@ -213,32 +213,8 @@ export default function TokenTable() {
       return null
     }
   }, [poolData, data])
+  console.log('pooldata', dataInfo, loading, poolData)
 
-  // const _tokens = levManagerAddreses.map((value: string)=>{
-  //   const leverageManager = useLeverageManagerContract(value)
-  //   const { result: token0_, loading, error } = useSingleCallResult(leverageManager, 'token0', [])
-  //   const { result: token1_, loading: l, error:e } = useSingleCallResult(leverageManager, 'token1', [])
-  //   const token0 = useToken(token0_?.toString())
-  //   const token1 = useToken(token1_?.toString())
-  //   // names, price, percentchange, tvl, volume
-  //   // const token0_ = useTokenContract(token0);
-  //   // const token1_ = useTokenContract(token1);
-
-  //   // const{ result: name0, loading: l0, error:e0 } = useSingleCallResult(token0_, 'name', [])
-  //   // const{ result: name1, loading: l1, error:e1 } = useSingleCallResult(token1_, 'name', [])
-
-  //   return {token0, token1}
-  // } )
-  // const tokenAddresses = [
-  //   ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'],
-  //   ['0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
-  //   ['0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9', '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'],
-  // ]
-  // const _tokens = tokenAddresses.map((value: string[]) => {
-  //   const token0 = useToken(value[0])
-  //   const token1 = useToken(value[1])
-  //   return { token0, token1 }
-  // })
 
   const { chainId, account, provider } = useWeb3React()
 
@@ -249,22 +225,26 @@ export default function TokenTable() {
         <Trans>Connect Wallet to Arbitrum</Trans>
       </GridContainer>
     )
-  } else if (loadingTokens && !tokens) {
+  } 
+  else if (loading ) {
     return <LoadingTokenTable rowCount={PAGE_SIZE} />
-  } else if (!tokens) {
-    return (
-      <NoTokensState
-        message={
-          <>
-            <AlertTriangle size={16} />
-            <Trans>An error occurred loading tokens. Please try again.</Trans>
-          </>
-        }
-      />
-    )
-  } else if (tokens?.length === 0) {
-    return <NoTokensState message={<Trans>No tokens found</Trans>} />
-  } else {
+  } 
+  // else if (!tokens) {
+  //   return (
+  //     <NoTokensState
+  //       message={
+  //         <>
+  //           <AlertTriangle size={16} />
+  //           <Trans>An error occurred loading tokens. Please try again.</Trans>
+  //         </>
+  //       }
+  //     />
+  //   )
+  // } 
+  // else if (tokens?.length === 0) {
+  //   return <NoTokensState message={<Trans>No tokens found</Trans>} />
+  // } 
+  else {
     return (
       <>
         <PairInfoContainer>
@@ -284,6 +264,7 @@ export default function TokenTable() {
                   tokenB={dat.token1}
                   fee={dat.fee}
                   tvl={dat.tvl}
+                  volume={dat.volume}
                 />
               ))}
           </TokenDataContainer>
@@ -349,7 +330,8 @@ function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo.volume ? poolsInfo.volume : '0'}
+          {poolsInfo.tvl ? formatDollar({ num: poolsInfo.volume, digits: 1 }) : '0'}
+
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

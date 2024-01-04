@@ -752,14 +752,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         }
         tvl={
           <ClickableContent>
-            {formatDollar({ num: tvl, digits: 0 })}
-            <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
+            {formatDollar({ num: tvl, digits: 1 })}
           </ClickableContent>
         }
         volume={
           <ClickableContent>
-            {formatNumber(volume, NumberType.FiatTokenStats)}{' '}
-            <span style={{ paddingLeft: '.25rem', color: 'gray' }}>usd</span>
+            {formatDollar({ num: volume, digits: 1 })}
+
           </ClickableContent>
         }
         APR={
