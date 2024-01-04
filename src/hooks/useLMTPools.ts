@@ -55,7 +55,7 @@ export function usePoolsData() {
             uniqueTokenIds.add(entry.tokenId)
           }
         })
-
+        
         const pools = new Set<string>()
         AddQueryData?.data?.marginPositionIncreaseds.forEach((entry: any) => {
           if (!pools.has(entry.pool)) {
@@ -113,7 +113,6 @@ export function usePoolsData() {
     const lpPositionByPool: { [key: string]: any } = {}
     const totalAmountsByPool: { [key: string]: number } = {}
     const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
-
     lpPositions?.forEach((entry) => {
       const key = `${entry.token0}-${entry.token1}-${entry.fee}`
       if (!lpPositionByPool[key]) {

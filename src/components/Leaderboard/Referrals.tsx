@@ -158,18 +158,17 @@ const Referrals = () => {
 
   useEffect(() => {
     const code = referral
-      ? refGen
-        ? defaultAbiCoder.encode(['uint256'], [refGen]).toString()
+      ? ref
+        ? defaultAbiCoder.encode(['uint256'], [ref]).toString()
         : undefined
-      : ref
-      ? defaultAbiCoder.encode(['uint256'], [ref]).toString()
+      : refGen
+      ? defaultAbiCoder.encode(['uint256'], [refGen]).toString()
       : undefined
     if (!account || !code || !referralContract) return
 
     const call = async () => {
       try {
         console.log('code', code, referral ? refGen : ref)
-
         const result = await referralContract.codeOwners(code)
         console.log('owner', result)
         setCodeExists(result != '0x0000000000000000000000000000000000000000')
@@ -179,7 +178,7 @@ const Referrals = () => {
     }
 
     call()
-  }, [refGen, ref, account])
+  }, [refGen, ref, account, ])
   console.log('code exists', codeExists)
 
   const [codeUsing, setCodeUsing] = useState(false)
