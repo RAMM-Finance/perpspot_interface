@@ -283,48 +283,27 @@ export function ConfirmReducePositionHeader({
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
+        <AutoColumn style={{ paddingBottom: '10px' }} gap="md">
           <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={16}>PnL</ThemedText.DeprecatedMain>
+            <ThemedText.DeprecatedMain fontSize={16}>Position Reduce Amount</ThemedText.DeprecatedMain>
           </RowBetween>
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500}>
                 <DeltaText delta={txnInfo.PnL.toNumber()}>
-                  {formatBNToString(txnInfo.margin, NumberType.SwapTradeAmount)}
+                  {formatBNToString(txnInfo.reduceAmount, NumberType.SwapTradeAmount)}
                 </DeltaText>
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
-                {inputCurrency?.symbol}
+                {outputCurrency?.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
           <RowBetween>
             <FiatValue fiatValue={fiatValuePnL} />
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
-          <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={16}>New Margin</ThemedText.DeprecatedMain>
-          </RowBetween>
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(txnInfo.margin, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={13} fontWeight={500}>
-                {inputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueMargin} />
           </RowBetween>
         </AutoColumn>
         <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
@@ -338,7 +317,7 @@ export function ConfirmReducePositionHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
                 {outputCurrency?.symbol}
               </Text>

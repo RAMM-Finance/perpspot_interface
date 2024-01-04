@@ -1332,7 +1332,7 @@ export function LeverageModalFooter({
           style={{ margin: '10px 0 0 0', width: 'fit-content', borderRadius: '10px' }}
           id={InterfaceElementName.CONFIRM_SWAP_BUTTON}
         >
-          <Text fontSize={12} fontWeight={500}>
+          <Text fontSize={14} fontWeight={500}>
             <Trans>Confirm Position</Trans>
           </Text>
         </ButtonError>

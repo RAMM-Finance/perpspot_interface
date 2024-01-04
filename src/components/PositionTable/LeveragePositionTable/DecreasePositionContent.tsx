@@ -12,7 +12,7 @@ import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPane
 import { ButtonError } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import HoverInlineText, { TextWrapper } from 'components/HoverInlineText'
+import { TextWrapper } from 'components/HoverInlineText'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import {
@@ -25,7 +25,7 @@ import {
   TextWithLoadingPlaceholder,
   TransactionDetails,
 } from 'components/modalFooters/common'
-import Row, { RowStart } from 'components/Row'
+import Row from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
@@ -38,11 +38,12 @@ import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
-import { useCurrency, useToken } from 'hooks/Tokens'
+import { useToken } from 'hooks/Tokens'
 import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
-import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
+import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
+import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import { useUSDPrice } from 'hooks/useUSDPrice'
@@ -65,6 +66,7 @@ import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositi
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import {
   CancelOrderOptions,
   LimitOrderOptions,
@@ -84,6 +86,7 @@ export interface DerivedReducePositionInfo {
   returnedAmount: BN
   premium: BN
   profitFee: BN
+  reduceAmount: TokenBN
   // newPosition: MarginPositionDetails
   minimumOutput: BN
   executionPrice: Price<Currency, Currency>
@@ -106,6 +109,7 @@ export interface DerivedLimitReducePositionInfo {
   startingDebtReduceAmount: BN
   minimumDebtReduceAmount: BN
   startingTriggerPrice: Price<Currency, Currency> // input / output
+  estimatedPnL: TokenBN
 }
 
 const Wrapper = styled.div`
@@ -253,6 +257,7 @@ function useDerivedReducePositionInfo(
           totalPosition: position.totalPosition.minus(parsedReduceAmount),
           totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
           totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
+          reduceAmount: new TokenBN(parsedReduceAmount, outputCurrency.wrapped, false),
         }
 
         onPositionChange({
@@ -281,6 +286,7 @@ function useDerivedReducePositionInfo(
       setTxnInfo(undefined)
       return
     }
+
     lagged()
   }, [
     setState,
@@ -332,10 +338,6 @@ function useDerivedReduceLimitPositionInfo(
   // txnInfo: DerivedReducePositionInfo | undefined
   inputError: ReactNode | undefined
   contractError: ReactNode | undefined
-  boundaryPrice: {
-    price: BN | undefined
-    isMax: boolean
-  }
 } {
   const [txnInfo, setTxnInfo] = useState<DerivedLimitReducePositionInfo>()
   const [error, setError] = useState<DecodedError>()
@@ -343,42 +345,6 @@ function useDerivedReduceLimitPositionInfo(
   const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(positionKey)
   const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
-
-  // holy fuck so hack
-  const boundaryPrice: {
-    price: BN | undefined
-    isMax: boolean
-  } = useMemo(() => {
-    const baseIsToken0 =
-      (baseCurrencyIsInput && !positionKey.isToken0) || (!baseCurrencyIsInput && positionKey.isToken0)
-    let isMax
-
-    if (baseCurrencyIsInput) {
-      if (baseIsToken0) {
-        isMax = false
-      } else {
-        isMax = true
-      }
-    } else {
-      if (baseIsToken0) {
-        isMax = true
-      } else {
-        isMax = false
-      }
-    }
-    if (pool && inputCurrency && outputCurrency && position) {
-      let price
-
-      if (baseCurrencyIsInput) {
-        price = parsedAmount?.div(position.totalDebtInput)
-      } else {
-        price = parsedAmount ? position.totalDebtInput.div(parsedAmount) : undefined
-      }
-      return { price, isMax }
-    }
-
-    return { price: undefined, isMax }
-  }, [pool, inputCurrency, outputCurrency, position, parsedAmount, baseCurrencyIsInput, positionKey])
 
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
@@ -418,37 +384,20 @@ function useDerivedReduceLimitPositionInfo(
 
       if (positionKey.isToken0) {
         const currentPrice = new BN(pool.token0Price.toFixed(18))
-        const maximumPrice = new BN(position.totalDebtInput.div(parsedAmount))
         if (!price.gte(currentPrice)) {
           if (baseIsToken0) {
             error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
           } else {
             error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-          }
-        }
-        if (price.gte(maximumPrice)) {
-          if (baseIsToken0) {
-            error = error ?? <Trans>Order Price must be less than or equal to the maximum limit price.</Trans>
-          } else {
-            error = error ?? <Trans>Order Price must be greater than or equal to the minimum limit price.</Trans>
           }
         }
       } else {
         const currentPrice = new BN(pool.token1Price.toFixed(18))
-        const maximumPrice = new BN(position.totalDebtOutput.div(parsedAmount))
         if (!price.gte(currentPrice)) {
           if (baseIsToken0) {
             error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
           } else {
             error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-          }
-
-          if (price.gte(maximumPrice)) {
-            if (baseIsToken0) {
-              error = error ?? <Trans>Order Price must be greater than or equal to the minimum limit price.</Trans>
-            } else {
-              error = error ?? <Trans>Order Price must be less than or equal to the maximum limit price.</Trans>
-            }
           }
         }
       }
@@ -460,6 +409,14 @@ function useDerivedReduceLimitPositionInfo(
 
   const deadline = useLimitTransactionDeadline()
   const marginFacility = useMarginFacilityContract(true)
+
+  const { result: estimatedPnL } = useEstimatedPnL(
+    positionKey,
+    position,
+    parsedAmount,
+    parsedLimitPrice,
+    outputCurrency
+  )
 
   useEffect(() => {
     const lagged = async () => {
@@ -473,7 +430,8 @@ function useDerivedReduceLimitPositionInfo(
         !deadline ||
         !marginFacility ||
         !existingLimitOrder ||
-        !position
+        !position ||
+        !estimatedPnL
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
@@ -511,7 +469,7 @@ function useDerivedReduceLimitPositionInfo(
             tokenB: outputCurrency.wrapped,
             fee: positionKey.poolKey.fee,
           }),
-          deadline: deadline?.toString(),
+          deadline: deadline.toString(),
           inputAmount: parsedAmount.shiftedBy(outputCurrency.decimals).toFixed(0),
           startOutput,
           minOutput: startOutput,
@@ -536,6 +494,7 @@ function useDerivedReduceLimitPositionInfo(
             new BN(1).shiftedBy(18).toFixed(0),
             price.shiftedBy(18).toFixed(0)
           ),
+          estimatedPnL,
         })
 
         onPositionChange({
@@ -547,7 +506,6 @@ function useDerivedReduceLimitPositionInfo(
         setState(DerivedInfoState.VALID)
         setError(undefined)
       } catch (err) {
-        console.log('limit reduce error', err)
         onPositionChange({})
         setState(DerivedInfoState.INVALID)
         setError(parseContractError(err))
@@ -579,6 +537,7 @@ function useDerivedReduceLimitPositionInfo(
     position,
     isLimit,
     onPositionChange,
+    estimatedPnL,
   ])
 
   const contractError = useMemo(() => {
@@ -595,15 +554,9 @@ function useDerivedReduceLimitPositionInfo(
       txnInfo,
       inputError,
       contractError,
-      boundaryPrice,
     }
-  }, [inputError, txnInfo, contractError, boundaryPrice])
+  }, [inputError, txnInfo, contractError])
 }
-
-// const InputHeader = styled.div`
-//   padding-left: 6px;
-//   padding-top: 3px;
-// `
 
 const InputSection = styled.div`
   background-color: ${({ theme }) => theme.surface1};
@@ -884,15 +837,27 @@ const ExistingReduceOrderSection = ({
 const PriceSection = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 `
 
 export default function DecreasePositionContent({
   positionKey,
   onPositionChange,
+  positionData,
+  inputCurrency,
+  outputCurrency,
 }: {
   positionKey: TraderPositionKey
   onPositionChange: (newPosition: AlteredPositionProperties) => void
+  positionData: {
+    position: MarginPositionDetails | undefined
+    loading: boolean
+  }
+  inputCurrency?: Currency
+  outputCurrency?: Currency
 }) {
+  const { position: existingPosition, loading: positionLoading } = positionData
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
   const [currentState, setCurrentState] = useState<{
@@ -935,7 +900,7 @@ export default function DecreasePositionContent({
   }, [positionKey])
   const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
+  // const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const { position: orderPosition, loading: orderLoading } = useMarginOrderPositionFromPositionId(orderKey)
   const existingOrderBool = useMemo(() => {
     if (!orderPosition || !existingPosition) return undefined
@@ -954,13 +919,6 @@ export default function DecreasePositionContent({
   const [showSettings, setShowSettings] = useState(false)
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string>('')
-
-  const inputCurrency = useCurrency(
-    existingPosition?.isToken0 ? existingPosition?.poolKey?.token1Address : existingPosition?.poolKey.token0Address
-  )
-  const outputCurrency = useCurrency(
-    existingPosition?.isToken0 ? existingPosition?.poolKey?.token0Address : existingPosition?.poolKey.token1Address
-  )
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
@@ -1010,7 +968,6 @@ export default function DecreasePositionContent({
     inputError: lmtInputError,
     txnInfo: lmtTxnInfo,
     contractError: lmtContractError,
-    boundaryPrice,
   } = useDerivedReduceLimitPositionInfo(
     currentState.isLimit,
     reduceAmount,
@@ -1291,7 +1248,7 @@ export default function DecreasePositionContent({
         <AnimatedDropdown open={currentState.isLimit}>
           <AutoColumn style={{ marginBottom: '10px' }}>
             <DynamicSection justify="start" gap="md" disabled={false}>
-              <RowStart>
+              <RowBetween>
                 {Boolean(inputCurrency && outputCurrency) && (
                   <PriceToggleSection>
                     <div
@@ -1309,44 +1266,17 @@ export default function DecreasePositionContent({
                     </div>
                   </PriceToggleSection>
                 )}
-                <PriceSection>
-                  <Row justify="flex-start" align="center" padding="0" marginBottom="5px">
-                    <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                      Current Price:
-                    </ThemedText.DeprecatedMain>
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', marginLeft: '10px' }}>
-                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
-                        {currentPrice && <HoverInlineText maxCharacters={20} text={currentPrice} />}
-                      </ThemedText.DeprecatedBody>
-                      {baseCurrency && (
-                        <ThemedText.DeprecatedBody color="textSecondary" fontSize={12}>
-                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                        </ThemedText.DeprecatedBody>
-                      )}
-                    </div>
-                  </Row>
-                  <Row justify="flex-start" align="center">
-                    <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                      {boundaryPrice.isMax ? <Trans>Max Price:</Trans> : <Trans>Min Price:</Trans>}
-                    </ThemedText.DeprecatedMain>
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', marginLeft: '10px' }}>
-                      <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
-                        {boundaryPrice.price ? (
-                          <HoverInlineText
-                            maxCharacters={20}
-                            text={formatBNToString(boundaryPrice.price, NumberType.FiatGasPrice, true)}
-                          />
-                        ) : null}
-                      </ThemedText.DeprecatedBody>
-                      {baseCurrency && (
-                        <ThemedText.DeprecatedBody color="textSecondary" fontSize={12}>
-                          {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                        </ThemedText.DeprecatedBody>
-                      )}
-                    </div>
-                  </Row>
+                <PriceSection onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}>
+                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                    Current Price
+                  </ThemedText.DeprecatedMain>
+                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
+                      {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
+                    </ThemedText.DeprecatedBody>
+                  </div>
                 </PriceSection>
-              </RowStart>
+              </RowBetween>
             </DynamicSection>
           </AutoColumn>
 
@@ -1447,7 +1377,6 @@ export default function DecreasePositionContent({
           />
           <CloseText isActive={closePosition}>Close Position</CloseText>
         </Row>
-
         <Hr />
         <AutoColumn justify="center" style={{ width: '100%', marginTop: '5px' }}>
           <TransactionDetails>
@@ -1671,43 +1600,6 @@ function DecreasePositionLimitDetails({
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="sm">
-        {/* <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip text={<Trans>Current Price</Trans>}>
-              <ThemedText.BodySmall color="textPrimary">
-                <Trans>Current Price</Trans>
-              </ThemedText.BodySmall>
-            </MouseoverTooltip>
-          </RowFixed>
-          {currentPrice ? (
-            <LmtTradePrice setShowInverted={setInverted} price={currentPrice} showInverted={invertedPrice} />
-          ) : (
-            '-'
-          )}
-        </RowBetween> */}
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip text={<Trans>Initial execution price of the limit order</Trans>}>
-              <ThemedText.BodySmall color="textPrimary">
-                <Trans>Starting Trigger Price</Trans>
-              </ThemedText.BodySmall>
-            </MouseoverTooltip>
-          </RowFixed>
-          {txnInfo ? (
-            <Underlined>
-              <LmtTradePrice
-                setShowInverted={setInverted}
-                price={txnInfo.startingTriggerPrice}
-                showInverted={invertedPrice}
-              />
-            </Underlined>
-          ) : (
-            <ThemedText.BodySmall textAlign="right" color="textSecondary">
-              -
-            </ThemedText.BodySmall>
-          )}
-        </RowBetween>
-        <Separator />
         <RowBetween>
           <RowFixed>
             <MouseoverTooltip text={<Trans>Reduce Position Amount</Trans>}>
@@ -1732,7 +1624,7 @@ function DecreasePositionLimitDetails({
           <RowFixed>
             <MouseoverTooltip text={<Trans>Maximum Debt Reduction</Trans>}>
               <ThemedText.BodySmall color="textPrimary">
-                <Trans>Desired Debt Reduction</Trans>
+                <Trans>Debt Reduction</Trans>
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
@@ -1761,7 +1653,7 @@ function DecreasePositionLimitDetails({
           <RowFixed>
             <MouseoverTooltip text={<Trans>Amount the reduced position converts to, given your order price </Trans>}>
               <ThemedText.BodySmall color="textPrimary">
-                <Trans>Minimum Debt Reduction</Trans>
+                <Trans>Estimated PnL</Trans>
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
@@ -1769,22 +1661,36 @@ function DecreasePositionLimitDetails({
             <ThemedText.BodySmall textAlign="right" color="textSecondary">
               <TruncatedText>
                 {txnInfo
-                  ? `${formatBNToString(txnInfo?.minimumDebtReduceAmount, NumberType.SwapTradeAmount)} ${
-                      inputCurrency?.symbol
-                    } ${
-                      txnInfo && existingPosition
-                        ? `(${formatBNToString(
-                            txnInfo.minimumDebtReduceAmount.div(existingPosition.totalDebtInput).times(100),
-                            NumberType.TokenNonTx,
-                            false,
-                            '-'
-                          )} %)`
-                        : ''
+                  ? `${formatBNToString(txnInfo.estimatedPnL, NumberType.SwapTradeAmount)} ${
+                      txnInfo.estimatedPnL?.tokenSymbol
                     }`
                   : '-'}
               </TruncatedText>
             </ThemedText.BodySmall>
           </TextWithLoadingPlaceholder>
+        </RowBetween>
+        <Separator />
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Initial execution price of the limit order</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Starting Trigger Price</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          {txnInfo ? (
+            <Underlined>
+              <LmtTradePrice
+                setShowInverted={setInverted}
+                price={txnInfo.startingTriggerPrice}
+                showInverted={invertedPrice}
+              />
+            </Underlined>
+          ) : (
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              -
+            </ThemedText.BodySmall>
+          )}
         </RowBetween>
       </AutoColumn>
     </StyledBGCard>
@@ -1811,7 +1717,6 @@ function useReducePositionCallback(
       if (!chainId) throw new Error('missing chainId')
       if (!provider) throw new Error('missing provider')
       if (!parsedReduceAmount) throw new Error('missing reduce amount')
-      // if (!marginFacility) throw new Error('missing marginFacility contract')
       if (!existingPosition) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
@@ -1882,7 +1787,6 @@ function useReducePositionCallback(
     tradeState,
     provider,
     chainId,
-    // marginFacility,
     allowedSlippage,
     deadline,
     parsedReduceAmount,

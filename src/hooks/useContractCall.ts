@@ -7,6 +7,13 @@ import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
 
+interface CallOutput {
+  result: string | undefined
+  error: DecodedError | undefined
+  loading: boolean
+  syncing: boolean
+}
+
 /**
  * @returns loading: true when fetching data for new params, syncing: true when fetching data for old params, block updates only
  */
@@ -15,7 +22,7 @@ export function useContractCall(
   calldata?: string,
   useSigner = false,
   blocksPerFetch = 0
-): { result: string | undefined; error: DecodedError | undefined; loading: boolean; syncing: boolean } {
+): CallOutput {
   const [result, setResult] = useState<string>()
   const [error, setError] = useState<DecodedError>()
   const [lastParams, setLastParams] = useState<{
@@ -27,30 +34,7 @@ export function useContractCall(
   const [lastBlockNumber, setBlockNumber] = useState<number>()
   const blockNumber = useBlockNumber()
   const { provider, chainId } = useWeb3React()
-  // const fetch = useCallback(async () => {
-  //   if (!provider || !address || !calldata || !chainId) {
-  //     return undefined
-  //   }
 
-  //   const isStr = typeof address === 'string'
-  //   const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
-
-  //   if (useSigner) {
-  //     const data = await provider.getSigner()?.call({
-  //       to,
-  //       data: calldata,
-  //     })
-
-  //     return { data, to, calldata }
-  //   } else {
-  //     const data = await provider.call({
-  //       to,
-  //       data: calldata,
-  //     })
-
-  //     return { data, to, calldata }
-  //   }
-  // }, [provider, address, calldata, useSigner, chainId])
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
       return undefined

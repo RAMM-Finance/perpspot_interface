@@ -174,7 +174,6 @@ export const darkTheme = {
   textTertiary: colors.gray500,
   accentAction: colors.gray700,
   surface1: '#0a0f19',
-  // accentActive: colors.gray400,
   accentActive: '#4C82FB',
   accentSuccess: colors.green200,
   accentWarning: colors.gold200,

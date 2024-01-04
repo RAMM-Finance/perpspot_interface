@@ -33,7 +33,6 @@ export function useRateAndUtil(
       tickUpper,
     ]
     let data
-    console.log('ticks', tickLower, tickUpper)
     try {
       data = DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
     } catch (err) {
@@ -53,7 +52,6 @@ export function useRateAndUtil(
       }
     } else {
       const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getUtilAndAPR', result)
-      console.log('printparsed', parsed[0].toString(), parsed[1].toString())
       const apr = new BN(parsed[0].toString()).shiftedBy(-16)
       const util = new BN(parsed[1].toString()).shiftedBy(-16)
       return {

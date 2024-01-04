@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
-import { SupportedChainId } from 'constants/chains'
 import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
@@ -180,10 +179,9 @@ export default function TokenTable() {
       }
     }
     call()
-  }, [])
+  }, [error, loading])
 
   const poolData = usePoolsData()
-  console.log('poolData', poolData, data)
 
   const poolsInfo = useMemo(() => {
     if (poolData) {
@@ -216,9 +214,6 @@ export default function TokenTable() {
     }
   }, [poolData, data])
 
-  console.log('dataInfo', dataInfo)
-
-  const levManagerAddreses = ['0x184773ef390325BEbe7d49d8481A5914B35c6c4C']
   // const _tokens = levManagerAddreses.map((value: string)=>{
   //   const leverageManager = useLeverageManagerContract(value)
   //   const { result: token0_, loading, error } = useSingleCallResult(leverageManager, 'token0', [])
@@ -248,7 +243,7 @@ export default function TokenTable() {
   const { chainId, account, provider } = useWeb3React()
 
   /* loading and error state */
-  if (chainId !== SupportedChainId.ARBITRUM_ONE || !account || !provider) {
+  if (!chainId || !account || !provider) {
     return (
       <GridContainer>
         <Trans>Connect Wallet to Sepolia</Trans>

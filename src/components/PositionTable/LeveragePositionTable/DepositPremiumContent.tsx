@@ -8,27 +8,29 @@ import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError, ButtonPrimary } from 'components/Button'
-import { DarkCard } from 'components/Card'
+import { DarkCard, LightCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import { Break } from 'components/earn/styled'
 import Loader from 'components/Icons/LoadingSpinner'
+import { LoadingOpacityContainer } from 'components/Loader/styled'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import {
+  RotatingArrow,
   Spinner,
   StyledCard,
+  StyledInfoIcon,
   StyledPolling,
   StyledPollingDot,
-  TextWithLoadingPlaceholder,
   TransactionDetails,
+  TruncatedText,
 } from 'components/modalFooters/common'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
-import { CallbackError, TruncatedText } from 'components/swap/styleds'
+import { CallbackError } from 'components/swap/styleds'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useMarginFacilityContract } from 'hooks/useContract'
-import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
@@ -39,22 +41,24 @@ import { Text } from 'rebass'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import styled, { useTheme } from 'styled-components/macro'
+import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { DepositPremiumOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
 
 interface DerivedDepositPremiumInfo {
-  newDepositAmount: BN
+  newDepositAmount: TokenBN
+  amount: TokenBN
 }
 
 const Wrapper = styled.div`
-  background-color: ${({ theme }) => theme.surface1};
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 const StyledBGCard = styled(StyledCard)`
@@ -168,7 +172,8 @@ function useDerivedDepositPremiumInfo(
         )
 
         const info: DerivedDepositPremiumInfo = {
-          newDepositAmount: position.premiumLeft.plus(parsedAmount),
+          newDepositAmount: new TokenBN(position.premiumLeft.plus(parsedAmount), inputCurrency.wrapped, false),
+          amount: new TokenBN(parsedAmount, inputCurrency.wrapped, false),
         }
         onPositionChange({
           premiumLeft: position.premiumLeft.plus(parsedAmount),
@@ -221,10 +226,20 @@ function useDerivedDepositPremiumInfo(
 export function DepositPremiumContent({
   positionKey,
   onPositionChange,
+  inputCurrency,
+  outputCurrency,
+  positionData,
 }: {
   positionKey: TraderPositionKey
   onPositionChange: (newPosition: AlteredPositionProperties) => void
+  inputCurrency: Currency | undefined
+  outputCurrency: Currency | undefined
+  positionData: {
+    position: MarginPositionDetails | undefined
+    loading: boolean
+  }
 }) {
+  const { position, loading: positionLoading } = positionData
   // state inputs, derived, handlers for trade confirmation
   const [amount, setAmount] = useState('')
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -232,15 +247,8 @@ export function DepositPremiumContent({
   const [showDetails, setShowDetails] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  const { position, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
+  // const { position, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const [errorMessage, setErrorMessage] = useState<string>()
-
-  const inputCurrency = useCurrency(
-    position?.isToken0 ? position?.poolKey?.token1Address : position?.poolKey.token0Address
-  )
-  const outputCurrency = useCurrency(
-    position?.isToken0 ? position?.poolKey?.token0Address : position?.poolKey.token1Address
-  )
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
@@ -273,9 +281,8 @@ export function DepositPremiumContent({
 
   const inputCurrencyBalance = useCurrencyBalance(account, inputCurrency ?? undefined)
 
-  // const marginFacility = useMarginFacilityContract(true)
-
   const addTransaction = useTransactionAdder()
+
   // callback
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -386,7 +393,7 @@ export function DepositPremiumContent({
   }, [setShowModal, setAttemptingTxn, setTxHash, setErrorMessage, setAmount, txHash])
 
   const fiatDepositAmount = useUSDPrice(currencyAmount)
-
+  const theme = useTheme()
   return (
     <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
       {showModal && (
@@ -395,10 +402,10 @@ export function DepositPremiumContent({
           isOpen={showModal}
           attemptingTxn={attemptingTxn}
           txHash={txHash}
-          header={<Trans>Position Details here</Trans>}
+          header={<DepositPremiumHeader txnInfo={txnInfo} loading={loading} inputCurrency={inputCurrency} />}
           bottom={
             <BaseFooter
-              errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
+              errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : null}
               onConfirm={handleDeposit}
               confirmText="Confirm Deposit"
               disabledConfirm={!!inputError || !txnInfo}
@@ -408,7 +415,7 @@ export function DepositPremiumContent({
           pendingText={<Trans>Depositing ...</Trans>}
           currencyToAdd={outputCurrency ?? undefined}
           recipient={account ?? null}
-          errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
+          errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : null}
         />
       )}
       <InputWrapper>
@@ -437,90 +444,44 @@ export function DepositPremiumContent({
             id="deposit-premium-input"
           />
         </InputSection>
-        <StyledBGCard>
-          <AutoColumn style={{ marginBottom: '10px' }} justify="space-between">
-            {/*<ValueLabel
-              description="Current Premium Deposit"
-              label="Current Premium Deposit"
-              value={formatBNToString(position?.premiumDeposit, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />
-            <ValueLabel
-              description="Current Premium Owed"
-              label="Current Premium Owed"
-              value={formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />*/}
-            <ValueLabel
-              description="Current Premium Left"
-              label="Current Premium Left"
-              value={formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}
-              syncing={positionLoading}
-              symbolAppend={inputCurrency?.symbol}
-            />
-          </AutoColumn>
-          <Break />
-          <TransactionDetails>
-            <Wrapper style={{ marginTop: '0' }}>
-              <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
-                <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
-                  <RowFixed style={{ position: 'relative' }}>
-                    {
-                      loading ? (
-                        <StyledPolling>
-                          <StyledPollingDot>
-                            <Spinner />
-                          </StyledPollingDot>
-                        </StyledPolling>
-                      ) : null // <HideSmall>
-                      //   <StyledInfoIcon color={theme.deprecated_bg3} />
-                      // </HideSmall>
-                    }
-                    {position ? (
-                      loading ? (
-                        <ThemedText.BodySmall>
-                          <Trans>Fetching details...</Trans>
-                        </ThemedText.BodySmall>
-                      ) : // <LoadingOpacityContainer $loading={loading}>
-                      //   <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
-                      // </LoadingOpacityContainer>
-                      null
-                    ) : null}
-                  </RowFixed>
-                  {/* <RowFixed>
-                    <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
-                  </RowFixed> */}
-                </StyledHeaderRow>
-                <AnimatedDropdown open={showDetails}>
-                  <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
-                    {!loading ? (
-                      <AutoColumn gap="sm">
-                        <RowBetween>
-                          <RowFixed>
-                            <MouseoverTooltip text={<Trans>Amount of Collateral Returned</Trans>}>
-                              <ThemedText.BodySmall>
-                                <Trans>New Deposit Amount</Trans>
-                              </ThemedText.BodySmall>
-                            </MouseoverTooltip>
-                          </RowFixed>
-                          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-                            <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                              <TruncatedText>
-                                {txnInfo && `${Number(txnInfo?.newDepositAmount)}  ${inputCurrency?.symbol}`}
-                              </TruncatedText>
-                            </ThemedText.BodySmall>
-                          </TextWithLoadingPlaceholder>
-                        </RowBetween>
-                      </AutoColumn>
-                    ) : null}
-                  </AutoColumn>
-                </AnimatedDropdown>
-              </AutoColumn>
-            </Wrapper>
-          </TransactionDetails>
-        </StyledBGCard>
+        <TransactionDetails>
+          <Wrapper style={{ marginTop: '0' }}>
+            <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
+              <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={false} open={showDetails}>
+                <RowFixed style={{ position: 'relative' }}>
+                  {loading ? (
+                    <StyledPolling>
+                      <StyledPollingDot>
+                        <Spinner />
+                      </StyledPollingDot>
+                    </StyledPolling>
+                  ) : (
+                    <HideSmall>
+                      <StyledInfoIcon color={theme.deprecated_bg3} />
+                    </HideSmall>
+                  )}
+                  {loading ? (
+                    <ThemedText.BodySmall>
+                      <Trans>Fetching details...</Trans>
+                    </ThemedText.BodySmall>
+                  ) : (
+                    <LoadingOpacityContainer $loading={loading}>
+                      <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
+                    </LoadingOpacityContainer>
+                  )}
+                </RowFixed>
+                <RowFixed>
+                  <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
+                </RowFixed>
+              </StyledHeaderRow>
+              <AnimatedDropdown open={showDetails}>
+                <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+                  <DepositDetails txnInfo={txnInfo} loading={loading} />
+                </AutoColumn>
+              </AnimatedDropdown>
+            </AutoColumn>
+          </Wrapper>
+        </TransactionDetails>
       </InputWrapper>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         {!inputError && approvalState !== ApprovalState.APPROVED ? (
@@ -582,7 +543,6 @@ export function DepositPremiumContent({
 }
 
 // deposit amount, new deposit, fiat values, old position health, new position health
-function DepositPremiumHeader() {}
 
 export function BaseFooter({
   onConfirm,
@@ -597,15 +557,91 @@ export function BaseFooter({
 }) {
   return (
     <>
-      <AutoRow>
-        <ButtonError onClick={onConfirm} disabled={disabledConfirm} style={{ margin: '10px 0 0 0' }}>
-          <Text fontSize={20} fontWeight={500}>
+      <AutoRow justify="center">
+        <ButtonError
+          onClick={onConfirm}
+          disabled={disabledConfirm}
+          style={{ margin: '10px 0 0 0', width: 'fit-content', borderRadius: '10px' }}
+        >
+          <Text fontSize={14} fontWeight={500}>
             <Trans>{confirmText}</Trans>
           </Text>
         </ButtonError>
-
         {errorMessage ? <CallbackError error={errorMessage} /> : null}
       </AutoRow>
     </>
+  )
+}
+
+const HeaderWrapper = styled(AutoColumn)`
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+`
+function DepositPremiumHeader({
+  txnInfo,
+  loading,
+  inputCurrency,
+}: {
+  txnInfo: DerivedDepositPremiumInfo | undefined
+  loading: boolean
+  inputCurrency: Currency | undefined
+}) {
+  const theme = useTheme()
+  return (
+    <HeaderWrapper>
+      <LightCard padding="0.75rem 1rem">
+        <AutoColumn gap="md">
+          <RowBetween align="center">
+            <RowFixed gap="0px">
+              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(txnInfo?.amount, NumberType.SwapTradeAmount)}
+              </TruncatedText>
+            </RowFixed>
+            <RowFixed gap="0px">
+              <Text fontSize={16} fontWeight={300} marginRight="6px">
+                You Deposit
+              </Text>
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={16} fontWeight={500}>
+                {txnInfo?.amount.tokenSymbol}
+              </Text>
+            </RowFixed>
+          </RowBetween>
+          <RowBetween align="center">
+            <RowFixed gap="0px">
+              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(txnInfo?.newDepositAmount, NumberType.SwapTradeAmount)}
+              </TruncatedText>
+            </RowFixed>
+            <RowFixed gap="0px">
+              <Text fontSize={16} fontWeight={300} marginRight="6px">
+                Resulting Premium Deposit
+              </Text>
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={16} fontWeight={500}>
+                {txnInfo?.newDepositAmount.tokenSymbol}
+              </Text>
+            </RowFixed>
+          </RowBetween>
+          {/* <RowBetween>
+            <FiatValue fiatValue={fiatValueInput} />
+          </RowBetween> */}
+        </AutoColumn>
+      </LightCard>
+    </HeaderWrapper>
+  )
+}
+
+function DepositDetails({ txnInfo, loading }: { txnInfo: DerivedDepositPremiumInfo | undefined; loading: boolean }) {
+  return (
+    <StyledCard>
+      <ValueLabel
+        label="New Deposit Amount"
+        description="Resulting Deposit Amount"
+        value={formatBNToString(txnInfo?.newDepositAmount, NumberType.SwapTradeAmount)}
+        symbolAppend={txnInfo?.newDepositAmount?.tokenSymbol}
+        syncing={loading}
+      />
+    </StyledCard>
   )
 }

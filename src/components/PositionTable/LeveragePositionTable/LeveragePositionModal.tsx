@@ -166,16 +166,38 @@ export function LeveragePositionModal(props: TradeModalProps) {
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
-      <DecreasePositionContent positionKey={positionKey} onPositionChange={setAlteredPosition} />
+      <DecreasePositionContent
+        positionKey={positionKey}
+        onPositionChange={setAlteredPosition}
+        inputCurrency={inputCurrency ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
+        positionData={{ position: existingPosition, loading: positionLoading }}
+      />
     ) : activeTab === TradeModalActiveTab.DEPOSIT_PREMIUM ? (
-      <DepositPremiumContent positionKey={positionKey} onPositionChange={setAlteredPosition} />
+      <DepositPremiumContent
+        positionKey={positionKey}
+        onPositionChange={setAlteredPosition}
+        inputCurrency={inputCurrency ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
+        positionData={{ position: existingPosition, loading: positionLoading }}
+      />
     ) : activeTab === TradeModalActiveTab.WITHDRAW_PREMIUM ? (
-      <WithdrawPremiumContent positionKey={positionKey} onPositionChange={setAlteredPosition} />
+      <WithdrawPremiumContent
+        positionKey={positionKey}
+        onPositionChange={setAlteredPosition}
+        inputCurrency={inputCurrency ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
+        positionData={{ position: existingPosition, loading: positionLoading }}
+      />
     ) : (
-      <DecreasePositionContent positionKey={positionKey} onPositionChange={setAlteredPosition} />
+      <DecreasePositionContent
+        positionKey={positionKey}
+        onPositionChange={setAlteredPosition}
+        positionData={{ position: existingPosition, loading: positionLoading }}
+      />
       // <IncreasePositionContent positionKey={positionKey} />
     )
-  }, [positionKey, activeTab])
+  }, [positionKey, activeTab, inputCurrency, outputCurrency, existingPosition, positionLoading])
 
   const positionExists = useMemo(() => {
     if (!positionLoading && existingPosition?.openTime === 0) {
@@ -214,7 +236,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
               Withdraw Premium
             </TabElement>
           </TabsWrapper>
-
           <ContentWrapper>{displayedContent}</ContentWrapper>
         </ActionsWrapper>
         <MarginPositionInfo
