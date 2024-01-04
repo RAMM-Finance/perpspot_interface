@@ -96,6 +96,7 @@ export interface DerivedReducePositionInfo {
   totalPosition: BN
   totalDebtInput: BN
   totalDebtOutput: BN
+  withdrawnPremium: TokenBN
 }
 
 export interface DerivedLimitReducePositionInfo {
@@ -241,7 +242,9 @@ function useDerivedReducePositionInfo(
           outputCurrency,
           inputCurrency,
           position.isToken0 ? result.amount0.toString() : result.amount1.toString(),
-          position.isToken0 ? result.amount1.toString() : result.amount0.toString()
+          position.isToken0
+            ? new BN(result.amount1.toString()).times(-1).toFixed(0)
+            : new BN(result.amount0.toString()).times(-1).toFixed(0)
         )
 
         const info: DerivedReducePositionInfo = {
@@ -258,6 +261,9 @@ function useDerivedReducePositionInfo(
           totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
           totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
           reduceAmount: new TokenBN(parsedReduceAmount, outputCurrency.wrapped, false),
+          withdrawnPremium: removePremium
+            ? new TokenBN(removePremium, inputCurrency.wrapped, true)
+            : new TokenBN(0, inputCurrency.wrapped, false),
         }
 
         onPositionChange({
@@ -274,7 +280,6 @@ function useDerivedReducePositionInfo(
         setError(undefined)
       } catch (err) {
         onPositionChange({})
-        console.log('reduce error', err)
         setState(DerivedInfoState.INVALID)
         setError(parseContractError(err))
         setTxnInfo(undefined)
@@ -1133,6 +1138,8 @@ export default function DecreasePositionContent({
 
   const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(reduceAmount, outputCurrency ?? undefined))
 
+  const [testLoading, setLoading] = useState(false)
+
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -1160,6 +1167,9 @@ export default function DecreasePositionContent({
                 txnInfo={txnInfo}
                 inputCurrency={inputCurrency ?? undefined}
                 outputCurrency={outputCurrency ?? undefined}
+                removePremium={closePosition}
+                allowedSlippage={allowedSlippage}
+                existingPosition={existingPosition}
                 showAcceptChanges={false}
                 onAcceptChanges={() => {}}
               />
@@ -1377,8 +1387,7 @@ export default function DecreasePositionContent({
           />
           <CloseText isActive={closePosition}>Close Position</CloseText>
         </Row>
-        <Hr />
-        <AutoColumn justify="center" style={{ width: '100%', marginTop: '5px' }}>
+        <AutoColumn justify="center" style={{ width: '100%', marginTop: '10px' }}>
           <TransactionDetails>
             <Wrapper>
               <AutoColumn gap="sm" style={{ width: '100%', marginBottom: '-8px' }}>
@@ -1419,19 +1428,22 @@ export default function DecreasePositionContent({
                     <RotatingArrow stroke={theme.textTertiary} open={Boolean(currentState.showDetails)} />
                   </RowFixed>
                 </StyledHeaderRow>
+                {/* <Button onClick={() => setLoading(!testLoading)}>Click</Button> */}
                 <AnimatedDropdown open={currentState.showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
                     {!currentState.isLimit ? (
                       <DecreasePositionDetails
                         txnInfo={txnInfo}
                         inputCurrency={inputCurrency ?? undefined}
-                        loading={loading}
+                        loading={testLoading}
                         existingPosition={existingPosition}
+                        allowedSlippage={allowedSlippage}
+                        removePremium={closePosition}
                       />
                     ) : (
                       <DecreasePositionLimitDetails
                         txnInfo={lmtTxnInfo}
-                        loading={loading}
+                        loading={testLoading}
                         existingPosition={existingPosition}
                         inputCurrency={inputCurrency ?? undefined}
                         outputCurrency={outputCurrency ?? undefined}
@@ -1495,49 +1507,25 @@ export default function DecreasePositionContent({
   )
 }
 
-function DecreasePositionDetails({
+export function DecreasePositionDetails({
   txnInfo,
   inputCurrency,
   loading,
   existingPosition,
+  allowedSlippage,
+  removePremium,
 }: {
   txnInfo?: DerivedReducePositionInfo
   inputCurrency?: Currency
   loading: boolean
   existingPosition?: MarginPositionDetails
+  allowedSlippage: Percent
+  removePremium: boolean
 }) {
+  const [invertedPrice, setInverted] = useState(false)
   return (
     <StyledBGCard style={{ width: '100%' }}>
-      <AutoColumn gap="sm">
-        <ValueLabel
-          label="Premium Owed"
-          description="Current amount of premium owed"
-          value={formatBNToString(txnInfo?.premium, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
-          syncing={loading}
-        />
-        <ValueLabel
-          label="Premium Returned"
-          description="Position will automatically withdraw your remaining 
-              premium deposit and refund you."
-          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
-          syncing={loading}
-        />
-        <ValueLabel
-          label="Slippage"
-          description="Slippage"
-          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
-          syncing={loading}
-        />
-        <ValueLabel
-          label="Execution Price"
-          description="Trade execution price"
-          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
-          syncing={loading}
-        />
+      <AutoColumn gap="md">
         <RowBetween>
           <RowFixed>
             <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
@@ -1546,18 +1534,65 @@ function DecreasePositionDetails({
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65}>
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
             <ThemedText.BodySmall textAlign="right" color="textSecondary">
               <TruncatedText>
                 <DeltaText delta={Number(txnInfo?.PnL)}>
-                  {txnInfo &&
-                    `${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)} (${(
-                      (Number(txnInfo?.PnL.toNumber()) / Number(existingPosition?.margin.toNumber())) *
-                      100
-                    ).toFixed(2)}%) ${inputCurrency?.symbol}`}
-                </DeltaText>{' '}
+                  {txnInfo
+                    ? `(${(
+                        (Number(txnInfo?.PnL.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                        100
+                      ).toFixed(2)}%) ${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)}  ${
+                        inputCurrency?.symbol
+                      }`
+                    : '-'}
+                </DeltaText>
               </TruncatedText>
             </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
+        {removePremium ? (
+          <ValueLabel
+            label="Returned Deposit"
+            description="Position will automatically withdraw your remaining 
+              premium deposit and refund you."
+            value={formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)}
+            symbolAppend={inputCurrency?.symbol}
+            syncing={loading}
+            height="14px"
+          />
+        ) : null}
+        <ValueLabel
+          label="Allowed Slippage"
+          description="Slippage permitted before revert"
+          value={txnInfo ? allowedSlippage.toFixed(4) : undefined}
+          symbolAppend="%"
+          syncing={loading}
+          height="14px"
+        />
+        <Separator />
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Execution price of transactionHash</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Estimated Execution Price</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
+            {txnInfo ? (
+              <Underlined>
+                <LmtTradePrice
+                  setShowInverted={setInverted}
+                  price={txnInfo.executionPrice}
+                  showInverted={invertedPrice}
+                />
+              </Underlined>
+            ) : (
+              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                -
+              </ThemedText.BodySmall>
+            )}
           </TextWithLoadingPlaceholder>
         </RowBetween>
       </AutoColumn>
@@ -1600,75 +1635,21 @@ function DecreasePositionLimitDetails({
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="sm">
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip text={<Trans>Reduce Position Amount</Trans>}>
-              <ThemedText.BodySmall color="textPrimary">
-                <Trans>Reduced Position</Trans>
-              </ThemedText.BodySmall>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-            <ThemedText.BodySmall textAlign="right" color="textSecondary">
-              <TruncatedText>
-                {txnInfo
-                  ? `${formatBNToString(txnInfo?.positionReduceAmount, NumberType.SwapTradeAmount, false)} ${
-                      outputCurrency?.symbol
-                    }`
-                  : '-'}
-              </TruncatedText>
-            </ThemedText.BodySmall>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip text={<Trans>Maximum Debt Reduction</Trans>}>
-              <ThemedText.BodySmall color="textPrimary">
-                <Trans>Debt Reduction</Trans>
-              </ThemedText.BodySmall>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-            <ThemedText.BodySmall textAlign="right" color="textSecondary">
-              <TruncatedText>
-                {txnInfo
-                  ? `${formatBNToString(txnInfo?.startingDebtReduceAmount, NumberType.SwapTradeAmount, false)} ${
-                      inputCurrency?.symbol
-                    } ${
-                      txnInfo && existingPosition
-                        ? `(${formatBNToString(
-                            txnInfo.startingDebtReduceAmount.div(existingPosition.totalDebtInput).times(100),
-                            NumberType.TokenNonTx,
-                            false,
-                            '-'
-                          )} %)`
-                        : ''
-                    }`
-                  : '-'}
-              </TruncatedText>
-            </ThemedText.BodySmall>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip text={<Trans>Amount the reduced position converts to, given your order price </Trans>}>
-              <ThemedText.BodySmall color="textPrimary">
-                <Trans>Estimated PnL</Trans>
-              </ThemedText.BodySmall>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65}>
-            <ThemedText.BodySmall textAlign="right" color="textSecondary">
-              <TruncatedText>
-                {txnInfo
-                  ? `${formatBNToString(txnInfo.estimatedPnL, NumberType.SwapTradeAmount)} ${
-                      txnInfo.estimatedPnL?.tokenSymbol
-                    }`
-                  : '-'}
-              </TruncatedText>
-            </ThemedText.BodySmall>
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
+        <ValueLabel
+          label="Debt Reduction"
+          value={formatBNToString(txnInfo?.startingDebtReduceAmount, NumberType.SwapTradeAmount)}
+          description="Maximum Debt Reduction"
+          syncing={loading}
+          height="14px"
+        />
+        <ValueLabel
+          label="Estimated PnL"
+          description="Amount the reduced position converts to, given your order price"
+          syncing={loading}
+          value={formatBNToString(txnInfo?.estimatedPnL, NumberType.SwapTradeAmount)}
+          delta={true}
+          height="14px"
+        />
         <Separator />
         <RowBetween>
           <RowFixed>
@@ -1678,19 +1659,21 @@ function DecreasePositionLimitDetails({
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
-          {txnInfo ? (
-            <Underlined>
-              <LmtTradePrice
-                setShowInverted={setInverted}
-                price={txnInfo.startingTriggerPrice}
-                showInverted={invertedPrice}
-              />
-            </Underlined>
-          ) : (
-            <ThemedText.BodySmall textAlign="right" color="textSecondary">
-              -
-            </ThemedText.BodySmall>
-          )}
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
+            {txnInfo ? (
+              <Underlined>
+                <LmtTradePrice
+                  setShowInverted={setInverted}
+                  price={txnInfo.startingTriggerPrice}
+                  showInverted={invertedPrice}
+                />
+              </Underlined>
+            ) : (
+              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+                -
+              </ThemedText.BodySmall>
+            )}
+          </TextWithLoadingPlaceholder>
         </RowBetween>
       </AutoColumn>
     </StyledBGCard>

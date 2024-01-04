@@ -16,14 +16,15 @@ export class TokenBN extends BN {
   public tokenName: string | undefined
   public tokenAddress: string
   constructor(val: BN.Value, token: Token, isRaw: boolean) {
-    super(val)
+    if (isRaw) {
+      super(new BN(val).shiftedBy(-token.decimals))
+    } else {
+      super(val)
+    }
     this.tokenDecimals = token.decimals
     this.tokenSymbol = token.symbol
     this.tokenName = token.name
     this.tokenAddress = token.address
-    if (isRaw) {
-      this.shiftedBy(-this.tokenDecimals)
-    }
   }
 
   public getRawAmount(): string {

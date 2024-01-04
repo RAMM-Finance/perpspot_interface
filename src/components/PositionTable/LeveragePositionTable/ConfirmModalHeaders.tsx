@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency, Price, TradeType } from '@uniswap/sdk-core'
+import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
 import { FiatValue } from 'components/BaseSwapPanel/FiatValue'
 import { ButtonPrimary } from 'components/Button'
 import Card from 'components/Card'
@@ -10,7 +10,6 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwapShowAcceptChanges, TruncatedText } from 'components/swap/styleds'
 import TradePrice from 'components/swap/TradePrice'
-import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
@@ -20,9 +19,9 @@ import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { MarginLimitOrder } from 'types/lmtv2position'
+import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
 
-import { DerivedReducePositionInfo } from './DecreasePositionContent'
+import { DecreasePositionDetails, DerivedReducePositionInfo } from './DecreasePositionContent'
 
 const LightCard = styled(Card)`
   background-color: ${({ theme }) => theme.surface1};
@@ -254,12 +253,18 @@ export function ConfirmReducePositionHeader({
   outputCurrency,
   showAcceptChanges,
   onAcceptChanges,
+  existingPosition,
+  allowedSlippage,
+  removePremium,
 }: {
   txnInfo: DerivedReducePositionInfo
   inputCurrency: Currency | undefined
   outputCurrency: Currency | undefined
   showAcceptChanges: boolean
   onAcceptChanges: () => void
+  existingPosition: MarginPositionDetails | undefined
+  allowedSlippage: Percent
+  removePremium: boolean
 }) {
   const theme = useTheme()
 
@@ -284,20 +289,18 @@ export function ConfirmReducePositionHeader({
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
         <AutoColumn style={{ paddingBottom: '10px' }} gap="md">
-          <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={16}>Position Reduce Amount</ThemedText.DeprecatedMain>
-          </RowBetween>
-          <RowBetween align="flex-end">
+          <RowBetween align="center">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500}>
-                <DeltaText delta={txnInfo.PnL.toNumber()}>
-                  {formatBNToString(txnInfo.reduceAmount, NumberType.SwapTradeAmount)}
-                </DeltaText>
+              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(txnInfo.reduceAmount, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
+              <Text fontSize={16} fontWeight={300} marginRight="6px">
+                Position Reduce Amount
+              </Text>
               <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={13} fontWeight={500}>
+              <Text fontSize={16} fontWeight={500}>
                 {outputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -307,18 +310,18 @@ export function ConfirmReducePositionHeader({
           </RowBetween>
         </AutoColumn>
         <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
-          <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={16}>New Total Position</ThemedText.DeprecatedMain>
-          </RowBetween>
-          <RowBetween align="flex-end">
+          <RowBetween align="center">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500}>
+              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
                 {formatBNToString(txnInfo.totalPosition, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
+              <Text fontSize={16} fontWeight={300} marginRight="6px">
+                New Total Position
+              </Text>
               <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={13} fontWeight={500}>
+              <Text fontSize={16} fontWeight={500}>
                 {outputCurrency?.symbol}
               </Text>
             </RowFixed>
@@ -331,6 +334,16 @@ export function ConfirmReducePositionHeader({
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <TradePrice price={txnInfo.executionPrice} />
       </RowBetween>
+
+      <DecreasePositionDetails
+        txnInfo={txnInfo}
+        inputCurrency={inputCurrency}
+        loading={false}
+        existingPosition={existingPosition}
+        allowedSlippage={allowedSlippage}
+        removePremium={removePremium}
+      />
+
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
           <RowBetween>

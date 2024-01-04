@@ -18,15 +18,12 @@ import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/h
 import styled, { useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
-
-
 // import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
 import { computeRealizedPriceImpact } from '../../utils/prices'
 import { AutoColumn } from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 import { MouseoverTooltip } from '../Tooltip'
-import FormattedPriceImpact from './FormattedPriceImpact'
 import { TruncatedText } from './styleds'
 
 const StyledCard = styled(Card)`
@@ -60,24 +57,23 @@ function TextWithLoadingPlaceholder({
   syncing,
   width,
   children,
+  height = '15px',
 }: {
   syncing: boolean
   width: number
   children: JSX.Element
+  height?: string
 }) {
   return syncing ? (
     <LoadingRows>
-      <div style={{ height: '15px', width: `${width}px` }} />
+      <div style={{ height, width: `${width}px` }} />
     </LoadingRows>
   ) : (
     children
   )
 }
 
-
 const formatPriceImpact = (priceImpact: Percent) => `${priceImpact.multiply(-1).toFixed(2)}%`
-
-
 
 export function AdvancedSwapDetails({
   trade,
@@ -111,7 +107,7 @@ export function AdvancedSwapDetails({
         />
         <MouseoverValueLabel
           description="The impact your trade has on the market price of this pool."
-          value={priceImpact&& formatPriceImpact(priceImpact)}
+          value={priceImpact && formatPriceImpact(priceImpact)}
           label={
             <Trans>
               <ThemedText.BodySmall>Price Impact</ThemedText.BodySmall>
@@ -238,6 +234,9 @@ export function ValueLabel({
   symbolAppend,
   hideInfoTooltips = false,
   delta,
+  labelSize = '12px',
+  valueSize = '12px',
+  height = '14px',
 }: {
   description: string
   label: string
@@ -246,24 +245,27 @@ export function ValueLabel({
   symbolAppend?: string
   hideInfoTooltips?: boolean
   delta?: boolean
+  height?: string
+  labelSize?: string
+  valueSize?: string
 }) {
   // const theme = useTheme()
 
   return (
-    <RowBetween padding="1px">
+    <RowBetween>
       <RowFixed>
         <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
-          <ThemedText.BodySmall>{label}</ThemedText.BodySmall>
+          <ThemedText.BodySmall fontSize={labelSize}>{label}</ThemedText.BodySmall>
         </MouseoverTooltip>
       </RowFixed>
 
-      <TextWithLoadingPlaceholder syncing={syncing} width={65}>
+      <TextWithLoadingPlaceholder syncing={syncing} width={65} height={height}>
         {!delta ? (
-          <ThemedText.BodySmall color="textSecondary" textAlign="right">
+          <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
             {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
           </ThemedText.BodySmall>
         ) : (
-          <ThemedText.BodySmall color="textSecondary" textAlign="right">
+          <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
             <DeltaText delta={Number(value)}>
               {value ? `${Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}` : '-'}
             </DeltaText>
