@@ -82,23 +82,25 @@ export function AddLimitModalHeader({
   const fiatValueMargin = useUSDPriceBN(trade.margin)
   const fiatValueTotalInput = useUSDPriceBN(trade.inputAmount)
   const fiatValueStartOutput = useUSDPriceBN(trade.startOutput)
-
   // output / input
   const limitPrice = useMemo(() => {
     if (inputCurrency && outputCurrency) {
+      const decimalInput = inputCurrency.decimals
+      const decimalOutput = outputCurrency.decimals
+      const decimalDiff = decimalInput>decimalOutput? decimalInput - decimalOutput: decimalOutput-decimalInput
       if (trade.limitPrice.isGreaterThan(1)) {
         return new Price(
           outputCurrency,
           inputCurrency,
-          trade.limitPrice.shiftedBy(18).toFixed(0),
-          new BN(1).shiftedBy(18).toFixed(0)
+          trade.limitPrice.shiftedBy(decimalDiff).toFixed(0),
+          new BN(1).shiftedBy(0).toFixed(0)
         )
       } else {
         return new Price(
           outputCurrency,
           inputCurrency,
-          new BN(1).shiftedBy(18).toFixed(0),
-          new BN(1).div(trade.limitPrice).shiftedBy(18).toFixed(0)
+          new BN(1).shiftedBy(0).toFixed(0),
+          new BN(1).div(trade.limitPrice).shiftedBy(decimalDiff).toFixed(0)
         )
       }
     }

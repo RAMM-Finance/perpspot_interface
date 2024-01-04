@@ -348,7 +348,7 @@ export default function TransactionSettings({
               <Trans>Limit Order deadline</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
-              text={<Trans>Your transaction will revert if it is pending for more than this period of time.</Trans>}
+              text={<Trans>Your order will only be valid for this period after tx is processed.</Trans>}
             />
           </RowFixed>
           <RowFixed>

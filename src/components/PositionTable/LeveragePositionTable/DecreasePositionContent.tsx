@@ -240,9 +240,10 @@ function useDerivedReducePositionInfo(
         const executionPrice = new Price(
           outputCurrency,
           inputCurrency,
-          position.isToken0 ? result.amount0.toString() : result.amount1.toString(),
-          position.isToken0 ? result.amount1.toString() : result.amount0.toString()
+          position.isToken0 ? result.amount0.toString() : result.amount1.abs().toString(),
+          position.isToken0 ? result.amount1.toString() : result.amount0.abs().toString()
         )
+        console.log('wtf',result.amount0, result.amount0.toString(), result.amount1.toString())
 
         const info: DerivedReducePositionInfo = {
           PnL: new BN(result.PnL.toString()).shiftedBy(-inputCurrency.decimals),
@@ -1506,16 +1507,17 @@ function DecreasePositionDetails({
   loading: boolean
   existingPosition?: MarginPositionDetails
 }) {
+  console.log('tx', txnInfo)
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="sm">
-        <ValueLabel
+        {/*<ValueLabel
           label="Premium Owed"
           description="Current amount of premium owed"
           value={formatBNToString(txnInfo?.premium, NumberType.SwapTradeAmount)}
           symbolAppend={inputCurrency?.symbol}
           syncing={loading}
-        />
+        />*/}
         <ValueLabel
           label="Premium Returned"
           description="Position will automatically withdraw your remaining 
@@ -1528,14 +1530,12 @@ function DecreasePositionDetails({
           label="Slippage"
           description="Slippage"
           value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
           syncing={loading}
         />
         <ValueLabel
           label="Execution Price"
           description="Trade execution price"
-          value={formatBNToString(txnInfo?.returnedAmount, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
+          value={txnInfo?.executionPrice.toFixed()}
           syncing={loading}
         />
         <RowBetween>

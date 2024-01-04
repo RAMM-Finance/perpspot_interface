@@ -242,7 +242,7 @@ export const PoolSelector = ({
 
   const availablePools = useMemo(() => {
     if (data) {
-      return data.data.poolAddeds.map((val: Pool) => {
+      return data.data?.poolAddeds.map((val: Pool) => {
         return { token0: val.token0, token1: val.token1, fee: val.fee }
       })
     } else {
