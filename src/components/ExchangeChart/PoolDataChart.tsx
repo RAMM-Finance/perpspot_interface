@@ -22,7 +22,7 @@ import useDatafeed from './useDataFeed'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const ChartContiner = styled.div`
-  height: 450px;
+  height: 550px;
   margin-bottom: 5px;
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
@@ -332,7 +332,7 @@ export const PoolDataChart = ({
       <div
         style={{
           padding: '5px',
-          height: '435px',
+          height: '535px',
           border: 'solid #98A1C03d',
           borderWidth: '0 0 0 0',
         }}

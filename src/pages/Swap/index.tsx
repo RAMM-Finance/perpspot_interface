@@ -192,7 +192,6 @@ const LeftContainer = styled.div`
   justify-content: flex-start;
   align-content: center;
 `
-
 const MiddleContainer = styled.div`
   display: flex;
   width: 100%;
@@ -209,7 +208,7 @@ const LiquidityDistibutionWrapper = styled.div`
   border-radius: 10px;
   width: 350px;
   padding: 1rem;
-  height: 450px;
+  height: 550px;
   overflow-y: scroll;
   ::-webkit-scrollbar {
     display: none;
