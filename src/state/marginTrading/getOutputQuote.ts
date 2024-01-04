@@ -17,7 +17,6 @@ export async function getOutputQuote(
   const { calldata } = await SwapQuoter.quoteCallParameters(route, amount, TradeType.EXACT_INPUT, {
     useQuoterV2: true,
   })
-
   const quoteCallReturnData = await provider.call({
     to: QUOTER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
     data: calldata,

@@ -356,7 +356,7 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
-        <ValueLabel
+        {/*<ValueLabel
           description="Slippage from spot price"
           label="Slippage"
           value={
@@ -364,7 +364,7 @@ export function AdvancedMarginTradeDetails({
           }
           symbolAppend="%"
           syncing={syncing}
-        />
+        />*/}
         <ValueLabel
           description="Swap fee + origination fee "
           label="Total Fees"

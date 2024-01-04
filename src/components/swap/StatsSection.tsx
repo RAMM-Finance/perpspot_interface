@@ -145,7 +145,6 @@ export default function StatsSection(props: StatsSectionProps) {
       <Stat
         dataCy="liq-below"
         value={stats?.tvl}
-        baseQuoteSymbol={baseQuoteSymbol}
         dollar={true}
         title={
           <ThemedText.BodySmall>
@@ -156,10 +155,10 @@ export default function StatsSection(props: StatsSectionProps) {
       <Stat
         dataCy="liq-above"
         value={stats?.volume}
-        baseQuoteSymbol={baseQuoteSymbol}
+        dollar={true}
         title={
           <ThemedText.BodySmall>
-            <Trans>Volume</Trans>
+            <Trans>Total Volume</Trans>
           </ThemedText.BodySmall>
         }
       />

@@ -298,7 +298,7 @@ export const PoolSelector = ({
         <PoolListContainer>
           <PoolListHeader>Pool (fee)</PoolListHeader>
           <PoolListHeader>TVL</PoolListHeader>
-          <PoolListHeader>24h Vol</PoolListHeader>
+          <PoolListHeader>Vol</PoolListHeader>
           <PoolListHeader></PoolListHeader>
         </PoolListContainer>
       </Row>

@@ -112,8 +112,8 @@ export default function ChainSelectorRow({
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
         <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
       </div>
-      <p>{formatDollar({ num: tvl, digits: 0 })}</p>
-      <p>{volume}</p>
+      <p>{formatDollar({ num: tvl, digits: 1 })}</p>
+      <p>{formatDollar({ num: volume, digits: 1 })}</p>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )
