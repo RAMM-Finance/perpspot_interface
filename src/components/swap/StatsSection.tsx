@@ -13,6 +13,7 @@ import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
+import { formatDollar } from 'utils/formatNumbers'
 
 const UNSUPPORTED_METADATA_CHAINS = [SupportedChainId.BNB]
 
@@ -26,25 +27,40 @@ function Stat({
   title,
   description,
   baseQuoteSymbol,
+  dollar,
 }: {
   dataCy: string
   value: NumericStat
   title: ReactNode
   description?: ReactNode
   baseQuoteSymbol?: string
+  dollar?: boolean
 }) {
   let _value = value ? formatNumber(value, NumberType.FiatTokenPrice).replace(/\$/g, '') : '-'
   if (value && baseQuoteSymbol) {
     _value = `${_value} ${baseQuoteSymbol}`
   }
-  return (
-    <StatWrapper data-cy={`${dataCy}`}>
-      <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
-      <StatPrice>
-        <ThemedText.BodySmall color="textSecondary">{_value}</ThemedText.BodySmall>
-      </StatPrice>
-    </StatWrapper>
-  )
+  if (dollar) {
+    return (
+      <StatWrapper data-cy={`${dataCy}`}>
+        <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
+        <StatPrice>
+          <ThemedText.BodySmall color="textSecondary">
+            {formatDollar({ num: Number(value), digits: 0 })} {baseQuoteSymbol}
+          </ThemedText.BodySmall>
+        </StatPrice>
+      </StatWrapper>
+    )
+  } else {
+    return (
+      <StatWrapper data-cy={`${dataCy}`}>
+        <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
+        <StatPrice>
+          <ThemedText.BodySmall color="textSecondary">{_value}</ThemedText.BodySmall>
+        </StatPrice>
+      </StatWrapper>
+    )
+  }
 }
 
 type StatsSectionProps = {
@@ -60,6 +76,8 @@ type StatsSectionProps = {
     low24h: number
     token1Reserve: number
     token0Reserve: number
+    tvl: number | undefined
+    volume: number | undefined
   }
   // priceHigh24H?: NumericStat
   // priceLow24H?: NumericStat
@@ -126,21 +144,22 @@ export default function StatsSection(props: StatsSectionProps) {
       />
       <Stat
         dataCy="liq-below"
-        value={stats?.token1Reserve}
-        baseQuoteSymbol={token1Symbol}
+        value={stats?.tvl}
+        baseQuoteSymbol={baseQuoteSymbol}
+        dollar={true}
         title={
           <ThemedText.BodySmall>
-            <Trans>Liquidity Below</Trans>
+            <Trans>TVL</Trans>
           </ThemedText.BodySmall>
         }
       />
       <Stat
         dataCy="liq-above"
-        value={stats?.token0Reserve}
-        baseQuoteSymbol={token0Symbol}
+        value={stats?.volume}
+        baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
-            <Trans>Liquidity Above</Trans>
+            <Trans>Volume</Trans>
           </ThemedText.BodySmall>
         }
       />

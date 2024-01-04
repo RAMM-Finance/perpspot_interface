@@ -309,7 +309,7 @@ export default function PositionListItem({
                    <Trans>Max:</Trans>
                  </ExtentsText> */}
               <Trans>
-                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%'}</span>
+                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + '+ swap fees'}</span>
                 {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
                    <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
               </Trans>

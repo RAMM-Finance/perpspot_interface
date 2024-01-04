@@ -401,9 +401,9 @@ export default function AddLiquidity() {
     onFieldBInput('')
     onLeftRangeInput('')
     onRightRangeInput('')
-    navigate(`/add`)
-    setSelectPair(() => true)
-  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+    navigate(`/add/`)
+    setSelectPair(true)
+  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, selectPair])
 
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
@@ -1279,7 +1279,8 @@ export default function AddLiquidity() {
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>Estimated APR: </ThemedText.BodySmall>
                                 <ThemedText.BodySmall>
-                                  {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %`}
+                                  {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
+                                    `${aprUtil?.apr ? ' + swap fees' : ''}`}
                                 </ThemedText.BodySmall>
                               </RowBetween>
                               <RowBetween>

@@ -62,8 +62,7 @@ interface PoolSelectorRowProps {
   onCurrencySelect: (
     currencyIn: Currency,
     currencyOut: Currency,
-    currencyInAdd: string,
-    currencyOutAdd: string,
+
     fee: number
   ) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
@@ -104,7 +103,7 @@ export default function ChainSelectorRow({
     <Container
       disabled={false}
       onClick={() => {
-        token0 && token1 && onCurrencySelect(token0, token1, token0?.wrapped.address, token1?.wrapped.address, fee)
+        token0 && token1 && onCurrencySelect(token0, token1, fee)
         setIsOpen(() => false)
         setSelectPair && setSelectPair(() => false)
       }}

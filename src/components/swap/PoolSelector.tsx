@@ -149,16 +149,17 @@ export const PoolSelector = ({
   const location = useLocation()
   const navigate = useNavigate()
 
-  const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, currencyInAdd: string, currencyOutAdd: string, fee: number) => {
-      onCurrencySelection(Field.INPUT, currencyIn)
-      onCurrencySelection(Field.OUTPUT, currencyOut)
-      if (location.pathname !== '/swap') {
-        navigate(`/add/${currencyOutAdd}/${currencyInAdd}/${fee}`)
-      }
-    },
-    []
-  )
+  if (location.pathname !== '/add/' && setSelectPair) {
+    setSelectPair(false)
+  }
+
+  const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency, fee: number) => {
+    onCurrencySelection(Field.INPUT, currencyIn)
+    onCurrencySelection(Field.OUTPUT, currencyOut)
+    if (location.pathname !== '/swap') {
+      navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
+    }
+  }, [])
 
   const inputRef = useRef<HTMLInputElement>()
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -256,7 +257,11 @@ export const PoolSelector = ({
       const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
 
       return availablePools.map((pool: any) => {
-        if (Object.keys(lowerCasePool).find((pair: any) => `${pair.token0}-${pair.token1}-${pair.fee}`)) {
+        if (
+          Object.keys(lowerCasePool).find(
+            (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`
+          )
+        ) {
           return {
             ...pool,
             tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
@@ -332,7 +337,7 @@ export const PoolSelector = ({
         as="button"
         gap="8"
         className={styles.ChainSelector}
-        background={selectPair ? 'accentActiveSoft' : isOpen ? 'accentActiveSoft' : 'accentActive'}
+        background="accentActiveSoft"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           padding: '10px',
