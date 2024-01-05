@@ -348,11 +348,11 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.VALUE]: <Trans>Position Value. If your position asset goes up by x%, your PnL goes up by your leverage * x%, denominated in your margin.</Trans>,
   [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited. Your PnL is denominated in your margin.</Trans>,
-  [PositionSortMethod.REPAYTIME]: <Trans>Borrow rate per hour, continuously spent from your deposit. </Trans>,
+  [PositionSortMethod.REPAYTIME]: <Trans>Current borrow rate per hour, continuously paid by your deposit. </Trans>,
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees</Trans>,
   [PositionSortMethod.REMAINING]: (
-    <Trans>Remaining Premium that maintains this position. Position is forced closed when this becomes 0 </Trans>
+    <Trans>Remaining Premium that maintains this position. Your position is forced closed when your deposit is depleted. </Trans>
   ),
   // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
   // [PositionSortMethod.RECENT_PREMIUM]: (
@@ -689,7 +689,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   position?.outputCurrency?.symbol
                 }`}
               </UnderlineText>
-              <Edit3 size={14} />
             </FlexStartRow>
           }
           collateral={
@@ -747,13 +746,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     </GreenText>
                   </UnderlineText>
                   <div>
-                    {position?.inputCurrency?.symbol} <Edit3 size={14} />
+                    {position?.inputCurrency?.symbol}
                   </div>
                 </AutoColumn>
               ) : (
                 <RedText>
                   0
-                  <Edit3 size={14} />
                 </RedText>
               )}
             </FlexStartRow>

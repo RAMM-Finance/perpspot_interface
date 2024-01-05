@@ -414,7 +414,6 @@ const TradeTabContent = () => {
         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
     [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade, lmtIsLoading, limitTrade, isLimitOrder]
   )
-console.log('inputdata',trade?.swapInput.multiply(1001).divide(1000), fiatValueTradeInput.data)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
@@ -715,16 +714,24 @@ console.log('inputdata',trade?.swapInput.multiply(1001).divide(1000), fiatValueT
                   <ThemedText.DeprecatedMain fontWeight={400}>
                     <Trans>Leverage</Trans>
                   </ThemedText.DeprecatedMain>
-                  <RowBetween width="max-content">
-                    <ThemedText.DeprecatedBody marginRight="3px" fontWeight={400} fontSize={12} color="text2">
-                      <Trans>Max:</Trans>
-                    </ThemedText.DeprecatedBody>
-                    <TextWithLoadingPlaceholder syncing={false} width={50}>
-                      <ThemedText.BodySmall color="textSecondary" textAlign="right">
-                        {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : '-'}
-                      </ThemedText.BodySmall>
-                    </TextWithLoadingPlaceholder>
-                  </RowBetween>
+                  <MouseoverTooltip
+                    text={
+                      <Trans>
+                        Maximum leverage is dependent on current liquidity conditions. If you desire higher leverage, you will need to lower your margin.
+                      </Trans>
+                    }
+                  >                                      
+                    <RowBetween width="max-content">
+                      <ThemedText.DeprecatedBody marginRight="3px" fontWeight={400} fontSize={12} color="text2">
+                        <Trans>Max:</Trans>
+                      </ThemedText.DeprecatedBody>
+                      <TextWithLoadingPlaceholder syncing={false} width={50}>
+                        <ThemedText.BodySmall color="textSecondary" textAlign="right">
+                          {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : '-'}
+                        </ThemedText.BodySmall>
+                      </TextWithLoadingPlaceholder>
+                    </RowBetween>
+                  </MouseoverTooltip>
                 </div>
                 <RowBetween style={{ flexWrap: 'nowrap', justifyContent: 'end' }}>
                   <LeverageInputSection>

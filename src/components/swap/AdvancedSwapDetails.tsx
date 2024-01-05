@@ -287,10 +287,10 @@ export function ValueLabel({
 function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
   if (price) {
     if (price.greaterThan(1)) {
-      const symbol = price.baseCurrency.symbol + '/' + price.quoteCurrency.symbol
+      const symbol = price.quoteCurrency.symbol + '/' + price.baseCurrency.symbol
       return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol} `
     } else {
-      const symbol = price?.quoteCurrency.symbol + '/' + price?.baseCurrency.symbol
+      const symbol = price?.baseCurrency.symbol + '/' + price?.quoteCurrency.symbol
       return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
     }
   } else {
@@ -321,6 +321,14 @@ export function AdvancedMarginTradeDetails({
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
+
+  // const estimatedTimeToClose = useMemo(()=>{
+  //   if(!trade) return undefined
+
+  //   const depletePerHour = trade?.borrowAmount.multiply(trade?.borrowRate.toNumber()*0.01).divide(trade?.premium)
+  //   trade.premium.divide(depletePerHour)
+
+  // },[trade])
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -346,14 +354,14 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />
         <ValueLabel
-          description="Initial Premium Deposit for this position, can be replenished in the position table. When deposit is depleted, your position will be force closed."
+          description="Initial Premium Deposit for this position, which can be replenished in the position table. When your deposit is depleted, your position will be force closed."
           label="Initial Premium deposit"
           value={formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <ValueLabel
-          description="Rate at which your premium deposit are depleted. Rate% * debt is rate of depletion  "
+          description="Rate at which your premium deposit are depleted. Rate% * borrow amount is the rate at which your premium is depleted. "
           label="Hourly Borrow Rate"
           value={formatBNToString(trade?.borrowRate, NumberType.SwapTradeAmount)}
           syncing={syncing}
@@ -361,7 +369,7 @@ export function AdvancedMarginTradeDetails({
           valueDescription=""
         />
         <ValueLabel
-          description="The amount you borrow"
+          description="The amount you borrow from Limitless"
           label="Borrow Amount"
           value={formatCurrencyAmount(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
@@ -377,11 +385,15 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />*/}
         <ValueLabel
-          description="Swap fee + origination fee "
+          description="Swap fee + Origination fee "
           label="Total Fees"
-          value={formatCurrencyAmount(trade?.fees, NumberType.SwapTradeAmount)}
+          value={formatCurrencyAmount(trade?.fees.add(trade?.swapFee), NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
+          valueDescription = {'Swap Fee: ' + formatCurrencyAmount(trade?.swapFee, NumberType.SwapTradeAmount)
+           +" "+ inputCurrency?.symbol+' Origination Fee: ' 
+           + formatCurrencyAmount(trade?.fees, NumberType.SwapTradeAmount)+" "+ inputCurrency?.symbol }
+          hideValueDescription={false}
         />
         <Separator />
         <RowBetween>
@@ -403,7 +415,7 @@ export function AdvancedMarginTradeDetails({
           <TextWithLoadingPlaceholder syncing={syncing} width={70}>
             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
               <TruncatedText>
-                {`${formatCurrencyAmount(trade?.swapOutput, NumberType.SwapTradeAmount)}  ${
+                {`${formatCurrencyAmount(trade?.minimumOutput, NumberType.SwapTradeAmount)}  ${
                   trade ? trade?.swapOutput?.currency.symbol : ''
                 }`}
               </TruncatedText>

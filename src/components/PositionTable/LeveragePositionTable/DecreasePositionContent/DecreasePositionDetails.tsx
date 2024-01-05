@@ -9,12 +9,44 @@ import { LmtTradePrice } from 'components/swap/TradePrice'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { Separator, ThemedText } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { DerivedReducePositionInfo } from '.'
+
+function MouseoverValueLabel({
+  description,
+  label,
+  value,
+  appendSymbol,
+  syncing,
+}: {
+  description: string
+  label: React.ReactNode
+  value: React.ReactNode | string
+  appendSymbol?: string
+  syncing?: boolean
+}) {
+  // const theme = useTheme()
+
+  return (
+    <RowBetween padding="1px">
+      <RowFixed>
+        <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={false}>
+          <ThemedText.BodySmall color="textSecondary">{label}</ThemedText.BodySmall>
+        </MouseoverTooltip>
+      </RowFixed>
+      <TextWithLoadingPlaceholder syncing={syncing ?? false} width={65}>
+        <ThemedText.BodySmall color="textSecondary" textAlign="right">
+          {`${value ?? '-'} ${appendSymbol ?? ''}`}
+        </ThemedText.BodySmall>
+      </TextWithLoadingPlaceholder>
+    </RowBetween>
+  )
+}
+
 
 const StyledBGCard = styled(StyledCard)`
   background: ${({ theme }) => theme.surface1};
@@ -40,6 +72,16 @@ export function DecreasePositionDetails({
   removePremium: boolean
 }) {
   const [invertedPrice, setInverted] = useState(false)
+
+  const receiveAmount = useMemo(()=>{
+    if(!txnInfo) return undefined
+
+    const re= existingPosition?.margin.minus(txnInfo?.margin).plus(txnInfo?.PnL)
+  
+    return re
+  },[txnInfo])
+  if(txnInfo)
+
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">
@@ -80,19 +122,20 @@ export function DecreasePositionDetails({
           />
         ) : null}
         <ValueLabel
-          label="Allowed Slippage"
-          description="Slippage permitted before revert"
-          value={txnInfo ? allowedSlippage.toFixed(4) : undefined}
-          symbolAppend="%"
+          label="Receive"
+          description="What you receive is your reduced margin + PnL"
+          value={
+            formatBNToString(receiveAmount, NumberType.SwapTradeAmount)
+          }
+          symbolAppend={inputCurrency?.symbol}
           syncing={loading}
           height="14px"
         />
-        <Separator />
         <RowBetween>
           <RowFixed>
             <MouseoverTooltip text={<Trans>Execution price of transactionHash</Trans>}>
               <ThemedText.BodySmall color="textPrimary">
-                <Trans>Estimated Execution Price</Trans>
+                <Trans>Reduce Execution Price</Trans>
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
@@ -112,6 +155,22 @@ export function DecreasePositionDetails({
             )}
           </TextWithLoadingPlaceholder>
         </RowBetween>
+
+        <Separator />
+        <MouseoverValueLabel
+          description="The minimum amount your reduced position is guaranteed to convert to. If the price slips any further, your transaction will revert."
+          label={
+            <>
+            <Trans> Minimum output</Trans>
+            </>
+          }
+          syncing={false}
+          value={
+            txnInfo?
+            formatBNToString(txnInfo?.minimumOutput, NumberType.SwapTradeAmount)
+            + " " + inputCurrency?.symbol : "-"
+          }
+        />
       </AutoColumn>
     </StyledBGCard>
   )

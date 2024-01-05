@@ -133,6 +133,7 @@ export interface AddMarginTrade {
   pool: Pool
   inputIsToken0: boolean
   borrowRate: BN
+  swapFee: CurrencyAmount<Currency>
 }
 
 export interface PreTradeInfo {
@@ -1109,6 +1110,7 @@ const useSimulateMarginTrade = (
             .shiftedBy(-18)
             .div(365 * 24)
             .times(100),
+          swapFee: CurrencyAmount.fromRawAmount(inputCurrency, swapInput).multiply(pool.fee).divide(1e6)
         }
 
         setResult(simulation)
