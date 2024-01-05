@@ -468,9 +468,9 @@ export function ConfirmLimitReducePositionHeader({
           </RowBetween>
         </AutoColumn>
       </LightCard>
-      <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
+      {/* <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <TradePrice price={txnInfo.startingTriggerPrice} />
-      </RowBetween>
+      </RowBetween> */}
 
       <DecreasePositionLimitDetails txnInfo={txnInfo} inputCurrency={inputCurrency} loading={false} />
 

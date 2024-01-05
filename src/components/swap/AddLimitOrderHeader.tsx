@@ -3,6 +3,7 @@ import { SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Price, TradeType } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
+import { UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -22,6 +23,7 @@ import { AutoColumn } from '../Column'
 import CurrencyLogo from '../Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from '../Row'
 import TradePrice from '../swap/TradePrice'
+import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { SwapShowAcceptChanges, TruncatedText } from './styleds'
 
 const LightCard = styled(Card)`
@@ -161,13 +163,11 @@ export function AddLimitModalHeader({
       </LightCard>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <ThemedText.DeprecatedMain fontSize={14}>Order Price</ThemedText.DeprecatedMain>
+        <UnderlineText>{limitPrice && <TradePrice price={limitPrice} />}</UnderlineText>
       </RowBetween>
-      <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
-        {limitPrice && <TradePrice price={limitPrice} />}
-      </RowBetween>
-      {/*<LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
-        <AdvancedAddLimitDetails trade={trade} />
-      </LightCard>*/}
+      <LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
+        <AdvancedAddLimitDetails trade={trade} syncing={false} />
+      </LightCard>
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
           <RowBetween>
@@ -190,7 +190,7 @@ export function AddLimitModalHeader({
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
           <Trans>
-            You will receive at least{' '}
+            Output is estimated, you will receive at least{' '}
             <b>
               {formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)} {outputCurrency?.symbol}
             </b>{' '}
