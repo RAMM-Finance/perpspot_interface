@@ -469,7 +469,7 @@ const Referrals = () => {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
               >
                 <ThemedText.BodySmall>Trading Volume</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>${tradingVolume.toString()}</ThemedText.BodyPrimary>
+                <ThemedText.BodyPrimary>${tradingVolume?.toString()}</ThemedText.BodyPrimary>
               </div>
             </StyledCard>
             <StyledCard>

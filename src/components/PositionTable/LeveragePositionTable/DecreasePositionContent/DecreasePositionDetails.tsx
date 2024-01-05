@@ -77,10 +77,9 @@ export function DecreasePositionDetails({
     if(!txnInfo) return undefined
 
     const re= existingPosition?.margin.minus(txnInfo?.margin).plus(txnInfo?.PnL)
-  
+
     return re
   },[txnInfo])
-  if(txnInfo)
 
   return (
     <StyledBGCard style={{ width: '100%' }}>
