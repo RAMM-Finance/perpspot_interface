@@ -44,7 +44,7 @@ export function FiatValue({
           {priceImpact && (
             <span style={{ color: priceImpactColor }}>
               {' '}
-              <MouseoverTooltip text={t`Slippage: the estimated difference between the USD values of input and output amounts.`}>
+              <MouseoverTooltip text={t`Slippage+total fees relative to total trade input`}>
                 (<Trans>{formatPriceImpact(priceImpact)}</Trans>)
               </MouseoverTooltip>
             </span>

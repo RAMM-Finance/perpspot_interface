@@ -315,7 +315,7 @@ const TradeTabContent = () => {
   const fiatValueTradeMargin = useUSDPrice(trade?.margin)
   const fiatValueTradeInput = useUSDPrice(trade?.swapInput)
   const fiatValueTradeOutput = useUSDPrice(trade?.swapOutput)
-  console.log('tradeswapoutput', trade?.swapOutput, fiatValueTradeOutput)
+
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.equalTo(maxInputAmount))
   /**
    * the approval state is NOT_APPROVED + pool with no liquidity, approvalAmount
@@ -414,6 +414,7 @@ const TradeTabContent = () => {
         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
     [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade, lmtIsLoading, limitTrade, isLimitOrder]
   )
+console.log('inputdata',trade?.swapInput.multiply(1001).divide(1000), fiatValueTradeInput.data)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',

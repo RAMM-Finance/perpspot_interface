@@ -464,7 +464,6 @@ export function LeverageModalHeader({
             <ThemedText.DeprecatedBody fontSize={13} color={theme.textTertiary}>
               <FiatValue
                 fiatValue={fiatValueTotalInput}
-                priceImpact={computeFiatValuePriceImpact(fiatValueInput.data, fiatValueTotalInput.data)}
               />
             </ThemedText.DeprecatedBody>
           </RowBetween>
@@ -490,7 +489,7 @@ export function LeverageModalHeader({
             <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
               <FiatValue
                 fiatValue={fiatValueTotalOutput}
-                priceImpact={computeFiatValuePriceImpact(fiatValueInput.data, fiatValueTotalOutput.data)}
+                priceImpact={computeFiatValuePriceImpact(fiatValueTotalInput.data, fiatValueTotalOutput.data)}
               />
             </ThemedText.DeprecatedBody>
           </RowBetween>
@@ -516,12 +515,12 @@ export function LeverageModalHeader({
                 <Trans>Price Updated</Trans>
               </Text>
             </RowFixed>
-            <ButtonPrimary
+            {/*<ButtonPrimary
               style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '10px' }}
               onClick={onAcceptChanges}
             >
               <Trans>Accept</Trans>
-            </ButtonPrimary>
+            </ButtonPrimary>*/}
           </RowBetween>
         </SwapShowAcceptChanges>
       ) : null}

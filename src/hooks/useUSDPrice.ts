@@ -36,7 +36,6 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
     currencyAmount?.currency,
     RouterPreference.PRICE
   )
-  console.log('useRoutingAPITrade', trade,state)
   // Get ETH value of ETH or WETH
   if (chainId && currencyAmount && currencyAmount.currency.wrapped.equals(nativeOnChain(chainId).wrapped)) {
     return {
@@ -100,7 +99,6 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
   const currency = currencyAmount?.currency
   const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)
-  console.log('ethvalue',currencyAmount?.currency?.symbol,  ethValue?.quotient.toString())
   const { data, networkStatus } = useTokenSpotPriceQuery({
     variables: { chain: chain ?? Chain.Ethereum, address: getNativeTokenDBAddress(chain ?? Chain.Ethereum) },
     skip: !chain || !isGqlSupportedChain(currency?.chainId),
@@ -119,7 +117,6 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
 
   // Otherwise, get the price of the token in ETH, and then multiple by the price of ETH
   const ethUSDPrice = data?.token?.project?.markets?.[0]?.price?.value
-  console.log('ethusedprice', ethUSDPrice, data, ethValue)
   if (!ethUSDPrice || !ethValue) return { data: undefined, isLoading: isEthValueLoading || isFirstLoad }
 
   return { data: parseFloat(ethValue.toExact()) * ethUSDPrice, isLoading: false }

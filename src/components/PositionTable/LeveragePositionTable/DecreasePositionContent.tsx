@@ -1302,7 +1302,7 @@ export default function DecreasePositionContent({
                 }}
                 showMaxButton={false}
                 hideBalance={true}
-                // fiatValue={fiatValueReduceAmount}
+                fiatValue={fiatValueReduceAmount}
                 // currency={outputCurrency}
                 label="Limit price"
                 id="limit-reduce-position-input"
@@ -1522,13 +1522,14 @@ export function DecreasePositionDetails({
   allowedSlippage: Percent
   removePremium: boolean
 }) {
+
   const [invertedPrice, setInverted] = useState(false)
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">
         <RowBetween>
           <RowFixed>
-            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
+            <MouseoverTooltip text={<Trans>Estimated PnL relative to margin when position is closed</Trans>}>
               <ThemedText.BodySmall color="textPrimary">
                 <Trans> PnL</Trans>
               </ThemedText.BodySmall>

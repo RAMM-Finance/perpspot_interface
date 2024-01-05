@@ -237,6 +237,8 @@ export function ValueLabel({
   labelSize = '12px',
   valueSize = '12px',
   height = '14px',
+  valueDescription = '', 
+  hideValueDescription = true
 }: {
   description: string
   label: string
@@ -248,6 +250,8 @@ export function ValueLabel({
   height?: string
   labelSize?: string
   valueSize?: string
+  valueDescription?: string
+  hideValueDescription?: boolean
 }) {
   // const theme = useTheme()
 
@@ -260,6 +264,8 @@ export function ValueLabel({
       </RowFixed>
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65} height={height}>
+        <MouseoverTooltip text={<Trans>{valueDescription}</Trans>} disableHover={hideValueDescription}>
+
         {!delta ? (
           <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
             {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
@@ -271,6 +277,8 @@ export function ValueLabel({
             </DeltaText>
           </ThemedText.BodySmall>
         )}
+        </MouseoverTooltip>
+
       </TextWithLoadingPlaceholder>
     </RowBetween>
   )
@@ -350,6 +358,7 @@ export function AdvancedMarginTradeDetails({
           value={formatBNToString(trade?.borrowRate, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend="%"
+          valueDescription=""
         />
         <ValueLabel
           description="The amount you borrow"

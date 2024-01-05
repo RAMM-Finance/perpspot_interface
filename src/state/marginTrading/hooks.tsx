@@ -1079,12 +1079,12 @@ const useSimulateMarginTrade = (
             newTotalInputDebt,
             BnToJSBI(existingPosition.totalDebtInput, inputCurrency)
           )
-          swapInput = JSBI.add(_margin, borrowAmount)
+          swapInput = JSBI.add(BnToJSBI(margin, inputCurrency), borrowAmount)
           _borrowAmount = borrowAmount
         } else {
           swapOutput = newTotalPosition
           _margin = newMargin
-          swapInput = JSBI.add(_margin, newTotalInputDebt)
+          swapInput = JSBI.add(BnToJSBI(margin, inputCurrency), newTotalInputDebt)
           _borrowAmount = newTotalInputDebt
         }
 

@@ -54,8 +54,8 @@ export default function TradePrice({ price }: TradePriceProps) {
   const [showInverted, setShowInverted] = useState<boolean>(false)
 
   const { baseCurrency, quoteCurrency } = price
-  const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
-
+  // const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
+  let usdPrice
   let formattedPrice: string
   try {
     formattedPrice = showInverted
@@ -93,8 +93,8 @@ export function LmtTradePrice({ price, showInverted, setShowInverted }: LmtTrade
   // const [showInverted, setShowInverted] = useState<boolean>(false)
 
   const { baseCurrency, quoteCurrency } = price
-  const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
-
+  // const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
+  let usdPrice
   let formattedPrice: string
   try {
     formattedPrice = showInverted

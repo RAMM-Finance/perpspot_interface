@@ -604,7 +604,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // Create the formatted string
   const formattedDuration = `${durationHours}hr ${durationMinutes}m`
 
-  const leverage = useMemo(() => (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin), [])
+  const leverage = useMemo(() => 
+  {
+    if(Number(details?.margin)==0) return 0
+    else return (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin)
+  }
+  , [])
 
   const { account, chainId, provider } = useWeb3React()
 
