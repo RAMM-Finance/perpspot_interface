@@ -21,12 +21,9 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
 
-import {
-  DecreasePositionDetails,
-  DecreasePositionLimitDetails,
-  DerivedLimitReducePositionInfo,
-  DerivedReducePositionInfo,
-} from './DecreasePositionContent'
+import { DerivedLimitReducePositionInfo, DerivedReducePositionInfo } from './DecreasePositionContent'
+import DecreasePositionLimitDetails from './DecreasePositionContent/DecreaseLimitPositionDetails'
+import { DecreasePositionDetails } from './DecreasePositionContent/DecreasePositionDetails'
 
 const LightCard = styled(Card)`
   background-color: ${({ theme }) => theme.surface1};
@@ -131,21 +128,19 @@ export function ConfirmCancelOrderHeader({
           <RowBetween>
             <ThemedText.DeprecatedMain fontSize={16}>Margin</ThemedText.DeprecatedMain>
           </RowBetween>
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
+          <RowBetween align="flex-start">
+            <AutoColumn>
               <TruncatedText fontSize={13} fontWeight={500}>
                 {formatBNToString(order.margin, NumberType.SwapTradeAmount)}
               </TruncatedText>
-            </RowFixed>
+              <FiatValue fiatValue={fiatValueMargin} />
+            </AutoColumn>
             <RowFixed gap="0px">
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
                 {inputCurrency?.symbol}
               </Text>
             </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueMargin} />
           </RowBetween>
         </AutoColumn>
         <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
@@ -469,12 +464,7 @@ export function ConfirmLimitReducePositionHeader({
           </AutoColumn>
         </Wrapper>
       </LightCard>
-      {/* <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
-        <TradePrice price={txnInfo.startingTriggerPrice} />
-      </RowBetween> */}
-
       <DecreasePositionLimitDetails txnInfo={txnInfo} inputCurrency={inputCurrency} loading={false} />
-
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
           <RowBetween>

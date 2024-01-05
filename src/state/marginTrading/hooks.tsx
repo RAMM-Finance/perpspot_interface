@@ -1031,7 +1031,6 @@ const useSimulateMarginTrade = (
           slippedTickMax,
         })
 
-
         const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
         const {
