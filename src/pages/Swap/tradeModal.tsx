@@ -315,7 +315,7 @@ const TradeTabContent = () => {
   const fiatValueTradeMargin = useUSDPrice(trade?.margin)
   const fiatValueTradeInput = useUSDPrice(trade?.swapInput)
   const fiatValueTradeOutput = useUSDPrice(trade?.swapOutput)
-
+  console.log('tradeswapoutput', trade?.swapOutput, fiatValueTradeOutput)
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.equalTo(maxInputAmount))
   /**
    * the approval state is NOT_APPROVED + pool with no liquidity, approvalAmount

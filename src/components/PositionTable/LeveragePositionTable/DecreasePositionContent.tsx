@@ -1618,14 +1618,14 @@ export function DecreasePositionLimitDetails({
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="sm">
-        <ValueLabel
+        {/*<ValueLabel
           label="Debt Reduction"
           value={formatBNToString(txnInfo?.startingDebtReduceAmount, NumberType.SwapTradeAmount)}
           description="Maximum Debt Reduction"
           syncing={loading}
           symbolAppend={inputCurrency?.symbol}
           height="14px"
-        />
+        />*/}
         <ValueLabel
           label="Estimated PnL"
           description="Amount the reduced position converts to, given your order price"
