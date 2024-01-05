@@ -34,19 +34,19 @@ export default function DiscreteSliderMarks({ initialValue, onChange, max }: Dis
     },
     {
       value: max ? max * 0.25 : 25,
-      label: `${max ? max * 0.1 : 25}x`,
+      label: `${max ? max * 0.25 : 25}x`,
     },
     {
       value: max ? max * 0.5 : 50,
-      label: `${max ? max * 0.1 : 50}x`,
+      label: `${max ? max * 0.5 : 50}x`,
     },
     {
       value: max ? max * 0.75 : 75,
-      label: `${max ? max * 0.1 : 75}x`,
+      label: `${max ? max * 0.75 : 75}x`,
     },
     {
-      value: max ? max * 1 : 100,
-      label: `${max ? max * 0.1 : 100}x`,
+      value: max ? max : 100,
+      label: `${max ? max : 100}x`,
     },
   ]
 
