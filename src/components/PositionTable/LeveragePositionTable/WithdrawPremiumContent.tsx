@@ -556,9 +556,13 @@ function WithdrawPremiumHeader({
   )
 }
 
+const DetailsWrapper = styled(StyledCard)`
+  background-color: ${({ theme }) => theme.surface1};
+`
+
 function WithdrawDetails({ txnInfo, loading }: { txnInfo: DerivedWithdrawPremiumInfo | undefined; loading: boolean }) {
   return (
-    <StyledCard>
+    <DetailsWrapper>
       <ValueLabel
         label="New Deposit Amount"
         description="Resulting Deposit Amount"
@@ -566,6 +570,6 @@ function WithdrawDetails({ txnInfo, loading }: { txnInfo: DerivedWithdrawPremium
         symbolAppend={txnInfo?.newDepositAmount?.tokenSymbol}
         syncing={loading}
       />
-    </StyledCard>
+    </DetailsWrapper>
   )
 }

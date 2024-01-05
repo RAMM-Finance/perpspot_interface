@@ -631,10 +631,12 @@ function DepositPremiumHeader({
     </HeaderWrapper>
   )
 }
-
+const DetailsWrapper = styled(StyledCard)`
+  background-color: ${({ theme }) => theme.surface1};
+`
 function DepositDetails({ txnInfo, loading }: { txnInfo: DerivedDepositPremiumInfo | undefined; loading: boolean }) {
   return (
-    <StyledCard>
+    <DetailsWrapper>
       <ValueLabel
         label="New Deposit Amount"
         description="Resulting Deposit Amount"
@@ -642,6 +644,6 @@ function DepositDetails({ txnInfo, loading }: { txnInfo: DerivedDepositPremiumIn
         symbolAppend={txnInfo?.newDepositAmount?.tokenSymbol}
         syncing={loading}
       />
-    </StyledCard>
+    </DetailsWrapper>
   )
 }
