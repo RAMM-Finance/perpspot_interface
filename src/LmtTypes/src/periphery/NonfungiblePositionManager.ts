@@ -145,7 +145,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     "burn(uint256)": FunctionFragment;
     "collect((uint256,address))": FunctionFragment;
     "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))": FunctionFragment;
-    "factory()": FunctionFragment;
     "fetchLatestTotalFeeGrowth(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
@@ -174,7 +173,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
       | "burn"
       | "collect"
       | "decreaseLiquidity"
-      | "factory"
       | "fetchLatestTotalFeeGrowth"
       | "getApproved"
       | "increaseLiquidity"
@@ -216,7 +214,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     functionFragment: "decreaseLiquidity",
     values: [INonfungiblePositionManager.DecreaseLiquidityParamsStruct]
   ): string;
-  encodeFunctionData(functionFragment: "factory", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "fetchLatestTotalFeeGrowth",
     values: [PromiseOrValue<BigNumberish>]
@@ -309,7 +306,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     functionFragment: "decreaseLiquidity",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "fetchLatestTotalFeeGrowth",
     data: BytesLike
@@ -513,8 +509,6 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    factory(overrides?: CallOverrides): Promise<[string]>;
-
     fetchLatestTotalFeeGrowth(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -668,8 +662,6 @@ export interface NonfungiblePositionManager extends BaseContract {
     params: INonfungiblePositionManager.DecreaseLiquidityParamsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  factory(overrides?: CallOverrides): Promise<string>;
 
   fetchLatestTotalFeeGrowth(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -831,8 +823,6 @@ export interface NonfungiblePositionManager extends BaseContract {
     ): Promise<
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
     >;
-
-    factory(overrides?: CallOverrides): Promise<string>;
 
     fetchLatestTotalFeeGrowth(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1076,8 +1066,6 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    factory(overrides?: CallOverrides): Promise<BigNumber>;
-
     fetchLatestTotalFeeGrowth(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1201,8 +1189,6 @@ export interface NonfungiblePositionManager extends BaseContract {
       params: INonfungiblePositionManager.DecreaseLiquidityParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
-
-    factory(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     fetchLatestTotalFeeGrowth(
       tokenId: PromiseOrValue<BigNumberish>,

@@ -1641,6 +1641,7 @@ function DecreasePositionLimitDetails({
           value={formatBNToString(txnInfo?.startingDebtReduceAmount, NumberType.SwapTradeAmount)}
           description="Maximum Debt Reduction"
           syncing={loading}
+          symbolAppend={inputCurrency?.symbol}
           height="14px"
         />
         <ValueLabel
@@ -1649,6 +1650,7 @@ function DecreasePositionLimitDetails({
           syncing={loading}
           value={formatBNToString(txnInfo?.estimatedPnL, NumberType.SwapTradeAmount)}
           delta={true}
+          symbolAppend={inputCurrency?.symbol}
           height="14px"
         />
         <Separator />
