@@ -252,6 +252,10 @@ export function ConfirmCancelOrderHeader({
   )
 }
 
+const Wrapper = styled(AutoColumn)`
+  gap: 0.5rem;
+`
+
 export function ConfirmReducePositionHeader({
   txnInfo,
   inputCurrency,
@@ -287,55 +291,53 @@ export function ConfirmReducePositionHeader({
     }
   }, [txnInfo, inputCurrency])
   const fiatValueReduceAmount = useUSDPrice(trade?.reduceAmount)
-  const fiatValuePnL = useUSDPrice(trade?.PnL)
+  // const fiatValuePnL = useUSDPrice(trade?.PnL)
   const fiatValueTotalPosition = useUSDPrice(trade?.totalPosition)
   // margin, total position, total input/output debt reduction + their fiat values
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="md">
-          <RowBetween align="center">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
-                {formatBNToString(txnInfo.reduceAmount, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                Position Reduce Amount
-              </Text>
-              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {outputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueReduceAmount} />
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn gap="sm">
-          <RowBetween align="center">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
-                {formatBNToString(txnInfo.totalPosition, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                New Total Position
-              </Text>
-              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {outputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueTotalPosition} />
-          </RowBetween>
-        </AutoColumn>
+        <Wrapper>
+          <AutoColumn gap="md">
+            <RowBetween align="flex-start">
+              <AutoColumn>
+                <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                  {formatBNToString(txnInfo.reduceAmount, NumberType.SwapTradeAmount)}
+                </TruncatedText>
+                <FiatValue fiatValue={fiatValueReduceAmount} />
+              </AutoColumn>
+              <RowFixed gap="0px">
+                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                  Position Reduce Amount
+                </Text>
+                <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <Text fontSize={16} fontWeight={500}>
+                  {outputCurrency?.symbol}
+                </Text>
+              </RowFixed>
+            </RowBetween>
+          </AutoColumn>
+          <AutoColumn gap="md">
+            <RowBetween align="flex-start">
+              <AutoColumn>
+                <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                  {formatBNToString(txnInfo.totalPosition, NumberType.SwapTradeAmount)}
+                </TruncatedText>
+                <FiatValue fiatValue={fiatValueTotalPosition} />
+              </AutoColumn>
+              <RowFixed gap="0px">
+                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                  New Total Position
+                </Text>
+                <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <Text fontSize={16} fontWeight={500}>
+                  {outputCurrency?.symbol}
+                </Text>
+              </RowFixed>
+            </RowBetween>
+          </AutoColumn>
+        </Wrapper>
       </LightCard>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <TradePrice price={txnInfo.executionPrice} />
@@ -424,49 +426,48 @@ export function ConfirmLimitReducePositionHeader({
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
-      <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="md">
-          <RowBetween align="center">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
-                {formatBNToString(txnInfo.positionReduceAmount, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                Position Reduce Amount
-              </Text>
-              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {outputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueReduceAmount} />
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn gap="sm">
-          <RowBetween align="center">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
-                {formatBNToString(txnInfo.newTotalPosition, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                New Total Position
-              </Text>
-              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {outputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueTotalPosition} />
-          </RowBetween>
-        </AutoColumn>
+      <LightCard padding="0.75rem 1rem" style={{ marginBottom: '1rem' }}>
+        <Wrapper>
+          <AutoColumn gap="md">
+            <RowBetween align="flex-start">
+              <AutoColumn>
+                <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                  {formatBNToString(txnInfo.positionReduceAmount, NumberType.SwapTradeAmount)}
+                </TruncatedText>
+                <FiatValue fiatValue={fiatValueReduceAmount} />
+              </AutoColumn>
+              <RowFixed gap="0px">
+                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                  Position Reduce Amount
+                </Text>
+                <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <Text fontSize={16} fontWeight={500}>
+                  {outputCurrency?.symbol}
+                </Text>
+              </RowFixed>
+            </RowBetween>
+            <RowBetween></RowBetween>
+          </AutoColumn>
+          <AutoColumn gap="md">
+            <RowBetween align="flex-start">
+              <AutoColumn>
+                <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                  {formatBNToString(txnInfo.newTotalPosition, NumberType.SwapTradeAmount)}
+                </TruncatedText>
+                <FiatValue fiatValue={fiatValueTotalPosition} />
+              </AutoColumn>
+              <RowFixed gap="0px">
+                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                  New Total Position
+                </Text>
+                <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <Text fontSize={16} fontWeight={500}>
+                  {outputCurrency?.symbol}
+                </Text>
+              </RowFixed>
+            </RowBetween>
+          </AutoColumn>
+        </Wrapper>
       </LightCard>
       {/* <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <TradePrice price={txnInfo.startingTriggerPrice} />

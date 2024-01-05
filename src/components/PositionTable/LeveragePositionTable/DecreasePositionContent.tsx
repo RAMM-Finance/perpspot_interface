@@ -1181,7 +1181,7 @@ export default function DecreasePositionContent({
           }
           bottom={
             <BaseFooter
-              errorMessage={<Trans>{currentState.errorMessage}</Trans>}
+              errorMessage={currentState.errorMessage ? <Trans>{currentState.errorMessage}</Trans> : undefined}
               onConfirm={handleReducePosition}
               confirmText="Confirm Reduce Position"
               disabledConfirm={!!inputError || !txnInfo}
@@ -1214,7 +1214,7 @@ export default function DecreasePositionContent({
           }
           bottom={
             <BaseFooter
-              errorMessage={<Trans>{currentState.limitErrorMessage}</Trans>}
+              errorMessage={currentState.limitErrorMessage ? <Trans>{currentState.limitErrorMessage}</Trans> : null}
               onConfirm={handleReduceLimitPosition}
               confirmText="Confirm Reduce Limit Order"
               disabledConfirm={!!lmtInputError || lmtTradeState !== DerivedInfoState.VALID}
