@@ -30,6 +30,7 @@ export function useDerivedReducePositionInfo(
   setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
   inRange: boolean,
+  existingOrderBool: boolean | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
@@ -162,7 +163,7 @@ export function useDerivedReducePositionInfo(
       }
     }
 
-    if (isLimit || inRange) {
+    if (isLimit || inRange || existingOrderBool) {
       setState(DerivedInfoState.INVALID)
       setTxnInfo(undefined)
       return
@@ -183,6 +184,7 @@ export function useDerivedReducePositionInfo(
     onPositionChange,
     inputError,
     inRange,
+    existingOrderBool,
   ])
 
   const contractError = useMemo(() => {
@@ -212,6 +214,7 @@ export function useDerivedReduceLimitPositionInfo(
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
   position: MarginPositionDetails | undefined,
   pool: Pool | undefined,
+  existingOrderBool: boolean | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
 ): {
@@ -395,7 +398,7 @@ export function useDerivedReduceLimitPositionInfo(
       }
     }
 
-    if (!isLimit) {
+    if (!isLimit || existingOrderBool) {
       setState(DerivedInfoState.INVALID)
       setTxnInfo(undefined)
       setError(undefined)
@@ -415,6 +418,7 @@ export function useDerivedReduceLimitPositionInfo(
     marginFacility,
     baseCurrencyIsInput,
     positionKey,
+    existingOrderBool,
     existingLimitOrder,
     position,
     isLimit,

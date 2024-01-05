@@ -332,6 +332,7 @@ export default function DecreasePositionContent({
     setTradeState,
     onPositionChange,
     inRange,
+    existingOrderBool,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
@@ -350,6 +351,7 @@ export default function DecreasePositionContent({
     onPositionChange,
     existingPosition,
     pool ?? undefined,
+    existingOrderBool,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
