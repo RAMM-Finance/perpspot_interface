@@ -16,6 +16,8 @@ interface LmtTradePriceProps {
   setShowInverted: (inverted: boolean) => void
   showInverted: boolean
   price: Price<Currency, Currency> | Price<Token, Token>
+  labelFontSize?: string
+  valueFontSize?: string
 }
 
 const StyledPriceContainer = styled.button`
@@ -89,9 +91,13 @@ export default function TradePrice({ price }: TradePriceProps) {
   )
 }
 
-export function LmtTradePrice({ price, showInverted, setShowInverted }: LmtTradePriceProps) {
-  // const [showInverted, setShowInverted] = useState<boolean>(false)
-
+export function LmtTradePrice({
+  price,
+  showInverted,
+  setShowInverted,
+  labelFontSize,
+  valueFontSize,
+}: LmtTradePriceProps) {
   const { baseCurrency, quoteCurrency } = price
   // const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
   let usdPrice
@@ -118,11 +124,11 @@ export function LmtTradePrice({ price, showInverted, setShowInverted }: LmtTrade
       }}
       title={text}
     >
-      <ThemedText.LabelSmall fontSize={12} fontWeight={400}>
+      <ThemedText.LabelSmall fontSize={labelFontSize} fontWeight={400}>
         {text}
       </ThemedText.LabelSmall>{' '}
       {usdPrice && (
-        <ThemedText.DeprecatedDarkGray>
+        <ThemedText.DeprecatedDarkGray fontSize={valueFontSize}>
           <Trans>({formatNumber(usdPrice, NumberType.FiatTokenPrice)})</Trans>
         </ThemedText.DeprecatedDarkGray>
       )}
