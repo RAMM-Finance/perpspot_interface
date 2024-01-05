@@ -413,7 +413,7 @@ export function LeverageModalHeader({
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="sm">
+        <AutoColumn gap="md">
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
@@ -440,7 +440,7 @@ export function LeverageModalHeader({
         <ArrowDown size="10" color={theme.textPrimary} />
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
-        <AutoColumn gap="sm">
+        <AutoColumn gap="md">
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
@@ -469,7 +469,7 @@ export function LeverageModalHeader({
             </ThemedText.DeprecatedBody>
           </RowBetween>
         </AutoColumn>
-        <AutoColumn gap="sm">
+        <AutoColumn gap="md">
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>

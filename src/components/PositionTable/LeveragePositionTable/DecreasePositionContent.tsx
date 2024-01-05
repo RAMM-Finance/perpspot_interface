@@ -75,7 +75,11 @@ import {
 } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
-import { ConfirmCancelOrderHeader, ConfirmReducePositionHeader } from './ConfirmModalHeaders'
+import {
+  ConfirmCancelOrderHeader,
+  ConfirmLimitReducePositionHeader,
+  ConfirmReducePositionHeader,
+} from './ConfirmModalHeaders'
 import { BaseFooter } from './DepositPremiumContent'
 import ExistingReduceOrderDetails from './DetailsContainer'
 import { AlteredPositionProperties } from './LeveragePositionModal'
@@ -101,7 +105,7 @@ export interface DerivedReducePositionInfo {
 
 export interface DerivedLimitReducePositionInfo {
   // margin: BN
-  // totalPosition: BN
+  newTotalPosition: TokenBN
   // totalDebtInput: BN
   // totalDebtOutput: BN
 
@@ -501,6 +505,7 @@ function useDerivedReduceLimitPositionInfo(
             price.shiftedBy(18).toFixed(0)
           ),
           estimatedPnL,
+          newTotalPosition: new TokenBN(position.totalPosition.minus(reduceAmount), outputCurrency.wrapped, false),
         })
 
         onPositionChange({
@@ -1139,8 +1144,6 @@ export default function DecreasePositionContent({
 
   const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(reduceAmount, outputCurrency ?? undefined))
 
-  const [testLoading, setLoading] = useState(false)
-
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -1199,16 +1202,15 @@ export default function DecreasePositionContent({
           txHash={currentState.limitTxHash}
           attemptingTxn={currentState.attemptingLimitTxn}
           header={
-            lmtTxnInfo
-              ? null
-              : // <ConfirmLimitReducePositionHeader
-                //   txnInfo={lmtTxnInfo}
-                //   inputCurrency={inputCurrency ?? undefined}
-                //   outputCurrency={outputCurrency ?? undefined}
-                //   showAcceptChanges={false}
-                //   onAcceptChanges={() => {}}
-                // />
-                null
+            lmtTxnInfo ? (
+              <ConfirmLimitReducePositionHeader
+                txnInfo={lmtTxnInfo}
+                inputCurrency={inputCurrency ?? undefined}
+                showAcceptChanges={false}
+                onAcceptChanges={() => {}}
+                outputCurrency={outputCurrency ?? undefined}
+              />
+            ) : null
           }
           bottom={
             <BaseFooter
@@ -1436,7 +1438,7 @@ export default function DecreasePositionContent({
                       <DecreasePositionDetails
                         txnInfo={txnInfo}
                         inputCurrency={inputCurrency ?? undefined}
-                        loading={testLoading}
+                        loading={loading}
                         existingPosition={existingPosition}
                         allowedSlippage={allowedSlippage}
                         removePremium={closePosition}
@@ -1444,11 +1446,8 @@ export default function DecreasePositionContent({
                     ) : (
                       <DecreasePositionLimitDetails
                         txnInfo={lmtTxnInfo}
-                        loading={testLoading}
-                        existingPosition={existingPosition}
+                        loading={loading}
                         inputCurrency={inputCurrency ?? undefined}
-                        outputCurrency={outputCurrency ?? undefined}
-                        pool={pool ?? undefined}
                       />
                     )}
                   </AutoColumn>
@@ -1605,32 +1604,15 @@ const Underlined = styled.div`
   text-decoration: ${({ theme }) => `underline dashed ${theme.textTertiary}`};
 `
 
-function DecreasePositionLimitDetails({
+export function DecreasePositionLimitDetails({
   txnInfo,
   loading,
-  existingPosition,
   inputCurrency,
-  outputCurrency,
-  pool,
 }: {
   txnInfo?: DerivedLimitReducePositionInfo
   loading: boolean
-  existingPosition?: MarginPositionDetails
   inputCurrency?: Currency
-  outputCurrency?: Currency
-  pool?: Pool
 }) {
-  const currentPrice = useMemo(() => {
-    // should start as input / output
-    if (existingPosition && pool) {
-      if (existingPosition.isToken0) {
-        return pool.token0Price
-      } else {
-        return pool.token1Price
-      }
-    }
-    return undefined
-  }, [existingPosition, pool])
   const [invertedPrice, setInverted] = useState(false)
 
   return (

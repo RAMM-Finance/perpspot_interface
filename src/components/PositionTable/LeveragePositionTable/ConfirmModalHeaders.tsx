@@ -21,7 +21,12 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
 
-import { DecreasePositionDetails, DerivedReducePositionInfo } from './DecreasePositionContent'
+import {
+  DecreasePositionDetails,
+  DecreasePositionLimitDetails,
+  DerivedLimitReducePositionInfo,
+  DerivedReducePositionInfo,
+} from './DecreasePositionContent'
 
 const LightCard = styled(Card)`
   background-color: ${({ theme }) => theme.surface1};
@@ -275,12 +280,13 @@ export function ConfirmReducePositionHeader({
         margin: BnToCurrencyAmount(txnInfo.margin, inputCurrency),
         totalPosition: BnToCurrencyAmount(txnInfo.totalPosition, inputCurrency),
         totalDebtInput: BnToCurrencyAmount(txnInfo.totalDebtInput, inputCurrency),
+        reduceAmount: BnToCurrencyAmount(txnInfo.reduceAmount, inputCurrency),
       }
     } else {
       return undefined
     }
   }, [txnInfo, inputCurrency])
-  const fiatValueMargin = useUSDPrice(trade?.margin)
+  const fiatValueReduceAmount = useUSDPrice(trade?.reduceAmount)
   const fiatValuePnL = useUSDPrice(trade?.PnL)
   const fiatValueTotalPosition = useUSDPrice(trade?.totalPosition)
   // margin, total position, total input/output debt reduction + their fiat values
@@ -288,7 +294,7 @@ export function ConfirmReducePositionHeader({
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn style={{ paddingBottom: '10px' }} gap="md">
+        <AutoColumn gap="md">
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
@@ -306,10 +312,10 @@ export function ConfirmReducePositionHeader({
             </RowFixed>
           </RowBetween>
           <RowBetween>
-            <FiatValue fiatValue={fiatValuePnL} />
+            <FiatValue fiatValue={fiatValueReduceAmount} />
           </RowBetween>
         </AutoColumn>
-        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
+        <AutoColumn gap="sm">
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
@@ -334,7 +340,6 @@ export function ConfirmReducePositionHeader({
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
         <TradePrice price={txnInfo.executionPrice} />
       </RowBetween>
-
       <DecreasePositionDetails
         txnInfo={txnInfo}
         inputCurrency={inputCurrency}
@@ -369,6 +374,131 @@ export function ConfirmReducePositionHeader({
             New position is estimated. Your position will be reduced by at least{' '}
             <b>
               {formatBNToString(txnInfo.minimumOutput, NumberType.SwapTradeAmount)} {inputCurrency?.symbol}
+            </b>{' '}
+            or the transaction will revert.
+          </Trans>
+        </ThemedText.DeprecatedItalic>
+      </AutoColumn>
+      {/* {recipient !== null ? (
+        <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
+          <ThemedText.DeprecatedMain>
+            <Trans>
+              Output will be sent to{' '}
+              <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
+            </Trans>
+          </ThemedText.DeprecatedMain>
+        </AutoColumn>
+      ) : null} */}
+    </AutoColumn>
+  )
+}
+
+export function ConfirmLimitReducePositionHeader({
+  txnInfo,
+  inputCurrency,
+  outputCurrency,
+  showAcceptChanges,
+  onAcceptChanges,
+}: {
+  txnInfo: DerivedLimitReducePositionInfo
+  inputCurrency: Currency | undefined
+  outputCurrency: Currency | undefined
+  showAcceptChanges: boolean
+  onAcceptChanges: () => void
+}) {
+  const theme = useTheme()
+
+  const trade = useMemo(() => {
+    if (inputCurrency) {
+      return {
+        reduceAmount: BnToCurrencyAmount(txnInfo.positionReduceAmount, inputCurrency),
+        newTotalPosition: BnToCurrencyAmount(txnInfo.newTotalPosition, inputCurrency),
+      }
+    } else {
+      return undefined
+    }
+  }, [txnInfo, inputCurrency])
+  const fiatValueReduceAmount = useUSDPrice(trade?.reduceAmount)
+  const fiatValueTotalPosition = useUSDPrice(trade?.newTotalPosition)
+  // margin, total position, total input/output debt reduction + their fiat values
+
+  return (
+    <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
+      <LightCard padding="0.75rem 1rem">
+        <AutoColumn gap="md">
+          <RowBetween align="center">
+            <RowFixed gap="0px">
+              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(txnInfo.positionReduceAmount, NumberType.SwapTradeAmount)}
+              </TruncatedText>
+            </RowFixed>
+            <RowFixed gap="0px">
+              <Text fontSize={16} fontWeight={300} marginRight="6px">
+                Position Reduce Amount
+              </Text>
+              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={16} fontWeight={500}>
+                {outputCurrency?.symbol}
+              </Text>
+            </RowFixed>
+          </RowBetween>
+          <RowBetween>
+            <FiatValue fiatValue={fiatValueReduceAmount} />
+          </RowBetween>
+        </AutoColumn>
+        <AutoColumn gap="sm">
+          <RowBetween align="center">
+            <RowFixed gap="0px">
+              <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(txnInfo.newTotalPosition, NumberType.SwapTradeAmount)}
+              </TruncatedText>
+            </RowFixed>
+            <RowFixed gap="0px">
+              <Text fontSize={16} fontWeight={300} marginRight="6px">
+                New Total Position
+              </Text>
+              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={16} fontWeight={500}>
+                {outputCurrency?.symbol}
+              </Text>
+            </RowFixed>
+          </RowBetween>
+          <RowBetween>
+            <FiatValue fiatValue={fiatValueTotalPosition} />
+          </RowBetween>
+        </AutoColumn>
+      </LightCard>
+      <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>
+        <TradePrice price={txnInfo.startingTriggerPrice} />
+      </RowBetween>
+
+      <DecreasePositionLimitDetails txnInfo={txnInfo} inputCurrency={inputCurrency} loading={false} />
+
+      {showAcceptChanges ? (
+        <SwapShowAcceptChanges justify="flex-start" gap="0px">
+          <RowBetween>
+            <RowFixed>
+              <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
+              <ThemedText.DeprecatedMain color={theme.textSecondary}>
+                <Trans>Price Updated</Trans>
+              </ThemedText.DeprecatedMain>
+            </RowFixed>
+            <ButtonPrimary
+              style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '12px' }}
+              onClick={onAcceptChanges}
+            >
+              <Trans>Accept</Trans>
+            </ButtonPrimary>
+          </RowBetween>
+        </SwapShowAcceptChanges>
+      ) : null}
+
+      <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
+        <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
+          <Trans>
+            New position is estimated. Your position will be reduced by at least{' '}
+            <b>
+              {formatBNToString(txnInfo.minimumDebtReduceAmount, NumberType.SwapTradeAmount)} {inputCurrency?.symbol}
             </b>{' '}
             or the transaction will revert.
           </Trans>

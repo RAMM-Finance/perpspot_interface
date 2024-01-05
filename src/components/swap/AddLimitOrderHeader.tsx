@@ -87,7 +87,7 @@ export function AddLimitModalHeader({
     if (inputCurrency && outputCurrency) {
       const decimalInput = inputCurrency.decimals
       const decimalOutput = outputCurrency.decimals
-      const decimalDiff = decimalInput>decimalOutput? decimalInput - decimalOutput: decimalOutput-decimalInput
+      const decimalDiff = decimalInput > decimalOutput ? decimalInput - decimalOutput : decimalOutput - decimalInput
       if (trade.limitPrice.isGreaterThan(1)) {
         return new Price(
           outputCurrency,
@@ -110,38 +110,18 @@ export function AddLimitModalHeader({
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
-          <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={14}>Margin</ThemedText.DeprecatedMain>
-          </RowBetween>
-          <RowBetween align="flex-end">
+        <AutoColumn gap="md">
+          <RowBetween align="center">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(trade.margin, NumberType.SwapTradeAmount)}
+              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
+                {formatBNToString(trade.additionalPremium, NumberType.SwapTradeAmount)})
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={13} fontWeight={500}>
-                {inputCurrency?.symbol}
+              <Text fontSize={13} fontWeight={300} marginRight="6px">
+                Margin + Premium
               </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <FiatValue fiatValue={fiatValueMargin} />
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn style={{ paddingBottom: '10px' }} gap="sm">
-          <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={14}>Total Input</ThemedText.DeprecatedMain>
-          </RowBetween>
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(trade.inputAmount, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
                 {inputCurrency?.symbol}
@@ -157,25 +137,25 @@ export function AddLimitModalHeader({
         <ArrowDown size="12" color={theme.textPrimary} />
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
-        <AutoColumn gap="sm">
-          <RowBetween>
-            <ThemedText.DeprecatedMain fontSize={13}>Desired Output</ThemedText.DeprecatedMain>
-          </RowBetween>
-          <RowBetween align="flex-end">
+        <AutoColumn gap="md">
+          <RowBetween align="center">
             <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500}>
-                {formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)}
+              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                {formatBNToString(trade.startOutput, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+              <Text fontSize={13} fontWeight={300} marginRight="6px">
+                Desired Output
+              </Text>
+              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
                 {outputCurrency?.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
           <RowBetween>
-            <FiatValue fiatValue={fiatValueMargin} />
+            <FiatValue fiatValue={fiatValueStartOutput} />
           </RowBetween>
         </AutoColumn>
       </LightCard>

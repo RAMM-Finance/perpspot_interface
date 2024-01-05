@@ -425,6 +425,7 @@ function CurrentPriceCard({
 const BorrowLiquidityWrapper = styled(LightCard)`
   border: 0;
   width: 100%;
+  padding-top: 1.25rem;
   border-radius: 0px;
   border-bottom-right-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
