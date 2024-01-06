@@ -8,9 +8,10 @@ import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import { LmtTradePrice } from 'components/swap/TradePrice'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { Separator, ThemedText } from 'theme'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { DerivedLimitReducePositionInfo } from '.'
 
@@ -26,12 +27,19 @@ export default function DecreasePositionLimitDetails({
   txnInfo,
   loading,
   inputCurrency,
+  existingPosition,
 }: {
   txnInfo?: DerivedLimitReducePositionInfo
+  existingPosition?: MarginPositionDetails
   loading: boolean
   inputCurrency?: Currency
 }) {
   const [invertedPrice, setInverted] = useState(false)
+
+  const recieveAmount = useMemo(() => {
+    if (!txnInfo || !existingPosition) return undefined
+    return existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.estimatedPnL)
+  }, [txnInfo, existingPosition])
 
   return (
     <StyledBGCard style={{ width: '100%' }}>
@@ -43,6 +51,15 @@ export default function DecreasePositionLimitDetails({
           syncing={loading}
           symbolAppend={inputCurrency?.symbol}
           height="14px"
+        />
+        <ValueLabel
+          label="Recieve"
+          value={formatBNToString(recieveAmount, NumberType.SwapTradeAmount)}
+          description="What you receive is your reduced margin + PnL"
+          syncing={loading}
+          delta={true}
+          height="14px"
+          symbolAppend={inputCurrency?.symbol}
         />
         <ValueLabel
           label="Estimated PnL"
@@ -62,7 +79,7 @@ export default function DecreasePositionLimitDetails({
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="16px">
             {txnInfo ? (
               <Underlined>
                 <LmtTradePrice
@@ -72,7 +89,7 @@ export default function DecreasePositionLimitDetails({
                 />
               </Underlined>
             ) : (
-              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <ThemedText.BodySmall fontSize="14px" textAlign="right" color="textSecondary">
                 -
               </ThemedText.BodySmall>
             )}

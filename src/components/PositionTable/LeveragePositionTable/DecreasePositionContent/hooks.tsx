@@ -361,6 +361,10 @@ export function useDerivedReduceLimitPositionInfo(
           isAdd: false,
         }
 
+        const startingDebtReduceAmount = parsedAmount.times(price).gt(position.totalDebtInput)
+          ? position.totalDebtInput
+          : parsedAmount.times(price)
+
         const calldata = MarginFacilitySDK.submitLimitOrder(params)
 
         await marginFacility.callStatic.multicall(calldata)
@@ -369,9 +373,10 @@ export function useDerivedReduceLimitPositionInfo(
         const reducePercentage = reduceAmount.div(position.totalPosition)
 
         setTxnInfo({
+          margin: position.margin.times(new BN(1).minus(reducePercentage)),
           positionReduceAmount: parsedAmount,
-          startingDebtReduceAmount: parsedAmount.times(price),
-          minimumDebtReduceAmount: parsedAmount.times(price),
+          startingDebtReduceAmount,
+          minimumDebtReduceAmount: startingDebtReduceAmount,
           startingTriggerPrice: new Price(
             outputCurrency,
             inputCurrency,

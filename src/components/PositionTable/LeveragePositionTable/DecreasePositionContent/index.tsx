@@ -79,7 +79,7 @@ export interface DerivedReducePositionInfo {
 }
 
 export interface DerivedLimitReducePositionInfo {
-  // margin: BN
+  margin: BN
   newTotalPosition: TokenBN
   // totalDebtInput: BN
   // totalDebtOutput: BN
@@ -575,6 +575,7 @@ export default function DecreasePositionContent({
                 showAcceptChanges={false}
                 onAcceptChanges={() => {}}
                 outputCurrency={outputCurrency ?? undefined}
+                existingPosition={existingPosition}
               />
             ) : null
           }
@@ -814,6 +815,7 @@ export default function DecreasePositionContent({
                         txnInfo={lmtTxnInfo}
                         loading={loading}
                         inputCurrency={inputCurrency ?? undefined}
+                        existingPosition={existingPosition}
                       />
                     )}
                   </AutoColumn>

@@ -9,7 +9,7 @@ import { LmtTradePrice } from 'components/swap/TradePrice'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { Separator, ThemedText } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
@@ -47,7 +47,6 @@ function MouseoverValueLabel({
   )
 }
 
-
 const StyledBGCard = styled(StyledCard)`
   background: ${({ theme }) => theme.surface1};
 `
@@ -73,13 +72,15 @@ export function DecreasePositionDetails({
 }) {
   const [invertedPrice, setInverted] = useState(false)
 
-  const receiveAmount = useMemo(()=>{
-    if(!txnInfo) return undefined
+  const receiveAmount = useMemo(() => {
+    if (!txnInfo || !existingPosition) return undefined
 
-    const re= existingPosition?.margin.minus(txnInfo?.margin).plus(txnInfo?.PnL)
+    const re = removePremium
+      ? existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL).plus(txnInfo.withdrawnPremium)
+      : existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
 
     return re
-  },[txnInfo])
+  }, [txnInfo, existingPosition, removePremium])
 
   return (
     <StyledBGCard style={{ width: '100%' }}>
@@ -121,11 +122,13 @@ export function DecreasePositionDetails({
           />
         ) : null}
         <ValueLabel
-          label="Receive"
-          description="What you receive is your reduced margin + PnL"
-          value={
-            formatBNToString(receiveAmount, NumberType.SwapTradeAmount)
+          label="Total Received"
+          description={
+            removePremium
+              ? 'What you receive is your reduced margin + PnL'
+              : 'What you recieve is your reduced margin + PnL + returned deposit'
           }
+          value={formatBNToString(receiveAmount, NumberType.SwapTradeAmount)}
           symbolAppend={inputCurrency?.symbol}
           syncing={loading}
           height="14px"
@@ -138,7 +141,7 @@ export function DecreasePositionDetails({
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="16px">
             {txnInfo ? (
               <Underlined>
                 <LmtTradePrice
@@ -148,27 +151,20 @@ export function DecreasePositionDetails({
                 />
               </Underlined>
             ) : (
-              <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <ThemedText.BodySmall fontSize="14px" textAlign="right" color="textSecondary">
                 -
               </ThemedText.BodySmall>
             )}
           </TextWithLoadingPlaceholder>
         </RowBetween>
-
         <Separator />
-        <MouseoverValueLabel
+        <ValueLabel
+          label="Minimum output"
           description="The minimum amount your reduced position is guaranteed to convert to. If the price slips any further, your transaction will revert."
-          label={
-            <>
-            <Trans> Minimum output</Trans>
-            </>
-          }
-          syncing={false}
-          value={
-            txnInfo?
-            formatBNToString(txnInfo?.minimumOutput, NumberType.SwapTradeAmount)
-            + " " + inputCurrency?.symbol : "-"
-          }
+          value={formatBNToString(txnInfo?.minimumOutput, NumberType.SwapTradeAmount)}
+          symbolAppend={inputCurrency?.symbol}
+          syncing={loading}
+          height="14px"
         />
       </AutoColumn>
     </StyledBGCard>

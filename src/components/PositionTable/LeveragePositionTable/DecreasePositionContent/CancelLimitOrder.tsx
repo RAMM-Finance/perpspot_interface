@@ -193,7 +193,7 @@ export const ExistingReduceOrderSection = ({
           errorMessage={error ? <Trans>{error}</Trans> : undefined}
         />
       )}
-      <OrderHeader margin={false}>Existing Reduce Limit Order found</OrderHeader>
+      <OrderHeader margin={false}>Reduce Limit Order found</OrderHeader>
       <ExistingReduceOrderDetails
         order={order}
         pool={pool}
