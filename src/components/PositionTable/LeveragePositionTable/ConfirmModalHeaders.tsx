@@ -270,13 +270,13 @@ export function ConfirmReducePositionHeader({
   const theme = useTheme()
 
   const trade = useMemo(() => {
-    if (inputCurrency) {
+    if (inputCurrency&& outputCurrency) {
       return {
         PnL: BnToCurrencyAmount(txnInfo.PnL, inputCurrency),
         margin: BnToCurrencyAmount(txnInfo.margin, inputCurrency),
-        totalPosition: BnToCurrencyAmount(txnInfo.totalPosition, inputCurrency),
+        totalPosition: BnToCurrencyAmount(txnInfo.totalPosition, outputCurrency),
         totalDebtInput: BnToCurrencyAmount(txnInfo.totalDebtInput, inputCurrency),
-        reduceAmount: BnToCurrencyAmount(txnInfo.reduceAmount, inputCurrency),
+        reduceAmount: BnToCurrencyAmount(txnInfo.reduceAmount, outputCurrency),
       }
     } else {
       return undefined
@@ -286,7 +286,6 @@ export function ConfirmReducePositionHeader({
   // const fiatValuePnL = useUSDPrice(trade?.PnL)
   const fiatValueTotalPosition = useUSDPrice(trade?.totalPosition)
   // margin, total position, total input/output debt reduction + their fiat values
-
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
