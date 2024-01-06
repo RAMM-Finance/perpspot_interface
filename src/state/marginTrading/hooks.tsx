@@ -27,6 +27,7 @@ import {
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 
 import { useCurrency } from '../../hooks/Tokens'
@@ -119,21 +120,21 @@ export function useMarginTradingActionHandlers(): {
 }
 
 export interface AddMarginTrade {
-  margin: CurrencyAmount<Currency> // additional margin
-  fees: CurrencyAmount<Currency> // fees
-  borrowAmount: CurrencyAmount<Currency> // additional borrowAmount
-  minimumOutput: CurrencyAmount<Currency> // minimum output amount
-  swapOutput: CurrencyAmount<Currency> // additional output amount
-  swapInput: CurrencyAmount<Currency> // margin + borrowAmount - fees
+  margin: TokenBN // additional margin
+  fees: TokenBN //CurrencyAmount<Currency> // fees
+  borrowAmount: TokenBN //CurrencyAmount<Currency> // additional borrowAmount
+  minimumOutput: TokenBN //CurrencyAmount<Currency> // minimum output amount
+  swapOutput: TokenBN //CurrencyAmount<Currency> // additional output amount
+  swapInput: TokenBN // CurrencyAmount<Currency> // margin + borrowAmount - fees
   allowedSlippage: Percent // should be Percent
   executionPrice: Price<Currency, Currency>
   swapRoute: Route<Currency, Currency>
-  premium: CurrencyAmount<Currency>
+  premium: TokenBN // CurrencyAmount<Currency>
   positionKey: TraderPositionKey
   pool: Pool
   inputIsToken0: boolean
   borrowRate: BN
-  swapFee: CurrencyAmount<Currency>
+  swapFee: TokenBN // CurrencyAmount<Currency>
 }
 
 export interface PreTradeInfo {
@@ -593,6 +594,52 @@ export function useDerivedLimitAddPositionInfo(
       inputError = inputError ?? <Trans>Enter a starting price</Trans>
     }
 
+    if (parsedStartingPrice && pool && parsedMargin && traderKey) {
+      /**
+       * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
+       * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
+       *
+       * isToken0 -> output is t0, input is t1
+       * !isToken0 -> output is t1, input is t0
+       * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
+       */
+      const baseIsToken0 =
+        (baseCurrencyIsInputToken && !traderKey.isToken0) || (!baseCurrencyIsInputToken && traderKey.isToken0)
+
+      /**
+       *
+       * if baseIsToken0 then limitPrice is in t1 / t0
+       * if !baseIsToken0 then limitPrice is in t0 / t1
+       *
+       * if baseIsT0 and isToken0 then no flip
+       * if baseIsT0 and !isToken0 then flip
+       * if !baseIsT0 and isToken0 then flip
+       * if !baseIsT0 and !isToken0 then no flip
+       */
+      const flippedPrice = (baseIsToken0 && !traderKey.isToken0) || (!baseIsToken0 && traderKey.isToken0)
+      const price = flippedPrice ? new BN(1).div(parsedStartingPrice) : parsedStartingPrice
+
+      if (traderKey.isToken0) {
+        const currentPrice = new BN(pool.token0Price.toFixed(18))
+        if (!price.gte(currentPrice)) {
+          if (baseIsToken0) {
+            inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+          } else {
+            inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+          }
+        }
+      } else {
+        const currentPrice = new BN(pool.token1Price.toFixed(18))
+        if (!price.gte(currentPrice)) {
+          if (baseIsToken0) {
+            inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+          } else {
+            inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+          }
+        }
+      }
+    }
+
     // show warning if the starting price is lower/higher than the current price?
 
     if (inputCurrency && parsedMargin) {
@@ -614,6 +661,9 @@ export function useDerivedLimitAddPositionInfo(
     parsedStartingPrice,
     existingLimitPosition,
     maxLeverage,
+    baseCurrencyIsInputToken,
+    pool,
+    traderKey,
   ])
 
   const {
@@ -998,12 +1048,9 @@ const useSimulateMarginTrade = (
         )
 
         // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
-        const bnAmountIn = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
+        const swapInput = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
         const amountOut = await getOutputQuote(
-          CurrencyAmount.fromRawAmount(
-            inputCurrency,
-            BnToCurrencyAmount(bnAmountIn, inputCurrency).quotient.toString()
-          ),
+          BnToCurrencyAmount(swapInput, inputCurrency),
           swapRoute,
           provider,
           chainId
@@ -1016,7 +1063,20 @@ const useSimulateMarginTrade = (
         // min output = (margin + borrowAmount) * current price * (1 - slippage)
         const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
         const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
-        const minimumOutput = bnAmountIn.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
+        const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
+
+        console.log('simulated-params', {
+          positionKey,
+          margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+          borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+          minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+          deadline: deadline.toString(),
+          simulatedOutput: amountOut.toString(),
+          executionOption: 1,
+          depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+          slippedTickMin,
+          slippedTickMax,
+        })
 
         // calldata
         const calldata = MarginFacilitySDK.addPositionParameters({
@@ -1039,6 +1099,7 @@ const useSimulateMarginTrade = (
           totalInputDebt: newTotalInputDebt,
           margin: newMargin,
           borrowInfo,
+          fees,
         } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
 
         const poolKey = {
@@ -1064,53 +1125,39 @@ const useSimulateMarginTrade = (
         })
         const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
 
-        // compute the added output amount + the execution price. (margin + borrowAmount - fees) / outputAmount
-        let swapInput: JSBI
         let swapOutput: JSBI
-        let _margin: JSBI
-        let _borrowAmount: JSBI
         if (existingPosition.openTime > 0) {
           swapOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
-
-          _margin = JSBI.subtract(newMargin, BnToJSBI(existingPosition.margin, inputCurrency))
-
-          // margin + borrowAmount - fees
-          const borrowAmount = JSBI.subtract(
-            newTotalInputDebt,
-            BnToJSBI(existingPosition.totalDebtInput, inputCurrency)
-          )
-          swapInput = JSBI.add(BnToJSBI(margin, inputCurrency), borrowAmount)
-          _borrowAmount = borrowAmount
         } else {
           swapOutput = newTotalPosition
-          _margin = newMargin
-          swapInput = JSBI.add(BnToJSBI(margin, inputCurrency), newTotalInputDebt)
-          _borrowAmount = newTotalInputDebt
         }
 
-        const executionPrice = new Price<Currency, Currency>(inputCurrency, outputCurrency, swapInput, swapOutput)
+        const executionPrice = new Price<Currency, Currency>(
+          inputCurrency,
+          outputCurrency,
+          swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+          swapOutput
+        )
 
         const simulation: AddMarginTrade = {
-          margin: BnToCurrencyAmount(margin, inputCurrency), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
-          fees: BnToCurrencyAmount(margin, inputCurrency).subtract(
-            CurrencyAmount.fromRawAmount(inputCurrency, _margin)
-          ),
-          minimumOutput: BnToCurrencyAmount(minimumOutput, outputCurrency),
-          borrowAmount: CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount),
-          swapInput: CurrencyAmount.fromRawAmount(inputCurrency, swapInput),
-          swapOutput: CurrencyAmount.fromRawAmount(outputCurrency, swapOutput),
+          margin: new TokenBN(margin, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
+          fees: new TokenBN(fees.toString(), inputCurrency.wrapped, true),
+          minimumOutput: new TokenBN(minimumOutput, outputCurrency.wrapped, false), //BnToCurrencyAmount(minimumOutput, outputCurrency),
+          borrowAmount: new TokenBN(borrowAmount, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount),
+          swapInput: new TokenBN(swapInput, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, swapInput),
+          swapOutput: new TokenBN(swapOutput.toString(), outputCurrency.wrapped, true), // CurrencyAmount.fromRawAmount(outputCurrency, swapOutput),
           executionPrice,
           allowedSlippage,
           positionKey,
           swapRoute,
-          premium: additionalPremium,
+          premium: new TokenBN(additionalPremium.toExact(), inputCurrency.wrapped, false),
           pool,
           inputIsToken0,
           borrowRate: new BN(borrowRate.toString())
             .shiftedBy(-18)
             .div(365 * 24)
             .times(100),
-          swapFee: CurrencyAmount.fromRawAmount(inputCurrency, swapInput).multiply(pool.fee).divide(1e6)
+          swapFee: new TokenBN(swapInput.times(pool.fee).div(1e6), inputCurrency.wrapped, false),
         }
 
         setResult(simulation)

@@ -3,7 +3,7 @@ import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { SwapEventName, SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
 import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import { useUSDPrice } from 'hooks/useUSDPrice'
+import { useUSDPrice, useUSDPriceBN } from 'hooks/useUSDPrice'
 import { getPriceUpdateBasisPoints } from 'lib/utils/analytics'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useState } from 'react'
@@ -11,7 +11,6 @@ import { AlertTriangle, ArrowDown } from 'react-feather'
 import { Text } from 'rebass'
 import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
-import { BorrowCreationDetails } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
@@ -25,7 +24,7 @@ import { AutoColumn } from '../Column'
 import CurrencyLogo from '../Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from '../Row'
 import TradePrice from '../swap/TradePrice'
-import { AdvancedBorrowSwapDetails, AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
+import { AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
 import { SwapShowAcceptChanges, TruncatedText } from './styleds'
 
 const LightCard = styled(Card)`
@@ -388,6 +387,8 @@ export function LeverageModalHeader({
   onAcceptChanges,
   preTradeInfo,
   existingPosition,
+  inputCurrency,
+  outputCurrency,
 }: {
   trade: AddMarginTrade // InterfaceTrade<Currency, Currency, TradeType>
   preTradeInfo: PreTradeInfo
@@ -396,19 +397,23 @@ export function LeverageModalHeader({
   recipient: string | null
   showAcceptChanges: boolean
   onAcceptChanges: () => void
+  inputCurrency?: Currency
+  outputCurrency?: Currency
 }) {
   const theme = useTheme()
 
   const [lastExecutionPrice, setLastExecutionPrice] = useState(trade.executionPrice)
   // const [priceUpdate, setPriceUpdate] = useState<number | undefined>()
 
-  const fiatValueInput = useUSDPrice(
-    trade?.margin && preTradeInfo?.additionalPremium ? trade?.margin?.add(preTradeInfo?.additionalPremium) : undefined
+  const fiatValueInput = useUSDPriceBN(
+    trade?.margin && preTradeInfo?.additionalPremium
+      ? trade?.margin?.plus(preTradeInfo?.additionalPremium.toExact())
+      : undefined
   )
-  const fiatValueTotalInput = useUSDPrice(
-    trade?.margin && trade?.borrowAmount ? trade?.margin?.add(trade?.borrowAmount) : undefined
+  const fiatValueTotalInput = useUSDPriceBN(
+    trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined
   )
-  const fiatValueTotalOutput = useUSDPrice(trade?.swapOutput)
+  const fiatValueTotalOutput = useUSDPriceBN(trade?.swapOutput)
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
@@ -417,7 +422,7 @@ export function LeverageModalHeader({
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                {formatCurrencyAmount(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
+                {formatBNToString(trade.margin, NumberType.SwapTradeAmount)} (+{' '}
                 {formatCurrencyAmount(preTradeInfo.additionalPremium, NumberType.SwapTradeAmount)})
               </TruncatedText>
             </RowFixed>
@@ -425,9 +430,9 @@ export function LeverageModalHeader({
               <Text fontSize={13} fontWeight={300} marginRight="6px">
                 Payment
               </Text>
-              <CurrencyLogo currency={trade?.margin?.currency} size="15px" style={{ marginRight: '4px' }} />
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
-                {trade?.margin?.currency.symbol}
+                {inputCurrency?.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
@@ -444,8 +449,8 @@ export function LeverageModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                {formatCurrencyAmount(
-                  trade?.borrowAmount && trade?.margin ? trade.borrowAmount.add(trade.margin) : null,
+                {formatBNToString(
+                  trade?.borrowAmount && trade?.margin ? trade.borrowAmount.plus(trade.margin) : undefined,
                   NumberType.SwapTradeAmount
                 )}
               </TruncatedText>
@@ -454,17 +459,15 @@ export function LeverageModalHeader({
               <Text fontSize={13} fontWeight={300} marginRight="6px">
                 Total Input
               </Text>
-              <CurrencyLogo currency={trade.margin?.currency} size="15px" style={{ marginRight: '4px' }} />
+              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
-                {trade.margin?.currency.symbol}
+                {inputCurrency?.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
           <RowBetween>
             <ThemedText.DeprecatedBody fontSize={13} color={theme.textTertiary}>
-              <FiatValue
-                fiatValue={fiatValueTotalInput}
-              />
+              <FiatValue fiatValue={fiatValueTotalInput} />
             </ThemedText.DeprecatedBody>
           </RowBetween>
         </AutoColumn>
@@ -472,16 +475,16 @@ export function LeverageModalHeader({
           <RowBetween align="flex-end">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                {formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)}
+                {formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount)}
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
               <Text fontSize={13} fontWeight={300} marginRight="6px">
                 Total Output
               </Text>
-              <CurrencyLogo currency={trade.swapOutput?.currency} size="15px" style={{ marginRight: '4px' }} />
+              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <Text fontSize={13} fontWeight={500}>
-                {trade.swapOutput?.currency.symbol}
+                {outputCurrency?.symbol}
               </Text>
             </RowFixed>
           </RowBetween>
@@ -530,7 +533,7 @@ export function LeverageModalHeader({
           <Trans>
             Output is estimated. You will receive at least{' '}
             <b>
-              {formatCurrencyAmount(trade.minimumOutput, NumberType.SwapTradeAmount)} {trade.swapOutput.currency.symbol}
+              {formatBNToString(trade.minimumOutput, NumberType.SwapTradeAmount)} {outputCurrency?.symbol}
             </b>{' '}
             or the transaction will revert.
           </Trans>
@@ -550,98 +553,98 @@ export function LeverageModalHeader({
   )
 }
 
-export function BorrowModalHeader({
-  trade,
-  inputCurrency,
-  outputCurrency,
-  recipient,
-}: {
-  trade?: BorrowCreationDetails
-  inputCurrency?: Currency
-  outputCurrency?: Currency
-  recipient: string | null
-}) {
-  const theme = useTheme()
-  return (
-    <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
-      <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="sm">
-          <RowBetween align="center">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500}>
-                {formatBNToString(trade?.collateralAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="2px">
-                Total Collateral
-              </Text>
-              <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
-                {inputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn gap="sm">
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500}>
-                {trade?.borrowedAmount && trade?.quotedPremium ? `${formatBNToString(trade.quotedPremium)}` : '-'}
-              </TruncatedText>
-            </RowFixed>
-            <AutoColumn gap="sm">
-              <RowBetween align="flex-end">
-                <RowFixed gap="0px">
-                  <Text fontSize={12} fontWeight={300} marginRight="2px">
-                    Premium
-                  </Text>
-                  <CurrencyLogo currency={outputCurrency} size="20px" style={{ marginRight: '12px' }} />
-                  <Text fontSize={20} fontWeight={500}>
-                    {outputCurrency?.symbol}
-                  </Text>
-                </RowFixed>
-              </RowBetween>
-            </AutoColumn>
-          </RowBetween>
-        </AutoColumn>
-      </LightCard>
-      <ArrowWrapper>
-        <ArrowDown size="16" color={theme.textPrimary} />
-      </ArrowWrapper>
-      <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
-        <AutoColumn gap="sm">
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={24} fontWeight={500}>
-                {trade?.borrowedAmount && trade?.quotedPremium ? `${formatBNToString(trade.borrowedAmount)}` : '-'}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={12} fontWeight={300} marginRight="2px">
-                Total Borrowed
-              </Text>
-              <CurrencyLogo currency={outputCurrency} size="20px" style={{ marginRight: '12px' }} />
-              <Text fontSize={20} fontWeight={500}>
-                {outputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-        </AutoColumn>
-      </LightCard>
-      <LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
-        <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={false} />
-      </LightCard>
-      {recipient !== null ? (
-        <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
-          <ThemedText.DeprecatedMain>
-            <Trans>
-              Output will be sent to{' '}
-              <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
-            </Trans>
-          </ThemedText.DeprecatedMain>
-        </AutoColumn>
-      ) : null}
-    </AutoColumn>
-  )
-}
+// export function BorrowModalHeader({
+//   trade,
+//   inputCurrency,
+//   outputCurrency,
+//   recipient,
+// }: {
+//   trade?: BorrowCreationDetails
+//   inputCurrency?: Currency
+//   outputCurrency?: Currency
+//   recipient: string | null
+// }) {
+//   const theme = useTheme()
+//   return (
+//     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
+//       <LightCard padding="0.75rem 1rem">
+//         <AutoColumn gap="sm">
+//           <RowBetween align="center">
+//             <RowFixed gap="0px">
+//               <TruncatedText fontSize={24} fontWeight={500}>
+//                 {formatBNToString(trade?.collateralAmount)}
+//               </TruncatedText>
+//             </RowFixed>
+//             <RowFixed gap="0px">
+//               <Text fontSize={12} fontWeight={300} marginRight="2px">
+//                 Total Collateral
+//               </Text>
+//               <CurrencyLogo currency={inputCurrency} size="20px" style={{ marginRight: '12px' }} />
+//               <Text fontSize={20} fontWeight={500}>
+//                 {inputCurrency?.symbol}
+//               </Text>
+//             </RowFixed>
+//           </RowBetween>
+//         </AutoColumn>
+//         <AutoColumn gap="sm">
+//           <RowBetween align="flex-end">
+//             <RowFixed gap="0px">
+//               <TruncatedText fontSize={24} fontWeight={500}>
+//                 {trade?.borrowedAmount && trade?.quotedPremium ? `${formatBNToString(trade.quotedPremium)}` : '-'}
+//               </TruncatedText>
+//             </RowFixed>
+//             <AutoColumn gap="sm">
+//               <RowBetween align="flex-end">
+//                 <RowFixed gap="0px">
+//                   <Text fontSize={12} fontWeight={300} marginRight="2px">
+//                     Premium
+//                   </Text>
+//                   <CurrencyLogo currency={outputCurrency} size="20px" style={{ marginRight: '12px' }} />
+//                   <Text fontSize={20} fontWeight={500}>
+//                     {outputCurrency?.symbol}
+//                   </Text>
+//                 </RowFixed>
+//               </RowBetween>
+//             </AutoColumn>
+//           </RowBetween>
+//         </AutoColumn>
+//       </LightCard>
+//       <ArrowWrapper>
+//         <ArrowDown size="16" color={theme.textPrimary} />
+//       </ArrowWrapper>
+//       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
+//         <AutoColumn gap="sm">
+//           <RowBetween align="flex-end">
+//             <RowFixed gap="0px">
+//               <TruncatedText fontSize={24} fontWeight={500}>
+//                 {trade?.borrowedAmount && trade?.quotedPremium ? `${formatBNToString(trade.borrowedAmount)}` : '-'}
+//               </TruncatedText>
+//             </RowFixed>
+//             <RowFixed gap="0px">
+//               <Text fontSize={12} fontWeight={300} marginRight="2px">
+//                 Total Borrowed
+//               </Text>
+//               <CurrencyLogo currency={outputCurrency} size="20px" style={{ marginRight: '12px' }} />
+//               <Text fontSize={20} fontWeight={500}>
+//                 {outputCurrency?.symbol}
+//               </Text>
+//             </RowFixed>
+//           </RowBetween>
+//         </AutoColumn>
+//       </LightCard>
+//       <LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
+//         <AdvancedBorrowSwapDetails borrowTrade={trade} syncing={false} />
+//       </LightCard>
+//       {recipient !== null ? (
+//         <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
+//           <ThemedText.DeprecatedMain>
+//             <Trans>
+//               Output will be sent to{' '}
+//               <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
+//             </Trans>
+//           </ThemedText.DeprecatedMain>
+//         </AutoColumn>
+//       ) : null}
+//     </AutoColumn>
+//   )
+// }

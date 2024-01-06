@@ -27,7 +27,7 @@ export class TokenBN extends BN {
     this.tokenAddress = token.address
   }
 
-  public getRawAmount(): string {
+  public rawAmount(): string {
     return this.shiftedBy(this.tokenDecimals).toFixed(0)
   }
 }

@@ -46,17 +46,13 @@ export enum TransactionType {
   CANCEL,
 
   // limitless actions
-  ADD_BORROW,
   ADD_LEVERAGE,
   REDUCE_LEVERAGE,
-  PREMIUM_LEVERAGE_DEPOSIT,
-  PREMIUM_BORROW,
-  REDUCE_BORROW_COLLATERAL,
-  REDUCE_BORROW_DEBT,
+  PREMIUM_DEPOSIT,
+  PREMIUM_WITHDRAW,
   ADD_LMT_LIQUIDITY,
   REMOVE_LMT_LIQUIDITY,
   ADD_LIMIT_ORDER,
-  REMOVE_LIMIT_ORDER,
   REDUCE_LIMIT_ORDER,
   CREATE_REFERRAL,
   USE_REFERRAL,
@@ -212,14 +208,6 @@ interface SubmitProposalTransactionInfo {
 
 // LIMITLESS INFO
 
-export interface AddBorrowPositionTransactionInfo {
-  type: TransactionType.ADD_BORROW
-  collateralAmount: string
-  inputCurrencyId: string
-  outputCurrencyId: string
-  borrowedAmount: string
-}
-
 export interface ReduceLeveragePositionTransactionInfo {
   type: TransactionType.REDUCE_LEVERAGE
   reduceAmount: number
@@ -249,10 +237,11 @@ export interface CancelLimitOrderTransactionInfo {
   outputCurrencyId: string
 }
 
-export interface RemoveLimitOrderTransactionInfo {
-  type: TransactionType.REMOVE_LIMIT_ORDER
+export interface CancelLimitOrderTransactionInfo {
+  type: TransactionType.CANCEL_LIMIT_ORDER
   inputCurrencyId: string
   outputCurrencyId: string
+  isAdd: boolean
 }
 
 export interface CreateReferralCodeTransactionInfo {
@@ -266,52 +255,23 @@ export interface UseReferralCodeTransactionInfo {
   outputCurrencyId: string
 }
 
-// type: TransactionType.REDUCE_LEVERAGE,
-//             reduceAmount: inputReduceAmount ?? "",
-//             pnl: Number(transactionInfo.pnl),
-//             initialCollateral: Number(position.initialCollateral),
-//             leverageFactor: (Number(position.totalDebtInput) + Number(position.initialCollateral)) / Number(position.initialCollateral),
-//             inputCurrencyId:  inputIsToken0 ? currencyId(token0) : currencyId(token1),
-//             outputCurrencyId: !inputIsToken0 ? currencyId(token0) : currencyId(token1),
-//             entryPrice: transactionInfo.entryPrice,
-//             markPrice: transactionInfo.currentPrice,
-//             quoteBaseSymbol: transactionInfo.quoteBaseSymbol
-
-export interface AddLeveragePremiumTransactionInfo {
-  type: TransactionType.PREMIUM_LEVERAGE_DEPOSIT
+export interface PremiumDepositTransactionInfo {
+  type: TransactionType.PREMIUM_DEPOSIT
   inputCurrencyId: string
   outputCurrencyId: string
+  amount: string
 }
 
-export interface AddBorrowPremiumTransactionInfo {
-  type: TransactionType.PREMIUM_BORROW
+export interface PremiumWithdrawTransactionInfo {
+  type: TransactionType.PREMIUM_WITHDRAW
   inputCurrencyId: string
   outputCurrencyId: string
-}
-
-export interface ReduceBorrowCollateralTransactionInfo {
-  type: TransactionType.REDUCE_BORROW_COLLATERAL
-  inputCurrencyId: string
-  outputCurrencyId: string
-  reduceAmount: number
-  newExpectedCollateral: number
-  recieveCollateral: boolean
-  expectedReturnedAmount: number
-}
-
-export interface ReduceBorrowDebtTransactionInfo {
-  type: TransactionType.REDUCE_BORROW_DEBT
-  reduceAmount: number
-  expectedReturnedAmount: number
-  newTotalPosition: number
-  recieveCollateral: boolean
-  inputCurrencyId: string
-  outputCurrencyId: string
+  amount: string
 }
 
 export interface AddLeverageTransactionInfo {
   type: TransactionType.ADD_LEVERAGE
-  inputAmount: string
+  margin: string
   inputCurrencyId: string
   outputCurrencyId: string
   expectedAddedPosition: string
@@ -337,20 +297,16 @@ export type TransactionInfo =
   | RemoveLiquidityV3TransactionInfo
   | RemoveLmtLiquidityTransactionInfo
   | SubmitProposalTransactionInfo
-  | AddBorrowPositionTransactionInfo
   | ReduceLeveragePositionTransactionInfo
-  | AddLeveragePremiumTransactionInfo
-  | AddBorrowPremiumTransactionInfo
-  | ReduceBorrowCollateralTransactionInfo
-  | ReduceBorrowDebtTransactionInfo
   | AddLeverageTransactionInfo
   | AddLmtLiquidityTransactionInfo
   | AddLimitOrderTransactionInfo
   | ReduceLimitOrderTransactionInfo
-  | RemoveLimitOrderTransactionInfo
   | CreateReferralCodeTransactionInfo
   | UseReferralCodeTransactionInfo
   | CancelLimitOrderTransactionInfo
+  | PremiumDepositTransactionInfo
+  | PremiumWithdrawTransactionInfo
 
 export interface TransactionDetails {
   hash: string

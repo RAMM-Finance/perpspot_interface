@@ -284,16 +284,17 @@ export abstract class MarginFacilitySDK {
     totalOutputDebt: JSBI
     margin: JSBI
     borrowInfo: LiquidityLoan[]
+    fees: JSBI
   } {
-    const result = MarginFacilitySDK.INTERFACE.decodeFunctionResult('addPosition', rawBytes)[0]
-
+    const result = MarginFacilitySDK.INTERFACE.decodeFunctionResult('addPosition', rawBytes)
+    const position = result[0]
     //   tick: number
     // liquidity: string
     // premium: string
     // feeGrowthInside0LastX128: string
     // feeGrowthInside1LastX128: string
     // lastGrowth: string
-    const borrowInfo: LiquidityLoan[] = result.base.borrowInfo.map((item: any) => {
+    const borrowInfo: LiquidityLoan[] = position.base.borrowInfo.map((item: any) => {
       return {
         tick: item.tick,
         liquidity: item.liquidity.toString(),
@@ -305,11 +306,12 @@ export abstract class MarginFacilitySDK {
     })
 
     return {
-      totalPosition: JSBI.BigInt(result.totalPosition.toString()),
-      totalInputDebt: JSBI.BigInt(result.base.totalDebtInput.toString()),
-      totalOutputDebt: JSBI.BigInt(result.base.totalDebtOutput.toString()),
-      margin: JSBI.BigInt(result.margin.toString()),
+      totalPosition: JSBI.BigInt(position.totalPosition.toString()),
+      totalInputDebt: JSBI.BigInt(position.base.totalDebtInput.toString()),
+      totalOutputDebt: JSBI.BigInt(position.base.totalDebtOutput.toString()),
+      margin: JSBI.BigInt(position.margin.toString()),
       borrowInfo,
+      fees: JSBI.BigInt(result[2].toString()),
     }
   }
 }

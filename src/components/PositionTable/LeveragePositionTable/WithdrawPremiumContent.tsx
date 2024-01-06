@@ -321,9 +321,10 @@ export function WithdrawPremiumContent({
         setTxHash(response?.hash)
         setErrorMessage(undefined)
         addTransaction(response, {
-          type: TransactionType.PREMIUM_LEVERAGE_DEPOSIT,
+          type: TransactionType.PREMIUM_WITHDRAW,
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
+          amount: formatBNToString(txnInfo.amount, NumberType.SwapTradeAmount),
         })
         return response.hash
       })

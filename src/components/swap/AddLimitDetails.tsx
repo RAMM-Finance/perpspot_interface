@@ -85,13 +85,13 @@ export function AdvancedAddLimitDetails({
   return (
     <StyledCard>
       <AutoColumn gap="sm">
-        <ValueLabel
+        {/* <ValueLabel
           description="Amount of margin you are submitting"
           value={formatBNToString(trade?.margin, NumberType.SwapTradeAmount)}
           label="Margin"
           symbolAppend={inputCurrency ? inputCurrency.symbol : '-'}
           syncing={syncing}
-        />
+        /> */}
         <ValueLabel
           description="Borrow Amount when order is filled"
           value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
@@ -109,10 +109,9 @@ export function AdvancedAddLimitDetails({
           description="Amount of premiums to be initially escrowed and held for order to be filled"
           value={formatBNToString(trade?.additionalPremium, NumberType.SwapTradeAmount)}
           label="Premium Depositing"
-          symbolAppend={inputCurrency ? inputCurrency.symbol : '-'}
+          symbolAppend={inputCurrency?.symbol}
           syncing={syncing}
         />
-
         {/*<MouseoverValueLabel
           description="Order Price"
           value={formatBNToString(trade?.limitPrice, NumberType.SwapTradeAmount)}

@@ -386,26 +386,14 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <ExecuteSummary info={info} />
     case TransactionType.SUBMIT_PROPOSAL:
       return <SubmitProposalTransactionSummary />
-    case TransactionType.ADD_BORROW:
-      return <Trans>Borrow Info Summary</Trans>
     case TransactionType.REDUCE_LEVERAGE:
       return <Trans>Reduce Leverage Summary</Trans>
-    case TransactionType.PREMIUM_BORROW:
-      return <Trans>Pay Borrow Position Summary</Trans>
-    case TransactionType.PREMIUM_LEVERAGE_DEPOSIT:
-      return <Trans>Pay Leverage Position Summary</Trans>
-    case TransactionType.REDUCE_BORROW_COLLATERAL:
-      return <Trans>Reduce Borrow Collateral Summary</Trans>
-    case TransactionType.REDUCE_BORROW_DEBT:
-      return <Trans>Reduce Borrow Debt Summary</Trans>
     case TransactionType.ADD_LEVERAGE:
       return <Trans>Add Leverage Summary</Trans>
     case TransactionType.ADD_LMT_LIQUIDITY:
       return <AddLmtLiquiditySummary info={info} />
     case TransactionType.ADD_LIMIT_ORDER:
       return <Trans>Add Limit Order Summary</Trans>
-    case TransactionType.REMOVE_LIMIT_ORDER:
-      return <Trans>Remove Limit Order Summary</Trans>
     case TransactionType.REDUCE_LIMIT_ORDER:
       return <Trans>Reduce Limit Order Summary</Trans>
     case TransactionType.CREATE_REFERRAL:
@@ -414,5 +402,9 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Using Referral Code</Trans>
     case TransactionType.CANCEL_LIMIT_ORDER:
       return <Trans>Cancel Limit Order Summary</Trans>
+    case TransactionType.PREMIUM_DEPOSIT:
+      return <Trans>Deposit Premium Summary</Trans>
+    case TransactionType.PREMIUM_WITHDRAW:
+      return <Trans>Withdraw Premium Summary</Trans>
   }
 }

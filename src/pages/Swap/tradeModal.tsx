@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Button } from '@mui/material'
 import { Trace, TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SwapEventName } from '@uniswap/analytics-events'
-import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
+import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -34,7 +34,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { PoolState } from 'hooks/usePools'
-import { useUSDPrice } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
@@ -130,9 +130,10 @@ export const OpacityHoverState = css`
 `
 
 const StyledLeverageInput = styled(NumericalInput)`
-  width: 2.5rem;
+  width: 3rem;
   text-align: right;
   padding-right: 5px;
+  padding-left: 5px;
   height: 20px;
   line-height: 12px;
   font-size: 14px;
@@ -312,11 +313,11 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
-  const fiatValueTradeMargin = useUSDPrice(trade?.margin)
-  const fiatValueTradeInput = useUSDPrice(trade?.swapInput)
-  const fiatValueTradeOutput = useUSDPrice(trade?.swapOutput)
+  const fiatValueTradeMargin = useUSDPriceBN(trade?.margin)
+  const fiatValueTradeInput = useUSDPriceBN(trade?.swapInput)
+  const fiatValueTradeOutput = useUSDPriceBN(trade?.swapOutput)
 
-  const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.equalTo(maxInputAmount))
+  const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
   /**
    * the approval state is NOT_APPROVED + pool with no liquidity, approvalAmount
    * if pool doesn't exist then should show up that there's no liquidity
@@ -428,7 +429,12 @@ const TradeTabContent = () => {
     }
   }, [currencies, baseCurrencyIsInputToken])
 
-  const { callback: addPositionCallback } = useAddPositionCallback(trade, allowedSlippage)
+  const { callback: addPositionCallback } = useAddPositionCallback(
+    trade,
+    currencies[Field.INPUT] ?? undefined,
+    currencies[Field.OUTPUT] ?? undefined,
+    allowedSlippage
+  )
 
   const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(orderKey)
 
@@ -514,6 +520,7 @@ const TradeTabContent = () => {
         txHash={txHash}
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage ? <Trans>{tradeErrorMessage}</Trans> : undefined}
+        outputCurrency={currencies[Field.OUTPUT] ?? undefined}
       />
       <ConfirmAddLimitOrderModal
         isOpen={lmtShowConfirm}
@@ -682,7 +689,7 @@ const TradeTabContent = () => {
                   !isLimitOrder
                     ? tradeState !== LeverageTradeState.VALID || !trade
                       ? '-'
-                      : formatCurrencyAmount(trade.swapOutput, NumberType.SwapTradeAmount)
+                      : formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount)
                     : limitTradeState !== LimitTradeState.VALID || !limitTrade
                     ? '-'
                     : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
@@ -717,10 +724,11 @@ const TradeTabContent = () => {
                   <MouseoverTooltip
                     text={
                       <Trans>
-                        Maximum leverage is dependent on current liquidity conditions. If you desire higher leverage, you will need to lower your margin.
+                        Maximum leverage is dependent on current liquidity conditions. If you desire higher leverage,
+                        you will need to lower your margin.
                       </Trans>
                     }
-                  >                                      
+                  >
                     <RowBetween width="max-content">
                       <ThemedText.DeprecatedBody marginRight="3px" fontWeight={400} fontSize={12} color="text2">
                         <Trans>Max:</Trans>

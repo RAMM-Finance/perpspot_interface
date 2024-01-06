@@ -158,6 +158,7 @@ export const ExistingReduceOrderSection = ({
           type: TransactionType.CANCEL_LIMIT_ORDER,
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
+          isAdd: false,
         })
       })
       .catch((error) => {

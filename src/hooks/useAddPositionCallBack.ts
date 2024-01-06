@@ -1,15 +1,16 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
-import { Percent, Price } from '@uniswap/sdk-core'
-import { priceToClosestTick } from '@uniswap/v3-sdk'
+import { NumberType } from '@uniswap/conedison/format'
+import { Currency, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
-import JSBI from 'jsbi'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
-import { AddMarginTrade } from 'state/marginTrading/hooks'
+import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
@@ -30,6 +31,8 @@ class ModifiedAddPositionError extends Error {
 
 export function useAddPositionCallback(
   trade: AddMarginTrade | undefined,
+  inputCurrency: Currency | undefined,
+  outputCurrency: Currency | undefined,
   allowedSlippage: Percent
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
@@ -44,55 +47,36 @@ export function useAddPositionCallback(
       if (!provider) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
+      if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
       // if (!marginAmount || !borrowAmount) throw new Error('missing parameters')
 
       const { pool, swapInput, swapRoute, positionKey, premium } = trade
 
-      const amountOut = await getOutputQuote(swapInput, swapRoute, provider, chainId)
+      const amountOut = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
 
       if (!amountOut) throw new Error('unable to get trade output')
 
-      // calculate max and minimum tick bounds (current price bounds)
-      const pullUp = JSBI.BigInt(10_000 + Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
-      const pullDown = JSBI.BigInt(10_000 - Math.floor(Number(allowedSlippage.toFixed(18)) * 100))
-      const minPrice = new Price(
-        pool.token0,
-        pool.token1,
-        JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-        JSBI.multiply(pool.token0Price.numerator, pullDown)
-      )
-      const maxPrice = new Price(
-        pool.token0,
-        pool.token1,
-        JSBI.multiply(pool.token0Price.denominator, JSBI.BigInt(10_000)),
-        JSBI.multiply(pool.token0Price.numerator, pullUp)
-      )
-      const slippedTickMax = priceToClosestTick(maxPrice)
-      const slippedTickMin = priceToClosestTick(minPrice)
-
-      const inputDecimals = swapInput.currency.wrapped.decimals
-      const outputDecimals = trade.swapOutput.currency.wrapped.decimals
+      const inputDecimals = inputCurrency.decimals
+      const outputDecimals = outputCurrency.decimals
       // calculate minimum output amount
+      const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
       const currentPrice = trade.inputIsToken0
         ? new BN(pool.token0Price.toFixed(18))
         : new BN(pool.token1Price.toFixed(18))
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
-      const totalInput = new BN(swapInput.quotient.toString()).shiftedBy(-inputDecimals)
-      const minimumOutput = totalInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-
+      const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
-        margin: trade.margin.quotient.toString(),
-        borrowAmount: trade.borrowAmount.quotient.toString(),
+        margin: trade.margin.rawAmount(),
+        borrowAmount: trade.borrowAmount.rawAmount(),
         minimumOutput: minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toString(),
         executionOption: 1,
-        depositPremium: premium.quotient.toString(),
+        depositPremium: premium.rawAmount(),
         slippedTickMin,
         slippedTickMax,
       })
-
       const tx = {
         from: account,
         to: LMT_MARGIN_FACILITY[chainId],
@@ -108,7 +92,6 @@ export function useAddPositionCallback(
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-
       const response = await provider
         .getSigner()
         .sendTransaction({ ...tx, gasLimit })
@@ -124,23 +107,23 @@ export function useAddPositionCallback(
     } catch (error: unknown) {
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, allowedSlippage])
+  }, [deadline, account, chainId, provider, trade, allowedSlippage, outputCurrency, inputCurrency])
 
   const callback = useMemo(() => {
-    if (!trade || !addPositionCallback) return null
+    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency) return null
 
     return () =>
       addPositionCallback().then((response) => {
         addTransaction(response, {
           type: TransactionType.ADD_LEVERAGE,
-          inputAmount: trade.margin.toExact(),
-          inputCurrencyId: trade.margin.currency.wrapped.address,
-          outputCurrencyId: trade.swapOutput.currency.wrapped.address,
-          expectedAddedPosition: trade.swapOutput.toExact(),
+          margin: formatBNToString(trade.margin, NumberType.SwapTradeAmount),
+          inputCurrencyId: inputCurrency.wrapped.address,
+          outputCurrencyId: outputCurrency.wrapped.address,
+          expectedAddedPosition: formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount),
         })
         return response.hash
       })
-  }, [addPositionCallback, addTransaction, trade])
+  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency])
 
   return {
     callback,

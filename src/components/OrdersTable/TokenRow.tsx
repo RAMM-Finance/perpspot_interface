@@ -24,6 +24,7 @@ import { TransactionType } from 'state/transactions/types'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginLimitOrder, TraderPositionKey } from 'types/lmtv2position'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 
 import { TradeModalActiveTab } from '../PositionTable/LeveragePositionTable/LeveragePositionModal'
 import {
@@ -593,8 +594,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // }, [])
   const nowInSeconds = Math.floor(Date.now() / 1000)
 
-  console.log('details', details, nowInSeconds)
-
   const duration = details.auctionDeadline - nowInSeconds
 
   // Calculate hours and remaining minutes
@@ -604,12 +603,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // Create the formatted string
   const formattedDuration = `${durationHours}hr ${durationMinutes}m`
 
-  const leverage = useMemo(() => 
-  {
-    if(Number(details?.margin)==0) return 0
+  const leverage = useMemo(() => {
+    if (Number(details?.margin) == 0) return 0
     else return (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin)
-  }
-  , [])
+  }, [])
 
   const { account, chainId, provider } = useWeb3React()
 
@@ -644,8 +641,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       const response = await marginFacility.cancelOrder(poolAddress, details.positionIsToken0, details.isAdd)
       return response
     } catch (err) {
-      console.log('cancel order error', err)
-      throw new Error('cancel order error')
+      throw new Error(getErrorMessage(parseContractError(err)))
     }
   }, [account, chainId, details, marginFacility, poolAddress, provider])
 
@@ -663,9 +659,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
         setTxHash(response?.hash)
         setErrorMessage(undefined)
         addTransaction(response, {
-          type: TransactionType.REMOVE_LIMIT_ORDER,
+          type: TransactionType.CANCEL_LIMIT_ORDER,
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
+          isAdd: details.isAdd,
         })
         return response.hash
       })
@@ -708,7 +705,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow>
               <AutoRow gap="2px">
                 {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
-                {(Number(details.inputAmount) ).toString()}
+                {Number(details.inputAmount).toString()}
                 <CurrencyLogo currency={outputCurrency} size="13px" />
                 {outputCurrency?.symbol}
               </AutoRow>
@@ -717,7 +714,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           output={
             <FlexStartRow>
               <AutoRow gap="2px" justify="start">
-                {(Number(details.startOutput) ).toString()}
+                {Number(details.startOutput).toString()}
                 <CurrencyLogo currency={inputCurrency} size="13px" />
                 {inputCurrency?.symbol}
               </AutoRow>
@@ -725,7 +722,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           leverage={
             <FlexStartRow>
-              <AutoRow>{(Math.round(leverage*100)/100).toString()}</AutoRow>
+              <AutoRow>{(Math.round(leverage * 100) / 100).toString()}</AutoRow>
             </FlexStartRow>
           }
           deadline={

@@ -41,10 +41,10 @@ export const FakeTokens_SEPOLIA: Token[] = [FETH_SEPOLIA, FUSDC_SEPOLIA, FWBTC_S
 export const FakeTokens_MUMBAI: Token[] = [FETH_MUMBAI, FUSDC_MUMBAI, FWBTC_MUMBAI, FDAI_MUMBAI]
 
 export const FakeTokensMapSepolia: { [address: string]: Token } = {
-  [FETH_SEPOLIA.address.toUpperCase()]: FETH_SEPOLIA,
-  [FUSDC_SEPOLIA.address.toUpperCase()]: FUSDC_SEPOLIA,
-  [FWBTC_SEPOLIA.address.toUpperCase()]: FWBTC_SEPOLIA,
-  [FDAI_SEPOLIA.address.toUpperCase()]: FDAI_SEPOLIA,
+  [FETH_SEPOLIA.address]: FETH_SEPOLIA,
+  [FUSDC_SEPOLIA.address]: FUSDC_SEPOLIA,
+  [FWBTC_SEPOLIA.address]: FWBTC_SEPOLIA,
+  [FDAI_SEPOLIA.address]: FDAI_SEPOLIA,
 }
 
 export const FakeTokensMapMumbai: { [address: string]: Token } = {

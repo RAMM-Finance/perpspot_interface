@@ -237,8 +237,8 @@ export function ValueLabel({
   labelSize = '12px',
   valueSize = '12px',
   height = '14px',
-  valueDescription = '', 
-  hideValueDescription = true
+  valueDescription = '',
+  hideValueDescription = true,
 }: {
   description: string
   label: string
@@ -265,20 +265,18 @@ export function ValueLabel({
 
       <TextWithLoadingPlaceholder syncing={syncing} width={65} height={height}>
         <MouseoverTooltip text={<Trans>{valueDescription}</Trans>} disableHover={hideValueDescription}>
-
-        {!delta ? (
-          <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
-            {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
-          </ThemedText.BodySmall>
-        ) : (
-          <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
-            <DeltaText delta={Number(value)}>
-              {value ? `${Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}` : '-'}
-            </DeltaText>
-          </ThemedText.BodySmall>
-        )}
+          {!delta ? (
+            <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
+              {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
+            </ThemedText.BodySmall>
+          ) : (
+            <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
+              <DeltaText delta={Number(value)}>
+                {value ? `${Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}` : '-'}
+              </DeltaText>
+            </ThemedText.BodySmall>
+          )}
         </MouseoverTooltip>
-
       </TextWithLoadingPlaceholder>
     </RowBetween>
   )
@@ -356,7 +354,7 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Initial Premium Deposit for this position, which can be replenished in the position table. When your deposit is depleted, your position will be force closed."
           label="Initial Premium deposit"
-          value={formatCurrencyAmount(trade?.premium, NumberType.SwapTradeAmount)}
+          value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
@@ -371,7 +369,7 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="The amount you borrow from Limitless"
           label="Borrow Amount"
-          value={formatCurrencyAmount(trade?.borrowAmount, NumberType.SwapTradeAmount)}
+          value={formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
@@ -387,12 +385,19 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="Swap fee + Origination fee "
           label="Total Fees"
-          value={formatCurrencyAmount(trade?.fees.add(trade?.swapFee), NumberType.SwapTradeAmount)}
+          value={formatBNToString(trade?.fees.plus(trade?.swapFee), NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
-          valueDescription = {'Swap Fee: ' + formatCurrencyAmount(trade?.swapFee, NumberType.SwapTradeAmount)
-           +" "+ inputCurrency?.symbol+' Origination Fee: ' 
-           + formatCurrencyAmount(trade?.fees, NumberType.SwapTradeAmount)+" "+ inputCurrency?.symbol }
+          valueDescription={
+            'Swap Fee: ' +
+            formatBNToString(trade?.swapFee, NumberType.SwapTradeAmount) +
+            ' ' +
+            inputCurrency?.symbol +
+            ' Origination Fee: ' +
+            formatBNToString(trade?.fees, NumberType.SwapTradeAmount) +
+            ' ' +
+            inputCurrency?.symbol
+          }
           hideValueDescription={false}
         />
         <Separator />
@@ -415,8 +420,8 @@ export function AdvancedMarginTradeDetails({
           <TextWithLoadingPlaceholder syncing={syncing} width={70}>
             <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
               <TruncatedText>
-                {`${formatCurrencyAmount(trade?.minimumOutput, NumberType.SwapTradeAmount)}  ${
-                  trade ? trade?.swapOutput?.currency.symbol : ''
+                {`${formatBNToString(trade?.minimumOutput, NumberType.SwapTradeAmount)}  ${
+                  trade ? trade?.swapOutput?.tokenSymbol : ''
                 }`}
               </TruncatedText>
             </ThemedText.DeprecatedBlack>

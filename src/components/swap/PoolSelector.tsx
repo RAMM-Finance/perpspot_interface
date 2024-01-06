@@ -62,7 +62,6 @@ export const PoolSelector = ({
   } = useSwapState()
 
   const { onCurrencySelection } = useSwapActionHandlers()
-
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -274,7 +273,7 @@ export const PoolSelector = ({
     } else {
       return null
     }
-  }, [poolData, data])
+  }, [poolData, data, availablePools])
 
   const dropdown = (
     <NavDropdown

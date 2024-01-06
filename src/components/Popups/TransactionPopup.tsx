@@ -1,6 +1,5 @@
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
-import { ReduceLeverageTransactionPopupContent } from 'components/TransactionConfirmationModal'
 import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Activity/parseLocal'
 import { PortfolioLogo } from 'components/WalletDropdown/MiniPortfolio/PortfolioLogo'
 import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
@@ -8,7 +7,7 @@ import useENSName from 'hooks/useENSName'
 import { X } from 'react-feather'
 import { useCombinedActiveList } from 'state/lists/hooks'
 import { useTransaction } from 'state/transactions/hooks'
-import { TransactionDetails, TransactionType } from 'state/transactions/types'
+import { TransactionDetails } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
@@ -103,8 +102,6 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
   if (!chainId || !tx) return null
 
   switch (tx.info.type) {
-    case TransactionType.REDUCE_LEVERAGE:
-      return <ReduceLeverageTransactionPopupContent tx={tx} chainId={chainId} removeThisPopup={removeThisPopup} />
     default:
       return (
         <Popup>

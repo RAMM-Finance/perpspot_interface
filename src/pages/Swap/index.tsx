@@ -22,9 +22,10 @@ import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/us
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
+import JoinModal from 'pages/Join'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactNode } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
@@ -43,7 +44,6 @@ import { supportedChainId } from '../../utils/supportedChainId'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
-import JoinModal from 'pages/Join'
 
 // const TradeTabContent = React.lazy(() => import('./tradeModal'))
 // const SwapTabContent = React.lazy(() => import('./swapModal'))
@@ -540,7 +540,7 @@ export default function Swap({ className }: { className?: string }) {
               </PositionsContainer>
             </LeftContainer>
           </MainWrapper>
-          {(location.pathname.substring(0, 6 ) === '/join/')? <JoinModal/> : null}
+          {location.pathname.substring(0, 6) === '/join/' ? <JoinModal /> : null}
         </PageWrapper>
         {!swapIsUnsupported ? null : (
           <UnsupportedCurrencyFooter

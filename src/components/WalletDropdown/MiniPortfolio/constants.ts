@@ -111,6 +111,7 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Delegated`,
     [TransactionStatus.Failed]: t`Delegate failed`,
   },
+
   [TransactionType.DEPOSIT_LIQUIDITY_STAKING]: {
     [TransactionStatus.Pending]: t`Depositing`,
     [TransactionStatus.Confirmed]: t`Deposited`,
@@ -136,35 +137,10 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Submitted proposal`,
     [TransactionStatus.Failed]: t`Submit proposal failed`,
   },
-  [TransactionType.ADD_BORROW]: {
-    [TransactionStatus.Pending]: t`Borrowing`,
-    [TransactionStatus.Confirmed]: t`Increased Borrow Position`,
-    [TransactionStatus.Failed]: t`Add borrow failed`,
-  },
   [TransactionType.REDUCE_LEVERAGE]: {
     [TransactionStatus.Pending]: t`Decreasing leverage`,
     [TransactionStatus.Confirmed]: t`Decreased leverage`,
     [TransactionStatus.Failed]: t`Decrease leverage failed`,
-  },
-  [TransactionType.PREMIUM_BORROW]: {
-    [TransactionStatus.Pending]: t`Paying Premium`,
-    [TransactionStatus.Confirmed]: t`Paid Borrower Premium`,
-    [TransactionStatus.Failed]: t`Payment failed`,
-  },
-  [TransactionType.PREMIUM_LEVERAGE_DEPOSIT]: {
-    [TransactionStatus.Pending]: t`Paying Premium`,
-    [TransactionStatus.Confirmed]: t`Paid Trader Premium`,
-    [TransactionStatus.Failed]: t`Payment failed`,
-  },
-  [TransactionType.REDUCE_BORROW_DEBT]: {
-    [TransactionStatus.Pending]: t`Reducing Debt`,
-    [TransactionStatus.Confirmed]: t`Reduced Debt for Borrow Position`,
-    [TransactionStatus.Failed]: t`Reduce borrow debt failed`,
-  },
-  [TransactionType.REDUCE_BORROW_COLLATERAL]: {
-    [TransactionStatus.Pending]: t`Reducing Collateral`,
-    [TransactionStatus.Confirmed]: t`Reduced Collateral for Borrow Position`,
-    [TransactionStatus.Failed]: t`Reduce Collateral failed`,
   },
   [TransactionType.ADD_LEVERAGE]: {
     [TransactionStatus.Pending]: t`Increasing Leverage Position`,
@@ -186,10 +162,20 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Added Limit Order`,
     [TransactionStatus.Failed]: t`Add Limit Order failed`,
   },
-  [TransactionType.REMOVE_LIMIT_ORDER]: {
+  [TransactionType.CANCEL_LIMIT_ORDER]: {
     [TransactionStatus.Pending]: t`Removing Limit Order`,
     [TransactionStatus.Confirmed]: t`Removed Limit Order`,
     [TransactionStatus.Failed]: t`Remove Limit Order failed`,
+  },
+  [TransactionType.PREMIUM_DEPOSIT]: {
+    [TransactionStatus.Pending]: t`Depositing Premium`,
+    [TransactionStatus.Confirmed]: t`Deposited Premium`,
+    [TransactionStatus.Failed]: t`Deposit Premium failed`,
+  },
+  [TransactionType.PREMIUM_WITHDRAW]: {
+    [TransactionStatus.Pending]: t`Withdrawing Premium`,
+    [TransactionStatus.Confirmed]: t`Withdrew Premium`,
+    [TransactionStatus.Failed]: t`Withdraw Premium failed`,
   },
   [TransactionType.REDUCE_LIMIT_ORDER]: {
     [TransactionStatus.Pending]: t`Reducing Limit Order`,

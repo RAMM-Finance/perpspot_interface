@@ -12,21 +12,21 @@ import { useMemo } from 'react'
 import { TokenAddressMap, useCombinedActiveList } from 'state/lists/hooks'
 import { useMultichainTransactions } from 'state/transactions/hooks'
 import {
-  AddBorrowPositionTransactionInfo,
-  AddBorrowPremiumTransactionInfo,
-  AddLeveragePremiumTransactionInfo,
   AddLeverageTransactionInfo,
+  AddLimitOrderTransactionInfo,
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
   ApproveTransactionInfo,
+  CancelLimitOrderTransactionInfo,
   CollectFeesTransactionInfo,
   CreateV3PoolTransactionInfo,
   ExactInputSwapTransactionInfo,
   ExactOutputSwapTransactionInfo,
   MigrateV2LiquidityToV3TransactionInfo,
-  ReduceBorrowCollateralTransactionInfo,
-  ReduceBorrowDebtTransactionInfo,
+  PremiumDepositTransactionInfo,
+  PremiumWithdrawTransactionInfo,
   ReduceLeveragePositionTransactionInfo,
+  ReduceLimitOrderTransactionInfo,
   RemoveLiquidityV3TransactionInfo,
   TransactionDetails,
   TransactionType,
@@ -80,8 +80,6 @@ function parseSwap(
   }
 }
 
-const MAX_SIG_FIGS = 5
-
 function parseAddLeverage(
   info: AddLeverageTransactionInfo,
   chainId: SupportedChainId,
@@ -90,15 +88,99 @@ function parseAddLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  const paidAmount = info.inputAmount
+  const paidAmount = info.margin
 
   const addedPosition = info.expectedAddedPosition
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`${tokenOut?.symbol}/${tokenIn?.symbol}, +${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
+      {`Deposited ${paidAmount} ${formatSymbol(tokenIn?.symbol)}, Recieved ${addedPosition} ${formatSymbol(
+        tokenOut?.symbol
+      )}`}
     </Descriptor>
   )
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parsePremiumDeposit(
+  info: PremiumDepositTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Deposited ${info.amount} into ${tokenOut?.symbol}/${tokenIn?.symbol} Position`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parsePremiumWithdraw(
+  info: PremiumWithdrawTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Withdrew ${info.amount} from ${tokenOut?.symbol}/${tokenIn?.symbol} Position`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseAddLimitOrder(
+  info: AddLimitOrderTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Add Limit Order Created for ${tokenOut?.symbol}/${tokenIn?.symbol} Position`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseReduceLimitOrder(
+  info: ReduceLimitOrderTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Reduce Limit Order Created for ${tokenOut?.symbol}/${tokenIn?.symbol} Position`
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
+function parseCancelLimitOrder(
+  info: CancelLimitOrderTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Cancel ${info.isAdd ? 'Add' : 'Remove'} Limit Order Created for ${tokenOut?.symbol}/${
+    tokenIn?.symbol
+  } Position`
 
   return {
     descriptor,
@@ -118,70 +200,7 @@ function parseReduceLeverage(
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
 
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
-
-  return {
-    descriptor,
-    currencies: [tokenIn, tokenOut],
-  }
-}
-
-function parseAddBorrow(
-  info: AddBorrowPositionTransactionInfo,
-  chainId: SupportedChainId,
-  tokens: TokenAddressMap
-): Partial<Activity> {
-  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
-  const formattedCollateralAmount = info.collateralAmount
-
-  const formattedBorrowAmount = info.borrowedAmount
-
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, +${formattedBorrowAmount} ${tokenOut?.symbol}`
-
-  return {
-    descriptor,
-    currencies: [tokenIn, tokenOut],
-  }
-}
-
-function parseReduceBorrowDebt(
-  info: ReduceBorrowDebtTransactionInfo,
-  chainId: SupportedChainId,
-  tokens: TokenAddressMap
-): Partial<Activity> {
-  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
-  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
-  const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
-  // console.log('stuff', info.newTotalPosition, newTotalPosition)
-
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenOut?.symbol}${
-    info.recieveCollateral ? `, received ${returnedAmount} ${tokenIn?.symbol}` : ''
-  }`
-
-  return {
-    descriptor,
-    currencies: [tokenIn, tokenOut],
-  }
-}
-
-function parseReduceBorrowCollateral(
-  info: ReduceBorrowCollateralTransactionInfo,
-  chainId: SupportedChainId,
-  tokens: TokenAddressMap
-): Partial<Activity> {
-  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
-  const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
-  // const returnedAmount = formatNumber(info.expectedReturnedAmount, NumberType.SwapTradeAmount)
-
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol}, ${reduceAmount} ${tokenIn?.symbol}${
-    info.recieveCollateral ? `, received ${info.expectedReturnedAmount} ${tokenIn?.symbol}` : ''
-  }`
+  const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
 
   return {
     descriptor,
@@ -257,34 +276,6 @@ function parseMigrateCreateV3(
   return { descriptor, currencies: [baseCurrency, quoteCurrency] }
 }
 
-function parsePremiumLeverage(
-  info: AddLeveragePremiumTransactionInfo,
-  chainId: SupportedChainId,
-  tokens: TokenAddressMap
-) {
-  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
-
-  return {
-    descriptor,
-    currencies: [tokenIn, tokenOut],
-  }
-}
-
-function parsePremiumBorrow(info: AddBorrowPremiumTransactionInfo, chainId: SupportedChainId, tokens: TokenAddressMap) {
-  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
-  const descriptor = `${tokenOut?.symbol}/${tokenIn?.symbol} premium payment`
-
-  return {
-    descriptor,
-    currencies: [tokenIn, tokenOut],
-  }
-}
-
 export function parseLocalActivity(
   details: TransactionDetails,
   chainId: SupportedChainId,
@@ -334,18 +325,18 @@ export function parseLocalActivity(
     additionalFields = parseMigrateCreateV3(info, chainId, tokens)
   } else if (info.type === TransactionType.ADD_LEVERAGE) {
     additionalFields = parseAddLeverage(info, chainId, tokens)
-  } else if (info.type === TransactionType.ADD_BORROW) {
-    additionalFields = parseAddBorrow(info, chainId, tokens)
   } else if (info.type === TransactionType.REDUCE_LEVERAGE) {
     additionalFields = parseReduceLeverage(info, chainId, tokens)
-  } else if (info.type === TransactionType.REDUCE_BORROW_DEBT) {
-    additionalFields = parseReduceBorrowDebt(info, chainId, tokens)
-  } else if (info.type === TransactionType.REDUCE_BORROW_COLLATERAL) {
-    additionalFields = parseReduceBorrowCollateral(info, chainId, tokens)
-  } else if (info.type === TransactionType.PREMIUM_BORROW) {
-    additionalFields = parsePremiumBorrow(info, chainId, tokens)
-  } else if (info.type === TransactionType.PREMIUM_LEVERAGE_DEPOSIT) {
-    additionalFields = parsePremiumLeverage(info, chainId, tokens)
+  } else if (info.type === TransactionType.PREMIUM_DEPOSIT) {
+    additionalFields = parsePremiumDeposit(info, chainId, tokens)
+  } else if (info.type === TransactionType.PREMIUM_WITHDRAW) {
+    additionalFields = parsePremiumWithdraw(info, chainId, tokens)
+  } else if (info.type === TransactionType.ADD_LIMIT_ORDER) {
+    additionalFields = parseAddLimitOrder(info, chainId, tokens)
+  } else if (info.type === TransactionType.REDUCE_LIMIT_ORDER) {
+    additionalFields = parseReduceLimitOrder(info, chainId, tokens)
+  } else if (info.type === TransactionType.CANCEL_LIMIT_ORDER) {
+    additionalFields = parseCancelLimitOrder(info, chainId, tokens)
   }
 
   return { ...defaultFields, ...additionalFields }
