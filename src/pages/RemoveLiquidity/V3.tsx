@@ -182,7 +182,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       })
       .catch((error) => {
         setAttemptingTxn(false)
-        console.error(error)
+        console.error('error?:',error)
       })
   }, [
     positionManager,

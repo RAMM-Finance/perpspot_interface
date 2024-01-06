@@ -453,14 +453,14 @@ export default function Swap({ className }: { className?: string }) {
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
-        <TokenSafetyModal
+        {/*<TokenSafetyModal
           isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
           tokenAddress={importTokensNotInDefault[0]?.address}
           secondTokenAddress={importTokensNotInDefault[1]?.address}
           onContinue={handleConfirmTokenWarning}
           onCancel={handleDismissTokenWarning}
           showCancel={true}
-        />
+        />*/}
         <PageWrapper>
           <SwapHeaderWrapper>
             <TokenNameCell>

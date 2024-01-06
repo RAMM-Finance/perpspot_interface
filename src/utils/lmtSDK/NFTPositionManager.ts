@@ -234,7 +234,6 @@ export abstract class NonfungiblePositionManager {
     )
 
     if (options.liquidityPercentage.equalTo(ONE)) {
-      console.log('options burn', options.burnToken)
       if (options.burnToken) {
         calldatas.push(NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [tokenId]))
       }

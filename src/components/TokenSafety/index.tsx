@@ -289,7 +289,7 @@ export default function TokenSafety({
         </ShortColumn>
         <ShortColumn>
           <InfoText>
-            {heading} {description} {learnMoreUrl}
+            {heading} {description} {/*learnMoreUrl*/}
           </InfoText>
         </ShortColumn>
         <Buttons warning={tokenNotFoundWarning} onCancel={onCancel} showCancel={true} />
