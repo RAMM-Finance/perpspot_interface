@@ -12,7 +12,7 @@ import { ReactNode, useCallback } from 'react'
 //   TransactionErrorContent,
 // } from '../TransactionConfirmationModal'
 
-export default function ConfirmReducePositionModal({
+export default function ConfirmModifyPositionModal({
   onDismiss,
   errorMessage,
   isOpen,

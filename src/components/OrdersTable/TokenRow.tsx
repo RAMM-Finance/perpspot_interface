@@ -1,17 +1,16 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
-import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { EditCell } from 'components/PositionTable/BorrowPositionTable/TokenRow'
+import { ConfirmCancelOrderHeader } from 'components/PositionTable/LeveragePositionTable/ConfirmModalHeaders'
+import { useCancelLimitOrderCallback } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent/CancelLimitOrder'
+import { BaseFooter } from 'components/PositionTable/LeveragePositionTable/DepositPremiumContent'
+import ConfirmModifyPositionModal from 'components/PositionTable/LeveragePositionTable/TransactionModal'
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
-import { useMarginFacilityContract } from 'hooks/useContract'
-import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
@@ -23,8 +22,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import { MarginLimitOrder, TraderPositionKey } from 'types/lmtv2position'
-import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { MarginLimitOrder, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 import { TradeModalActiveTab } from '../PositionTable/LeveragePositionTable/LeveragePositionModal'
 import {
@@ -564,15 +562,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { order: details, loading } = props
 
-  // const positionKey: OrderPositionKey = useMemo(() => {
-  //   return {
-  //     poolKey: details.key,
-  //     isAdd: details.isAdd,
-  //     trader: 'yes',
-  //     isToken0: false,
-  //   }
-  // }, [details])
-
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
       return [details.key.token0Address, details.key.token1Address]
@@ -582,16 +571,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const inputCurrency = useCurrency(token0Address)
   const outputCurrency = useCurrency(token1Address)
+  const { account, chainId, provider } = useWeb3React()
+  const orderKey: OrderPositionKey | undefined = useMemo(() => {
+    if (!details || !account) return undefined
+    return {
+      poolKey: details.key,
+      trader: account,
+      isAdd: details.isAdd,
+      isToken0: details.positionIsToken0,
+    }
+  }, [details, account])
+  // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, details?.key.fee)
 
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, details?.key.fee)
-
-  // const [inputAmount, startOutput, margin] = useMemo(() => {
-  //   if (pool) {
-  //     return [details.inputAmount, details.startOutput, details.margin]
-  //   } else {
-  //     return [undefined, undefined, undefined]
-  //   }
-  // }, [])
   const nowInSeconds = Math.floor(Date.now() / 1000)
 
   const duration = details.auctionDeadline - nowInSeconds
@@ -608,52 +599,26 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     else return (Number(details?.margin) + Number(details?.inputAmount)) / Number(details?.margin)
   }, [])
 
-  const { account, chainId, provider } = useWeb3React()
-
-  const marginFacility = useMarginFacilityContract(true)
+  // const marginFacility = useMarginFacilityContract(true)
 
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
+  const [showModal, setShowModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string>()
-
-  const poolAddress = useMemo(() => {
-    if (chainId && pool) {
-      return computePoolAddress({
-        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-        tokenA: pool.token0,
-        tokenB: pool.token1,
-        fee: pool.fee,
-      }).toLowerCase()
-    }
-    return undefined
-  }, [chainId, pool])
 
   // CANCEL ORDER TO DO
 
-  const callback = useCallback(async (): Promise<TransactionResponse> => {
-    try {
-      if (!account) throw new Error('missing account')
-      if (!poolAddress) throw new Error('missing pool')
-      if (!marginFacility) throw new Error('missing marginFacility contract')
-      if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
-
-      const response = await marginFacility.cancelOrder(poolAddress, details.positionIsToken0, details.isAdd)
-      return response
-    } catch (err) {
-      throw new Error(getErrorMessage(parseContractError(err)))
-    }
-  }, [account, chainId, details, marginFacility, poolAddress, provider])
+  const { callback: cancelCallback } = useCancelLimitOrderCallback(orderKey)
 
   const addTransaction = useTransactionAdder()
 
   const handleCancel = useCallback(() => {
-    if (!callback || !details || !inputCurrency || !outputCurrency) {
+    if (!cancelCallback || !details || !inputCurrency || !outputCurrency) {
       return
     }
     setAttemptingTxn(true)
 
-    callback()
+    cancelCallback()
       .then((response) => {
         setAttemptingTxn(false)
         setTxHash(response?.hash)
@@ -672,10 +637,54 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
         setTxHash(undefined)
         setErrorMessage(error.message)
       })
-  }, [callback, details, inputCurrency, outputCurrency, addTransaction, setAttemptingTxn, setTxHash, setErrorMessage])
+  }, [
+    cancelCallback,
+    details,
+    inputCurrency,
+    outputCurrency,
+    addTransaction,
+    setAttemptingTxn,
+    setTxHash,
+    setErrorMessage,
+  ])
+
+  const handleDismiss = useCallback(() => {
+    setShowModal(false)
+    setAttemptingTxn(false)
+    setTxHash(undefined)
+    setErrorMessage(undefined)
+  }, [])
 
   return (
     <div ref={ref} data-testid="token-table-row">
+      {showModal && (
+        <ConfirmModifyPositionModal
+          onDismiss={handleDismiss}
+          isOpen={showModal}
+          attemptingTxn={attemptingTxn}
+          txHash={txHash}
+          header={
+            <ConfirmCancelOrderHeader
+              order={details}
+              inputCurrency={inputCurrency ?? undefined}
+              outputCurrency={outputCurrency ?? undefined}
+            />
+          }
+          bottom={
+            <BaseFooter
+              errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : null}
+              onConfirm={handleCancel}
+              confirmText="Confirm Cancel Order"
+              disabledConfirm={false}
+            />
+          }
+          title="Confirm Cancel Order"
+          pendingText={<Trans>Cancelling Position ...</Trans>}
+          currencyToAdd={outputCurrency ?? undefined}
+          recipient={account ?? null}
+          errorMessage={errorMessage ? <Trans>{errorMessage}</Trans> : undefined}
+        />
+      )}
       <StyledLoadedRow>
         <PositionRow
           header={false}
@@ -739,7 +748,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow>
                 <RowBetween>
                   <ButtonPrimary
-                    onClick={handleCancel}
+                    onClick={() => setShowModal(true)}
                     style={{
                       height: '15px',
                       fontSize: '10px',

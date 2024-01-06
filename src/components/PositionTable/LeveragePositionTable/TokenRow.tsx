@@ -15,7 +15,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Edit3, Info } from 'react-feather'
+import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import styled, { css, useTheme } from 'styled-components/macro'
@@ -346,13 +346,20 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 // `
 
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
-  [PositionSortMethod.VALUE]: <Trans>Position Value. If your position asset goes up by x%, your PnL goes up by your leverage * x%, denominated in your margin.</Trans>,
+  [PositionSortMethod.VALUE]: (
+    <Trans>
+      Position Value. If your position asset goes up by x%, your PnL goes up by your leverage * x%, denominated in your
+      margin.
+    </Trans>
+  ),
   [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited. Your PnL is denominated in your margin.</Trans>,
   [PositionSortMethod.REPAYTIME]: <Trans>Current borrow rate per hour, continuously paid by your deposit. </Trans>,
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees</Trans>,
   [PositionSortMethod.REMAINING]: (
-    <Trans>Remaining Premium that maintains this position. Your position is forced closed when your deposit is depleted. </Trans>
+    <Trans>
+      Remaining Premium that maintains this position. Your position is forced closed when your deposit is depleted.{' '}
+    </Trans>
   ),
   // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
   // [PositionSortMethod.RECENT_PREMIUM]: (
@@ -590,17 +597,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [details])
 
-  const { isToken0, margin, totalDebtInput } = details
+  const { margin, totalDebtInput } = details
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
       return [details.poolKey.token0Address, details.poolKey.token1Address]
     }
     return [undefined, undefined]
   }, [details])
+
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
   const leverageFactor = useMemo(
     () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
@@ -637,7 +645,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       return [undefined, undefined, undefined]
     }
   }, [pool, details])
-  // console.log(margin)
+
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
     position?.pool?.token1?.address,
@@ -645,23 +653,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     account,
     position?.isToken0
   )
-  // console.log('rate', rate?.toString())
-
-  // console.log('position at table', position, rate)
-  // /**
-  //    * Returns the current mid price of the pool in terms of token0, i.e. the ratio of token1 over token0
-  //    */
-  // get token0Price(): Price<Token, Token>;
-  // /**
-  //  * Returns the current mid price of the pool in terms of token1, i.e. the ratio of token0 over token1
-  //  */
-  // get token1Price(): Price<Token, Token>;
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
-  // Number(formatBNToString(position?.premiumLeft.minus(position?.premiumOwed), NumberType.SwapTradeAmount)) -
-  // Number(formatBNToString(position?.premiumOwed, NumberType.SwapTradeAmount))
-
-  // console.log('leverageFactor', leverageFactor, initialCollateral, totalDebtInput)
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
@@ -699,7 +692,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           repaymentTime={
             <FlexStartRow>
               {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + ' %'}
-              {/*position?.timeLeft()[0] ? <GreenText>{position?.timeLeft()[1]}</GreenText> : <RedText>{0}</RedText>*/}
             </FlexStartRow>
           }
           PnL={
@@ -745,14 +737,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                       {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
                     </GreenText>
                   </UnderlineText>
-                  <div>
-                    {position?.inputCurrency?.symbol}
-                  </div>
+                  <div>{position?.inputCurrency?.symbol}</div>
                 </AutoColumn>
               ) : (
-                <RedText>
-                  0
-                </RedText>
+                <RedText>0</RedText>
               )}
             </FlexStartRow>
           }

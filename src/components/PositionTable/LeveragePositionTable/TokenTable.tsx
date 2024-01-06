@@ -165,7 +165,6 @@ export default function LeveragePositionsTable({
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
-  // const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
 
   /* loading and error state */
   if (loading) {
