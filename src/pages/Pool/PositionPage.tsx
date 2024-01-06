@@ -50,6 +50,8 @@ import { TransactionType } from '../../state/transactions/types'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
+import { useRateAndUtil } from 'hooks/useLMTV2Positions'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 
 const getTokenLink = (chainId: any, address: string) => {
   if (isGqlSupportedChain(chainId)) {
@@ -409,7 +411,7 @@ export function PositionPage() {
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // flag for receiving WETH
-  const [receiveWETH, setReceiveWETH] = useState(false)
+  const [receiveWETH, setReceiveWETH] = useState(true)
   const nativeCurrency = useNativeCurrency()
   const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
 
@@ -421,6 +423,14 @@ export function PositionPage() {
     }
     return undefined
   }, [liquidity, pool, tickLower, tickUpper])
+
+  const { result: ratesData } = useRateAndUtil(
+    pool?.token0.address,
+    pool?.token1.address,
+    pool?.fee,
+    tickLower,
+    tickUpper
+  )
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
@@ -542,7 +552,7 @@ export function PositionPage() {
           tokenId: tokenId.toString(),
           recipient: account,
         },
-        { gasLimit: 20000000 }
+        { gasLimit: 10000000 }
       )
       return response
     } catch (err) {
@@ -1094,13 +1104,13 @@ export function PositionPage() {
                           <AutoColumn gap="md">
                             <Label>
                               <Trans>Unclaimed Fees + Premiums</Trans>
-                            </Label>
-                            {false
-                             // fiatValueOfFees?.greaterThan(new Fraction(1, 100)) 
+                            </Label>                          
+                            {
+                             fiatValueOfFees?.greaterThan(new Fraction(1, 100)) 
                               ? (
                               <ThemedText.DeprecatedLargeHeader
                                 color={theme.accentSuccess}
-                                fontSize="36px"
+                                fontSize="12px"
                                 fontWeight={500}
                               >
                                 <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
@@ -1108,7 +1118,7 @@ export function PositionPage() {
                             ) : (
                               <ThemedText.DeprecatedLargeHeader
                                 color={theme.textPrimary}
-                                fontSize="36px"
+                                fontSize="12px"
                                 fontWeight={500}
                               >
                                 {/*<Trans>$-</Trans>*/}
@@ -1153,7 +1163,7 @@ export function PositionPage() {
                             <LinkedCurrency chainId={chainId} currency={currencyQuote} />
                             <RowFixed>
                               <ThemedText.BodySmall color="textSecondary">
-                                {feeValueUpper ? formatCurrencyAmount(feeValueUpper, 4) : '-'}
+                                {feeValueUpper ? formatCurrencyAmount(feeValueUpper, 10) : '-'}
                               </ThemedText.BodySmall>
                             </RowFixed>
                           </RowBetween>
@@ -1163,12 +1173,22 @@ export function PositionPage() {
                             </RowFixed>
                             <RowFixed>
                               <ThemedText.BodySmall color="textSecondary">
-                                {feeValueLower ? formatCurrencyAmount(feeValueLower, 4) : '-'}
+                                {feeValueLower ? formatCurrencyAmount(feeValueLower, 10) : '-'}
                               </ThemedText.BodySmall>
                             </RowFixed>
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
+                        <Label>
+                          <ThemedText.DeprecatedLargeHeader
+                            color={theme.accentSuccess}
+                            fontSize="12px"
+                            fontWeight={500}
+                          >
+                          <Trans>Premium only APR (variable) : {ratesData? formatBNToString(ratesData?.apr) + "%": '-'}</Trans>
+                          </ThemedText.DeprecatedLargeHeader>
+
+                        </Label>                        
                       {false && showCollectAsWeth && (
                         <AutoColumn gap="md">
                           <RowBetween>
