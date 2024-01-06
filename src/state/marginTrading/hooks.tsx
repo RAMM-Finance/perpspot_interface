@@ -1065,18 +1065,18 @@ const useSimulateMarginTrade = (
         const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
         const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
-        console.log('simulated-params', {
-          positionKey,
-          margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-          borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-          minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-          deadline: deadline.toString(),
-          simulatedOutput: amountOut.toString(),
-          executionOption: 1,
-          depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-          slippedTickMin,
-          slippedTickMax,
-        })
+        // console.log('simulated-params', {
+        //   positionKey,
+        //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+        //   borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+        //   minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+        //   deadline: deadline.toString(),
+        //   simulatedOutput: amountOut.toString(),
+        //   executionOption: 1,
+        //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+        //   slippedTickMin,
+        //   slippedTickMax,
+        // })
 
         // calldata
         const calldata = MarginFacilitySDK.addPositionParameters({
