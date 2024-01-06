@@ -155,6 +155,7 @@ export function AddMarginPositionConfirmModal({
   existingPosition,
   onCancel,
   outputCurrency,
+  inputCurrency
 }: {
   isOpen: boolean
   trade: AddMarginTrade | undefined
@@ -170,6 +171,7 @@ export function AddMarginPositionConfirmModal({
   existingPosition: MarginPositionDetails | undefined
   onCancel: () => void
   outputCurrency: Currency | undefined
+  inputCurrency: Currency | undefined
 
   // swapQuoteReceivedDate: Date | undefined
   // fiatValueInput: { data?: number; isLoading: boolean }
@@ -204,6 +206,8 @@ export function AddMarginPositionConfirmModal({
         allowedSlippage={allowedSlippage}
         showAcceptChanges={showAcceptChanges}
         onAcceptChanges={onAcceptChanges}
+        inputCurrency = {inputCurrency}
+        outputCurrency = {outputCurrency}
       />
     ) : null
   }, [allowedSlippage, onAcceptChanges, trade, preTradeInfo, existingPosition, showAcceptChanges])

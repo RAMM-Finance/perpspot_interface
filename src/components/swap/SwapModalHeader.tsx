@@ -408,12 +408,13 @@ export function LeverageModalHeader({
   const fiatValueInput = useUSDPriceBN(
     trade?.margin && preTradeInfo?.additionalPremium
       ? trade?.margin?.plus(preTradeInfo?.additionalPremium.toExact())
-      : undefined
+      : undefined, inputCurrency
   )
   const fiatValueTotalInput = useUSDPriceBN(
-    trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined
+    trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined, 
+    inputCurrency
   )
-  const fiatValueTotalOutput = useUSDPriceBN(trade?.swapOutput)
+  const fiatValueTotalOutput = useUSDPriceBN(trade?.swapOutput, outputCurrency)
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
