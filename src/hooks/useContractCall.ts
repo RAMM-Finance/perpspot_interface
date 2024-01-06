@@ -69,10 +69,10 @@ export function useContractCall(
     if (!blockNumber || !address || !calldata || !provider || !chainId) {
       return
     }
+
     // console.log('useContractCall1', blockNumber, lastBlockNumber, loading, error, lastParams, address, calldata)
     const _to = typeof address === 'string' ? address : address[chainId] ?? ZERO_ADDRESS
     const paramsUnchanged = lastParams?.to === _to && lastParams?.calldata === calldata
-
     if (error && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
       return
     }

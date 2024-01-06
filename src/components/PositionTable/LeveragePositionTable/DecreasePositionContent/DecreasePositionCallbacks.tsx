@@ -51,9 +51,11 @@ export function useReducePositionCallback(
         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
       const isClose = parsedReduceAmount.isEqualTo(existingPosition.totalPosition)
+
+      // TODO rounding error, hacked to 99% for now 
       const removePremium =
         isClose && existingPosition.premiumLeft.isGreaterThan(0)
-          ? existingPosition.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
+          ? existingPosition.premiumLeft.times(99).div(100).shiftedBy(inputCurrency.decimals).toFixed(0)
           : undefined
 
       const reduceParam: ReducePositionOptions = {
