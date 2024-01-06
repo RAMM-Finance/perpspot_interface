@@ -67,6 +67,7 @@ export function useUSDPriceBN(
 
   const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
   // const currency = currencyAmount?.currency
+  console.log('BnToCurrencyAmount', currencyAmount, amount, currency)
   const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)
 
   const { data, networkStatus } = useTokenSpotPriceQuery({

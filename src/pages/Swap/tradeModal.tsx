@@ -313,10 +313,9 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
-  const fiatValueTradeMargin = useUSDPriceBN(trade?.margin)
-  const fiatValueTradeInput = useUSDPriceBN(trade?.swapInput)
-  const fiatValueTradeOutput = useUSDPriceBN(trade?.swapOutput)
-
+  const fiatValueTradeMargin = useUSDPriceBN(trade?.margin, currencies[Field.INPUT]?? undefined)
+  const fiatValueTradeInput = useUSDPriceBN(trade?.margin.plus(trade?.borrowAmount),currencies[Field.INPUT]?? undefined)
+  const fiatValueTradeOutput = useUSDPriceBN(trade?.swapOutput,currencies[Field.OUTPUT]??undefined)
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
   /**
    * the approval state is NOT_APPROVED + pool with no liquidity, approvalAmount
@@ -521,6 +520,7 @@ const TradeTabContent = () => {
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage ? <Trans>{tradeErrorMessage}</Trans> : undefined}
         outputCurrency={currencies[Field.OUTPUT] ?? undefined}
+        inputCurrency={currencies[Field.INPUT]?? undefined}
       />
       <ConfirmAddLimitOrderModal
         isOpen={lmtShowConfirm}
