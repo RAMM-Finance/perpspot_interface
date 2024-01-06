@@ -124,7 +124,7 @@ export function DecreasePositionDetails({
         <ValueLabel
           label="Total Received"
           description={
-            removePremium
+            !removePremium
               ? 'What you receive is your reduced margin + PnL'
               : 'What you recieve is your reduced margin + PnL + returned deposit'
           }

@@ -156,8 +156,8 @@ export abstract class NonfungiblePositionManager {
           tickUpper: position.tickUpper,
           amount0Desired,
           amount1Desired,
-          amount0Max,
-          amount1Max,
+          amount0Max: amount0Max.toString(),
+          amount1Max: amount1Max.toString(),
           amount0Min,
           amount1Min,
           recipient,
@@ -169,8 +169,8 @@ export abstract class NonfungiblePositionManager {
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('increaseLiquidity', [
         {
           tokenId: toHex(options.tokenId),
-          amount0Max,
-          amount1Max,
+          amount0Max: amount0Max.toString(),
+          amount1Max: amount1Max.toString(),
           amount0Desired,
           amount1Desired,
           amount0Min,
