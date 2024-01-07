@@ -25,6 +25,9 @@ import ConnectionErrorView from './ConnectionErrorView'
 import Option from './Option'
 import PrivacyPolicyNotice from './PrivacyPolicyNotice'
 
+
+import useSelectChain from 'hooks/useSelectChain'
+
 const Wrapper = styled.div`
   ${flexColumnNoWrap};
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -139,6 +142,8 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
   const drawerOpenRef = useRef(drawerOpen)
   drawerOpenRef.current = drawerOpen
 
+  const selectChain = useSelectChain()
+  const targetChainId = 42161
   const tryActivation = useCallback(
     async (connection: Connection) => {
       // Skips wallet connection if the connection should override the default behavior, i.e. install metamask or launch coinbase app
@@ -156,6 +161,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
         setPendingError(undefined)
 
         await connection.connector.activate()
+
         dispatch(updateSelectedWallet({ wallet: connection.type }))
         if (drawerOpenRef.current) toggleWalletDrawer()
       } catch (error) {

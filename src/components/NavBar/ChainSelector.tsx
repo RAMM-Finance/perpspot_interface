@@ -34,7 +34,7 @@ interface ChainSelectorProps {
 }
 
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
-  const { chainId, connector } = useWeb3React()
+  const { account, chainId, connector } = useWeb3React()
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
 
@@ -96,7 +96,7 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   return (
     <Box position="relative" ref={ref}>
       <MouseoverTooltip text={t`Your wallet's current network is unsupported.`} disableHover={isSupported}>
-        <Row
+        {account && <Row
           as="button"
           gap="8"
           className={styles.ChainSelector}
@@ -113,8 +113,8 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
           ) : (
             <img src={info.logoUrl} alt={info.label} className={styles.Image} data-testid="chain-selector-logo" />
           )}
-          {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
-        </Row>
+          {/*isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />*/}
+        </Row>}
       </MouseoverTooltip>
       {
         //isOpen
