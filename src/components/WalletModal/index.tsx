@@ -159,7 +159,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
       try {
         setPendingConnection(connection)
         setPendingError(undefined)
-
+        console.log('windowme', window.ethereum?.isMetaMask)
         await connection.connector.activate()
 
         dispatch(updateSelectedWallet({ wallet: connection.type }))

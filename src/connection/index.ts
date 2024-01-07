@@ -60,8 +60,10 @@ const getIsCoinbaseWalletBrowser = () => isMobile && getIsCoinbaseWallet()
 const getIsMetaMaskBrowser = () => isMobile && getIsMetaMaskWallet()
 const getIsInjectedMobileBrowser = () => getIsCoinbaseWalletBrowser() || getIsMetaMaskBrowser()
 
-const getShouldAdvertiseMetaMask = () =>
-  !getIsMetaMaskWallet() && !isMobile && (!getIsInjected() || getIsCoinbaseWallet())
+// const getShouldAdvertiseMetaMask = () =>
+//   !getIsMetaMaskWallet() && !isMobile && (!getIsInjected() || getIsCoinbaseWallet())
+const getShouldAdvertiseMetaMask = ()=> !getIsMetaMaskWallet() && !isMobile &&!getIsInjected()
+
 const getIsGenericInjector = () => getIsInjected() && !getIsMetaMaskWallet() && !getIsCoinbaseWallet()
 
 const [web3Injected, web3InjectedHooks] = initializeConnector<MetaMask>((actions) => new MetaMask({ actions, onError }))
