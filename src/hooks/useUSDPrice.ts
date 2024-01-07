@@ -36,6 +36,7 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
     currencyAmount?.currency,
     RouterPreference.PRICE
   )
+  console.log('useethvalue', trade)
   // Get ETH value of ETH or WETH
   if (chainId && currencyAmount && currencyAmount.currency.wrapped.equals(nativeOnChain(chainId).wrapped)) {
     return {
@@ -67,8 +68,9 @@ export function useUSDPriceBN(
 
   const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
   // const currency = currencyAmount?.currency
+  console.log('useUSd', currencyAmount?.currency?.name)
   const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)
-
+  console.log('got ethvalue', ethValue?.toExact())
   const { data, networkStatus } = useTokenSpotPriceQuery({
     variables: { chain: chain ?? Chain.Ethereum, address: getNativeTokenDBAddress(chain ?? Chain.Ethereum) },
     skip: !chain || !isGqlSupportedChain(currency?.chainId),
@@ -77,12 +79,13 @@ export function useUSDPriceBN(
     fetchPolicy: 'cache-first',
   })
 
+  console.log('native price', data?.token?.project?.markets?.[0]?.price?.value, networkStatus)
   // Use USDC price for chains not supported by backend yet
   const stablecoinPrice = useStablecoinPrice(!isGqlSupportedChain(currency?.chainId) ? currency : undefined)
   if (!isGqlSupportedChain(currency?.chainId) && currencyAmount && stablecoinPrice) {
     return { data: parseFloat(stablecoinPrice.quote(currencyAmount).toSignificant()), isLoading: false }
   }
-
+  console.log('stablecoinPrice', stablecoinPrice)
   const isFirstLoad = networkStatus === NetworkStatus.loading
 
   // Otherwise, get the price of the token in ETH, and then multiple by the price of ETH
