@@ -19,6 +19,7 @@ import { useState } from 'react'
 import styled from 'styled-components/macro'
 
 import useDatafeed from './useDataFeed'
+import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
@@ -84,14 +85,6 @@ export const PoolDataSection = ({
       } else {
         return getFakePool(chainId, token0.address, token1.address)
       }
-
-      // return computePoolAddress({
-      // 	factoryAddress: UNISWAP_FACTORIES[1],
-      // 	tokenA: token0,
-      // 	tokenB: token1,
-      // 	fee,
-      // 	initCodeHashManualOverride: UNISWAP_POOL_INIT_CODE_HASH
-      // }).toLowerCase()
     }
     return undefined
   }, [chainId, token0, token1])
@@ -122,8 +115,6 @@ export const PoolDataSection = ({
   const [stats, setStats] = useState<{
     price: number
     delta: number
-    // token0Volume: number | null,
-    // token1Volume: number | null,
     high24h: number
     low24h: number
     invertPrice: boolean
@@ -137,6 +128,9 @@ export const PoolDataSection = ({
   const token1Contract = useTokenContract(token1?.address)
 
   const poolData = usePoolsData()
+
+  // useLatestPoolPriceData(uniswapPoolAddress)
+  // useLatestPoolDayData(uniswapPoolAddress ?? '')
 
   useEffect(() => {
     if (token0 && token1) {
@@ -164,8 +158,6 @@ export const PoolDataSection = ({
               },
               fetchPolicy: 'network-only',
             })
-
-            // console.log("priceQuery", priceQuery, result)
 
             if (!result.error && !result.loading && !priceQuery.error && !priceQuery.loading && poolData) {
               const data = result.data.poolDayDatas

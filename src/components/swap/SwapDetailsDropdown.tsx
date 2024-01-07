@@ -216,7 +216,7 @@ export function LeverageDetailsDropdown({
 
   return (
     <Wrapper style={{ marginTop: '0' }}>
-      <AutoColumn gap="sm">
+      <AutoColumn gap="sm" style={{ width: '100%' }}>
         <TraceEvent
           events={[BrowserEvent.onClick]}
           name={SwapEventName.SWAP_DETAILS_EXPANDED}
@@ -262,7 +262,7 @@ export function LeverageDetailsDropdown({
           </StyledHeaderRow>
         </TraceEvent>
         <AnimatedDropdown open={showDetails}>
-          <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+          <SwapDetailsWrapper>
             <StyledCard>
               <AdvancedMarginTradeDetails
                 trade={trade}
@@ -272,7 +272,7 @@ export function LeverageDetailsDropdown({
                 existingPosition={existingPosition}
               />
             </StyledCard>
-          </AutoColumn>
+          </SwapDetailsWrapper>
         </AnimatedDropdown>
       </AutoColumn>
     </Wrapper>

@@ -41,7 +41,7 @@ const StatPrice = styled.div`
 const NoData = styled.div`
   color: ${({ theme }) => theme.textTertiary};
 `
-export const StatsWrapper = styled.div`
+const StatsWrapper = styled.div`
   gap: 16px;
   ${textFadeIn}
 `

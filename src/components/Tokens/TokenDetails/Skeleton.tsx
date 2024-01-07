@@ -1,4 +1,5 @@
 // import { WidgetSkeleton } from 'components/Widget'
+import { StatsWrapper } from 'components/swap/StatsSection'
 import { DEFAULT_WIDGET_WIDTH } from 'components/Widget'
 import { ArrowLeft } from 'react-feather'
 import { useParams } from 'react-router-dom'
@@ -9,8 +10,7 @@ import { LoadingBubble } from '../loading'
 import { AboutContainer, AboutHeader } from './About'
 import { BreadcrumbNavLink } from './BreadcrumbNavLink'
 import { TokenPrice } from './PriceChart'
-import { StatPair, StatsWrapper, StatWrapper } from './StatsSection'
-
+import { StatPair, StatWrapper } from './StatsSection'
 export const Hr = styled.hr`
   background-color: ${({ theme }) => theme.backgroundOutline};
   border: none;

@@ -49,7 +49,7 @@ const PRICE_CHART = gql`
   }
 `
 
-const POOL_PRICE_CHART = gql`
+export const POOL_PRICE_CHART_QUERY = gql`
   query poolHourDatas($startTime: Int!, $endTime: Int!, $address: String!, $amount: Int!) {
     poolHourDatas(
       where: { pool: $address, periodStartUnix_gt: $startTime, periodStartUnix_lt: $endTime }
@@ -139,7 +139,7 @@ export async function fetchPoolPriceData(
       loading,
       error,
     } = await dataClient.query({
-      query: POOL_PRICE_CHART,
+      query: POOL_PRICE_CHART_QUERY,
       variables: {
         address: address.toLowerCase(),
         startTime: startTimestamp,
@@ -248,7 +248,6 @@ export async function fetchLiveBar(
   chainId: number,
   poolAddress: string,
   invertPrice: boolean,
-  useUniswapSubgraph: boolean,
   dataClient: ApolloClient<NormalizedCacheObject>
 ) {
   try {

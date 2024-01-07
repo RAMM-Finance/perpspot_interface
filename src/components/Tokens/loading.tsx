@@ -22,7 +22,7 @@ export const LoadingBubble = styled.div<{
   background: linear-gradient(
     to left,
     ${({ theme }) => theme.backgroundInteractive} 25%,
-    ${({ theme }) => lighten(0.075, theme.backgroundInteractive)} 50%,
+    ${({ theme }) => lighten(0.035, theme.backgroundInteractive)} 50%,
     ${({ theme }) => theme.backgroundInteractive} 75%
   );
   will-change: background-position;

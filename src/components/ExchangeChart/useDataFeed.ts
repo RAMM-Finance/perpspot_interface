@@ -1,4 +1,3 @@
-import { limitlessClient } from 'graphql/limitlessGraph/limitlessClients'
 import { fetchLiveBar, fetchPoolPriceData } from 'graphql/limitlessGraph/poolPriceData'
 import { uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
 import { useMemo, useRef } from 'react'
@@ -24,14 +23,13 @@ const configurationData = {
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
   invertPrice: boolean
-  useUniswapSubgraph: boolean
 }
 
 export default function useDatafeed({ chainId }: { chainId: number }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
-  const resetCacheRef = useRef<() => void | undefined>()
-  const activeTicker = useRef<string | undefined>()
-  const shouldRefetchBars = useRef<boolean>(false)
+  // const resetCacheRef = useRef<() => void | undefined>()
+  // const activeTicker = useRef<string | undefined>()
+  // const shouldRefetchBars = useRef<boolean>(false)
 
   return useMemo(() => {
     return {
@@ -41,19 +39,12 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           setTimeout(() => callback(configurationData))
         },
         // symbolName => JSON obj. w/ token0Symbol, token1Symbol, poolAddress
-        resolveSymbol: (
-          symbolName: string,
-          onSymbolResolvedCallback: any,
-          onResolveErrorCallback: any,
-          extension: any
-        ) => {
+        resolveSymbol: (symbolName: string, onSymbolResolvedCallback: any, onResolveErrorCallback: any) => {
           console.log('[resolveSymbol]: Method call', symbolName)
           if (symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const { baseSymbol, quoteSymbol, poolAddress, invertPrice, useUniswapSubgraph } = JSON.parse(symbolName)
-          console.log('symbols', baseSymbol, quoteSymbol, poolAddress, invertPrice, useUniswapSubgraph)
-          // console.log("resolveSymbol", symbolName)
+          const { baseSymbol, quoteSymbol, poolAddress, invertPrice } = JSON.parse(symbolName)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -70,7 +61,6 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
             data_status: 'streaming',
             poolAddress,
             invertPrice,
-            useUniswapSubgraph,
           }
           setTimeout(() => onSymbolResolvedCallback(symbolInfo))
         },
@@ -84,11 +74,11 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           onHistoryCallback: HistoryCallback,
           onErrorCallback: (error: string) => void
         ) => {
-          // console.log('[getBars]: Method call', symbolInfo, periodParams);
+          console.log('[getBars]: Method call', symbolInfo, periodParams)
           // if (Object.values(SUPPORTED_RESOLUTIONS).find(str => str === resolution) === undefined) {
           //   return onErrorCallback("[getBars] Invalid resolution");
           // }
-          const { poolAddress, invertPrice, useUniswapSubgraph } = symbolInfo
+          const { poolAddress, invertPrice } = symbolInfo
           const { from, to, countBack } = periodParams
 
           try {
@@ -98,7 +88,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
               to,
               countBack,
               invertPrice,
-              useUniswapSubgraph ? uniswapClient : limitlessClient
+              uniswapClient
             )
             // console.log("data", data)
             const noData = !data || data.length === 0
@@ -115,21 +105,13 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
         subscribeBars: async (
           symbolInfo: SymbolInfo,
           resolution: ResolutionString,
-          onRealtimeCallback: SubscribeBarsCallback,
-          _subscribeUID: string,
-          onResetCacheNeededCallback: () => void
+          onRealtimeCallback: SubscribeBarsCallback
         ) => {
-          const { useUniswapSubgraph, invertPrice, poolAddress } = symbolInfo
+          const { invertPrice, poolAddress } = symbolInfo
           // console.log("[subscribe bars]", useUniswapSubgraph)
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveBar(
-              chainId,
-              poolAddress,
-              invertPrice,
-              useUniswapSubgraph,
-              useUniswapSubgraph ? uniswapClient : limitlessClient
-            ).then((bar) => {
+            fetchLiveBar(chainId, poolAddress, invertPrice, uniswapClient).then((bar) => {
               if (bar) {
                 onRealtimeCallback(bar)
               }

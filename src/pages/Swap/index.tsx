@@ -2,13 +2,12 @@ import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
 import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { PoolDataSection } from 'components/ExchangeChart'
-import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
+import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { OrdersTable } from 'components/OrdersTable/TokenTable'
 import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
-import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
+import { PoolDetailsSection } from 'components/swap/PoolDetailsSection'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -152,12 +151,14 @@ export const LeverageGaugeSection = styled(SwapSection)`
   &:focus-within {
     border: 1px solid transparent;
   }
+  padding-bottom: 0;
 `
 
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
   padding: 0px;
   margin-top: 5px;
+  margin-bottom: 10px;
   width: 100%;
 `
 
@@ -192,28 +193,6 @@ const LeftContainer = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;
-`
-const MiddleContainer = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: flex-start;
-  align-content: center;
-`
-
-const LiquidityDistibutionWrapper = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-  border-radius: 10px;
-  width: 350px;
-  padding: 1rem;
-  height: 550px;
-  overflow-y: scroll;
-  ::-webkit-scrollbar {
-    display: none;
-  }
 `
 
 const ActivityWrapper = styled.section`
@@ -355,7 +334,7 @@ export default function Swap({ className }: { className?: string }) {
   const [inputCurrency, outputCurrency] = useMemo(() => {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
   }, [currencies])
-  const [, pool] = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
+  const [poolState, pool] = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   // const theme = useTheme()
 
   // toggle wallet when disconnected
@@ -452,14 +431,6 @@ export default function Swap({ className }: { className?: string }) {
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
-        {/*<TokenSafetyModal
-          isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
-          tokenAddress={importTokensNotInDefault[0]?.address}
-          secondTokenAddress={importTokensNotInDefault[1]?.address}
-          onContinue={handleConfirmTokenWarning}
-          onCancel={handleDismissTokenWarning}
-          showCancel={true}
-        />*/}
         <PageWrapper>
           <SwapHeaderWrapper>
             <TokenNameCell>
@@ -471,12 +442,7 @@ export default function Swap({ className }: { className?: string }) {
                 <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
               )}
             </TokenNameCell>
-            <PoolDataSection
-              chainId={chainId ?? 11155111}
-              token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-              token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-              fee={pool?.fee}
-            />
+            <PoolStatsSection chainId={chainId} pool={pool} />
           </SwapHeaderWrapper>
           <MainWrapper>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
@@ -486,22 +452,7 @@ export default function Swap({ className }: { className?: string }) {
               </TabContent>
             </SwapWrapper>
             <LeftContainer>
-              <MiddleContainer>
-                <PoolDataChart
-                  chainId={chainId ?? 11155111}
-                  token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                  token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                  fee={pool?.fee}
-                />
-                <LiquidityDistibutionWrapper>
-                  <LiquidityDistributionTable
-                    token0={inputIsToken0 ? inputCurrency?.wrapped : outputCurrency?.wrapped}
-                    token1={inputIsToken0 ? outputCurrency?.wrapped : inputCurrency?.wrapped}
-                    currentPrice={currentPrice}
-                    bin={binData}
-                  />
-                </LiquidityDistibutionWrapper>
-              </MiddleContainer>
+              <PoolDetailsSection chainId={chainId} pool={pool} poolState={poolState} />
               <PositionsContainer>
                 <TableHeader>
                   <TabsWrapper>

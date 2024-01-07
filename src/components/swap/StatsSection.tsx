@@ -197,10 +197,7 @@ const StatPrice = styled.div`
   font-size: 12px;
   color: ${({ theme }) => theme.textPrimary};
 `
-const NoData = styled.div`
-  color: ${({ theme }) => theme.textTertiary};
-`
-const StatsWrapper = styled.div`
+export const StatsWrapper = styled.div`
   /* display: flex;
   gap: 16px; */
   display: flex;

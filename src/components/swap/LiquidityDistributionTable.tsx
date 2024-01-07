@@ -1,4 +1,5 @@
 import { Currency } from '@uniswap/sdk-core'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { BinData } from 'hooks/useLMTV2Positions'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -77,6 +78,22 @@ const LiquidityDistributionTable = ({
     </>
   )
 }
+
+export const LiquidityDistributionLoading = () => {
+  return (
+    <>
+      <Title>
+        <ThemedText.BodySecondary>Borrowable Liquidity</ThemedText.BodySecondary>
+      </Title>
+      <Bubble />
+    </>
+  )
+}
+
+const Bubble = styled(LoadingBubble)`
+  width: 100%;
+  height: 100%;
+`
 
 export default LiquidityDistributionTable
 

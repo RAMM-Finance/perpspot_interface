@@ -36,7 +36,6 @@ import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
 import LeaderboardPage from './Leaderboard'
 import MigrateV2 from './MigrateV2'
-import MigrateV2Pair from './MigrateV2/MigrateV2Pair'
 import NotFound from './NotFound'
 import Pool from './Pool'
 import { PositionPage } from './Pool/PositionPage'
@@ -289,7 +288,7 @@ export default function App() {
                   <Route path="close/:leverageManager/:trader/:tokenId" element={<ClosePosition />} />
 
                   <Route path="migrate/v2" element={<MigrateV2 />} />
-                  <Route path="migrate/v2/:address" element={<MigrateV2Pair />} />
+                  {/* <Route path="migrate/v2/:address" element={<MigrateV2Pair />} /> */}
 
                   <Route path="*" element={<Navigate to="/not-found" replace />} />
                   <Route path="/not-found" element={<NotFound />} />

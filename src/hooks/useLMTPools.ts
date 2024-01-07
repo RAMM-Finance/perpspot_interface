@@ -55,7 +55,7 @@ export function usePoolsData() {
             uniqueTokenIds.add(entry.tokenId)
           }
         })
-        
+
         const pools = new Set<string>()
         AddQueryData?.data?.marginPositionIncreaseds.forEach((entry: any) => {
           if (!pools.has(entry.pool)) {
@@ -90,7 +90,7 @@ export function usePoolsData() {
       }
     }
     call()
-  }, [account, referralContract])
+  }, [account, referralContract, dataProvider, error, loading])
 
   const slot0s = useMultipleContractSingleData(uniquePools, POOL_STATE_INTERFACE, 'slot0')
   const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
@@ -203,7 +203,7 @@ export function usePoolsData() {
     })
 
     return poolToData
-  }, [uniquePools, uniqueTokens, slot0s, lpPositions, addData, reduceData, addLiqData])
+  }, [uniquePools, uniqueTokens, slot0s, lpPositions, addData, reduceData])
 
   return useMemo(() => {
     return poolToData
