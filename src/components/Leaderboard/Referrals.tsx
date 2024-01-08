@@ -56,11 +56,12 @@ const Filter = styled.div`
 
 const FilterWrapper = styled.div`
   display: flex;
+  margin-left: 20px;
 `
 
 const StyledSelectorText = styled.div<{ active: boolean }>`
   font-size: 14px;
-  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
+  color: ${({ theme, active }) => (active ? theme.accentActive : theme.textPrimary)};
   font-weight: ${({ active }) => (active ? '600' : '300')};
 `
 
@@ -72,9 +73,9 @@ const Selector = styled.div<{ active: boolean }>`
   border-top: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
   border-right: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
   border-left: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
-
+  border-bottom: 1px solid ${({ active, theme }) => (active ? theme.backgroundSurface : 'none')};
   padding: 8px 12px 8px 12px;
-  background-color: ${({ active, theme }) => (active ? theme.surface1 : 'none')};
+  background-color: ${({ active, theme }) => (active ? 'none' : 'none')};
   cursor: pointer;
   &:hover {
     opacity: ${({ theme }) => theme.opacity.hover};
@@ -612,10 +613,10 @@ const ReferrerActiveWrapper = styled.div``
 
 const StyledCard = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.surface1};
+  background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
 `
 const ContentWrapper = styled.div<{ active: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: ${({ active, theme }) => (active ? ' 0 10px 10px 10px' : '10px')};
+  border-radius: 10px;
 `
