@@ -19,7 +19,7 @@ interface PresetsButtonsProps {
 
 export function PresetsButtons({ onSetRecommendedRange }: PresetsButtonsProps) {
   return (
-    <AutoRow style={{ zIndex: '1' }} gap="4px" width="auto">
+    <AutoRow style={{ zIndex: '1', marginLeft: '20px' }} gap="4px" width="fit-content">
       <Button onClick={onSetRecommendedRange}>
         <ThemedText.DeprecatedBody fontSize={12}>
           <Trans>Recommended Range</Trans>

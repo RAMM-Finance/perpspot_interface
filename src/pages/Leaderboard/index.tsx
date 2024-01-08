@@ -41,7 +41,7 @@ const AchievementsWrapper = styled.div`
   padding-bottom: 20px;
 `
 const ReferralsWrapper = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  // border: solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
   margin-left: 0.125rem;

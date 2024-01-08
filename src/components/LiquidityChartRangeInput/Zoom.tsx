@@ -12,8 +12,8 @@ const Wrapper = styled.div<{ count: number }>`
   grid-gap: 6px;
 
   position: absolute;
-  top: -100px;
-  right: 0;
+  top: -42px;
+  right: 40px;
 `
 
 const Button = styled(ButtonGray)`

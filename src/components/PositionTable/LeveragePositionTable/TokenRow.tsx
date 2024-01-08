@@ -4,7 +4,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
-import Row, { AutoRow, RowBetween } from 'components/Row'
+import Row, { RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
@@ -49,7 +49,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 12px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -172,7 +172,7 @@ const NameCell = styled(Cell)`
   padding-right: 8px;
 `
 const PriceCell = styled(DataCell)`
-  width: 100%;
+  width: 1;
   justify-content: flex-start;
   padding-right: 8px;
 `
@@ -696,16 +696,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           PnL={
             <FlexStartRow>
-              <AutoRow gap="2px" align="center">
+              <AutoColumn style={{ lineHeight: 1.5 }}>
                 <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                  {position &&
-                    `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} (${(
-                      (position?.PnL().toNumber() / position?.margin.toNumber()) *
-                      100
-                    ).toFixed(2)} %)`}{' '}
+                  {position && `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} `}
                 </DeltaText>
-                <div style={{ lineHeight: '1' }}>{' ' + position?.inputCurrency?.symbol}</div>
-              </AutoRow>
+                <div>
+                  <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
+                    {position && `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                  </DeltaText>
+                  {' ' + position?.inputCurrency?.symbol}
+                </div>
+              </AutoColumn>
             </FlexStartRow>
           }
           entryPrice={
@@ -730,14 +731,20 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           remainingPremium={
             <FlexStartRow>
               {position?.premiumLeft.isGreaterThan(0) ? (
-                <AutoColumn>
+                <AutoColumn style={{ lineHeight: 1.5 }}>
                   <UnderlineText>
                     <GreenText style={{ display: 'flex', alignItems: 'center' }}>
                       {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
-                      {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
                     </GreenText>
                   </UnderlineText>
-                  <div>{position?.inputCurrency?.symbol}</div>
+                  <div style={{ display: 'flex', gap: '3px' }}>
+                    <UnderlineText>
+                      <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                        {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                      </GreenText>
+                    </UnderlineText>
+                    {position?.inputCurrency?.symbol}
+                  </div>
                 </AutoColumn>
               ) : (
                 <RedText>0</RedText>

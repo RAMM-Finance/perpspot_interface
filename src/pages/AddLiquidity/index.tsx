@@ -11,6 +11,7 @@ import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import { PositionPreview } from 'components/PositionPreview'
+import RateToggle from 'components/RateToggle'
 import { PoolSelector } from 'components/swap/PoolSelector'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
@@ -41,8 +42,7 @@ import HoverInlineText from '../../components/HoverInlineText'
 import { AddRemoveTabs } from '../../components/NavigationTabs'
 import RangeSelector from '../../components/RangeSelector'
 import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
-import RateToggle from '../../components/RateToggle'
-import Row, { AutoRow, RowBetween, RowFixed } from '../../components/Row'
+import Row, { RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
 import { ZERO_PERCENT } from '../../constants/misc'
@@ -763,12 +763,47 @@ export default function AddLiquidity() {
                         <DynamicSection gap="md" disabled={!feeAmount || invalidPool}>
                           {!noLiquidity ? (
                             <>
-                              <RowBetween></RowBetween>
-                              <RowBetween style={{ marginBottom: '30px' }}>
-                                <ThemedText.BodyPrimary>
+                              <RowBetween>
+                                <ThemedText.BodySecondary>
                                   <Trans>Select Price Range</Trans>
-                                </ThemedText.BodyPrimary>
-
+                                </ThemedText.BodySecondary>
+                              </RowBetween>
+                              <RowBetween>
+                                {price && baseCurrency && quoteCurrency && !noLiquidity && (
+                                  <Trans>
+                                    <div
+                                      style={{
+                                        display: 'flex',
+                                        justifyContent: 'start',
+                                        alignItems: 'end',
+                                        gap: '5px',
+                                      }}
+                                    >
+                                      <ThemedText.DeprecatedMain
+                                        fontWeight={500}
+                                        textAlign="start"
+                                        fontSize={12}
+                                        color="text"
+                                      >
+                                        Current Price:
+                                      </ThemedText.DeprecatedMain>
+                                      <ThemedText.DeprecatedBody
+                                        fontWeight={500}
+                                        textAlign="start"
+                                        fontSize={12}
+                                        color="textSecondary"
+                                      >
+                                        <HoverInlineText
+                                          maxCharacters={10}
+                                          text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
+                                        />
+                                      </ThemedText.DeprecatedBody>
+                                      <ThemedText.DeprecatedBody textAlign="start" color="textSecondary" fontSize={11}>
+                                        {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                                      </ThemedText.DeprecatedBody>
+                                    </div>
+                                  </Trans>
+                                )}
                                 {baseCurrency && quoteCurrency ? (
                                   <RateToggle
                                     currencyA={baseCurrency}
@@ -792,39 +827,9 @@ export default function AddLiquidity() {
                                   />
                                 ) : null}
                               </RowBetween>
-
-                              {price && baseCurrency && quoteCurrency && !noLiquidity && (
-                                <AutoRow gap="4px" justify="left" style={{ marginTop: '0.5rem' }}>
-                                  <Trans>
-                                    <div style={{ display: 'flex', gap: '2px' }}>
-                                      <ThemedText.DeprecatedMain
-                                        fontWeight={500}
-                                        textAlign="center"
-                                        fontSize={12}
-                                        color="text1"
-                                      >
-                                        Current Price:
-                                      </ThemedText.DeprecatedMain>
-                                      <ThemedText.DeprecatedBody
-                                        fontWeight={500}
-                                        textAlign="center"
-                                        fontSize={12}
-                                        color="text1"
-                                      >
-                                        <HoverInlineText
-                                          maxCharacters={20}
-                                          text={invertPrice ? price.invert().toSignificant(6) : price.toSignificant(6)}
-                                        />
-                                      </ThemedText.DeprecatedBody>
-                                    </div>
-
-                                    <ThemedText.DeprecatedBody color="text2" fontSize={11}>
-                                      {quoteCurrency?.symbol} per {baseCurrency.symbol}
-                                    </ThemedText.DeprecatedBody>
-                                  </Trans>
-                                  {!noLiquidity && <PresetsButtons onSetRecommendedRange={handleSetRecommendedRange} />}
-                                </AutoRow>
-                              )}
+                              <RowBetween>
+                                {!noLiquidity && <PresetsButtons onSetRecommendedRange={handleSetRecommendedRange} />}
+                              </RowBetween>
 
                               <LiquidityChartRangeInput
                                 currencyA={baseCurrency ?? undefined}
@@ -1236,9 +1241,9 @@ export default function AddLiquidity() {
                           gap="md"
                           disabled={!feeAmount || invalidPool || (noLiquidity && !startPriceTypedValue)}
                         >
-                          <ThemedText.BodyPrimary style={{ marginBottom: '10px', marginTop: '10px' }}>
+                          <ThemedText.BodySecondary style={{ marginBottom: '10px', marginTop: '10px' }}>
                             {hasExistingPosition ? <Trans>Add more liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
-                          </ThemedText.BodyPrimary>
+                          </ThemedText.BodySecondary>
 
                           <CurrencyInputPanel
                             value={formattedAmounts[Field.CURRENCY_A]}
@@ -1274,7 +1279,7 @@ export default function AddLiquidity() {
                             gap="md"
                           >
                             {' '}
-                            <ThemedText.BodyPrimary style={{ marginBottom: '5px' }}>Details</ThemedText.BodyPrimary>
+                            <ThemedText.BodySecondary style={{ marginBottom: '5px' }}>Details</ThemedText.BodySecondary>
                             <OutlineCard>
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>Estimated APR: </ThemedText.BodySmall>

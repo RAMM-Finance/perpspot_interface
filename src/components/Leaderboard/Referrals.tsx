@@ -15,25 +15,27 @@ import { usePointsData } from './data'
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  align-items: left;
   margin-top: 10px;
   padding: 10px;
 `
 
 const InputWrapper = styled(InputSection)`
-  width: 95%;
+  background: none;
+  border: none;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: start;
   align-items: center;
   &:focus-within {
-    border: 1px solid ${({ theme }) => theme.backgroundOutline};
+    border: none;
   }
 `
 
 const Input = styled.input`
   margin-bottom: 10px;
+  max-width: 400px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
@@ -54,7 +56,6 @@ const Filter = styled.div`
 
 const FilterWrapper = styled.div`
   display: flex;
-  margin-bottom: 6px;
 `
 
 const StyledSelectorText = styled.div<{ active: boolean }>`
@@ -64,10 +65,16 @@ const StyledSelectorText = styled.div<{ active: boolean }>`
 `
 
 const Selector = styled.div<{ active: boolean }>`
+  margin-bottom: -1px;
+  z-index: 3;
   font-color: ${({ active, theme }) => (active ? theme.background : 'none')};
-  border-radius: 10px;
-  padding: 8px;
-  background-color: ${({ active, theme }) => (active ? theme.accentActiveSoft : 'none')};
+  border-radius: 10px 10px 0 0;
+  border-top: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
+  border-right: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
+  border-left: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
+
+  padding: 8px 12px 8px 12px;
+  background-color: ${({ active, theme }) => (active ? theme.surface1 : 'none')};
   cursor: pointer;
   &:hover {
     opacity: ${({ theme }) => theme.opacity.hover};
@@ -75,7 +82,7 @@ const Selector = styled.div<{ active: boolean }>`
 `
 
 const Referrals = () => {
-  const {refereeActivity,tradeProcessedByTrader,lpPositionsByUniqueLps} = usePointsData()
+  const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
   console.log('refereeActivity', refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps)
 
   const [referral, setReferral] = useState<boolean>(false)
@@ -178,7 +185,7 @@ const Referrals = () => {
     }
 
     call()
-  }, [refGen, ref, account, ])
+  }, [refGen, ref, account])
   console.log('code exists', codeExists)
 
   const [codeUsing, setCodeUsing] = useState(false)
@@ -221,8 +228,10 @@ const Referrals = () => {
     }
   }, [account, chainId, referral, provider, ref])
 
+  console.log('CREATE REF CODE', createReferralCode)
+
   const handleCreateReferral = useCallback(() => {
-    if (!userRef?.current?.value || !account || !referralContract || !chainId || !provider) {
+    if (!refGen || !account || !referralContract || !chainId || !provider) {
       return
     }
 
@@ -230,6 +239,7 @@ const Referrals = () => {
 
     callback()
       .then((response) => {
+        console.log('RES', response)
         setAttemptingTxn(false)
         setTxHash(response?.hash)
         setErrorMessage(undefined)
@@ -273,23 +283,21 @@ const Referrals = () => {
       })
   }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
-  const totalCollected = useMemo(()=>{
-    if(!account || !lpPositionsByUniqueLps) return 0 
-    let totalAmount =0  
-    lpPositionsByUniqueLps?.[account]?.forEach((entry:any)=>{
+  const totalCollected = useMemo(() => {
+    if (!account || !lpPositionsByUniqueLps) return 0
+    let totalAmount = 0
+    lpPositionsByUniqueLps?.[account]?.forEach((entry: any) => {
       totalAmount += entry.amount0Collected
       totalAmount += entry.amount1Collected
-    })  
+    })
     return totalAmount
-  }, [lpPositionsByUniqueLps,account])
+  }, [lpPositionsByUniqueLps, account])
 
-  const tradingVolume = useMemo(()=>{
-    if(!account || !tradeProcessedByTrader) return 0 
-    if(!tradeProcessedByTrader[account]) return 0 
+  const tradingVolume = useMemo(() => {
+    if (!account || !tradeProcessedByTrader) return 0
+    if (!tradeProcessedByTrader[account]) return 0
     else return tradeProcessedByTrader[account].amount
-
-  }, [tradeProcessedByTrader,account])
-
+  }, [tradeProcessedByTrader, account])
 
   return (
     <Wrapper>
@@ -303,124 +311,170 @@ const Referrals = () => {
           </Selector>
         </Filter>
       </FilterWrapper>
-      {!referral && !acceptedCreate && (
-        <InputWrapper>
-          <ThemedText.BodyPrimary
-            style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
-            fontSize={16}
-            fontWeight={800}
-          >
-            Generate Referral Code
-          </ThemedText.BodyPrimary>
-          <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-            Looks like you don't have a referral code to share. Create a new one and start earning rebates!
-          </ThemedText.BodyPrimary>
-          <Input
-            placeholder="Create referral code"
-            id="refferal-code"
-            ref={referralRef}
-            onChange={handleUserRefChange}
-          ></Input>
-          {codeExists && (
+      <ContentWrapper active={referral}>
+        {!referral && !acceptedCode && (
+          <InputWrapper>
+            <ThemedText.BodySecondary
+              style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
+              fontSize={16}
+              fontWeight={800}
+            >
+              Generate Referral Code
+            </ThemedText.BodySecondary>
             <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-              Code taken
+              Looks like you don't have a referral code to share. Create a new one and start earning rebates!
             </ThemedText.BodyPrimary>
-          )}
-          {!codeExists && <SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>}
-        </InputWrapper>
-      )}{' '}
-      {referral && !acceptedCode && (
-        <InputWrapper>
-          <ThemedText.BodyPrimary
-            style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
-            fontSize={16}
-            fontWeight={800}
-          >
-            Enter Referral Code
-          </ThemedText.BodyPrimary>
-          <ThemedText.BodyPrimary style={{ paddingBottom: '15px' }}>
-            Please input referral code to benefit from fee discounts.
-          </ThemedText.BodyPrimary>
-          <Input
-            placeholder=" Enter referral code"
-            id="refferal-code"
-            ref={userRef}
-            onChange={handleCodeChange}
-          ></Input>
-          {codeExists ? (
-            <SmallButtonPrimary onClick={handleUseCode}>Use Code</SmallButtonPrimary>
-          ) : (
-            <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-              Code does not exist
+            <Input
+              placeholder="Create referral code"
+              id="refferal-code"
+              ref={referralRef}
+              onChange={handleUserRefChange}
+            ></Input>
+            {codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>}
+            {!codeExists && <SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>}
+          </InputWrapper>
+        )}{' '}
+        {referral && !acceptedCode && (
+          <InputWrapper>
+            <ThemedText.BodySecondary
+              style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
+              fontSize={16}
+              fontWeight={800}
+            >
+              Enter Referral Code
+            </ThemedText.BodySecondary>
+            <ThemedText.BodyPrimary style={{ paddingBottom: '15px' }}>
+              Enter a referral code to benefit from fee discounts.
             </ThemedText.BodyPrimary>
-          )}
-        </InputWrapper>
-      )}
-      {!referral && acceptedCreate && (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              borderBottom: 'solid 1px gray',
-              paddingBottom: '10px',
-              alignItems: 'center',
-            }}
-          >
-            <ThemedText.BodySmall>Referral Codes: Tier {refereeActivity && account&& (refereeActivity[account]?.tier.toString())}</ThemedText.BodySmall>{' '}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr ', gap: '10px' }}>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Users Referred</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>{refereeActivity && account&& (refereeActivity[account]?.usersReferred)}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Volume by Referees </ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>${refereeActivity && account&& (refereeActivity[account]?.tradeVolume)}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>My Total Referral Points</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>{refereeActivity && account&& (refereeActivity[account]?.point)}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Fees earned by Referees</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>${refereeActivity && account&& (refereeActivity[account]?.lpAmount)}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall> Rebates</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Claimable Rebates</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>$0.0000</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>{' '}
-          </div>
-          <StyledCard style={{ padding: '15px' }}>
-            {/*<div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
+            <Input
+              placeholder=" Enter referral code"
+              id="refferal-code"
+              ref={userRef}
+              onChange={handleCodeChange}
+            ></Input>
+            {codeExists ? (
+              <SmallButtonPrimary onClick={handleUseCode}>Use Code</SmallButtonPrimary>
+            ) : (
+              <SmallButtonPrimary altDisabledStyle={true}>Code does not exist</SmallButtonPrimary>
+            )}
+          </InputWrapper>
+        )}
+        {!referral && acceptedCreate && (
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px', padding: '40px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'start',
+                paddingBottom: '10px',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <ThemedText.BodySecondary fontSize={16}>Tier: </ThemedText.BodySecondary>
+              <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                Tier {refereeActivity && account && refereeActivity[account]?.tier.toString()}
+              </ThemedText.BodyPrimary>{' '}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr ', gap: '10px' }}>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Users Referred</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    {refereeActivity && account && refereeActivity[account]?.usersReferred}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Volume by Referees </ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    ${refereeActivity && account && refereeActivity[account]?.tradeVolume}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>My Total Referral Points</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    {refereeActivity && account && refereeActivity[account]?.point}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Fees earned by Referees</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    ${refereeActivity && account && refereeActivity[account]?.lpAmount}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary> Rebates</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    $0.00
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Claimable Rebates</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    $0.0000
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>{' '}
+            </div>
+            {/* <StyledCard style={{ padding: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
               <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Referral Code:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">{activeCodes}</ThemedText.BodySmall>
@@ -446,84 +500,106 @@ const Referrals = () => {
                 <ThemedText.BodySmall>Total Rebates:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">12431-341341</ThemedText.BodySmall>
               </div>
-            </div>*/}
-          </StyledCard>
-          <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px' }}>
-            <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
-          </StyledCard>
-        </div>
-      )}
-      {referral && acceptedCode && (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px' }}>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Active Referral Code</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>{referralCode?.toString()}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Trading Volume</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>${tradingVolume?.toString()}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>LP Fee Collected</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>${totalCollected}</ThemedText.BodyPrimary>
-              </div>
-            </StyledCard>
-
-            <StyledCard>
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', padding: '15px' }}
-              >
-                <ThemedText.BodySmall>Rebates(this week)</ThemedText.BodySmall>
-                <ThemedText.BodyPrimary>$0.00</ThemedText.BodyPrimary>
-              </div>
+            </div>
+            </StyledCard> */}
+            <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
+              <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
             </StyledCard>
           </div>
-          <StyledCard style={{ padding: '15px' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'start',
-                borderBottom: 'solid 1px gray',
-                paddingBottom: '10px',
-                paddingLeft: '10px',
-                alignItems: 'center',
-              }}
-            >
-              <ThemedText.BodySmall>Rebates Distribution History</ThemedText.BodySmall>{' '}
+        )}
+        {referral && acceptedCode && (
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px', padding: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Active Referral Code</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    {referralCode?.toString()}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Trading Volume</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    ${tradingVolume?.toString()}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>LP Fee Collected</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    ${totalCollected}
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
+
+              <StyledCard>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '15px',
+                  }}
+                >
+                  <ThemedText.BodySecondary>Rebates(this week)</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                    $0.00
+                  </ThemedText.BodyPrimary>
+                </div>
+              </StyledCard>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
-              <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
-                <ThemedText.BodySmall>Date:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">{Date.now()}</ThemedText.BodySmall>
-              </div>
-              {/*<div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+            <ThemedText.BodySmall style={{ paddingLeft: '10px' }}>Rebates Distribution History</ThemedText.BodySmall>{' '}
+            <StyledCard style={{ padding: '15px' }}>
+              <div style={{ display: 'flex', padding: '10px' }}>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+                  <ThemedText.BodySmall>Date:</ThemedText.BodySmall>
+                  <ThemedText.BodySmall color="textSecondary">{Date.now()}</ThemedText.BodySmall>
+                </div>
+                {/*<div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Type:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">V1 Airdrop</ThemedText.BodySmall>
               </div>*/}
-              <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
-                <ThemedText.BodySmall>Amount:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">$5.12</ThemedText.BodySmall>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+                  <ThemedText.BodySmall>Amount:</ThemedText.BodySmall>
+                  <ThemedText.BodySmall color="textSecondary">$5.12</ThemedText.BodySmall>
+                </div>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+                  <ThemedText.BodySmall>Transaction:</ThemedText.BodySmall>
+                  <ThemedText.BodySmall color="textSecondary">0x233143514313</ThemedText.BodySmall>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
-                <ThemedText.BodySmall>Transaction:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">0x233143514313</ThemedText.BodySmall>
-              </div>
-            </div>
-          </StyledCard>
-        </div>
-      )}
+            </StyledCard>
+          </div>
+        )}
+      </ContentWrapper>
     </Wrapper>
   )
 }
@@ -538,4 +614,8 @@ const StyledCard = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
+`
+const ContentWrapper = styled.div<{ active: boolean }>`
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: ${({ active, theme }) => (active ? ' 0 10px 10px 10px' : '10px')};
 `

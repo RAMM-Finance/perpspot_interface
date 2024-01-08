@@ -29,6 +29,12 @@ export const RowStart = styled(Row)`
   align-items: center;
   gap: 20px;
 `
+
+export const RowEnd = styled(Row)`
+  justify-content: end;
+  align-items: center;
+  gap: 20px;
+`
 export const RowFlat = styled.div`
   display: flex;
   align-items: flex-end;
