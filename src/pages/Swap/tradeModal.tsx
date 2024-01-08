@@ -11,12 +11,11 @@ import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
 import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
-import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
-import Row, { RowBetween, RowFixed } from 'components/Row'
+import { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
 import { AddMarginPositionConfirmModal } from 'components/swap/ConfirmSwapModal'
@@ -156,7 +155,7 @@ export const DynamicSection = styled(AutoColumn)<{ disabled?: boolean }>`
   pointer-events: ${({ disabled }) => (disabled ? 'none' : 'initial')};
 `
 
-export const LimitInputPrice = styled(AutoColumn)`
+const LimitInputPrice = styled(AutoColumn)`
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
   margin-top: 10px;
@@ -169,6 +168,13 @@ export const LimitInputPrice = styled(AutoColumn)`
   &:focus-within {
     border: 1px solid ${({ theme }) => theme.accentActive};
   }
+`
+
+const PriceSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 `
 
 export const StyledSelectorText = styled(ThemedText.BodySmall)<{ active: boolean }>`
@@ -562,7 +568,7 @@ const TradeTabContent = () => {
       <LimitInputWrapper>
         <AnimatedDropdown open={isLimitOrder}>
           <DynamicSection disabled={false}>
-            <Row gap="20px">
+            <RowBetween gap="20px">
               {Boolean(baseCurrency && quoteCurrency) && (
                 <PriceToggleSection>
                   <PriceToggle
@@ -577,7 +583,17 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-              <Row justify="flex-end" align="start">
+              <PriceSection onClick={() => onPriceToggle(!baseCurrencyIsInputToken)}>
+                <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                  Current Price
+                </ThemedText.DeprecatedMain>
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
+                    {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
+                  </ThemedText.DeprecatedBody>
+                </div>
+              </PriceSection>
+              {/* <Row justify="flex-end" align="start">
                 <ThemedText.DeprecatedMain fontWeight={535} fontSize={14} color="text1" marginRight="10px">
                   Current Price:
                 </ThemedText.DeprecatedMain>
@@ -591,8 +607,8 @@ const TradeTabContent = () => {
                     </ThemedText.DeprecatedBody>
                   )}
                 </div>
-              </Row>
-            </Row>
+              </Row> */}
+            </RowBetween>
 
             <LimitInputPrice>
               <Trans>

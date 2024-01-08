@@ -129,7 +129,7 @@ export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: P
     })
   }, [chainId, pool])
 
-  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress)
+  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
   const poolData = usePoolsData()
   const contract0 = useTokenContract(pool?.token0?.address)
   const contract1 = useTokenContract(pool?.token1?.address)
@@ -147,7 +147,7 @@ export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: P
       }
     }
 
-    let price = new BN(pool.token0Price.toFixed(18))
+    let price = priceData.priceNow
     const invertPrice = price.lt(1)
     let delta
     let price24hHigh
@@ -164,7 +164,7 @@ export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: P
       price24hHigh = priceData.high24
       price24hLow = priceData.low24
     }
-    return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl]
+    return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool]
   }, [pool, priceData, poolData])
 
   const baseQuoteSymbol = invertPrice

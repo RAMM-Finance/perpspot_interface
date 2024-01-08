@@ -1,5 +1,5 @@
 import { fetchLiveBar, fetchPoolPriceData } from 'graphql/limitlessGraph/poolPriceData'
-import { uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
+import { getUniswapSubgraph, uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
 import { useMemo, useRef } from 'react'
 
 import {
@@ -88,7 +88,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
               to,
               countBack,
               invertPrice,
-              uniswapClient
+              getUniswapSubgraph(chainId)
             )
             // console.log("data", data)
             const noData = !data || data.length === 0
