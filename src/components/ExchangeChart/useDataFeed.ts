@@ -1,5 +1,5 @@
 import { fetchLiveBar, fetchPoolPriceData } from 'graphql/limitlessGraph/poolPriceData'
-import { getUniswapSubgraph, uniswapClient } from 'graphql/limitlessGraph/uniswapClients'
+import { getUniswapSubgraph } from 'graphql/limitlessGraph/uniswapClients'
 import { useMemo, useRef } from 'react'
 
 import {
@@ -108,7 +108,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           // console.log("[subscribe bars]", useUniswapSubgraph)
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveBar(chainId, poolAddress, uniswapClient).then((bar) => {
+            fetchLiveBar(chainId, poolAddress, getUniswapSubgraph(chainId)).then((bar) => {
               if (bar) {
                 onRealtimeCallback(bar)
               }

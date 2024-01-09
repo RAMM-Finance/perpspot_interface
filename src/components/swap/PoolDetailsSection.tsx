@@ -53,6 +53,7 @@ function getSymbol(pool: Pool | undefined, chainId: number | undefined): string 
     quoteSymbol,
   })
 }
+
 export function PoolDetailsSection({
   pool,
   poolState,
@@ -62,26 +63,19 @@ export function PoolDetailsSection({
   poolState?: PoolState
   chainId?: number
 }) {
-  const poolAddress = useMemo(() => {
-    if (!pool || !chainId) return undefined
-    return computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    })
-  }, [pool, chainId])
-
   // console.log('poolContract', useSingleCallResult(poolContract, 'slot0')?.result)
   const symbol = useMemo(() => getSymbol(pool, chainId), [pool, chainId])
   const token0 = pool?.token0
   const token1 = pool?.token1
   const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
-  const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
+  const { result: binData } = useBulkBinData(pool)
+  // const binData = undefined
+
   if (!pool || !chainId) return <PoolDetailsSkeleton />
   return (
     <MiddleContainer>
       {symbol && chainId && <PoolDataChart symbol={symbol} chainId={chainId} />}
+
       <LiquidityDistibutionWrapper>
         <LiquidityDistributionTable token0={token0} token1={token1} currentPrice={currentPrice} bin={binData} />
       </LiquidityDistibutionWrapper>

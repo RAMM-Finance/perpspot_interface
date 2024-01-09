@@ -15,7 +15,6 @@ import { TabContent, TabNavItem } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { useBestPool } from 'hooks/useBestPool'
-import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -412,18 +411,22 @@ export default function Swap({ className }: { className?: string }) {
     setSwapQuoteReceivedDate,
   ])
 
-  const {
-    loading: leverageLoading,
-    positions: leveragePositions,
-    error,
-    syncing: leverageSyncing,
-  } = useLeveragedLMTPositions(account)
+  // const {
+  //   loading: leverageLoading,
+  //   positions: leveragePositions,
+  //   error,
+  //   syncing: leverageSyncing,
+  // } = useLeveragedLMTPositions(account)
+  const leverageLoading = false
+  const leveragePositions = [] as any
 
-  const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
+  // const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
+  const orderLoading = false
+  const limitOrders = [] as any
 
-  const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
+  // const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
 
-  const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
+  // const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
 
   const [activePositionTable, setActiveTable] = useState(1)
 

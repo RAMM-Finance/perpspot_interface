@@ -1,3 +1,4 @@
+import { Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -5,9 +6,11 @@ import { SupportedChainId } from 'constants/chains'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
 import { useMemo } from 'react'
+import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
+import { roundToBin } from 'utils/roundToBin'
 
 import { useDataProviderContract } from './useContract'
 import { useContractCall } from './useContractCall'
@@ -21,6 +24,7 @@ export function useRateAndUtil(
   tickLower: number | undefined,
   tickUpper: number | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined; syncing: boolean } {
+  console.log('contractcall1')
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower == tickUpper) return undefined
     const params = [
@@ -161,6 +165,7 @@ export function useInstantaeneousRate(
   trader: string | undefined,
   positionIsToken0: boolean | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: string | undefined } {
+  console.log('contractcall2')
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !trader || positionIsToken0 == undefined) return undefined
     const params = [
@@ -239,28 +244,28 @@ export function useInstantaeneousRate(
 }
 // BinData[] |
 export function useBulkBinData(
-  token0: string | undefined,
-  token1: string | undefined,
-  fee: number | undefined,
-  currentTick: number | undefined
+  pool: Pool | undefined
+  // token0: string | undefined,
+  // token1: string | undefined,
+  // fee: number | undefined,
+  // currentTick: number | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: BinData[] | undefined } {
+  const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const calldata = useMemo(() => {
-    if (!token0 || !token1 || !fee || !currentTick) return undefined
-    const tickRounded = Math.ceil(currentTick / 100) * 100
+    if (!pool || !tickDiscretization) return undefined
+    const roundedCurrentTick = roundToBin(pool.tickCurrent, tickDiscretization, false)
     const params = [
       {
-        token0,
-        token1,
-        fee,
+        token0: pool.token0.address,
+        token1: pool.token1.address,
+        fee: pool.fee,
       },
-      tickRounded - 3000,
-      tickRounded + 3000,
+      roundedCurrentTick - 3000,
+      roundedCurrentTick + 3000,
     ]
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
-  }, [token0, token1, fee, currentTick])
-
+  }, [pool, tickDiscretization])
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
-
   return useMemo(() => {
     if (!result) {
       return {
@@ -332,7 +337,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     if (!account) return undefined
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
-
+  console.log('contractcall4')
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     if (!result) {
@@ -651,7 +656,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       key.isToken0,
     ])
   }, [key, chainId])
-
+  console.log('contractcall5')
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
@@ -865,7 +870,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
 
     return DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])
   }, [key, chainId])
-
+  console.log('contractcall6')
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     if (!result || !key) {

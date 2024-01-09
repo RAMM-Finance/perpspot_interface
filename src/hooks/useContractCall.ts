@@ -37,8 +37,10 @@ export function useContractCall(
 
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
+      console.log('fetching5')
       return undefined
     }
+    console.log('fetching6')
 
     const isStr = typeof address === 'string'
     const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
@@ -55,6 +57,7 @@ export function useContractCall(
         data: calldata,
       })
     }
+    console.log('fetching7')
 
     return { data, to, calldata }
   }, [provider, address, calldata, useSigner, chainId])
@@ -70,7 +73,7 @@ export function useContractCall(
       return
     }
 
-    // console.log('useContractCall1', blockNumber, lastBlockNumber, loading, error, lastParams, address, calldata)
+    // console.log('useContractCall params', blockNumber, lastBlockNumber, loading, error, lastParams, address, calldata)
     const _to = typeof address === 'string' ? address : address[chainId] ?? ZERO_ADDRESS
     const paramsUnchanged = lastParams?.to === _to && lastParams?.calldata === calldata
     if (error && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
@@ -84,8 +87,7 @@ export function useContractCall(
     if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
       return
     }
-    // note down the blockNumber of the last attempt
-    setBlockNumber(blockNumber)
+
     if (lastParams && paramsUnchanged) {
       setSyncing(true)
     } else {
@@ -95,6 +97,7 @@ export function useContractCall(
     fetch()
       .then((data) => {
         if (!data) {
+          console.log('fetching8')
           setError({
             type: ErrorType.EmptyError,
             error: 'missing params',
@@ -105,20 +108,24 @@ export function useContractCall(
           setLoading(false)
           setSyncing(false)
         } else {
-          const { data: result, to, calldata } = data
-          setResult(result)
+          const { data: _result, to, calldata } = data
+          console.log('fetching9', _result, to, calldata)
+          setResult(_result)
           setLastParams({ to, calldata })
           setError(undefined)
           setLoading(false)
           setSyncing(false)
         }
+        setBlockNumber(blockNumber)
       })
       .catch((err) => {
+        console.log('fetching10')
         setError(parseContractError(err))
         setLastParams(undefined)
         setResult(undefined)
         setLoading(false)
         setSyncing(false)
+        setBlockNumber(blockNumber)
       })
   }, [
     calldata,
