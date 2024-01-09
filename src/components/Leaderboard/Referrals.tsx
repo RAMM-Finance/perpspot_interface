@@ -12,6 +12,8 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import { usePointsData } from './data'
+import TierBar from './TierBar'
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -61,7 +63,7 @@ const FilterWrapper = styled.div`
 
 const StyledSelectorText = styled.div<{ active: boolean }>`
   font-size: 14px;
-  color: ${({ theme, active }) => (active ? theme.accentActive : theme.textPrimary)};
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   font-weight: ${({ active }) => (active ? '600' : '300')};
 `
 
@@ -229,8 +231,6 @@ const Referrals = () => {
     }
   }, [account, chainId, referral, provider, ref])
 
-  console.log('CREATE REF CODE', createReferralCode)
-
   const handleCreateReferral = useCallback(() => {
     if (!refGen || !account || !referralContract || !chainId || !provider) {
       return
@@ -240,7 +240,6 @@ const Referrals = () => {
 
     callback()
       .then((response) => {
-        console.log('RES', response)
         setAttemptingTxn(false)
         setTxHash(response?.hash)
         setErrorMessage(undefined)
@@ -371,107 +370,59 @@ const Referrals = () => {
                 gap: '10px',
               }}
             >
-              <ThemedText.BodySecondary fontSize={16}>Tier: </ThemedText.BodySecondary>
-              <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+              <ThemedText.BodyPrimary>Tier: </ThemedText.BodyPrimary>
+              <ThemedText.BodySecondary color="gold" fontSize={16}>
                 Tier {refereeActivity && account && refereeActivity[account]?.tier.toString()}
-              </ThemedText.BodyPrimary>{' '}
+              </ThemedText.BodySecondary>{' '}
             </div>
+            <div style={{ width: '80%' }}>
+              <TierBar />
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr ', gap: '10px' }}>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Users Referred</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                <CardWrapper>
+                  <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && refereeActivity[account]?.usersReferred}
-                  </ThemedText.BodyPrimary>
-                </div>
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Volume by Referees </ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>Volume by Referees </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>
                     ${refereeActivity && account && refereeActivity[account]?.tradeVolume}
-                  </ThemedText.BodyPrimary>
-                </div>
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>My Total Referral Points</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>My Total Referral Points</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && refereeActivity[account]?.point}
-                  </ThemedText.BodyPrimary>
-                </div>
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Fees earned by Referees</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>Fees earned by Referees</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>
                     ${refereeActivity && account && refereeActivity[account]?.lpAmount}
-                  </ThemedText.BodyPrimary>
-                </div>
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary> Rebates</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
-                    $0.00
-                  </ThemedText.BodyPrimary>
-                </div>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary> Rebates</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>$0.00</ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Claimable Rebates</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
-                    $0.0000
-                  </ThemedText.BodyPrimary>
-                </div>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>Claimable Rebates</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>$0.0000</ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>{' '}
             </div>
             {/* <StyledCard style={{ padding: '15px' }}>
@@ -512,69 +463,29 @@ const Referrals = () => {
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px', padding: '40px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Active Referral Code</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
-                    {referralCode?.toString()}
-                  </ThemedText.BodyPrimary>
-                </div>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>Active Referral Code</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>{referralCode?.toString()}</ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Trading Volume</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
-                    ${tradingVolume?.toString()}
-                  </ThemedText.BodyPrimary>
-                </div>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>${tradingVolume?.toString()}</ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>LP Fee Collected</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
-                    ${totalCollected}
-                  </ThemedText.BodyPrimary>
-                </div>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>LP Fee Collected</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>${totalCollected}</ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
 
               <StyledCard>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '15px',
-                  }}
-                >
-                  <ThemedText.BodySecondary>Rebates(this week)</ThemedText.BodySecondary>
-                  <ThemedText.BodyPrimary fontSize={16} color="accentActive">
-                    $0.00
-                  </ThemedText.BodyPrimary>
-                </div>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>Rebates(this week)</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>$0.00</ThemedText.BodySecondary>
+                </CardWrapper>
               </StyledCard>
             </div>
             <ThemedText.BodySmall style={{ paddingLeft: '10px' }}>Rebates Distribution History</ThemedText.BodySmall>{' '}
@@ -615,8 +526,32 @@ const StyledCard = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
+  padding: 10px;
 `
 const ContentWrapper = styled.div<{ active: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
+`
+
+const CardWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  alignitems: center;
+  gap: 20px;
+  padding: 15px;
+`
+
+const TierProgress = styled.progress`
+  width: 50%;
+  height: 5px;
+  -webkit-appearance: none;
+  ::-webkit-progress-bar {
+    background-color: ${({ theme }) => theme.accentActiveSoft};
+    border-radius: 100px;
+  }
+  ::-webkit-progress-value {
+    background: ${({ theme }) => theme.accentActive};
+    border-top-left-radius: 100px;
+    border-bottom-left-radius: 100px;
+  }
 `
