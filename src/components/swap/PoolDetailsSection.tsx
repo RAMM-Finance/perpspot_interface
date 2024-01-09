@@ -1,9 +1,9 @@
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart, PoolDataChartLoading } from 'components/ExchangeChart/PoolDataChart'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { getFakeSymbol, isFakePair } from 'constants/fake-tokens'
 import { useBulkBinData } from 'hooks/useLMTV2Positions'
-import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { PoolState } from 'hooks/usePools'
 import { useMemo } from 'react'
 import styled from 'styled-components/macro'
@@ -33,13 +33,9 @@ const LiquidityDistibutionWrapper = styled.div`
   }
 `
 
-function getSymbol(
-  pool: Pool | undefined,
-  chainId: number | undefined,
-  invertPrice: boolean | undefined
-): string | undefined {
-  if (!pool || !chainId || invertPrice === undefined) return undefined
-  // const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
+function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
+  if (!pool || !chainId) return undefined
+  const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
 
   const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
   const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
@@ -55,7 +51,6 @@ function getSymbol(
     }),
     baseSymbol,
     quoteSymbol,
-    invertPrice,
   })
 }
 export function PoolDetailsSection({
@@ -78,13 +73,7 @@ export function PoolDetailsSection({
   }, [pool, chainId])
 
   // console.log('poolContract', useSingleCallResult(poolContract, 'slot0')?.result)
-  const { data: priceData } = useLatestPoolPriceData(poolAddress, chainId)
-  const invertPrice = useMemo(() => {
-    if (!priceData) return undefined
-    console.log('priceData', priceData.priceNow.toString())
-    return priceData.priceNow.lt(1)
-  }, [priceData])
-  const symbol = useMemo(() => getSymbol(pool, chainId, invertPrice), [pool, invertPrice, chainId])
+  const symbol = useMemo(() => getSymbol(pool, chainId), [pool, chainId])
   const token0 = pool?.token0
   const token1 = pool?.token1
   const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192

@@ -22,7 +22,6 @@ const configurationData = {
 
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
-  invertPrice: boolean
 }
 
 export default function useDatafeed({ chainId }: { chainId: number }) {
@@ -44,7 +43,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           if (symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const { baseSymbol, quoteSymbol, poolAddress, invertPrice } = JSON.parse(symbolName)
+          const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(symbolName)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -60,7 +59,6 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
             poolAddress,
-            invertPrice,
           }
           setTimeout(() => onSymbolResolvedCallback(symbolInfo))
         },
@@ -78,7 +76,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           // if (Object.values(SUPPORTED_RESOLUTIONS).find(str => str === resolution) === undefined) {
           //   return onErrorCallback("[getBars] Invalid resolution");
           // }
-          const { poolAddress, invertPrice } = symbolInfo
+          const { poolAddress } = symbolInfo
           const { from, to, countBack } = periodParams
 
           try {
@@ -87,7 +85,6 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
               from,
               to,
               countBack,
-              invertPrice,
               getUniswapSubgraph(chainId)
             )
             // console.log("data", data)
@@ -107,11 +104,11 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
-          const { invertPrice, poolAddress } = symbolInfo
+          const { poolAddress } = symbolInfo
           // console.log("[subscribe bars]", useUniswapSubgraph)
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveBar(chainId, poolAddress, invertPrice, uniswapClient).then((bar) => {
+            fetchLiveBar(chainId, poolAddress, uniswapClient).then((bar) => {
               if (bar) {
                 onRealtimeCallback(bar)
               }

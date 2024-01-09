@@ -114,7 +114,6 @@ export async function fetchPoolPriceData(
   startTimestamp: number,
   endTimestamp: number,
   countBack: number,
-  invertPrice: boolean,
   dataClient: ApolloClient<NormalizedCacheObject>
 ): Promise<{
   data: PriceChartEntry[]
@@ -148,6 +147,7 @@ export async function fetchPoolPriceData(
       },
       fetchPolicy: 'cache-first',
     })
+    const invertPrice = parseFloat(result.poolHourDatas[result.poolHourDatas.length - 1].close) < 1
 
     const formattedHistory = result.poolHourDatas.map((d: any) => {
       return {
@@ -247,7 +247,6 @@ export function useTokenSearchQuery(text: string) {
 export async function fetchLiveBar(
   chainId: number,
   poolAddress: string,
-  invertPrice: boolean,
   dataClient: ApolloClient<NormalizedCacheObject>
 ) {
   try {
@@ -276,6 +275,8 @@ export async function fetchLiveBar(
         return undefined
       }
       let lastBar = poolHourDatas[0]
+
+      const invertPrice = parseFloat(lastBar.close) < 1
       // time: number;
       // /** Opening price */
       // open: number;

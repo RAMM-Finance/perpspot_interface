@@ -168,8 +168,8 @@ export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: P
   }, [pool, priceData, poolData])
 
   const baseQuoteSymbol = invertPrice
-    ? pool?.token1.symbol + '/' + pool?.token0.symbol
-    : pool?.token0.symbol + '/' + pool?.token1.symbol
+    ? pool?.token0.symbol + '/' + pool?.token1.symbol
+    : pool?.token1.symbol + '/' + pool?.token0.symbol
 
   const loading = loading0 || loading1 || priceLoading || !reserve0 || !reserve1 || !priceData || !pool
 
