@@ -154,8 +154,8 @@ export async function fetchPoolPriceData(
         time: d.periodStartUnix * 1000,
         open: invertPrice ? 1 / parseFloat(d.open) : parseFloat(d.open),
         close: invertPrice ? 1 / parseFloat(d.close) : parseFloat(d.close),
-        high: invertPrice ? 1 / parseFloat(d.high) : parseFloat(d.high),
-        low: invertPrice ? 1 / parseFloat(d.low) : parseFloat(d.low),
+        high: invertPrice ? 1 / parseFloat(d.low) : parseFloat(d.high),
+        low: invertPrice ? 1 / parseFloat(d.high) : parseFloat(d.low),
       }
     })
 

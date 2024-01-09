@@ -268,6 +268,7 @@ export function getIsValidSwapQuote(
 export default function Swap({ className }: { className?: string }) {
   const navigate = useNavigate()
   const { account, chainId, provider } = useWeb3React()
+
   const loadedUrlParams = useDefaultsFromURLSearch()
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()

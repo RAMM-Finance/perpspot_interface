@@ -1,5 +1,3 @@
-import { Interface } from '@ethersproject/abi'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { LoadingBubble } from 'components/Tokens/loading'
 import moment from 'moment'
 import { IChartingLibraryWidget, LanguageCode, widget } from 'public/charting_library'
@@ -10,7 +8,7 @@ import styled from 'styled-components/macro'
 import { defaultChartProps } from './constants'
 import useDatafeed from './useDataFeed'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
+// const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const ChartContainer = styled.div`
   height: 550px;

@@ -46,7 +46,7 @@ function onError(error: Error) {
 }
 
 const [web3Network, web3NetworkHooks] = initializeConnector<Network>(
-  (actions) => new Network({ actions, urlMap: RPC_PROVIDERS, defaultChainId: 1 })
+  (actions) => new Network({ actions, urlMap: RPC_PROVIDERS, defaultChainId: 42161 })
 )
 export const networkConnection: Connection = {
   getName: () => 'Network',
@@ -62,7 +62,7 @@ const getIsInjectedMobileBrowser = () => getIsCoinbaseWalletBrowser() || getIsMe
 
 // const getShouldAdvertiseMetaMask = () =>
 //   !getIsMetaMaskWallet() && !isMobile && (!getIsInjected() || getIsCoinbaseWallet())
-const getShouldAdvertiseMetaMask = ()=> !getIsMetaMaskWallet() && !isMobile &&!getIsInjected()
+const getShouldAdvertiseMetaMask = () => !getIsMetaMaskWallet() && !isMobile && !getIsInjected()
 
 const getIsGenericInjector = () => getIsInjected() && !getIsMetaMaskWallet() && !getIsCoinbaseWallet()
 
