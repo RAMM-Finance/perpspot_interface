@@ -37,7 +37,7 @@ export function usePoolsData() {
   const referralContract = useReferralContract()
 
   useEffect(() => {
-    if (!client || !AddQuery || loading || error || !referralContract || !account) return
+    if (!client || !AddQuery || loading || error || !referralContract ) return
     const call = async () => {
       try {
         setLoading(true)

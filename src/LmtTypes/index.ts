@@ -64,6 +64,8 @@ export type { NonfungiblePositionManager } from "./src/periphery/NonfungiblePosi
 export { NonfungiblePositionManager__factory } from "./factories/src/periphery/NonfungiblePositionManager__factory";
 export type { ReferralSystem } from "./src/periphery/Registry.sol/ReferralSystem";
 export { ReferralSystem__factory } from "./factories/src/periphery/Registry.sol/ReferralSystem__factory";
+export type{LPVault} from "./src/periphery/LPVault"; 
+export {LPVault__factory} from "./factories/src/periphery/LPVault__factory"; 
 export type { PoolManager } from "./src/PoolManager";
 export { PoolManager__factory } from "./factories/src/PoolManager__factory";
 export type { PremiumComputer } from "./src/PremiumComputer";

@@ -6,3 +6,4 @@ export { Arbitrageur__factory } from "./Arbitrageur__factory";
 export { DataProvider__factory } from "./DataProvider__factory";
 export { ERC721Enumerable__factory } from "./ERC721Enumerable__factory";
 export { NonfungiblePositionManager__factory } from "./NonfungiblePositionManager__factory";
+export {LPVault__factory} from "./LPVault__factory"; 

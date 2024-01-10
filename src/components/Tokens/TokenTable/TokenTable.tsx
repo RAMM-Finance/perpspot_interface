@@ -219,7 +219,7 @@ export default function TokenTable() {
   const { chainId, account, provider } = useWeb3React()
 
   /* loading and error state */
-  if (!chainId || !account || !provider) {
+  if (!chainId  || !provider) {
     return (
       <GridContainer>
         <Trans>Connect Wallet to Arbitrum</Trans>

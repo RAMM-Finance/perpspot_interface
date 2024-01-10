@@ -53,7 +53,7 @@ export function usePointsData() {
   })
 
   useEffect(() => {
-    if (!client || !AddQuery || loading || error || !referralContract || !account) return
+    if (!client || !AddQuery || loading || error || !referralContract ) return
     const call = async () => {
       try {
         setLoading(true)
@@ -91,9 +91,12 @@ export function usePointsData() {
         })
 
         let codeUsers
-        try {
-          codeUsers = await referralContract?.getReferees(account)
-        } catch (err) {}
+        if(account){
+            try {
+            codeUsers = await referralContract?.getReferees(account)
+          } catch (err) {}
+        }
+
 
         const uniquePools = Array.from(pools)
         const uniqueTokens_ = new Map<string, any>()

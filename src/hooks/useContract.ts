@@ -26,6 +26,7 @@ import {
   LMT_NFT_POSITION_MANAGER,
   LMT_POOL_MANAGER,
   LMT_REFERRAL,
+  LMT_VAULT,
   MULTICALL_ADDRESS,
   NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
   QUOTER_ADDRESSES,
@@ -45,12 +46,14 @@ import LmtPoolManagerJson from '../abis_v2/PoolManager.json'
 import { abi as ReferralSystemABI } from '../abis_v2/ReferralSystem.json'
 import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
 import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
+import {abi as VaultAbi} from '../abis_v2/LPVault.json'
 import {
   DataProvider,
   MarginFacility,
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
   PoolManager as LmtPoolManager,
   ReferralSystem,
+  LPVault,
 } from '../LmtTypes'
 import { getContract } from '../utils'
 
@@ -124,6 +127,10 @@ export function useDataProviderContract(withSignerIfPossible?: boolean) {
 
 export function useReferralContract(withSignerIfPossible?: boolean) {
   return useContract<ReferralSystem>(LMT_REFERRAL, ReferralSystemABI, withSignerIfPossible)
+}
+
+export function useVaultContract(withSignerIfPossible?: boolean){
+  return useContract<LPVault>(LMT_VAULT,VaultAbi, withSignerIfPossible )
 }
 
 // returns null on errors
