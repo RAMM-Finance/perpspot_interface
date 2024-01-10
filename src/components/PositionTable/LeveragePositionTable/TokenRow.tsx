@@ -33,6 +33,7 @@ import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionMo
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import {useUSDPriceBN} from "hooks/useUSDPrice"
 
 const Cell = styled.div`
   display: flex;
@@ -677,12 +678,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           value={
             <FlexStartRow>
-              <UnderlineText>
                 {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
                   position?.outputCurrency?.symbol
                 }`}
-              </UnderlineText>
             </FlexStartRow>
+
+
           }
           collateral={
             <FlexStartRow>
