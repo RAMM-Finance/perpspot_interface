@@ -1,6 +1,8 @@
 import { Trans } from '@lingui/macro'
+import { ButtonPrimary } from 'components/Button'
 import PositionListItem from 'components/PositionListItem'
 import React from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
@@ -77,6 +79,24 @@ export default function PositionList({
           <Trans>Your positions</Trans>
           {positions && ' (' + positions.length + ')'}
         </div>
+        <ButtonPrimary
+          style={{
+            marginLeft: '20px',
+
+            padding: '.5rem',
+            width: 'fit-content',
+            fontSize: '0.8rem',
+            borderRadius: '10px',
+            height: '30px',
+            lineHeight: '1',
+          }}
+          data-cy="join-pool-button"
+          id="join-pool-button"
+          as={Link}
+          to="/add/"
+        >
+          <Trans>Add New Position</Trans>
+        </ButtonPrimary>
         <ToggleLabel
           id="desktop-hide-closed-positions"
           onClick={() => {

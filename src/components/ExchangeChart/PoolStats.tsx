@@ -142,8 +142,8 @@ export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: P
     let volume
     if (Object.keys(poolData).find((pair: any) => `${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`)) {
       {
-        tvl = new BN(poolData[`${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`].totalValueLocked)
-        volume = new BN(poolData[`${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`].volume)
+        tvl = new BN(poolData[`${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
+        volume = new BN(poolData[`${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
       }
     }
 

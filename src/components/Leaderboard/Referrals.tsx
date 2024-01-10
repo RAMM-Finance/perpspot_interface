@@ -2,14 +2,17 @@ import { defaultAbiCoder } from '@ethersproject/abi'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
+import Modal from 'components/Modal'
 import { ethers } from 'ethers'
 import { useReferralContract } from 'hooks/useContract'
 import { InputSection } from 'pages/Swap'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Copy, Share } from 'react-feather'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { useTheme } from 'styled-components/macro'
+import { CopyToClipboard, ThemedText } from 'theme'
 
 import { usePointsData } from './data'
 import TierBar from './TierBar'
@@ -87,6 +90,8 @@ const Selector = styled.div<{ active: boolean }>`
 const Referrals = () => {
   const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
   console.log('refereeActivity', refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps)
+  const theme = useTheme()
+  const [showModal, setShowModal] = useState(false)
 
   const [referral, setReferral] = useState<boolean>(false)
   //generate code
@@ -101,6 +106,10 @@ const Referrals = () => {
 
   console.log('createReferralCode', createReferralCode)
   console.log('referralCode', referralCode)
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
 
   const acceptedCreate = useMemo(() => {
     if (createReferralCode) {
@@ -243,6 +252,7 @@ const Referrals = () => {
         setAttemptingTxn(false)
         setTxHash(response?.hash)
         setErrorMessage(undefined)
+        setShowModal(!showModal)
         addTransaction(response, {
           type: TransactionType.CREATE_REFERRAL,
           inputCurrencyId: '',
@@ -298,6 +308,12 @@ const Referrals = () => {
     if (!tradeProcessedByTrader[account]) return 0
     else return tradeProcessedByTrader[account].amount
   }, [tradeProcessedByTrader, account])
+
+  const referralLink = useMemo(() => {
+    return `${window.location.href.substring(0, window.location.href.length - 11)}join/${activeCodes}`
+  }, [activeCodes])
+
+  console.log(referralLink)
 
   return (
     <Wrapper>
@@ -360,24 +376,52 @@ const Referrals = () => {
           </InputWrapper>
         )}
         {!referral && acceptedCreate && (
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px', padding: '40px' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'start',
-                paddingBottom: '10px',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
-              <ThemedText.BodyPrimary>Tier: </ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary color="gold" fontSize={16}>
-                Tier {refereeActivity && account && refereeActivity[account]?.tier.toString()}
-              </ThemedText.BodySecondary>{' '}
-            </div>
-            <div style={{ width: '80%' }}>
-              <TierBar />
-            </div>
+          <ActiveReferralWrapper>
+            <TierWrapper>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                <ThemedText.BodySecondary color="gold" fontSize={16} fontWeight={800}>
+                  Tier {refereeActivity && account && refereeActivity[account]?.tier.toString()}
+                </ThemedText.BodySecondary>{' '}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'end', gap: '5px' }}>
+                  <div style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'end' }}>
+                    <ThemedText.BodyPrimary>Referral Code:</ThemedText.BodyPrimary>{' '}
+                    <ThemedText.BodySecondary fontWeight={800} fontSize={16} color="accentActive">
+                      {activeCodes && activeCodes}
+                    </ThemedText.BodySecondary>{' '}
+                  </div>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <ThemedText.BodySmall>Share your referral code to earn rewards</ThemedText.BodySmall>
+                    <ShareWrapper>
+                      <Share onClick={() => setShowModal(!showModal)} color={theme.accentActive} size={14} />
+                    </ShareWrapper>
+                    <Modal onDismiss={handleCloseModal} isOpen={showModal}>
+                      <div
+                        style={{
+                          padding: '30px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px',
+                          alignItems: 'center',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <ThemedText.SubHeader>Share the link below to begin earning rewards</ThemedText.SubHeader>
+                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                          <ThemedText.BodySecondary>{referralLink}</ThemedText.BodySecondary>
+                          <CopyToClipboard toCopy={referralLink}>
+                            <Copy size={14} />
+                          </CopyToClipboard>
+                        </div>
+                      </div>
+                    </Modal>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ width: '85%', marginLeft: '50px' }}>
+                <TierBar tier={refereeActivity ? (account ? Number(refereeActivity[account]?.tier) : 0) : 0} />
+              </div>
+            </TierWrapper>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr ', gap: '10px' }}>
               <StyledCard>
@@ -390,7 +434,7 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>Volume by Referees </ThemedText.BodyPrimary>
+                  <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     ${refereeActivity && account && refereeActivity[account]?.tradeVolume}
                   </ThemedText.BodySecondary>
@@ -398,7 +442,7 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>My Total Referral Points</ThemedText.BodyPrimary>
+                  <ThemedText.SubHeader fontSize={15}>My Total Referral Points</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && refereeActivity[account]?.point}
                   </ThemedText.BodySecondary>
@@ -406,7 +450,7 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>Fees earned by Referees</ThemedText.BodyPrimary>
+                  <ThemedText.SubHeader fontSize={15}>Fees earned by Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     ${refereeActivity && account && refereeActivity[account]?.lpAmount}
                   </ThemedText.BodySecondary>
@@ -414,13 +458,13 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary> Rebates</ThemedText.BodyPrimary>
+                  <ThemedText.SubHeader fontSize={15}> Rebates</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>$0.00</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>Claimable Rebates</ThemedText.BodyPrimary>
+                  <ThemedText.SubHeader fontSize={15}>Claimable Rebates</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>$0.0000</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>{' '}
@@ -457,7 +501,7 @@ const Referrals = () => {
             <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
               <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
             </StyledCard>
-          </div>
+          </ActiveReferralWrapper>
         )}
         {referral && acceptedCode && (
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px', padding: '40px' }}>
@@ -541,17 +585,25 @@ const CardWrapper = styled.div`
   padding: 15px;
 `
 
-const TierProgress = styled.progress`
-  width: 50%;
-  height: 5px;
-  -webkit-appearance: none;
-  ::-webkit-progress-bar {
-    background-color: ${({ theme }) => theme.accentActiveSoft};
-    border-radius: 100px;
-  }
-  ::-webkit-progress-value {
-    background: ${({ theme }) => theme.accentActive};
-    border-top-left-radius: 100px;
-    border-bottom-left-radius: 100px;
+const TierWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  gap: 30px;
+  margin-bottom: 30px;
+`
+
+const ActiveReferralWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+  padding: 40px;
+`
+
+const ShareWrapper = styled.div`
+  &:hover {
+    cursor: pointer;
   }
 `

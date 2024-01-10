@@ -109,6 +109,8 @@ export default function AddLiquidity() {
     tokenId ? BigNumber.from(tokenId) : undefined
   )
 
+  console.log(tokenId)
+
   const hasExistingPosition = !!existingPositionDetails && !positionLoading
   const { position: existingPosition } = useDerivedPositionInfo(existingPositionDetails)
 

@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { ButtonGray, ButtonPrimary, ButtonText } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import { Menu } from 'components/Menu'
+import SimplePool from 'components/PoolSimple'
 import PositionList from 'components/PositionList'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
@@ -12,6 +13,7 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { isSupportedChain } from 'constants/chains'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
+import { useState } from 'react'
 import { AlertTriangle, Inbox } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { useUserHideClosedPositions } from 'state/user/hooks'
@@ -20,6 +22,35 @@ import { HideSmall, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
 
 import { LoadingRows } from './styleds'
+
+const Filter = styled.div`
+  display: flex;
+  align-items: end;
+  width: fit-content;
+  gap: 10px;
+`
+
+const FilterWrapper = styled.div`
+  display: flex;
+  margin-bottom: 6px;
+`
+
+const StyledSelectorText = styled.div<{ active: boolean }>`
+  font-size: 16px;
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
+  font-weight: ${({ active }) => (active ? '600' : '300')};
+`
+
+const Selector = styled.div<{ active: boolean }>`
+  font-color: ${({ active, theme }) => (active ? theme.background : 'none')};
+  border-radius: 10px;
+  padding: 8px;
+  background-color: ${({ active, theme }) => (active ? theme.accentActiveSoft : 'none')};
+  cursor: pointer;
+  &:hover {
+    opacity: ${({ theme }) => theme.opacity.hover};
+  }
+`
 
 const PageWrapper = styled(AutoColumn)`
   padding: 68px 8px 0px;
@@ -199,6 +230,7 @@ function WrongNetworkCard() {
 export default function Pool() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
+  const [advanced, setAdvanced] = useState<boolean>(false)
 
   const theme = useTheme()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
@@ -232,9 +264,9 @@ export default function Pool() {
         <AutoColumn gap="lg" justify="center">
           <AutoColumn gap="lg" style={{ width: '100%' }}>
             <TitleRow padding="0">
-              {/*<ThemedText.LargeHeader>
+              {/* <ThemedText.LargeHeader>
                 <Trans>Liquidity Positions</Trans>
-              </ThemedText.LargeHeader>*/}
+              </ThemedText.LargeHeader>
               <ButtonRow>
                 <ButtonPrimary
                   style={{
@@ -266,51 +298,88 @@ export default function Pool() {
                 >
                   <Trans>Import Uniswap Position</Trans>
                 </ButtonPrimary>
-              </ButtonRow>
+              </ButtonRow> */}
+              <FilterWrapper>
+                <Filter>
+                  <Selector onClick={() => setAdvanced(false)} active={!advanced}>
+                    <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
+                  </Selector>
+                  <Selector onClick={() => setAdvanced(true)} active={advanced}>
+                    <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
+                  </Selector>
+                </Filter>
+              </FilterWrapper>
             </TitleRow>
 
             <MainContentWrapper>
-              {lmtPositionsLoading ? (
-                <PositionsLoadingPlaceholder />
-              ) : filteredPositions && closedPositions && filteredPositions.length > 0 ? (
-                <PositionList
-                  positions={filteredPositions}
-                  setUserHideClosedPositions={setUserHideClosedPositions}
-                  userHideClosedPositions={userHideClosedPositions}
-                />
-              ) : (
-                <ErrorContainer>
-                  <ThemedText.DeprecatedBody color={theme.textTertiary} textAlign="center">
-                    {/*<InboxIcon strokeWidth={1} style={{ marginTop: '2em' }} /> */}
-                    <div>
-                      <Trans>Your liquidity positions will appear here.</Trans>
-                    </div>
-                  </ThemedText.DeprecatedBody>
-                  {!showConnectAWallet && closedPositions.length > 0 && (
-                    <ButtonText
-                      style={{ marginTop: '.5rem' }}
-                      onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
+              {!advanced && <SimplePool />}
+              {advanced && lmtPositionsLoading && <PositionsLoadingPlaceholder />}
+              {advanced &&
+                !lmtPositionsLoading &&
+                filteredPositions &&
+                closedPositions &&
+                filteredPositions.length > 0 && (
+                  <PositionList
+                    positions={filteredPositions}
+                    setUserHideClosedPositions={setUserHideClosedPositions}
+                    userHideClosedPositions={userHideClosedPositions}
+                  />
+                )}
+              {advanced &&
+                !lmtPositionsLoading &&
+                filteredPositions &&
+                closedPositions &&
+                filteredPositions.length === 0 && (
+                  <ErrorContainer>
+                    <ButtonPrimary
+                      style={{
+                        marginLeft: '20px',
+                        marginBottom: '30px',
+                        padding: '.5rem',
+                        width: 'fit-content',
+                        fontSize: '0.8rem',
+                        borderRadius: '10px',
+                        height: '30px',
+                        lineHeight: '1',
+                      }}
+                      data-cy="join-pool-button"
+                      id="join-pool-button"
+                      as={Link}
+                      to="/add/"
                     >
-                      <Trans>Show closed positions</Trans>
-                    </ButtonText>
-                  )}
-                  {showConnectAWallet && (
-                    <TraceEvent
-                      events={[BrowserEvent.onClick]}
-                      name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                      properties={{ received_swap_quote: false }}
-                      element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-                    >
-                      <ButtonPrimary
-                        style={{ marginTop: '2em', marginBottom: '2em', padding: '8px 16px' }}
-                        onClick={toggleWalletDrawer}
+                      <Trans>Add New Position</Trans>
+                    </ButtonPrimary>
+                    <ThemedText.DeprecatedBody color={theme.textTertiary} textAlign="center">
+                      {/*<InboxIcon strokeWidth={1} style={{ marginTop: '2em' }} /> */}
+                      <div>
+                        <Trans>Your liquidity positions will appear here.</Trans>
+                      </div>
+                    </ThemedText.DeprecatedBody>
+                    {!showConnectAWallet && closedPositions.length > 0 && (
+                      <ButtonText
+                        style={{ marginTop: '.5rem' }}
+                        onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
                       >
-                        <Trans>Connect a wallet</Trans>
-                      </ButtonPrimary>
-                    </TraceEvent>
-                  )}
-                </ErrorContainer>
-              )}
+                        <Trans>Show closed positions</Trans>
+                      </ButtonText>
+                    )}
+                    {showConnectAWallet && (
+                      <TraceEvent
+                        events={[BrowserEvent.onClick]}
+                        name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                        properties={{ received_swap_quote: false }}
+                        element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+                      >
+                        <ButtonPrimary
+                          style={{ marginTop: '2em', marginBottom: '2em', padding: '8px 16px' }}
+                          onClick={toggleWalletDrawer}
+                        >
+                          <Trans>Connect a wallet</Trans>
+                        </ButtonPrimary>
+                      </TraceEvent>
+                    )}
+                  </ErrorContainer>
+                )}
             </MainContentWrapper>
             <HideSmall>{/*<CTACards /> */}</HideSmall>
           </AutoColumn>

@@ -155,7 +155,7 @@ export const PoolSelector = ({
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency, fee: number) => {
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
-    if (location.pathname !== '/swap') {
+    if (location.pathname !== '/swap' && location.pathname !== '/pools') {
       navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
     }
   }, [])

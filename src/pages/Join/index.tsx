@@ -53,7 +53,6 @@ const Status = styled.div`
 
 export default function JoinModal() {
   const [showModal, setShowModal] = useState(true)
-  const [isValidCode, setIsValidCode] = useState(true)
   const navigate = useNavigate()
 
   const location = useLocation()
@@ -87,11 +86,8 @@ export default function JoinModal() {
 
   console.log(activeCodes)
 
-  const referral = '0x0000000000000000000000000000000000000000'
-  // const ref = '32'
-
   useEffect(() => {
-    const code = referral ? (path ? defaultAbiCoder.encode(['uint256'], [path]).toString() : undefined) : undefined
+    const code = path ? defaultAbiCoder.encode(['uint256'], [path]).toString() : undefined
     if (!code || !referralContract) return
 
     const call = async () => {
@@ -133,7 +129,7 @@ export default function JoinModal() {
       console.log('referr', err)
       throw new Error('reff')
     }
-  }, [account, chainId, referral, provider, path])
+  }, [account, chainId, provider, path])
 
   const handleUseCode = useCallback(() => {
     if (!path || !account || !referralContract || !chainId || !provider) {
@@ -214,7 +210,7 @@ export default function JoinModal() {
                 onClick={handleUseCode}
                 fontWeight={600}
               >
-                <Trans>Join with code: LIMITLESS</Trans>
+                <Trans>Join with code: {path}</Trans>
               </ButtonPrimary>
             ) : (
               <ButtonPrimary
@@ -224,7 +220,7 @@ export default function JoinModal() {
                 fontWeight={600}
                 altDisabledStyle={walletConnected}
               >
-                <Trans>Join with code: LIMITLESS</Trans>
+                <Trans>Join with code: {path}</Trans>
               </ButtonPrimary>
             )}
           </Actions>
