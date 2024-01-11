@@ -129,6 +129,8 @@ export const InputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
   padding: 10px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   margin-top: 5px;
 `
 
@@ -142,7 +144,21 @@ export const LimitInputSection = styled(SwapSection)`
   background-color: ${({ theme }) => theme.surface1};
 `
 
-export const LeverageGaugeSection = styled(SwapSection)`
+export const LeverageGaugeSection = styled.div`
+  position: relative;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  padding: 16px;
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  padding-top: 8px;
+  padding-bottom: 0px;
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
+  }
   border: 1px solid ${({ theme }) => theme.backgroundSurface};
   border-top-right-radius: 0;
   border-top-left-radius: 0;
@@ -151,14 +167,13 @@ export const LeverageGaugeSection = styled(SwapSection)`
   &:focus-within {
     border: 1px solid transparent;
   }
-  padding-bottom: 0;
 `
 
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
   padding: 0px;
-  margin-top: 5px;
-  margin-bottom: 10px;
+  margin-top: 4px;
+  margin-bottom: 8px;
   width: 100%;
 `
 

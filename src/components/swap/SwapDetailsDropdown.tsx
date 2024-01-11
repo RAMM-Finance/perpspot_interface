@@ -263,15 +263,17 @@ export function LeverageDetailsDropdown({
         </TraceEvent>
         <AnimatedDropdown open={showDetails}>
           <SwapDetailsWrapper>
-            <StyledCard>
-              <AdvancedMarginTradeDetails
-                trade={trade}
-                syncing={loading}
-                allowedSlippage={allowedSlippage}
-                preTradeInfo={preTradeInfo}
-                existingPosition={existingPosition}
-              />
-            </StyledCard>
+            <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
+              <StyledCard>
+                <AdvancedMarginTradeDetails
+                  trade={trade}
+                  syncing={loading}
+                  allowedSlippage={allowedSlippage}
+                  preTradeInfo={preTradeInfo}
+                  existingPosition={existingPosition}
+                />
+              </StyledCard>
+            </AutoColumn>
           </SwapDetailsWrapper>
         </AnimatedDropdown>
       </AutoColumn>

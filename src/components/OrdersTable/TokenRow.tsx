@@ -569,7 +569,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     return [undefined, undefined]
   }, [details])
 
-  const inputCurrency = useCurrency(token0Address)
+  const inputCurrency = useCurrency()
   const outputCurrency = useCurrency(token1Address)
   const { account, chainId, provider } = useWeb3React()
   const orderKey: OrderPositionKey | undefined = useMemo(() => {
