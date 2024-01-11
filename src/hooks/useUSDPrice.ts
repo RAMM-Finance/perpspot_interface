@@ -4,6 +4,8 @@ import { BigNumber as BN } from 'bignumber.js'
 import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
+import { useMemo } from 'react'
+import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
@@ -59,39 +61,38 @@ export function useUSDPriceBN(
   data: number | undefined
   isLoading: boolean
 } {
-  return { data: 100, isLoading: false }
-  // const currencyAmount = useMemo(() => {
-  //   if (amount && currency) return BnToCurrencyAmount(amount, currency)
-  //   else return undefined
-  // }, [amount, currency])
+  const currencyAmount = useMemo(() => {
+    if (amount && currency) return BnToCurrencyAmount(amount, currency)
+    else return undefined
+  }, [amount, currency])
 
-  // const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
-  // // const currency = currencyAmount?.currency
-  // // console.log('useUSd', currencyAmount?.currency?.name)
-  // const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)
-  // // console.log('got ethvalue', ethValue?.toExact())
-  // const { data, networkStatus } = useTokenSpotPriceQuery({
-  //   variables: { chain: chain ?? Chain.Ethereum, address: getNativeTokenDBAddress(chain ?? Chain.Ethereum) },
-  //   skip: !chain || !isGqlSupportedChain(currency?.chainId),
-  //   pollInterval: PollingInterval.Normal,
-  //   notifyOnNetworkStatusChange: true,
-  //   fetchPolicy: 'cache-first',
-  // })
+  const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
+  // const currency = currencyAmount?.currency
+  // console.log('useUSd', currencyAmount?.currency?.name)
+  const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)
+  // console.log('got ethvalue', ethValue?.toExact())
+  const { data, networkStatus } = useTokenSpotPriceQuery({
+    variables: { chain: chain ?? Chain.Ethereum, address: getNativeTokenDBAddress(chain ?? Chain.Ethereum) },
+    skip: !chain || !isGqlSupportedChain(currency?.chainId),
+    pollInterval: PollingInterval.Normal,
+    notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'cache-first',
+  })
 
-  // // console.logconsole.log('stablecoinPrice', stablecoinPrice)('native price', data?.token?.project?.markets?.[0]?.price?.value, networkStatus)
-  // // Use USDC price for chains not supported by backend yet
-  // const stablecoinPrice = useStablecoinPrice(!isGqlSupportedChain(currency?.chainId) ? currency : undefined)
-  // if (!isGqlSupportedChain(currency?.chainId) && currencyAmount && stablecoinPrice) {
-  //   return { data: parseFloat(stablecoinPrice.quote(currencyAmount).toSignificant()), isLoading: false }
-  // }
-  // // console.log('stablecoinPrice', stablecoinPrice)
-  // const isFirstLoad = networkStatus === NetworkStatus.loading
+  // console.logconsole.log('stablecoinPrice', stablecoinPrice)('native price', data?.token?.project?.markets?.[0]?.price?.value, networkStatus)
+  // Use USDC price for chains not supported by backend yet
+  const stablecoinPrice = useStablecoinPrice(!isGqlSupportedChain(currency?.chainId) ? currency : undefined)
+  if (!isGqlSupportedChain(currency?.chainId) && currencyAmount && stablecoinPrice) {
+    return { data: parseFloat(stablecoinPrice.quote(currencyAmount).toSignificant()), isLoading: false }
+  }
+  // console.log('stablecoinPrice', stablecoinPrice)
+  const isFirstLoad = networkStatus === NetworkStatus.loading
 
-  // // Otherwise, get the price of the token in ETH, and then multiple by the price of ETH
-  // const ethUSDPrice = data?.token?.project?.markets?.[0]?.price?.value
-  // if (!ethUSDPrice || !ethValue) return { data: undefined, isLoading: isEthValueLoading || isFirstLoad }
+  // Otherwise, get the price of the token in ETH, and then multiple by the price of ETH
+  const ethUSDPrice = data?.token?.project?.markets?.[0]?.price?.value
+  if (!ethUSDPrice || !ethValue) return { data: undefined, isLoading: isEthValueLoading || isFirstLoad }
 
-  // return { data: parseFloat(ethValue.toExact()) * ethUSDPrice, isLoading: false }
+  return { data: parseFloat(ethValue.toExact()) * ethUSDPrice, isLoading: false }
 }
 
 export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
@@ -121,6 +122,5 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   const ethUSDPrice = data?.token?.project?.markets?.[0]?.price?.value
   if (!ethUSDPrice || !ethValue) return { data: undefined, isLoading: isEthValueLoading || isFirstLoad }
 
-  // return { data: parseFloat(ethValue.toExact()) * ethUSDPrice, isLoading: false }
-  return { data: 100, isLoading: false }
+  return { data: parseFloat(ethValue.toExact()) * ethUSDPrice, isLoading: false }
 }
