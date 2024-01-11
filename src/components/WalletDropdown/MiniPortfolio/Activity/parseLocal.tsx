@@ -188,6 +188,37 @@ function parseCancelLimitOrder(
   }
 }
 
+function parseMintLLP(
+  info: CancelLimitOrderTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Cancel LLP Mint`
+
+  return {
+    descriptor,
+    currencies: [],
+  }
+}
+
+function parseRedeemLLP(
+  info: CancelLimitOrderTransactionInfo,
+  chainId: SupportedChainId,
+  tokens: TokenAddressMap
+): Partial<Activity> {
+  // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+
+  const descriptor = `Cancel LLP Redeem`
+
+  return {
+    descriptor,
+    currencies: [],
+  }
+}
 function parseReduceLeverage(
   info: ReduceLeveragePositionTransactionInfo,
   chainId: SupportedChainId,
@@ -337,7 +368,7 @@ export function parseLocalActivity(
     additionalFields = parseReduceLimitOrder(info, chainId, tokens)
   } else if (info.type === TransactionType.CANCEL_LIMIT_ORDER) {
     additionalFields = parseCancelLimitOrder(info, chainId, tokens)
-  }
+  } 
 
   return { ...defaultFields, ...additionalFields }
 }

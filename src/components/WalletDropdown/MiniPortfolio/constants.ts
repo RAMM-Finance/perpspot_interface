@@ -197,6 +197,16 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Cancelled Limit Order`,
     [TransactionStatus.Failed]: t`Cancel Limit Order failed`,
   },
+  [TransactionType.MINT_LLP]: {
+    [TransactionStatus.Pending]: t`Minting LLP`,
+    [TransactionStatus.Confirmed]: t`Minted LLP`,
+    [TransactionStatus.Failed]: t`Minting LLP failed`,
+  },
+  [TransactionType.REDEEM_LLP]: {
+    [TransactionStatus.Pending]: t`Redeeming LLP`,
+    [TransactionStatus.Confirmed]: t`Redeemed LLP`,
+    [TransactionStatus.Failed]: t`Redeeming LLP failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

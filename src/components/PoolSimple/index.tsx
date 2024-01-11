@@ -12,7 +12,7 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useCurrency } from 'hooks/Tokens'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import { ArrowContainer } from 'pages/Swap'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { ArrowUpRight, Maximize2 } from 'react-feather'
 import { useDerivedLmtMintInfo, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { useDerivedSwapInfo } from 'state/swap/hooks'
@@ -22,8 +22,28 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { Field as Fields } from '../../state/mint/v3/actions'
 import { Field } from '../../state/swap/actions'
-
+import {useVaultContract} from "hooks/useContract"
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionResponse } from '@ethersproject/abstract-provider'
+import {ApprovalState, useApproveCallback} from "hooks/useApproveCallback"
+import {LMT_VAULT} from "constants/addresses"
+import { SupportedChainId } from 'constants/chains'
+import { MouseoverTooltip } from 'components/Tooltip'
+import Loader from 'components/Icons/LoadingSpinner'
+import { Trans } from '@lingui/macro'
+import { Info } from 'react-feather'
+import { TransactionType } from 'state/transactions/types'
+// TransactionType.MINT_LLP
 export default function SimplePool() {
+  const vaultContract= useVaultContract()
+  const [attemptingTxn, setAttemptingTxn] = useState(false)
+  const [txHash, setTxHash] = useState<string>()
+  const [error, setError] = useState<string>()
+  const addTransaction = useTransactionAdder()
+
+
+
+
   const { account, chainId, provider } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
 
@@ -86,6 +106,8 @@ export default function SimplePool() {
 
   const usdcValueCurrencyA = usdcValues[Fields.CURRENCY_A]
   const usdcValueCurrencyB = usdcValues[Fields.CURRENCY_B]
+  console.log('value???',baseCurrency,quoteCurrency, parsedAmounts[Fields.CURRENCY_A]?.quotient.toString())
+
   const currencyAFiat = useMemo(
     () => ({
       data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
@@ -183,6 +205,87 @@ export default function SimplePool() {
 
   console.log(useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'))
 
+  // allowance / approval
+  const [vaultApprovalState, approveVault] = useApproveCallback(
+    parsedAmounts[Fields.CURRENCY_A],
+    LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
+  )
+  console.log('vaultapprovalstate', vaultApprovalState)
+
+  const callback = useCallback(async (): Promise<TransactionResponse> => {
+
+    try {
+      const amountIn = parsedAmounts[Fields.CURRENCY_A]?.quotient.toString()
+      let response
+      if(baseCurrency && amountIn && account)
+       response = await vaultContract?.depositAnyToken(baseCurrency?.wrapped.address, amountIn, account)
+      return response as TransactionResponse
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, vaultContract, provider, parsedAmounts])
+
+  const handleDeposit = useCallback(() => {
+    if (!parsedAmounts?.[Fields.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    callback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setError(undefined)
+        addTransaction(response, {
+          type: TransactionType.MINT_LLP,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        return response.hash
+      })
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setError(error.message)
+      })
+  }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error])
+
+  // const [price, setPrice] = useState<string>()
+  // const [supply, setSupply] = useState<string>()
+  // const [backing, setBacking] = useState<string>()
+  // const [apr, setApr] = useState<string>()
+  // const [urate, setUrate] = useState<string>()
+
+  useEffect(() => {
+    if (!provider || !vaultContract) return
+
+    const call = async () => {
+      try {
+        const rawPrice = await vaultContract.previewRedeem("1000000000000000000")
+        const rawSupply = await vaultContract.totalSupply() 
+        const rawBacking = await vaultContract.totalAssets() 
+
+        const balanceWETH = await vaultContract.tokenBalance("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
+        const balanceWBTC = await vaultContract.tokenBalance("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
+        const balanceUSDC = await vaultContract.tokenBalance("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
+        const utilizedWETH = await vaultContract.utilizedBalance("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
+        const utilizedWBTC = await vaultContract.utilizedBalance("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
+        const utilizedUSDC = await vaultContract.utilizedBalance("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
+        console.log('data', rawPrice.toString(), rawSupply.toString(), rawBacking.toString(), 
+          balanceWETH.toString(), balanceWBTC.toString(), balanceUSDC.toString(), 
+          utilizedWETH.toString(), utilizedWBTC.toString(), utilizedUSDC.toString())
+      } catch (error) {
+
+        console.log('codebyowners err')
+      }
+    }
+
+    call()
+  }, [provider, vaultContract])
+
+
   return (
     <Wrapper>
       <AutoColumn>
@@ -196,19 +299,19 @@ export default function SimplePool() {
         </RowStart>
         <RowBetween align="start">
           <AutoColumn style={{ width: '50%' }} gap="40px">
-            <PoolSelector largeWidth={true} />
+            {/*<PoolSelector largeWidth={true} />*/}
             <DetailsCard>
               <RowBetween style={{ marginBottom: '6px' }}>
                 <ThemedText.BodyPrimary>Price: </ThemedText.BodyPrimary>
                 <ThemedText.BodySecondary>19.28</ThemedText.BodySecondary>
               </RowBetween>
               <RowBetween style={{ marginBottom: '6px' }}>
-                <ThemedText.BodyPrimary>Wallet:</ThemedText.BodyPrimary>
+                <ThemedText.BodyPrimary>Total Supply:</ThemedText.BodyPrimary>
                 <ThemedText.BodySecondary>0.000 LLP ($0.00)</ThemedText.BodySecondary>
               </RowBetween>
               <RowBetween style={{ marginBottom: '20px' }}>
-                <ThemedText.BodyPrimary>Staked: </ThemedText.BodyPrimary>
-                <ThemedText.BodySecondary>0.000 LLP ($0.00)</ThemedText.BodySecondary>
+                <ThemedText.BodyPrimary>Total Backing(USD) </ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary>($0.00)</ThemedText.BodySecondary>
               </RowBetween>
               <hr />
               <RowBetween style={{ marginTop: '20px', marginBottom: '6px' }}>
@@ -267,12 +370,46 @@ export default function SimplePool() {
               >
                 Connect Wallet
               </ButtonPrimary>
-            ) : (
+            ) : 
+            vaultApprovalState !== ApprovalState.APPROVED?(
+            <ButtonPrimary
+               onClick={approveVault}
+                style={{ fontSize: '14px', borderRadius: '10px' }}
+                width="14"
+                padding=".5rem"
+                disabled={vaultApprovalState === ApprovalState.PENDING}
+              >
+                {vaultApprovalState === ApprovalState.PENDING ? (
+                  <>
+                    <Loader size="20px" />
+                    <Trans>Approval pending</Trans>
+                  </>
+                ) : (
+                  <>
+                    <MouseoverTooltip
+                      text={
+                        <Trans>
+                          Permission is required to deposit and mint LLP.{' '}
+                        </Trans>
+                      }
+                    >
+                      <RowBetween>
+                        <Info size={20} />
+                        <Trans>Approve use of {currencies?.[Fields.CURRENCY_A]?.symbol}</Trans>
+                      </RowBetween>
+                    </MouseoverTooltip>
+                  </>
+                )}
+              </ButtonPrimary>
+
+              ): 
+            (
               <ButtonPrimary
                 style={{ fontSize: '14px', borderRadius: '10px' }}
                 width="14"
                 padding=".5rem"
                 fontWeight={600}
+                onClick={handleDeposit}
               >
                 Buy
               </ButtonPrimary>
