@@ -106,7 +106,6 @@ export default function SimplePool() {
 
   const usdcValueCurrencyA = usdcValues[Fields.CURRENCY_A]
   const usdcValueCurrencyB = usdcValues[Fields.CURRENCY_B]
-  console.log('value???',baseCurrency,quoteCurrency, parsedAmounts[Fields.CURRENCY_A]?.quotient.toString())
 
   const currencyAFiat = useMemo(
     () => ({
@@ -210,13 +209,13 @@ export default function SimplePool() {
     parsedAmounts[Fields.CURRENCY_A],
     LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
-  console.log('vaultapprovalstate', vaultApprovalState)
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
 
     try {
       const amountIn = parsedAmounts[Fields.CURRENCY_A]?.quotient.toString()
       let response
+      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
       if(baseCurrency && amountIn && account)
        response = await vaultContract?.depositAnyToken(baseCurrency?.wrapped.address, amountIn, account)
       return response as TransactionResponse
@@ -252,11 +251,63 @@ export default function SimplePool() {
       })
   }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error])
 
-  // const [price, setPrice] = useState<string>()
-  // const [supply, setSupply] = useState<string>()
-  // const [backing, setBacking] = useState<string>()
-  // const [apr, setApr] = useState<string>()
-  // const [urate, setUrate] = useState<string>()
+  const redeemCallback = useCallback(async (): Promise<TransactionResponse> => {
+
+    try {
+      const amountIn = parsedAmounts[Fields.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('redeeminput', baseCurrency?.wrapped.address, amountIn, account)
+      if(baseCurrency && amountIn && account)
+       response = await vaultContract?.redeemToAnyToken(baseCurrency?.wrapped.address,
+        amountIn, account, account)
+      return response as TransactionResponse
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, vaultContract, provider, parsedAmounts])
+
+  const handleRedeem = useCallback(() => {
+    if (!parsedAmounts?.[Fields.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
+      return
+    }
+    setAttemptingTxn(true)
+
+    redeemCallback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setError(undefined)
+        addTransaction(response, {
+          type: TransactionType.REDEEM_LLP,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        return response.hash
+      })
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setError(error.message)
+      })
+  }, [redeemCallback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error])
+
+
+  useEffect(()=>{
+    if(!account || !provider || !vaultContract) return 
+
+    const call = async () => {
+      try {
+        const balance = await vaultContract.balanceOf(account)
+        console.log('balance', balance.toString())
+      } catch (error) {
+
+        console.log('codebyowners err')
+      }
+    }  
+    call() 
+  }, [account, provider, vaultContract])
+
 
   useEffect(() => {
     if (!provider || !vaultContract) return
@@ -273,6 +324,10 @@ export default function SimplePool() {
         const utilizedWETH = await vaultContract.utilizedBalance("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
         const utilizedWBTC = await vaultContract.utilizedBalance("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
         const utilizedUSDC = await vaultContract.utilizedBalance("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
+        const maxWithdrawableWETH = await vaultContract.maxRedeemableInToken("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
+        const maxWithdrawableWBTC = await vaultContract.maxRedeemableInToken("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
+        const maxWithdrawableUSDC = await vaultContract.maxRedeemableInToken("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
+
         console.log('data', rawPrice.toString(), rawSupply.toString(), rawBacking.toString(), 
           balanceWETH.toString(), balanceWBTC.toString(), balanceUSDC.toString(), 
           utilizedWETH.toString(), utilizedWBTC.toString(), utilizedUSDC.toString())
@@ -371,7 +426,7 @@ export default function SimplePool() {
                 Connect Wallet
               </ButtonPrimary>
             ) : 
-            vaultApprovalState !== ApprovalState.APPROVED?(
+            typedValue && vaultApprovalState !== ApprovalState.APPROVED?(
             <ButtonPrimary
                onClick={approveVault}
                 style={{ fontSize: '14px', borderRadius: '10px' }}
@@ -409,7 +464,7 @@ export default function SimplePool() {
                 width="14"
                 padding=".5rem"
                 fontWeight={600}
-                onClick={handleDeposit}
+                onClick={handleRedeem}
               >
                 Buy
               </ButtonPrimary>
@@ -440,6 +495,7 @@ export default function SimplePool() {
                   <LoadedCell>
                     <ThemedText.BodySecondary>{tok.util}</ThemedText.BodySecondary>
                   </LoadedCell>
+
                 </LoadedCellWrapper>
               )
             })}
