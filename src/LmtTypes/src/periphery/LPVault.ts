@@ -38,6 +38,7 @@ export interface LPVaultInterface extends utils.Interface {
     "decimals()": FunctionFragment;
     "depositAnyToken(address,uint256,address)": FunctionFragment;
     "getAllTokens()": FunctionFragment;
+    "getData()": FunctionFragment;
     "maxRedeemableInToken(address)": FunctionFragment;
     "name()": FunctionFragment;
     "nonces(address)": FunctionFragment;
@@ -71,6 +72,7 @@ export interface LPVaultInterface extends utils.Interface {
       | "decimals"
       | "depositAnyToken"
       | "getAllTokens"
+      | "getData"
       | "maxRedeemableInToken"
       | "name"
       | "nonces"
@@ -130,6 +132,7 @@ export interface LPVaultInterface extends utils.Interface {
     functionFragment: "getAllTokens",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "getData", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "maxRedeemableInToken",
     values: [PromiseOrValue<string>]
@@ -250,6 +253,7 @@ export interface LPVaultInterface extends utils.Interface {
     functionFragment: "getAllTokens",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getData", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "maxRedeemableInToken",
     data: BytesLike
@@ -464,6 +468,12 @@ export interface LPVault extends BaseContract {
 
     getAllTokens(overrides?: CallOverrides): Promise<[string[]]>;
 
+    getData(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[], BigNumber[]]
+    >;
+
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -612,6 +622,12 @@ export interface LPVault extends BaseContract {
 
   getAllTokens(overrides?: CallOverrides): Promise<string[]>;
 
+  getData(
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[], BigNumber[]]
+  >;
+
   maxRedeemableInToken(
     tokenAddress: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -757,6 +773,12 @@ export interface LPVault extends BaseContract {
     ): Promise<BigNumber>;
 
     getAllTokens(overrides?: CallOverrides): Promise<string[]>;
+
+    getData(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[], BigNumber[]]
+    >;
 
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
@@ -981,6 +1003,8 @@ export interface LPVault extends BaseContract {
 
     getAllTokens(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getData(overrides?: CallOverrides): Promise<BigNumber>;
+
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1125,6 +1149,8 @@ export interface LPVault extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getAllTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getData(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,

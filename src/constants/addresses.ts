@@ -73,7 +73,7 @@ export const LMT_REFERRAL: AddressMap = {
 }
 
 export const LMT_VAULT: AddressMap={
-  [SupportedChainId.ARBITRUM_ONE]: "0x77475a8126AEF102899F67B7f2309eFB21Bb3c02"
+  [SupportedChainId.ARBITRUM_ONE]: "0x21DA443916C869909f21BdCc2d5B00410eb5A113"
 }
 
 // celo v3 addresses

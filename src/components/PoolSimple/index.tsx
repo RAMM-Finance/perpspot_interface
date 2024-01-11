@@ -308,29 +308,23 @@ export default function SimplePool() {
     call() 
   }, [account, provider, vaultContract])
 
-
+  const [data, setData] = useState<any> ()
   useEffect(() => {
     if (!provider || !vaultContract) return
 
     const call = async () => {
       try {
-        const rawPrice = await vaultContract.previewRedeem("1000000000000000000")
-        const rawSupply = await vaultContract.totalSupply() 
-        const rawBacking = await vaultContract.totalAssets() 
 
-        const balanceWETH = await vaultContract.tokenBalance("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
-        const balanceWBTC = await vaultContract.tokenBalance("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
-        const balanceUSDC = await vaultContract.tokenBalance("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
-        const utilizedWETH = await vaultContract.utilizedBalance("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
-        const utilizedWBTC = await vaultContract.utilizedBalance("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
-        const utilizedUSDC = await vaultContract.utilizedBalance("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
-        const maxWithdrawableWETH = await vaultContract.maxRedeemableInToken("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
-        const maxWithdrawableWBTC = await vaultContract.maxRedeemableInToken("0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f")
-        const maxWithdrawableUSDC = await vaultContract.maxRedeemableInToken("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
+        const rawData = await vaultContract.getData()
+        setData(rawData)
 
-        console.log('data', rawPrice.toString(), rawSupply.toString(), rawBacking.toString(), 
-          balanceWETH.toString(), balanceWBTC.toString(), balanceUSDC.toString(), 
-          utilizedWETH.toString(), utilizedWBTC.toString(), utilizedUSDC.toString())
+        // rawdata[0] is total supply 
+        // 1 is totalbacking 
+        // 2 is utilization rate, i.e 0.5*1e18 is 50% 
+        // 3 is each token balance in vault (pool column in table)
+        // 4 is each token weight, i.e 0.5*1e18 is 50% 
+        // 5 is each token util, i.e 0.5*1e18 is 50% 
+
       } catch (error) {
 
         console.log('codebyowners err')
@@ -339,8 +333,14 @@ export default function SimplePool() {
 
     call()
   }, [provider, vaultContract])
+  console.log('data', data)
+
+  // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
 
+  // Total Supply is raw supply 
+  // Total Backing is rawbacking 
+  // Utilization rate is 
   return (
     <Wrapper>
       <AutoColumn>
@@ -464,7 +464,7 @@ export default function SimplePool() {
                 width="14"
                 padding=".5rem"
                 fontWeight={600}
-                onClick={handleRedeem}
+                onClick={handleDeposit}
               >
                 Buy
               </ButtonPrimary>
