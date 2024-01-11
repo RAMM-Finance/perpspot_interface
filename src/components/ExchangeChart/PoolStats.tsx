@@ -101,7 +101,7 @@ function Stat({
             <AutoRow>
               <ArrowCell>{arrow}</ArrowCell>
               <DeltaText delta={value?.toNumber()}>
-                {formatBNToString(value ?? undefined, NumberType.TokenNonTx)}%
+                {formatBNToString(value?.abs() ?? undefined, NumberType.TokenNonTx)}%
               </DeltaText>
             </AutoRow>
           </StatPrice>

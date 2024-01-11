@@ -5,7 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
-import { useMarginFacilityContract } from 'hooks/useContract'
+import { useDataProviderContract, useMarginFacilityContract } from 'hooks/useContract'
 import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
@@ -56,6 +56,8 @@ export function useDerivedReducePositionInfo(
     return error
   }, [parsedReduceAmount])
 
+  const { account, chainId } = useWeb3React()
+  const dataProvider = useDataProviderContract()
   useEffect(() => {
     const lagged = async () => {
       if (
@@ -65,7 +67,9 @@ export function useDerivedReducePositionInfo(
         !!inputError ||
         !pool ||
         !inputCurrency ||
-        !outputCurrency
+        !outputCurrency ||
+        !chainId ||
+        !account
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
@@ -80,13 +84,25 @@ export function useDerivedReducePositionInfo(
         const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
         const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
         const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
-
         // reducePercentage * totalPosition multiplied(or divided) current price
         const minOutput = parsedReduceAmount
           .times(price)
           .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
         const isClose = parsedReduceAmount.isEqualTo(position.totalPosition)
+
+        const poolAddress = computePoolAddress({
+          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+          tokenA: inputCurrency.wrapped,
+          tokenB: outputCurrency.wrapped,
+          fee: pool.fee,
+        })
+        const _rawPosition = await dataProvider?.callStatic.getMarginPosition(
+          poolAddress,
+          account,
+          positionKey.isToken0
+        )
+        console.log('_rawPosition', _rawPosition)
         const removePremium =
           isClose && position.premiumLeft.isGreaterThan(0)
             ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
