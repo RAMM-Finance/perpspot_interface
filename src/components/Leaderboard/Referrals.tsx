@@ -7,7 +7,7 @@ import { ethers } from 'ethers'
 import { useReferralContract } from 'hooks/useContract'
 import { InputSection } from 'pages/Swap'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Copy, Share } from 'react-feather'
+import { Copy } from 'react-feather'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
@@ -78,9 +78,9 @@ const Selector = styled.div<{ active: boolean }>`
   border-top: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
   border-right: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
   border-left: 1px solid ${({ active, theme }) => (active ? theme.backgroundOutline : 'none')};
-  border-bottom: 1px solid ${({ active, theme }) => (active ? theme.backgroundSurface : 'none')};
+  border-bottom: 1px solid ${({ active, theme }) => (active ? theme.surface1 : 'none')};
   padding: 8px 12px 8px 12px;
-  background-color: ${({ active, theme }) => (active ? 'none' : 'none')};
+  background-color: ${({ active, theme }) => (active ? theme.surface1 : 'none')};
   cursor: pointer;
   &:hover {
     opacity: ${({ theme }) => theme.opacity.hover};
@@ -376,45 +376,59 @@ const Referrals = () => {
           </InputWrapper>
         )}
         {!referral && acceptedCreate && (
-          <ActiveReferralWrapper>
+          <ActiveWrapper>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'end', marginBottom: '15px' }}>
+              <SmallButtonPrimary onClick={() => setShowModal(!showModal)}>Generate Referral Link</SmallButtonPrimary>
+            </div>
+            <Modal maxWidth={400} onDismiss={handleCloseModal} isOpen={showModal}>
+              <div
+                style={{
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  minWidth: '400px',
+                  minHeight: '150px',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <StyledCard
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-around',
+                  }}
+                >
+                  <ThemedText.SubHeader>Share the link below to begin earning rewards</ThemedText.SubHeader>
+                  <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                    <ThemedText.BodySecondary>{referralLink}</ThemedText.BodySecondary>
+                    <CopyToClipboard toCopy={referralLink}>
+                      <Copy size={14} />
+                    </CopyToClipboard>
+                  </div>
+                </StyledCard>
+              </div>
+            </Modal>
             <TierWrapper>
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  alignItems: 'start',
+                  marginBottom: '20px',
+                }}
+              >
                 <ThemedText.BodySecondary color="gold" fontSize={16} fontWeight={800}>
                   Tier {refereeActivity && account && refereeActivity[account]?.tier.toString()}
                 </ThemedText.BodySecondary>{' '}
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'end', gap: '5px' }}>
-                  <div style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'end' }}>
-                    <ThemedText.BodyPrimary>Referral Code:</ThemedText.BodyPrimary>{' '}
-                    <ThemedText.BodySecondary fontWeight={800} fontSize={16} color="accentActive">
-                      {activeCodes && activeCodes}
-                    </ThemedText.BodySecondary>{' '}
-                  </div>
-                  <div style={{ display: 'flex', gap: '5px' }}>
-                    <ThemedText.BodySmall>Share your referral code to earn rewards</ThemedText.BodySmall>
-                    <ShareWrapper>
-                      <Share onClick={() => setShowModal(!showModal)} color={theme.accentActive} size={14} />
-                    </ShareWrapper>
-                    <Modal onDismiss={handleCloseModal} isOpen={showModal}>
-                      <div
-                        style={{
-                          padding: '30px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '10px',
-                          alignItems: 'center',
-                          textAlign: 'center',
-                        }}
-                      >
-                        <ThemedText.SubHeader>Share the link below to begin earning rewards</ThemedText.SubHeader>
-                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-                          <ThemedText.BodySecondary>{referralLink}</ThemedText.BodySecondary>
-                          <CopyToClipboard toCopy={referralLink}>
-                            <Copy size={14} />
-                          </CopyToClipboard>
-                        </div>
-                      </div>
-                    </Modal>
-                  </div>
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'end' }}>
+                  <ThemedText.BodyPrimary>Referral Code:</ThemedText.BodyPrimary>{' '}
+                  <ThemedText.BodySecondary fontWeight={800} fontSize={16} color="accentActive">
+                    {activeCodes && activeCodes}
+                  </ThemedText.BodySecondary>{' '}
                 </div>
               </div>
 
@@ -501,10 +515,10 @@ const Referrals = () => {
             <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
               <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
             </StyledCard>
-          </ActiveReferralWrapper>
+          </ActiveWrapper>
         )}
         {referral && acceptedCode && (
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '10px', padding: '40px' }}>
+          <ActiveWrapper style={{ paddingTop: '40px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
               <StyledCard>
                 <CardWrapper>
@@ -553,7 +567,7 @@ const Referrals = () => {
                 </div>
               </div>
             </StyledCard>
-          </div>
+          </ActiveWrapper>
         )}
       </ContentWrapper>
     </Wrapper>
@@ -568,7 +582,7 @@ const ReferrerActiveWrapper = styled.div``
 
 const StyledCard = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
   padding: 10px;
 `
@@ -594,12 +608,14 @@ const TierWrapper = styled.div`
   margin-bottom: 30px;
 `
 
-const ActiveReferralWrapper = styled.div`
+const ActiveWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
   gap: 10px;
   padding: 40px;
+  padding-top: 20px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 const ShareWrapper = styled.div`

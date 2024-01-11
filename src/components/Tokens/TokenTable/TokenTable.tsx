@@ -7,7 +7,6 @@ import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { ReactNode, useMemo } from 'react'
 import { useEffect, useState } from 'react'
-import { AlertTriangle } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -216,20 +215,18 @@ export default function TokenTable() {
   }, [poolData, data])
   console.log('pooldata', dataInfo, loading, poolData)
 
-
   const { chainId, account, provider } = useWeb3React()
 
   /* loading and error state */
-  if (!chainId  || !provider) {
+  if (!chainId || !provider) {
     return (
       <GridContainer>
         <Trans>Connect Wallet to Arbitrum</Trans>
       </GridContainer>
     )
-  } 
-  else if (loading ) {
+  } else if (loading) {
     return <LoadingTokenTable rowCount={PAGE_SIZE} />
-  } 
+  }
   // else if (!tokens) {
   //   return (
   //     <NoTokensState
@@ -241,10 +238,10 @@ export default function TokenTable() {
   //       }
   //     />
   //   )
-  // } 
+  // }
   // else if (tokens?.length === 0) {
   //   return <NoTokensState message={<Trans>No tokens found</Trans>} />
-  // } 
+  // }
   else {
     return (
       <>
@@ -317,6 +314,7 @@ const TVLInfoWrapper = styled.div`
   border-radius: 10px;
   height: 7rem;
   padding: 0.5rem;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
@@ -332,7 +330,6 @@ function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
           {poolsInfo.tvl ? formatDollar({ num: poolsInfo.volume, digits: 1 }) : '0'}
-
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

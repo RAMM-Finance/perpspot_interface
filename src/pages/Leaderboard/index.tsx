@@ -20,7 +20,7 @@ const PageWrapper = styled.div`
   width: 100%;
 `
 const LeaderboardWrapper = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
   width: 100%;
@@ -93,7 +93,7 @@ const PointsWrapper = styled.div`
   margin-left: 7.5%;
   // border: solid 1px ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  // background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 7px;
 `
 

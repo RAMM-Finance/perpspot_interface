@@ -204,6 +204,6 @@ const HeaderCell = styled.div``
 const HeaderCellWrapper = styled.div`
   display: grid;
   grid-template-columns: 0.75fr 3fr 3fr 3fr 3fr 3fr;
-  border-bottom: solid ${({ theme }) => theme.backgroundOutline};
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
 `
