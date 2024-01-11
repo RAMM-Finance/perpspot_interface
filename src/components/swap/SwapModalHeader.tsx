@@ -408,18 +408,20 @@ export function LeverageModalHeader({
   const fiatValueInput = useUSDPriceBN(
     trade?.margin && preTradeInfo?.additionalPremium
       ? trade?.margin?.plus(preTradeInfo?.additionalPremium.toExact())
-      : undefined, inputCurrency
-  )
-  const fiatValueTotalInput = useUSDPriceBN(
-    trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined, 
+      : undefined,
     inputCurrency
   )
+  const fiatValueTotalInput = useUSDPriceBN(
+    trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined,
+    inputCurrency
+  )
+
   const fiatValueTotalOutput = useUSDPriceBN(trade?.swapOutput, outputCurrency)
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="md">
+        <AutoColumn gap="xs">
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
@@ -447,56 +449,58 @@ export function LeverageModalHeader({
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
         <AutoColumn gap="md">
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                {formatBNToString(
-                  trade?.borrowAmount && trade?.margin ? trade.borrowAmount.plus(trade.margin) : undefined,
-                  NumberType.SwapTradeAmount
-                )}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={13} fontWeight={300} marginRight="6px">
-                Total Input
-              </Text>
-              <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={13} fontWeight={500}>
-                {inputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <ThemedText.DeprecatedBody fontSize={13} color={theme.textTertiary}>
-              <FiatValue fiatValue={fiatValueTotalInput} />
-            </ThemedText.DeprecatedBody>
-          </RowBetween>
-        </AutoColumn>
-        <AutoColumn gap="md">
-          <RowBetween align="flex-end">
-            <RowFixed gap="0px">
-              <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                {formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount)}
-              </TruncatedText>
-            </RowFixed>
-            <RowFixed gap="0px">
-              <Text fontSize={13} fontWeight={300} marginRight="6px">
-                Total Output
-              </Text>
-              <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={13} fontWeight={500}>
-                {outputCurrency?.symbol}
-              </Text>
-            </RowFixed>
-          </RowBetween>
-          <RowBetween>
-            <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
-              <FiatValue
-                fiatValue={fiatValueTotalOutput}
-                priceImpact={computeFiatValuePriceImpact(fiatValueTotalInput.data, fiatValueTotalOutput.data)}
-              />
-            </ThemedText.DeprecatedBody>
-          </RowBetween>
+          <AutoColumn gap="xs">
+            <RowBetween align="flex-end">
+              <RowFixed gap="0px">
+                <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                  {formatBNToString(
+                    trade?.borrowAmount && trade?.margin ? trade.borrowAmount.plus(trade.margin) : undefined,
+                    NumberType.SwapTradeAmount
+                  )}
+                </TruncatedText>
+              </RowFixed>
+              <RowFixed gap="0px">
+                <Text fontSize={13} fontWeight={300} marginRight="6px">
+                  Total Input
+                </Text>
+                <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <Text fontSize={13} fontWeight={500}>
+                  {inputCurrency?.symbol}
+                </Text>
+              </RowFixed>
+            </RowBetween>
+            <RowBetween>
+              <ThemedText.DeprecatedBody fontSize={13} color={theme.textTertiary}>
+                <FiatValue fiatValue={fiatValueTotalInput} />
+              </ThemedText.DeprecatedBody>
+            </RowBetween>
+          </AutoColumn>
+          <AutoColumn gap="xs">
+            <RowBetween align="flex-end">
+              <RowFixed gap="0px">
+                <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                  {formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount)}
+                </TruncatedText>
+              </RowFixed>
+              <RowFixed gap="0px">
+                <Text fontSize={13} fontWeight={300} marginRight="6px">
+                  Total Output
+                </Text>
+                <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <Text fontSize={13} fontWeight={500}>
+                  {outputCurrency?.symbol}
+                </Text>
+              </RowFixed>
+            </RowBetween>
+            <RowBetween>
+              <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
+                <FiatValue
+                  fiatValue={fiatValueTotalOutput}
+                  priceImpact={computeFiatValuePriceImpact(fiatValueTotalInput.data, fiatValueTotalOutput.data)}
+                />
+              </ThemedText.DeprecatedBody>
+            </RowBetween>
+          </AutoColumn>
         </AutoColumn>
       </LightCard>
       <RowBetween style={{ marginTop: '0.25rem', padding: '0 1rem' }}>

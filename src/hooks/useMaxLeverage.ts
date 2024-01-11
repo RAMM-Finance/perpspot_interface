@@ -159,7 +159,7 @@ export function useMaxLeverage(
     ]
     return DataProviderSDK.INTERFACE.encodeFunctionData('computeMaxLeverage', params)
   }, [positionKey, margin, inputCurrency, startingLeverage, stepSize])
-  console.log('contractcall7')
+  // console.log('contractcall7')
   const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     return {

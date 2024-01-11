@@ -193,9 +193,10 @@ export function LeveragePositionModal(props: TradeModalProps) {
       <DecreasePositionContent
         positionKey={positionKey}
         onPositionChange={setAlteredPosition}
+        inputCurrency={inputCurrency ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
       />
-      // <IncreasePositionContent positionKey={positionKey} />
     )
   }, [positionKey, activeTab, inputCurrency, outputCurrency, existingPosition, positionLoading])
 

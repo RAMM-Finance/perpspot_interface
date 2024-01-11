@@ -32,7 +32,7 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  min-width: 325px;
+  min-width: 340px;
   flex-flow: row nowrap;
   align-items: space-evenly;
   margin-bottom: 0.5rem;
@@ -40,6 +40,9 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   margin-right: 0.25rem;
   transition: transform 250ms ease;
   // background-color: ${({ theme }) => theme.backgroundSurface};
+  flex-grow: 1; /* Grow to absorb all available space */
+  flex-shrink: 1; /* Allow shrinking if needed */
+  overflow-y: auto;
 `
 // export const LimitWrapper = styled.div`
 //   position: relative;

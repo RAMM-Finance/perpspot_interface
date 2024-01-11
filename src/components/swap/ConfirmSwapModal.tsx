@@ -155,7 +155,7 @@ export function AddMarginPositionConfirmModal({
   existingPosition,
   onCancel,
   outputCurrency,
-  inputCurrency
+  inputCurrency,
 }: {
   isOpen: boolean
   trade: AddMarginTrade | undefined
@@ -206,11 +206,20 @@ export function AddMarginPositionConfirmModal({
         allowedSlippage={allowedSlippage}
         showAcceptChanges={showAcceptChanges}
         onAcceptChanges={onAcceptChanges}
-        inputCurrency = {inputCurrency}
-        outputCurrency = {outputCurrency}
+        inputCurrency={inputCurrency}
+        outputCurrency={outputCurrency}
       />
     ) : null
-  }, [allowedSlippage, onAcceptChanges, trade, preTradeInfo, existingPosition, showAcceptChanges])
+  }, [
+    allowedSlippage,
+    onAcceptChanges,
+    trade,
+    preTradeInfo,
+    existingPosition,
+    showAcceptChanges,
+    inputCurrency,
+    outputCurrency,
+  ])
 
   const modalBottom = useCallback(() => {
     return trade ? (

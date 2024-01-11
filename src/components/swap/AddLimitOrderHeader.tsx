@@ -112,7 +112,7 @@ export function AddLimitModalHeader({
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
-        <AutoColumn gap="md">
+        <AutoColumn gap="xs">
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
@@ -139,7 +139,7 @@ export function AddLimitModalHeader({
         <ArrowDown size="12" color={theme.textPrimary} />
       </ArrowWrapper>
       <LightCard padding="0.75rem 1rem" style={{ marginBottom: '0.25rem' }}>
-        <AutoColumn gap="md">
+        <AutoColumn gap="xs">
           <RowBetween align="center">
             <RowFixed gap="0px">
               <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>

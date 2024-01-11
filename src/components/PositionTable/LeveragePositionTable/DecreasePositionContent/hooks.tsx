@@ -5,7 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
-import { useDataProviderContract, useMarginFacilityContract } from 'hooks/useContract'
+import { useMarginFacilityContract } from 'hooks/useContract'
 import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
@@ -56,8 +56,6 @@ export function useDerivedReducePositionInfo(
     return error
   }, [parsedReduceAmount])
 
-  const { account, chainId } = useWeb3React()
-  const dataProvider = useDataProviderContract()
   useEffect(() => {
     const lagged = async () => {
       if (
@@ -67,9 +65,7 @@ export function useDerivedReducePositionInfo(
         !!inputError ||
         !pool ||
         !inputCurrency ||
-        !outputCurrency ||
-        !chainId ||
-        !account
+        !outputCurrency
       ) {
         setState(DerivedInfoState.INVALID)
         setTxnInfo(undefined)
@@ -91,22 +87,14 @@ export function useDerivedReducePositionInfo(
 
         const isClose = parsedReduceAmount.isEqualTo(position.totalPosition)
 
-        const poolAddress = computePoolAddress({
-          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-          tokenA: inputCurrency.wrapped,
-          tokenB: outputCurrency.wrapped,
-          fee: pool.fee,
-        })
-        const _rawPosition = await dataProvider?.callStatic.getMarginPosition(
-          poolAddress,
-          account,
-          positionKey.isToken0
-        )
-        console.log('_rawPosition', _rawPosition)
-        const removePremium =
-          isClose && position.premiumLeft.isGreaterThan(0)
-            ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
-            : undefined
+        let removePremium: string | undefined
+        if (isClose && position.premiumLeft.isGreaterThan(0)) {
+          let shiftedPremiumLeft = position.premiumLeft.shiftedBy(inputCurrency.decimals)
+          if (shiftedPremiumLeft.gt('100')) {
+            shiftedPremiumLeft = shiftedPremiumLeft.minus('100')
+          }
+          removePremium = shiftedPremiumLeft.toFixed(0)
+        }
 
         const params: ReducePositionOptions = {
           positionKey,

@@ -24,7 +24,7 @@ export function useRateAndUtil(
   tickLower: number | undefined,
   tickUpper: number | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined; syncing: boolean } {
-  console.log('contractcall1')
+  // console.log('contractcall1')
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower == tickUpper) return undefined
     const params = [
@@ -165,7 +165,7 @@ export function useInstantaeneousRate(
   trader: string | undefined,
   positionIsToken0: boolean | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: string | undefined } {
-  console.log('contractcall2')
+  // console.log('contractcall2')
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !trader || positionIsToken0 == undefined) return undefined
     const params = [
@@ -337,7 +337,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     if (!account) return undefined
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
-  console.log('contractcall4')
+  // console.log('contractcall4')
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     if (!result) {
@@ -656,7 +656,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       key.isToken0,
     ])
   }, [key, chainId])
-  console.log('contractcall5')
+  // console.log('contractcall5')
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
@@ -870,7 +870,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
 
     return DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])
   }, [key, chainId])
-  console.log('contractcall6')
+
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
     if (!result || !key) {
