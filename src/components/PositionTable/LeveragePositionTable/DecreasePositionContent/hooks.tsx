@@ -302,7 +302,7 @@ export function useDerivedReduceLimitPositionInfo(
     positionKey,
     position,
     parsedAmount,
-    parsedLimitPrice,
+    parsedLimitPrice ? (baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice) : undefined,
     outputCurrency
   )
 
