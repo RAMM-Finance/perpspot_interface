@@ -8,6 +8,8 @@ import {
   DecreaseLiquidityQuery,
   IncreaseLiquidityQuery,
   ReduceQuery,
+  DepositVaultQuery, 
+  WithdrawVaultQuery
 } from 'graphql/limitlessGraph/queries'
 import {
   tokenDecimal,
@@ -23,6 +25,53 @@ interface AddPositionData {
   trader: string
 }
 
+export const CollectMultipler = 400
+export const VaultDivisor = 200000
+
+function calculateTimeWeightedDeposits(vaultDataByAddress: any) {
+    if(!vaultDataByAddress) return undefined 
+
+    const timeWeightedDepositsByTrader:{ [key: string]: any } = {}
+
+    Object.keys(vaultDataByAddress).forEach(trader => {
+        const transactions = vaultDataByAddress[trader];
+
+        // Sort transactions by timestamp
+        transactions.sort((a:any, b:any) => a.blockTimestamp - b.blockTimestamp);
+
+        let timeWeightedDeposit = 0;
+        let currentAmount = 0;
+        let lastTimestamp = Number(transactions[0].blockTimestamp)
+
+        transactions.forEach((transaction:any) => {
+            // Time since last transaction
+            const timeDelta = Number(transaction.blockTimestamp) - lastTimestamp;
+            lastTimestamp = Number(transaction.blockTimestamp)
+            timeWeightedDeposit += timeDelta * currentAmount
+
+            // Update current amount based on deposit or withdrawal
+            if (transaction.type === 'deposit') {
+                currentAmount += Number(transaction.shares)/1e18;
+            } else if (transaction.type === 'withdraw') {
+                currentAmount -= Number(transaction.shares)/1e18;
+            }
+
+            // current amount = 0* 0 300* 26 
+            // 150, 150* 
+        })
+
+        const lastTimeDelta = Date.now()/1000 - lastTimestamp 
+
+        timeWeightedDeposit += lastTimeDelta * currentAmount
+
+        // Save the final calculated value for the trader
+        timeWeightedDepositsByTrader[trader] = timeWeightedDeposit/VaultDivisor;
+    });
+
+    return timeWeightedDepositsByTrader;
+}
+
+
 export function usePointsData() {
   const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
   const [uniquePools, setUniquePools] = useState<any>([])
@@ -37,6 +86,7 @@ export function usePointsData() {
   const [collectData, setCollectData] = useState<any>()
   const [codeUserPerReferrer, setCodeUserPerReferrer] = useState<any>()
   const [referralMultipliers, setReferralMultipliers] = useState<any>()
+  const [vaultDataByAddress, setVaultByAddress] = useState<any>()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
   const nfpm = useLmtNFTPositionManager()
@@ -62,14 +112,42 @@ export function usePointsData() {
         const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
         const CollectQueryData = await client.query(CollectQuery, {}).toPromise()
         const DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
+        const DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
+        const WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
         console.log(
-          'AddQuery',
-          AddQueryData.data.marginPositionIncreaseds,
-          AddLiqQueryData,
-          CollectQueryData,
-          DecreaseLiquidityData
+          'DepositQuery',
+           DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws
         )
 
+        const vaultDataByAddress: { [key: string]: any } = {}
+        DepositQuery?.data?.deposits.forEach((entry:any)=>{
+          const lp = ethers.utils.getAddress(entry.owner)
+          if(!vaultDataByAddress[lp]){
+            vaultDataByAddress[lp] =[]
+          }
+          const newEntry = {
+            blockTimestamp: entry.blockTimestamp, 
+            shares: entry.shares, 
+            type: "deposit"
+          }
+          vaultDataByAddress[lp].push(newEntry) 
+        })
+        WithdrawQuery?.data?.withdraws.forEach((entry:any)=>{
+          const lp = ethers.utils.getAddress(entry.owner)
+          if(vaultDataByAddress[lp]){
+            const newEntry = {
+              blockTimestamp: entry.blockTimestamp, 
+              shares: entry.shares, 
+              type: "withdraw"
+            }
+            vaultDataByAddress[lp].push(newEntry) 
+          }
+
+        })
+
+        setVaultByAddress(vaultDataByAddress)
+
+   
         const uniqueTokenIds = new Set<string>()
         const uniqueTraders = new Set<string>()
 
@@ -85,8 +163,9 @@ export function usePointsData() {
           if (!pools.has(entry.pool)) {
             pools.add(entry.pool)
           }
-          if (!uniqueTraders.has(ethers.utils.getAddress(entry.trader))) {
-            uniqueTraders.add(ethers.utils.getAddress(entry.trader))
+          const trader = ethers.utils.getAddress(entry.trader)
+          if (!uniqueTraders.has(trader)) {
+            uniqueTraders.add(trader)
           }
         })
 
@@ -131,9 +210,11 @@ export function usePointsData() {
                 referralMultiplier = await referralContract?.referralMultipliers(referrer)
               } catch (err) {}
               if (codeUsers) {
-                if (!codesUsers[referrer]) codesUsers[referrer] = []
+                if (!codesUsers[referrer]) codesUsers[referrer] = []                
                 codeUsers.forEach((user: string) => {
-                  codesUsers[referrer].push(user)
+                  if (!codesUsers[referrer].includes(user)){
+                    codesUsers[referrer].push(user)
+                  }
                 })
               }
               if (referralMultiplier) {
@@ -165,6 +246,8 @@ export function usePointsData() {
     }
     call()
   }, [account, referralContract])
+
+  console.log('vaultDataByAddress', vaultDataByAddress)
 
   const PointsData = useMemo(() => {
     const addDataProcessed = addData?.map((entry: any) => ({
@@ -241,10 +324,19 @@ export function usePointsData() {
         amount1Collected: (usdValue[entry.token1] * amount1Collected) / 10 ** tokenDecimal[entry.token1],
       })
     })
+    if(vaultDataByAddress) Object.keys(vaultDataByAddress)?.forEach((address:string)=>{
+      const lpAddress = ethers.utils.getAddress(address)
+      if (!lpPositionsByUniqueLps[lpAddress]) {
+        lpPositionsByUniqueLps[lpAddress] = []
+      }
+    })
+
+    const timeWeightedDeposits = calculateTimeWeightedDeposits(vaultDataByAddress)
 
     return {
       tradeProcessedByTrader,
       lpPositionsByUniqueLps,
+      timeWeightedDeposits
     }
   }, [
     account,
@@ -259,11 +351,12 @@ export function usePointsData() {
     codeUsers,
     codeUserPerReferrer,
     referralMultipliers,
+    vaultDataByAddress
   ])
 
   const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
   const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps
-
+  const timeWeightedDeposits = PointsData.timeWeightedDeposits
   const refereeActivity = useMemo(() => {
     if (!codeUserPerReferrer) return
     const result: { [key: string]: any } = {}
@@ -271,23 +364,33 @@ export function usePointsData() {
       const codeUsers = codeUserPerReferrer[referrer]
       let collectAmount = 0
       let tradeAmount = 0
+      let vaultAmount=0 
       codeUsers?.forEach((address: any) => {
+        if(address!= referrer) 
         lpPositionsByUniqueLps?.[address]?.forEach((position: any) => {
-          collectAmount += Number(position.amount0Collected) // TODO use position.token0 and get prices
-          collectAmount += Number(position.amount1Collected) // TODO use position.token1 and get prices
+          collectAmount += Number(position.amount0Collected)  * CollectMultipler// TODO use position.token0 and get prices
+          collectAmount += Number(position.amount1Collected) * CollectMultipler// TODO use position.token1 and get prices
         })
       })
 
       codeUsers?.forEach((address: any) => {
         tradeProcessedByTrader?.[address]?.forEach((trade: any) => {
-          tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
+          if(ethers.utils.getAddress(trade.trader)!= referrer) 
+            tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
+
         })
       })
+
+      codeUsers?.forEach((address:any)=>{
+        if(timeWeightedDeposits?.[address]){
+          vaultAmount += timeWeightedDeposits?.[address]
+        }
+      })
       result[referrer] = {
-        lpAmount: collectAmount,
+        lpAmount: collectAmount + vaultAmount,
         tradeVolume: tradeAmount,
         usersReferred: codeUsers && codeUsers.length,
-        point: referralMultipliers[referrer] * (tradeAmount + collectAmount),
+        point: referralMultipliers[referrer] * (tradeAmount + collectAmount+vaultAmount),
         tier: referralMultipliers[referrer],
       }
     })
@@ -296,16 +399,15 @@ export function usePointsData() {
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
   console.log(
-    'codeusers',
-    codeUsers,
-    referralMultipliers,
-    refereeActivity?.['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5']
+    'timeWeightedDeposits',
+    timeWeightedDeposits, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
   )
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
       lpPositionsByUniqueLps,
       refereeActivity,
+      timeWeightedDeposits
     }
   }, [account, addData, addLiqData, reduceData, collectData, lpPositions, loading, error])
 }

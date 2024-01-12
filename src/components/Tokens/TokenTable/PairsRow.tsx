@@ -655,6 +655,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
+  console.log('token0, token1', token0, token1)
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
   const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / 1e10

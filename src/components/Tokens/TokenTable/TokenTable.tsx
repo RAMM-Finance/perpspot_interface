@@ -166,9 +166,9 @@ export default function TokenTable() {
         setLoading(true)
 
         const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
-
         setData(
-          poolQueryData.data?.poolAddeds.map((val: Pool) => {
+          poolQueryData.data?.poolAddeds.filter((val: Pool) => val.token0 !== "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1" && val.token1 !== "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1")
+          .map((val: Pool) => {
             return { token0: val.token0, token1: val.token1, fee: val.fee }
           })
         )

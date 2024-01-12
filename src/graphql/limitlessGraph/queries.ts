@@ -111,3 +111,30 @@ export const CollectQuery = `
     }
   }
 `
+
+
+export const DepositVaultQuery = `
+  query {
+    deposits {
+      caller
+      owner
+      assets
+      shares 
+      blockNumber
+      blockTimestamp
+    }
+  }
+`
+
+export const WithdrawVaultQuery = `
+  query {
+    withdraws {
+      caller
+      owner
+      assets
+      shares 
+      blockNumber
+      blockTimestamp
+    }
+  }
+`

@@ -230,6 +230,8 @@ export const PoolSelector = ({
         const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
 
         setData(poolQueryData)
+
+
         setLoading(false)
       } catch (error) {
         setError(error)
@@ -241,7 +243,9 @@ export const PoolSelector = ({
 
   const availablePools = useMemo(() => {
     if (data) {
-      return data.data?.poolAddeds.map((val: Pool) => {
+      return data.data?.poolAddeds
+      .filter((val: Pool) => val.token0 !== "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1" && val.token1 !== "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1")
+      .map((val: Pool) => {
         return { token0: val.token0, token1: val.token1, fee: val.fee }
       })
     } else {

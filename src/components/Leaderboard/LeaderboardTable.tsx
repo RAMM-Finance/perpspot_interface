@@ -3,8 +3,7 @@ import { useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
-
-import { usePointsData } from './data'
+import { usePointsData , CollectMultipler, VaultDivisor} from './data'
 interface Leader {
   rank: number
   tradePoint: number
@@ -16,7 +15,7 @@ interface Leader {
 
 export default function LeaderboardTable() {
   const tradePoints = usePointsData()
-
+  console.log('tradepoints', tradePoints)
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)
     const allUsersArrays = allUserObjects.map((point: any) => {
@@ -37,9 +36,9 @@ export default function LeaderboardTable() {
         return {
           trader: user,
           lpPoints: obj.lpPositionsByUniqueLps[user].reduce(
-            (accum: number, tok: any) => accum + (tok.amount0Collected + tok.amount1Collected),
+            (accum: number, tok: any) => accum + (tok.amount0Collected*CollectMultipler + tok.amount1Collected*CollectMultipler),
             0
-          ),
+          ) + (obj.timeWeightedDeposits[user]? obj.timeWeightedDeposits[user]: 0),
         }
       } else {
         return {
