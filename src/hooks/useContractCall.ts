@@ -57,7 +57,6 @@ export function useContractCall(
         data: calldata,
       })
     }
-    console.log('fetching7')
 
     return { data, to, calldata }
   }, [provider, address, calldata, useSigner, chainId])
@@ -97,7 +96,6 @@ export function useContractCall(
     fetch()
       .then((data) => {
         if (!data) {
-          console.log('fetching8')
           setError({
             type: ErrorType.EmptyError,
             error: 'missing params',
@@ -109,7 +107,7 @@ export function useContractCall(
           setSyncing(false)
         } else {
           const { data: _result, to, calldata } = data
-          console.log('fetching9', _result, to, calldata)
+          // console.log('fetching9', _result, to, calldata)
           setResult(_result)
           setLastParams({ to, calldata })
           setError(undefined)

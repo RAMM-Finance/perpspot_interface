@@ -8,6 +8,7 @@ import { AddQuery, IncreaseLiquidityQuery, PoolAddedQuery, ReduceQuery } from 'g
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useState } from 'react'
+import { ethers } from 'ethers'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import {
@@ -46,7 +47,7 @@ export function usePoolsData() {
         const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
         const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
 
-        console.log('AddQuery', poolQueryData, AddQueryData.data.marginPositionIncreaseds, AddLiqQueryData)
+        // console.log('AddQuery', poolQueryData, AddQueryData.data.marginPositionIncreaseds, AddLiqQueryData)
 
         const uniqueTokenIds = new Set<string>()
 
@@ -90,7 +91,7 @@ export function usePoolsData() {
       }
     }
     call()
-  }, [account, referralContract, dataProvider, error, loading])
+  }, [account, referralContract, dataProvider])
 
   const slot0s = useMultipleContractSingleData(uniquePools, POOL_STATE_INTERFACE, 'slot0')
   const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
@@ -102,7 +103,7 @@ export function usePoolsData() {
       const slot0 = slot0s[index]
       if (slot0 && uniqueTokens.get(pool)) {
         const entry = uniqueTokens.get(pool)
-        const key = `${entry[0]}-${entry[1]}-${entry[2]}`
+        const key = `${ethers.utils.getAddress(entry[0])}-${ethers.utils.getAddress(entry[1])}-${entry[2]}`
 
         if (!slot0ByPool[key]) {
           slot0ByPool[key] = slot0.result
@@ -114,11 +115,12 @@ export function usePoolsData() {
     const totalAmountsByPool: { [key: string]: number } = {}
     const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
     lpPositions?.forEach((entry) => {
-      const key = `${entry.token0}-${entry.token1}-${entry.fee}`
+      const key = `${ethers.utils.getAddress(entry.token0)}-${ethers.utils.getAddress(entry.token1)}-${entry.fee}`
       if (!lpPositionByPool[key]) {
         lpPositionByPool[key] = []
       }
-      const curTick = slot0ByPool?.[key]?.[0].tick
+      let curTick = slot0ByPool?.[key]?.[0].tick
+      if(curTick== undefined) curTick = slot0ByPool?.[key]?.tick
 
       let amount0
       let amount1
@@ -152,12 +154,13 @@ export function usePoolsData() {
         ).toString()
         amount0 = '0'
       }
-
+      const token0 = ethers.utils.getAddress(entry.token0)
+      const token1 = ethers.utils.getAddress(entry.token1)
       const newEntry = {
-        amount0: Number(amount0) * usdValue[entry.token0],
-        amount1: Number(amount1) * usdValue[entry.token1],
-        token0: entry.token0,
-        token1: entry.token1,
+        amount0: Number(amount0) * usdValue[token0],
+        amount1: Number(amount1) * usdValue[token1],
+        token0: token0,
+        token1: token1,
       }
 
       lpPositionByPool[key].push(newEntry)

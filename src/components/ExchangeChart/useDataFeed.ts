@@ -24,7 +24,7 @@ type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
 }
 
-export default function useDatafeed({ chainId }: { chainId: number }) {
+export default function useDatafeed({ chainId, symbol}: { chainId: number, symbol?: string}) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
   // const resetCacheRef = useRef<() => void | undefined>()
   // const activeTicker = useRef<string | undefined>()
@@ -44,6 +44,8 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
           const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(symbolName)
+                    console.log('symbolsssss', baseSymbol, quoteSymbol)
+
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -120,5 +122,5 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
         },
       },
     }
-  }, [chainId])
+  }, [chainId, symbol])
 }
