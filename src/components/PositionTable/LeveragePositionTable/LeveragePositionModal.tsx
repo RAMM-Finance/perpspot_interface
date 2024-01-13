@@ -341,8 +341,14 @@ function MarginPositionInfo({
           title={<Trans>Premium Deposit</Trans>}
           description={<Trans>Current premium deposit remaining</Trans>}
           syncing={loading}
-          value={position?.premiumLeft}
-          newValue={alteredPosition?.premiumLeft}
+          value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
+          newValue={
+            alteredPosition?.premiumLeft
+              ? alteredPosition?.premiumLeft.gt(0)
+                ? alteredPosition?.premiumLeft
+                : new BN(0)
+              : undefined
+          }
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
         />

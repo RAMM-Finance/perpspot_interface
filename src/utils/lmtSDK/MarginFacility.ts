@@ -43,6 +43,7 @@ export interface ReducePositionOptions {
   executionData: string
   minOutput: string
   removePremium?: string
+  isClose?: boolean
 }
 
 export interface DepositPremiumOptions {
@@ -217,7 +218,7 @@ export abstract class MarginFacilitySDK {
     )
 
     // remove after withdraw premium
-    if (param.removePremium) {
+    if (param.removePremium || param.isClose) {
       // (PoolKey calldata key, bool borrowToken1, uint256 amount)
       calldatas.push(
         MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
@@ -228,6 +229,7 @@ export abstract class MarginFacilitySDK {
           },
           param.positionKey.isToken0,
           param.removePremium,
+          param.isClose,
         ])
       )
     }

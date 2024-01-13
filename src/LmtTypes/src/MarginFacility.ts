@@ -256,7 +256,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     "setPauseConfig(bool,bool,bool)": FunctionFragment;
     "setProtocolContracts(address,address)": FunctionFragment;
     "submitOrder(address,bool,bool,uint256,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
-    "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
+    "withdrawPremium((address,address,uint24),bool,uint256,bool)": FunctionFragment;
   };
 
   getFunction(
@@ -457,7 +457,8 @@ export interface MarginFacilityInterface extends utils.Interface {
     values: [
       PoolKeyStruct,
       PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
 
@@ -934,6 +935,7 @@ export interface MarginFacility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -1139,6 +1141,7 @@ export interface MarginFacility extends BaseContract {
     key: PoolKeyStruct,
     borrowToken1: PromiseOrValue<boolean>,
     amount: PromiseOrValue<BigNumberish>,
+    isClose: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1350,6 +1353,7 @@ export interface MarginFacility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -1656,6 +1660,7 @@ export interface MarginFacility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -1834,6 +1839,7 @@ export interface MarginFacility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

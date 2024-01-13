@@ -120,7 +120,7 @@ export interface FacilityInterface extends utils.Interface {
     "setOwner(address)": FunctionFragment;
     "setPauseConfig(bool,bool,bool)": FunctionFragment;
     "setProtocolContracts(address,address)": FunctionFragment;
-    "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
+    "withdrawPremium((address,address,uint24),bool,uint256,bool)": FunctionFragment;
   };
 
   getFunction(
@@ -228,7 +228,8 @@ export interface FacilityInterface extends utils.Interface {
     values: [
       PoolKeyStruct,
       PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
 
@@ -444,6 +445,7 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -535,6 +537,7 @@ export interface Facility extends BaseContract {
     key: PoolKeyStruct,
     borrowToken1: PromiseOrValue<boolean>,
     amount: PromiseOrValue<BigNumberish>,
+    isClose: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -626,6 +629,7 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -749,6 +753,7 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -841,6 +846,7 @@ export interface Facility extends BaseContract {
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

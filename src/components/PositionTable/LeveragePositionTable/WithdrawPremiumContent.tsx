@@ -164,7 +164,8 @@ function useDerivedWithdrawPremiumInfo(
           positionKey.isToken0,
           withdrawAll
             ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
-            : parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0)
+            : parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+          withdrawAll
         )
 
         const info: DerivedWithdrawPremiumInfo = {
@@ -287,7 +288,8 @@ export function WithdrawPremiumContent({
           fee: positionKey.poolKey.fee,
         },
         positionKey.isToken0,
-        new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0)
+        new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0),
+        withdrawAll
       )
 
       return response
@@ -306,6 +308,7 @@ export function WithdrawPremiumContent({
     inputCurrency,
     tradeState,
     positionKey,
+    withdrawAll,
     amount,
   ])
 

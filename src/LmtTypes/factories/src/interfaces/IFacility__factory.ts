@@ -240,6 +240,11 @@ const _abi = [
         name: "amount",
         type: "uint256",
       },
+      {
+        internalType: "bool",
+        name: "isClose",
+        type: "bool",
+      },
     ],
     name: "withdrawPremium",
     outputs: [],

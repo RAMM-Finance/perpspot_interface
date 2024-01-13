@@ -249,6 +249,7 @@ export interface DataProviderInterface extends utils.Interface {
     "getLiquidityInBin((address,address,uint24),int24)": FunctionFragment;
     "getMarginPosition(address,address,bool)": FunctionFragment;
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
+    "getMinMaxTicks((int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getOrder(address,address,bool,bool)": FunctionFragment;
     "getOrderInfo(address,address,bool,bool)": FunctionFragment;
     "getPoolkeys(address)": FunctionFragment;
@@ -272,6 +273,7 @@ export interface DataProviderInterface extends utils.Interface {
       | "getLiquidityInBin"
       | "getMarginPosition"
       | "getMaxWithdrawable"
+      | "getMinMaxTicks"
       | "getOrder"
       | "getOrderInfo"
       | "getPoolkeys"
@@ -353,6 +355,10 @@ export interface DataProviderInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMinMaxTicks",
+    values: [LiquidityLoanStruct[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getOrder",
@@ -440,6 +446,10 @@ export interface DataProviderInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getMaxWithdrawable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMinMaxTicks",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOrder", data: BytesLike): Result;
@@ -578,6 +588,11 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { maxWithdrawable: BigNumber }>;
 
+    getMinMaxTicks(
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<[number, number] & { min: number; max: number }>;
+
     getOrder(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -713,6 +728,11 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getMinMaxTicks(
+    borrowInfo: LiquidityLoanStruct[],
+    overrides?: CallOverrides
+  ): Promise<[number, number] & { min: number; max: number }>;
+
   getOrder(
     pool: PromiseOrValue<string>,
     trader: PromiseOrValue<string>,
@@ -841,6 +861,11 @@ export interface DataProvider extends BaseContract {
       tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getMinMaxTicks(
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<[number, number] & { min: number; max: number }>;
 
     getOrder(
       pool: PromiseOrValue<string>,
@@ -976,6 +1001,11 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getMinMaxTicks(
+      borrowInfo: LiquidityLoanStruct[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getOrder(
       pool: PromiseOrValue<string>,
       trader: PromiseOrValue<string>,
@@ -1101,6 +1131,11 @@ export interface DataProvider extends BaseContract {
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMinMaxTicks(
+      borrowInfo: LiquidityLoanStruct[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

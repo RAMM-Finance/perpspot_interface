@@ -105,7 +105,7 @@ export interface IFacilityInterface extends utils.Interface {
     "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
-    "withdrawPremium((address,address,uint24),bool,uint256)": FunctionFragment;
+    "withdrawPremium((address,address,uint24),bool,uint256,bool)": FunctionFragment;
   };
 
   getFunction(
@@ -142,7 +142,8 @@ export interface IFacilityInterface extends utils.Interface {
     values: [
       PoolKeyStruct,
       PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
     ]
   ): string;
 
@@ -214,6 +215,7 @@ export interface IFacility extends BaseContract {
       key: PoolKeyStruct,
       isToken0: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -242,6 +244,7 @@ export interface IFacility extends BaseContract {
     key: PoolKeyStruct,
     isToken0: PromiseOrValue<boolean>,
     amount: PromiseOrValue<BigNumberish>,
+    isClose: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -270,6 +273,7 @@ export interface IFacility extends BaseContract {
       key: PoolKeyStruct,
       isToken0: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -301,6 +305,7 @@ export interface IFacility extends BaseContract {
       key: PoolKeyStruct,
       isToken0: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -330,6 +335,7 @@ export interface IFacility extends BaseContract {
       key: PoolKeyStruct,
       isToken0: PromiseOrValue<boolean>,
       amount: PromiseOrValue<BigNumberish>,
+      isClose: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
