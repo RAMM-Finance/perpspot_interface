@@ -37,10 +37,10 @@ export function useContractCall(
 
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
-      console.log('fetching5')
+      // console.log('fetching5')
       return undefined
     }
-    console.log('fetching6')
+    // console.log('fetching6')
 
     const isStr = typeof address === 'string'
     const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
@@ -117,7 +117,7 @@ export function useContractCall(
         setBlockNumber(blockNumber)
       })
       .catch((err) => {
-        console.log('fetching10')
+        // console.log('fetching10')
         setError(parseContractError(err))
         setLastParams(undefined)
         setResult(undefined)

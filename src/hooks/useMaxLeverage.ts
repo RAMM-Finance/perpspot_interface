@@ -144,6 +144,14 @@ export function useMaxLeverage(
 ) {
   const calldata = useMemo(() => {
     if (!positionKey || margin?.isZero() || !margin || !inputCurrency) return undefined
+    console.log(
+      'useMaxLeverage:params',
+      margin.toString(),
+      startingLeverage.toString(),
+      inputCurrency,
+      positionKey,
+      stepSize
+    )
     const params = [
       {
         poolKey: {
@@ -161,6 +169,7 @@ export function useMaxLeverage(
   }, [positionKey, margin, inputCurrency, startingLeverage, stepSize])
   // console.log('contractcall7')
   const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+
   return useMemo(() => {
     return {
       loading,

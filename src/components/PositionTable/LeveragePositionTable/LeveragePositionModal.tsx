@@ -107,11 +107,12 @@ const PositionInfoWrapper = styled(LightCard)`
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
   border: none;
   background: ${({ theme }) => theme.backgroundSurface};
   // border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 0.75rem;
+  padding-top: 1.5rem;
 `
 
 const ActionsWrapper = styled.div`
@@ -432,7 +433,7 @@ function CurrentPriceCard({
 const BorrowLiquidityWrapper = styled(LightCard)`
   border: 0;
   width: 100%;
-  padding-top: 1.25rem;
+  padding-top: 2rem;
   border-radius: 0px;
   border-bottom-right-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};

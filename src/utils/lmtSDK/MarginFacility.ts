@@ -218,20 +218,20 @@ export abstract class MarginFacilitySDK {
     )
 
     // remove after withdraw premium
-    // if (param.isClose) {
-    //   calldatas.push(
-    //     MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
-    //       {
-    //         token0: param.positionKey.poolKey.token0Address,
-    //         token1: param.positionKey.poolKey.token1Address,
-    //         fee: param.positionKey.poolKey.fee,
-    //       },
-    //       param.positionKey.isToken0,
-    //       '0',
-    //       param.isClose,
-    //     ])
-    //   )
-    // }
+    if (param.isClose) {
+      calldatas.push(
+        MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
+          {
+            token0: param.positionKey.poolKey.token0Address,
+            token1: param.positionKey.poolKey.token1Address,
+            fee: param.positionKey.poolKey.fee,
+          },
+          param.positionKey.isToken0,
+          '0',
+          param.isClose,
+        ])
+      )
+    }
 
     return calldatas
   }
