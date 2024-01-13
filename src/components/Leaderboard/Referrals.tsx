@@ -448,17 +448,17 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
-                  <ThemedText.BodySecondary fontSize={16}>
-                    ${refereeActivity && account && refereeActivity[account]?.tradeVolume}
-                  </ThemedText.BodySecondary>
-                </CardWrapper>
-              </StyledCard>
-              <StyledCard>
-                <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>My Total Referral Points</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && refereeActivity[account]?.point}
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
+              </StyledCard>              
+              <StyledCard>
+                <CardWrapper>
+                  <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    ${refereeActivity && account && refereeActivity[account]?.tradeVolume}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -472,14 +472,14 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}> Rebates</ThemedText.SubHeader>
-                  <ThemedText.BodySecondary fontSize={16}>$0.00</ThemedText.BodySecondary>
+                  <ThemedText.SubHeader fontSize={15}>Vault Deposits From Referees</ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>${refereeActivity && account &&  refereeActivity[account]?.vaultDeposits}</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Claimable Rebates</ThemedText.SubHeader>
-                  <ThemedText.BodySecondary fontSize={16}>$0.0000</ThemedText.BodySecondary>
+                  <ThemedText.SubHeader fontSize={15}>Claimable Rebates(this week)</ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>Coming soon</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>{' '}
             </div>

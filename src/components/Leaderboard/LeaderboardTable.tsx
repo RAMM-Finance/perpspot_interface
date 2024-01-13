@@ -38,7 +38,7 @@ export default function LeaderboardTable() {
           lpPoints: obj.lpPositionsByUniqueLps[user].reduce(
             (accum: number, tok: any) => accum + (tok.amount0Collected*CollectMultipler + tok.amount1Collected*CollectMultipler),
             0
-          ) + (obj.timeWeightedDeposits[user]? obj.timeWeightedDeposits[user]: 0),
+          ) + (obj.timeWeightedDeposits[user]? obj.timeWeightedDeposits[user].timeWeighted: 0),
         }
       } else {
         return {

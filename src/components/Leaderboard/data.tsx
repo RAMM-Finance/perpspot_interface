@@ -65,7 +65,10 @@ function calculateTimeWeightedDeposits(vaultDataByAddress: any) {
         timeWeightedDeposit += lastTimeDelta * currentAmount
 
         // Save the final calculated value for the trader
-        timeWeightedDepositsByTrader[trader] = timeWeightedDeposit/VaultDivisor;
+        timeWeightedDepositsByTrader[trader] = {
+          timeWeighted: timeWeightedDeposit/VaultDivisor, 
+          currentAmount: currentAmount
+        }
     });
 
     return timeWeightedDepositsByTrader;
@@ -365,6 +368,7 @@ export function usePointsData() {
       let collectAmount = 0
       let tradeAmount = 0
       let vaultAmount=0 
+      let totalVaultDeposits = 0
       codeUsers?.forEach((address: any) => {
         if(address!= referrer) 
         lpPositionsByUniqueLps?.[address]?.forEach((position: any) => {
@@ -383,15 +387,18 @@ export function usePointsData() {
 
       codeUsers?.forEach((address:any)=>{
         if(timeWeightedDeposits?.[address]){
-          vaultAmount += timeWeightedDeposits?.[address]
+          vaultAmount += timeWeightedDeposits?.[address].timeWeighted
+          totalVaultDeposits += timeWeightedDeposits?.[address].currentAmount
         }
       })
+
       result[referrer] = {
         lpAmount: collectAmount + vaultAmount,
         tradeVolume: tradeAmount,
         usersReferred: codeUsers && codeUsers.length,
         point: referralMultipliers[referrer] * (tradeAmount + collectAmount+vaultAmount),
         tier: referralMultipliers[referrer],
+        vaultDeposits: totalVaultDeposits
       }
     })
 
@@ -400,7 +407,7 @@ export function usePointsData() {
 
   console.log(
     'timeWeightedDeposits',
-    timeWeightedDeposits, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
+    timeWeightedDeposits, refereeActivity, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
   )
   return useMemo(() => {
     return {
