@@ -26,6 +26,7 @@ export function useDerivedReducePositionInfo(
   reduceAmount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
+  closePosition: boolean,
   allowedSlippage: Percent,
   setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
@@ -81,20 +82,10 @@ export function useDerivedReducePositionInfo(
         const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
         const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
         // reducePercentage * totalPosition multiplied(or divided) current price
+
         const minOutput = parsedReduceAmount
           .times(price)
           .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
-
-        const isClose = parsedReduceAmount.isEqualTo(position.totalPosition)
-
-        let removePremium: string | undefined
-        if (isClose && position.premiumLeft.isGreaterThan(0)) {
-          let shiftedPremiumLeft = position.premiumLeft.shiftedBy(inputCurrency.decimals)
-          if (shiftedPremiumLeft.gt('100')) {
-            shiftedPremiumLeft = shiftedPremiumLeft.minus('100')
-          }
-          removePremium = shiftedPremiumLeft.toFixed(0)
-        }
 
         const params: ReducePositionOptions = {
           positionKey,
@@ -104,10 +95,11 @@ export function useDerivedReducePositionInfo(
           slippedTickMax,
           executionData: ethers.constants.HashZero,
           minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
-          removePremium,
+          isClose: closePosition,
         }
 
         const calldatas = MarginFacilitySDK.reducePositionParameters(params)
+
         const bytes = await marginFacility.callStatic.multicall(calldatas)
 
         const result = (MarginFacilitySDK.decodeReducePositionResult(bytes[0]) as any)[0]
@@ -142,8 +134,8 @@ export function useDerivedReducePositionInfo(
           totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
           totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
           reduceAmount: new TokenBN(parsedReduceAmount, outputCurrency.wrapped, false),
-          withdrawnPremium: removePremium
-            ? new TokenBN(removePremium, inputCurrency.wrapped, true)
+          withdrawnPremium: closePosition
+            ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, true)
             : new TokenBN(0, inputCurrency.wrapped, false),
         }
 
@@ -152,9 +144,7 @@ export function useDerivedReducePositionInfo(
           totalPosition: position.totalPosition.minus(parsedReduceAmount),
           totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
           totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
-          premiumLeft: removePremium
-            ? position.premiumLeft.minus(new BN(removePremium).shiftedBy(-inputCurrency.decimals))
-            : undefined,
+          premiumLeft: closePosition ? new BN(0) : undefined,
         })
         setTxnInfo(info)
         setState(DerivedInfoState.VALID)
@@ -189,6 +179,7 @@ export function useDerivedReducePositionInfo(
     inputError,
     inRange,
     existingOrderBool,
+    closePosition,
   ])
 
   const contractError = useMemo(() => {

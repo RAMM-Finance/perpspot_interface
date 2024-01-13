@@ -42,8 +42,7 @@ export interface ReducePositionOptions {
   slippedTickMax: number
   executionData: string
   minOutput: string
-  removePremium?: string
-  isClose?: boolean
+  isClose: boolean
 }
 
 export interface DepositPremiumOptions {
@@ -54,6 +53,7 @@ export interface DepositPremiumOptions {
 export interface WithdrawPremiumOptions {
   positionKey: TraderPositionKey
   amount: JSBI
+  isClose: boolean
 }
 
 //     address pool,
@@ -218,21 +218,20 @@ export abstract class MarginFacilitySDK {
     )
 
     // remove after withdraw premium
-    if (param.removePremium || param.isClose) {
-      // (PoolKey calldata key, bool borrowToken1, uint256 amount)
-      calldatas.push(
-        MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
-          {
-            token0: param.positionKey.poolKey.token0Address,
-            token1: param.positionKey.poolKey.token1Address,
-            fee: param.positionKey.poolKey.fee,
-          },
-          param.positionKey.isToken0,
-          param.removePremium,
-          param.isClose,
-        ])
-      )
-    }
+    // if (param.isClose) {
+    //   calldatas.push(
+    //     MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
+    //       {
+    //         token0: param.positionKey.poolKey.token0Address,
+    //         token1: param.positionKey.poolKey.token1Address,
+    //         fee: param.positionKey.poolKey.fee,
+    //       },
+    //       param.positionKey.isToken0,
+    //       '0',
+    //       param.isClose,
+    //     ])
+    //   )
+    // }
 
     return calldatas
   }
@@ -267,6 +266,7 @@ export abstract class MarginFacilitySDK {
       param.positionKey.trader,
       param.positionKey.isToken0,
       toHex(param.amount),
+      param.isClose,
     ])
 
     return {

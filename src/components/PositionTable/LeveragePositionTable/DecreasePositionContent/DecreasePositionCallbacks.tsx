@@ -19,6 +19,7 @@ export function useReducePositionCallback(
   positionKey: TraderPositionKey,
   parsedReduceAmount: BN | undefined,
   existingPosition: MarginPositionDetails | undefined,
+  closePosition: boolean,
   pool: Pool | undefined,
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined,
@@ -50,14 +51,6 @@ export function useReducePositionCallback(
         .times(price)
         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
-      const isClose = parsedReduceAmount.isEqualTo(existingPosition.totalPosition)
-
-      // TODO rounding error, hacked to 99% for now 
-      const removePremium =
-        isClose && existingPosition.premiumLeft.isGreaterThan(0)
-          ? existingPosition.premiumLeft.times(99).div(100).shiftedBy(inputCurrency.decimals).toFixed(0)
-          : undefined
-
       const reduceParam: ReducePositionOptions = {
         positionKey,
         reducePercentage: reducePercent,
@@ -66,7 +59,7 @@ export function useReducePositionCallback(
         executionData: ethers.constants.HashZero,
         slippedTickMin,
         slippedTickMax,
-        removePremium,
+        isClose: closePosition,
       }
 
       const calldatas = MarginFacilitySDK.reducePositionParameters(reduceParam)
@@ -111,6 +104,7 @@ export function useReducePositionCallback(
     deadline,
     parsedReduceAmount,
     existingPosition,
+    closePosition,
   ])
 
   return callback
