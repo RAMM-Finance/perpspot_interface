@@ -114,12 +114,14 @@ export default createReducer<SwapState>(initialState, (builder) =>
         }
       } else if (field === Field.INPUT) {
         // the normal case
+        localStorage.setItem('currencyIn', JSON.stringify(currencyId))
         return {
           ...state,
           originInputId: currencyId,
           [field]: { currencyId },
         }
       } else if (field === Field.OUTPUT) {
+        localStorage.setItem('currencyOut', JSON.stringify(currencyId))
         return {
           ...state,
           originInputId: currencyId,

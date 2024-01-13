@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -751,17 +751,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             <DeltaText delta={delta}>{formattedDelta}</DeltaText>
           </ClickableContent>
         }
-        tvl={
-          <ClickableContent>
-            {formatDollar({ num: tvl, digits: 1 })}
-          </ClickableContent>
-        }
-        volume={
-          <ClickableContent>
-            {formatDollar({ num: volume, digits: 1 })}
-
-          </ClickableContent>
-        }
+        tvl={<ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>}
+        volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           <>
             <ClickableRate rate={estimatedapr_}>{`${formatBNToString(

@@ -16,6 +16,7 @@ const LiquidityDistributionTable = ({
   currentPrice: number
   bin: BinData[] | undefined
 }) => {
+  console.log(bin)
   return (
     <>
       <Title>

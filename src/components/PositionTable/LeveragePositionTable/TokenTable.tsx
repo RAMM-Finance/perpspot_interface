@@ -154,7 +154,7 @@ export default function LeveragePositionsTable({
   loading,
 }: {
   positions?: MarginPositionDetails[]
-  loading: boolean
+  loading?: boolean
 }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)

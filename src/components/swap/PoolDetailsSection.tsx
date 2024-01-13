@@ -7,27 +7,60 @@ import { useBulkBinData } from 'hooks/useLMTV2Positions'
 import { PoolState } from 'hooks/usePools'
 import { useMemo } from 'react'
 import styled from 'styled-components/macro'
+import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
 
 import LiquidityDistributionTable, { LiquidityDistributionLoading } from './LiquidityDistributionTable'
+import PoolSelect from './PoolSelect'
+import { PostionsContainer } from './PostionsContainer'
 
-const MiddleContainer = styled.div`
+const Container = styled.div`
   display: flex;
   width: 100%;
   justify-content: flex-start;
   align-content: center;
+  margin-left: 0.25rem;
+`
+const MiddleContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`
+
+const RightContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.25rem;
+  width: 400px;
 `
 
 const LiquidityDistibutionWrapper = styled.div`
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
   border-radius: 10px;
-  width: 350px;
+  width: 97%;
   padding: 1rem;
   height: 550px;
   overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+`
+
+const PositionsWrapper = styled.div`
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  margin-bottom: 0.5rem;
+  height: calc(100vh - 582px);
+  min-height: 150px;
+  border-radius: 10px;
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  overflow-x: scroll;
   ::-webkit-scrollbar {
     display: none;
   }
@@ -58,10 +91,20 @@ export function PoolDetailsSection({
   pool,
   poolState,
   chainId,
+  account,
+  orders,
+  loadingOrders,
+  positions,
+  loadingPositions,
 }: {
   pool?: Pool
   poolState?: PoolState
   chainId?: number
+  account?: string
+  orders?: MarginLimitOrder[]
+  loadingOrders?: boolean
+  positions?: MarginPositionDetails[]
+  loadingPositions?: boolean
 }) {
   // console.log('poolContract', useSingleCallResult(poolContract, 'slot0')?.result)
   const symbol = useMemo(() => getSymbol(pool, chainId), [pool, chainId])
@@ -71,25 +114,43 @@ export function PoolDetailsSection({
   const { result: binData } = useBulkBinData(pool)
   // const binData = undefined
 
+  function PoolDetailsSkeleton() {
+    return (
+      <Container>
+        <MiddleContainer>
+          <PoolDataChartLoading />
+        </MiddleContainer>
+        <RightContainer>
+          <PoolSelect />
+          <LiquidityDistibutionWrapper>
+            <LiquidityDistributionLoading />
+          </LiquidityDistibutionWrapper>
+        </RightContainer>
+      </Container>
+    )
+  }
+
   if (!pool || !chainId) return <PoolDetailsSkeleton />
   return (
-    <MiddleContainer>
-      {symbol && chainId && <PoolDataChart symbol={symbol} chainId={chainId} />}
-
-      <LiquidityDistibutionWrapper>
-        <LiquidityDistributionTable token0={token0} token1={token1} currentPrice={currentPrice} bin={binData} />
-      </LiquidityDistibutionWrapper>
-    </MiddleContainer>
-  )
-}
-
-function PoolDetailsSkeleton() {
-  return (
-    <MiddleContainer>
-      <PoolDataChartLoading />
-      <LiquidityDistibutionWrapper>
-        <LiquidityDistributionLoading />
-      </LiquidityDistibutionWrapper>
-    </MiddleContainer>
+    <Container>
+      <MiddleContainer>
+        {symbol && chainId && <PoolDataChart symbol={symbol} chainId={chainId} />}
+        <PositionsWrapper>
+          <PostionsContainer
+            account={account}
+            orders={orders}
+            loadingOrders={loadingOrders}
+            positions={positions}
+            loadingPositions={loadingPositions}
+          />
+        </PositionsWrapper>
+      </MiddleContainer>
+      <RightContainer>
+        <PoolSelect />
+        <LiquidityDistibutionWrapper>
+          <LiquidityDistributionTable token0={token0} token1={token1} currentPrice={currentPrice} bin={binData} />
+        </LiquidityDistibutionWrapper>
+      </RightContainer>
+    </Container>
   )
 }

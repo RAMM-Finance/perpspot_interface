@@ -17,7 +17,9 @@ export const PageWrapper = styled.div`
   justify-content: flex-start;
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
-  width: 100%;
+  width: 99.5%;
+  margin-right: 0.125rem;
+  margin-left: 0.125rem;
   min-height: calc(100vh - 65px);
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {

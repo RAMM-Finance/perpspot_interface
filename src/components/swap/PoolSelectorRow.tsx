@@ -24,7 +24,7 @@ const Container = styled.button<{ disabled: boolean }>`
   text-align: left;
   transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
     background-color;
-  width: 375px;
+  width: 100%;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     width: 100%;

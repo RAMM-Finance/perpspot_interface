@@ -32,7 +32,9 @@ export const SearchInput = styled.input`
   display: flex;
   padding: 16px;
   padding-left: 40px;
-  height: 20px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  height: 15px;
   align-items: center;
   width: 90%;
   white-space: nowrap;

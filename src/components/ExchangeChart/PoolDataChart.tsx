@@ -16,8 +16,6 @@ const ChartContainer = styled.div`
   /* border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 1px 0; */
   margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
   width: 100%;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px;
@@ -55,14 +53,14 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
-  const symbolRef = useRef<string>(symbol); // Initialize symbolRef with symbol
+  const symbolRef = useRef<string>(symbol) // Initialize symbolRef with symbol
 
   // const symbolRef = useRef(symbol)
 
   useEffect(() => {
-    symbolRef.current = symbol;
+    symbolRef.current = symbol
     // You may need to reinitialize or update your chart here if necessary
-  }, [symbol]);
+  }, [symbol])
 
   useEffect(() => {
     // Function to initialize the TradingView widget
@@ -90,7 +88,7 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         custom_formatters: defaultChartProps.custom_formatters,
       }
 
-      tvWidgetRef.current = new widget(widgetOptions as any);
+      tvWidgetRef.current = new widget(widgetOptions as any)
 
       tvWidgetRef.current?.onChartReady(function () {
         setChartReady(true)
@@ -115,10 +113,8 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         tvWidgetRef.current.remove()
         tvWidgetRef.current = null
       }
-    };
+    }
   }, [chainId, datafeed, symbol])
-
-
 
   // useEffect(() => {
   //   // if longer than 1 seconds w/o update, reload
@@ -199,5 +195,5 @@ export function PoolDataChartLoading() {
 
 const Bubble = styled(LoadingBubble)`
   height: 535px;
-  width: 100%;
+  width: 80%;
 `

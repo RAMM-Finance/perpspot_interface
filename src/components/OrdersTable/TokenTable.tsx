@@ -146,7 +146,7 @@ function findCurrency(address: string | undefined, tokens: { [address: string]: 
 //   return { filteredOrders: orders }
 // }
 
-export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; loading: boolean }) {
+export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; loading?: boolean }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
 
   const resetFilterString = useResetAtom(filterStringAtom)
@@ -181,7 +181,6 @@ export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; 
                 order.positionIsToken0
               }
               order={order}
-              loading={loading}
             />
           ))}
         </TokenDataContainer>

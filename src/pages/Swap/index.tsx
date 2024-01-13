@@ -4,17 +4,14 @@ import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { OrdersTable } from 'components/OrdersTable/TokenTable'
-import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
-import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { PoolDetailsSection } from 'components/swap/PoolDetailsSection'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
-import { TabContent, TabNavItem } from 'components/Tabs'
+import { TabContent } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
-import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
 import { useBestPool } from 'hooks/useBestPool'
+import { usePoolsData } from 'hooks/useLMTPools'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
@@ -178,8 +175,9 @@ export const DetailsSwapSection = styled(SwapSection)`
 `
 
 const PositionsContainer = styled.div`
+  width: calc(100% - 315px);
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -187,6 +185,10 @@ const PositionsContainer = styled.div`
   min-height: 150px;
   border-radius: 10px;
   overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  overflow-x: scroll;
   ::-webkit-scrollbar {
     display: none;
   }
@@ -202,7 +204,7 @@ const StatsContainer = styled.div`
   margin-left: auto;
 `
 
-const LeftContainer = styled.div`
+const RightContainer = styled.div`
   display: flex;
   width: 100%;
   flex-direction: column;
@@ -440,9 +442,8 @@ export default function Swap({ className }: { className?: string }) {
 
   // const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
 
-  const [activePositionTable, setActiveTable] = useState(1)
-
   const location = useLocation()
+  const poolData = usePoolsData()
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -458,7 +459,7 @@ export default function Swap({ className }: { className?: string }) {
                 <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
               )}
             </TokenNameCell>
-            <PoolStatsSection chainId={chainId} pool={pool} />
+            <PoolStatsSection poolData={poolData} chainId={chainId} pool={pool} />
           </SwapHeaderWrapper>
           <MainWrapper>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
@@ -467,44 +468,18 @@ export default function Swap({ className }: { className?: string }) {
                 <SwapTabContent />
               </TabContent>
             </SwapWrapper>
-            <LeftContainer>
-              <PoolDetailsSection chainId={chainId} pool={pool} poolState={poolState} />
-              <PositionsContainer>
-                <TableHeader>
-                  <TabsWrapper>
-                    <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
-                      Leverage Positions
-                    </TabNavItem>
-                    <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-                      Orders
-                    </TabNavItem>
-                    <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
-                      History
-                    </TabNavItem>
-                  </TabsWrapper>
-                  {activePositionTable === 1 && <LeverageSearchBar />}
-                </TableHeader>
-                <TabContent id={1} activeTab={activePositionTable}>
-                  <LeveragePositionsTable positions={leveragePositions} loading={leverageLoading} />
-                </TabContent>
-                <TabContent id={2} activeTab={activePositionTable}>
-                  <OrdersTable orders={limitOrders} loading={orderLoading} />
-                </TabContent>
-                <TabContent id={3} activeTab={activePositionTable}>
-                  {!account ? (
-                    <ActivityWrapper>
-                      <MissingHistoryWrapper>None</MissingHistoryWrapper>
-                    </ActivityWrapper>
-                  ) : (
-                    <ActivityWrapper>
-                      <ActivityInnerWarpper>
-                        <ActivityTab account={account} />
-                      </ActivityInnerWarpper>
-                    </ActivityWrapper>
-                  )}
-                </TabContent>
-              </PositionsContainer>
-            </LeftContainer>
+            <RightContainer>
+              <PoolDetailsSection
+                account={account}
+                orders={limitOrders}
+                loadingOrders={orderLoading}
+                positions={leveragePositions}
+                loadingPositions={leverageLoading}
+                chainId={chainId}
+                pool={pool}
+                poolState={poolState}
+              />
+            </RightContainer>
           </MainWrapper>
           {location.pathname.substring(0, 6) === '/join/' ? <JoinModal /> : null}
         </PageWrapper>

@@ -19,7 +19,6 @@ import { useState } from 'react'
 import styled from 'styled-components/macro'
 
 import useDatafeed from './useDataFeed'
-import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
@@ -63,7 +62,7 @@ export const PoolDataSection = ({
   fee: FeeAmount | undefined
 }) => {
   // const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>;
-  const { datafeed } = useDatafeed({ chainId})
+  const { datafeed } = useDatafeed({ chainId })
   // const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null);
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)

@@ -49,6 +49,22 @@ export const searchContainer = style([
   }),
 ])
 
+export const blueButton = style([
+  sprinkles({
+    color: 'textSecondary',
+  }),
+  {
+    fontSize: '12px',
+    backgroundColor: 'accentActive',
+    ':hover': {
+      color: 'white',
+      background: 'accentActiveSoft',
+      fontWeight: 'bold',
+      opacity: '80%',
+    },
+  },
+])
+
 export const rightSideContainer = style([
   baseSideContainer,
   sprinkles({

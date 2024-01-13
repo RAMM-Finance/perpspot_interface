@@ -553,7 +553,7 @@ const FlexStartRow = styled(Row)`
 
 interface LoadedRowProps {
   order: MarginLimitOrder
-  loading: boolean
+  loading?: boolean
 }
 
 /* Loaded State: row component with token information */

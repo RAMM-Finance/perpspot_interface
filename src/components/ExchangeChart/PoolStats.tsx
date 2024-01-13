@@ -9,12 +9,11 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { getFakePool, isFakePair } from 'constants/fake-tokens'
 import { useTokenContract } from 'hooks/useContract'
-import { usePoolsData } from 'hooks/useLMTPools'
 import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
-import styled from 'styled-components'
+import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
@@ -115,7 +114,7 @@ function Stat({
   }
 }
 
-export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: Pool }) {
+export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number; pool?: Pool; poolData: any }) {
   const poolAddress = useMemo(() => {
     if (!pool || !chainId) return null
     if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
@@ -130,7 +129,6 @@ export function PoolStatsSection({ chainId, pool }: { chainId?: number; pool?: P
   }, [chainId, pool])
 
   const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
-  const poolData = usePoolsData()
   const contract0 = useTokenContract(pool?.token0?.address)
   const contract1 = useTokenContract(pool?.token1?.address)
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [poolAddress ?? ''])

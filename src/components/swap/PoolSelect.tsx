@@ -1,34 +1,26 @@
 import { Currency, Token } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { SearchInput } from 'components/SearchModal/styleds'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
 import useDebounce from 'hooks/useDebounce'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
-import { Box } from 'nft/components/Box'
-import { Portal } from 'nft/components/common/Portal'
 import { Column, Row } from 'nft/components/Flex'
-import { useIsMobile } from 'nft/hooks'
 import { ChangeEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Dispatch, SetStateAction } from 'react'
-import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FixedSizeList } from 'react-window'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
+import { formatDollar } from 'utils/formatNumbers'
 
-import * as styles from './PoolSelector.css'
-import PoolSelectorRow from './PoolSelectorRow'
+const LOGO_SIZE = 20
 
 const PoolListHeader = styled.h4`
   font-size: 12px;
@@ -37,24 +29,61 @@ const PoolListHeader = styled.h4`
 `
 const PoolListContainer = styled.div`
   display: grid;
-  grid-template-columns: 3fr 1fr 1fr 0.5fr;
-  width: 375px;
+  grid-template-columns: 3fr 1fr 1fr;
+  width: 100%;
   padding-left: 1vw;
+  height: 30px;
 `
 
-const SelectorRow = styled(Row)``
+const Label = styled.div`
+  font-size: 12px;
+  margin-left: 5px;
+  width: 8rem;
+`
+const Status = styled.div`
+  display: flex;
+  align-items: center;
+  width: ${LOGO_SIZE}px;
+`
 
-export const PoolSelector = ({
-  largeWidth,
-  bg,
-  selectPair,
-  setSelectPair,
-}: {
-  largeWidth: boolean
-  bg?: boolean
-  selectPair?: boolean
-  setSelectPair?: Dispatch<SetStateAction<boolean>>
-}) => {
+const Container = styled.button<{ disabled: boolean; active: boolean }>`
+  background: ${({ theme, active }) => (active ? theme.accentActiveSoft : 'none')};
+  border: none;
+  border-radius: 10px;
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
+  cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr;
+  line-height: 10px;
+  align-items: center;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+  text-align: left;
+  transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
+    background-color;
+  width: 100%;
+
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
+    width: 100%;
+  }
+
+  &:hover {
+    background-color: ${({ disabled, theme }) => (disabled ? 'none' : theme.backgroundOutline)};
+  }
+`
+
+const Wrapper = styled.div`
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  margin-bottom: 0.5rem;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  border-radius: 10px;
+  width: 97%;
+  padding: 0.25rem;
+  height: fit-content;
+`
+
+export default function PoolSelect() {
   const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -148,16 +177,9 @@ export const PoolSelector = ({
   const location = useLocation()
   const navigate = useNavigate()
 
-  if (location.pathname !== '/add/' && setSelectPair) {
-    setSelectPair(false)
-  }
-
-  const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency, fee: number) => {
+  const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
-    if (location.pathname !== '/swap' && location.pathname !== '/pools') {
-      navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
-    }
   }, [])
 
   const inputRef = useRef<HTMLInputElement>()
@@ -196,14 +218,7 @@ export const PoolSelector = ({
   //   [debouncedQuery, native, searchCurrencies, handleCurrencySelect]
   // )
 
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const isMobile = useIsMobile()
-
   const theme = useTheme()
-
-  const ref = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
   const [data, setData] = useState<any>()
   const [loading, setLoading] = useState(false)
@@ -282,15 +297,53 @@ export const PoolSelector = ({
     }
   }, [poolData, data, availablePools])
 
-  const dropdown = (
-    <NavDropdown
-      ref={modalRef}
-      style={
-        largeWidth
-          ? { position: 'absolute', height: 'fit-content', zIndex: '3', marginRight: '1vw' }
-          : { position: 'absolute', height: 'fit-content', zIndex: '3' }
-      }
-    >
+  interface PoolSelectorRowProps {
+    currencyId: string[]
+    tvl: number
+    volume: number
+    onCurrencySelect: (currencyIn: Currency, currencyOut: Currency) => void
+    fee: number
+  }
+
+  function PoolSelectorRow({ onCurrencySelect, currencyId, fee, tvl, volume }: PoolSelectorRowProps) {
+    // const { chainId } = useWeb3React()
+    const {
+      [Field.INPUT]: { currencyId: inputCurrencyId },
+      [Field.OUTPUT]: { currencyId: outputCurrencyId },
+    } = useSwapState()
+
+    const baseCurrency = useCurrency(currencyId[0])
+    const quoteCurrency = useCurrency(currencyId[1])
+    const [token0, token1] =
+      baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
+        ? [baseCurrency, quoteCurrency]
+        : [quoteCurrency, baseCurrency]
+    const labelIn = token0?.symbol as string
+    const labelOut = token1?.symbol as string
+    const active = token0?.wrapped.address === inputCurrencyId && token1?.wrapped.address === outputCurrencyId
+
+    const theme = useTheme()
+
+    return (
+      <Container
+        disabled={false}
+        active={active}
+        onClick={() => {
+          token0 && token1 && onCurrencySelect(token0, token1)
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
+          <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
+        </div>
+        <p>{formatDollar({ num: tvl, digits: 1 })}</p>
+        <p>{formatDollar({ num: volume, digits: 1 })}</p>
+      </Container>
+    )
+  }
+
+  return (
+    <Wrapper>
       <Row flexDirection="column">
         <SearchInput
           type="text"
@@ -308,100 +361,21 @@ export const PoolSelector = ({
           <PoolListHeader></PoolListHeader>
         </PoolListContainer>
       </Row>
-      <Row>
-        <Column paddingX="8">
-          {dataInfo &&
-            dataInfo.map((curr: any) => {
-              return (
-                <PoolSelectorRow
-                  currencyId={[curr.token0, curr.token1]}
-                  onCurrencySelect={handleCurrencySelect}
-                  key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                  fee={curr?.fee}
-                  setIsOpen={setIsOpen}
-                  setSelectPair={setSelectPair}
-                  selectPair={selectPair}
-                  tvl={curr.tvl}
-                  volume={curr.volume}
-                />
-              )
-            })}
-        </Column>
-      </Row>
-    </NavDropdown>
-  )
-
-  const chevronProps = {
-    height: 15,
-    width: 15,
-    color: theme.textSecondary,
-  }
-
-  return largeWidth ? (
-    <Box position="relative" ref={ref}>
-      <Row
-        as="button"
-        gap="8"
-        className={styles.ChainSelector}
-        background="accentActiveSoft"
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          padding: '10px',
-          height: 'fit-content',
-          width: '325px',
-          display: 'flex',
-          justifyContent: 'space-between',
-        }}
-      >
-        {selectPair ? (
-          <>
-            <Row style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }} gap="8">
-              <ThemedText.BodySmall fontSize={largeWidth ? '16px' : ''} color="secondary">
-                Select a Pair
-              </ThemedText.BodySmall>
-              <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
-            </Row>
-          </>
-        ) : (
-          <>
-            <Row style={{ paddingLeft: '10px' }} gap="8">
-              <DoubleCurrencyLogo
-                currency0={inputCurrency as Currency}
-                currency1={outputCurrency as Currency}
-                size={20}
+      <Column style={{ gap: '3px' }}>
+        {dataInfo &&
+          dataInfo.map((curr: any) => {
+            return (
+              <PoolSelectorRow
+                currencyId={[curr.token0, curr.token1]}
+                onCurrencySelect={handleCurrencySelect}
+                key={`${curr.token0}-${curr.token1}-${curr.fee}`}
+                fee={curr?.fee}
+                tvl={curr.tvl}
+                volume={curr.volume}
               />
-              <ThemedText.BodySmall
-                fontSize={largeWidth ? '16px' : ''}
-                color="secondary"
-              >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
-            </Row>
-            <Row gap="8">
-              <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
-              {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
-            </Row>
-          </>
-        )}
-      </Row>
-      {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
-    </Box>
-  ) : (
-    <Box position="relative" ref={ref}>
-      <Row
-        gap="8"
-        background={isOpen ? 'accentActiveSoft' : 'none'}
-        style={{ padding: '5px', width: '255px', display: 'flex', justifyContent: 'space-around' }}
-      >
-        <Row gap="8">
-          <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={20} />
-          <ThemedText.BodySmall
-            fontSize={largeWidth ? '16px' : ''}
-            color="secondary"
-          >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
-        </Row>
-        <Row gap="8">
-          <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
-        </Row>
-      </Row>
-    </Box>
+            )
+          })}
+      </Column>
+    </Wrapper>
   )
 }

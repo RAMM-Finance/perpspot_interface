@@ -53,7 +53,7 @@ const Selector = styled.div<{ active: boolean }>`
 `
 
 const PageWrapper = styled(AutoColumn)`
-  padding: 68px 8px 0px;
+  padding: 30px 8px 0px;
   max-width: 1200px;
   width: 100%;
 
@@ -261,10 +261,19 @@ export default function Pool() {
   return (
     <Trace page={InterfacePageName.POOL_PAGE} shouldLogImpression>
       <PageWrapper>
+        <FilterWrapper>
+          <Filter>
+            <Selector onClick={() => setAdvanced(false)} active={!advanced}>
+              <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
+            </Selector>
+            <Selector onClick={() => setAdvanced(true)} active={advanced}>
+              <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
+            </Selector>
+          </Filter>
+        </FilterWrapper>
         <AutoColumn gap="lg" justify="center">
-          <AutoColumn gap="lg" style={{ width: '100%' }}>
-            <TitleRow padding="0">
-              {/* <ThemedText.LargeHeader>
+          <AutoColumn gap="lg" style={{ width: '100%', marginTop: '20px' }}>
+            {/* <ThemedText.LargeHeader>
                 <Trans>Liquidity Positions</Trans>
               </ThemedText.LargeHeader>
               <ButtonRow>
@@ -299,20 +308,9 @@ export default function Pool() {
                   <Trans>Import Uniswap Position</Trans>
                 </ButtonPrimary>
               </ButtonRow> */}
-              <FilterWrapper>
-                <Filter>
-                  <Selector onClick={() => setAdvanced(false)} active={!advanced}>
-                    <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
-                  </Selector>
-                  <Selector onClick={() => setAdvanced(true)} active={advanced}>
-                    <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
-                  </Selector>
-                </Filter>
-              </FilterWrapper>
-            </TitleRow>
 
+            {!advanced && <SimplePool />}
             <MainContentWrapper>
-              {!advanced && <SimplePool />}
               {advanced && lmtPositionsLoading && <PositionsLoadingPlaceholder />}
               {advanced &&
                 !lmtPositionsLoading &&

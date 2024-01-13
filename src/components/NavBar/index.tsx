@@ -1,5 +1,8 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import AboutModal from 'components/About/AboutModal'
+import { SmallButtonPrimary } from 'components/Button'
+import Modal from 'components/Modal'
 import NewBadge from 'components/WalletModal/NewBadge'
 import Web3Status from 'components/Web3Status'
 import { useMGTMMicrositeEnabled } from 'featureFlags/flags/mgtm'
@@ -10,7 +13,7 @@ import { useAtomValue } from 'jotai/utils'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
 import { useProfilePageState } from 'nft/hooks'
-import { ReactNode } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { NavLink, NavLinkProps, useLocation, useNavigate } from 'react-router-dom'
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
@@ -120,6 +123,11 @@ const Navbar = ({ blur }: { blur: boolean }) => {
   const sellPageState = useProfilePageState((state) => state.state)
   const navigate = useNavigate()
 
+  const [showModal, setShowModal] = useState(false)
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
+
   return (
     <>
       {/* {blur && <Blur />} */}
@@ -156,6 +164,13 @@ const Navbar = ({ blur }: { blur: boolean }) => {
                 {/* <SearchBar /> */}
               </Box>
               {/* {isNftPage && sellPageState !== ProfilePageStateType.LISTING && <Bag />} */}
+              <SmallButtonPrimary
+                onClick={() => setShowModal(!showModal)}
+                className={styles.blueButton}
+                style={{ background: '#3783fd' }}
+              >
+                What is Limitless
+              </SmallButtonPrimary>
               {!isNftPage && (
                 <Box display={{ sm: 'none', lg: 'flex' }}>
                   <ChainSelector />
@@ -166,6 +181,9 @@ const Navbar = ({ blur }: { blur: boolean }) => {
             </Row>
           </Box>
         </Box>
+        <Modal isOpen={showModal} onDismiss={handleCloseModal}>
+          <AboutModal />
+        </Modal>
       </Nav>
     </>
   )
