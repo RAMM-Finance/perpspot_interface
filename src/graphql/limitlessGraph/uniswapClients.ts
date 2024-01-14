@@ -305,6 +305,51 @@ export function getUniswapSubgraph(chainId: number): ApolloClient<NormalizedCach
   }
 }
 
+const arbitrumApiKey = process.env.API_KEY
+
+export function getCustomApiSubgraph(chainId: number): ApolloClient<NormalizedCacheObject> {
+  switch (chainId) {
+    case SupportedChainId.ARBITRUM_ONE:
+      if (arbitrumApiKey) {
+        return customArbitrumClient
+      } else {
+        return arbitrumClient
+      }
+    default:
+      return getUniswapSubgraph(chainId)
+  }
+}
+
+export const customArbitrumClient = new ApolloClient({
+  uri: arbitrumApiKey
+    ? `https://gateway-arbitrum.network.thegraph.com/api/${arbitrumApiKey}/subgraphs/id/FbCGRftH4a3yZugY7TnbYgPJVEv2LvMT6oF1fxPe9aJM`
+    : 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal',
+  cache: new InMemoryCache({
+    typePolicies: {
+      Token: {
+        // Singleton types that have no identifying field can use an empty
+        // array for their keyFields.
+        keyFields: false,
+      },
+      Pool: {
+        // Singleton types that have no identifying field can use an empty
+        // array for their keyFields.
+        keyFields: false,
+      },
+    },
+  }),
+  queryDeduplication: true,
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'cache-first',
+    },
+    query: {
+      fetchPolicy: 'cache-first',
+      errorPolicy: 'all',
+    },
+  },
+})
+
 export function getUniswapUri(chainId?: number): string {
   switch (chainId) {
     case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:

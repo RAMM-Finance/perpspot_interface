@@ -1,5 +1,5 @@
 import { fetchLiveBar, fetchPoolPriceData } from 'graphql/limitlessGraph/poolPriceData'
-import { getUniswapSubgraph } from 'graphql/limitlessGraph/uniswapClients'
+import { getCustomApiSubgraph, getUniswapSubgraph } from 'graphql/limitlessGraph/uniswapClients'
 import { useMemo, useRef } from 'react'
 
 import {
@@ -24,7 +24,7 @@ type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
 }
 
-export default function useDatafeed({ chainId, symbol}: { chainId: number, symbol?: string}) {
+export default function useDatafeed({ chainId, symbol }: { chainId: number; symbol?: string }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
   // const resetCacheRef = useRef<() => void | undefined>()
   // const activeTicker = useRef<string | undefined>()
@@ -44,7 +44,6 @@ export default function useDatafeed({ chainId, symbol}: { chainId: number, symbo
             return onResolveErrorCallback('Symbol cannot be empty')
           }
           const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(symbolName)
-                    console.log('symbolsssss', baseSymbol, quoteSymbol)
 
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
@@ -75,9 +74,6 @@ export default function useDatafeed({ chainId, symbol}: { chainId: number, symbo
           onErrorCallback: (error: string) => void
         ) => {
           console.log('[getBars]: Method call', symbolInfo, periodParams)
-          // if (Object.values(SUPPORTED_RESOLUTIONS).find(str => str === resolution) === undefined) {
-          //   return onErrorCallback("[getBars] Invalid resolution");
-          // }
           const { poolAddress } = symbolInfo
           const { from, to, countBack } = periodParams
 
@@ -87,7 +83,7 @@ export default function useDatafeed({ chainId, symbol}: { chainId: number, symbo
               from,
               to,
               countBack,
-              getUniswapSubgraph(chainId)
+              getCustomApiSubgraph(chainId)
             )
             // console.log("data", data)
             const noData = !data || data.length === 0
@@ -122,5 +118,5 @@ export default function useDatafeed({ chainId, symbol}: { chainId: number, symbo
         },
       },
     }
-  }, [chainId, symbol])
+  }, [chainId])
 }
