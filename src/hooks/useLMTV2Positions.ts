@@ -338,7 +338,14 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
   // console.log('contractcall4')
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 4)
+  console.log(
+    'leverage positions',
+    loading,
+    result ? DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0] : undefined,
+    error,
+    syncing
+  )
   return useMemo(() => {
     if (!result) {
       return {
