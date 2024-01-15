@@ -305,7 +305,7 @@ export function getUniswapSubgraph(chainId: number): ApolloClient<NormalizedCach
   }
 }
 
-const arbitrumApiKey = process.env.API_KEY
+const arbitrumApiKey = process.env.REACT_APP_API_KEY
 
 export function getCustomApiSubgraph(chainId: number): ApolloClient<NormalizedCacheObject> {
   console.log('custom api subgraph')
