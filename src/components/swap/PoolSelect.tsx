@@ -1,7 +1,6 @@
 import { Currency, Token } from '@uniswap/sdk-core'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { SearchInput } from 'components/SearchModal/styleds'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
@@ -12,7 +11,7 @@ import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
 import { Column, Row } from 'nft/components/Flex'
-import { ChangeEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FixedSizeList } from 'react-window'
 import { useAllTokenBalances } from 'state/connection/hooks'
@@ -352,7 +351,7 @@ export default function PoolSelect({ detailsLoading }: { detailsLoading: boolean
   return (
     <Wrapper>
       <Row flexDirection="column">
-        <SearchInput
+        {/* <SearchInput
           type="text"
           id="token-search-input"
           placeholder="Search name or paste address"
@@ -360,7 +359,7 @@ export default function PoolSelect({ detailsLoading }: { detailsLoading: boolean
           value={searchQuery}
           ref={inputRef as RefObject<HTMLInputElement>}
           onChange={handleInput}
-        />
+        /> */}
         <PoolListContainer>
           <PoolListHeader>Pool (fee)</PoolListHeader>
           <PoolListHeader>TVL</PoolListHeader>

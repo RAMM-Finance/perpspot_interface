@@ -1,0 +1,23 @@
+.tab-container {
+  display: flex;
+  position: relative;
+}
+
+.tab-item {
+  padding: 15px;
+  flex: 1;
+}
+
+.tab-item.selected {
+  color: #0052D9;
+}
+
+.underline {
+  position: absolute;
+  bottom: 0;
+  width: 16px;
+  height: 3px;
+  background-color: #0052D9;
+  transition: left 0.3s ease;
+  transform: translateX(-50%);
+}
