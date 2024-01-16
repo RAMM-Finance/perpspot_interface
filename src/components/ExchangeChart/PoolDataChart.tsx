@@ -194,6 +194,6 @@ export function PoolDataChartLoading() {
 }
 
 const Bubble = styled(LoadingBubble)`
-  height: 535px;
-  width: 80%;
+  height: 550px;
+  width: 100%;
 `

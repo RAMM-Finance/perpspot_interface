@@ -1,6 +1,8 @@
 import { Currency, Token } from '@uniswap/sdk-core'
+import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { SearchInput } from 'components/SearchModal/styleds'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
@@ -46,6 +48,11 @@ const Status = styled.div`
   width: ${LOGO_SIZE}px;
 `
 
+const ListWrapper = styled.div`
+  overflow-y: auto;
+  height: 14vh;
+`
+
 const Container = styled.button<{ disabled: boolean; active: boolean }>`
   background: ${({ theme, active }) => (active ? theme.accentActiveSoft : 'none')};
   border: none;
@@ -83,7 +90,7 @@ const Wrapper = styled.div`
   height: fit-content;
 `
 
-export default function PoolSelect() {
+export default function PoolSelect({ detailsLoading }: { detailsLoading: boolean }) {
   const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -361,21 +368,56 @@ export default function PoolSelect() {
           <PoolListHeader></PoolListHeader>
         </PoolListContainer>
       </Row>
-      <Column style={{ gap: '3px' }}>
-        {dataInfo &&
-          dataInfo.map((curr: any) => {
-            return (
-              <PoolSelectorRow
-                currencyId={[curr.token0, curr.token1]}
-                onCurrencySelect={handleCurrencySelect}
-                key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                fee={curr?.fee}
-                tvl={curr.tvl}
-                volume={curr.volume}
-              />
-            )
-          })}
-      </Column>
+      <ListWrapper>
+        {isLoading || detailsLoading ? (
+          <AutoColumn>
+            <LoadingRow />
+            <LoadingRow />
+            <LoadingRow />
+          </AutoColumn>
+        ) : (
+          <Column style={{ gap: '3px' }}>
+            {dataInfo &&
+              dataInfo.map((curr: any) => {
+                return (
+                  <PoolSelectorRow
+                    currencyId={[curr.token0, curr.token1]}
+                    onCurrencySelect={handleCurrencySelect}
+                    key={`${curr.token0}-${curr.token1}-${curr.fee}`}
+                    fee={curr?.fee}
+                    tvl={curr.tvl}
+                    volume={curr.volume}
+                  />
+                )
+              })}
+          </Column>
+        )}
+      </ListWrapper>
     </Wrapper>
   )
 }
+const LoadingRow = () => {
+  return <LoadingSquare />
+}
+const LoadingSquare = styled(LoadingBubble)`
+  width: 100%;
+  height: 38px;
+
+  border: none;
+  border-radius: 10px;
+  color: ${({ theme }) => theme.textPrimary};
+
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr;
+  line-height: 10px;
+  align-items: center;
+
+  text-align: left;
+  transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
+    background-color;
+  width: 100%;
+
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
+    width: 100%;
+  }
+`

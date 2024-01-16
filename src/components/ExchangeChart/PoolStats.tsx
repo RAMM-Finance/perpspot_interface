@@ -75,7 +75,7 @@ function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <LoadingBubble />
+          <LoadingBubble height="18px" />
         </StatPrice>
       </StatWrapper>
     )
