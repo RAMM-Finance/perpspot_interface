@@ -35,6 +35,7 @@ export const PageWrapper = styled.div`
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
   min-width: 340px;
+  height: 99%;
   flex-flow: row nowrap;
   align-items: space-evenly;
   margin-bottom: 0.5rem;

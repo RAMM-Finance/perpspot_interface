@@ -58,9 +58,9 @@ export const blueButton = style([
     backgroundColor: 'accentActive',
     ':hover': {
       color: 'white',
-      background: 'accentActiveSoft',
+      background: 'accentActive',
       fontWeight: 'bold',
-      opacity: '80%',
+      opacity: '95%',
     },
   },
 ])

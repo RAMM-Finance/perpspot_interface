@@ -251,6 +251,7 @@ export default function SimplePool() {
     LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
+  //callStatic for deposit
   const cb = useCallback(async (): Promise<BigNumber> => {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
@@ -319,6 +320,42 @@ export default function SimplePool() {
         setError(error.message)
       })
   }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
+
+  //call static for redeem
+
+  const cbredeem = useCallback(async (): Promise<BigNumber> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
+      if (quoteCurrency && amountIn && account)
+        response = await vaultContract?.callStatic.redeemToAnyToken(
+          quoteCurrency?.wrapped.address,
+          amountIn,
+          account,
+          account
+        )
+      return response as BigNumber
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, vaultContract, provider, parsedAmounts])
+
+  useEffect(() => {
+    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider || buy) {
+      return
+    }
+    setAttemptingTxn(true)
+
+    cbredeem()
+      .then((response) => {
+        console.log(response)
+        setValue(Number(response) / 1e18)
+      })
+      .catch((error) => {
+        console.error('referrr', error)
+      })
+  }, [account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, buy, cbredeem])
 
   const redeemCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -421,6 +458,7 @@ export default function SimplePool() {
   const WBTC = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
   const USDC = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
 
+  console.log(formattedAmounts[Field.CURRENCY_A])
   const indexData = useMemo(() => {
     if (data && mW) {
       return [
@@ -524,10 +562,22 @@ export default function SimplePool() {
           <CurrencyWrapper>
             <FilterWrapper>
               <Filter>
-                <Selector onClick={() => setBuy(true)} active={buy}>
+                <Selector
+                  onClick={() => {
+                    setBuy(true)
+                    setValue(0)
+                  }}
+                  active={buy}
+                >
                   <StyledSelectorText active={buy}>Buy LLP</StyledSelectorText>
                 </Selector>
-                <Selector onClick={() => setBuy(false)} active={!buy}>
+                <Selector
+                  onClick={() => {
+                    setBuy(false)
+                    setValue(0)
+                  }}
+                  active={!buy}
+                >
                   <StyledSelectorText active={!buy}>Sell LLP</StyledSelectorText>
                 </Selector>
               </Filter>
@@ -536,35 +586,44 @@ export default function SimplePool() {
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
               onMax={() => {
-                onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+                !buy
+                  ? onFieldAInput(llpBalance.toString())
+                  : onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
               }}
-              showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
+              showMaxButton={true}
               currency={currencies[Field.CURRENCY_A] ?? null}
               id="add-liquidity-input-tokena"
               fiatValue={currencyAFiat}
-              showCommonBases
               onCurrencySelect={buy ? handleCurrencySelect : undefined}
               llpBalance={!buy ? llpBalance : 0}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Sell</ThemedText.BodyPrimary>
               }
             />
-            <ArrowWrapper onClick={() => setBuy(!buy)} clickable={true}>
+            <ArrowWrapper
+              onClick={() => {
+                setBuy(!buy)
+                setValue(0)
+              }}
+              clickable={true}
+            >
               <ArrowContainer color="white">
                 <Maximize2 size="10" />
               </ArrowContainer>
             </ArrowWrapper>
             <CurrencyInputPanel
-              value={buy ? value.toString() : formattedAmounts[Field.CURRENCY_B]}
-              onUserInput={onFieldBInput}
-              onMax={() => {
-                onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-              }}
-              showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
+              value={value.toString()}
+              onUserInput={
+                buy
+                  ? onFieldBInput
+                  : () => {
+                      null
+                    }
+              }
+              showMaxButton={false}
               fiatValue={currencyBFiat}
               currency={currencies[Field.CURRENCY_B] ?? null}
               id="add-liquidity-input-tokenb"
-              showCommonBases
               onCurrencySelect={!buy ? handleCurrencySelect : undefined}
               llpBalance={buy ? llpBalance : 0}
               label={
@@ -596,31 +655,35 @@ export default function SimplePool() {
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
                 onClick={approveVault}
-                style={{ fontSize: '14px', borderRadius: '10px' }}
+                style={{
+                  fontSize: '16px',
+                  borderRadius: '10px',
+                  height: '40px',
+                }}
                 width="14"
                 padding=".5rem"
                 disabled={vaultApprovalState === ApprovalState.PENDING}
               >
                 {vaultApprovalState === ApprovalState.PENDING ? (
                   <>
-                    <Loader size="20px" />
+                    <Loader size="18px" />
                     <Trans>Approval pending</Trans>
                   </>
                 ) : (
                   <>
-                    <MouseoverTooltip text={<Trans>Permission is required to deposit and mint LLP. </Trans>}>
-                      <RowBetween>
-                        <Info size={20} />
-                        <Trans>Approve use of {currencies?.[Field.CURRENCY_A]?.symbol}</Trans>
-                      </RowBetween>
+                    <MouseoverTooltip
+                      style={{ height: '25px', display: 'flex', alignItems: 'center' }}
+                      text={<Trans>Permission is required to deposit and mint LLP. </Trans>}
+                    >
+                      <Info size={18} />
+                      <Trans>Approve use of {currencies?.[Field.CURRENCY_A]?.symbol}</Trans>
                     </MouseoverTooltip>
                   </>
                 )}
               </ButtonPrimary>
             ) : errorMessage && !value ? (
               <ButtonPrimary
-                className={styles.blueButton}
-                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
+                style={{ fontSize: '16px', borderRadius: '10px', height: '40px' }}
                 width="14"
                 padding=".5rem"
                 fontWeight={600}
@@ -648,7 +711,7 @@ export default function SimplePool() {
                 fontWeight={600}
                 onClick={handleRedeem}
               >
-                Sell LLP
+                <Trans>Sell</Trans> LLP
               </ButtonPrimary>
             )}
           </CurrencyWrapper>
@@ -841,6 +904,6 @@ const Selector = styled.div<{ active: boolean }>`
   background-color: ${({ active, theme }) => (active ? '#3783fd' : theme.accentActiveSoft)};
   cursor: pointer;
   &:hover {
-    opacity: ${({ theme }) => theme.opacity.hover};
+    opacity: 95%;
   }
 `

@@ -80,7 +80,7 @@ const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
-  height: calc(100vh - 125px);
+  height: 100%;
 
   overflow-y: scroll;
   ::-webkit-scrollbar {

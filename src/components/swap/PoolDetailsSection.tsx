@@ -19,6 +19,7 @@ const Container = styled.div`
   justify-content: flex-start;
   align-content: center;
   margin-left: 0.25rem;
+  height: 100%;
 `
 const MiddleContainer = styled.div`
   display: flex;
@@ -31,6 +32,7 @@ const RightContainer = styled.div`
   flex-direction: column;
   margin-left: 0.25rem;
   width: 400px;
+  height: 100%;
 `
 
 const LiquidityDistibutionWrapper = styled.div`
@@ -42,7 +44,7 @@ const LiquidityDistibutionWrapper = styled.div`
   border-radius: 10px;
   width: 97%;
   padding: 1rem;
-  height: 550px;
+  height: 100%;
   overflow-y: scroll;
   ::-webkit-scrollbar {
     display: none;
@@ -53,8 +55,8 @@ const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
-  height: calc(100vh - 582px);
   min-height: 150px;
+  height: 100%;
   border-radius: 10px;
   overflow-y: scroll;
   ::-webkit-scrollbar {
