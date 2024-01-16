@@ -197,6 +197,7 @@ interface CurrencyInputPanelProps {
   renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
   locked?: boolean
   loading?: boolean
+  llpBalance?: number
 }
 
 export default function CurrencyInputPanel({
@@ -220,6 +221,7 @@ export default function CurrencyInputPanel({
   locked = false,
   loading = false,
   label,
+  llpBalance,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -315,7 +317,9 @@ export default function CurrencyInputPanel({
                       renderBalance ? (
                         renderBalance(selectedCurrencyBalance)
                       ) : (
-                        <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                        <Trans>
+                          Balance: {llpBalance ? llpBalance : formatCurrencyAmount(selectedCurrencyBalance, 4)}
+                        </Trans>
                       )
                     ) : null}
                   </ThemedText.BodySmall>

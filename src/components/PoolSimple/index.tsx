@@ -14,6 +14,7 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_VAULT } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
+import { BigNumber } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useVaultContract } from 'hooks/useContract'
@@ -37,6 +38,7 @@ import * as styles from '../NavBar/style.css'
 export default function SimplePool() {
   const theme = useTheme()
   const [buy, setBuy] = useState(true)
+  const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
@@ -105,7 +107,7 @@ export default function SimplePool() {
   }
 
   const usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
-  const usdcValueCurrencyB = usdcValues[Field.CURRENCY_B]
+  const usdcValueCurrencyB = value
 
   const currencyAFiat = useMemo(
     () => ({
@@ -116,7 +118,7 @@ export default function SimplePool() {
   )
   const currencyBFiat = useMemo(
     () => ({
-      data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
+      data: usdcValueCurrencyB ? parseFloat(value.toFixed(2).toString()) : undefined,
       isLoading: false,
     }),
     [usdcValueCurrencyB]
@@ -249,6 +251,35 @@ export default function SimplePool() {
     LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
+  const cb = useCallback(async (): Promise<BigNumber> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
+      if (baseCurrency && amountIn && account)
+        response = await vaultContract?.callStatic.depositAnyToken(baseCurrency?.wrapped.address, amountIn, account)
+      return response as BigNumber
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, vaultContract, provider, parsedAmounts, baseCurrency])
+
+  useEffect(() => {
+    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider || !buy) {
+      return
+    }
+
+    cb()
+      .then((response) => {
+        console.log(response)
+        setValue(Number(response) / 1e18)
+      })
+      .catch((error) => {
+        console.log(error)
+        setValue(0)
+      })
+  }, [vaultContract, parsedAmounts, cb, account, chainId, provider, buy])
+
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
@@ -287,20 +318,22 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error])
+  }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
 
   const redeemCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
-      console.log('redeeminput', baseCurrency?.wrapped.address, amountIn, account)
-      if (baseCurrency && amountIn && account)
-        response = await vaultContract?.redeemToAnyToken(baseCurrency?.wrapped.address, amountIn, account, account)
+      console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
+      if (quoteCurrency && amountIn && account)
+        response = await vaultContract?.redeemToAnyToken(quoteCurrency?.wrapped.address, amountIn, account, account)
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
     }
   }, [account, chainId, vaultContract, provider, parsedAmounts])
+
+  const [llpBalance, setLlpBalance] = useState<number>(0)
 
   const handleRedeem = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
@@ -335,15 +368,18 @@ export default function SimplePool() {
       try {
         const balance = await vaultContract.balanceOf(account)
         console.log('balance', balance.toString())
+        setLlpBalance(() => Number(balance) / 1e18)
       } catch (error) {
         console.log('codebyowners err')
       }
     }
     call()
-  }, [account, provider, vaultContract])
+  }, [account, provider, vaultContract, attemptingTxn])
 
   const [data, setData] = useState<any>()
   const [mW, setMW] = useState<any>()
+  const [llpPrice, setLlpPrice] = useState<any>()
+
   useEffect(() => {
     if (!provider || !vaultContract) return
 
@@ -363,6 +399,9 @@ export default function SimplePool() {
         )
         setMW([maxWithdrawableWETH, maxWithdrawableWBTC, maxWithdrawableUSDC])
 
+        const price = await vaultContract.previewRedeem(`${1e18}`)
+        setLlpPrice(price)
+
         // rawdata[0] is total supply
         // 1 is totalbacking
         // 2 is utilization rate, i.e 0.5*1e18 is 50%
@@ -381,10 +420,6 @@ export default function SimplePool() {
   const WETH = useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
   const WBTC = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
   const USDC = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
-
-  // const [, WETHpool] = usePool(WETH ?? undefined, LLPtok ?? undefined, 500)
-  // const [, WBTCpool] = usePool(WBTC ?? undefined, LLPtok ?? undefined, 500)
-  // const [, USDCpool] = usePool(USDC ?? undefined, LLPtok ?? undefined, 500)
 
   const indexData = useMemo(() => {
     if (data && mW) {
@@ -418,7 +453,6 @@ export default function SimplePool() {
       return undefined
     }
   }, [data, mW])
-  console.log(indexData)
 
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
@@ -450,7 +484,7 @@ export default function SimplePool() {
             </RowStart>
             <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
               <ThemedText.BodyPrimary>Price: </ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary>19.28</ThemedText.BodySecondary>
+              <ThemedText.BodySecondary>{llpPrice && (llpPrice / 1e18).toFixed(2)}</ThemedText.BodySecondary>
             </RowBetween>
             <RowBetween>
               <ThemedText.BodyPrimary>Total Supply:</ThemedText.BodyPrimary>
@@ -510,6 +544,7 @@ export default function SimplePool() {
               fiatValue={currencyAFiat}
               showCommonBases
               onCurrencySelect={buy ? handleCurrencySelect : undefined}
+              llpBalance={!buy ? llpBalance : 0}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Sell</ThemedText.BodyPrimary>
               }
@@ -520,7 +555,7 @@ export default function SimplePool() {
               </ArrowContainer>
             </ArrowWrapper>
             <CurrencyInputPanel
-              value={formattedAmounts[Field.CURRENCY_B]}
+              value={buy ? value.toString() : formattedAmounts[Field.CURRENCY_B]}
               onUserInput={onFieldBInput}
               onMax={() => {
                 onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
@@ -531,6 +566,7 @@ export default function SimplePool() {
               id="add-liquidity-input-tokenb"
               showCommonBases
               onCurrencySelect={!buy ? handleCurrencySelect : undefined}
+              llpBalance={buy ? llpBalance : 0}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Buy</ThemedText.BodyPrimary>
               }
@@ -545,6 +581,17 @@ export default function SimplePool() {
                 onClick={toggleWalletDrawer}
               >
                 Connect Wallet
+              </ButtonPrimary>
+            ) : errorMessage === `Insufficient ${currencies[Field.CURRENCY_A]?.symbol}` ? (
+              <ButtonPrimary
+                className={styles.blueButton}
+                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
+                width="14"
+                padding=".5rem"
+                fontWeight={600}
+                onClick={handleDeposit}
+              >
+                {errorMessage}
               </ButtonPrimary>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
@@ -570,7 +617,7 @@ export default function SimplePool() {
                   </>
                 )}
               </ButtonPrimary>
-            ) : (
+            ) : errorMessage && !value ? (
               <ButtonPrimary
                 className={styles.blueButton}
                 style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
@@ -579,7 +626,29 @@ export default function SimplePool() {
                 fontWeight={600}
                 onClick={handleDeposit}
               >
-                {buy ? 'Buy' : 'Sell'} LLP
+                {errorMessage}
+              </ButtonPrimary>
+            ) : buy ? (
+              <ButtonPrimary
+                className={styles.blueButton}
+                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
+                width="14"
+                padding=".5rem"
+                fontWeight={600}
+                onClick={handleDeposit}
+              >
+                Buy LLP
+              </ButtonPrimary>
+            ) : (
+              <ButtonPrimary
+                className={styles.blueButton}
+                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
+                width="14"
+                padding=".5rem"
+                fontWeight={600}
+                onClick={handleRedeem}
+              >
+                Sell LLP
               </ButtonPrimary>
             )}
           </CurrencyWrapper>

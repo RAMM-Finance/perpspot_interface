@@ -14,12 +14,13 @@ import {
   tickToPrice,
 } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { useLmtPoolManagerContract } from 'hooks/useContract'
+import { useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { getTickToPrice } from 'utils/getTickToPrice'
@@ -537,8 +538,10 @@ export function useDerivedLmtMintInfo(
   depositBDisabled: boolean
   invertPrice: boolean
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
+  llpBalance: number | undefined
 } {
-  const { account } = useWeb3React()
+  const { account, provider } = useWeb3React()
+  const vaultContract = useVaultContract()
 
   const { independentField, typedValue, leftRangeTypedValue, rightRangeTypedValue, startPriceTypedValue } =
     useV3MintState()
@@ -892,6 +895,35 @@ export function useDerivedLmtMintInfo(
     errorMessage = <Trans>Insufficient {currencies[Field.CURRENCY_B]?.symbol} balance</Trans>
   }
 
+  const llpBal = useRef<number>(0)
+  let llpBalance
+
+  useEffect(() => {
+    if (!account || !provider || !vaultContract) return
+
+    const call = async () => {
+      try {
+        const balance = await vaultContract.balanceOf(account)
+        console.log('balance', balance.toString())
+        llpBal.current = Number(balance) / 1e18
+      } catch (error) {
+        console.log('codebyowners err')
+      }
+    }
+    call()
+  }, [account, provider, vaultContract])
+
+  if (currencyA?.symbol === 'LLP') {
+    if (llpBal.current === 0) {
+      errorMessage = <Trans> LLP</Trans>
+    } else if (Number(typedValue) <= llpBal.current) {
+      errorMessage = null
+    } else {
+      errorMessage = <Trans>Insufficient LLP Balance</Trans>
+    }
+    llpBalance = llpBal.current
+  }
+
   const invalidPool = poolState === PoolState.INVALID
 
   return {
@@ -915,6 +947,7 @@ export function useDerivedLmtMintInfo(
     depositBDisabled,
     invertPrice,
     ticksAtLimit,
+    llpBalance,
   }
 }
 
