@@ -4,10 +4,11 @@ import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } f
 import {useEffect, useMemo , useState} from 'react'
 import { PositionDetails } from 'types/position'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
+import { ethers } from 'ethers'
 
 import { useReferralContract, 
   useDataProviderContract, useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
-
+import { useWeb3React } from '@web3-react/core'
 interface UseV3PositionsResults {
   loading: boolean
   positions: PositionDetails[] | undefined
@@ -28,11 +29,27 @@ export enum PositionState {
   INVALID,
 }
 
-export function usePointExists(code:string | undefined) {
-  const referralContract = useReferralContract() 
-  const result = useSingleCallResult(referralContract, 'codeOwners', [code])
+export function useUsingCode( ) {
+  const { account, provider } = useWeb3React()
 
-  return result.result
+  const referralContract = useReferralContract() 
+
+  const [codeUsing, setCodeUsing] = useState(false)
+
+  useEffect(() => {
+    if (!account ||!provider ||!referralContract) return
+    const call = async () => {
+      try {
+        const result = await referralContract.userReferralCodes(account)
+        setCodeUsing(result != ethers.constants.HashZero)
+      } catch (error) {
+        console.log('codeowner err')
+      }
+    }
+    call()
+  }, [account, referralContract])
+
+  return codeUsing
 }
 
 // export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {

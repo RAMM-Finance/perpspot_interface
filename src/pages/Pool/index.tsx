@@ -20,7 +20,7 @@ import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
-
+import {useUsingCode} from 'hooks/usePointsInfo'
 import { LoadingRows } from './styleds'
 
 const Filter = styled.div`
@@ -231,7 +231,6 @@ export default function Pool() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const [advanced, setAdvanced] = useState<boolean>(false)
-
   const theme = useTheme()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 

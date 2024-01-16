@@ -35,7 +35,7 @@ import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
 import { MarginField, setBaseCurrencyIsInputToken, setLimit, setLocked, setPrice, typeInput } from './actions'
 import { getOutputQuote } from './getOutputQuote'
-
+import {useUsingCode} from "hooks/usePointsInfo"
 export function useMarginTradingState(): AppState['margin'] {
   return useAppSelector((state) => state.margin)
 }
@@ -176,7 +176,7 @@ export function useDerivedAddPositionInfo(
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
-
+  const usingCode = useUsingCode( )
   // const {
   //   [MarginField.MARGIN]: margin,
   //   [MarginField.LEVERAGE_FACTOR]: leverageFactor,
@@ -322,6 +322,11 @@ export function useDerivedAddPositionInfo(
 
     if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
       inputError = inputError ?? <Trans>Select a token</Trans>
+    }
+
+    if(!usingCode){
+      inputError = inputError ?? <Trans>Not using code</Trans>
+
     }
 
     if (!parsedMargin || parsedMargin.isZero()) {
