@@ -31,7 +31,7 @@ const RightContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 0.25rem;
-  width: 600px;
+  width: 420px;
   height: 100%;
 `
 

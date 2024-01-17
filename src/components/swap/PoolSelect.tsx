@@ -41,7 +41,7 @@ const PoolListHeader = styled(ThemedText.BodySmall)`
 `
 const PoolListContainer = styled.div`
   display: grid;
-  grid-template-columns: 3fr 0.9fr 0.9fr 1.2fr 1fr;
+  grid-template-columns: 2.9fr 0.9fr 0.9fr;
   width: 100%;
   padding-left: 0.25vw;
 
@@ -71,7 +71,7 @@ const Container = styled.button<{ disabled: boolean; active: boolean }>`
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns: 3fr 0.9fr 0.9fr 1.2fr 1fr;
+  grid-template-columns: 2fr 0.9fr 0.9fr;
   line-height: 10px;
   align-items: center;
   padding: 3px;
@@ -402,17 +402,20 @@ export default function PoolSelect({
             <ThemedText.BodySmall color="textSecondary" fontWeight={800}>
               {labelIn}
             </ThemedText.BodySmall>
-            /<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>
+            {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}
+            /<ThemedText.BodySmall fontWeight={800}>{labelOut + ` (UNIv3)`}</ThemedText.BodySmall>
+
           </Label>
         </div>
-        <ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
-        <ThemedText.BodySmall>{formatDollar({ num: volume, digits: 0 })}</ThemedText.BodySmall>
-        <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.FiatTokenPrice)}</ThemedText.BodySmall>
+        {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
+        <ThemedText.BodySmall>{formatDollar({ num: volume, digits: 0 })}</ThemedText.BodySmall>*/}
         <ThemedText.BodySmall>
           <DeltaText delta={delta?.toNumber()}>
             {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
           </DeltaText>
         </ThemedText.BodySmall>
+        <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.FiatTokenPrice)}</ThemedText.BodySmall>
+
       </Container>
     )
   }
@@ -430,11 +433,12 @@ export default function PoolSelect({
           onChange={handleInput}
         /> */}
         <PoolListContainer>
-          <PoolListHeader>Pool (fee)</PoolListHeader>
-          <PoolListHeader>TVL</PoolListHeader>
-          <PoolListHeader>Vol</PoolListHeader>
-          <PoolListHeader>Price</PoolListHeader>
+          <PoolListHeader>Pool</PoolListHeader>
+          {/*<PoolListHeader>TVL</PoolListHeader>
+          <PoolListHeader>Vol</PoolListHeader>*/}
           <PoolListHeader>24h Change</PoolListHeader>
+          <PoolListHeader>Price</PoolListHeader>
+
         </PoolListContainer>
       </Row>
       <ListWrapper>

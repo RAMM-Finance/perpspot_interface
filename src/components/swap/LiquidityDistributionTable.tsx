@@ -17,7 +17,6 @@ const LiquidityDistributionTable = ({
   currentPrice: number
   bin: BinData[] | undefined
 }) => {
-  token0 && token1 && console.log(token0, token1)
   const [liqNum, priceNum] = useMemo(() => {
     if (token0 && token1) {
       if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
@@ -33,6 +32,7 @@ const LiquidityDistributionTable = ({
       return [undefined, undefined]
     }
   }, [token0, token1])
+
 
   return (
     <>
@@ -51,7 +51,7 @@ const LiquidityDistributionTable = ({
         bin
           .filter(
             (y) =>
-              Number(y.price) / Number(`1e${token1?.wrapped.decimals}`) > currentPrice / Number(`1e${priceNum}`) &&
+              Number(y.price)/1e18  > currentPrice  &&
               Number(y.token0Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
           )
           .filter(
@@ -78,8 +78,8 @@ const LiquidityDistributionTable = ({
           ))
           .reverse()}
       <PriceWrapper>
-        <ThemedText.BodyPrimary>{(currentPrice / Number(`1e${priceNum}`)).toFixed(2)}</ThemedText.BodyPrimary>
-        <ThemedText.BodyPrimary>{(currentPrice / Number(`1e${priceNum}`)).toFixed(2)}</ThemedText.BodyPrimary>
+        {token0&&token1&&(<ThemedText.BodyPrimary>{(currentPrice/Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) ).toFixed(2)}</ThemedText.BodyPrimary>)}
+        {token0&&token1&&(<ThemedText.BodyPrimary>{(currentPrice/Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) ).toFixed(2)}</ThemedText.BodyPrimary>)}
       </PriceWrapper>
       <LDHeaderRow>
         <LDHeaderCellIn>
@@ -93,7 +93,7 @@ const LiquidityDistributionTable = ({
         bin
           .filter(
             (y) =>
-              Number(y.price) / Number(`1e${token1?.wrapped.decimals}`) < currentPrice &&
+              Number(y.price) / 1e18 < currentPrice &&
               Number(y.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
           )
           .filter(
@@ -105,7 +105,7 @@ const LiquidityDistributionTable = ({
           )
           .map((x) => (
             <LDDataRow
-              spread={(Number(x.token1Liquidity) / Number(`1e${liqNum}`) / 100 / currentPrice) * 32.5}
+              spread={(Number(x.token1Liquidity) / Number(`1e${liqNum}`) / 100 ) * 32.5}
               key={Number(x.price) / Number(`1e${liqNum}`)}
             >
               <LDDataCellIn>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellIn>

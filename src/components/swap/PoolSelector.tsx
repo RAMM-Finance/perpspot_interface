@@ -376,7 +376,7 @@ export const PoolSelector = ({
               >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
             </Row>
             <Row gap="8">
-              <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
+              {/*<ThemedText.BodySmall>All Markets</ThemedText.BodySmall>*/}
               {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
             </Row>
           </>
@@ -399,7 +399,7 @@ export const PoolSelector = ({
           >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
         </Row>
         <Row gap="8">
-          <ThemedText.BodySmall>All Markets</ThemedText.BodySmall>
+          {/*<ThemedText.BodySmall>All Markets</ThemedText.BodySmall>*/}
         </Row>
       </Row>
     </Box>
