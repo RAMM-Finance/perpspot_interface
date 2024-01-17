@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
+import modalBG from '../About/images/AboutModalBG2.png'
+
 const StyledTabIndicator = styled.div<{ tabCount: any; offset: any; duration: any }>`
   position: absolute;
   width: ${({ tabCount }) => 100 / tabCount}%;
@@ -116,18 +118,102 @@ const Pane3 = () => {
 export default function AboutModal() {
   const [focusedIdx, setFocusedIdx] = useState(0)
 
+  // return (
+  //   <div style={{ width: '100%', padding: '30px' }}>
+  //     <Sliders focusedIdx={focusedIdx}>
+  //       <Pane1 />
+  //       <Pane2 />
+  //       <Pane3 />
+  //     </Sliders>
+  //     <Tabs focusedIdx={focusedIdx} onChange={setFocusedIdx}>
+  //       <Tab title={<ThemedText.BodySecondary>Tab 1</ThemedText.BodySecondary>} />
+  //       <Tab title={<ThemedText.BodySecondary>Tab 2</ThemedText.BodySecondary>} />
+  //       <Tab title={<ThemedText.BodySecondary>Tab 3</ThemedText.BodySecondary>} />
+  //     </Tabs>
+  //   </div>
+  // )
+
   return (
-    <div style={{ width: '100%', padding: '30px' }}>
-      <Sliders focusedIdx={focusedIdx}>
-        <Pane1 />
-        <Pane2 />
-        <Pane3 />
-      </Sliders>
-      <Tabs focusedIdx={focusedIdx} onChange={setFocusedIdx}>
-        <Tab title={<ThemedText.BodySecondary>Tab 1</ThemedText.BodySecondary>} />
-        <Tab title={<ThemedText.BodySecondary>Tab 2</ThemedText.BodySecondary>} />
-        <Tab title={<ThemedText.BodySecondary>Tab 3</ThemedText.BodySecondary>} />
-      </Tabs>
-    </div>
+    <Wrapper>
+      <img src={modalBG} width="600px" />
+      <TextSection>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">1. No Liquidations.</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            No more forced price-based liquidations. HODL ur levered position under any price action.
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">2. Limitless Pairs.</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            Supports every possible asset on chain. Permissionless listing(coming soon).
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">3. Extremely high leverage.</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            Up to 100x liquidation-free leverage on any pairs.
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">
+            4. Leveraged limit orders for every pair.
+          </ThemedText.DeprecatedLabel>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">5. Unlimited liquidity.</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            Trade against the entire chain, not just one protocol, for best execution.{' '}
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">6. No oracles.</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            Free from oracle-based attacks, which is the largest attack vector in DeFi.{' '}
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">7. Positive sum dynamics.</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            LPs are not trading against the trader. LPs earn yield regardless of whether the trader is losing or
+            winning.
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">
+            8. Extremely higher yields for LPs.
+          </ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            5-10x more yields than the same pair in Uniswap V3. Choose between simple and customized LPing.{' '}
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+      </TextSection>
+    </Wrapper>
   )
 }
+
+const Wrapper = styled.div`
+  padding: 50px;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background: #000;
+`
+
+const TextSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+  margin-top: 20px;
+  gap: 15px;
+`
+
+const TextPoint = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`

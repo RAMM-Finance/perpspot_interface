@@ -18,7 +18,8 @@ import { NavLink, NavLinkProps, useLocation, useNavigate } from 'react-router-do
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
 
-import { ReactComponent as Logo } from '../../assets/svg/full_logo_black.svg'
+import { ReactComponent as LogoText } from '../../assets/svg/full_logo_black.svg'
+import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
@@ -83,7 +84,7 @@ export const PageTabs = () => {
       <Tabs>
         <LogoSection>
           <NavLink to="/swap">
-            <Logo fill="#fff" width="150px" />
+            <LogoText fill="#fff" width="150px" />
           </NavLink>
         </LogoSection>
         <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
@@ -167,9 +168,10 @@ const Navbar = ({ blur }: { blur: boolean }) => {
               <SmallButtonPrimary
                 onClick={() => setShowModal(!showModal)}
                 className={styles.blueButton}
-                style={{ background: '#3783fd' }}
+                style={{ display: ' flex', gap: '5px', background: '#0ecc83', color: '#0a0f19' }}
               >
-                What is Limitless
+                <Logo fill="#0a0f19" width="12px" />
+                <Trans> What is Limitless?</Trans>
               </SmallButtonPrimary>
               {!isNftPage && (
                 <Box display={{ sm: 'none', lg: 'flex' }}>
@@ -181,7 +183,7 @@ const Navbar = ({ blur }: { blur: boolean }) => {
             </Row>
           </Box>
         </Box>
-        <Modal isOpen={showModal} onDismiss={handleCloseModal}>
+        <Modal maxWidth={700} isOpen={showModal} onDismiss={handleCloseModal}>
           <AboutModal />
         </Modal>
       </Nav>

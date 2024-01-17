@@ -35,7 +35,7 @@ import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.sv
 import { Field } from '../../state/mint/v3/actions'
 import * as styles from '../NavBar/style.css'
 // TransactionType.MINT_LLP
-export default function SimplePool() {
+export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const theme = useTheme()
   const [buy, setBuy] = useState(true)
   const [value, setValue] = useState<number>(0)
@@ -641,16 +641,15 @@ export default function SimplePool() {
               >
                 Connect Wallet
               </ButtonPrimary>
-            ) : errorMessage === `Insufficient ${currencies[Field.CURRENCY_A]?.symbol}` ? (
+            ) : !codeActive ? (
               <ButtonPrimary
                 className={styles.blueButton}
                 style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
                 width="14"
                 padding=".5rem"
                 fontWeight={600}
-                onClick={handleDeposit}
               >
-                {errorMessage}
+                Not using code
               </ButtonPrimary>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonPrimary
@@ -681,7 +680,7 @@ export default function SimplePool() {
                   </>
                 )}
               </ButtonPrimary>
-            ) : errorMessage && !value ? (
+            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A])) || !value ? (
               <ButtonPrimary
                 style={{ fontSize: '16px', borderRadius: '10px', height: '40px' }}
                 width="14"

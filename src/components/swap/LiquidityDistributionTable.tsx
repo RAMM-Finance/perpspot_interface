@@ -1,6 +1,7 @@
 import { Currency } from '@uniswap/sdk-core'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { BinData } from 'hooks/useLMTV2Positions'
+import { useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -16,6 +17,23 @@ const LiquidityDistributionTable = ({
   currentPrice: number
   bin: BinData[] | undefined
 }) => {
+  token0 && token1 && console.log(token0, token1)
+  const [liqNum, priceNum] = useMemo(() => {
+    if (token0 && token1) {
+      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+        return [28, 10]
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+        return [6, -12]
+      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+        return [16, -2]
+      } else {
+        return [0, 0]
+      }
+    } else {
+      return [undefined, undefined]
+    }
+  }, [token0, token1])
+
   return (
     <>
       <Title>
@@ -28,18 +46,31 @@ const LiquidityDistributionTable = ({
         <LDHeaderCellOut>Amount ({token0?.symbol})</LDHeaderCellOut>
       </LDHeaderRow>
       {bin &&
+        token0 &&
+        token1 &&
         bin
-          .filter((y) => Number(y.price) / 1e18 > currentPrice / 1e10 && Number(y.token0Liquidity) / 1e18 > 0)
-          .filter((z) => !(Number(z.token0Liquidity) / 1e8 > 0 && Number(z.token1Liquidity) / 1e18 > 0))
+          .filter(
+            (y) =>
+              Number(y.price) / Number(`1e${token1?.wrapped.decimals}`) > currentPrice / Number(`1e${priceNum}`) &&
+              Number(y.token0Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+          )
+          .filter(
+            (z) =>
+              !(
+                Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) > 0 &&
+                Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+              )
+          )
           .map((x) => (
             <LDDataRowNeg
-              spread={(Number(x.token0Liquidity) / 1e28 / 100 / currentPrice) * 32.5}
-              key={Number(x.price) / 1e28}
+              // spread={(Number(x.token0Liquidity) / Number(`1e${liqNum}`) / 100 / currentPrice) * 32.5}
+              spread={75 / 100}
+              key={Number(x.price) / Number(`1e${liqNum}`)}
             >
-              <LDDataCellInNeg>{(Number(x.price) / 1e28).toFixed(2)}</LDDataCellInNeg>
+              <LDDataCellInNeg>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellInNeg>
               <LDDataCellOutNeg>
                 {formatDollar({
-                  num: (Number(x.token0Liquidity) - Number(x.token0Borrowed)) / 1e8,
+                  num: (Number(x.token0Liquidity) - Number(x.token0Borrowed)) / Number(`1e${token0?.wrapped.decimals}`),
                   dollarSign: false,
                 })}
               </LDDataCellOutNeg>
@@ -47,8 +78,8 @@ const LiquidityDistributionTable = ({
           ))
           .reverse()}
       <PriceWrapper>
-        <ThemedText.BodyPrimary>{(currentPrice / 1e10).toFixed(2)}</ThemedText.BodyPrimary>
-        <ThemedText.BodyPrimary>{(currentPrice / 1e10).toFixed(2)}</ThemedText.BodyPrimary>
+        <ThemedText.BodyPrimary>{(currentPrice / Number(`1e${priceNum}`)).toFixed(2)}</ThemedText.BodyPrimary>
+        <ThemedText.BodyPrimary>{(currentPrice / Number(`1e${priceNum}`)).toFixed(2)}</ThemedText.BodyPrimary>
       </PriceWrapper>
       <LDHeaderRow>
         <LDHeaderCellIn>
@@ -57,18 +88,30 @@ const LiquidityDistributionTable = ({
         <LDHeaderCellOut>Amount ({token1?.symbol})</LDHeaderCellOut>
       </LDHeaderRow>
       {bin &&
+        token0 &&
+        token1 &&
         bin
-          .filter((y) => Number(y.price) / 1e18 < currentPrice && Number(y.token1Liquidity) / 1e18 > 0)
-          .filter((z) => !(Number(z.token0Liquidity) / 1e8 > 0 && Number(z.token1Liquidity) / 1e18 > 0))
+          .filter(
+            (y) =>
+              Number(y.price) / Number(`1e${token1?.wrapped.decimals}`) < currentPrice &&
+              Number(y.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+          )
+          .filter(
+            (z) =>
+              !(
+                Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) > 0 &&
+                Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+              )
+          )
           .map((x) => (
             <LDDataRow
-              spread={(Number(x.token1Liquidity) / 1e28 / 100 / currentPrice) * 32.5}
-              key={Number(x.price) / 1e28}
+              spread={(Number(x.token1Liquidity) / Number(`1e${liqNum}`) / 100 / currentPrice) * 32.5}
+              key={Number(x.price) / Number(`1e${liqNum}`)}
             >
-              <LDDataCellIn>{(Number(x.price) / 1e28).toFixed(2)}</LDDataCellIn>
+              <LDDataCellIn>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellIn>
               <LDDataCellOut>
                 {formatDollar({
-                  num: (Number(x.token1Liquidity) - Number(x.token1Borrowed)) / 1e18,
+                  num: (Number(x.token1Liquidity) - Number(x.token1Borrowed)) / Number(`1e${token1?.wrapped.decimals}`),
                   dollarSign: false,
                 })}
               </LDDataCellOut>

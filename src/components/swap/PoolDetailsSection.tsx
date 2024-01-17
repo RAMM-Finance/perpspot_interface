@@ -31,7 +31,7 @@ const RightContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 0.25rem;
-  width: 400px;
+  width: 600px;
   height: 100%;
 `
 
@@ -123,7 +123,7 @@ export function PoolDetailsSection({
           <PoolDataChartLoading />
         </MiddleContainer>
         <RightContainer>
-          <PoolSelect detailsLoading={true} />
+          <PoolSelect chainId={chainId} detailsLoading={true} />
           <LiquidityDistibutionWrapper>
             <LiquidityDistributionLoading />
           </LiquidityDistibutionWrapper>
@@ -148,7 +148,7 @@ export function PoolDetailsSection({
         </PositionsWrapper>
       </MiddleContainer>
       <RightContainer>
-        <PoolSelect detailsLoading={false} />
+        <PoolSelect chainId={chainId} detailsLoading={false} />
         <LiquidityDistibutionWrapper>
           <LiquidityDistributionTable token0={token0} token1={token1} currentPrice={currentPrice} bin={binData} />
         </LiquidityDistibutionWrapper>

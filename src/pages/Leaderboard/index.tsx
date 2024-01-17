@@ -154,7 +154,6 @@ export default function LeaderboardPage() {
     }
     call()
   }, [])
-  console.log('data', addData?.data)
 
   return (
     <PageWrapper>

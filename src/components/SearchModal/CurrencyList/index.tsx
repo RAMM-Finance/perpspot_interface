@@ -3,7 +3,6 @@ import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import Loader from 'components/Icons/LoadingSpinner'
-import TokenSafetyIcon from 'components/TokenSafety/TokenSafetyIcon'
 import { checkWarning } from 'constants/tokenSafety'
 import { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
 import { Check } from 'react-feather'
@@ -246,9 +245,13 @@ export default function CurrencyList({
 }) {
   const itemData: Currency[] = useMemo(() => {
     if (otherListTokens && otherListTokens?.length > 0) {
-      return [...currencies, ...otherListTokens]
+      return [...currencies, ...otherListTokens].filter(
+        (curr) => curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC'
+      )
     }
-    return currencies
+    return currencies.filter(
+      (curr) => curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC'
+    )
   }, [currencies, otherListTokens])
 
   const Row = useCallback(
