@@ -306,8 +306,15 @@ const Referrals = () => {
   const tradingVolume = useMemo(() => {
     if (!account || !tradeProcessedByTrader) return 0
     if (!tradeProcessedByTrader[account]) return 0
-    else return tradeProcessedByTrader[account].amount
+    else  {
+      let totalAmount = 0
+      tradeProcessedByTrader[account].forEach((entry:any )=>{
+        totalAmount += entry.amount
+      })
+      return totalAmount
+    }
   }, [tradeProcessedByTrader, account])
+  if(account) console.log('volum', tradeProcessedByTrader, tradeProcessedByTrader?.[account])
 
   const referralLink = useMemo(() => {
     return `${window.location.href.substring(0, window.location.href.length - 11)}join/${activeCodes}`
@@ -422,7 +429,7 @@ const Referrals = () => {
                 }}
               >
                 <ThemedText.BodySecondary color="gold" fontSize={16} fontWeight={800}>
-                  Tier {refereeActivity && account && refereeActivity[account]?.tier.toString()}
+                  Tier {refereeActivity && account && refereeActivity[account]?.tier?.toString()}
                 </ThemedText.BodySecondary>{' '}
                 <div style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'end' }}>
                   <ThemedText.BodyPrimary>Referral Code:</ThemedText.BodyPrimary>{' '}
@@ -529,34 +536,34 @@ const Referrals = () => {
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>${tradingVolume?.toString()}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>${Math.round(tradingVolume)?.toString()}</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>LP Fee Collected</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>${totalCollected}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>${Math.round(Number(totalCollected))?.toString()}</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
 
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>Rebates(this week)</ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary>Rebates this week(coming soon)</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>$0.00</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
             </div>
             <ThemedText.BodySmall style={{ paddingLeft: '10px' }}>Rebates Distribution History</ThemedText.BodySmall>{' '}
-            <StyledCard style={{ padding: '15px' }}>
+            {/*<StyledCard style={{ padding: '15px' }}>
               <div style={{ display: 'flex', padding: '10px' }}>
                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                   <ThemedText.BodySmall>Date:</ThemedText.BodySmall>
                   <ThemedText.BodySmall color="textSecondary">{Date.now()}</ThemedText.BodySmall>
                 </div>
-                {/*<div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                 <ThemedText.BodySmall>Type:</ThemedText.BodySmall>
                 <ThemedText.BodySmall color="textSecondary">V1 Airdrop</ThemedText.BodySmall>
-              </div>*/}
+              </div>
                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'start', padding: '10px' }}>
                   <ThemedText.BodySmall>Amount:</ThemedText.BodySmall>
                   <ThemedText.BodySmall color="textSecondary">$5.12</ThemedText.BodySmall>
@@ -566,7 +573,11 @@ const Referrals = () => {
                   <ThemedText.BodySmall color="textSecondary">0x233143514313</ThemedText.BodySmall>
                 </div>
               </div>
+            </StyledCard>*/}
+            <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
+              <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
             </StyledCard>
+
           </ActiveWrapper>
         )}
       </ContentWrapper>

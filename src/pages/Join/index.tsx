@@ -13,6 +13,8 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import useSelectChain from 'hooks/useSelectChain'
+import { SupportedChainId } from 'constants/chains'
 
 const ModalWrapper = styled.div`
   display: flex;
@@ -155,6 +157,20 @@ export default function JoinModal() {
         setErrorMessage(error.message)
       })
   }, [useCodeCallback, account, referralContract, chainId, provider, path, txHash, attemptingTxn, errorMessage])
+  const [pendingChainId, setPendingChainId] = useState<SupportedChainId | undefined>(undefined)
+  const selectChain = useSelectChain()
+  const isArbitrum = chainId == 42161
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const targetChainId = 42161
+  const onSelectChain = useCallback(
+    async () => {
+      setPendingChainId(targetChainId)
+      await selectChain(targetChainId)
+      setPendingChainId(undefined)
+      setIsOpen(false)
+    },
+    [selectChain, setIsOpen]
+  )
 
   return (
     <ReferralModal isOpen={showModal} maxHeight={750} maxWidth={800} $scrollOverlay={true} onDismiss={handleCloseModal}>
@@ -189,19 +205,41 @@ export default function JoinModal() {
                   onClick={toggleWalletDrawer}
                   fontWeight={600}
                 >
-                  <Trans>Connect Wallet to Arbitrum</Trans>
+                  <Trans>Connect Wallet</Trans>
                 </ButtonPrimary>
               </>
             ) : (
               <ThemedText.SubHeader>Connected</ThemedText.SubHeader>
             )}
           </Actions>
-          <Actions active={codeExists && walletConnected}>
+          <Actions active={codeExists && walletConnected && !isArbitrum}>
             <Status>
-              <ThemedText.BodySmall fontWeight={800}>2</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontWeight={800}> {!isArbitrum ? '2' : '✓'}</ThemedText.BodySmall>
+            </Status>
+            {!isArbitrum ? (
+              <>
+                {' '}
+                <ThemedText.SubHeader>Connect</ThemedText.SubHeader>
+                <ButtonPrimary
+                  style={{ marginTop: '37px', fontSize: '14px', borderRadius: '10px' }}
+                  width="14"
+                  padding=".5rem"
+                  onClick={onSelectChain}
+                  fontWeight={600}
+                >
+                  <Trans>Switch To Aribtrum </Trans>
+                </ButtonPrimary>
+              </>
+            ) : (
+              <ThemedText.SubHeader>Connected</ThemedText.SubHeader>
+            )}
+          </Actions>
+          <Actions active={codeExists && walletConnected && isArbitrum}>
+            <Status>
+              <ThemedText.BodySmall fontWeight={800}>3</ThemedText.BodySmall>
             </Status>
             <ThemedText.SubHeader>Join</ThemedText.SubHeader>
-            <ThemedText.BodyPrimary>Save 4% by using this code</ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary>Save fees and earn more points by using this code</ThemedText.BodyPrimary>
             {walletConnected ? (
               <ButtonPrimary
                 style={{ fontSize: '14px', borderRadius: '10px' }}

@@ -169,14 +169,13 @@ export default function AboutModal() {
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">6. No oracles.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            Free from oracle-based attacks, which is the largest attack vector in DeFi.{' '}
+            Free from oracle-based attacks, the largest attack vector in DeFi.{' '}
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">7. Positive sum dynamics.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            LPs are not trading against the trader. LPs earn yield regardless of whether the trader is losing or
-            winning.
+            LPs are not trading against the trader. LPs earn yield regardless of the trader's PnL.
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>
@@ -184,7 +183,7 @@ export default function AboutModal() {
             8. Extremely higher yields for LPs.
           </ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            5-10x more yields than the same pair in Uniswap V3. Choose between simple and customized LPing.{' '}
+            We offer 5-10x more yield than Uniswap V3 from increased capital effiency.{' '}
           </ThemedText.SubHeaderSmall>
         </TextPoint>
       </TextSection>
