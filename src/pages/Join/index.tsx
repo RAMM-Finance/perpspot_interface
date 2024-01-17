@@ -148,6 +148,7 @@ export default function JoinModal() {
           inputCurrencyId: '',
           outputCurrencyId: '',
         })
+        setShowModal(false)
         return response.hash
       })
       .catch((error) => {
@@ -219,7 +220,7 @@ export default function JoinModal() {
             {!isArbitrum ? (
               <>
                 {' '}
-                <ThemedText.SubHeader>Connect</ThemedText.SubHeader>
+                <ThemedText.SubHeader>Switch Network</ThemedText.SubHeader>
                 <ButtonPrimary
                   style={{ marginTop: '37px', fontSize: '14px', borderRadius: '10px' }}
                   width="14"
@@ -231,7 +232,7 @@ export default function JoinModal() {
                 </ButtonPrimary>
               </>
             ) : (
-              <ThemedText.SubHeader>Connected</ThemedText.SubHeader>
+              <ThemedText.SubHeader>Switched To Arbitrum</ThemedText.SubHeader>
             )}
           </Actions>
           <Actions active={codeExists && walletConnected && isArbitrum}>
