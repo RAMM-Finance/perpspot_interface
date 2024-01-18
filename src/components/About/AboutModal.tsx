@@ -146,7 +146,7 @@ export default function AboutModal() {
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">2. Limitless Pairs.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            Supports every possible asset on chain. Permissionless listing(coming soon).
+            Supports every possible assets/pairs. Permissionless listing(coming soon).
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>

@@ -44,7 +44,8 @@ export const LMT_MARGIN_FACILITY: AddressMap = {
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_NFPM,
-  [SupportedChainId.ARBITRUM_ONE]: '0xB8EEc6875E1807A189D7fa58081230b7493Ad6c1',
+  // [SupportedChainId.ARBITRUM_ONE]: '0xB8EEc6875E1807A189D7fa58081230b7493Ad6c1',
+  [SupportedChainId.ARBITRUM_ONE]: '0x6D73fc6F4C299E369377C0e60CebFef2409f86A0'
 }
 
 export const LMT_POOL_MANAGER: AddressMap = {

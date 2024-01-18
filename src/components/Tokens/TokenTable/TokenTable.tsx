@@ -341,10 +341,9 @@ function HowToDetails() {
     <HowTo>
       <ThemedText.HeadlineSmall>How It Works</ThemedText.HeadlineSmall>
       <p>
-        Liquidity Providers (LPs) earn spot-trading fees while capital is lent out. They also earn fees in the form of
-        premiums when capital is being utlized.
+        Liquidity Providers (LPs) earn additional premiums while out-of-range capital is lent out. They also earn swap fees from Uniswap when the position is in range.
       </p>
-      <p>LPs can deposit their existing Non-Fungible Token Position (NFT) or create a new LP Position</p>
+      <p>LPs can create a new LP Position, which will allow them to earn swap fees from Uniswap while earning additional premiums in Limitless.</p>
     </HowTo>
   )
 }
