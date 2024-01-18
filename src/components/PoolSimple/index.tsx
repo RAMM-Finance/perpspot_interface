@@ -2,6 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -19,6 +20,7 @@ import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useVaultContract } from 'hooks/useContract'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Swap'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowUpRight, ChevronDown, Maximize2 } from 'react-feather'
@@ -43,8 +45,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
-
-  console.log(vaultContract)
 
   const { account, chainId, provider } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
@@ -459,12 +459,31 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const WBTC = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
   const USDC = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
 
+  const WETHCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+    if (!WETH) return undefined
+    return CurrencyAmount.fromRawAmount(WETH, new BN(1).shiftedBy(WETH.decimals).toFixed(0))
+  }, [WETH])
+
+  const WBTCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+    if (!WBTC) return undefined
+    return CurrencyAmount.fromRawAmount(WBTC, new BN(1).shiftedBy(WBTC.decimals).toFixed(0))
+  }, [WBTC])
+
+  const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+    if (!USDC) return undefined
+    return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
+  }, [USDC])
+
+  const WETHPrice = useUSDPrice(WETHCurrencyAmount)
+  const WBTCPrice = useUSDPrice(WBTCCurrencyAmount)
+  const USDCPrice = useUSDPrice(USDCCurrencyAmount)
+
   const indexData = useMemo(() => {
-    if (data && mW) {
+    if (data && mW && WETHPrice && WBTCPrice && USDCPrice) {
       return [
         {
           token: WETH,
-          price: 12,
+          price: WETHPrice?.data,
           poolBal: data[3][0],
           weight: data[4][0],
           util: data[4][0],
@@ -472,7 +491,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
         },
         {
           token: WBTC,
-          price: 12,
+          price: WBTCPrice?.data,
           poolBal: data[3][1],
           weight: data[4][1],
           util: data[4][1],
@@ -480,7 +499,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
         },
         {
           token: USDC,
-          price: 12,
+          price: USDCPrice?.data,
           poolBal: data[3][2],
           weight: data[4][2],
           util: data[4][2],
@@ -676,10 +695,10 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                       <ThemedText.BodySecondary>{tok.token.symbol}</ThemedText.BodySecondary>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>{tok.price}</ThemedText.BodySecondary>
+                      <ThemedText.BodySecondary>${tok.price && tok.price.toFixed(2)}</ThemedText.BodySecondary>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>{`${
+                      <ThemedText.BodySecondary>{`$${
                         tok.poolBal / Number(`1e${tok.token.decimals}`)
                       }`}</ThemedText.BodySecondary>
                     </LoadedCell>

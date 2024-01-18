@@ -238,7 +238,6 @@ export default function Pool() {
 
   const theme = useTheme()
   const codeActive = useUsingCode()
-  console.log(codeActive)
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
   // const { positions, loading: positionsLoading } = useV3Positions(account)
