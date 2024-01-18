@@ -389,18 +389,21 @@ export const PoolSelector = ({
       <Row
         gap="8"
         background={isOpen ? 'accentActiveSoft' : 'none'}
-        style={{ padding: '5px', width: '255px', display: 'flex', justifyContent: 'space-around' }}
+        style={{ padding: '5px', width: '200px', display: 'flex', justifyContent: 'space-around' }}
       >
-        <Row gap="8">
+        <Row gap="4">
           <DoubleCurrencyLogo currency0={inputCurrency as Currency} currency1={outputCurrency as Currency} size={20} />
+          <ThemedText.BodySmall fontWeight={800} fontSize={largeWidth ? '14px' : ''} color="textSecondary">
+            {inputCurrency?.symbol}
+          </ThemedText.BodySmall>
           <ThemedText.BodySmall
-            fontSize={largeWidth ? '16px' : ''}
-            color="secondary"
-          >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+            fontSize={largeWidth ? '14px' : ''}
+            fontWeight={800}
+            color="textPrimary"
+          >{`/ ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+          <ThemedText.BodySmall>(UNIv3)</ThemedText.BodySmall>
         </Row>
-        <Row gap="8">
-          {/*<ThemedText.BodySmall>All Markets</ThemedText.BodySmall>*/}
-        </Row>
+        <Row gap="8">{/*<ThemedText.BodySmall>All Markets</ThemedText.BodySmall>*/}</Row>
       </Row>
     </Box>
   )

@@ -207,6 +207,7 @@ const StatsContainer = styled.div`
 const RightContainer = styled.div`
   display: flex;
   width: 100%;
+  min-width: calc(100% - 420px);
   flex-direction: column;
   justify-content: flex-start;
   align-content: center;

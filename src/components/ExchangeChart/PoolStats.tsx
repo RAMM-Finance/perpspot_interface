@@ -190,7 +190,7 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
         delta={true}
         title={
           <ThemedText.BodySmall>
-            <Trans>24h Change</Trans>
+            <Trans>24h Change (Δ)</Trans>
           </ThemedText.BodySmall>
         }
         loading={loading}

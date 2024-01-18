@@ -246,11 +246,15 @@ export default function CurrencyList({
   const itemData: Currency[] = useMemo(() => {
     if (otherListTokens && otherListTokens?.length > 0) {
       return [...currencies, ...otherListTokens].filter(
-        (curr) => curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC'
+        (curr) =>
+          curr.symbol !== 'ETH' &&
+          (curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC')
       )
     }
     return currencies.filter(
-      (curr) => curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC'
+      (curr) =>
+        curr.symbol !== 'ETH' &&
+        (curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC')
     )
   }, [currencies, otherListTokens])
 

@@ -6,6 +6,7 @@ import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
+import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
@@ -41,11 +42,11 @@ const PoolListHeader = styled(ThemedText.BodySmall)`
 `
 const PoolListContainer = styled.div`
   display: grid;
-  grid-template-columns: 2.9fr 0.9fr 0.9fr;
+  grid-template-columns: 2.4fr 0.8fr 1fr;
   width: 100%;
-  padding-left: 0.25vw;
-
+  padding-left: 0.5vw;
   margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 `
 
 const Label = styled.div`
@@ -67,11 +68,11 @@ const ListWrapper = styled.div`
 const Container = styled.button<{ disabled: boolean; active: boolean }>`
   background: ${({ theme, active }) => (active ? theme.accentActiveSoft : 'none')};
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns: 2fr 0.9fr 0.9fr;
+  grid-template-columns: 2.4fr 0.8fr 1fr;
   line-height: 10px;
   align-items: center;
   padding: 3px;
@@ -389,34 +390,46 @@ export default function PoolSelect({
     }, [priceData])
 
     return (
-      <Container
-        disabled={false}
-        active={active}
-        onClick={() => {
-          token0 && token1 && onCurrencySelect(token0, token1)
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={20} margin />
-          <Label style={{ display: 'flex', gap: '2px' }}>
-            <ThemedText.BodySmall color="textSecondary" fontWeight={800}>
-              {labelIn}
+      <MouseoverTooltip
+        text={
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <ThemedText.BodySmall color="textPrimary">TVL:</ThemedText.BodySmall>
+            <ThemedText.BodySmall color="textSecondary">{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
+            <ThemedText.BodySmall color="textPrimary">Volume:</ThemedText.BodySmall>
+            <ThemedText.BodySmall color="textSecondary">
+              {formatDollar({ num: volume, digits: 0 })}
             </ThemedText.BodySmall>
-            {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}
-            /<ThemedText.BodySmall fontWeight={800}>{labelOut + ` (UNIv3)`}</ThemedText.BodySmall>
-
-          </Label>
-        </div>
-        {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
+          </div>
+        }
+      >
+        <Container
+          disabled={false}
+          active={active}
+          onClick={() => {
+            token0 && token1 && onCurrencySelect(token0, token1)
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={20} margin />
+            <Label style={{ display: 'flex', gap: '2px' }}>
+              <ThemedText.BodySmall color="textSecondary" fontWeight={800}>
+                {labelIn}
+              </ThemedText.BodySmall>
+              {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}/
+              <ThemedText.BodySmall fontWeight={800}>{labelOut}</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize="10px">(UNIv3)</ThemedText.BodySmall>
+            </Label>
+          </div>
+          {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
         <ThemedText.BodySmall>{formatDollar({ num: volume, digits: 0 })}</ThemedText.BodySmall>*/}
-        <ThemedText.BodySmall>
-          <DeltaText delta={delta?.toNumber()}>
-            {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
-          </DeltaText>
-        </ThemedText.BodySmall>
-        <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.FiatTokenPrice)}</ThemedText.BodySmall>
-
-      </Container>
+          <ThemedText.BodySmall>
+            <DeltaText delta={delta?.toNumber()}>
+              {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
+            </DeltaText>
+          </ThemedText.BodySmall>
+          <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.FiatTokenPrice)}</ThemedText.BodySmall>
+        </Container>
+      </MouseoverTooltip>
     )
   }
 
@@ -436,14 +449,13 @@ export default function PoolSelect({
           <PoolListHeader>Pool</PoolListHeader>
           {/*<PoolListHeader>TVL</PoolListHeader>
           <PoolListHeader>Vol</PoolListHeader>*/}
-          <PoolListHeader>24h Change</PoolListHeader>
+          <PoolListHeader>24h Δ</PoolListHeader>
           <PoolListHeader>Price</PoolListHeader>
-
         </PoolListContainer>
       </Row>
       <ListWrapper>
         {isLoading || detailsLoading ? (
-          <AutoColumn>
+          <AutoColumn gap="5px">
             <LoadingRow />
             <LoadingRow />
             <LoadingRow />
@@ -475,10 +487,10 @@ const LoadingRow = () => {
 }
 const LoadingSquare = styled(LoadingBubble)`
   width: 100%;
-  height: 38px;
+  height: 25px;
 
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   color: ${({ theme }) => theme.textPrimary};
 
   display: grid;

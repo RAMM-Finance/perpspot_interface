@@ -33,7 +33,6 @@ import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionMo
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
-import {useUSDPriceBN} from "hooks/useUSDPrice"
 
 const Cell = styled.div`
   display: flex;
@@ -50,7 +49,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 12px;
-  grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -81,15 +80,15 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 0.75fr 1fr 1fr 1fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -397,6 +396,14 @@ function HeaderCell({
 
   return (
     <HeaderCellWrapper onClick={() => enabled && handleSortCategory()}>
+      {category}
+      {description && (
+        <MouseoverTooltip text={description} placement="right">
+          <InfoIconContainer style={{ paddingRight: '0px' }}>
+            <Info size={14} />
+          </InfoIconContainer>
+        </MouseoverTooltip>
+      )}
       {sortMethod === category && enabled && (
         <>
           {sortAscending ? (
@@ -405,14 +412,6 @@ function HeaderCell({
             <ArrowDown size={20} strokeWidth={1.8} color={theme.accentActive} />
           )}
         </>
-      )}
-      {category}
-      {description && (
-        <MouseoverTooltip text={description} placement="right">
-          <InfoIconContainer>
-            <Info size={14} />
-          </InfoIconContainer>
-        </MouseoverTooltip>
       )}
     </HeaderCellWrapper>
   )
@@ -678,12 +677,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           value={
             <FlexStartRow>
-                {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
-                  position?.outputCurrency?.symbol
-                }`}
+              {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
+                position?.outputCurrency?.symbol
+              }`}
             </FlexStartRow>
-
-
           }
           collateral={
             <FlexStartRow>

@@ -8,6 +8,7 @@ import styled, { css } from 'styled-components/macro'
 import { AutoColumn } from '../Column'
 
 export const PageWrapper = styled.div`
+  max-height: 900px;
   // padding: 10px 14px 0px;
   /* max-width: 1700px; */
   /* display: grid;
@@ -20,7 +21,6 @@ export const PageWrapper = styled.div`
   width: 99.5%;
   margin-right: 0.125rem;
   margin-left: 0.125rem;
-  min-height: calc(100vh - 65px);
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
@@ -35,6 +35,7 @@ export const PageWrapper = styled.div`
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
   min-width: 340px;
+  max-width: 340px;
   height: 99%;
   flex-flow: row nowrap;
   align-items: space-evenly;

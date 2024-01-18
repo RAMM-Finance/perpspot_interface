@@ -20,7 +20,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useVaultContract } from 'hooks/useContract'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import { ArrowContainer } from 'pages/Swap'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowUpRight, ChevronDown, Maximize2 } from 'react-feather'
 import { Info } from 'react-feather'
 import { useDerivedLmtMintInfo, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
@@ -33,7 +33,6 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { Field } from '../../state/mint/v3/actions'
-import * as styles from '../NavBar/style.css'
 // TransactionType.MINT_LLP
 export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const theme = useTheme()
@@ -44,6 +43,8 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
+
+  console.log(vaultContract)
 
   const { account, chainId, provider } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
@@ -458,7 +459,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const WBTC = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
   const USDC = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
 
-  console.log(formattedAmounts[Field.CURRENCY_A])
   const indexData = useMemo(() => {
     if (data && mW) {
       return [
@@ -631,38 +631,11 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               }
             />
             {!account ? (
-              <ButtonPrimary
-                className={styles.blueButton}
-                style={{ fontSize: '14px', borderRadius: '10px', background: '#3783fd' }}
-                width="14"
-                padding=".5rem"
-                fontWeight={600}
-                onClick={toggleWalletDrawer}
-              >
-                Connect Wallet
-              </ButtonPrimary>
+              <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
             ) : !codeActive ? (
-              <ButtonPrimary
-                className={styles.blueButton}
-                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
-                width="14"
-                padding=".5rem"
-                fontWeight={600}
-              >
-                Not using code
-              </ButtonPrimary>
+              <ButtonError text="Not Using Code"></ButtonError>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
-              <ButtonPrimary
-                onClick={approveVault}
-                style={{
-                  fontSize: '16px',
-                  borderRadius: '10px',
-                  height: '40px',
-                }}
-                width="14"
-                padding=".5rem"
-                disabled={vaultApprovalState === ApprovalState.PENDING}
-              >
+              <ButtonError onClick={approveVault}>
                 {vaultApprovalState === ApprovalState.PENDING ? (
                   <>
                     <Loader size="18px" />
@@ -679,39 +652,13 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                     </MouseoverTooltip>
                   </>
                 )}
-              </ButtonPrimary>
-            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A])) || !value ? (
-              <ButtonPrimary
-                style={{ fontSize: '16px', borderRadius: '10px', height: '40px' }}
-                width="14"
-                padding=".5rem"
-                fontWeight={600}
-                onClick={handleDeposit}
-              >
-                {errorMessage}
-              </ButtonPrimary>
+              </ButtonError>
+            ) : errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value ? (
+              <ButtonError onClick={handleDeposit} text={errorMessage ? errorMessage : 'Enter an amount'}></ButtonError>
             ) : buy ? (
-              <ButtonPrimary
-                className={styles.blueButton}
-                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
-                width="14"
-                padding=".5rem"
-                fontWeight={600}
-                onClick={handleDeposit}
-              >
-                Buy LLP
-              </ButtonPrimary>
+              <ButtonBlue onClick={handleDeposit} text="Buy LLP"></ButtonBlue>
             ) : (
-              <ButtonPrimary
-                className={styles.blueButton}
-                style={{ fontSize: '16px', borderRadius: '10px', background: '#3783fd', height: '40px' }}
-                width="14"
-                padding=".5rem"
-                fontWeight={600}
-                onClick={handleRedeem}
-              >
-                <Trans>Sell</Trans> LLP
-              </ButtonPrimary>
+              <ButtonBlue onClick={handleRedeem} text="Sell LLP"></ButtonBlue>
             )}
           </CurrencyWrapper>
         </RowBetween>
@@ -900,9 +847,59 @@ const Selector = styled.div<{ active: boolean }>`
   width: 100%;
   border-radius: 5px;
   padding: 8px;
-  background-color: ${({ active, theme }) => (active ? '#3783fd' : theme.accentActiveSoft)};
+  background-color: ${({ active, theme }) => (active ? theme.accentActive : theme.accentActiveSoft)};
   cursor: pointer;
   &:hover {
     opacity: 95%;
   }
 `
+const BlueButton = styled.button`
+  font-size: 16px;
+  background-color: ${({ theme }) => theme.accentActive};
+  border-radius: 10px;
+  height: 40px;
+  border: none;
+  &:hover {
+    opacity: 95%;
+  }
+  cursor: pointer;
+`
+
+const ErrorButton = styled(ButtonPrimary)`
+  font-size: 16px;
+  border-radius: 10px;
+  height: 40px;
+  &:hover {
+    opacity: 95%;
+  }
+  cursor: pointer;
+`
+
+function ButtonBlue({ text, onClick }: { text?: string; onClick?: React.MouseEventHandler<HTMLButtonElement> }) {
+  return (
+    <BlueButton onClick={onClick}>
+      <ThemedText.BodySecondary fontWeight={600} fontSize={16}>
+        {text}
+      </ThemedText.BodySecondary>
+    </BlueButton>
+  )
+}
+
+function ButtonError({
+  text,
+  onClick,
+  children,
+}: {
+  text?: any
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
+  children?: ReactNode
+}) {
+  return (
+    <ErrorButton onClick={onClick}>
+      <ThemedText.BodySecondary fontWeight={600} fontSize={16}>
+        {text}
+      </ThemedText.BodySecondary>
+      {children}
+    </ErrorButton>
+  )
+}
