@@ -13,11 +13,26 @@ export const currencyAmountToPreciseFloat = (currencyAmount: CurrencyAmount<Curr
   return floatForLargerNumbers
 }
 
-export const formatDollarAmount = (num: number | undefined, digits = 2, round = true) => {
+interface FormatDollarAmountArgs {
+  num: number | undefined | null
+  long?: boolean
+  digits?: number
+  round?: boolean
+}
+
+export const formatDollarAmount = ({ num, long = false, digits = 2, round = true }: FormatDollarAmountArgs): string => {
   if (num === 0) return '$0.00'
   if (!num) return '-'
   if (num < 0.001 && digits <= 3) {
     return '<$0.001'
+  }
+
+  if (long) {
+    return numbro(num).formatCurrency({
+      thousandSeparated: true,
+      currencySymbol: ' ',
+      mantissa: digits,
+    })
   }
 
   return numbro(num).formatCurrency({

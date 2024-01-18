@@ -167,10 +167,15 @@ export default function TokenTable() {
 
         const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
         setData(
-          poolQueryData.data?.poolAddeds.filter((val: Pool) => val.token0 !== "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1" && val.token1 !== "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1")
-          .map((val: Pool) => {
-            return { token0: val.token0, token1: val.token1, fee: val.fee }
-          })
+          poolQueryData.data?.poolAddeds
+            .filter(
+              (val: Pool) =>
+                val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
+                val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'
+            )
+            .map((val: Pool) => {
+              return { token0: val.token0, token1: val.token1, fee: val.fee }
+            })
         )
         setLoading(false)
       } catch (error) {
@@ -213,7 +218,6 @@ export default function TokenTable() {
       return null
     }
   }, [poolData, data])
-  console.log('pooldata', dataInfo, loading, poolData)
 
   const { chainId, account, provider } = useWeb3React()
 
@@ -341,9 +345,13 @@ function HowToDetails() {
     <HowTo>
       <ThemedText.HeadlineSmall>How It Works</ThemedText.HeadlineSmall>
       <p>
-        Liquidity Providers (LPs) earn additional premiums while out-of-range capital is lent out. They also earn swap fees from Uniswap when the position is in range.
+        Liquidity Providers (LPs) earn additional premiums while out-of-range capital is lent out. They also earn swap
+        fees from Uniswap when the position is in range.
       </p>
-      <p>LPs can create a new LP Position, which will allow them to earn swap fees from Uniswap while earning additional premiums in Limitless.</p>
+      <p>
+        LPs can create a new LP Position, which will allow them to earn swap fees from Uniswap while earning additional
+        premiums in Limitless.
+      </p>
     </HowTo>
   )
 }
