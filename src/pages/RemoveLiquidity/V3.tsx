@@ -19,7 +19,6 @@ import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
 import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
 import { useToken } from 'hooks/Tokens'
-import { useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { usePool } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
@@ -102,12 +101,10 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txnHash, setTxnHash] = useState<string | undefined>()
   const addTransaction = useTransactionAdder()
-  const positionManager = useV3NFTPositionManagerContract()
 
   const burn = useCallback(async () => {
     setAttemptingTxn(true)
     if (
-      !positionManager ||
       !liquidityValue0 ||
       !liquidityValue1 ||
       !deadline ||
@@ -119,31 +116,30 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     ) {
       return
     }
-
+    // position: Position,
+    // options: RemoveLiquidityOptions,
+    // account: string,
+    // computedAmount0: JSBI,
+    // computedAmount1: JSBI
     // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
     // vast majority of cases
-    // const { calldata, value } = NonfungiblePositionManager.removeCallParameters(positionSDK, {
-    //   tokenId: tokenId.toString(),
-    //   liquidityPercentage,
-    //   slippageTolerance: allowedSlippage,
-    //   deadline: deadline.toString(),
-    //   collectOptions: {
-    //     expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(liquidityValue0.currency, 0),
-    //     expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(liquidityValue1.currency, 0),
-    //     recipient: account,
-    //   },
-    // })
-    const { calldata, value } = LmtNFTPositionManager.removeCallParameters(positionSDK, {
-      tokenId: tokenId.toString(),
-      liquidityPercentage,
-      slippageTolerance: allowedSlippage,
-      deadline: deadline.toString(),
-      collectOptions: {
-        expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(liquidityValue0.currency, 0),
-        expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(liquidityValue1.currency, 0),
-        recipient: account,
+    const { calldata, value } = LmtNFTPositionManager.removeCallParameters(
+      positionSDK,
+      {
+        tokenId: tokenId.toString(),
+        liquidityPercentage,
+        slippageTolerance: allowedSlippage,
+        deadline: deadline.toString(),
+        collectOptions: {
+          expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(liquidityValue0.currency, 0),
+          expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(liquidityValue1.currency, 0),
+          recipient: account,
+        },
       },
-    })
+      account,
+      liquidityValue0.quotient,
+      liquidityValue1.quotient
+    )
 
     const txn = {
       to: LMT_NFT_POSITION_MANAGER[chainId], // positionManager.address,
@@ -182,10 +178,9 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       })
       .catch((error) => {
         setAttemptingTxn(false)
-        console.error('error?:',error)
+        console.error('error?:', error)
       })
   }, [
-    positionManager,
     liquidityValue0,
     liquidityValue1,
     deadline,
@@ -469,7 +464,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                 </AutoColumn>
               </DarkCardOutline>
 
-              {false&&showCollectAsWeth && (
+              {false && showCollectAsWeth && (
                 <RowBetween>
                   <ThemedText.DeprecatedMain>
                     <Trans>Collect as {nativeWrappedSymbol}</Trans>

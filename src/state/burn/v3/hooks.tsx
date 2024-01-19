@@ -3,8 +3,9 @@ import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { useToken } from 'hooks/Tokens'
+import { useParsedBurnAmounts } from 'hooks/useParsedBurnAmounts'
 import { usePool } from 'hooks/usePools'
-import { useV3PositionFees , useLMTPositionFees} from 'hooks/useV3PositionFees'
+import { useLMTPositionFees, useV3PositionFees } from 'hooks/useV3PositionFees'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PositionDetails } from 'types/position'
@@ -70,7 +71,7 @@ export function useDerivedV3BurnInfo(
       : undefined
 
   const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, position?.tokenId, asWETH)
-  console.log('feesearnedwtf', feeValue0, feeValue0?.toString(), feeValue1?.toString())
+  // console.log('feesearnedwtf', feeValue0, feeValue0?.toString(), feeValue1?.toString())
   const outOfRange =
     pool && position ? pool.tickCurrent < position.tickLower || pool.tickCurrent > position.tickUpper : false
 
@@ -129,21 +130,32 @@ export function useDerivedLmtBurnInfo(
 
   const liquidityPercentage = new Percent(percent, 100)
 
-  const discountedAmount0 = positionSDK
-    ? liquidityPercentage.multiply(positionSDK.amount0.quotient).quotient
-    : undefined
-  const discountedAmount1 = positionSDK
-    ? liquidityPercentage.multiply(positionSDK.amount1.quotient).quotient
-    : undefined
+  // const discountedAmount0 = positionSDK
+  //   ? liquidityPercentage.multiply(positionSDK.amount0.quotient).quotient
+  //   : undefined
+  // const discountedAmount1 = positionSDK
+  //   ? liquidityPercentage.multiply(positionSDK.amount1.quotient).quotient
+  //   : undefined
 
-  const liquidityValue0 =
-    token0 && discountedAmount0
-      ? CurrencyAmount.fromRawAmount(asWETH ? token0 : unwrappedToken(token0), discountedAmount0)
-      : undefined
-  const liquidityValue1 =
-    token1 && discountedAmount1
-      ? CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), discountedAmount1)
-      : undefined
+  const { result: parsedLiquidity } = useParsedBurnAmounts(
+    position?.tokenId.toString(),
+    position?.liquidity.toString(),
+    token0 ?? undefined,
+    token1 ?? undefined,
+    liquidityPercentage
+  )
+
+  const liquidityValue0 = parsedLiquidity ? parsedLiquidity.amount0 : undefined
+  const liquidityValue1 = parsedLiquidity ? parsedLiquidity.amount1 : undefined
+
+  // const liquidityValue0 =
+  //   token0 && discountedAmount0
+  //     ? CurrencyAmount.fromRawAmount(asWETH ? token0 : unwrappedToken(token0), discountedAmount0)
+  //     : undefined
+  // const liquidityValue1 =
+  //   token1 && discountedAmount1
+  //     ? CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), discountedAmount1)
+  //     : undefined
 
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, position?.tokenId, asWETH)
 

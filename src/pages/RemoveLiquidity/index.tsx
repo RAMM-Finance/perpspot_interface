@@ -57,6 +57,26 @@ export default function RemoveLiquidity() {
   const { account, chainId, provider } = useWeb3React()
   const [tokenA, tokenB] = useMemo(() => [currencyA?.wrapped, currencyB?.wrapped], [currencyA, currencyB])
 
+  const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
+
+  const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
+  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
+  const {
+    loading,
+    position: lmtPositionDetails,
+    maxWithdrawable: maxWithdrawableValue,
+  } = useLmtLpPositionFromTokenId(parsedTokenId)
+  // console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
+  const {
+    token0: token0Address,
+    token1: token1Address,
+    fee: feeAmount,
+    liquidity,
+    tickLower,
+    tickUpper,
+    tokenId,
+  } = lmtPositionDetails || {}
+
   const theme = useTheme()
 
   // toggle wallet when disconnected
@@ -64,7 +84,11 @@ export default function RemoveLiquidity() {
 
   // burn state
   const { independentField, typedValue } = useBurnState()
-  const { pair, parsedAmounts, error } = useDerivedBurnInfo(currencyA ?? undefined, currencyB ?? undefined)
+  const { pair, parsedAmounts, error } = useDerivedBurnInfo(
+    currencyA ?? undefined,
+    currencyB ?? undefined,
+    tokenId?.toString()
+  )
   const { onUserInput: _onUserInput } = useBurnActionHandlers()
   const isValid = !error
 
@@ -290,26 +314,6 @@ export default function RemoveLiquidity() {
         })
     }
   }
-
-  const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
-
-  const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
-  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
-  const {
-    loading,
-    position: lmtPositionDetails,
-    maxWithdrawable: maxWithdrawableValue,
-  } = useLmtLpPositionFromTokenId(parsedTokenId)
-  // console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
-  const {
-    token0: token0Address,
-    token1: token1Address,
-    fee: feeAmount,
-    liquidity,
-    tickLower,
-    tickUpper,
-    tokenId,
-  } = lmtPositionDetails || {}
 
   const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 

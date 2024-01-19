@@ -95,19 +95,15 @@ export function ConfirmCancelOrderHeader({
   const triggerPrice = useMemo(() => {
     if (inputCurrency && outputCurrency) {
       if (order.isAdd) {
-        return new Price(
-          inputCurrency,
-          outputCurrency,
-          order.inputAmount.shiftedBy(18).toFixed(0),
-          order.currentOutput.shiftedBy(18).toFixed(0)
-        )
+        return new Price({
+          baseAmount: BnToCurrencyAmount(order.currentOutput, outputCurrency),
+          quoteAmount: BnToCurrencyAmount(order.inputAmount, inputCurrency),
+        })
       } else {
-        return new Price(
-          outputCurrency,
-          inputCurrency,
-          order.inputAmount.shiftedBy(18).toFixed(0),
-          order.currentOutput.shiftedBy(18).toFixed(0)
-        )
+        return new Price({
+          baseAmount: BnToCurrencyAmount(order.inputAmount, outputCurrency),
+          quoteAmount: BnToCurrencyAmount(order.currentOutput, inputCurrency),
+        })
       }
     }
     return undefined
@@ -270,7 +266,7 @@ export function ConfirmReducePositionHeader({
   const theme = useTheme()
 
   const trade = useMemo(() => {
-    if (inputCurrency&& outputCurrency) {
+    if (inputCurrency && outputCurrency) {
       return {
         PnL: BnToCurrencyAmount(txnInfo.PnL, inputCurrency),
         margin: BnToCurrencyAmount(txnInfo.margin, inputCurrency),
@@ -427,7 +423,7 @@ export function ConfirmLimitReducePositionHeader({
                 <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
                   {formatBNToString(txnInfo.positionReduceAmount, NumberType.SwapTradeAmount)}
                 </TruncatedText>
-                <FiatValue fiatValue={fiatValueReduceAmount} />
+                <FiatValue fiatValue={fiatValueReduceAmount} height="14px" />
               </AutoColumn>
               <RowFixed gap="0px">
                 <Text fontSize={16} fontWeight={300} marginRight="6px">
@@ -439,7 +435,6 @@ export function ConfirmLimitReducePositionHeader({
                 </Text>
               </RowFixed>
             </RowBetween>
-            <RowBetween></RowBetween>
           </AutoColumn>
           <AutoColumn gap="md">
             <RowBetween align="flex-start">
@@ -447,7 +442,7 @@ export function ConfirmLimitReducePositionHeader({
                 <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
                   {formatBNToString(txnInfo.newTotalPosition, NumberType.SwapTradeAmount)}
                 </TruncatedText>
-                <FiatValue fiatValue={fiatValueTotalPosition} />
+                <FiatValue fiatValue={fiatValueTotalPosition} height="14px" />
               </AutoColumn>
               <RowFixed gap="0px">
                 <Text fontSize={16} fontWeight={300} marginRight="6px">

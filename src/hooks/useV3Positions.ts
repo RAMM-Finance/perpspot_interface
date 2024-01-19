@@ -336,7 +336,7 @@ export function useLmtLpPositionFromTokenId(tokenId: BigNumber | undefined): Use
         maxWithdrawable: data,
       }
     }
-  }, [position.loading, error, data, tokenId])
+  }, [data, position])
 }
 
 export function useV3Positions(account: string | null | undefined): UseV3PositionsResults {
