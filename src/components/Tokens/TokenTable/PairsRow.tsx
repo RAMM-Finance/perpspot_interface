@@ -368,7 +368,7 @@ export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined>
   [TokenSortMethod.APR]: (
     <Trans>
       Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
-      liquidity between 50% and 200% of current price
+      liquidity between 90% and 110% of current price
     </Trans>
   ),
   [TokenSortMethod.URate]: (
