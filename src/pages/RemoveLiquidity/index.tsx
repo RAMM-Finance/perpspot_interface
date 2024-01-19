@@ -300,7 +300,7 @@ export default function RemoveLiquidity() {
     position: lmtPositionDetails,
     maxWithdrawable: maxWithdrawableValue,
   } = useLmtLpPositionFromTokenId(parsedTokenId)
-  console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
+  // console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
   const {
     token0: token0Address,
     token1: token1Address,
@@ -467,6 +467,7 @@ export default function RemoveLiquidity() {
     },
     [currencyIdA, currencyIdB, navigate]
   )
+
   const handleSelectCurrencyB = useCallback(
     (currency: Currency) => {
       if (currencyIdA && currencyId(currency) === currencyIdA) {

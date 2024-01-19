@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
-import { formatDollar } from 'utils/formatNumbers'
+import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency, useToken } from '../../../hooks/Tokens'
@@ -56,7 +56,7 @@ const StyledTokenRow = styled.div<{
 }>`
   background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
-  font-size: 0.75rem;
+  font-size: 12px;
   grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 5fr;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -95,7 +95,7 @@ const StyledTokenRow = styled.div<{
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     //grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
     grid-template-columns: 5fr 5fr 4fr 3fr 6fr 6fr 6fr;
-    font-size: 0.75rem;
+    font-size: 12px;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
@@ -141,7 +141,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   border-color: ${({ theme }) => theme.backgroundOutline};
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textPrimary};
-  font-size: 0.8rem;
+  font-size: 13px;
   font-weight: 900;
   height: 2rem;
   line-height: 16px;
@@ -157,7 +157,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    font-size: 0.8rem;
+    font-size: 13px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -655,10 +655,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
-  console.log('token0, token1', token0, token1)
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
-  const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / 1e10
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
+  const currentPrice = useMemo(() => {
+    if (!pool) return
+    return Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`)
+  }, [pool])
+
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const [tickLower, tickUpper] = useMemo(() => {
     if (pool && tickDiscretization) {
@@ -678,33 +681,33 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
-  let tvl_
-  let volume_
-  let estimatedapr_
-  let urate_
+  // let tvl_
+  // let volume_
+  // let estimatedapr_
+  // let urate_
 
-  if (
-    currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-    currencyIdb?.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
-  ) {
-    tvl_ = 2313000000
-    volume_ = 1300000
-    estimatedapr_ = 23.5
-    urate_ = 42.32
-  } else if (
-    currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-    currencyIdb?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
-  ) {
-    tvl_ = 1530000000
-    volume_ = 210000
-    estimatedapr_ = 32.1
-    urate_ = 77.6
-  } else {
-    tvl_ = 3212000000
-    volume_ = 2830000
-    estimatedapr_ = 25.7
-    urate_ = 56.3
-  }
+  // if (
+  //   currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+  //   currencyIdb?.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
+  // ) {
+  //   tvl_ = 2313000000
+  //   volume_ = 1300000
+  //   estimatedapr_ = 23.5
+  //   urate_ = 42.32
+  // } else if (
+  //   currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
+  //   currencyIdb?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
+  // ) {
+  //   tvl_ = 1530000000
+  //   volume_ = 210000
+  //   estimatedapr_ = 32.1
+  //   urate_ = 77.6
+  // } else {
+  //   tvl_ = 3212000000
+  //   volume_ = 2830000
+  //   estimatedapr_ = 25.7
+  //   urate_ = 56.3
+  // }
   return (
     <RowWrapper
       ref={ref}
@@ -740,7 +743,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         price={
           <ClickableContent>
             <PriceInfoCell>
-              <Price>{formatDollar({ num: currentPrice, dollarSign: false })}</Price>
+              <Price>{formatDollarAmount({ num: currentPrice, long: true })}</Price>
               <span>{token0?.symbol + '/' + token1?.symbol}</span>
             </PriceInfoCell>
           </ClickableContent>
@@ -755,14 +758,17 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           <>
-            <ClickableRate rate={estimatedapr_}>{`${formatBNToString(
-              rateUtilData?.apr.times(1),
-              NumberType.TokenNonTx
-            )} %`}</ClickableRate>
+            <ClickableRate
+              rate={Number(formatBNToString(rateUtilData?.apr.times(1), NumberType.TokenNonTx))}
+            >{`${formatBNToString(rateUtilData?.apr.times(1), NumberType.TokenNonTx)} %`}</ClickableRate>
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span>
           </>
         }
-        UtilRate={<ClickableRate rate={urate_}>{`${formatBNToString(rateUtilData?.util.times(1))} %`}</ClickableRate>}
+        UtilRate={
+          <ClickableRate rate={Number(formatBNToString(rateUtilData?.util.times(1)))}>{`${formatBNToString(
+            rateUtilData?.util.times(1)
+          )} %`}</ClickableRate>
+        }
         // sparkLine={
         //   <SparkLine>
         //     <ParentSize>

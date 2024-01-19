@@ -24,7 +24,7 @@ type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
 }
 
-export default function useDatafeed({ chainId, symbol }: { chainId: number; symbol?: string }) {
+export default function useDatafeed({ chainId }: { chainId: number }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
   // const resetCacheRef = useRef<() => void | undefined>()
   // const activeTicker = useRef<string | undefined>()
@@ -73,7 +73,7 @@ export default function useDatafeed({ chainId, symbol }: { chainId: number; symb
           onHistoryCallback: HistoryCallback,
           onErrorCallback: (error: string) => void
         ) => {
-          console.log('[getBars]: Method call', symbolInfo, periodParams)
+          console.log('[getBars]: Method call', resolution, symbolInfo, periodParams)
           const { poolAddress } = symbolInfo
           const { from, to, countBack } = periodParams
 

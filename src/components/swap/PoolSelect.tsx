@@ -427,7 +427,7 @@ export default function PoolSelect({
               {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
             </DeltaText>
           </ThemedText.BodySmall>
-          <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.FiatTokenPrice)}</ThemedText.BodySmall>
+          <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.TokenNonTx)}</ThemedText.BodySmall>
         </Container>
       </MouseoverTooltip>
     )

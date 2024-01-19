@@ -31,6 +31,7 @@ import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { currencyId } from 'utils/currencyId'
+import { formatDollarAmount } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
@@ -182,33 +183,33 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   function IndexHeader() {
     return (
       <HeaderCellWrapper>
-        <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+        <HeaderCell style={{ paddingLeft: '20px' }}>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Token
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Price
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Pool
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Weight
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Utililzation
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Maxiumum Withdrawable
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
@@ -469,17 +470,18 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     return CurrencyAmount.fromRawAmount(WBTC, new BN(1).shiftedBy(WBTC.decimals).toFixed(0))
   }, [WBTC])
 
-  const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
-    if (!USDC) return undefined
-    return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
-  }, [USDC])
+  // const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+  //   if (!USDC) return undefined
+  //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
+  // }, [USDC])
 
   const WETHPrice = useUSDPrice(WETHCurrencyAmount)
   const WBTCPrice = useUSDPrice(WBTCCurrencyAmount)
-  const USDCPrice = useUSDPrice(USDCCurrencyAmount)
+  // const USDCPrice = useUSDPrice(USDCCurrencyAmount)
+  const USDCPrice = 1
 
   const indexData = useMemo(() => {
-    if (data && mW && WETHPrice && WBTCPrice && USDCPrice) {
+    if (data && mW && WETHPrice && WBTCPrice) {
       return [
         {
           token: WETH,
@@ -499,7 +501,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
         },
         {
           token: USDC,
-          price: USDCPrice?.data,
+          price: USDCPrice,
           poolBal: data[3][2],
           weight: data[4][2],
           util: data[4][2],
@@ -540,42 +542,46 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               </div>
             </RowStart>
             <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
-              <ThemedText.BodyPrimary>Price: </ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary>{llpPrice && (llpPrice / 1e18).toFixed(2)}</ThemedText.BodySecondary>
+              <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
+              <ThemedText.BodySecondary fontSize={12}>
+                {llpPrice && (llpPrice / 1e18).toFixed(2)}
+              </ThemedText.BodySecondary>
             </RowBetween>
             <RowBetween>
-              <ThemedText.BodyPrimary>Total Supply:</ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary>{data && (data[0] / 1e18).toFixed(2)}</ThemedText.BodySecondary>
+              <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
+              <ThemedText.BodySecondary fontSize={12}>{data && (data[0] / 1e18).toFixed(2)}</ThemedText.BodySecondary>
             </RowBetween>
             <RowBetween>
-              <ThemedText.BodyPrimary>Total Backing(USD) </ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary>{data && '$' + `${(data[1] / 1e18).toFixed(2)}`}</ThemedText.BodySecondary>
+              <ThemedText.BodyPrimary fontSize={12}>Total Backing(USD): </ThemedText.BodyPrimary>
+              <ThemedText.BodySecondary fontSize={12}>
+                {data && `$${formatDollarAmount({ num: data[1] / 1e18, long: true })}`}
+              </ThemedText.BodySecondary>
             </RowBetween>
             {buy ? (
               <RowBetween
                 style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
               >
-                <ThemedText.BodyPrimary>Estimated APR: </ThemedText.BodyPrimary>
-                <ThemedText.BodySecondary>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
+                <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={12}>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
               </RowBetween>
             ) : (
               <>
                 <RowBetween
                   style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
                 >
-                  <ThemedText.BodyPrimary>Reserved: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary>0.000 LLP ($0.00)</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={12}>Reserved: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>0.000 LLP ($0.00)</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
-                  <ThemedText.BodyPrimary>Estimated APR: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
                 </RowBetween>
               </>
             )}
 
             <RowBetween>
-              <ThemedText.BodyPrimary>Utilization Rate:</ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary>{data && data[2] / 1e18}%</ThemedText.BodySecondary>
+              <ThemedText.BodyPrimary fontSize={12}>Utilization Rate:</ThemedText.BodyPrimary>
+              <ThemedText.BodySecondary fontSize={12}>{data && data[2] / 1e18}%</ThemedText.BodySecondary>
             </RowBetween>
           </DetailsCard>
           <CurrencyWrapper>
@@ -687,35 +693,41 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             <IndexHeader />
 
             {indexData &&
+              WBTCPrice &&
+              WETHPrice &&
               indexData.map((tok: any) => {
                 return (
                   <LoadedCellWrapper key={tok.token.symbol}>
-                    <LoadedCell>
-                      <CurrencyLogo currency={tok.token} />
-                      <ThemedText.BodySecondary>{tok.token.symbol}</ThemedText.BodySecondary>
+                    <LoadedCell style={{ paddingLeft: '20px' }}>
+                      <CurrencyLogo currency={tok.token} size="20px" />
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                        {tok.token.symbol}
+                      </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>${tok.price && tok.price.toFixed(2)}</ThemedText.BodySecondary>
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                        {formatDollarAmount({ num: tok?.price, long: true })}
+                      </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>{`$${
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">{`$${
                         tok.poolBal / Number(`1e${tok.token.decimals}`)
-                      }`}</ThemedText.BodySecondary>
+                      }`}</ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                         {`${(tok.weight / Number(`1e${tok.token.decimals}`)) * 100}`}%
-                      </ThemedText.BodySecondary>
+                      </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                         {`${(tok.util / Number(`1e${tok.token.decimals}`)) * 100}`}%
-                      </ThemedText.BodySecondary>
+                      </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySecondary>
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                         {`${(tok.maxWith / Number(`1e${tok.token.decimals}`)) * 100}`}
-                      </ThemedText.BodySecondary>
+                      </ThemedText.BodySmall>
                     </LoadedCell>
                   </LoadedCellWrapper>
                 )
@@ -855,7 +867,7 @@ const FilterWrapper = styled.div`
 `
 
 const StyledSelectorText = styled.div<{ active: boolean }>`
-  font-size: 16px;
+  font-size: 14px;
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   font-weight: ${({ active }) => (active ? '600' : '300')};
   text-align: center;
@@ -873,7 +885,7 @@ const Selector = styled.div<{ active: boolean }>`
   }
 `
 const BlueButton = styled.button`
-  font-size: 16px;
+  font-size: 14px;
   background-color: ${({ theme }) => theme.accentActive};
   border-radius: 10px;
   height: 40px;
@@ -885,7 +897,7 @@ const BlueButton = styled.button`
 `
 
 const ErrorButton = styled(ButtonPrimary)`
-  font-size: 16px;
+  font-size: 14px;
   border-radius: 10px;
   height: 40px;
   &:hover {
@@ -897,7 +909,7 @@ const ErrorButton = styled(ButtonPrimary)`
 function ButtonBlue({ text, onClick }: { text?: string; onClick?: React.MouseEventHandler<HTMLButtonElement> }) {
   return (
     <BlueButton onClick={onClick}>
-      <ThemedText.BodySecondary fontWeight={600} fontSize={16}>
+      <ThemedText.BodySecondary fontWeight={600} fontSize={14}>
         {text}
       </ThemedText.BodySecondary>
     </BlueButton>
@@ -915,7 +927,7 @@ function ButtonError({
 }) {
   return (
     <ErrorButton onClick={onClick}>
-      <ThemedText.BodySecondary fontWeight={600} fontSize={16}>
+      <ThemedText.BodySecondary fontWeight={600} fontSize={14}>
         {text}
       </ThemedText.BodySecondary>
       {children}
