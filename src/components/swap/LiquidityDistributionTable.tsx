@@ -84,6 +84,15 @@ const LiquidityDistributionTable = ({
                         0 && Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
                     )
                 )
+                .filter(
+                  (a) =>
+                    formatDollar({
+                      num:
+                        (Number(a.token0Liquidity) - Number(a.token0Borrowed)) /
+                        Number(`1e${token0?.wrapped.decimals}`),
+                      dollarSign: false,
+                    }) !== '0.00'
+                )
                 .map((x) => (
                   <LDDataRowNeg
                     // spread={(Number(x.token0Liquidity) / Number(`1e${liqNum}`) / 100 / currentPrice) * 32.5}
@@ -154,6 +163,15 @@ const LiquidityDistributionTable = ({
                       Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) >
                         0 && Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
                     )
+                )
+                .filter(
+                  (a) =>
+                    formatDollar({
+                      num:
+                        (Number(a.token1Liquidity) - Number(a.token1Borrowed)) /
+                        Number(`1e${token1?.wrapped.decimals}`),
+                      dollarSign: false,
+                    }) !== '0.00'
                 )
                 .map((x) => (
                   <LDDataRow

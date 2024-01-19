@@ -39,7 +39,7 @@ import { Field } from '../../state/mint/v3/actions'
 // TransactionType.MINT_LLP
 export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const theme = useTheme()
-  const [buy, setBuy] = useState(true)
+  const [buy, setBuy] = useState(false)
   const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -217,36 +217,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     )
   }
 
-  const tokensList = [
-    {
-      name: 'WETH',
-      currency: useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'),
-      price: 123,
-      pool: 230000,
-      weight: '25.3% / 26%',
-      util: 12,
-      maxWithdrawable: 12,
-    },
-    {
-      name: 'WBTC',
-      currency: useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'),
-      price: 123,
-      pool: 230000,
-      weight: '25.3% / 26%',
-      util: 12,
-      maxWithdrawable: 12,
-    },
-    {
-      name: 'USDC',
-      currency: useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'),
-      price: 123,
-      pool: 230000,
-      weight: '25.3% / 26%',
-      util: 12,
-      maxWithdrawable: 12,
-    },
-  ]
-
   // allowance / approval
   const [vaultApprovalState, approveVault] = useApproveCallback(
     parsedAmounts[Field.CURRENCY_A],
@@ -275,7 +245,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     cb()
       .then((response) => {
         console.log(response)
-        setValue(Number(response) / 1e18)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
       })
       .catch((error) => {
         console.log(error)
@@ -352,7 +322,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     cbredeem()
       .then((response) => {
         console.log(response)
-        setValue(Number(response) / 1e18)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
       })
       .catch((error) => {
         console.error('referrr', error)
@@ -518,7 +488,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   // Total Supply is raw supply
   // Total Backing is rawbacking
   // Utilization rate is
-
+  console.log(llpPrice)
   return (
     <Wrapper>
       <AutoColumn>
@@ -589,8 +559,8 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               <Filter>
                 <Selector
                   onClick={() => {
-                    setBuy(true)
-                    setValue(0)
+                    // setBuy(true)
+                    // setValue(0)
                   }}
                   active={buy}
                 >
@@ -627,8 +597,8 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             />
             <ArrowWrapper
               onClick={() => {
-                setBuy(!buy)
-                setValue(0)
+                // setBuy(!buy)
+                // setValue(0)
               }}
               clickable={true}
             >
@@ -678,7 +648,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                   </>
                 )}
               </ButtonError>
-            ) : errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value ? (
+            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A])) || !value ? (
               <ButtonError onClick={handleDeposit} text={errorMessage ? errorMessage : 'Enter an amount'}></ButtonError>
             ) : buy ? (
               <ButtonBlue onClick={handleDeposit} text="Buy LLP"></ButtonBlue>
