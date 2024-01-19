@@ -48,7 +48,7 @@ const getLanguageFromURL = (): LanguageCode | null => {
 
 export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: string }) => {
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
-  const { datafeed } = useDatafeed({ chainId, symbol })
+  const { datafeed } = useDatafeed({ chainId })
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)

@@ -144,14 +144,14 @@ export function useMaxLeverage(
 ) {
   const calldata = useMemo(() => {
     if (!positionKey || margin?.isZero() || !margin || !inputCurrency) return undefined
-    console.log(
-      'useMaxLeverage:params',
-      margin.toString(),
-      startingLeverage.toString(),
-      inputCurrency,
-      positionKey,
-      stepSize
-    )
+    // console.log(
+    //   'useMaxLeverage:params',
+    //   margin.toString(),
+    //   startingLeverage.toString(),
+    //   inputCurrency,
+    //   positionKey,
+    //   stepSize
+    // )
     const params = [
       {
         poolKey: {
@@ -167,16 +167,39 @@ export function useMaxLeverage(
     ]
     return DataProviderSDK.INTERFACE.encodeFunctionData('computeMaxLeverage', params)
   }, [positionKey, margin, inputCurrency, startingLeverage, stepSize])
-  // console.log('contractcall7')
+
   const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 
   return useMemo(() => {
+    if (error || loading) {
+      return {
+        loading,
+        error,
+        result: undefined,
+      }
+    }
+
+    if (result) {
+      try {
+        const decoded = DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result)
+        return {
+          loading,
+          error,
+          result: new BN(decoded.toString()).shiftedBy(-18),
+        }
+      } catch {
+        return {
+          loading,
+          error: 'error decoding result',
+          result: new BN(0),
+        }
+      }
+    }
+
     return {
       loading,
       error,
-      result: result
-        ? new BN(DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result).toString()).shiftedBy(-18)
-        : undefined,
+      result: undefined,
     }
   }, [loading, error, result])
 
