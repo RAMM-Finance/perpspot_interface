@@ -3,6 +3,7 @@ import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
+import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PoolDetailsSection } from 'components/swap/PoolDetailsSection'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -483,6 +484,7 @@ export default function Swap({ className }: { className?: string }) {
             </RightContainer>
           </MainWrapper>
           {location.pathname.substring(0, 6) === '/join/' ? <JoinModal /> : null}
+          <Footer />
         </PageWrapper>
         {!swapIsUnsupported ? null : (
           <UnsupportedCurrencyFooter

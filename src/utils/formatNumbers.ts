@@ -21,18 +21,23 @@ interface FormatDollarAmountArgs {
 }
 
 export const formatDollarAmount = ({ num, long = false, digits = 2, round = true }: FormatDollarAmountArgs): string => {
-  if (num === 0) return '$0.00'
-  if (!num) return '-'
-  if (num < 0.001 && digits <= 3) {
-    return '<$0.001'
-  }
-
   if (long) {
+    if (!num) return '0.00'
+    if (num < 0.9999999999) {
+      return Number(num).toPrecision(2)
+    }
+    if (num === 0) return '0.00'
     return numbro(num).formatCurrency({
       thousandSeparated: true,
       currencySymbol: ' ',
       mantissa: digits,
     })
+  }
+  if (!num) return '-'
+  if (num === 0) return '$0.00'
+
+  if (num < 0.001 && digits <= 3) {
+    return '<$0.001'
   }
 
   return numbro(num).formatCurrency({
