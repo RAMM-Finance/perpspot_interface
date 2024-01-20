@@ -189,7 +189,8 @@ export abstract class NonfungiblePositionManager {
     options: RemoveLiquidityOptions,
     account: string,
     computedAmount0: JSBI,
-    computedAmount1: JSBI
+    computedAmount1: JSBI,
+    maxLiquidityToWithdraw: JSBI
   ): MethodParameters {
     const calldatas: string[] = []
 
@@ -199,13 +200,12 @@ export abstract class NonfungiblePositionManager {
     // construct a partial position with a percentage of liquidity
     const partialPosition = new Position({
       pool: position.pool,
-      liquidity: options.liquidityPercentage.multiply(position.liquidity).quotient,
+      liquidity: options.liquidityPercentage.multiply(maxLiquidityToWithdraw).quotient,
       tickLower: position.tickLower,
       tickUpper: position.tickUpper,
     })
 
     invariant(JSBI.greaterThan(partialPosition.liquidity, ZERO), 'ZERO_LIQUIDITY')
-
     // const remainingLiquidity = JSBI.subtract(position.liquidity, partialPosition.liquidity)
 
     // slippage-adjusted underlying amounts

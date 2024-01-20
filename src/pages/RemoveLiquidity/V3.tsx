@@ -1,5 +1,5 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
@@ -23,26 +23,27 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { usePool } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
+import JSBI from 'jsbi'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { DarkCardOutline } from 'pages/Pool/PositionPage'
 import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useBurnV3ActionHandlers, useBurnV3State, useDerivedLmtBurnInfo } from 'state/burn/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { currencyId } from 'utils/currencyId'
 import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
-import { TransactionType } from '../../state/transactions/types'
-import { calculateGasMargin } from '../../utils/calculateGasMargin'
-import { currencyId } from '../../utils/currencyId'
 import AppBody from '../AppBody'
 import { ResponsiveHeaderText, SmallMaxButton, Wrapper } from './styled'
-
 const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 
 // redirect invalid tokenIds
@@ -65,8 +66,9 @@ export default function RemoveLiquidityV3() {
 }
 
 function Remove({ tokenId }: { tokenId: BigNumber }) {
+  const navigate = useNavigate()
   // const { position } = useV3PositionFromTokenId(tokenId)
-  const { position: lmtPosition } = useLmtLpPositionFromTokenId(tokenId)
+  const { position: lmtPosition, loading } = useLmtLpPositionFromTokenId(tokenId)
   const theme = useTheme()
   const { account, chainId, provider } = useWeb3React()
 
@@ -86,7 +88,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     feeValue1,
     outOfRange,
     error,
-  } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH)
+    maxLiquidityToWithdraw,
+  } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH, loading)
   const { onPercentSelect } = useBurnV3ActionHandlers()
 
   const removed = lmtPosition?.liquidity?.eq(0)
@@ -112,7 +115,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       !chainId ||
       !positionSDK ||
       !liquidityPercentage ||
-      !provider
+      !provider ||
+      !maxLiquidityToWithdraw
     ) {
       return
     }
@@ -138,7 +142,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       },
       account,
       liquidityValue0.quotient,
-      liquidityValue1.quotient
+      liquidityValue1.quotient,
+      JSBI.BigInt(maxLiquidityToWithdraw.toString())
     )
 
     const txn = {
@@ -174,6 +179,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               expectedAmountBaseRaw: liquidityValue0.quotient.toString(),
               expectedAmountQuoteRaw: liquidityValue1.quotient.toString(),
             })
+            navigate('/pools')
           })
       })
       .catch((error) => {
@@ -190,10 +196,12 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     feeValue1,
     positionSDK,
     liquidityPercentage,
+    navigate,
     provider,
     tokenId,
     allowedSlippage,
     addTransaction,
+    maxLiquidityToWithdraw,
   ])
 
   const handleDismissConfirmation = useCallback(() => {
@@ -218,10 +226,12 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
   // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
   const {
-    loading,
+    loading: lmtPositionLoading,
     position: lmtPositionDetails,
-    maxWithdrawable: maxWithdrawableValue,
+    error: lmtPositionError,
+    // maxWithdrawable: maxWithdrawableValue,
   } = useLmtLpPositionFromTokenId(parsedTokenId)
+  // console.log('lmtPositionDetails', lmtPositionDetails)
   const {
     token0: token0Address,
     token1: token1Address,
@@ -231,7 +241,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     tickUpper,
   } = lmtPositionDetails || {}
 
-  const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
+  const maxWithdrawableLiquidity = maxLiquidityToWithdraw?.toString()
 
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
@@ -239,11 +249,18 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   // construct Position from details returned
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
   const position = useMemo(() => {
-    if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+    if (
+      pool &&
+      liquidity &&
+      typeof tickLower === 'number' &&
+      typeof tickUpper === 'number' &&
+      !lmtPositionLoading &&
+      !lmtPositionError
+    ) {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
     }
     return undefined
-  }, [liquidity, pool, tickLower, tickUpper])
+  }, [liquidity, pool, tickLower, tickUpper, lmtPositionError, lmtPositionLoading])
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {

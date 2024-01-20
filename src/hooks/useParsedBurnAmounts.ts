@@ -1,5 +1,6 @@
 import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { BigNumber } from 'ethers'
 import JSBI from 'jsbi'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager as NFPM } from 'utils/lmtSDK/NFTPositionManager'
@@ -10,7 +11,7 @@ import useTransactionDeadline from './useTransactionDeadline'
 
 export const useParsedBurnAmounts = (
   tokenId: string | undefined,
-  liquidity: string | undefined,
+  liquidity: BigNumber | undefined,
   token0: Token | undefined,
   token1: Token | undefined,
   percent: Percent | undefined
@@ -31,6 +32,7 @@ export const useParsedBurnAmounts = (
 
   // const contract = useLmtNFTPositionManager(true)
   const { result, error, loading } = useContractCall(LMT_NFT_POSITION_MANAGER, calldata, true)
+
   return useMemo(() => {
     if (loading || error) {
       return {
