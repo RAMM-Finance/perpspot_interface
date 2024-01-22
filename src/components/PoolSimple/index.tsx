@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
+import { YellowCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -571,7 +572,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                   }}
                   active={buy}
                 >
-                  <StyledSelectorText active={buy}>Buy LLP</StyledSelectorText>
+                  <StyledSelectorText active={buy}>Buy LLP (Coming Soon)</StyledSelectorText>
                 </Selector>
                 <Selector
                   onClick={() => {
@@ -584,6 +585,10 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                 </Selector>
               </Filter>
             </FilterWrapper>
+            <YellowCard style={{ fontSize: '14px' }}>
+              The ability to purchase LLP is coming soon. In the meantime, advanced LP is allowed via the "Advanced"
+              tab.
+            </YellowCard>
             <CurrencyInputPanel
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
@@ -700,7 +705,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                     <LoadedCell>
                       <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                         {formatDollarAmount({
-                          num: (Number(tok.weight) / Number(`1e${tok.token.decimals}`)) * 100,
+                          num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
                           long: true,
                         })}
                         %
@@ -709,7 +714,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                     <LoadedCell>
                       <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                         {formatDollarAmount({
-                          num: (Number(tok.util) / Number(`1e${tok.token.decimals}`)) * 100,
+                          num: (Number(tok.util) / Number(`1e${18}`)) * 100,
                           long: true,
                         })}
                         %
@@ -718,7 +723,9 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                     <LoadedCell>
                       <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                         {formatDollarAmount({
-                          num: Number(tok.maxWith) / Number(`1e${tok.token.decimals}`),
+                          num:
+                            (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
+                            (1 - Number(tok.util) / Number(`1e${18}`)),
                           long: true,
                         }) +
                           ' ' +
@@ -772,7 +779,7 @@ const DetailsCard = styled.div`
   width: 57%;
   border-radius: 10px;
   padding: 20px;
-  height: 381px;
+  height: 445px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
 `
@@ -867,6 +874,7 @@ const StyledSelectorText = styled.div<{ active: boolean }>`
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   font-weight: ${({ active }) => (active ? '600' : '300')};
   text-align: center;
+  cursor: ${({ active }) => (active ? 'pointer' : 'default')};
 `
 
 const Selector = styled.div<{ active: boolean }>`

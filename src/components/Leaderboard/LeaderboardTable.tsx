@@ -3,7 +3,8 @@ import { useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
-import { usePointsData , CollectMultipler, VaultDivisor} from './data'
+
+import { CollectMultipler, usePointsData } from './data'
 interface Leader {
   rank: number
   tradePoint: number
@@ -26,7 +27,9 @@ export default function LeaderboardTable() {
       }
     })
     const flattenedUsers = allUsersArrays.flat(1)
-    const uniqueUsers = [...new Set(flattenedUsers)]
+    const uniqueUsers = [...new Set(flattenedUsers)].filter(
+      (user) => user !== '0x0000000000000000000000000000000000000000'
+    )
     return uniqueUsers
   }
 
@@ -35,10 +38,12 @@ export default function LeaderboardTable() {
       if (Object.keys(obj.lpPositionsByUniqueLps).find((lpUser) => lpUser === user)) {
         return {
           trader: user,
-          lpPoints: obj.lpPositionsByUniqueLps[user].reduce(
-            (accum: number, tok: any) => accum + (tok.amount0Collected*CollectMultipler + tok.amount1Collected*CollectMultipler),
-            0
-          ) + (obj.timeWeightedDeposits[user]? obj.timeWeightedDeposits[user].timeWeighted: 0),
+          lpPoints:
+            obj.lpPositionsByUniqueLps[user].reduce(
+              (accum: number, tok: any) =>
+                accum + (tok.amount0Collected * CollectMultipler + tok.amount1Collected * CollectMultipler),
+              0
+            ) + (obj.timeWeightedDeposits[user] ? obj.timeWeightedDeposits[user].timeWeighted : 0),
         }
       } else {
         return {

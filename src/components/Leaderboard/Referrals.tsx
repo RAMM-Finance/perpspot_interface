@@ -306,15 +306,15 @@ const Referrals = () => {
   const tradingVolume = useMemo(() => {
     if (!account || !tradeProcessedByTrader) return 0
     if (!tradeProcessedByTrader[account]) return 0
-    else  {
+    else {
       let totalAmount = 0
-      tradeProcessedByTrader[account].forEach((entry:any )=>{
+      tradeProcessedByTrader[account].forEach((entry: any) => {
         totalAmount += entry.amount
       })
       return totalAmount
     }
   }, [tradeProcessedByTrader, account])
-  if(account) console.log('volum', tradeProcessedByTrader, tradeProcessedByTrader?.[account])
+  if (account) console.log('volum', tradeProcessedByTrader, tradeProcessedByTrader?.[account])
 
   const referralLink = useMemo(() => {
     return `${window.location.href.substring(0, window.location.href.length - 11)}join/${activeCodes}`
@@ -335,7 +335,7 @@ const Referrals = () => {
         </Filter>
       </FilterWrapper>
       <ContentWrapper active={referral}>
-        {!referral && !acceptedCode && (
+        {!referral && !acceptedCreate && (
           <InputWrapper>
             <ThemedText.BodySecondary
               style={{ textAlign: 'center', paddingTop: '5px', paddingBottom: '15px' }}
@@ -345,16 +345,19 @@ const Referrals = () => {
               Generate Referral Code
             </ThemedText.BodySecondary>
             <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-              Looks like you don't have a referral code to share. Create a new one and start earning rebates!
+              {/* Looks like you don't have a referral code to share. Create a new one and start earning rebates! */}
+              Ability to generate your own referral codes is coming soon!
             </ThemedText.BodyPrimary>
             <Input
               placeholder="Create referral code"
               id="refferal-code"
               ref={referralRef}
-              onChange={handleUserRefChange}
+              disabled={true}
+              // onChange={handleUserRefChange}
             ></Input>
-            {codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>}
-            {!codeExists && <SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>}
+            {/* {codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>}
+            {!codeExists && <SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>} */}
+            {!codeExists && <SmallButtonPrimary disabled={true}>Generate Code</SmallButtonPrimary>}
           </InputWrapper>
         )}{' '}
         {referral && !acceptedCode && (
@@ -460,7 +463,7 @@ const Referrals = () => {
                     {refereeActivity && account && refereeActivity[account]?.point}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>              
+              </StyledCard>
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
@@ -480,7 +483,9 @@ const Referrals = () => {
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Vault Deposits From Referees</ThemedText.SubHeader>
-                  <ThemedText.BodySecondary fontSize={16}>${refereeActivity && account &&  refereeActivity[account]?.vaultDeposits}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
+                  </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
@@ -536,13 +541,17 @@ const Referrals = () => {
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>${Math.round(tradingVolume)?.toString()}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    ${Math.round(tradingVolume)?.toString()}
+                  </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>LP Fee Collected</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>${Math.round(Number(totalCollected))?.toString()}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    ${Math.round(Number(totalCollected))?.toString()}
+                  </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
 
@@ -577,7 +586,6 @@ const Referrals = () => {
             <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
               <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
             </StyledCard>
-
           </ActiveWrapper>
         )}
       </ContentWrapper>
@@ -600,6 +608,7 @@ const StyledCard = styled.div`
 const ContentWrapper = styled.div<{ active: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
 const CardWrapper = styled.div`

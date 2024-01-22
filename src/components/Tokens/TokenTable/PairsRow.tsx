@@ -681,6 +681,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
+  console.log(pool, tickLower, tickUpper)
+
   // let tvl_
   // let volume_
   // let estimatedapr_

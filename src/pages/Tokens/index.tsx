@@ -1,5 +1,6 @@
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
+import Footer from 'components/Footer'
 import { MAX_WIDTH_MEDIA_BREAKPOINT, MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { filterStringAtom } from 'components/Tokens/state'
 import TokenTable from 'components/Tokens/TokenTable/TokenTable'
@@ -14,6 +15,7 @@ const ExploreContainer = styled.div`
   padding-top: 15px;
   flex-flow: column nowrap;
   max-width: 1480px;
+  margin-bottom: calc(30% - 200px);
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
@@ -75,6 +77,7 @@ const Tokens = () => {
       <ExploreContainer>
         <TokenTable />
       </ExploreContainer>
+      <Footer />
     </Trace>
   )
 }
