@@ -93,7 +93,7 @@ const Referrals = () => {
   const theme = useTheme()
   const [showModal, setShowModal] = useState(false)
 
-  const [referral, setReferral] = useState<boolean>(false)
+  const [referral, setReferral] = useState<boolean>(true)
   //generate code
   const [createReferralCode, setCreateReferralCode] = useState<HTMLInputElement | string>()
   //referral code value
@@ -325,12 +325,13 @@ const Referrals = () => {
   return (
     <Wrapper>
       <FilterWrapper>
-        <Filter onClick={() => setReferral(!referral)}>
+        {/* <Filter onClick={() => setReferral(!referral)}> */}
+        <Filter>
           <Selector active={referral}>
             <StyledSelectorText active={referral}>User</StyledSelectorText>
           </Selector>
           <Selector active={!referral}>
-            <StyledSelectorText active={!referral}>Referrer</StyledSelectorText>
+            <StyledSelectorText active={!referral}>Referrer (Coming Soon)</StyledSelectorText>
           </Selector>
         </Filter>
       </FilterWrapper>

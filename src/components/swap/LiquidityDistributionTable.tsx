@@ -1,8 +1,10 @@
 import { Currency } from '@uniswap/sdk-core'
+import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { BinData } from 'hooks/useLMTV2Positions'
 import { useEffect, useMemo, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -12,12 +14,15 @@ const LiquidityDistributionTable = ({
   token1,
   currentPrice,
   bin,
+  fee,
 }: {
   token0: Currency | undefined
   token1: Currency | undefined
   currentPrice: number
   bin: BinData[] | undefined
+  fee?: number
 }) => {
+  const navigate = useNavigate()
   const [liqNum, priceNum] = useMemo(() => {
     if (token0 && token1) {
       if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
@@ -46,6 +51,12 @@ const LiquidityDistributionTable = ({
     <>
       <Title>
         <ThemedText.BodySecondary>Borrowable Liquidity</ThemedText.BodySecondary>
+        <SmallButtonPrimary
+          onClick={() => navigate('/add/' + token0?.wrapped.address + '/' + token1?.wrapped.address + '/' + `${fee}`)}
+          style={{ height: '25px', borderRadius: '8px' }}
+        >
+          Earn
+        </SmallButtonPrimary>
       </Title>
       {/* <NegativeWrapper> */}
       <LDHeaderRow>
@@ -224,6 +235,9 @@ const PriceWrapper = styled.div`
 
 const Title = styled.div`
   margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 `
 
 const LDHeaderRow = styled.div`

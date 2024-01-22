@@ -3,6 +3,7 @@ import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
+import Footer from 'components/Footer'
 import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
 import Referrals from 'components/Leaderboard/Referrals'
@@ -18,6 +19,7 @@ const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100vh;
 `
 const LeaderboardWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -156,52 +158,53 @@ export default function LeaderboardPage() {
   }, [])
 
   return (
-    <PageWrapper>
-      <PointsWrapper>
-        <Points />
-      </PointsWrapper>
-      <Container>
-        <FilterWrapper>
-          <Filter>
-            <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
-              <StyledSelectorText active={leaderboard}>Leaderboard</StyledSelectorText>
-            </Selector>
-            <Selector onClick={() => setLeaderboard(false)} active={!leaderboard}>
-              <StyledSelectorText active={!leaderboard}>Referrals</StyledSelectorText>
-            </Selector>
-          </Filter>
-        </FilterWrapper>
-        {leaderboard ? (
-          <LeaderboardWrapper>
-            <LeaderboardTable />
-          </LeaderboardWrapper>
-        ) : (
-          <ReferralsWrapper>
-            {showConnectAWallet ? (
-              <ErrorContainer style={{ paddingTop: '50px' }}>
-                <TraceEvent
-                  events={[BrowserEvent.onClick]}
-                  name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                  properties={{ received_swap_quote: false }}
-                  element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-                >
-                  <ButtonPrimary
-                    style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                    onClick={toggleWalletDrawer}
+    <>
+      <PageWrapper>
+        <PointsWrapper>
+          <Points />
+        </PointsWrapper>
+        <Container>
+          <FilterWrapper>
+            <Filter>
+              <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
+                <StyledSelectorText active={leaderboard}>Leaderboard</StyledSelectorText>
+              </Selector>
+              <Selector onClick={() => setLeaderboard(false)} active={!leaderboard}>
+                <StyledSelectorText active={!leaderboard}>Referrals</StyledSelectorText>
+              </Selector>
+            </Filter>
+          </FilterWrapper>
+          {leaderboard ? (
+            <LeaderboardWrapper>
+              <LeaderboardTable />
+            </LeaderboardWrapper>
+          ) : (
+            <ReferralsWrapper>
+              {showConnectAWallet ? (
+                <ErrorContainer style={{ paddingTop: '50px' }}>
+                  <TraceEvent
+                    events={[BrowserEvent.onClick]}
+                    name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                    properties={{ received_swap_quote: false }}
+                    element={InterfaceElementName.CONNECT_WALLET_BUTTON}
                   >
-                    <Trans>
-                      <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                    </Trans>
-                  </ButtonPrimary>
-                </TraceEvent>
-              </ErrorContainer>
-            ) : (
-              <Referrals />
-            )}
-          </ReferralsWrapper>
-        )}
+                    <ButtonPrimary
+                      style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                      onClick={toggleWalletDrawer}
+                    >
+                      <Trans>
+                        <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
+                      </Trans>
+                    </ButtonPrimary>
+                  </TraceEvent>
+                </ErrorContainer>
+              ) : (
+                <Referrals />
+              )}
+            </ReferralsWrapper>
+          )}
 
-        {/* <AchievementsWrapper>
+          {/* <AchievementsWrapper>
           <ThemedText.SubHeader>
             <Header>Achievements</Header>
           </ThemedText.SubHeader>
@@ -227,7 +230,9 @@ export default function LeaderboardPage() {
             <Achievements />
           )}
         </AchievementsWrapper> */}
-      </Container>
-    </PageWrapper>
+        </Container>
+      </PageWrapper>
+      <Footer />
+    </>
   )
 }
