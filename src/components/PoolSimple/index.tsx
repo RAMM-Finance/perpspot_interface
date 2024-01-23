@@ -640,7 +640,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
             ) : !codeActive ? (
-              <ButtonError text="Not Using Code"></ButtonError>
+              <ButtonError text="Not Whitelisted"></ButtonError>
             ) : !value ? (
               <ButtonBlue text="Enter a value"></ButtonBlue>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (

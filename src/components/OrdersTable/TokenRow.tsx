@@ -617,7 +617,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       return
     }
     setAttemptingTxn(true)
-
+    
     cancelCallback()
       .then((response) => {
         setAttemptingTxn(false)

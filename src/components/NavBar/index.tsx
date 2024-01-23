@@ -94,7 +94,7 @@ export const PageTabs = () => {
           <Trans>Pairs</Trans>
         </MenuItem>
         <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
-          <Trans>Pools</Trans>
+          <Trans>Earn</Trans>
         </MenuItem>
         {/*<MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
           <Trans>Faucets</Trans>

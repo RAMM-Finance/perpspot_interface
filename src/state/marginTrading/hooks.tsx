@@ -325,7 +325,7 @@ export function useDerivedAddPositionInfo(
     }
 
     if(!usingCode){
-      inputError = inputError ?? <Trans>Not using code</Trans>
+      inputError = inputError ?? <Trans>Not whitelisted</Trans>
 
     }
 

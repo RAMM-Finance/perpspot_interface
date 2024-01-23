@@ -145,10 +145,10 @@ export function usePointsData() {
             }
             vaultDataByAddress[lp].push(newEntry) 
           }
-
         })
-
         setVaultByAddress(vaultDataByAddress)
+
+
 
    
         const uniqueTokenIds = new Set<string>()
@@ -250,7 +250,7 @@ export function usePointsData() {
     call()
   }, [account, referralContract])
 
-  console.log('vaultDataByAddress', vaultDataByAddress)
+  console.log('vaultDataByAddress',addLiqData, decreaseLiqData, vaultDataByAddress)
 
   const PointsData = useMemo(() => {
     const addDataProcessed = addData?.map((entry: any) => ({
@@ -335,7 +335,6 @@ export function usePointsData() {
     })
 
     const timeWeightedDeposits = calculateTimeWeightedDeposits(vaultDataByAddress)
-
     return {
       tradeProcessedByTrader,
       lpPositionsByUniqueLps,
