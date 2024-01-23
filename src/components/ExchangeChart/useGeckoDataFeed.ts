@@ -23,7 +23,7 @@ const formatEndpoint = (
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
 }
 
-const fetchLiveBar = async()
+// const fetchLiveBar = async()
 
 const fetchBars = async (
   address: string,
