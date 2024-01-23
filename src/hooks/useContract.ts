@@ -78,6 +78,9 @@ const usdValueData: PricesMap = {
   // weth -arb
   '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1': 2000,
   '0xaf88d065e77c8cC2239327C5EDb3A432268e5831': 1,
+  '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 2.5
+  '0x912CE59144191C1204E64559FE8253a0e49E6548': 1.6
+
 }
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
@@ -96,6 +99,8 @@ const DecimalValues: DecimalMap = {
   // weth -arb
   '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1': 18,
   '0xaf88d065e77c8cC2239327C5EDb3A432268e5831': 6,
+  '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 18
+  '0x912CE59144191C1204E64559FE8253a0e49E6548': 18
 }
 
 export const tokenDecimal = new Proxy<DecimalMap>(DecimalValues, {
