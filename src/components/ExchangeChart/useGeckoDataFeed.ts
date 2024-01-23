@@ -1,6 +1,4 @@
 import axios from 'axios'
-import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
-import { getCustomApiSubgraph } from 'graphql/limitlessGraph/uniswapClients'
 import { useMemo, useRef } from 'react'
 
 import {
@@ -24,6 +22,8 @@ const formatEndpoint = (
 ) => {
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
 }
+
+const fetchLiveBar = async()
 
 const fetchBars = async (
   address: string,
@@ -190,15 +190,15 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
-          const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
-          intervalRef.current && clearInterval(intervalRef.current)
-          intervalRef.current = setInterval(function () {
-            fetchLiveBar(chainId, poolAddress, getCustomApiSubgraph(chainId)).then((bar) => {
-              if (bar) {
-                onRealtimeCallback(bar)
-              }
-            })
-          }, 1000)
+          // const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
+          // intervalRef.current && clearInterval(intervalRef.current)
+          // intervalRef.current = setInterval(function () {
+          //   fetchLiveBar(chainId, poolAddress, getCustomApiSubgraph(chainId)).then((bar) => {
+          //     if (bar) {
+          //       onRealtimeCallback(bar)
+          //     }
+          //   })
+          // }, 1000)
         },
         unsubscribeBars: () => {
           intervalRef.current && clearInterval(intervalRef.current)
