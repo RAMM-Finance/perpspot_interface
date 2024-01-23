@@ -62,7 +62,7 @@ export function useTokenFromActiveNetwork(tokenAddress: string | undefined): Tok
     () => parseStringOrBytes32(tokenName.result?.[0], tokenNameBytes32.result?.[0], UNKNOWN_TOKEN_NAME),
     [tokenName.result, tokenNameBytes32.result]
   )
-
+  
   return useMemo(() => {
     // If the token is on another chain, we cannot fetch it on-chain, and it is invalid.
     if (typeof tokenAddress !== 'string' || !isSupportedChain(chainId) || !formattedAddress) return undefined
@@ -83,8 +83,13 @@ export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string
   // console.log('tokenAddress', tokenAddress)
   const address = isAddress(tokenAddress)
   if(address=="0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1") return useTokenFromActiveNetwork(address)
+  // else if(address =="0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60") return useTokenFromActiveNetwork(address)
   const token: Token | undefined = address ? tokens[address] : undefined
-  const tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
+  let tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
+  if((address == "0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60" 
+    || address =="0x912CE59144191C1204E64559FE8253a0e49E6548") && token) 
+    tokenFromNetwork= new Token(token?.chainId, token?.address, token?.decimals, token?.symbol, token?.name)
+
   return tokenFromNetwork ?? token
 }
 
@@ -101,8 +106,8 @@ export function useCurrencyFromMap(tokens: TokenMap, currencyId?: string | null)
     const chain = supportedChainId(chainId)
     return chain && currencyId ? TOKEN_SHORTHANDS[currencyId.toUpperCase()]?.[chain] : undefined
   }, [chainId, currencyId])
-
   const token = useTokenFromMapOrNetwork(tokens, isNative ? undefined : shorthandMatchAddress ?? currencyId)
+
   if (currencyId === null || currencyId === undefined || !isSupportedChain(chainId)) return null
 
   // this case so we use our builtin wrapped token instead of wrapped tokens on token lists

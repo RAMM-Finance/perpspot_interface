@@ -30,7 +30,7 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
 import { formatDollar } from 'utils/formatNumbers'
-
+import {ethers} from "ethers"
 type NumericStat = BN | undefined | null
 
 const LOGO_SIZE = 20
@@ -292,7 +292,7 @@ export default function PoolSelect({
             val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'
         )
         .map((val: Pool) => {
-          return { token0: val.token0, token1: val.token1, fee: val.fee }
+          return { token0: ethers.utils.getAddress(val.token0), token1: ethers.utils.getAddress(val.token1), fee: val.fee }
         })
     } else {
       return undefined
@@ -347,6 +347,7 @@ export default function PoolSelect({
       baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
         ? [baseCurrency, quoteCurrency]
         : [quoteCurrency, baseCurrency]
+    console.log('poolparams', token0, token1)
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
     const decimal = useMemo(() => {
       if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'WETH') {

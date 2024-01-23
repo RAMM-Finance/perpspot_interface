@@ -76,6 +76,10 @@ export const LMT_REFERRAL: AddressMap = {
 export const LMT_VAULT: AddressMap={
   [SupportedChainId.ARBITRUM_ONE]: "0x21DA443916C869909f21BdCc2d5B00410eb5A113"
 }
+export const LMT_VAULT_MANAGER: AddressMap={
+  [SupportedChainId.ARBITRUM_ONE]: "0xd5328446304530679d960F09fA7673464171c7cE"
+}
+
 
 // celo v3 addresses
 const CELO_V3_CORE_FACTORY_ADDRESSES = '0xAfE208a311B21f13EF87E33A90049fC17A7acDEc'
