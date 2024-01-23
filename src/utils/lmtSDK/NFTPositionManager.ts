@@ -184,7 +184,14 @@ export abstract class NonfungiblePositionManager {
     return { calldata, value }
   }
 
-  public static removeCallParameters(position: Position, options: RemoveLiquidityOptions): MethodParameters {
+  public static removeCallParameters(
+    position: Position,
+    options: RemoveLiquidityOptions,
+    account: string,
+    computedAmount0: JSBI,
+    computedAmount1: JSBI,
+    maxLiquidityToWithdraw: JSBI
+  ): MethodParameters {
     const calldatas: string[] = []
 
     const deadline = toHex(options.deadline)
@@ -193,12 +200,13 @@ export abstract class NonfungiblePositionManager {
     // construct a partial position with a percentage of liquidity
     const partialPosition = new Position({
       pool: position.pool,
-      liquidity: options.liquidityPercentage.multiply(position.liquidity).subtract(100).quotient, // subtract 100 for min liquidity in poolmanager
+      liquidity: options.liquidityPercentage.multiply(maxLiquidityToWithdraw).quotient,
       tickLower: position.tickLower,
       tickUpper: position.tickUpper,
     })
 
     invariant(JSBI.greaterThan(partialPosition.liquidity, ZERO), 'ZERO_LIQUIDITY')
+    // const remainingLiquidity = JSBI.subtract(position.liquidity, partialPosition.liquidity)
 
     // slippage-adjusted underlying amounts
     const { amount0: amount0Min, amount1: amount1Min } = partialPosition.burnAmountsWithSlippage(
@@ -211,34 +219,19 @@ export abstract class NonfungiblePositionManager {
         {
           tokenId,
           liquidity: toHex(partialPosition.liquidity),
-          amount0Min: toHex(amount0Min),
-          amount1Min: toHex(amount1Min),
+          amount0Min: JSBI.lessThan(computedAmount0, amount0Min) ? computedAmount0.toString() : toHex(amount0Min),
+          amount1Min: JSBI.lessThan(computedAmount1, amount1Min) ? computedAmount1.toString() : toHex(amount1Min),
           deadline,
         },
       ])
     )
 
-    const { expectedCurrencyOwed0, expectedCurrencyOwed1, ...rest } = options.collectOptions
-    calldatas.push(
-      ...NonfungiblePositionManager.encodeCollect({
-        tokenId: toHex(options.tokenId),
-        // add the underlying value to the expected currency already owed
-        expectedCurrencyOwed0: expectedCurrencyOwed0.add(
-          CurrencyAmount.fromRawAmount(expectedCurrencyOwed0.currency, amount0Min)
-        ),
-        expectedCurrencyOwed1: expectedCurrencyOwed1.add(
-          CurrencyAmount.fromRawAmount(expectedCurrencyOwed1.currency, amount1Min)
-        ),
-        ...rest,
-      })
-    )
-
+    // must close completely + auto collect
     if (options.liquidityPercentage.equalTo(ONE)) {
-      if (options.burnToken) {
-        calldatas.push(NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [tokenId]))
-      }
-    } else {
-      invariant(options.burnToken !== true, 'CANNOT_BURN')
+      calldatas.push(
+        NonfungiblePositionManager.INTERFACE.encodeFunctionData('collect', [{ tokenId, recipient: account }])
+      )
+      calldatas.push(NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [tokenId]))
     }
 
     return {

@@ -77,6 +77,10 @@ export const StyledButtonError = styled(ButtonError)`
   width: 200px;
   height: 40px;
   border-radius: 10px;
+  color: ${({ theme }) => theme.textSecondary};
+  &:disabled {
+    opacity: 100%;
+  }
 `
 
 /* two-column layout where DepositAmount is moved at the very end on mobile. */

@@ -88,7 +88,7 @@ export interface DerivedLimitReducePositionInfo {
   positionReduceAmount: BN
   startingDebtReduceAmount: BN
   minimumDebtReduceAmount: BN
-  startingTriggerPrice: Price<Currency, Currency> // input / output
+  // startingTriggerPrice: Price<Currency, Currency> // input / output
   estimatedPnL: TokenBN
 }
 

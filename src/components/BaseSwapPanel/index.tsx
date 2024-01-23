@@ -7,6 +7,8 @@ import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
 import { isSupportedChain } from 'constants/chains'
+import { DEFAULT_LOCALE } from 'constants/locales'
+import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import { Lock } from 'react-feather'
@@ -318,7 +320,10 @@ export default function CurrencyInputPanel({
                         renderBalance(selectedCurrencyBalance)
                       ) : (
                         <Trans>
-                          Balance: {llpBalance ? llpBalance : formatCurrencyAmount(selectedCurrencyBalance, 4)}
+                          Balance:{' '}
+                          {llpBalance
+                            ? formatLocaleNumber({ number: llpBalance, locale: DEFAULT_LOCALE })
+                            : formatCurrencyAmount(selectedCurrencyBalance, 4)}
                         </Trans>
                       )
                     ) : null}

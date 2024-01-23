@@ -12,6 +12,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import moment from 'moment'
 // import { GenieAsset, Trait } from 'nft/types'
 import { useMemo, useState } from 'react'
+import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import styled from 'styled-components'
 import { Separator, ThemedText } from 'theme'
 import { MarginLimitOrder } from 'types/lmtv2position'
@@ -95,12 +96,10 @@ const ExistingReduceOrderDetails = ({
 
   // input / output
   const triggerPrice = useMemo(() => {
-    return new Price(
-      outputCurrency,
-      inputCurrency,
-      order.inputAmount.shiftedBy(18).toFixed(0),
-      order.currentOutput.shiftedBy(18).toFixed(0)
-    )
+    return new Price({
+      baseAmount: BnToCurrencyAmount(order.inputAmount, outputCurrency),
+      quoteAmount: BnToCurrencyAmount(order.currentOutput, inputCurrency),
+    })
   }, [order, inputCurrency, outputCurrency])
   // const baseCurrency = baseCurrencyIsInputToken ? inputCurrency : outputCurrency
   // const quoteCurrency = baseCurrencyIsInputToken ? outputCurrency : inputCurrency

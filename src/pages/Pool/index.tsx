@@ -4,6 +4,7 @@ import { BrowserEvent, InterfaceElementName, InterfaceEventName, InterfacePageNa
 import { useWeb3React } from '@web3-react/core'
 import { ButtonGray, ButtonPrimary, ButtonText } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import Footer from 'components/Footer'
 import { Menu } from 'components/Menu'
 import SimplePool from 'components/PoolSimple'
 import PositionList from 'components/PositionList'
@@ -53,10 +54,12 @@ const Selector = styled.div<{ active: boolean }>`
   }
 `
 
-const PageWrapper = styled(AutoColumn)`
+const PageWrapper = styled.div`
   padding: 30px 8px 0px;
   max-width: 1200px;
   width: 100%;
+  height: 100vh;
+  margin-bottom: 20px;
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
     max-width: 800px;
@@ -264,35 +267,36 @@ export default function Pool() {
   // const showV2Features = Boolean(V2_FACTORY_ADDRESSES[chainId]) //Potentially needed later
 
   return (
-    <Trace page={InterfacePageName.POOL_PAGE} shouldLogImpression>
-      <PageWrapper>
-        {codeActive ? (
-          <FilterWrapper>
-            <Filter>
-              <Selector
-                onClick={() => {
-                  setAdvanced(false)
-                  localStorage.removeItem('data')
-                }}
-                active={!advanced}
-              >
-                <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
-              </Selector>
-              <Selector
-                onClick={() => {
-                  localStorage.setItem('data', 'advanced')
-                  setAdvanced(true)
-                }}
-                active={advanced}
-              >
-                <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
-              </Selector>
-            </Filter>
-          </FilterWrapper>
-        ) : null}
-        <AutoColumn gap="lg" justify="center">
-          <AutoColumn gap="lg" style={{ width: '100%', marginTop: '20px' }}>
-            {/* <ThemedText.LargeHeader>
+    <>
+      <Trace page={InterfacePageName.POOL_PAGE} shouldLogImpression>
+        <PageWrapper>
+          {codeActive ? (
+            <FilterWrapper>
+              <Filter>
+                <Selector
+                  onClick={() => {
+                    setAdvanced(false)
+                    localStorage.removeItem('data')
+                  }}
+                  active={!advanced}
+                >
+                  <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
+                </Selector>
+                <Selector
+                  onClick={() => {
+                    localStorage.setItem('data', 'advanced')
+                    setAdvanced(true)
+                  }}
+                  active={advanced}
+                >
+                  <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
+                </Selector>
+              </Filter>
+            </FilterWrapper>
+          ) : null}
+          <AutoColumn gap="lg" justify="center">
+            <AutoColumn gap="lg" style={{ width: '100%', marginTop: '20px' }}>
+              {/* <ThemedText.LargeHeader>
                 <Trans>Liquidity Positions</Trans>
               </ThemedText.LargeHeader>
               <ButtonRow>
@@ -328,81 +332,89 @@ export default function Pool() {
                 </ButtonPrimary>
               </ButtonRow> */}
 
-            {!advanced && <SimplePool codeActive={codeActive} />}
-            <MainContentWrapper>
-              {advanced && lmtPositionsLoading && <PositionsLoadingPlaceholder />}
+              {!advanced && <SimplePool codeActive={codeActive} />}
+              {advanced && lmtPositionsLoading && (
+                <MainContentWrapper>
+                  <PositionsLoadingPlaceholder />
+                </MainContentWrapper>
+              )}
               {advanced &&
                 !lmtPositionsLoading &&
                 filteredPositions &&
                 closedPositions &&
                 filteredPositions.length > 0 && (
-                  <PositionList
-                    positions={filteredPositions}
-                    setUserHideClosedPositions={setUserHideClosedPositions}
-                    userHideClosedPositions={userHideClosedPositions}
-                  />
+                  <MainContentWrapper>
+                    <PositionList
+                      positions={filteredPositions}
+                      setUserHideClosedPositions={setUserHideClosedPositions}
+                      userHideClosedPositions={userHideClosedPositions}
+                    />
+                  </MainContentWrapper>
                 )}
               {advanced &&
                 !lmtPositionsLoading &&
                 filteredPositions &&
                 closedPositions &&
                 filteredPositions.length === 0 && (
-                  <ErrorContainer>
-                    <ButtonPrimary
-                      style={{
-                        marginLeft: '20px',
-                        marginBottom: '30px',
-                        padding: '.5rem',
-                        width: 'fit-content',
-                        fontSize: '0.8rem',
-                        borderRadius: '10px',
-                        height: '30px',
-                        lineHeight: '1',
-                      }}
-                      data-cy="join-pool-button"
-                      id="join-pool-button"
-                      as={Link}
-                      to="/add/"
-                    >
-                      <Trans>Add New Position</Trans>
-                    </ButtonPrimary>
-                    <ThemedText.DeprecatedBody color={theme.textTertiary} textAlign="center">
-                      {/*<InboxIcon strokeWidth={1} style={{ marginTop: '2em' }} /> */}
-                      <div>
-                        <Trans>Your liquidity positions will appear here.</Trans>
-                      </div>
-                    </ThemedText.DeprecatedBody>
-                    {!showConnectAWallet && closedPositions.length > 0 && (
-                      <ButtonText
-                        style={{ marginTop: '.5rem' }}
-                        onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
+                  <MainContentWrapper>
+                    <ErrorContainer>
+                      <ButtonPrimary
+                        style={{
+                          marginLeft: '20px',
+                          marginBottom: '30px',
+                          padding: '.5rem',
+                          width: 'fit-content',
+                          fontSize: '0.8rem',
+                          borderRadius: '10px',
+                          height: '30px',
+                          lineHeight: '1',
+                        }}
+                        data-cy="join-pool-button"
+                        id="join-pool-button"
+                        as={Link}
+                        to="/add/"
                       >
-                        <Trans>Show closed positions</Trans>
-                      </ButtonText>
-                    )}
-                    {showConnectAWallet && (
-                      <TraceEvent
-                        events={[BrowserEvent.onClick]}
-                        name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                        properties={{ received_swap_quote: false }}
-                        element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-                      >
-                        <ButtonPrimary
-                          style={{ marginTop: '2em', marginBottom: '2em', padding: '8px 16px' }}
-                          onClick={toggleWalletDrawer}
+                        <Trans>Add New Position</Trans>
+                      </ButtonPrimary>
+                      <ThemedText.DeprecatedBody color={theme.textTertiary} textAlign="center">
+                        {/*<InboxIcon strokeWidth={1} style={{ marginTop: '2em' }} /> */}
+                        <div>
+                          <Trans>Your liquidity positions will appear here.</Trans>
+                        </div>
+                      </ThemedText.DeprecatedBody>
+                      {!showConnectAWallet && closedPositions.length > 0 && (
+                        <ButtonText
+                          style={{ marginTop: '.5rem' }}
+                          onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
                         >
-                          <Trans>Connect a wallet</Trans>
-                        </ButtonPrimary>
-                      </TraceEvent>
-                    )}
-                  </ErrorContainer>
+                          <Trans>Show closed positions</Trans>
+                        </ButtonText>
+                      )}
+                      {showConnectAWallet && (
+                        <TraceEvent
+                          events={[BrowserEvent.onClick]}
+                          name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                          properties={{ received_swap_quote: false }}
+                          element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+                        >
+                          <ButtonPrimary
+                            style={{ marginTop: '2em', marginBottom: '2em', padding: '8px 16px' }}
+                            onClick={toggleWalletDrawer}
+                          >
+                            <Trans>Connect a wallet</Trans>
+                          </ButtonPrimary>
+                        </TraceEvent>
+                      )}
+                    </ErrorContainer>
+                  </MainContentWrapper>
                 )}
-            </MainContentWrapper>
-            <HideSmall>{/*<CTACards /> */}</HideSmall>
+              <HideSmall>{/*<CTACards /> */}</HideSmall>
+            </AutoColumn>
           </AutoColumn>
-        </AutoColumn>
-      </PageWrapper>
-      {/*<SwitchLocaleLink /> */}
-    </Trace>
+        </PageWrapper>
+        {/*<SwitchLocaleLink /> */}
+      </Trace>
+      <Footer />
+    </>
   )
 }

@@ -236,54 +236,54 @@ export function useDerivedReduceLimitPositionInfo(
       error = error ?? <Trans>Enter a limit price</Trans>
     }
 
-    if (parsedLimitPrice && pool && position && parsedAmount) {
-      /**
-       * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
-       * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
-       *
-       * isToken0 -> output is t0, input is t1
-       * !isToken0 -> output is t1, input is t0
-       * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
-       */
-      const baseIsToken0 =
-        (baseCurrencyIsInput && !positionKey.isToken0) || (!baseCurrencyIsInput && positionKey.isToken0)
+    // if (parsedLimitPrice && pool && position && parsedAmount) {
+    //   /**
+    //    * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
+    //    * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
+    //    *
+    //    * isToken0 -> output is t0, input is t1
+    //    * !isToken0 -> output is t1, input is t0
+    //    * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
+    //    */
+    //   const baseIsToken0 =
+    //     (baseCurrencyIsInput && !positionKey.isToken0) || (!baseCurrencyIsInput && positionKey.isToken0)
 
-      /**
-       *
-       * if baseIsToken0 then limitPrice is in t1 / t0
-       * if !baseIsToken0 then limitPrice is in t0 / t1
-       *
-       * if baseIsT0 and isToken0 then no flip
-       * if baseIsT0 and !isToken0 then flip
-       * if !baseIsT0 and isToken0 then flip
-       * if !baseIsT0 and !isToken0 then no flip
-       */
-      const flippedPrice = (baseIsToken0 && !positionKey.isToken0) || (!baseIsToken0 && positionKey.isToken0)
-      const price = flippedPrice ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
+    //   /**
+    //    *
+    //    * if baseIsToken0 then limitPrice is in t1 / t0
+    //    * if !baseIsToken0 then limitPrice is in t0 / t1
+    //    *
+    //    * if baseIsT0 and isToken0 then no flip
+    //    * if baseIsT0 and !isToken0 then flip
+    //    * if !baseIsT0 and isToken0 then flip
+    //    * if !baseIsT0 and !isToken0 then no flip
+    //    */
+    //   const flippedPrice = (baseIsToken0 && !positionKey.isToken0) || (!baseIsToken0 && positionKey.isToken0)
+    //   const price = flippedPrice ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
 
-      if (positionKey.isToken0) {
-        const currentPrice = new BN(pool.token0Price.toFixed(18))
-        if (!price.gte(currentPrice)) {
-          if (baseIsToken0) {
-            error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-          } else {
-            error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-          }
-        }
-      } else {
-        const currentPrice = new BN(pool.token1Price.toFixed(18))
-        if (!price.gte(currentPrice)) {
-          if (baseIsToken0) {
-            error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-          } else {
-            error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-          }
-        }
-      }
-    }
+    //   if (positionKey.isToken0) {
+    //     const currentPrice = new BN(pool.token0Price.toFixed(18))
+    //     if (!price.gte(currentPrice)) {
+    //       if (baseIsToken0) {
+    //         error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+    //       } else {
+    //         error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+    //       }
+    //     }
+    //   } else {
+    //     const currentPrice = new BN(pool.token1Price.toFixed(18))
+    //     if (!price.gte(currentPrice)) {
+    //       if (baseIsToken0) {
+    //         error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+    //       } else {
+    //         error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+    //       }
+    //     }
+    //   }
+    // }
 
     return error
-  }, [parsedAmount, parsedLimitPrice, baseCurrencyIsInput, pool, positionKey, position])
+  }, [parsedAmount, parsedLimitPrice])
   const { chainId } = useWeb3React()
 
   const deadline = useLimitTransactionDeadline()
@@ -367,17 +367,22 @@ export function useDerivedReduceLimitPositionInfo(
         const reduceAmount = parsedAmount
         const reducePercentage = reduceAmount.div(position.totalPosition)
 
+        // console.log(
+        //   'starting trigger price:',
+        //   new BN(1).shiftedBy(18).toFixed(0),
+        //   new Price(
+        //     outputCurrency,
+        //     inputCurrency,
+        //     new BN(1).shiftedBy(18).toFixed(0),
+        //     price.shiftedBy(18).toFixed(0)
+        //   ).toFixed(18),
+        //   price.toFixed(18)
+        // )
         setTxnInfo({
           margin: position.margin.times(new BN(1).minus(reducePercentage)),
           positionReduceAmount: parsedAmount,
           startingDebtReduceAmount,
           minimumDebtReduceAmount: startingDebtReduceAmount,
-          startingTriggerPrice: new Price(
-            outputCurrency,
-            inputCurrency,
-            new BN(1).shiftedBy(18).toFixed(0),
-            price.shiftedBy(18).toFixed(0)
-          ),
           estimatedPnL,
           newTotalPosition: new TokenBN(position.totalPosition.minus(reduceAmount), outputCurrency.wrapped, false),
         })

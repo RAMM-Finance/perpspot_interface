@@ -1,8 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
-import { useUSDPrice } from 'hooks/useUSDPrice'
-import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -98,7 +96,7 @@ export function LmtTradePrice({
   labelFontSize,
   valueFontSize,
 }: LmtTradePriceProps) {
-  const { baseCurrency, quoteCurrency } = price
+  // const { baseCurrency, quoteCurrency } = price
   // const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
   let usdPrice
   let formattedPrice: string

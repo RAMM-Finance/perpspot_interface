@@ -24,14 +24,17 @@ import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
 import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
+import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { PoolState, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import { useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useMaxLiquidityToWithdraw } from 'state/burn/v3/hooks'
 import { Bound } from 'state/mint/v3/actions'
 import { useIsTransactionPending, useTransactionAdder } from 'state/transactions/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -50,8 +53,6 @@ import { TransactionType } from '../../state/transactions/types'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
-import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 
 const getTokenLink = (chainId: any, address: string) => {
   if (isGqlSupportedChain(chainId)) {
@@ -385,9 +386,9 @@ export function PositionPage() {
   const {
     loading,
     position: lmtPositionDetails,
-    maxWithdrawable: maxWithdrawableValue,
+    // maxWithdrawable: maxWithdrawableValue,
   } = useLmtLpPositionFromTokenId(parsedTokenId)
-  console.log('maxWithdrawable', maxWithdrawableValue, lmtPositionDetails)
+
   const {
     token0: token0Address,
     token1: token1Address,
@@ -398,6 +399,12 @@ export function PositionPage() {
     tokenId,
   } = lmtPositionDetails || {}
 
+  const maxWithdrawableValue = useMaxLiquidityToWithdraw(
+    lmtPositionDetails,
+    token0Address,
+    token1Address,
+    lmtPositionDetails?.fee
+  )
   const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 
   const removed = liquidity?.eq(0)
@@ -455,13 +462,13 @@ export function PositionPage() {
       maximumWithdrawablePercentage = 100
     }
   }
-  console.log(
-    'maxWithdrawableposition',
-    maxWithdrawablePosition,
-    position,
-    maxWithdrawableLiquidity,
-    liquidity?.toString()
-  )
+  // console.log(
+  //   'maxWithdrawableposition',
+  //   maxWithdrawablePosition,
+  //   position,
+  //   maxWithdrawableLiquidity,
+  //   liquidity?.toString()
+  // )
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -570,6 +577,7 @@ export function PositionPage() {
     tokenId,
     addTransaction,
     provider,
+    lmtPositionManager,
   ])
 
   const collectLMTFees = useCallback(() => {
@@ -633,6 +641,8 @@ export function PositionPage() {
     tokenId,
     addTransaction,
     provider,
+    callback,
+    lmtPositionManager,
   ])
 
   const collect = useCallback(() => {
@@ -1012,24 +1022,26 @@ export function PositionPage() {
                             <span style={{ width: '8px' }} /> */}
                             </Label>
 
-                            {//fiatValueOfFees?.greaterThan(new Fraction(1, 100))
-                            false ? (
-                              <ThemedText.DeprecatedLargeHeader
-                                color={theme.accentSuccess}
-                                fontSize="36px"
-                                fontWeight={500}
-                              >
-                                <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
-                              </ThemedText.DeprecatedLargeHeader>
-                            ) : (
-                              <ThemedText.DeprecatedLargeHeader
-                                color={theme.textPrimary}
-                                fontSize="36px"
-                                fontWeight={500}
-                              >
-                                {/*<Trans>$-</Trans>*/}
-                              </ThemedText.DeprecatedLargeHeader>
-                            )}
+                            {
+                              //fiatValueOfFees?.greaterThan(new Fraction(1, 100))
+                              false ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.accentSuccess}
+                                  fontSize="36px"
+                                  fontWeight={500}
+                                >
+                                  <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="36px"
+                                  fontWeight={500}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )
+                            }
                           </AutoColumn>
                           {/* {ownsNFT && tokenId && !removed ? ( */}
                           {tokenId && !removed ? (
@@ -1104,10 +1116,8 @@ export function PositionPage() {
                           <AutoColumn gap="md">
                             <Label>
                               <Trans>Unclaimed Fees + Premiums</Trans>
-                            </Label>                          
-                            {
-                             fiatValueOfFees?.greaterThan(new Fraction(1, 100)) 
-                              ? (
+                            </Label>
+                            {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
                               <ThemedText.DeprecatedLargeHeader
                                 color={theme.accentSuccess}
                                 fontSize="12px"
@@ -1179,16 +1189,13 @@ export function PositionPage() {
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
-                        <Label>
-                          <ThemedText.DeprecatedLargeHeader
-                            color={theme.accentSuccess}
-                            fontSize="12px"
-                            fontWeight={500}
-                          >
-                          <Trans>Premium only APR (variable) : {ratesData? formatBNToString(ratesData?.apr) + "%": '-'}</Trans>
-                          </ThemedText.DeprecatedLargeHeader>
-
-                        </Label>                        
+                      <Label>
+                        <ThemedText.DeprecatedLargeHeader color={theme.accentSuccess} fontSize="12px" fontWeight={500}>
+                          <Trans>
+                            Premium only APR (variable) : {ratesData ? formatBNToString(ratesData?.apr) + '%' : '-'}
+                          </Trans>
+                        </ThemedText.DeprecatedLargeHeader>
+                      </Label>
                       {false && showCollectAsWeth && (
                         <AutoColumn gap="md">
                           <RowBetween>

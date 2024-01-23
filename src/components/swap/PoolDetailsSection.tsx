@@ -44,8 +44,7 @@ const LiquidityDistibutionWrapper = styled.div`
   border-radius: 10px;
   width: 97%;
   padding: 1rem;
-  max-height: 700px;
-  height: 100%;
+  height: 700px;
 `
 
 const PositionsWrapper = styled.div`
@@ -147,7 +146,13 @@ export function PoolDetailsSection({
       <RightContainer>
         <PoolSelect chainId={chainId} detailsLoading={false} />
         <LiquidityDistibutionWrapper>
-          <LiquidityDistributionTable token0={token0} token1={token1} currentPrice={currentPrice} bin={binData} />
+          <LiquidityDistributionTable
+            token0={token0}
+            token1={token1}
+            currentPrice={currentPrice}
+            bin={binData}
+            fee={pool.fee}
+          />
         </LiquidityDistibutionWrapper>
       </RightContainer>
     </Container>

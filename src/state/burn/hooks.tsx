@@ -19,7 +19,8 @@ export function useBurnState(): AppState['burn'] {
 
 export function useDerivedBurnInfo(
   currencyA: Currency | undefined,
-  currencyB: Currency | undefined
+  currencyB: Currency | undefined,
+  tokenId: string | undefined
 ): {
   pair?: Pair | null
   parsedAmounts: {
@@ -48,8 +49,12 @@ export function useDerivedBurnInfo(
     [Field.LIQUIDITY]: pair?.liquidityToken,
   }
 
+  const [token0, token1] = [pair?.token0, pair?.token1]
+  const Ais0 = tokenA && tokenB ? tokenA?.sortsBefore(tokenB) : false
   // liquidity values
   const totalSupply = useTotalSupply(pair?.liquidityToken)
+  // const { result: parsedAmountResult } = useParsedBurnAmounts(tokenId, userLiquidity?.quotient, token0, token1)
+
   const liquidityValueA =
     pair &&
     totalSupply &&

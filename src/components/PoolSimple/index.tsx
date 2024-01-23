@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
+import { YellowCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -39,7 +40,8 @@ import { Field } from '../../state/mint/v3/actions'
 // TransactionType.MINT_LLP
 export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const theme = useTheme()
-  const [buy, setBuy] = useState(true)
+  const [liqError, setLiqError] = useState<boolean>(false)
+  const [buy, setBuy] = useState<boolean>(false)
   const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -217,36 +219,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     )
   }
 
-  const tokensList = [
-    {
-      name: 'WETH',
-      currency: useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'),
-      price: 123,
-      pool: 230000,
-      weight: '25.3% / 26%',
-      util: 12,
-      maxWithdrawable: 12,
-    },
-    {
-      name: 'WBTC',
-      currency: useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'),
-      price: 123,
-      pool: 230000,
-      weight: '25.3% / 26%',
-      util: 12,
-      maxWithdrawable: 12,
-    },
-    {
-      name: 'USDC',
-      currency: useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'),
-      price: 123,
-      pool: 230000,
-      weight: '25.3% / 26%',
-      util: 12,
-      maxWithdrawable: 12,
-    },
-  ]
-
   // allowance / approval
   const [vaultApprovalState, approveVault] = useApproveCallback(
     parsedAmounts[Field.CURRENCY_A],
@@ -275,7 +247,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     cb()
       .then((response) => {
         console.log(response)
-        setValue(Number(response) / 1e18)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
       })
       .catch((error) => {
         console.log(error)
@@ -339,7 +311,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
         )
       return response as BigNumber
     } catch (err) {
-      throw new Error('reff')
+      throw new Error(err.errorArgs)
     }
   }, [account, chainId, vaultContract, provider, parsedAmounts])
 
@@ -352,10 +324,12 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
     cbredeem()
       .then((response) => {
         console.log(response)
-        setValue(Number(response) / 1e18)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
+        setLiqError(false)
       })
       .catch((error) => {
-        console.error('referrr', error)
+        console.log('referrr', error)
+        if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
       })
   }, [account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, buy, cbredeem])
 
@@ -488,44 +462,46 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
           price: WETHPrice?.data,
           poolBal: data[3][0],
           weight: data[4][0],
-          util: data[4][0],
-          maxWith: mW[0][0],
+          util: data[5][0],
+          maxWith: mW[0].maxShares,
         },
         {
           token: WBTC,
           price: WBTCPrice?.data,
           poolBal: data[3][1],
           weight: data[4][1],
-          util: data[4][1],
-          maxWith: mW[1][0],
+          util: data[5][1],
+          maxWith: mW[1].maxShares,
         },
         {
           token: USDC,
           price: USDCPrice,
           poolBal: data[3][2],
           weight: data[4][2],
-          util: data[4][2],
-          maxWith: mW[2][0],
+          util: data[5][2],
+          maxWith: mW[2].maxShares,
         },
       ]
     } else {
       return undefined
     }
-  }, [data, mW])
+  }, [data, mW, USDCPrice, WETHPrice, WBTCPrice, WETH, WBTC, USDC])
 
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
   // Total Supply is raw supply
   // Total Backing is rawbacking
   // Utilization rate is
-
   return (
     <Wrapper>
       <AutoColumn>
         <RowStart style={{ marginBottom: '20px' }}>
           <AutoColumn gap="5px">
             <ThemedText.DeprecatedMediumHeader color="textSecondary">Buy / Sell LLP</ThemedText.DeprecatedMediumHeader>
-            <ThemedText.BodyPrimary>Purchase or Sell LLP Tokens.</ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary>
+              By minting LLP you will gain index exposure to BTC, ETH, and USDC while earning fees from uniswap+premiums
+              and points from Limitless.
+            </ThemedText.BodyPrimary>
           </AutoColumn>
         </RowStart>
         <RowBetween align="start">
@@ -549,7 +525,9 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             </RowBetween>
             <RowBetween>
               <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary fontSize={12}>{data && (data[0] / 1e18).toFixed(2)}</ThemedText.BodySecondary>
+              <ThemedText.BodySecondary fontSize={12}>
+                {data && formatDollarAmount({ num: data[0] / 1e18, long: true })}
+              </ThemedText.BodySecondary>
             </RowBetween>
             <RowBetween>
               <ThemedText.BodyPrimary fontSize={12}>Total Backing(USD): </ThemedText.BodyPrimary>
@@ -581,7 +559,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
 
             <RowBetween>
               <ThemedText.BodyPrimary fontSize={12}>Utilization Rate:</ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary fontSize={12}>{data && data[2] / 1e18}%</ThemedText.BodySecondary>
+              <ThemedText.BodySecondary fontSize={12}>{data && (data[2] / 1e18) * 100}%</ThemedText.BodySecondary>
             </RowBetween>
           </DetailsCard>
           <CurrencyWrapper>
@@ -589,12 +567,12 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               <Filter>
                 <Selector
                   onClick={() => {
-                    setBuy(true)
-                    setValue(0)
+                    // setBuy(true)
+                    // setValue(0)
                   }}
                   active={buy}
                 >
-                  <StyledSelectorText active={buy}>Buy LLP</StyledSelectorText>
+                  <StyledSelectorText active={buy}>Buy LLP (Coming Soon)</StyledSelectorText>
                 </Selector>
                 <Selector
                   onClick={() => {
@@ -607,6 +585,10 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                 </Selector>
               </Filter>
             </FilterWrapper>
+            <YellowCard style={{ fontSize: '14px' }}>
+              The ability to purchase LLP is coming soon. In the meantime, advanced LP is allowed via the "Advanced"
+              tab.
+            </YellowCard>
             <CurrencyInputPanel
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
@@ -627,8 +609,8 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             />
             <ArrowWrapper
               onClick={() => {
-                setBuy(!buy)
-                setValue(0)
+                // setBuy(!buy)
+                // setValue(0)
               }}
               clickable={true}
             >
@@ -637,7 +619,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               </ArrowContainer>
             </ArrowWrapper>
             <CurrencyInputPanel
-              value={value.toString()}
+              value={value.toPrecision(4)}
               onUserInput={
                 buy
                   ? onFieldBInput
@@ -659,6 +641,8 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
             ) : !codeActive ? (
               <ButtonError text="Not Using Code"></ButtonError>
+            ) : !value ? (
+              <ButtonBlue text="Enter a value"></ButtonBlue>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonError onClick={approveVault}>
                 {vaultApprovalState === ApprovalState.PENDING ? (
@@ -678,8 +662,10 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                   </>
                 )}
               </ButtonError>
-            ) : errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value ? (
-              <ButtonError onClick={handleDeposit} text={errorMessage ? errorMessage : 'Enter an amount'}></ButtonError>
+            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A])) || !value ? (
+              <ButtonError text={errorMessage}></ButtonError>
+            ) : liqError ? (
+              <ButtonError text="Not enough liquidity"></ButtonError>
             ) : buy ? (
               <ButtonBlue onClick={handleDeposit} text="Buy LLP"></ButtonBlue>
             ) : (
@@ -710,23 +696,40 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                       </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">{`$${
-                        tok.poolBal / Number(`1e${tok.token.decimals}`)
-                      }`}</ThemedText.BodySmall>
-                    </LoadedCell>
-                    <LoadedCell>
                       <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {`${(tok.weight / Number(`1e${tok.token.decimals}`)) * 100}`}%
+                        {formatDollarAmount({ num: tok.poolBal / Number(`1e${tok.token.decimals}`), long: true }) +
+                          ' ' +
+                          tok.token.symbol}
                       </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
                       <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {`${(tok.util / Number(`1e${tok.token.decimals}`)) * 100}`}%
+                        {formatDollarAmount({
+                          num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
+                          long: true,
+                        })}
+                        %
                       </ThemedText.BodySmall>
                     </LoadedCell>
                     <LoadedCell>
                       <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {`${(tok.maxWith / Number(`1e${tok.token.decimals}`)) * 100}`}
+                        {formatDollarAmount({
+                          num: (Number(tok.util) / Number(`1e${18}`)) * 100,
+                          long: true,
+                        })}
+                        %
+                      </ThemedText.BodySmall>
+                    </LoadedCell>
+                    <LoadedCell>
+                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                        {formatDollarAmount({
+                          num:
+                            (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
+                            (1 - Number(tok.util) / Number(`1e${18}`)),
+                          long: true,
+                        }) +
+                          ' ' +
+                          tok.token.symbol}
                       </ThemedText.BodySmall>
                     </LoadedCell>
                   </LoadedCellWrapper>
@@ -776,7 +779,7 @@ const DetailsCard = styled.div`
   width: 57%;
   border-radius: 10px;
   padding: 20px;
-  height: 381px;
+  height: 445px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
 `
@@ -790,7 +793,7 @@ const LoadedCell = styled.div`
 
 const LoadedCellWrapper = styled.div`
   display: grid;
-  grid-template-columns: 3fr 2fr 2fr 2fr 2fr 2fr;
+  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 3fr;
   padding: 10px;
   border-radius: 10px;
   :hover {
@@ -802,7 +805,7 @@ const LoadedCellWrapper = styled.div`
 const HeaderCell = styled.div``
 const HeaderCellWrapper = styled.div`
   display: grid;
-  grid-template-columns: 3fr 2fr 2fr 2fr 2fr 2fr;
+  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 3fr;
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
 `
@@ -871,6 +874,7 @@ const StyledSelectorText = styled.div<{ active: boolean }>`
   color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
   font-weight: ${({ active }) => (active ? '600' : '300')};
   text-align: center;
+  cursor: ${({ active }) => (active ? 'pointer' : 'default')};
 `
 
 const Selector = styled.div<{ active: boolean }>`

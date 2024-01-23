@@ -1,16 +1,11 @@
-import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { AutoColumn } from 'components/Column'
-import { StyledCard, TextWithLoadingPlaceholder } from 'components/modalFooters/common'
-import { RowBetween, RowFixed } from 'components/Row'
+import { StyledCard } from 'components/modalFooters/common'
 import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
-import { LmtTradePrice } from 'components/swap/TradePrice'
-import { MouseoverTooltip } from 'components/Tooltip'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
-import { Separator, ThemedText } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { DerivedLimitReducePositionInfo } from '.'
@@ -70,31 +65,6 @@ export default function DecreasePositionLimitDetails({
           symbolAppend={inputCurrency?.symbol}
           height="14px"
         />
-        <Separator />
-        <RowBetween>
-          <RowFixed>
-            <MouseoverTooltip text={<Trans>Initial execution price of the limit order</Trans>}>
-              <ThemedText.BodySmall color="textPrimary">
-                <Trans>Starting Trigger Price</Trans>
-              </ThemedText.BodySmall>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65} height="16px">
-            {txnInfo ? (
-              <Underlined>
-                <LmtTradePrice
-                  setShowInverted={setInverted}
-                  price={txnInfo.startingTriggerPrice}
-                  showInverted={invertedPrice}
-                />
-              </Underlined>
-            ) : (
-              <ThemedText.BodySmall fontSize="14px" textAlign="right" color="textSecondary">
-                -
-              </ThemedText.BodySmall>
-            )}
-          </TextWithLoadingPlaceholder>
-        </RowBetween>
       </AutoColumn>
     </StyledBGCard>
   )

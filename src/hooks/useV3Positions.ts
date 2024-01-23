@@ -275,6 +275,7 @@ interface UseV3PositionResults {
   loading: boolean
   position: PositionDetails | undefined
   maxWithdrawable?: BigNumber
+  error?: any
 }
 
 export function useV3PositionFromTokenId(tokenId: BigNumber | undefined): UseV3PositionResults {
@@ -328,15 +329,17 @@ export function useLmtLpPositionFromTokenId(tokenId: BigNumber | undefined): Use
         loading: position.loading,
         position: position.positions?.[0],
         maxWithdrawable: data,
+        error,
       }
     } else {
       return {
         loading: position.loading,
         position: position.positions?.[0],
         maxWithdrawable: data,
+        error,
       }
     }
-  }, [position.loading, error, data, tokenId])
+  }, [data, position, error])
 }
 
 export function useV3Positions(account: string | null | undefined): UseV3PositionsResults {
@@ -345,8 +348,6 @@ export function useV3Positions(account: string | null | undefined): UseV3Positio
   const { loading: balanceLoading, result: balanceResult } = useSingleCallResult(positionManager, 'balanceOf', [
     account ?? undefined,
   ])
-
-  // console.log('balanceResult', balanceLoading, balanceResult)
 
   // we don't expect any account balance to ever exceed the bounds of max safe int
   const accountBalance: number | undefined = balanceResult?.[0]?.toNumber()

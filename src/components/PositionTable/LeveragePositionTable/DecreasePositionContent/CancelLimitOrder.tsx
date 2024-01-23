@@ -1,5 +1,4 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { Trans } from '@lingui/macro'
 import { Currency } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -21,9 +20,6 @@ import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { CancelOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
-import { ConfirmCancelOrderHeader } from '../ConfirmModalHeaders'
-import { BaseFooter } from '../DepositPremiumContent'
-import ConfirmModifyPositionModal from '../TransactionModal'
 import ExistingReduceOrderDetails from './ReduceOrderDetails'
 
 const ReduceOrderWrapper = styled.div`
@@ -170,7 +166,7 @@ export const ExistingReduceOrderSection = ({
 
   return (
     <ReduceOrderWrapper>
-      {showConfirm && (
+      {/* {showConfirm && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
           isOpen={showConfirm}
@@ -193,8 +189,8 @@ export const ExistingReduceOrderSection = ({
           recipient={account ?? null}
           errorMessage={error ? <Trans>{error}</Trans> : undefined}
         />
-      )}
-      <OrderHeader margin={false}>Reduce Limit Order found</OrderHeader>
+      )} */}
+      <OrderHeader margin={false}>Existing Reduce Limit Order</OrderHeader>
       <ExistingReduceOrderDetails
         order={order}
         pool={pool}
@@ -213,7 +209,7 @@ export const ExistingReduceOrderSection = ({
           }}
           padding=".25rem"
           onClick={() => {
-            setShowConfirm(true)
+            handleCancel()
           }}
         >
           <ThemedText.BodySmall fontWeight={600}>Remove</ThemedText.BodySmall>

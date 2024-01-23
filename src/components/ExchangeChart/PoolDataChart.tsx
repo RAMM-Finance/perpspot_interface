@@ -6,7 +6,7 @@ import { useState } from 'react'
 import styled from 'styled-components/macro'
 
 import { defaultChartProps } from './constants'
-import useDatafeed from './useDataFeed'
+import useGeckoDatafeed from './useGeckoDataFeed'
 
 // const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
@@ -48,17 +48,17 @@ const getLanguageFromURL = (): LanguageCode | null => {
 
 export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: string }) => {
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
-  const { datafeed } = useDatafeed({ chainId })
+  // const { datafeed } = useDatafeed({ chainId })
+  const { datafeed } = useGeckoDatafeed({ chainId })
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
   const symbolRef = useRef<string>(symbol) // Initialize symbolRef with symbol
 
-  // const symbolRef = useRef(symbol)
-
   useEffect(() => {
     symbolRef.current = symbol
+    localStorage.setItem('chartData', symbol)
     // You may need to reinitialize or update your chart here if necessary
   }, [symbol])
 
@@ -78,6 +78,7 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         disabled_features: defaultChartProps.disabled_features,
         client_id: defaultChartProps.clientId,
         user_id: defaultChartProps.userId,
+        description: 'https://www.geckoterminal.com/',
         //fullscreen: defaultChartProps.fullscreen,
         // autosize: defaultChartProps.autosize,
         custom_css_url: defaultChartProps.custom_css_url,
@@ -115,59 +116,6 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
       }
     }
   }, [chainId, datafeed, symbol])
-
-  // useEffect(() => {
-  //   // if longer than 1 seconds w/o update, reload
-  //   if (lastUpdate < moment.now() - 5000 * 1) {
-  //     setLastUpdate(moment.now())
-  //   }
-  // })
-
-  // console.log('symbolwtf', symbol)
-  // useEffect(() => {
-  //   const widgetOptions = {
-  //     debug: false,
-  //     symbol: symbolRef.current,
-  //     datafeed,
-  //     theme: defaultChartProps.theme,
-  //     container: chartContainerRef.current,
-  //     library_path: defaultChartProps.library_path,
-  //     locale: defaultChartProps.locale,
-  //     loading_screen: defaultChartProps.loading_screen,
-  //     enabled_features: defaultChartProps.enabled_features,
-  //     disabled_features: defaultChartProps.disabled_features,
-  //     client_id: defaultChartProps.clientId,
-  //     user_id: defaultChartProps.userId,
-  //     //fullscreen: defaultChartProps.fullscreen,
-  //     // autosize: defaultChartProps.autosize,
-  //     custom_css_url: defaultChartProps.custom_css_url,
-  //     autosize: true,
-  //     overrides: defaultChartProps.overrides,
-  //     interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
-  //     favorites: defaultChartProps.favorites,
-  //     custom_formatters: defaultChartProps.custom_formatters,
-  //     // save_load_adapter: new SaveLoadAdapter(chainId, tvCharts, setTvCharts, onSelectToken),
-  //   }
-
-  //   tvWidgetRef.current = new widget(widgetOptions as any)
-
-  //   tvWidgetRef.current?.onChartReady(function () {
-  //     setChartReady(true)
-
-  //     tvWidgetRef.current?.activeChart().dataReady(() => {
-  //       setChartDataLoading(false)
-  //     })
-  //   })
-
-  //   return () => {
-  //     if (tvWidgetRef.current) {
-  //       tvWidgetRef.current.remove()
-  //       tvWidgetRef.current = null
-  //       setChartReady(false)
-  //       setChartDataLoading(true)
-  //     }
-  //   }
-  // }, [chainId, datafeed, symbol, symbolRef])
 
   return (
     <ChartContainer>
