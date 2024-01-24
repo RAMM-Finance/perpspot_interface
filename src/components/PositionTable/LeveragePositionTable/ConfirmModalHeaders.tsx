@@ -423,7 +423,7 @@ export function ConfirmLimitReducePositionHeader({
                 <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
                   {formatBNToString(txnInfo.positionReduceAmount, NumberType.SwapTradeAmount)}
                 </TruncatedText>
-                <FiatValue fiatValue={fiatValueReduceAmount} height="14px" />
+                <FiatValue fiatValue={fiatValueReduceAmount} height="12px" />
               </AutoColumn>
               <RowFixed gap="0px">
                 <Text fontSize={16} fontWeight={300} marginRight="6px">
@@ -442,7 +442,7 @@ export function ConfirmLimitReducePositionHeader({
                 <TruncatedText fontSize={16} fontWeight={500} color={theme.textSecondary}>
                   {formatBNToString(txnInfo.newTotalPosition, NumberType.SwapTradeAmount)}
                 </TruncatedText>
-                <FiatValue fiatValue={fiatValueTotalPosition} height="14px" />
+                <FiatValue fiatValue={fiatValueTotalPosition} height="12px" />
               </AutoColumn>
               <RowFixed gap="0px">
                 <Text fontSize={16} fontWeight={300} marginRight="6px">

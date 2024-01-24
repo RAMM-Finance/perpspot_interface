@@ -138,8 +138,6 @@ const LiquidityDistributionTable = ({
             </ThemedText.BodyPrimary>
           )}
         </PriceWrapper>
-
-        {/* <PositiveWrapper> */}
         <LDHeaderRow>
           <LDHeaderCellIn>
             Price ({token1?.symbol}/{token0?.symbol})
@@ -203,7 +201,6 @@ const LiquidityDistributionTable = ({
                 .reverse()}
           </PositiveData>
         )}
-        {/* </PositiveWrapper> */}
       </Wrapper>
     </>
   )

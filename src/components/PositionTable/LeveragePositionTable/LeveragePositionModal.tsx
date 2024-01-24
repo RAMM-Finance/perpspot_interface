@@ -34,6 +34,7 @@ import { unwrappedToken } from 'utils/unwrappedToken'
 
 import DecreasePositionContent from './DecreasePositionContent'
 import { DepositPremiumContent } from './DepositPremiumContent'
+import { LoadingBubble } from './loading'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
 
 interface TradeModalProps {
@@ -164,8 +165,22 @@ export function LeveragePositionModal(props: TradeModalProps) {
     existingPosition?.isToken0 ? positionKey?.poolKey.token0Address : positionKey?.poolKey.token1Address
   )
 
+  // const dataLoading = positionLoading || !existingPosition || !inputCurrency || !outputCurrency
+
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
+    // if (dataLoading)
+    //   return (
+    //     <DarkCard
+    //       width="390px"
+    //       margin="0"
+    //       padding="0"
+    //       style={{ paddingRight: '1rem', paddingLeft: '1rem' }}
+    //       height="350px"
+    //     >
+    //       <LoadingDisplayedContent />
+    //     </DarkCard>
+    //   )
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
       <DecreasePositionContent
         positionKey={positionKey}
@@ -277,6 +292,11 @@ const PositionValueWrapper = styled(LightCard)`
   width: 95%;
 `
 
+const LoadingDisplayedContent = styled(LoadingBubble)`
+  width: 100%;
+  height: 100%;
+`
+
 function MarginPositionInfo({
   position,
   alteredPosition,
@@ -329,15 +349,6 @@ function MarginPositionInfo({
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
         />
-        {/*<PositionValueLabel
-          title={<Trans>Total Debt (Output)</Trans>}
-          description={<Trans>{`Total liquidity borrowed in ${outputCurrency?.symbol}`}</Trans>}
-          syncing={loading}
-          value={position?.totalDebtOutput}
-          newValue={alteredPosition?.totalDebtOutput}
-          appendSymbol={outputCurrency?.symbol}
-          type={NumberType.TokenNonTx}
-        />*/}
         <PositionValueLabel
           title={<Trans>Premium Deposit</Trans>}
           description={<Trans>Current premium deposit remaining</Trans>}
@@ -367,6 +378,75 @@ function MarginPositionInfo({
       </PositionValueWrapper>
       <BorrowLiquidityRangeSection position={position} pool={pool ?? undefined} />
     </PositionInfoWrapper>
+  )
+}
+
+const LoadingMarginPositionInfo = () => {
+  return (
+    <PositionInfoWrapper>
+      <RowBetween justify="center">
+        <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
+        <CloseIcon style={{ width: '12px', marginRight: '10px' }} onClick={() => {}} />
+      </RowBetween>
+      <PositionValueWrapper>
+        <LoadingPositionValueLabel title={<Trans>Total Position</Trans>} />
+        <LoadingPositionValueLabel title={<Trans>Collateral</Trans>} />
+        <LoadingPositionValueLabel title={<Trans>Total Debt</Trans>} />
+        <LoadingPositionValueLabel title={<Trans>Premium Deposit</Trans>} />
+        <LoadingPositionValueLabel title={<Trans>Position Health</Trans>} />
+      </PositionValueWrapper>
+      <LoadingBorrowLiquidity />
+    </PositionInfoWrapper>
+  )
+}
+
+const SmallLoadingBubble = styled(LoadingBubble)`
+  width: 10px;
+  height: 10px;
+`
+const MediumLoadingBubble = styled(LoadingBubble)`
+  width: 30px;
+  height: 30px;
+`
+
+const LoadingBorrowLiquidity = () => {
+  return (
+    <BorrowLiquidityWrapper>
+      <AutoColumn gap="md">
+        <AutoColumn gap="md">
+          <RowBetween>
+            <Label display="flex" style={{ marginRight: '12px' }}>
+              <Trans>Position Borrowed Range</Trans>
+            </Label>
+          </RowBetween>
+          <RowFixed></RowFixed>
+        </AutoColumn>
+        <RowBetween>
+          <SecondLabel padding="12px" width="100%">
+            <AutoColumn gap="sm" justify="center">
+              <ExtentsText>
+                <Trans>Min price</Trans>
+              </ExtentsText>
+              <TextWithLoadingPlaceholder syncing={true} width={65} height="px">
+                <ThemedText.BodySecondary textAlign="center">{1.0}</ThemedText.BodySecondary>
+              </TextWithLoadingPlaceholder>
+            </AutoColumn>
+          </SecondLabel>
+          <DoubleArrow>⟷</DoubleArrow>
+          <SecondLabel padding="12px" width="100%">
+            <AutoColumn gap="sm" justify="center">
+              <ExtentsText>
+                <Trans>Max price</Trans>
+              </ExtentsText>
+              <TextWithLoadingPlaceholder syncing={true} width={65} height="px">
+                <ThemedText.BodySecondary textAlign="center">{1.0}</ThemedText.BodySecondary>
+              </TextWithLoadingPlaceholder>
+            </AutoColumn>
+          </SecondLabel>
+        </RowBetween>
+        <MediumLoadingBubble />
+      </AutoColumn>
+    </BorrowLiquidityWrapper>
   )
 }
 
@@ -460,6 +540,7 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
     currency1?.wrapped.address,
     pool?.fee
   )
+
   const [tickLower, tickUpper] = useMemo(() => {
     if (position && tickDiscretization) {
       return getLiquidityTicks(position.borrowInfo, tickDiscretization)
@@ -602,6 +683,19 @@ const ValueWrapper = styled(TextWrapper)`
   color: ${({ theme }) => theme.textSecondary};
   align-items: left;
 `
+
+function LoadingPositionValueLabel({ title, description }: { title: ReactNode; description?: ReactNode }) {
+  return (
+    <PositionValueLabelWrapper>
+      <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
+      <TextWithLoadingPlaceholder syncing={true} width={80}>
+        <ValueWrapper margin={false}>
+          <Row padding="5px" height="28px" width="65px"></Row>
+        </ValueWrapper>
+      </TextWithLoadingPlaceholder>
+    </PositionValueLabelWrapper>
+  )
+}
 
 function PositionValueLabel({
   value,

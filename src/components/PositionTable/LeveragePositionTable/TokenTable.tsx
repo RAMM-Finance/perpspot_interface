@@ -165,10 +165,9 @@ export default function LeveragePositionsTable({
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
-
   /* loading and error state */
   if (loading) {
-    return <LoadingTokenTable rowCount={1} />
+    return <LoadingTokenTable rowCount={3} />
   } else if (!filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {

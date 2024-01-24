@@ -1191,21 +1191,23 @@ const useSimulateMarginTrade = (
   // const { account } = useWeb3React()
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
+  const [syncing, setSyncing] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [lastBlockNumber, setBlockNumber] = useState<number>()
+  const [lastParams, setLastParams] = useState<string>()
+  const blocksPerFetch = 4
   // const poolManager = useLmtPoolManagerContract()
 
   // const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
   const [result, setResult] = useState<AddMarginTrade>()
   const [simulationError, setSimulationError] = useState<DecodedError>()
   const deadline = useTransactionDeadline()
-  const [syncing, setSyncing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [lastBlockNumber, setBlockNumber] = useState<number>()
-  const [lastParams, setLastParams] = useState<string>()
+
   const { provider, chainId } = useWeb3React()
 
   const dataProvider = useDataProviderContract()
   const feePercent = useLmtFeePercent(pool)
-  const blocksPerFetch = 4
+
   const computeData = useCallback(async () => {
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       return

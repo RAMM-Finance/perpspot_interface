@@ -352,7 +352,10 @@ const TradeTabContent = () => {
   )
 
   const lmtIsValid = useMemo(() => limitTradeState === LimitTradeState.VALID, [limitTradeState])
-  const lmtIsLoading = useMemo(() => limitTradeState === LimitTradeState.LOADING, [limitTradeState])
+  const lmtIsLoading = useMemo(
+    () => limitTradeState === LimitTradeState.LOADING || limitTradeState === LimitTradeState.SYNCING,
+    [limitTradeState]
+  )
 
   const handleCancel = useCallback(() => {
     setTradeState((currentState) => ({

@@ -656,6 +656,11 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
 
+  const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken || !position || !existingDeposit
+
+  if (loading) {
+    return <LoadingRow />
+  }
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
     <div ref={ref} data-testid="token-table-row">

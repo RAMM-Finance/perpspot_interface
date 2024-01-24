@@ -265,8 +265,8 @@ export default function DecreasePositionContent({
       isAdd: false,
     }
   }, [positionKey])
-  const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
+  // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
+  // const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
 
   const {
     position: orderPosition,
@@ -323,32 +323,34 @@ export default function DecreasePositionContent({
 
   const [closePosition, setClosePosition] = useState(false)
 
-  const { txnInfo, inputError, contractError } = useDerivedReducePositionInfo(
+  const { txnInfo, inputError, contractError, tradeState } = useDerivedReducePositionInfo(
     currentState.isLimit,
     reduceAmount,
     positionKey,
     existingPosition,
     closePosition,
     allowedSlippage,
-    setTradeState,
+    // setTradeState,
     onPositionChange,
     inRange,
     existingOrderBool,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
+  // console.log('reduce:', txnInfo, inputError, contractError)
 
   const {
     inputError: lmtInputError,
     txnInfo: lmtTxnInfo,
     contractError: lmtContractError,
+    tradeState: lmtTradeState,
   } = useDerivedReduceLimitPositionInfo(
     currentState.isLimit,
     reduceAmount,
     limitPrice,
     orderKey,
     baseCurrencyIsInput,
-    setLmtTradeState,
+    // setLmtTradeState,
     onPositionChange,
     existingPosition,
     pool ?? undefined,
@@ -460,7 +462,10 @@ export default function DecreasePositionContent({
 
   const theme = useTheme()
 
-  const loading = useMemo(() => tradeState === DerivedInfoState.LOADING, [tradeState])
+  const loading = useMemo(
+    () => tradeState === DerivedInfoState.LOADING || tradeState === DerivedInfoState.SYNCING,
+    [tradeState]
+  )
 
   const handleDismiss = useCallback(() => {
     if (currentState.txHash) {

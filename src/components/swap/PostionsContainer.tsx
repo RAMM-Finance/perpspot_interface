@@ -1,5 +1,4 @@
 import { OrdersTable } from 'components/OrdersTable/TokenTable'
-import { default as LeverageSearchBar } from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TabContent, TabNavItem } from 'components/Tabs'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
@@ -83,7 +82,7 @@ export function PostionsContainer({
             History
           </TabNavItem>
         </TabsWrapper>
-        {activePositionTable === 1 && <LeverageSearchBar />}
+        {/* {activePositionTable === 1 && <LeverageSearchBar />} */}
       </TableHeader>
       <TabContent id={1} activeTab={activePositionTable}>
         <LeveragePositionsTable positions={positions} loading={loadingPositions} />
