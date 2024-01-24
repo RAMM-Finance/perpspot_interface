@@ -27,6 +27,7 @@ interface AddPositionData {
 
 export const CollectMultipler = 400
 export const VaultDivisor = 200000
+export const referralDivisor = 5
 
 function calculateTimeWeightedDeposits(vaultDataByAddress: any) {
     if(!vaultDataByAddress) return undefined 

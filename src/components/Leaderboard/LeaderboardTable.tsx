@@ -3,8 +3,12 @@ import { useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
+import { ArrowUpRight } from 'react-feather'
+import { ExternalLink } from '../../theme'
+import { AutoColumn } from 'components/Column'
+import { Trans } from '@lingui/macro'
 
-import { CollectMultipler, usePointsData } from './data'
+import { CollectMultipler, usePointsData,referralDivisor } from './data'
 interface Leader {
   rank: number
   tradePoint: number
@@ -13,6 +17,7 @@ interface Leader {
   totalPoint: number
   wallet: string
 }
+
 
 export default function LeaderboardTable() {
   const tradePoints = usePointsData()
@@ -57,7 +62,7 @@ export default function LeaderboardTable() {
       if (obj.refereeActivity && Object.keys(obj.refereeActivity).find((rUser) => rUser === rpUser.trader)) {
         return {
           ...rpUser,
-          rPoints: obj.refereeActivity[rpUser.trader].lpAmount + obj.refereeActivity[rpUser.trader].tradeVolume,
+          rPoints: obj.refereeActivity[rpUser.trader].lpAmount/referralDivisor + obj.refereeActivity[rpUser.trader].tradeVolume/referralDivisor,
         }
       } else {
         return {
@@ -185,6 +190,10 @@ export default function LeaderboardTable() {
           </LoadedCellWrapper>
         )
       })}
+
+
+
+
     </>
   )
 }

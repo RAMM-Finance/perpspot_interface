@@ -44,7 +44,6 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
           const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(symbolName)
-
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',

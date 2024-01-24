@@ -351,7 +351,6 @@ export default function PoolSelect({
       baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
         ? [baseCurrency, quoteCurrency]
         : [quoteCurrency, baseCurrency]
-    // console.log('poolparams', token0, token1)
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
     const decimal = useMemo(() => {
       if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'WETH') {
@@ -382,7 +381,13 @@ export default function PoolSelect({
     const [currPrice, delta] = useMemo(() => {
       if (!priceData) return [undefined, undefined]
       let price = priceData.priceNow
-      const invertPrice = price.lt(1)
+      let invertPrice = price.lt(1)
+      if (
+        pool?.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
+        pool?.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+      )
+        invertPrice = false
+
       let delt
       const price24hAgo = new BN(1).div(priceData.price24hAgo)
       if (invertPrice) {

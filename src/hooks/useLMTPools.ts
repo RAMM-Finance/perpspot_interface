@@ -4,7 +4,8 @@ import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contra
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery, IncreaseLiquidityQuery, PoolAddedQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
+import { AddQuery, IncreaseLiquidityQuery, PoolAddedQuery, ReduceQuery,LiquidityProvidedQuery,
+LiquidityWithdrawnQuery} from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useState } from 'react'
@@ -28,7 +29,10 @@ export function usePoolsData() {
   const [uniqueTokens, setUniqueTokens] = useState<any>()
   const [addData, setAddData] = useState<any>()
   const [reduceData, setReduceData] = useState<any>()
-  const [addLiqData, setAddLiqData] = useState<any>()
+  // const [addLiqData, setAddLiqData] = useState<any>()
+  const [providedData, setProvidedData] = useState<any>()
+  const [withdrawnData, setWithdrawnData] = useState<any>()
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
@@ -45,22 +49,24 @@ export function usePoolsData() {
         const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
         const AddQueryData = await client.query(AddQuery, {}).toPromise()
         const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-        const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
-
+        // const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
+        const ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise() 
+        const WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise() 
         // console.log('AddQuery', poolQueryData, AddQueryData.data.marginPositionIncreaseds, AddLiqQueryData)
 
-        const uniqueTokenIds = new Set<string>()
+        // const uniqueTokenIds = new Set<string>()
 
-        AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any) => {
-          if (!uniqueTokenIds.has(entry.tokenId)) {
-            uniqueTokenIds.add(entry.tokenId)
-          }
-        })
+        // AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any) => {
+        //   if (!uniqueTokenIds.has(entry.tokenId)) {
+        //     uniqueTokenIds.add(entry.tokenId)
+        //   }
+        // })
 
         const pools = new Set<string>()
-        AddQueryData?.data?.marginPositionIncreaseds.forEach((entry: any) => {
-          if (!pools.has(entry.pool)) {
-            pools.add(entry.pool)
+        ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
+          const pool = ethers.utils.getAddress(entry.pool)
+          if (!pools.has(pool)) {
+            pools.add(pool)
           }
         })
 
@@ -69,21 +75,24 @@ export function usePoolsData() {
           Array.from(pools).map(async (pool: any) => {
             const token = await dataProvider?.getPoolkeys(pool)
             if (token) {
-              if (!uniqueTokens_.has(pool)) {
-                uniqueTokens_.set(pool, [token[0], token[1], token[2]])
+              const poolAdress = ethers.utils.getAddress(pool)
+              if (!uniqueTokens_.has(poolAdress)) {
+                uniqueTokens_.set(poolAdress, [token[0], token[1], token[2]])
               }
-              return { pool: (token[0], token[1], token[2]) }
+              return { poolAdress: (token[0], token[1], token[2]) }
             } else return null
           })
         )
-        const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
+        // const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
 
+        setProvidedData(ProvidedQueryData?.data.liquidityProvideds)
+        setWithdrawnData(WithdrawnQueryData?.data.liquidityWithdrawns)
         setUniqueTokens(uniqueTokens_)
-        setUniqueTokenIds(bigNumberTokenIds)
+        // setUniqueTokenIds(bigNumberTokenIds)
         setUniquePools(Array.from(pools))
         setAddData(AddQueryData.data.marginPositionIncreaseds)
         setReduceData(ReduceQueryData.data.marginPositionReduceds)
-        setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
+        // setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
         setLoading(false)
       } catch (error) {
         setError(error)
@@ -94,34 +103,25 @@ export function usePoolsData() {
   }, [account, referralContract, dataProvider])
 
   const slot0s = useMultipleContractSingleData(uniquePools, POOL_STATE_INTERFACE, 'slot0')
-  const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
+  // const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
 
   const poolToData = useMemo(() => {
     const slot0ByPool: { [key: string]: any } = {}
-
+    const slot0ByPoolAddress: { [key: string]: any } = {}
     uniquePools?.forEach((pool: any, index: any) => {
       const slot0 = slot0s[index]
       if (slot0 && uniqueTokens.get(pool)) {
-        const entry = uniqueTokens.get(pool)
-        const key = `${ethers.utils.getAddress(entry[0])}-${ethers.utils.getAddress(entry[1])}-${entry[2]}`
-
-        if (!slot0ByPool[key]) {
-          slot0ByPool[key] = slot0.result
+        const poolAdress = ethers.utils.getAddress(pool)
+        if(!slot0ByPoolAddress[poolAdress]){
+          slot0ByPoolAddress[poolAdress] = slot0.result
         }
       }
     })
 
-    const lpPositionByPool: { [key: string]: any } = {}
-    const totalAmountsByPool: { [key: string]: number } = {}
-    const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
-    lpPositions?.forEach((entry) => {
-      const key = `${ethers.utils.getAddress(entry.token0)}-${ethers.utils.getAddress(entry.token1)}-${entry.fee}`
-      if (!lpPositionByPool[key]) {
-        lpPositionByPool[key] = []
-      }
-      let curTick = slot0ByPool?.[key]?.[0].tick
-      if(curTick== undefined) curTick = slot0ByPool?.[key]?.tick
-
+    const processLiqEntry = (entry: any) => {
+      const pool = ethers.utils.getAddress(entry.pool)
+      let curTick = slot0ByPoolAddress[pool]?.[0].tick 
+      if(!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
       let amount0
       let amount1
       if (curTick < entry.tickLower) {
@@ -154,17 +154,23 @@ export function usePoolsData() {
         ).toString()
         amount0 = '0'
       }
-      const token0 = ethers.utils.getAddress(entry.token0)
-      const token1 = ethers.utils.getAddress(entry.token1)
-      const newEntry = {
-        amount0: Number(amount0) * usdValue[token0],
-        amount1: Number(amount1) * usdValue[token1],
-        token0: token0,
-        token1: token1,
-      }
 
-      lpPositionByPool[key].push(newEntry)
-    })
+      const tokens = uniqueTokens.get(pool)
+      const usdValueOfToken0 = usdValue[tokens[0]]
+      const usdValueOfToken1 = usdValue[tokens[1]]
+
+      return{
+        pool: pool, 
+        amount0: usdValueOfToken0* Number(amount0)/ 10 ** tokenDecimal[tokens[0]], 
+        amount1: usdValueOfToken1* Number(amount1)/ 10 ** tokenDecimal[tokens[1]]
+      }
+    }
+    const ProvidedDataProcessed = providedData?.map(processLiqEntry)
+    const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
+
+
+    const totalAmountsByPool: { [key: string]: number } = {}
+    const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
 
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
@@ -193,21 +199,32 @@ export function usePoolsData() {
     addDataProcessed?.forEach(processEntry)
     reduceDataProcessed?.forEach(processEntry)
 
-    Object.keys(lpPositionByPool).forEach((key) => {
-      let totalValueLocked = 0
+    const TVLDataPerPool : { [key: string]: any } = {}
+    ProvidedDataProcessed?.forEach((entry:any)=>{
+      const tokens = uniqueTokens.get(entry.pool)
+      const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
 
-      lpPositionByPool[key].forEach((entry: any) => {
-        totalValueLocked += entry.amount0 / 10 ** tokenDecimal[entry.token0]
-        totalValueLocked += entry.amount1 / 10 ** tokenDecimal[entry.token1]
-      })
+      if(!TVLDataPerPool[key]){
+        TVLDataPerPool[key] = 0
+      }
+      TVLDataPerPool[key] += entry.amount0
+      TVLDataPerPool[key] += entry.amount1
+    })
+    WithdrawDataProcessed?.forEach((entry:any)=>{
+      const tokens = uniqueTokens.get(entry.pool)
+      const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
 
-      // Assign the summed values to the new object
-      poolToData[key] = { totalValueLocked, volume: totalAmountsByPool?.[key] }
+      TVLDataPerPool[key] -= entry.amount0
+      TVLDataPerPool[key] -= entry.amount1
+    })
+
+
+    Object.keys(TVLDataPerPool).forEach((key)=>{
+      poolToData[key] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] }
     })
 
     return poolToData
-  }, [uniquePools, uniqueTokens, slot0s, lpPositions, addData, reduceData])
-
+  }, [uniquePools, uniqueTokens, slot0s, providedData,withdrawnData, addData, reduceData])
   return useMemo(() => {
     return poolToData
   }, [poolToData])

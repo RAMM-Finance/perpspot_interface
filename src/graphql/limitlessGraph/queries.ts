@@ -18,6 +18,30 @@ query poolHourDatas($startTime: Int!, $address: String!) {
 }
 `
 
+export const LiquidityProvidedQuery = `
+  query {
+    liquidityProvideds {
+      pool
+      recipient
+      liquidity
+      tickLower
+      tickUpper
+      blockTimestamp
+    }
+  }
+`
+export const LiquidityWithdrawnQuery = `
+  query {
+    liquidityWithdrawns {
+      pool
+      recipient
+      liquidity
+      tickLower
+      tickUpper
+      blockTimestamp
+    }
+  }
+`
 
 export const AddOrderQuery = `
   query {

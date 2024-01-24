@@ -13,6 +13,11 @@ import { AddQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { ArrowUpRight } from 'react-feather'
+import { ExternalLink } from '../../theme'
+import { AutoColumn } from 'components/Column'
+
+
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -178,6 +183,7 @@ export default function LeaderboardPage() {
             <LeaderboardWrapper>
               <LeaderboardTable />
             </LeaderboardWrapper>
+
           ) : (
             <ReferralsWrapper>
               {showConnectAWallet ? (
