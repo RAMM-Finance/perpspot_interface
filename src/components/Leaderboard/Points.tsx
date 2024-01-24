@@ -5,7 +5,7 @@ import { ThemedText } from 'theme'
 
 import affiliate from './affiliate-marketing.png'
 import coin from './coin.png'
-import { usePointsData } from './data'
+import { usePointsData , CollectMultipler,referralDivisor} from './data'
 import star from './star_616489.png'
 
 const Wrapper = styled.div`
@@ -53,9 +53,9 @@ export default function Points() {
         return {
           trader: user,
           lpPoints: obj.lpPositionsByUniqueLps[user].reduce(
-            (accum: number, tok: any) => accum + (tok.amount0Collected + tok.amount1Collected),
+            (accum: number, tok: any) => accum + (tok.amount0Collected * CollectMultipler+ tok.amount1Collected* CollectMultipler),
             0
-          ),
+          )+ (obj.timeWeightedDeposits[user] ? obj.timeWeightedDeposits[user].timeWeighted : 0),
         }
       } else {
         return {
@@ -69,7 +69,7 @@ export default function Points() {
       if (obj.refereeActivity && Object.keys(obj.refereeActivity).find((rUser) => rUser === rpUser.trader)) {
         return {
           ...rpUser,
-          rPoints: obj.refereeActivity[rpUser.trader].lpAmount + obj.refereeActivity[rpUser.trader].tradeVolume,
+          rPoints: obj.refereeActivity[rpUser.trader].lpAmount/referralDivisor + obj.refereeActivity[rpUser.trader].tradeVolume/referralDivisor,
         }
       } else {
         return {
