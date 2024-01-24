@@ -72,7 +72,6 @@ export function useContractCall(
       return
     }
 
-    // console.log('useContractCall params', blockNumber, lastBlockNumber, loading, error, lastParams, address, calldata)
     const _to = typeof address === 'string' ? address : address[chainId] ?? ZERO_ADDRESS
     const paramsUnchanged = lastParams?.to === _to && lastParams?.calldata === calldata
     if (error && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {

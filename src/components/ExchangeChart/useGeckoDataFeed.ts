@@ -35,8 +35,6 @@ const fetchBars = async (
   token: 'base' | 'quote',
   after_timestamp: number
 ) => {
-  console.log('gecko', before_timestamp)
-  //api.geckoterminal.com/api/v2/networks/arbitrum/pools/0x0e4831319a50228b9e450861297ab92dee15b44f/ohlcv/hour?aggregate=1&before_timestamp=1705994487&limit=300&currency=token&token=base
   try {
     const response = await axios.get(
       formatEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, before_timestamp, limit, currency, token),

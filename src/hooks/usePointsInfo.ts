@@ -1,14 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { BigNumber as BN } from 'bignumber.js'
-import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
-import {useEffect, useMemo , useState} from 'react'
-import { PositionDetails } from 'types/position'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
-import { ethers } from 'ethers'
-
-import { useReferralContract, 
-  useDataProviderContract, useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
 import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
+import { useEffect, useState } from 'react'
+import { PositionDetails } from 'types/position'
+
 interface UseV3PositionsResults {
   loading: boolean
   positions: PositionDetails[] | undefined
@@ -28,7 +23,6 @@ export enum PositionState {
   EXISTS,
   INVALID,
 }
-
 
 const GenesisAddressses = [
   // '0x515c07dd7cd01496d4000e4998b4fd5acd2c09e1',
@@ -94,16 +88,15 @@ const GenesisAddressses = [
   // '0x5c87aa10cd753ebf828ad352aef786e289065a57',
   '0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5',
   '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0',
-  '0x64dA461ECbAa3FEC3625F21b74a8c74394d501c9', 
+  '0x64dA461ECbAa3FEC3625F21b74a8c74394d501c9',
   '0x4F02Bbe7Fc56c412B24E59fDd79e2DfA4C6B6048',
-  '0xFD84b7AC1E646580db8c77f1f05F47977fAda692'
+  '0xFD84b7AC1E646580db8c77f1f05F47977fAda692',
 ]
 
-
-export function useUsingCode( ) {
+export function useUsingCode() {
   const { account, provider, chainId } = useWeb3React()
 
-  // const referralContract = useReferralContract() 
+  // const referralContract = useReferralContract()
 
   const [codeUsing, setCodeUsing] = useState(false)
 
@@ -139,7 +132,6 @@ export function useUsingCode( ) {
       }
     }
   }, [account, provider, chainId])
-
 
   return codeUsing
 }
@@ -270,7 +262,6 @@ export function useUsingCode( ) {
 //   }
 // }
 
-
 // export function useLmtLpPositionFromTokenId(tokenId: BigNumber | undefined): UseV3PositionResults {
 //   const position = useLmtLpPositionsFromTokenIds(tokenId ? [tokenId] : undefined)
 //   const dataProvider = useDataProviderContract()
@@ -289,12 +280,12 @@ export function useUsingCode( ) {
 //         setLoading(true)
 //         const result = await dataProvider?.getMaxWithdrawable(
 //           {
-//             token0: position.positions?.[0]?.token0 as string, 
-//             token1: position.positions?.[0]?.token1 as string, 
+//             token0: position.positions?.[0]?.token0 as string,
+//             token1: position.positions?.[0]?.token1 as string,
 //             fee: position.positions?.[0]?.fee as number ,
-//           }, 
-//           position.positions?.[0]?.tickLower as number, 
-//           position.positions?.[0]?.tickUpper as number, 
+//           },
+//           position.positions?.[0]?.tickLower as number,
+//           position.positions?.[0]?.tickUpper as number,
 //         )
 //         setData(result)
 //         setLoading(false)
@@ -310,12 +301,11 @@ export function useUsingCode( ) {
 
 //   }, [dataProvider, loading, lastBlockNumber,blockNumber, position.positions, ])
 
-
 //   return useMemo(() =>{
 //     if(!data || !position){
 //       return{
-//         loading: position.loading, 
-//         position: position.positions?.[0], 
+//         loading: position.loading,
+//         position: position.positions?.[0],
 //         maxWithdrawable: data
 //       }
 //     }else{

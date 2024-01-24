@@ -345,7 +345,7 @@ const TradeTabContent = () => {
   const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
     () => [
       tradeState === LeverageTradeState.INVALID,
-      LeverageTradeState.LOADING === tradeState,
+      LeverageTradeState.LOADING === tradeState || LeverageTradeState.SYNCING === tradeState,
       tradeState === LeverageTradeState.NO_ROUTE_FOUND,
     ],
     [tradeState]

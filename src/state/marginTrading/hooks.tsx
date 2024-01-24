@@ -8,10 +8,11 @@ import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addres
 import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useDataProviderContract, useLmtPoolManagerContract, useMarginFacilityContract } from 'hooks/useContract'
+import { useDataProviderContract, useMarginFacilityContract } from 'hooks/useContract'
 import { useLmtFeePercent } from 'hooks/useLmtFeePercent'
 import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useMaxLeverage } from 'hooks/useMaxLeverage'
+import { useUsingCode } from 'hooks/usePointsInfo'
 import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -25,6 +26,7 @@ import {
   useUserSlippageTolerance,
 } from 'state/user/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
+import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
@@ -35,7 +37,6 @@ import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
 import { MarginField, setBaseCurrencyIsInputToken, setLimit, setLocked, setPrice, typeInput } from './actions'
 import { getOutputQuote } from './getOutputQuote'
-import {useUsingCode} from "hooks/usePointsInfo"
 export function useMarginTradingState(): AppState['margin'] {
   return useAppSelector((state) => state.margin)
 }
@@ -176,7 +177,7 @@ export function useDerivedAddPositionInfo(
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
-  const usingCode = useUsingCode( )
+  const usingCode = useUsingCode()
   // const {
   //   [MarginField.MARGIN]: margin,
   //   [MarginField.LEVERAGE_FACTOR]: leverageFactor,
@@ -235,7 +236,7 @@ export function useDerivedAddPositionInfo(
   }, [account, inputCurrency, outputCurrency, pool])
 
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
-  const { position: existingLimitPosition } = useMarginOrderPositionFromPositionId(orderKey)
+  // const { position: existingLimitPosition } = useMarginOrderPositionFromPositionId(orderKey)
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
   const [userPremiumPercent] = useUserPremiumDepositPercent()
@@ -324,9 +325,8 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Select a token</Trans>
     }
 
-    if(!usingCode){
+    if (!usingCode) {
       inputError = inputError ?? <Trans>Not whitelisted</Trans>
-
     }
 
     if (!parsedMargin || parsedMargin.isZero()) {
@@ -355,7 +355,7 @@ export function useDerivedAddPositionInfo(
     }
 
     return inputError
-  }, [account, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, preTradeInfo])
+  }, [account, usingCode, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, preTradeInfo])
 
   const {
     state,
@@ -599,51 +599,51 @@ export function useDerivedLimitAddPositionInfo(
       inputError = inputError ?? <Trans>Enter a starting price</Trans>
     }
 
-    if (parsedStartingPrice && pool && parsedMargin && traderKey) {
-      /**
-       * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
-       * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
-       *
-       * isToken0 -> output is t0, input is t1
-       * !isToken0 -> output is t1, input is t0
-       * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
-       */
-      const baseIsToken0 =
-        (baseCurrencyIsInputToken && !traderKey.isToken0) || (!baseCurrencyIsInputToken && traderKey.isToken0)
+    // if (parsedStartingPrice && pool && parsedMargin && traderKey) {
+    //   /**
+    //    * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
+    //    * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
+    //    *
+    //    * isToken0 -> output is t0, input is t1
+    //    * !isToken0 -> output is t1, input is t0
+    //    * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
+    //    */
+    //   const baseIsToken0 =
+    //     (baseCurrencyIsInputToken && !traderKey.isToken0) || (!baseCurrencyIsInputToken && traderKey.isToken0)
 
-      /**
-       *
-       * if baseIsToken0 then limitPrice is in t1 / t0
-       * if !baseIsToken0 then limitPrice is in t0 / t1
-       *
-       * if baseIsT0 and isToken0 then no flip
-       * if baseIsT0 and !isToken0 then flip
-       * if !baseIsT0 and isToken0 then flip
-       * if !baseIsT0 and !isToken0 then no flip
-       */
-      const flippedPrice = (baseIsToken0 && !traderKey.isToken0) || (!baseIsToken0 && traderKey.isToken0)
-      const price = flippedPrice ? new BN(1).div(parsedStartingPrice) : parsedStartingPrice
+    //   /**
+    //    *
+    //    * if baseIsToken0 then limitPrice is in t1 / t0
+    //    * if !baseIsToken0 then limitPrice is in t0 / t1
+    //    *
+    //    * if baseIsT0 and isToken0 then no flip
+    //    * if baseIsT0 and !isToken0 then flip
+    //    * if !baseIsT0 and isToken0 then flip
+    //    * if !baseIsT0 and !isToken0 then no flip
+    //    */
+    //   const flippedPrice = (baseIsToken0 && !traderKey.isToken0) || (!baseIsToken0 && traderKey.isToken0)
+    //   const price = flippedPrice ? new BN(1).div(parsedStartingPrice) : parsedStartingPrice
 
-      if (traderKey.isToken0) {
-        const currentPrice = new BN(pool.token0Price.toFixed(18))
-        if (!price.gte(currentPrice)) {
-          if (baseIsToken0) {
-            inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-          } else {
-            inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-          }
-        }
-      } else {
-        const currentPrice = new BN(pool.token1Price.toFixed(18))
-        if (!price.gte(currentPrice)) {
-          if (baseIsToken0) {
-            inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-          } else {
-            inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-          }
-        }
-      }
-    }
+    //   if (traderKey.isToken0) {
+    //     const currentPrice = new BN(pool.token0Price.toFixed(18))
+    //     if (!price.gte(currentPrice)) {
+    //       if (baseIsToken0) {
+    //         inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+    //       } else {
+    //         inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+    //       }
+    //     }
+    //   } else {
+    //     const currentPrice = new BN(pool.token1Price.toFixed(18))
+    //     if (!price.gte(currentPrice)) {
+    //       if (baseIsToken0) {
+    //         inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
+    //       } else {
+    //         inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
+    //       }
+    //     }
+    //   }
+    // }
 
     // show warning if the starting price is lower/higher than the current price?
 
@@ -736,6 +736,10 @@ export interface AddLimitTrade {
   formattedLimitPrice: Price<Currency, Currency>
 }
 
+const getLimitParamString = (margin: BN, leverageFactor: BN, limitPrice: BN, allowedSlippage: Percent) => {
+  return `${margin.toString()}-${leverageFactor.toString()}-${limitPrice.toString()}-${allowedSlippage.toFixed(18)}`
+}
+
 const useSimulateAddLimitOrder = (
   orderKey?: OrderPositionKey,
   margin?: BN,
@@ -759,161 +763,350 @@ const useSimulateAddLimitOrder = (
   const { account, chainId } = useWeb3React()
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
-  const poolManager = useLmtPoolManagerContract()
+  // const poolManager = useLmtPoolManagerContract()
 
-  const [tradeState, setTradeState] = useState<LimitTradeState>(LimitTradeState.INVALID)
+  // const [tradeState, setTradeState] = useState<LimitTradeState>(LimitTradeState.INVALID)
   const [simulationError, setSimulationError] = useState<DecodedError>()
   const [result, setResult] = useState<AddLimitTrade>()
+  const [syncing, setSyncing] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [lastBlockNumber, setBlockNumber] = useState<number>()
+  const [lastParams, setLastParams] = useState<string>()
 
   const [orderDuration] = useUserLimitOrderTransactionTTL()
   const feePercent = useLmtFeePercent(pool)
-  const [lastUserParams, setLastUserParams] = useState<{
-    margin: BN
-    leverageFactor: BN
-    startingPrice: BN
-    orderKey: OrderPositionKey
-    allowedSlippage: Percent
-  }>()
+  // const [lastUserParams, setLastUserParams] = useState<{
+  //   margin: BN
+  //   leverageFactor: BN
+  //   startingPrice: BN
+  //   orderKey: OrderPositionKey
+  //   allowedSlippage: Percent
+  // }>()
 
-  useEffect(() => {
-    const lagged = async () => {
-      if (
-        !account ||
-        !chainId ||
-        !pool ||
-        !margin ||
-        !blockNumber ||
-        !poolManager ||
-        !deadline ||
-        !orderKey ||
-        !leverageFactor ||
-        !startingPrice ||
-        !allowedSlippage ||
-        !inputCurrency ||
-        !outputCurrency ||
-        !marginFacility ||
-        !additionalPremium ||
-        !!inputError ||
-        approvalState !== ApprovalState.APPROVED ||
-        !orderDuration ||
-        !feePercent
-      ) {
-        setTradeState(LimitTradeState.INVALID)
-        setResult(undefined)
-        setLastUserParams(undefined)
-        return
-      }
-      try {
-        const poolAddress = computePoolAddress({
-          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-          tokenA: pool.token0,
-          tokenB: pool.token1,
-          fee: pool.fee,
-        })
-
-        // const rawFeesResult = await poolManager.callStatic.getFeeParams({
-        //   token0: pool.token0.address,
-        //   token1: pool.token1.address,
-        //   fee: pool.fee,
-        // })
-        // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
-
-        const totalInput = new BN(margin).times(leverageFactor)
-        const totalInputWithFees = totalInput.times(new BN(1).minus(feePercent))
-        // if base is input then output / input.
-        const limitPrice = baseCurrencyIsInputToken ? startingPrice : new BN(1).div(startingPrice)
-
-        // we assume that starting price is output / input here.
-        const startOutput = totalInputWithFees.times(limitPrice)
-        const slippageBn = new BN(allowedSlippage.toFixed(18)).div(100)
-        const minOutput = totalInputWithFees.times(limitPrice).times(new BN(1).minus(slippageBn))
-        // decay rate defaults to zero
-        const decayRate = new BN('0')
-
-        const calldata = MarginFacilitySDK.submitLimitOrder({
-          orderKey,
-          margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-          pool: poolAddress,
-          isAdd: true,
-          deadline: deadline.toString(),
-          startOutput: startOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-          minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-          inputAmount: totalInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-          decayRate: decayRate.shiftedBy(18).toFixed(0),
-          depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-        })
-
-        setTradeState(LimitTradeState.LOADING)
-        await marginFacility.callStatic.multicall(calldata)
-        setTradeState(LimitTradeState.VALID)
-        setSimulationError(undefined)
-        setResult({
-          orderKey,
-          margin,
-          poolAddress,
-          startOutput,
-          decayRate,
-          allowedSlippage,
-          inputAmount: totalInput,
-          minOutput,
-          inputCurrencyId: inputCurrency.wrapped.address,
-          outputCurrencyId: outputCurrency.wrapped.address,
-          additionalPremium: new BN(additionalPremium.toExact()),
-          limitPrice,
-          duration: orderDuration,
-          deadline: deadline.toString(),
-          formattedLimitPrice: new Price(
-            outputCurrency,
-            inputCurrency,
-            limitPrice.shiftedBy(18).toFixed(0),
-            new BN(1).shiftedBy(18).toFixed(0)
-          ),
-        })
-        setLastUserParams({
-          margin,
-          leverageFactor,
-          startingPrice,
-          orderKey,
-          allowedSlippage,
-        })
-      } catch (err) {
-        setTradeState(LimitTradeState.INVALID)
-        setSimulationError(parseContractError(err))
-        setResult(undefined)
-        setLastUserParams(undefined)
-      }
-      return
+  const computeData = useCallback(async () => {
+    if (
+      !pool ||
+      !margin ||
+      !blockNumber ||
+      !deadline ||
+      !orderKey ||
+      !leverageFactor ||
+      !startingPrice ||
+      !allowedSlippage ||
+      !inputCurrency ||
+      !outputCurrency ||
+      !marginFacility ||
+      !additionalPremium ||
+      !orderDuration ||
+      !feePercent ||
+      !chainId
+    ) {
+      return undefined
     }
 
-    if (existingLimitPosition && existingLimitPosition?.auctionStartTime > 0) {
-      setTradeState(LimitTradeState.EXISTING_ORDER)
-      return
-    } else {
-      lagged()
+    const poolAddress = computePoolAddress({
+      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+      tokenA: pool.token0,
+      tokenB: pool.token1,
+      fee: pool.fee,
+    })
+
+    const totalInput = new BN(margin).times(leverageFactor)
+    const totalInputWithFees = totalInput.times(new BN(1).minus(feePercent))
+    // if base is input then output / input.
+    const limitPrice = baseCurrencyIsInputToken ? startingPrice : new BN(1).div(startingPrice)
+
+    // we assume that starting price is output / input here.
+    const startOutput = totalInputWithFees.times(limitPrice)
+    const slippageBn = new BN(allowedSlippage.toFixed(18)).div(100)
+    const minOutput = totalInputWithFees.times(limitPrice).times(new BN(1).minus(slippageBn))
+    // decay rate defaults to zero
+    const decayRate = new BN('0')
+
+    const calldata = MarginFacilitySDK.submitLimitOrder({
+      orderKey,
+      margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+      pool: poolAddress,
+      isAdd: true,
+      deadline: deadline.toString(),
+      startOutput: startOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      inputAmount: totalInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+      decayRate: decayRate.shiftedBy(18).toFixed(0),
+      depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+    })
+
+    await marginFacility.callStatic.multicall(calldata)
+
+    const _result: AddLimitTrade = {
+      orderKey,
+      margin,
+      poolAddress,
+      startOutput,
+      decayRate,
+      allowedSlippage,
+      inputAmount: totalInput,
+      minOutput,
+      inputCurrencyId: inputCurrency.wrapped.address,
+      outputCurrencyId: outputCurrency.wrapped.address,
+      additionalPremium: new BN(additionalPremium.toExact()),
+      limitPrice,
+      duration: orderDuration,
+      deadline: deadline.toString(),
+      formattedLimitPrice: new Price(
+        outputCurrency,
+        inputCurrency,
+        limitPrice.shiftedBy(18).toFixed(0),
+        new BN(1).shiftedBy(18).toFixed(0)
+      ),
+    }
+
+    return {
+      result: _result,
+      params: getLimitParamString(margin, leverageFactor, limitPrice, allowedSlippage),
     }
   }, [
-    account,
-    chainId,
-    pool,
-    margin,
-    blockNumber,
-    poolManager,
-    deadline,
-    orderKey,
-    leverageFactor,
-    startingPrice,
-    allowedSlippage,
-    inputCurrency,
-    outputCurrency,
-    marginFacility,
-    existingLimitPosition,
-    baseCurrencyIsInputToken,
     additionalPremium,
-    inputError,
-    approvalState,
-    orderDuration,
+    allowedSlippage,
+    baseCurrencyIsInputToken,
+    blockNumber,
+    chainId,
+    deadline,
     feePercent,
+    inputCurrency,
+    leverageFactor,
+    margin,
+    marginFacility,
+    orderDuration,
+    orderKey,
+    outputCurrency,
+    pool,
+    startingPrice,
   ])
+
+  const blocksPerFetch = 3
+
+  useEffect(() => {
+    if (!blockNumber || !chainId || !!inputError || approvalState !== ApprovalState.APPROVED) {
+      return
+    }
+
+    let paramsUnchanged = false
+    if (leverageFactor && startingPrice && margin && allowedSlippage) {
+      const limitPrice = baseCurrencyIsInputToken ? startingPrice : new BN(1).div(startingPrice)
+      const params = getLimitParamString(margin, leverageFactor, limitPrice, allowedSlippage)
+      if (lastParams === params) {
+        paramsUnchanged = true
+      }
+    }
+
+    if (simulationError && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+      return
+    }
+
+    if (loading || syncing) {
+      return
+    }
+
+    if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
+      return
+    }
+
+    if (lastParams && paramsUnchanged) {
+      setSyncing(true)
+    } else {
+      setLoading(true)
+    }
+
+    computeData()
+      .then((data) => {
+        if (!data) {
+          setSimulationError({
+            type: ErrorType.EmptyError,
+            error: 'missing params',
+            data: undefined,
+          })
+          setLastParams(undefined)
+          setResult(undefined)
+          setLoading(false)
+          setSyncing(false)
+        } else {
+          // console.log('fetching9', _result, to, calldata)
+          const { result: _result, params } = data
+          setResult(_result)
+          setLastParams(params)
+          setSimulationError(undefined)
+          setLoading(false)
+          setSyncing(false)
+        }
+        setBlockNumber(blockNumber)
+      })
+      .catch((err) => {
+        // console.log('fetching10')
+        setSimulationError(parseContractError(err))
+        setLastParams(undefined)
+        setResult(undefined)
+        setLoading(false)
+        setSyncing(false)
+        setBlockNumber(blockNumber)
+      })
+  }, [
+    baseCurrencyIsInputToken,
+    blockNumber,
+    chainId,
+    computeData,
+    inputError,
+    lastBlockNumber,
+    lastParams,
+    leverageFactor,
+    loading,
+    margin,
+    simulationError,
+    startingPrice,
+    syncing,
+    allowedSlippage,
+    approvalState,
+  ])
+
+  // useEffect(() => {
+  //   const lagged = async () => {
+  //     if (
+  //       !account ||
+  //       !chainId ||
+  //       !pool ||
+  //       !margin ||
+  //       !blockNumber ||
+  //       !poolManager ||
+  //       !deadline ||
+  //       !orderKey ||
+  //       !leverageFactor ||
+  //       !startingPrice ||
+  //       !allowedSlippage ||
+  //       !inputCurrency ||
+  //       !outputCurrency ||
+  //       !marginFacility ||
+  //       !additionalPremium ||
+  //       !!inputError ||
+  //       approvalState !== ApprovalState.APPROVED ||
+  //       !orderDuration ||
+  //       !feePercent
+  //     ) {
+  //       setTradeState(LimitTradeState.INVALID)
+  //       setResult(undefined)
+  //       setLastUserParams(undefined)
+  //       return
+  //     }
+  //     try {
+  //       const poolAddress = computePoolAddress({
+  //         factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+  //         tokenA: pool.token0,
+  //         tokenB: pool.token1,
+  //         fee: pool.fee,
+  //       })
+
+  //       // const rawFeesResult = await poolManager.callStatic.getFeeParams({
+  //       //   token0: pool.token0.address,
+  //       //   token1: pool.token1.address,
+  //       //   fee: pool.fee,
+  //       // })
+  //       // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
+
+  //       const totalInput = new BN(margin).times(leverageFactor)
+  //       const totalInputWithFees = totalInput.times(new BN(1).minus(feePercent))
+  //       // if base is input then output / input.
+  //       const limitPrice = baseCurrencyIsInputToken ? startingPrice : new BN(1).div(startingPrice)
+
+  //       // we assume that starting price is output / input here.
+  //       const startOutput = totalInputWithFees.times(limitPrice)
+  //       const slippageBn = new BN(allowedSlippage.toFixed(18)).div(100)
+  //       const minOutput = totalInputWithFees.times(limitPrice).times(new BN(1).minus(slippageBn))
+  //       // decay rate defaults to zero
+  //       const decayRate = new BN('0')
+
+  //       const calldata = MarginFacilitySDK.submitLimitOrder({
+  //         orderKey,
+  //         margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         pool: poolAddress,
+  //         isAdd: true,
+  //         deadline: deadline.toString(),
+  //         startOutput: startOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+  //         minOutput: minOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+  //         inputAmount: totalInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         decayRate: decayRate.shiftedBy(18).toFixed(0),
+  //         depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+  //       })
+
+  //       setTradeState(LimitTradeState.LOADING)
+  //       await marginFacility.callStatic.multicall(calldata)
+  //       setTradeState(LimitTradeState.VALID)
+  //       setSimulationError(undefined)
+  //       setResult({
+  //         orderKey,
+  //         margin,
+  //         poolAddress,
+  //         startOutput,
+  //         decayRate,
+  //         allowedSlippage,
+  //         inputAmount: totalInput,
+  //         minOutput,
+  //         inputCurrencyId: inputCurrency.wrapped.address,
+  //         outputCurrencyId: outputCurrency.wrapped.address,
+  //         additionalPremium: new BN(additionalPremium.toExact()),
+  //         limitPrice,
+  //         duration: orderDuration,
+  //         deadline: deadline.toString(),
+  //         formattedLimitPrice: new Price(
+  //           outputCurrency,
+  //           inputCurrency,
+  //           limitPrice.shiftedBy(18).toFixed(0),
+  //           new BN(1).shiftedBy(18).toFixed(0)
+  //         ),
+  //       })
+  //       setLastUserParams({
+  //         margin,
+  //         leverageFactor,
+  //         startingPrice,
+  //         orderKey,
+  //         allowedSlippage,
+  //       })
+  //     } catch (err) {
+  //       setTradeState(LimitTradeState.INVALID)
+  //       setSimulationError(parseContractError(err))
+  //       setResult(undefined)
+  //       setLastUserParams(undefined)
+  //     }
+  //     return
+  //   }
+
+  //   if (existingLimitPosition && existingLimitPosition?.auctionStartTime > 0) {
+  //     setTradeState(LimitTradeState.EXISTING_ORDER)
+  //     return
+  //   } else {
+  //     lagged()
+  //   }
+  // }, [
+  //   account,
+  //   chainId,
+  //   pool,
+  //   margin,
+  //   blockNumber,
+  //   poolManager,
+  //   deadline,
+  //   orderKey,
+  //   leverageFactor,
+  //   startingPrice,
+  //   allowedSlippage,
+  //   inputCurrency,
+  //   outputCurrency,
+  //   marginFacility,
+  //   existingLimitPosition,
+  //   baseCurrencyIsInputToken,
+  //   additionalPremium,
+  //   inputError,
+  //   approvalState,
+  //   orderDuration,
+  //   feePercent,
+  // ])
 
   const contractError = useMemo(() => {
     let error: ReactNode | undefined
@@ -926,42 +1119,53 @@ const useSimulateAddLimitOrder = (
   }, [simulationError])
 
   return useMemo(() => {
-    if (!margin || !leverageFactor || !startingPrice || !orderKey) {
+    let tradeState: LimitTradeState = LimitTradeState.INVALID
+    if (loading) {
+      tradeState = LimitTradeState.LOADING
+    } else if (syncing) {
+      tradeState = LimitTradeState.SYNCING
+    } else if (simulationError) {
+      tradeState = LimitTradeState.INVALID
+    }
+
+    const limitPrice = startingPrice
+      ? baseCurrencyIsInputToken
+        ? startingPrice
+        : new BN(1).div(startingPrice)
+      : undefined
+    if (!margin || !leverageFactor || !startingPrice) {
       return {
         state: LimitTradeState.INVALID,
         contractError,
         result: undefined,
       }
-    } else if (
-      lastUserParams &&
-      lastUserParams.margin.eq(margin) &&
-      lastUserParams.leverageFactor.eq(leverageFactor) &&
-      lastUserParams.startingPrice.eq(startingPrice) &&
-      lastUserParams.orderKey === orderKey &&
-      lastUserParams.allowedSlippage === allowedSlippage
-    ) {
-      return {
-        state: tradeState,
-        contractError,
-        result,
-      }
-    } else {
-      return {
-        state: tradeState,
-        contractError,
-        result: undefined,
+    } else if (limitPrice && margin && leverageFactor && allowedSlippage) {
+      const params = getLimitParamString(margin, leverageFactor, limitPrice, allowedSlippage)
+      if (lastParams === params) {
+        return {
+          state: LimitTradeState.VALID,
+          contractError,
+          result,
+        }
       }
     }
+    return {
+      state: tradeState,
+      contractError,
+      result: undefined,
+    }
   }, [
-    tradeState,
     contractError,
     result,
     margin,
     leverageFactor,
     startingPrice,
-    orderKey,
-    lastUserParams,
     allowedSlippage,
+    baseCurrencyIsInputToken,
+    loading,
+    lastParams,
+    syncing,
+    simulationError,
   ])
 }
 
@@ -984,229 +1188,446 @@ const useSimulateMarginTrade = (
   result?: AddMarginTrade
   contractError?: ReactNode
 } => {
-  const { account } = useWeb3React()
+  // const { account } = useWeb3React()
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
-  const poolManager = useLmtPoolManagerContract()
+  // const poolManager = useLmtPoolManagerContract()
 
-  const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
+  // const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
   const [result, setResult] = useState<AddMarginTrade>()
   const [simulationError, setSimulationError] = useState<DecodedError>()
-  const { provider, chainId } = useWeb3React()
   const deadline = useTransactionDeadline()
+  const [syncing, setSyncing] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [lastBlockNumber, setBlockNumber] = useState<number>()
+  const [lastParams, setLastParams] = useState<string>()
+  const { provider, chainId } = useWeb3React()
 
   const dataProvider = useDataProviderContract()
   const feePercent = useLmtFeePercent(pool)
-  const [lastUserParams, setLastUserParams] = useState<{
-    margin: BN
-    borrowAmount: BN
-    positionKey: TraderPositionKey
-    allowedSlippage: Percent
-  }>()
-  // console.log('simulate params', margin?.toString(), borrowAmount?.toString(), tradeState)
-  useEffect(() => {
-    // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
-
-    const lagged = async () => {
-      if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
-        return
-      }
-
-      if (
-        !account ||
-        !pool ||
-        !margin ||
-        !borrowAmount ||
-        !account ||
-        !blockNumber ||
-        !existingPosition ||
-        !inputCurrency ||
-        !outputCurrency ||
-        !additionalPremium ||
-        !!inputError ||
-        !marginFacility ||
-        !inputCurrency ||
-        !outputCurrency ||
-        !allowedSlippage ||
-        !poolManager ||
-        !deadline ||
-        inputIsToken0 === undefined ||
-        approvalState !== ApprovalState.APPROVED ||
-        !dataProvider ||
-        !feePercent ||
-        !provider ||
-        !chainId ||
-        !positionKey
-      ) {
-        setTradeState(LeverageTradeState.INVALID)
-        setResult(undefined)
-        setLastUserParams(undefined)
-        return
-      }
-
-      try {
-        setTradeState(LeverageTradeState.LOADING)
-        const swapRoute = new Route(
-          [pool],
-          inputIsToken0 ? pool.token0 : pool.token1,
-          inputIsToken0 ? pool.token1 : pool.token0
-        )
-
-        // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
-        const swapInput = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
-        const amountOut = await getOutputQuote(
-          BnToCurrencyAmount(swapInput, inputCurrency),
-          swapRoute,
-          provider,
-          chainId
-        )
-
-        if (!amountOut) return
-
-        const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
-
-        // min output = (margin + borrowAmount) * current price * (1 - slippage)
-        const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
-        const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
-        const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-
-        // console.log('simulated-params', {
-        //   positionKey,
-        //   margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-        //   deadline: deadline.toString(),
-        //   simulatedOutput: amountOut.toString(),
-        //   executionOption: 1,
-        //   depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-        //   slippedTickMin,
-        //   slippedTickMax,
-        // })
-
-        // calldata
-        const calldata = MarginFacilitySDK.addPositionParameters({
-          positionKey,
-          margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
-          borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-          minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-          deadline: deadline.toString(),
-          simulatedOutput: amountOut.toString(),
-          executionOption: 1,
-          depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
-          slippedTickMin,
-          slippedTickMax,
-        })
-
-        const multicallResult = await marginFacility.callStatic.multicall(calldata)
-
-        const {
-          totalPosition: newTotalPosition,
-          totalInputDebt: newTotalInputDebt,
-          margin: newMargin,
-          borrowInfo,
-          fees,
-        } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
-
-        const poolKey = {
-          token0: pool.token0.address,
-          token1: pool.token1.address,
-          fee: pool.fee,
-        }
-
-        const newBorrowInfo: any[] = borrowInfo.map((borrowItem) => {
-          const existingItem = existingPosition.borrowInfo.find((item) => item.tick === borrowItem.tick)
-          const liquidityDifference = existingItem
-            ? new BN(borrowItem.liquidity).minus(existingItem.liquidity)
-            : new BN(borrowItem.liquidity)
-
-          return {
-            tick: borrowItem.tick,
-            liquidity: liquidityDifference.toString(),
-            premium: '0',
-            feeGrowthInside0LastX128: '0',
-            feeGrowthInside1LastX128: '0',
-            lastGrowth: '0',
-          }
-        })
-        const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
-
-        let swapOutput: JSBI
-        if (existingPosition.openTime > 0) {
-          swapOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
-        } else {
-          swapOutput = newTotalPosition
-        }
-
-        const executionPrice = new Price<Currency, Currency>(
-          inputCurrency,
-          outputCurrency,
-          swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-          swapOutput
-        )
-
-        const simulation: AddMarginTrade = {
-          margin: new TokenBN(margin, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
-          fees: new TokenBN(fees.toString(), inputCurrency.wrapped, true),
-          minimumOutput: new TokenBN(minimumOutput, outputCurrency.wrapped, false), //BnToCurrencyAmount(minimumOutput, outputCurrency),
-          borrowAmount: new TokenBN(borrowAmount, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount),
-          swapInput: new TokenBN(swapInput, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, swapInput),
-          swapOutput: new TokenBN(swapOutput.toString(), outputCurrency.wrapped, true), // CurrencyAmount.fromRawAmount(outputCurrency, swapOutput),
-          executionPrice,
-          allowedSlippage,
-          positionKey,
-          swapRoute,
-          premium: new TokenBN(additionalPremium.toExact(), inputCurrency.wrapped, false),
-          pool,
-          inputIsToken0,
-          borrowRate: new BN(borrowRate.toString())
-            .shiftedBy(-18)
-            .div(365 * 24)
-            .times(100),
-          swapFee: new TokenBN(swapInput.times(pool.fee).div(1e6), inputCurrency.wrapped, false),
-        }
-
-        setResult(simulation)
-        setTradeState(LeverageTradeState.VALID)
-        setSimulationError(undefined)
-        setLastUserParams({
-          margin,
-          borrowAmount,
-          positionKey,
-          allowedSlippage,
-        })
-      } catch (err) {
-        setTradeState(LeverageTradeState.INVALID)
-        setResult(undefined)
-        setLastUserParams(undefined)
-        setSimulationError(parseContractError(err))
-      }
+  const blocksPerFetch = 4
+  const computeData = useCallback(async () => {
+    if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       return
     }
 
-    lagged()
+    if (
+      !pool ||
+      !margin ||
+      !borrowAmount ||
+      !existingPosition ||
+      !inputCurrency ||
+      !outputCurrency ||
+      !additionalPremium ||
+      !marginFacility ||
+      !allowedSlippage ||
+      !deadline ||
+      inputIsToken0 === undefined ||
+      !dataProvider ||
+      !feePercent ||
+      !positionKey
+    ) {
+      return undefined
+    }
+
+    const swapRoute = new Route(
+      [pool],
+      inputIsToken0 ? pool.token0 : pool.token1,
+      inputIsToken0 ? pool.token1 : pool.token0
+    )
+
+    // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
+    const swapInput = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
+    const amountOut = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+
+    if (!amountOut) return undefined
+
+    const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
+
+    // min output = (margin + borrowAmount) * current price * (1 - slippage)
+    const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
+    const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
+    const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
+
+    // calldata
+    const calldata = MarginFacilitySDK.addPositionParameters({
+      positionKey,
+      margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+      borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+      minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      deadline: deadline.toString(),
+      simulatedOutput: amountOut.toString(),
+      executionOption: 1,
+      depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+      slippedTickMin,
+      slippedTickMax,
+    })
+
+    const multicallResult = await marginFacility.callStatic.multicall(calldata)
+
+    const {
+      totalPosition: newTotalPosition,
+      totalInputDebt: newTotalInputDebt,
+      margin: newMargin,
+      borrowInfo,
+      fees,
+    } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
+
+    const poolKey = {
+      token0: pool.token0.address,
+      token1: pool.token1.address,
+      fee: pool.fee,
+    }
+
+    const newBorrowInfo: any[] = borrowInfo.map((borrowItem) => {
+      const existingItem = existingPosition.borrowInfo.find((item) => item.tick === borrowItem.tick)
+      const liquidityDifference = existingItem
+        ? new BN(borrowItem.liquidity).minus(existingItem.liquidity)
+        : new BN(borrowItem.liquidity)
+
+      return {
+        tick: borrowItem.tick,
+        liquidity: liquidityDifference.toString(),
+        premium: '0',
+        feeGrowthInside0LastX128: '0',
+        feeGrowthInside1LastX128: '0',
+        lastGrowth: '0',
+      }
+    })
+
+    const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
+
+    let swapOutput: JSBI
+    if (existingPosition.openTime > 0) {
+      swapOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
+    } else {
+      swapOutput = newTotalPosition
+    }
+
+    const executionPrice = new Price<Currency, Currency>(
+      inputCurrency,
+      outputCurrency,
+      swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+      swapOutput
+    )
+
+    const simulation: AddMarginTrade = {
+      margin: new TokenBN(margin, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
+      fees: new TokenBN(fees.toString(), inputCurrency.wrapped, true),
+      minimumOutput: new TokenBN(minimumOutput, outputCurrency.wrapped, false), //BnToCurrencyAmount(minimumOutput, outputCurrency),
+      borrowAmount: new TokenBN(borrowAmount, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount),
+      swapInput: new TokenBN(swapInput, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, swapInput),
+      swapOutput: new TokenBN(swapOutput.toString(), outputCurrency.wrapped, true), // CurrencyAmount.fromRawAmount(outputCurrency, swapOutput),
+      executionPrice,
+      allowedSlippage,
+      positionKey,
+      swapRoute,
+      premium: new TokenBN(additionalPremium.toExact(), inputCurrency.wrapped, false),
+      pool,
+      inputIsToken0,
+      borrowRate: new BN(borrowRate.toString())
+        .shiftedBy(-18)
+        .div(365 * 24)
+        .times(100),
+      swapFee: new TokenBN(swapInput.times(pool.fee).div(1e6), inputCurrency.wrapped, false),
+    }
+
+    return {
+      data: simulation,
+      userParams: `${margin.toString()}-${JSON.stringify(
+        positionKey
+      )}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(5)}`,
+    }
   }, [
-    blockNumber,
     positionKey,
     allowedSlippage,
     marginFacility,
-    account,
     existingPosition,
     inputCurrency,
     outputCurrency,
     additionalPremium,
     inputIsToken0,
     borrowAmount,
-    inputError,
     pool,
     margin,
     provider,
     chainId,
-    poolManager,
     deadline,
-    approvalState,
     dataProvider,
     feePercent,
   ])
+
+  useEffect(() => {
+    // if invalid params before
+    if (!!inputError || approvalState !== ApprovalState.APPROVED || !blockNumber) {
+      return
+    }
+
+    let paramsUnchanged = false
+    if (borrowAmount && positionKey && margin) {
+      const params = `${margin.toString()}-${JSON.stringify(
+        positionKey
+      )}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(5)}`
+      paramsUnchanged = lastParams === params
+    }
+
+    if (simulationError && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+      return
+    }
+
+    if (loading || syncing) {
+      return
+    }
+
+    if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
+      return
+    }
+
+    if (lastParams && paramsUnchanged) {
+      setSyncing(true)
+    } else {
+      setLoading(true)
+    }
+
+    computeData()
+      .then((data) => {
+        if (!data) {
+          setSimulationError({
+            type: ErrorType.EmptyError,
+            error: 'missing params',
+            data: undefined,
+          })
+          setLastParams(undefined)
+          setResult(undefined)
+          setLoading(false)
+          setSyncing(false)
+        } else {
+          // console.log('fetching9', _result, to, calldata)
+          const { data: _result, userParams } = data
+          setResult(_result)
+          setLastParams(userParams)
+          setSimulationError(undefined)
+          setLoading(false)
+          setSyncing(false)
+        }
+        setBlockNumber(blockNumber)
+      })
+      .catch((err) => {
+        // console.log('fetching10')
+        setSimulationError(parseContractError(err))
+        setLastParams(undefined)
+        setResult(undefined)
+        setLoading(false)
+        setSyncing(false)
+        setBlockNumber(blockNumber)
+      })
+  }, [
+    allowedSlippage,
+    approvalState,
+    blockNumber,
+    borrowAmount,
+    computeData,
+    inputError,
+    lastBlockNumber,
+    lastParams,
+    loading,
+    margin,
+    positionKey,
+    simulationError,
+    syncing,
+  ])
+
+  // useEffect(() => {
+  //   // what if pool doesn't exist? what if pool exists but not initialized or has liquidity
+
+  //   const lagged = async () => {
+  //     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
+  //       return
+  //     }
+  //     if (
+  //       !account ||
+  //       !pool ||
+  //       !margin ||
+  //       !borrowAmount ||
+  //       !account ||
+  //       !blockNumber ||
+  //       !existingPosition ||
+  //       !inputCurrency ||
+  //       !outputCurrency ||
+  //       !additionalPremium ||
+  //       !!inputError ||
+  //       !marginFacility ||
+  //       !inputCurrency ||
+  //       !outputCurrency ||
+  //       !allowedSlippage ||
+  //       !poolManager ||
+  //       !deadline ||
+  //       inputIsToken0 === undefined ||
+  //       approvalState !== ApprovalState.APPROVED ||
+  //       !dataProvider ||
+  //       !feePercent ||
+  //       !provider ||
+  //       !chainId ||
+  //       !positionKey
+  //     ) {
+  //       console.log('useDerivedAdd:2')
+  //       setTradeState(LeverageTradeState.INVALID)
+  //       setResult(undefined)
+  //       setLastUserParams(undefined)
+  //       return
+  //     }
+
+  //     try {
+  //       setTradeState(LeverageTradeState.LOADING)
+  //       const swapRoute = new Route(
+  //         [pool],
+  //         inputIsToken0 ? pool.token0 : pool.token1,
+  //         inputIsToken0 ? pool.token1 : pool.token0
+  //       )
+
+  //       // const feePercent = new BN(rawFeesResult[0].toString()).shiftedBy(-18).toString()
+  //       const swapInput = margin.plus(borrowAmount).times(new BN(1).minus(feePercent))
+  //       const amountOut = await getOutputQuote(
+  //         BnToCurrencyAmount(swapInput, inputCurrency),
+  //         swapRoute,
+  //         provider,
+  //         chainId
+  //       )
+
+  //       if (!amountOut) return
+
+  //       const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
+
+  //       // min output = (margin + borrowAmount) * current price * (1 - slippage)
+  //       const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
+  //       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
+  //       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
+
+  //       // calldata
+  //       const calldata = MarginFacilitySDK.addPositionParameters({
+  //         positionKey,
+  //         margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+  //         deadline: deadline.toString(),
+  //         simulatedOutput: amountOut.toString(),
+  //         executionOption: 1,
+  //         depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         slippedTickMin,
+  //         slippedTickMax,
+  //       })
+
+  //       const multicallResult = await marginFacility.callStatic.multicall(calldata)
+
+  //       const {
+  //         totalPosition: newTotalPosition,
+  //         totalInputDebt: newTotalInputDebt,
+  //         margin: newMargin,
+  //         borrowInfo,
+  //         fees,
+  //       } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
+
+  //       const poolKey = {
+  //         token0: pool.token0.address,
+  //         token1: pool.token1.address,
+  //         fee: pool.fee,
+  //       }
+
+  //       const newBorrowInfo: any[] = borrowInfo.map((borrowItem) => {
+  //         const existingItem = existingPosition.borrowInfo.find((item) => item.tick === borrowItem.tick)
+  //         const liquidityDifference = existingItem
+  //           ? new BN(borrowItem.liquidity).minus(existingItem.liquidity)
+  //           : new BN(borrowItem.liquidity)
+
+  //         return {
+  //           tick: borrowItem.tick,
+  //           liquidity: liquidityDifference.toString(),
+  //           premium: '0',
+  //           feeGrowthInside0LastX128: '0',
+  //           feeGrowthInside1LastX128: '0',
+  //           lastGrowth: '0',
+  //         }
+  //       })
+
+  //       const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
+
+  //       let swapOutput: JSBI
+  //       if (existingPosition.openTime > 0) {
+  //         swapOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
+  //       } else {
+  //         swapOutput = newTotalPosition
+  //       }
+
+  //       const executionPrice = new Price<Currency, Currency>(
+  //         inputCurrency,
+  //         outputCurrency,
+  //         swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //         swapOutput
+  //       )
+
+  //       const simulation: AddMarginTrade = {
+  //         margin: new TokenBN(margin, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _margin)
+  //         fees: new TokenBN(fees.toString(), inputCurrency.wrapped, true),
+  //         minimumOutput: new TokenBN(minimumOutput, outputCurrency.wrapped, false), //BnToCurrencyAmount(minimumOutput, outputCurrency),
+  //         borrowAmount: new TokenBN(borrowAmount, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, _borrowAmount),
+  //         swapInput: new TokenBN(swapInput, inputCurrency.wrapped, false), // CurrencyAmount.fromRawAmount(inputCurrency, swapInput),
+  //         swapOutput: new TokenBN(swapOutput.toString(), outputCurrency.wrapped, true), // CurrencyAmount.fromRawAmount(outputCurrency, swapOutput),
+  //         executionPrice,
+  //         allowedSlippage,
+  //         positionKey,
+  //         swapRoute,
+  //         premium: new TokenBN(additionalPremium.toExact(), inputCurrency.wrapped, false),
+  //         pool,
+  //         inputIsToken0,
+  //         borrowRate: new BN(borrowRate.toString())
+  //           .shiftedBy(-18)
+  //           .div(365 * 24)
+  //           .times(100),
+  //         swapFee: new TokenBN(swapInput.times(pool.fee).div(1e6), inputCurrency.wrapped, false),
+  //       }
+
+  //       setResult(simulation)
+  //       setTradeState(LeverageTradeState.VALID)
+  //       setSimulationError(undefined)
+  //       setLastUserParams({
+  //         margin,
+  //         borrowAmount,
+  //         positionKey,
+  //         allowedSlippage,
+  //       })
+  //     } catch (err) {
+  //       setTradeState(LeverageTradeState.INVALID)
+  //       setResult(undefined)
+  //       setLastUserParams(undefined)
+  //       setSimulationError(parseContractError(err))
+  //     }
+  //     return
+  //   }
+
+  //   lagged()
+  // }, [
+  //   blockNumber,
+  //   positionKey,
+  //   allowedSlippage,
+  //   marginFacility,
+  //   account,
+  //   existingPosition,
+  //   inputCurrency,
+  //   outputCurrency,
+  //   additionalPremium,
+  //   inputIsToken0,
+  //   borrowAmount,
+  //   inputError,
+  //   pool,
+  //   margin,
+  //   provider,
+  //   chainId,
+  //   poolManager,
+  //   deadline,
+  //   approvalState,
+  //   dataProvider,
+  //   feePercent,
+  // ])
 
   const contractError = useMemo(() => {
     let error: ReactNode | undefined
@@ -1219,6 +1640,15 @@ const useSimulateMarginTrade = (
   }, [simulationError])
 
   return useMemo(() => {
+    let tradeState: LeverageTradeState = LeverageTradeState.INVALID
+    if (loading) {
+      tradeState = LeverageTradeState.LOADING
+    } else if (syncing) {
+      tradeState = LeverageTradeState.SYNCING
+    } else if (simulationError) {
+      tradeState = LeverageTradeState.INVALID
+    }
+
     if (!margin || !borrowAmount || !positionKey) {
       return {
         state: LeverageTradeState.INVALID,
@@ -1226,14 +1656,14 @@ const useSimulateMarginTrade = (
         result: undefined,
       }
     } else if (
-      lastUserParams &&
-      lastUserParams.margin.eq(margin) &&
-      lastUserParams.borrowAmount.eq(borrowAmount) &&
-      lastUserParams.positionKey === positionKey &&
-      lastUserParams.allowedSlippage === allowedSlippage
+      lastParams &&
+      lastParams ===
+        `${margin.toString()}-${JSON.stringify(positionKey)}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(
+          5
+        )}`
     ) {
       return {
-        state: tradeState,
+        state: LeverageTradeState.VALID,
         contractError,
         result,
       }
@@ -1244,7 +1674,18 @@ const useSimulateMarginTrade = (
         result: undefined,
       }
     }
-  }, [result, tradeState, contractError, borrowAmount, positionKey, lastUserParams, margin, allowedSlippage])
+  }, [
+    result,
+    contractError,
+    borrowAmount,
+    positionKey,
+    margin,
+    allowedSlippage,
+    lastParams,
+    loading,
+    syncing,
+    simulationError,
+  ])
 }
 
 export const BnToJSBI = (x: BN, currency: Currency): JSBI => {

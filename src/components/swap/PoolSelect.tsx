@@ -8,6 +8,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { ethers } from 'ethers'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
@@ -30,7 +31,6 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
 import { formatDollar } from 'utils/formatNumbers'
-import {ethers} from "ethers"
 type NumericStat = BN | undefined | null
 
 const LOGO_SIZE = 20
@@ -292,7 +292,11 @@ export default function PoolSelect({
             val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'
         )
         .map((val: Pool) => {
-          return { token0: ethers.utils.getAddress(val.token0), token1: ethers.utils.getAddress(val.token1), fee: val.fee }
+          return {
+            token0: ethers.utils.getAddress(val.token0),
+            token1: ethers.utils.getAddress(val.token1),
+            fee: val.fee,
+          }
         })
     } else {
       return undefined
@@ -347,7 +351,7 @@ export default function PoolSelect({
       baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
         ? [baseCurrency, quoteCurrency]
         : [quoteCurrency, baseCurrency]
-    console.log('poolparams', token0, token1)
+    // console.log('poolparams', token0, token1)
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
     const decimal = useMemo(() => {
       if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'WETH') {
