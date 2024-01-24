@@ -4,7 +4,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 
-import { CollectMultipler, usePointsData } from './data'
+import { CollectMultipler, usePointsData,referralDivisor } from './data'
 interface Leader {
   rank: number
   tradePoint: number
@@ -57,7 +57,7 @@ export default function LeaderboardTable() {
       if (obj.refereeActivity && Object.keys(obj.refereeActivity).find((rUser) => rUser === rpUser.trader)) {
         return {
           ...rpUser,
-          rPoints: obj.refereeActivity[rpUser.trader].lpAmount + obj.refereeActivity[rpUser.trader].tradeVolume,
+          rPoints: obj.refereeActivity[rpUser.trader].lpAmount/referralDivisor + obj.refereeActivity[rpUser.trader].tradeVolume/referralDivisor,
         }
       } else {
         return {

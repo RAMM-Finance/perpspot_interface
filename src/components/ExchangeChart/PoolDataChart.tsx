@@ -24,20 +24,20 @@ const ChartContainer = styled.div`
 `
 
 // interface ChartContainerProps {
-// 	symbol: ChartingLibraryWidgetOptions['symbol'];
-// 	interval: ChartingLibraryWidgetOptions['interval'];
+//  symbol: ChartingLibraryWidgetOptions['symbol'];
+//  interval: ChartingLibraryWidgetOptions['interval'];
 
-// 	// BEWARE: no trailing slash is expected in feed URL
-// 	datafeedUrl: string;
-// 	libraryPath: ChartingLibraryWidgetOptions['library_path'];
-// 	chartsStorageUrl: ChartingLibraryWidgetOptions['charts_storage_url'];
-// 	chartsStorageApiVersion: ChartingLibraryWidgetOptions['charts_storage_api_version'];
-// 	clientId: ChartingLibraryWidgetOptions['client_id'];
-// 	userId: ChartingLibraryWidgetOptions['user_id'];
-// 	fullscreen: ChartingLibraryWidgetOptions['fullscreen'];
-// 	autosize: ChartingLibraryWidgetOptions['autosize'];
-// 	studiesOverrides: ChartingLibraryWidgetOptions['studies_overrides'];
-// 	container: ChartingLibraryWidgetOptions['container'];
+//  // BEWARE: no trailing slash is expected in feed URL
+//  datafeedUrl: string;
+//  libraryPath: ChartingLibraryWidgetOptions['library_path'];
+//  chartsStorageUrl: ChartingLibraryWidgetOptions['charts_storage_url'];
+//  chartsStorageApiVersion: ChartingLibraryWidgetOptions['charts_storage_api_version'];
+//  clientId: ChartingLibraryWidgetOptions['client_id'];
+//  userId: ChartingLibraryWidgetOptions['user_id'];
+//  fullscreen: ChartingLibraryWidgetOptions['fullscreen'];
+//  autosize: ChartingLibraryWidgetOptions['autosize'];
+//  studiesOverrides: ChartingLibraryWidgetOptions['studies_overrides'];
+//  container: ChartingLibraryWidgetOptions['container'];
 // }
 
 const getLanguageFromURL = (): LanguageCode | null => {
@@ -83,16 +83,20 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         // autosize: defaultChartProps.autosize,
         custom_css_url: defaultChartProps.custom_css_url,
         autosize: true,
-        overrides: defaultChartProps.overrides,
+        overrides: {
+          ...defaultChartProps.overrides,
+        },
         interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
         favorites: defaultChartProps.favorites,
         custom_formatters: defaultChartProps.custom_formatters,
+
       }
 
       tvWidgetRef.current = new widget(widgetOptions as any)
 
       tvWidgetRef.current?.onChartReady(function () {
         setChartReady(true)
+        tvWidgetRef.current?.applyOverrides({ "mainSeriesProperties.minTick": "10000,1,false" });
 
         tvWidgetRef.current?.activeChart().dataReady(() => {
           setChartDataLoading(false)

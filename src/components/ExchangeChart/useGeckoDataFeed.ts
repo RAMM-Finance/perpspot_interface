@@ -111,7 +111,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
           const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(chartData)
-
+          console.log('basesymbol', baseSymbol)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -126,6 +126,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             currency_code: quoteSymbol,
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
+            invertPrice: true, 
             poolAddress,
           }
           setTimeout(() => onSymbolResolvedCallback(symbolInfo))

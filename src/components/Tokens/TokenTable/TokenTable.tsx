@@ -345,12 +345,11 @@ function HowToDetails() {
     <HowTo>
       <ThemedText.HeadlineSmall>How It Works</ThemedText.HeadlineSmall>
       <p>
-        Liquidity Providers (LPs) earn additional premiums while out-of-range capital is lent out. They also earn swap
-        fees from Uniswap when the position is in range.
+        Liquidity Providers (LPs) earn swap fees from Uniswap when the position is in range, and also 
+          earn additional premiums for out-of-range capital being lent out to traders. 
       </p>
       <p>
-        LPs can create a new LP Position, which will allow them to earn swap fees from Uniswap while earning additional
-        premiums in Limitless.
+        LPs can create a new LP Position, which will automatically provide liquidity to Uniswap. 
       </p>
     </HowTo>
   )
