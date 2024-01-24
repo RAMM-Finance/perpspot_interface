@@ -91,8 +91,10 @@ const GenesisAddressses = [
   '0x64dA461ECbAa3FEC3625F21b74a8c74394d501c9',
   '0x4F02Bbe7Fc56c412B24E59fDd79e2DfA4C6B6048',
   '0xFD84b7AC1E646580db8c77f1f05F47977fAda692',
+  '0x6ED0B92553d2be567d0b1245aE4e66cBd1ADe51f',
 ]
 
+export function useUsingCode() {
 export function useUsingCode() {
   const { account, provider, chainId } = useWeb3React()
 

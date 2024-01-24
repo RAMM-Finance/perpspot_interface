@@ -62,7 +62,7 @@ const Status = styled.div`
 
 const ListWrapper = styled.div`
   overflow-y: auto;
-  height: 14vh;
+  height: fit-content;
 `
 
 const Container = styled.button<{ disabled: boolean; active: boolean }>`
@@ -102,7 +102,7 @@ const Wrapper = styled.div`
   border-radius: 10px;
   width: 97%;
   padding: 0.25rem;
-  height: 150px;
+  height: fit-content;
 `
 
 export default function PoolSelect({
@@ -427,7 +427,7 @@ export default function PoolSelect({
               </ThemedText.BodySmall>
               {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}/
               <ThemedText.BodySmall fontWeight={800}>{labelOut}</ThemedText.BodySmall>
-              <ThemedText.BodySmall fontSize="10px">(UNIv3)</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize="10px">({fee / 10000}%)</ThemedText.BodySmall>
             </Label>
           </div>
           {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>

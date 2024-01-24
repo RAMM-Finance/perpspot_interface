@@ -49,11 +49,13 @@ export const PoolSelector = ({
   bg,
   selectPair,
   setSelectPair,
+  fee,
 }: {
   largeWidth: boolean
   bg?: boolean
   selectPair?: boolean
   setSelectPair?: Dispatch<SetStateAction<boolean>>
+  fee?: number
 }) => {
   const onlyShowCurrenciesWithBalance = false
   const {
@@ -401,7 +403,7 @@ export const PoolSelector = ({
             fontWeight={800}
             color="textPrimary"
           >{`/ ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
-          <ThemedText.BodySmall>(UNIv3)</ThemedText.BodySmall>
+          <ThemedText.BodySmall>({fee && fee / 10000 + '%'})</ThemedText.BodySmall>
         </Row>
         <Row gap="8">{/*<ThemedText.BodySmall>All Markets</ThemedText.BodySmall>*/}</Row>
       </Row>

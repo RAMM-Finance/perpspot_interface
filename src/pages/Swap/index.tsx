@@ -455,7 +455,7 @@ export default function Swap({ className }: { className?: string }) {
             <TokenNameCell>
               {inputCurrency && outputCurrency ? (
                 <Row>
-                  <PoolSelector largeWidth={false} />
+                  <PoolSelector fee={pool?.fee} largeWidth={false} />
                 </Row>
               ) : (
                 <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>

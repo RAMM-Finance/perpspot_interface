@@ -5,7 +5,6 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
-import { YellowCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -41,7 +40,7 @@ import { Field } from '../../state/mint/v3/actions'
 export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   const theme = useTheme()
   const [liqError, setLiqError] = useState<boolean>(false)
-  const [buy, setBuy] = useState<boolean>(false)
+  const [buy, setBuy] = useState<boolean>(true)
   const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -505,7 +504,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
           </AutoColumn>
         </RowStart>
         <RowBetween align="start">
-          {/*<PoolSelector largeWidth={true} />*/}
           <DetailsCard>
             <RowStart padding="5px">
               <Logo width={25} fill="#fff" />
@@ -530,7 +528,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               </ThemedText.BodySecondary>
             </RowBetween>
             <RowBetween>
-              <ThemedText.BodyPrimary fontSize={12}>Total Backing(USD): </ThemedText.BodyPrimary>
+              <ThemedText.BodyPrimary fontSize={12}>Total Backing (USD): </ThemedText.BodyPrimary>
               <ThemedText.BodySecondary fontSize={12}>
                 {data && `$${formatDollarAmount({ num: data[1] / 1e18, long: true })}`}
               </ThemedText.BodySecondary>
@@ -567,12 +565,12 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
               <Filter>
                 <Selector
                   onClick={() => {
-                    // setBuy(true)
-                    // setValue(0)
+                    setBuy(true)
+                    setValue(0)
                   }}
                   active={buy}
                 >
-                  <StyledSelectorText active={buy}>Buy LLP (Coming Soon)</StyledSelectorText>
+                  <StyledSelectorText active={buy}>Buy LLP </StyledSelectorText>
                 </Selector>
                 <Selector
                   onClick={() => {
@@ -585,10 +583,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                 </Selector>
               </Filter>
             </FilterWrapper>
-            <YellowCard style={{ fontSize: '14px' }}>
-              The ability to purchase LLP is coming soon. In the meantime, advanced LP is allowed via the "Advanced"
-              tab.
-            </YellowCard>
             <CurrencyInputPanel
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
@@ -609,8 +603,8 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             />
             <ArrowWrapper
               onClick={() => {
-                // setBuy(!buy)
-                // setValue(0)
+                setBuy(!buy)
+                setValue(0)
               }}
               clickable={true}
             >
@@ -740,25 +734,19 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
         <RowBetween>
           <FaqWrapper>
             <FaqElement>
-              <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                Learn about providing liquidity
-              </ThemedText.BodySecondary>
+              <a
+                href="https://limitless.gitbook.io/limitless/intro/limitless-lp-token-llp"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
+                  Earning with LLP
+                </ThemedText.BodySecondary>
+              </a>
               <ArrowUpRight size="20" />
             </FaqElement>{' '}
             <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-              Check out our v3 LP walkthrough and migration guidelines.
-            </ThemedText.BodyPrimary>
-          </FaqWrapper>
-          <FaqWrapper>
-            <FaqElement>
-              {' '}
-              <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                Top Pools
-              </ThemedText.BodySecondary>
-              <ArrowUpRight size="20" />
-            </FaqElement>{' '}
-            <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-              Explore Limitless Analytics
+              Read our LLP documentation to better understand how to earn.
             </ThemedText.BodyPrimary>
           </FaqWrapper>
         </RowBetween>
@@ -779,7 +767,7 @@ const DetailsCard = styled.div`
   width: 57%;
   border-radius: 10px;
   padding: 20px;
-  height: 445px;
+  height: 378px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
 `

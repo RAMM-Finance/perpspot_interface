@@ -34,16 +34,16 @@ const Footer = () => {
     <Wrapper>
       <Logo fill="#fff" width="200px" />
       <IconWrapper>
-        <Link href="https://twitter.com/LimitlessFi_" target="_blank">
+        <Link href="https://twitter.com/LimitlessFi_" rel="noopener noreferrer" target="_blank">
           <X fill="#b8c0dc" width="25px" />
         </Link>
-        <Link href="https://discord.com/invite/v7Dq4vTvUE" target="_blank">
+        <Link href="https://discord.com/invite/v7Dq4vTvUE" rel="noopener noreferrer" target="_blank">
           <DiscordIcon fill="#b8c0dc" width="35px" />
         </Link>
-        <Link target="_blank">
+        <Link rel="noopener noreferrer" target="_blank">
           <GitHub fill="#b8c0dc" width="30px" />
         </Link>
-        <Link href="https://linktr.ee/limitlessfi" target="_blank">
+        <Link href="https://linktr.ee/limitlessfi" rel="noopener noreferrer" target="_blank">
           <Bookmark fill="#b8c0dc" width="30px" />
         </Link>
       </IconWrapper>
