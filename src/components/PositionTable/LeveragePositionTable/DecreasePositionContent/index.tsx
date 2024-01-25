@@ -38,7 +38,7 @@ import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { DynamicSection } from 'pages/Swap/tradeModal'
 import { PriceToggleSection } from 'pages/Swap/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Swap/tradeModal'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -303,18 +303,18 @@ export default function DecreasePositionContent({
   }, [userSlippageTolerance])
 
   const borrowLiquidityRange = useBorrowedLiquidityRange(existingPosition, pool ?? undefined)
-  const inRange = useMemo(() => {
+
+  useEffect(() => {
     if (
       (positionKey.isToken0 && borrowLiquidityRange === BorrowedLiquidityRange.BELOW_RANGE) ||
       (!positionKey.isToken0 && borrowLiquidityRange === BorrowedLiquidityRange.ABOVE_RANGE)
     ) {
       setCurrentState((prev) => ({ ...prev, isLimit: false, limitAvailable: false }))
     } else if (borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE) {
-      setCurrentState((prev) => ({ ...prev, isLimit: true }))
+      setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
     } else {
       setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
     }
-    return borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE
   }, [borrowLiquidityRange, positionKey.isToken0])
 
   const onToggle = useCallback(() => {
@@ -332,7 +332,6 @@ export default function DecreasePositionContent({
     allowedSlippage,
     // setTradeState,
     onPositionChange,
-    inRange,
     existingOrderBool,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
@@ -602,9 +601,7 @@ export default function DecreasePositionContent({
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '100px', alignItems: 'center' }}>
-          {inRange ? (
-            <InRangeLimitReduceWarning />
-          ) : currentState.limitAvailable ? (
+          {currentState.limitAvailable ? (
             <FilterWrapper>
               <Filter onClick={() => setCurrentState((prev) => ({ ...prev, isLimit: !prev.isLimit }))}>
                 <Selector active={!currentState.isLimit}>
