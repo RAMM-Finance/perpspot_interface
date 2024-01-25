@@ -392,6 +392,7 @@ export default function PoolSelect({
         delt = price.minus(priceData.price24hAgo).div(price).times(100)
       }
       return [price, delt]
+
     }, [priceData, pool])
 
     return (
