@@ -77,7 +77,11 @@ export function usePoolsData() {
             if (token) {
               const poolAdress = ethers.utils.getAddress(pool)
               if (!uniqueTokens_.has(poolAdress)) {
-                uniqueTokens_.set(poolAdress, [token[0], token[1], token[2]])
+                uniqueTokens_.set(poolAdress, [
+                  ethers.utils.getAddress(token[0]), 
+                  ethers.utils.getAddress(token[1]), 
+                  token[2]]
+                )
               }
               return { poolAdress: (token[0], token[1], token[2]) }
             } else return null
@@ -174,20 +178,21 @@ export function usePoolsData() {
 
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
-      token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+      token: entry.positionIsToken0 ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0] : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.addedAmount,
     }))
     const reduceDataProcessed = reduceData?.map((entry: any) => ({
       key: entry.pool,
-      token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+      token: entry.positionIsToken0 ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0] : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.reduceAmount,
     }))
 
     const processEntry = (entry: any) => {
       const usdValueOfToken = usdValue[entry.token] || 0
       const totalValue = (usdValueOfToken * entry.amount) / 10 ** tokenDecimal[entry.token]
-      if (uniqueTokens.get(entry.key)) {
-        const tokens = uniqueTokens?.get(entry.key)
+      const pool = ethers.utils.getAddress(entry.key)
+      if (uniqueTokens.get(pool)) {
+        const tokens = uniqueTokens?.get(pool)
         const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`
         if (totalAmountsByPool[newKey]) {
           totalAmountsByPool[newKey] += totalValue
@@ -225,6 +230,7 @@ export function usePoolsData() {
 
     return poolToData
   }, [uniquePools, uniqueTokens, slot0s, providedData,withdrawnData, addData, reduceData])
+
   return useMemo(() => {
     return poolToData
   }, [poolToData])
