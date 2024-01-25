@@ -538,7 +538,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
                 style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
               >
                 <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
-                <ThemedText.BodySecondary fontSize={12}>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
+                <ThemedText.BodySecondary fontSize={12}>{`Variable Premium Rate ~50%` + `  + swap fees`}</ThemedText.BodySecondary>
               </RowBetween>
             ) : (
               <>

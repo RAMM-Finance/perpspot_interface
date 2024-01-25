@@ -393,7 +393,6 @@ export default function PoolSelect({
       }
       return [price, delt]
     }, [priceData])
-    console.log(token0, token1)
     return (
       <MouseoverTooltip
         text={

@@ -946,6 +946,17 @@ export default function AddLiquidity() {
                             </StackedItem>
                           </StackedContainer>
 
+                        <YellowCard padding="8px 12px" $borderRadius="12px">
+                              <RowBetween>
+                                {/*<AlertTriangle stroke={theme.deprecated_primary2} size="16px" />*/}
+                                <ThemedText.DeprecatedLabel ml="12px" fontSize="12px">
+                                  <Trans>
+                                    The recommended range is the range that optimizes the IL risk adjusted yield, considering utilization rates and current liquidity conditions.    
+                                  </Trans>
+                                </ThemedText.DeprecatedLabel>
+                              </RowBetween>
+                            </YellowCard>
+
                           {outOfRange ? (
                             <YellowCard padding="8px 12px" $borderRadius="12px">
                               <RowBetween>

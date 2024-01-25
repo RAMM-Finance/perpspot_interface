@@ -319,13 +319,14 @@ export function AdvancedMarginTradeDetails({
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
-  // const estimatedTimeToClose = useMemo(()=>{
-  //   if(!trade) return undefined
+  const estimatedTimeToClose = useMemo(()=>{
+    if(!trade) return undefined
 
-  //   const depletePerHour = trade?.borrowAmount.multiply(trade?.borrowRate.toNumber()*0.01).divide(trade?.premium)
-  //   trade.premium.divide(depletePerHour)
+    const rate =  trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
+    return new BN(rate/trade?.borrowRate?.toNumber())
 
-  // },[trade])
+  },[trade])
+
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -336,14 +337,14 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />
         <ValueLabel
-          description="Initial Premium Deposit for this position, which can be replenished in the position table. When your deposit is depleted, your position will be force closed."
+          description="Initial Premium Deposit for this position, which can be replenished on the position table. When your deposit is depleted, your position will be force closed."
           label="Initial Premium deposit"
           value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <ValueLabel
-          description="Rate at which your premium deposit are depleted. Rate% * borrow amount is the rate at which your premium is depleted. "
+          description="Variable Premium Rate. Rate % * borrow amount is the hourly amount your premium deposit is depleted."
           label="Hourly Borrow Rate"
           value={formatBNToString(trade?.borrowRate, NumberType.SwapTradeAmount)}
           syncing={syncing}
@@ -356,6 +357,13 @@ export function AdvancedMarginTradeDetails({
           value={formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
+        />
+        <ValueLabel
+          description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount."
+          label="Estimated Position Duration"
+          value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
+          syncing={syncing}
+          symbolAppend={'hrs'}
         />
         {/*<ValueLabel
           description="Slippage from spot price"
