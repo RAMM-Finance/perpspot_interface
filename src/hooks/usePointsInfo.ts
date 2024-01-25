@@ -95,24 +95,24 @@ const GenesisAddressses = [
   '0xBC02E19F1272216b3D2EDDf1b4Ef30eEA1B170eB', 
   '0xb92505a3364B7C7E333c05B44cE1E55377fC43cA', 
 
-"0x47222A77742bDd3BC56196FfB444B2D6dd019a43",
-"0x30086c39930C0708B83e2C31Ee080505D843aC8C",
-"0x31613Fa26f749dD32B27e78566184b287E753D76",
-"0x3Bfb3a55c7190ead733Cd7B5A7dc80B2D9e9BAba",
-"0xD690B90480010DCd01e13a26835D67D1c71FDAE8",
-"0xb9a7329e124edb947255e58df434d4b495def0e9",
-"0xbd51C01c14FC9F0999ccfDeAD8Ea5b29FEaD68BB",
-"0x3723f31F00ddA73d4151887d26385542bb897059",
-"0xba4363BFaD340b41d52029d3A26D35dcF8d1D21f",
-"0xa40bFaD79081c09E1703346561019cb09d1b27a7",
-"0x477Ff99788728bCB75C1226270D54e857C6467FA",
-"0xc578AB81B82E994606Dd323Baa19C1af5101dfbd",
-"0xF43385Aa764Bd312466973F89444Bf6fBcCD8278",
-"0xecd02810db92ff027ea1b0850d46bda963676d74",
-"0xC32Bfe6c9141B25DDB628e73786b746c7a27b216",
-"0xc56bc1a93909508b0f6e57a32a5c2cc8b4940c08",
-"0x9F6c6910A8B1199251a9E213a50a8ba3DFA8d7BE",
-"0x65f106ec944aF77914d6DF5EaC6488a147a5d054",
+  "0x47222A77742bDd3BC56196FfB444B2D6dd019a43",
+  "0x30086c39930C0708B83e2C31Ee080505D843aC8C",
+  "0x31613Fa26f749dD32B27e78566184b287E753D76",
+  "0x3Bfb3a55c7190ead733Cd7B5A7dc80B2D9e9BAba",
+  "0xD690B90480010DCd01e13a26835D67D1c71FDAE8",
+  "0xb9a7329e124edb947255e58df434d4b495def0e9",
+  "0xbd51C01c14FC9F0999ccfDeAD8Ea5b29FEaD68BB",
+  "0x3723f31F00ddA73d4151887d26385542bb897059",
+  "0xba4363BFaD340b41d52029d3A26D35dcF8d1D21f",
+  "0xa40bFaD79081c09E1703346561019cb09d1b27a7",
+  "0x477Ff99788728bCB75C1226270D54e857C6467FA",
+  "0xc578AB81B82E994606Dd323Baa19C1af5101dfbd",
+  "0xF43385Aa764Bd312466973F89444Bf6fBcCD8278",
+  "0xecd02810db92ff027ea1b0850d46bda963676d74",
+  "0xC32Bfe6c9141B25DDB628e73786b746c7a27b216",
+  "0xc56bc1a93909508b0f6e57a32a5c2cc8b4940c08",
+  "0x9F6c6910A8B1199251a9E213a50a8ba3DFA8d7BE",
+  "0x65f106ec944aF77914d6DF5EaC6488a147a5d054",
 
 ]
 
@@ -137,31 +137,31 @@ export function useUsingCode() {
   //   call()
   // }, [account, referralContract])
 
-  // useEffect(() => {
-  //   const getBeacon = async () => {
-  //     if (account && provider && chainId) {
-  //       try {
-  //         const result = await fetch(`https://beacon.degenscore.com/v1/beacon/${account.toLowerCase()}`)
-  //         const result2 = await fetch(`https://beacon.degenscore.com/v2/beacon/${account.toLowerCase()}`)
+  useEffect(() => {
+    const getBeacon = async () => {
+      if (account && provider && chainId) {
+        try {
+          const result = await fetch(`https://beacon.degenscore.com/v1/beacon/${account.toLowerCase()}`)
+          const result2 = await fetch(`https://beacon.degenscore.com/v2/beacon/${account.toLowerCase()}`)
 
-  //         const isBeacon = await fetch(`https://beacon.degenscore.com/v2/beacon/{0xb92505a3364B7C7E333c05B44cE1E55377fC43cA}`)
+          const isBeacon = await fetch(`https://beacon.degenscore.com/v2/beacon/0xb92505a3364B7C7E333c05B44cE1E55377fC43cA`)
 
-  //         setResult(isBeacon.status)
-  //         setCodeUsing(result.status === 200 || result2.status===200)
-  //       } catch (err) {
-  //         console.log('BEACON ERR', err)
-  //       }
-  //     }
-  //   }
-  //   if (account) {
-  //     if (GenesisAddressses.find((val) => val.toLowerCase() === account.toLowerCase())) {
-  //       setCodeUsing(true)
-  //     } else {
-  //       getBeacon()
-  //     }
-  //   }
-  // }, [account, provider, chainId])
-  // console.log('isBeacon', result)
+          setResult(isBeacon.status)
+          setCodeUsing(result.status === 200 || result2.status===200)
+        } catch (err) {
+          console.log('BEACON ERR', err)
+        }
+      }
+    }
+    if (account) {
+      if (GenesisAddressses.find((val) => val.toLowerCase() === account.toLowerCase())) {
+        setCodeUsing(true)
+      } else {
+        getBeacon()
+      }
+    }
+  }, [account, provider, chainId])
+  console.log('isBeacon', result)
   return true
 }
 

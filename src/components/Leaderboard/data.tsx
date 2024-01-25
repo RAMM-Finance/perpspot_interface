@@ -251,7 +251,7 @@ export function usePointsData() {
     call()
   }, [account, referralContract])
 
-  console.log('vaultDataByAddress',addLiqData, decreaseLiqData, vaultDataByAddress)
+  console.log('lpPositions',lpPositions, collectData )
 
   const PointsData = useMemo(() => {
     const addDataProcessed = addData?.map((entry: any) => ({
@@ -315,7 +315,8 @@ export function usePointsData() {
         amount1Collected = amount1Collected - Number(sameTokenIdDecreases[i].amount1)
       }
 
-      const lpAddress = ethers.utils.getAddress(entry.operator)
+      let lpAddress = ethers.utils.getAddress(entry.operator)
+      if(sameTokenIdCollects.length>0) lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
       if (!lpPositionsByUniqueLps[lpAddress]) {
         lpPositionsByUniqueLps[lpAddress] = []
       }
@@ -407,7 +408,7 @@ export function usePointsData() {
 
   console.log(
     'timeWeightedDeposits',
-    timeWeightedDeposits, refereeActivity, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
+    timeWeightedDeposits, lpPositionsByUniqueLps, refereeActivity, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
   )
   return useMemo(() => {
     return {
