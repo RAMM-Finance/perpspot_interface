@@ -1,8 +1,14 @@
+import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
+import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { BinData } from 'hooks/useLMTV2Positions'
+import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
@@ -12,27 +18,117 @@ import { formatDollar } from 'utils/formatNumbers'
 const LiquidityDistributionTable = ({
   token0,
   token1,
-  currentPrice,
   bin,
   fee,
+  pool,
+  chainId,
 }: {
   token0: Currency | undefined
   token1: Currency | undefined
-  currentPrice: number
   bin: BinData[] | undefined
   fee?: number
+  pool?: Pool
+  chainId?: number
 }) => {
+  const poolAddress = useMemo(() => {
+    if (!pool || !chainId) return null
+    return computePoolAddress({
+      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+      tokenA: pool.token0,
+      tokenB: pool.token1,
+      fee: pool.fee,
+    })
+  }, [chainId, pool])
+  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
+
+  const [currentPrice] = useMemo(() => {
+    if (!priceData) return [undefined, undefined]
+    let price = priceData.priceNow
+    let invertPrice = price.lt(1)
+    if (
+      pool?.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
+      pool?.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+    )
+      invertPrice = false
+    if (invertPrice) {
+      price = new BN(1).div(price)
+    }
+    return [price]
+  }, [priceData, pool])
+
+  //spread logic
+  const negMax = useMemo(() => {
+    if (bin && currentPrice && token0 && token1) {
+      return Math.max(
+        ...bin
+          .filter(
+            (y) =>
+              Number(y.price) / 1e18 >
+                currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
+              Number(y.token0Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+          )
+          .filter(
+            (z) =>
+              !(
+                Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) > 0 &&
+                Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+              )
+          )
+          .filter(
+            (a) =>
+              formatDollar({
+                num: (Number(a.token0Liquidity) - Number(a.token0Borrowed)) / Number(`1e${token0?.wrapped.decimals}`),
+                dollarSign: false,
+              }) !== '0.00'
+          )
+          .map((x) => (Number(x.token0Liquidity) - Number(x.token0Borrowed)) / Number(`1e${token0?.wrapped.decimals}`))
+      )
+    } else return 0
+  }, [bin, currentPrice, token0, token1])
+  const posMax = useMemo(() => {
+    if (bin && currentPrice && token0 && token1) {
+      return Math.max(
+        ...bin
+          .filter(
+            (y) =>
+              Number(y.price) / 1e18 <
+                currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
+              Number(y.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+          )
+          .filter(
+            (z) =>
+              !(
+                Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) > 0 &&
+                Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
+              )
+          )
+          .filter(
+            (a) =>
+              formatDollar({
+                num: (Number(a.token1Liquidity) - Number(a.token1Borrowed)) / Number(`1e${token1?.wrapped.decimals}`),
+                dollarSign: false,
+              }) !== '0.00'
+          )
+          .map((x) => (Number(x.token1Liquidity) - Number(x.token1Borrowed)) / Number(`1e${token1?.wrapped.decimals}`))
+      )
+    } else return 0
+  }, [bin, currentPrice, token0, token1])
+
   const navigate = useNavigate()
-  const [liqNum, priceNum] = useMemo(() => {
+  const liqNum = useMemo(() => {
     if (token0 && token1) {
       if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-        return [28, 10]
+        return 28
       } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-        return [6, -12]
+        return 6
       } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-        return [16, -2]
+        return 16
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
+        return 18
+      } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
+        return 13
       } else {
-        return [0, 0]
+        return 0
       }
     } else {
       return [undefined, undefined]
@@ -80,12 +176,15 @@ const LiquidityDistributionTable = ({
         ) : (
           <NegativeData>
             {bin &&
+              currentPrice &&
               token0 &&
               token1 &&
+              negMax &&
               bin
                 .filter(
                   (y) =>
-                    Number(y.price) / 1e18 > currentPrice &&
+                    Number(y.price) / 1e18 >
+                      currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
                     Number(y.token0Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
                 )
                 .filter(
@@ -106,8 +205,13 @@ const LiquidityDistributionTable = ({
                 )
                 .map((x) => (
                   <LDDataRowNeg
-                    // spread={(Number(x.token0Liquidity) / Number(`1e${liqNum}`) / 100 / currentPrice) * 32.5}
-                    spread={75 / 100}
+                    spread={
+                      ((Number(x.token0Liquidity) - Number(x.token0Borrowed)) /
+                        Number(`1e${token0?.wrapped.decimals}`) /
+                        negMax) *
+                      100
+                    }
+                    // spread={75 / 100}
                     key={Number(x.price) / Number(`1e${liqNum}`)}
                   >
                     <LDDataCellInNeg>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellInNeg>
@@ -128,14 +232,10 @@ const LiquidityDistributionTable = ({
 
         <PriceWrapper>
           {token0 && token1 && (
-            <ThemedText.BodyPrimary>
-              {(currentPrice / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`)).toFixed(2)}
-            </ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary>{formatBNToString(currentPrice, NumberType.TokenNonTx)}</ThemedText.BodyPrimary>
           )}
           {token0 && token1 && (
-            <ThemedText.BodyPrimary>
-              {(currentPrice / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`)).toFixed(2)}
-            </ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary>{formatBNToString(currentPrice, NumberType.TokenNonTx)}</ThemedText.BodyPrimary>
           )}
         </PriceWrapper>
         <LDHeaderRow>
@@ -158,12 +258,15 @@ const LiquidityDistributionTable = ({
         ) : (
           <PositiveData>
             {bin &&
+              currentPrice &&
               token0 &&
               token1 &&
+              posMax &&
               bin
                 .filter(
                   (y) =>
-                    Number(y.price) / 1e18 < currentPrice &&
+                    Number(y.price) / 1e18 <
+                      currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
                     Number(y.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
                 )
                 .filter(
@@ -184,7 +287,12 @@ const LiquidityDistributionTable = ({
                 )
                 .map((x) => (
                   <LDDataRow
-                    spread={(Number(x.token1Liquidity) / Number(`1e${liqNum}`) / 100) * 32.5}
+                    spread={
+                      ((Number(x.token1Liquidity) - Number(x.token1Borrowed)) /
+                        Number(`1e${token1?.wrapped.decimals}`) /
+                        posMax) *
+                      100
+                    }
                     key={Number(x.price) / Number(`1e${liqNum}`)}
                   >
                     <LDDataCellIn>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellIn>
@@ -259,7 +367,7 @@ interface SpreadProps {
 const LDDataRow = styled.div<SpreadProps>`
   display: grid;
   grid-template-columns: 2fr 2fr;
-  background-image: linear-gradient(to right, transparent ${(props) => props.spread}px, rgba(0, 118, 27, 0.47));
+  background-image: linear-gradient(to right, transparent ${(props) => 100 - props.spread}px, rgba(0, 118, 27, 0.47));
   padding: 0.2rem;
   border-radius: 5px;
   margin-bottom: 0.15rem;
@@ -282,7 +390,7 @@ const LDDataCellOut = styled.div`
 `
 
 const LDDataRowNeg = styled(LDDataRow)<SpreadProps>`
-  background-image: linear-gradient(to right, transparent ${(props) => props.spread}px, rgba(131, 0, 0, 0.47));
+  background-image: linear-gradient(to right, transparent ${(props) => 100 - props.spread}px, rgba(131, 0, 0, 0.47));
 `
 
 const LDDataCellInNeg = styled.div`

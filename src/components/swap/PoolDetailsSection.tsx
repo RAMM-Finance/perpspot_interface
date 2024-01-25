@@ -108,7 +108,6 @@ export function PoolDetailsSection({
   const symbol = useMemo(() => getSymbol(pool, chainId), [pool, chainId])
   const token0 = pool?.token0
   const token1 = pool?.token1
-  const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
   const { result: binData } = useBulkBinData(pool)
   // const binData = undefined
 
@@ -149,9 +148,10 @@ export function PoolDetailsSection({
           <LiquidityDistributionTable
             token0={token0}
             token1={token1}
-            currentPrice={currentPrice}
             bin={binData}
             fee={pool.fee}
+            pool={pool}
+            chainId={chainId}
           />
         </LiquidityDistibutionWrapper>
       </RightContainer>

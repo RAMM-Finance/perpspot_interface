@@ -95,7 +95,6 @@ const GenesisAddressses = [
 ]
 
 export function useUsingCode() {
-export function useUsingCode() {
   const { account, provider, chainId } = useWeb3React()
 
   // const referralContract = useReferralContract()

@@ -22,7 +22,6 @@ import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/so
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { Column, Row } from 'nft/components/Flex'
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { FixedSizeList } from 'react-window'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import { Field } from 'state/swap/actions'
@@ -31,7 +30,6 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
 import { formatDollar } from 'utils/formatNumbers'
-type NumericStat = BN | undefined | null
 
 const LOGO_SIZE = 20
 
@@ -202,9 +200,6 @@ export default function PoolSelect({
     native,
   ])
 
-  const location = useLocation()
-  const navigate = useNavigate()
-
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
@@ -352,18 +347,18 @@ export default function PoolSelect({
         ? [baseCurrency, quoteCurrency]
         : [quoteCurrency, baseCurrency]
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
-    const decimal = useMemo(() => {
-      if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'WETH') {
-        return 10
-      } else if (token1?.wrapped.symbol === 'WETH' && token0?.wrapped.symbol === 'USDC') {
-        return -12
-      } else if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'USDC') {
-        return -2
-      } else {
-        return 0
-      }
-    }, [token0, token1])
-    const currentPrice = (Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${decimal}`)).toFixed(1)
+    // const decimal = useMemo(() => {
+    //   if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'WETH') {
+    //     return 10
+    //   } else if (token1?.wrapped.symbol === 'WETH' && token0?.wrapped.symbol === 'USDC') {
+    //     return -12
+    //   } else if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'USDC') {
+    //     return -2
+    //   } else {
+    //     return 0
+    //   }
+    // }, [token0, token1])
+    // const currentPrice = (Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${decimal}`)).toFixed(1)
     const labelIn = token0?.symbol as string
     const labelOut = token1?.symbol as string
     const active = token0?.wrapped.address === inputCurrencyId && token1?.wrapped.address === outputCurrencyId
@@ -398,7 +393,7 @@ export default function PoolSelect({
       }
       return [price, delt]
     }, [priceData])
-
+    console.log(token0, token1)
     return (
       <MouseoverTooltip
         text={

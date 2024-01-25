@@ -354,6 +354,15 @@ export default function Swap({ className }: { className?: string }) {
   const [inputCurrency, outputCurrency] = useMemo(() => {
     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
   }, [currencies])
+
+  const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
+
+  // const baseCurrency = useMemo(() => {
+  //   return inputIsToken0 ? inputCurrency : outputCurrency
+  // }, [inputIsToken0])
+
+  // const sorted = baseCurrency === inputCurrency
+  // const quoteCurrency = sorted ? outputCurrency : inputCurrency
   const [poolState, pool] = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
   // const theme = useTheme()
 
@@ -379,8 +388,6 @@ export default function Swap({ className }: { className?: string }) {
     // execute: onWrap,
     // inputError: wrapInputError,
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
-
-  const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
   const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
     () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],

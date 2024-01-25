@@ -147,8 +147,11 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
 
     let price = priceData.priceNow
     let invertPrice = price.lt(1)
-    if(pool.token0.address.toLowerCase() == "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f".toLowerCase()
-      && pool.token1.address.toLowerCase() == "0x82af49447d8a07e3bd95bd0d56f35241523fbab1".toLowerCase()) invertPrice = false
+    if (
+      pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
+      pool.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+    )
+      invertPrice = false
     let delta
     let price24hHigh
     let price24hLow
