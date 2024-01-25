@@ -58,8 +58,6 @@ const LiquidityDistributionTable = ({
     return price
   }, [priceData, pool])
 
-  console.log(inverse)
-
   //spread logic
   const negMax = useMemo(() => {
     if (bin && currentPrice && token0 && token1) {
