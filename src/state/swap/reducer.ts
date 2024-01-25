@@ -7,6 +7,7 @@ import {
   Field,
   replaceSwapState,
   selectCurrency,
+  selectPair,
   setActiveTab,
   setBorrowManagerAddress,
   setHideClosedLeveragePositions,
@@ -132,6 +133,17 @@ export default createReducer<SwapState>(initialState, (builder) =>
           ...state,
           [field]: { currencyId },
         }
+      }
+    })
+    .addCase(selectPair, (state, { payload: { fieldIn, fieldOut, currencyIdIn, currencyIdOut } }) => {
+      localStorage.setItem('currencyIn', JSON.stringify(currencyIdIn))
+      localStorage.setItem('currencyOut', JSON.stringify(currencyIdOut))
+      return {
+        ...state,
+        originInputId: currencyIdIn,
+        originOutputId: currencyIdOut,
+        [fieldIn]: { currencyIdIn },
+        [fieldOut]: { currencyIdOut },
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {

@@ -12,7 +12,12 @@ export enum ActiveSwapTab {
   BORROW,
   SWAP,
 }
-
+export const selectPair = createAction<{
+  fieldIn: Field
+  fieldOut: Field
+  currencyIdIn: string
+  currencyIdOut: string
+}>('swap/selectPair')
 export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')
 export const switchCurrencies = createAction<{
   leverage: boolean

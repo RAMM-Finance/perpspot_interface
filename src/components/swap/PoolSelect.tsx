@@ -116,7 +116,7 @@ export default function PoolSelect({
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-  const { onCurrencySelection } = useSwapActionHandlers()
+  const { onCurrencySelection, onPairSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -203,6 +203,7 @@ export default function PoolSelect({
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
+    // onPairSelection(Field.INPUT, Field.OUTPUT, currencyIn, currencyOut)
   }, [])
 
   const inputRef = useRef<HTMLInputElement>()
@@ -392,7 +393,6 @@ export default function PoolSelect({
         delt = price.minus(priceData.price24hAgo).div(price).times(100)
       }
       return [price, delt]
-
     }, [priceData, pool])
 
     return (
