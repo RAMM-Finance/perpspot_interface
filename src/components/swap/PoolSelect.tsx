@@ -201,6 +201,8 @@ export default function PoolSelect({
   ])
 
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
+    localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+    localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
     // onPairSelection(Field.INPUT, Field.OUTPUT, currencyIn, currencyOut)

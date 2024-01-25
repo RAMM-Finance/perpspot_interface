@@ -634,7 +634,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
     localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
     localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
   }, [])
