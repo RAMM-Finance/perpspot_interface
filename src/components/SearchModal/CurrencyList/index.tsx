@@ -248,13 +248,21 @@ export default function CurrencyList({
       return [...currencies, ...otherListTokens].filter(
         (curr) =>
           curr.symbol !== 'ETH' &&
-          (curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC')
+          (curr.wrapped.symbol === 'WETH' ||
+            // curr.wrapped.symbol === 'ARB' ||
+            // curr.wrapped.symbol === 'LDO' ||
+            curr.wrapped.symbol === 'wBTC' ||
+            curr.wrapped.symbol === 'USDC')
       )
     }
     return currencies.filter(
       (curr) =>
         curr.symbol !== 'ETH' &&
-        (curr.wrapped.symbol === 'WETH' || curr.wrapped.symbol === 'wBTC' || curr.wrapped.symbol === 'USDC')
+        (curr.wrapped.symbol === 'WETH' ||
+          // curr.wrapped.symbol === 'ARB' ||
+          // curr.wrapped.symbol === 'LDO' ||
+          curr.wrapped.symbol === 'wBTC' ||
+          curr.wrapped.symbol === 'USDC')
     )
   }, [currencies, otherListTokens])
 

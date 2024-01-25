@@ -154,13 +154,12 @@ export const PoolSelector = ({
     setSelectPair(false)
   }
 
-  const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency, fee: number) => {
-    onCurrencySelection(Field.INPUT, currencyIn)
-    onCurrencySelection(Field.OUTPUT, currencyOut)
-    if (location.pathname !== '/swap' && location.pathname !== '/pools') {
+  const handleCurrencySelect = useCallback(
+    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
       navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
-    }
-  }, [])
+    },
+    [navigate]
+  )
 
   const inputRef = useRef<HTMLInputElement>()
   const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
