@@ -37,7 +37,7 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { Field } from '../../state/mint/v3/actions'
 // TransactionType.MINT_LLP
-export default function SimplePool({ codeActive }: { codeActive: boolean }) {
+export default function SimplePool() {
   const theme = useTheme()
   const [liqError, setLiqError] = useState<boolean>(false)
   const [buy, setBuy] = useState<boolean>(true)
@@ -110,7 +110,7 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
   }
 
   const usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
-  const usdcValueCurrencyB = value
+  const usdcValueCurrencyB = usdcValues[Field.CURRENCY_B]
 
   const currencyAFiat = useMemo(
     () => ({
@@ -633,10 +633,6 @@ export default function SimplePool({ codeActive }: { codeActive: boolean }) {
             />
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
-            ) : !codeActive ? (
-              <ButtonError text="Not Whitelisted"></ButtonError>
-            ) : !value ? (
-              <ButtonBlue text="Enter a value"></ButtonBlue>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonError onClick={approveVault}>
                 {vaultApprovalState === ApprovalState.PENDING ? (

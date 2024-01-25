@@ -495,8 +495,6 @@ function TokenRow({
             onClick={(e) => {
               e.stopPropagation()
               if (currency1 && currency0 && token0 && token1) {
-                onCurrencySelection(Field.INPUT, token0)
-                onCurrencySelection(Field.OUTPUT, token1)
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },
                 })
@@ -632,14 +630,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   [onCurrencySelection]
   // )
   const navigate = useNavigate()
-  const handleInputSelect = (inputCurrency: Currency) => {
-    onCurrencySelection(Field.INPUT, inputCurrency)
-  }
 
-  const handleOutputSelect = useCallback(
-    (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
-    [onCurrencySelection]
-  )
+  const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
+    onCurrencySelection(Field.INPUT, currencyIn)
+    onCurrencySelection(Field.OUTPUT, currencyOut)
+  }, [])
+
   //   const {
   //   // trade: { state: tradeState, trade },
   //   // allowedSlippage,
@@ -681,8 +677,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
-  console.log(pool, tickLower, tickUpper)
-
   // let tvl_
   // let volume_
   // let estimatedapr_
@@ -710,14 +704,15 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   estimatedapr_ = 25.7
   //   urate_ = 56.3
   // }
+  console.log(token0, token1)
   return (
     <RowWrapper
       ref={ref}
       onClick={() => {
         if (token0 && token1) {
+          handleCurrencySelect(token0, token1)
           navigate({
             pathname: '/swap',
-            search: `?inputCurrency=${(token0 as any)?.address}&outputCurrency=${(token1 as any)?.address}`,
           })
         }
       }}
