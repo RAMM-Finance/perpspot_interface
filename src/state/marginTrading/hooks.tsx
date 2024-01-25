@@ -836,6 +836,8 @@ const useSimulateAddLimitOrder = (
       depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
     })
 
+    setLastParams(getLimitParamString(margin, leverageFactor, limitPrice, allowedSlippage))
+
     await marginFacility.callStatic.multicall(calldata)
 
     const _result: AddLimitTrade = {
@@ -884,7 +886,7 @@ const useSimulateAddLimitOrder = (
     startingPrice,
   ])
 
-  const blocksPerFetch = 3
+  const blocksPerFetch = 2
 
   useEffect(() => {
     if (!blockNumber || !chainId || !!inputError || approvalState !== ApprovalState.APPROVED) {
@@ -900,15 +902,16 @@ const useSimulateAddLimitOrder = (
       }
     }
 
-    if (simulationError && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+    // regardless of error or not, if the params are unchanged, don't refetch until next interval
+    if (paramsUnchanged && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
       return
     }
 
-    if (loading || syncing) {
+    if (loading && !lastParams) {
       return
     }
 
-    if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
+    if (syncing) {
       return
     }
 
@@ -934,7 +937,7 @@ const useSimulateAddLimitOrder = (
           // console.log('fetching9', _result, to, calldata)
           const { result: _result, params } = data
           setResult(_result)
-          setLastParams(params)
+          // setLastParams(params)
           setSimulationError(undefined)
           setLoading(false)
           setSyncing(false)
@@ -944,7 +947,7 @@ const useSimulateAddLimitOrder = (
       .catch((err) => {
         // console.log('fetching10')
         setSimulationError(parseContractError(err))
-        setLastParams(undefined)
+        // setLastParams(undefined)
         setResult(undefined)
         setLoading(false)
         setSyncing(false)
@@ -1133,6 +1136,7 @@ const useSimulateAddLimitOrder = (
         ? startingPrice
         : new BN(1).div(startingPrice)
       : undefined
+
     if (!margin || !leverageFactor || !startingPrice) {
       return {
         state: LimitTradeState.INVALID,
@@ -1141,7 +1145,7 @@ const useSimulateAddLimitOrder = (
       }
     } else if (limitPrice && margin && leverageFactor && allowedSlippage) {
       const params = getLimitParamString(margin, leverageFactor, limitPrice, allowedSlippage)
-      if (lastParams === params) {
+      if (lastParams === params && !simulationError && result) {
         return {
           state: LimitTradeState.VALID,
           contractError,
@@ -1167,6 +1171,12 @@ const useSimulateAddLimitOrder = (
     syncing,
     simulationError,
   ])
+}
+
+const getAddUserParams = (margin: BN, positionKey: TraderPositionKey, borrowAmount: BN, allowedSlippage: Percent) => {
+  return `${margin.toString()}-${JSON.stringify(
+    positionKey
+  )}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(5)}`
 }
 
 const useSimulateMarginTrade = (
@@ -1195,7 +1205,7 @@ const useSimulateMarginTrade = (
   const [loading, setLoading] = useState(false)
   const [lastBlockNumber, setBlockNumber] = useState<number>()
   const [lastParams, setLastParams] = useState<string>()
-  const blocksPerFetch = 4
+  const blocksPerFetch = 3
   // const poolManager = useLmtPoolManagerContract()
 
   // const [tradeState, setTradeState] = useState<LeverageTradeState>(LeverageTradeState.INVALID)
@@ -1250,7 +1260,7 @@ const useSimulateMarginTrade = (
     const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
     const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
     const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-
+    // console.log('derived', swapInput.toString(), swapRoute, amountOut.toString())
     // calldata
     const calldata = MarginFacilitySDK.addPositionParameters({
       positionKey,
@@ -1264,6 +1274,8 @@ const useSimulateMarginTrade = (
       slippedTickMin,
       slippedTickMax,
     })
+
+    setLastParams(getAddUserParams(margin, positionKey, borrowAmount, allowedSlippage))
 
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
@@ -1364,20 +1376,30 @@ const useSimulateMarginTrade = (
     if (!!inputError || approvalState !== ApprovalState.APPROVED || !blockNumber) {
       return
     }
+    // console.log('derived:1')
 
     let paramsUnchanged = false
     if (borrowAmount && positionKey && margin) {
-      const params = `${margin.toString()}-${JSON.stringify(
-        positionKey
-      )}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(5)}`
+      const params = getAddUserParams(margin, positionKey, borrowAmount, allowedSlippage)
+      // console.log(
+      //   'derived:currentParams',
+      //   getAddUserParams(margin, positionKey, borrowAmount, allowedSlippage),
+      //   lastParams
+      // )
       paramsUnchanged = lastParams === params
     }
+    // console.log('derived:2', paramsUnchanged, lastParams, blockNumber)
 
-    if (simulationError && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+    // if params unchanged and error then try again next block interval
+    if (paramsUnchanged && simulationError && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
       return
     }
 
-    if (loading || syncing) {
+    if (loading && !lastParams) {
+      return
+    }
+
+    if (syncing) {
       return
     }
 
@@ -1394,6 +1416,7 @@ const useSimulateMarginTrade = (
     computeData()
       .then((data) => {
         if (!data) {
+          // console.log('derived:missing')
           setSimulationError({
             type: ErrorType.EmptyError,
             error: 'missing params',
@@ -1406,8 +1429,9 @@ const useSimulateMarginTrade = (
         } else {
           // console.log('fetching9', _result, to, calldata)
           const { data: _result, userParams } = data
+          // console.log('derived:result', _result, userParams)
           setResult(_result)
-          setLastParams(userParams)
+          // setLastParams(userParams)
           setSimulationError(undefined)
           setLoading(false)
           setSyncing(false)
@@ -1415,9 +1439,10 @@ const useSimulateMarginTrade = (
         setBlockNumber(blockNumber)
       })
       .catch((err) => {
+        // console.log('derived:error')
         // console.log('fetching10')
         setSimulationError(parseContractError(err))
-        setLastParams(undefined)
+        // setLastParams(undefined)
         setResult(undefined)
         setLoading(false)
         setSyncing(false)
@@ -1662,7 +1687,9 @@ const useSimulateMarginTrade = (
       lastParams ===
         `${margin.toString()}-${JSON.stringify(positionKey)}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(
           5
-        )}`
+        )}` &&
+      result &&
+      !simulationError
     ) {
       return {
         state: LeverageTradeState.VALID,

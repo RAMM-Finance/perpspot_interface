@@ -94,6 +94,8 @@ export function useDerivedReducePositionInfo(
       isClose: closePosition,
     }
 
+    setLastParams(getReduceUserParams(parsedReduceAmount, allowedSlippage))
+
     const calldatas = MarginFacilitySDK.reducePositionParameters(params)
 
     const bytes = await marginFacility.callStatic.multicall(calldatas)
@@ -175,11 +177,15 @@ export function useDerivedReducePositionInfo(
       paramsUnchanged = lastParams === params
     }
 
-    if (error && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+    if (paramsUnchanged && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
       return
     }
 
-    if (loading || syncing) {
+    if (loading && !lastParams) {
+      return
+    }
+
+    if (syncing) {
       return
     }
 
@@ -209,7 +215,7 @@ export function useDerivedReducePositionInfo(
         } else {
           const { result: _result, params, position } = data
           setTxnInfo(_result)
-          setLastParams(params)
+          // setLastParams(params)
           setError(undefined)
           setLoading(false)
           setSyncing(false)
@@ -219,7 +225,7 @@ export function useDerivedReducePositionInfo(
       })
       .catch((err) => {
         setError(parseContractError(err))
-        setLastParams(undefined)
+        // setLastParams(undefined)
         setTxnInfo(undefined)
         setLoading(false)
         setSyncing(false)
@@ -561,7 +567,7 @@ export function useDerivedReduceLimitPositionInfo(
 
     const price = baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
     const startOutput = parsedAmount.times(price).shiftedBy(inputCurrency.decimals).toFixed(0)
-
+    setLastParams(getLimitUserParams(parsedAmount, price))
     const params: LimitOrderOptions = {
       orderKey: {
         poolKey: positionKey.poolKey,
@@ -647,15 +653,15 @@ export function useDerivedReduceLimitPositionInfo(
       paramsUnchanged = lastParams === params
     }
 
-    if (error && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+    if (paramsUnchanged && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
       return
     }
 
-    if (loading || syncing) {
+    if (loading && !lastParams) {
       return
     }
 
-    if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
+    if (syncing) {
       return
     }
 
@@ -681,7 +687,7 @@ export function useDerivedReduceLimitPositionInfo(
         } else {
           const { result: _result, params, newPosition } = data
           setTxnInfo(_result)
-          setLastParams(params)
+          // setLastParams(params)
           setError(undefined)
           setLoading(false)
           setSyncing(false)
@@ -691,7 +697,7 @@ export function useDerivedReduceLimitPositionInfo(
       })
       .catch((err) => {
         setError(parseContractError(err))
-        setLastParams(undefined)
+        // setLastParams(undefined)
         setTxnInfo(undefined)
         setLoading(false)
         setSyncing(false)

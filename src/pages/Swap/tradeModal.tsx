@@ -274,6 +274,7 @@ const TradeTabContent = () => {
     currencies[Field.INPUT]?.wrapped.address,
     currencies[Field.OUTPUT]?.wrapped.address
   )
+  // console.log('derived:', tradeState, trade)
 
   const {
     orderKey,
