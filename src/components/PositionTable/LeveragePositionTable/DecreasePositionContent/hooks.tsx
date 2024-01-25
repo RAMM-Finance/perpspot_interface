@@ -36,7 +36,7 @@ export function useDerivedReducePositionInfo(
   allowedSlippage: Percent,
   // setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
-  inRange: boolean,
+  // inRange: boolean,
   existingOrderBool: boolean | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
@@ -163,7 +163,7 @@ export function useDerivedReducePositionInfo(
   ])
 
   useEffect(() => {
-    if (isLimit || inRange || existingOrderBool) {
+    if (isLimit || existingOrderBool) {
       return
     }
 
@@ -236,7 +236,7 @@ export function useDerivedReducePositionInfo(
     blockNumber,
     error,
     existingOrderBool,
-    inRange,
+    // inRange,
     inputError,
     isLimit,
     lastBlockNumber,
@@ -393,7 +393,7 @@ export function useDerivedReducePositionInfo(
       tradeState = DerivedInfoState.VALID
     }
 
-    if (isLimit || inRange || existingOrderBool) {
+    if (isLimit || existingOrderBool) {
       return {
         txnInfo: undefined,
         inputError: undefined,
@@ -425,7 +425,7 @@ export function useDerivedReducePositionInfo(
     inputError,
     contractError,
     existingOrderBool,
-    inRange,
+    // inRange,
     isLimit,
     allowedSlippage,
     error,
