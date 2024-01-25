@@ -12,7 +12,6 @@ import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { isSupportedChain } from 'constants/chains'
-import { useUsingCode } from 'hooks/usePointsInfo'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
 import { useState } from 'react'
@@ -58,7 +57,7 @@ const PageWrapper = styled.div`
   padding: 30px 8px 0px;
   max-width: 1200px;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   margin-bottom: 20px;
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
@@ -240,7 +239,7 @@ export default function Pool() {
   })
 
   const theme = useTheme()
-  const codeActive = useUsingCode()
+  // const codeActive = useUsingCode()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
   // const { positions, loading: positionsLoading } = useV3Positions(account)
@@ -270,30 +269,28 @@ export default function Pool() {
     <>
       <Trace page={InterfacePageName.POOL_PAGE} shouldLogImpression>
         <PageWrapper>
-          {codeActive ? (
-            <FilterWrapper>
-              <Filter>
-                <Selector
-                  onClick={() => {
-                    setAdvanced(false)
-                    localStorage.removeItem('data')
-                  }}
-                  active={!advanced}
-                >
-                  <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
-                </Selector>
-                <Selector
-                  onClick={() => {
-                    localStorage.setItem('data', 'advanced')
-                    setAdvanced(true)
-                  }}
-                  active={advanced}
-                >
-                  <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
-                </Selector>
-              </Filter>
-            </FilterWrapper>
-          ) : null}
+          <FilterWrapper>
+            <Filter>
+              <Selector
+                onClick={() => {
+                  setAdvanced(false)
+                  localStorage.removeItem('data')
+                }}
+                active={!advanced}
+              >
+                <StyledSelectorText active={!advanced}>Simple</StyledSelectorText>
+              </Selector>
+              <Selector
+                onClick={() => {
+                  localStorage.setItem('data', 'advanced')
+                  setAdvanced(true)
+                }}
+                active={advanced}
+              >
+                <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
+              </Selector>
+            </Filter>
+          </FilterWrapper>
           <AutoColumn gap="lg" justify="center">
             <AutoColumn gap="lg" style={{ width: '100%', marginTop: '20px' }}>
               {/* <ThemedText.LargeHeader>
@@ -332,7 +329,7 @@ export default function Pool() {
                 </ButtonPrimary>
               </ButtonRow> */}
 
-              {!advanced && <SimplePool codeActive={codeActive} />}
+              {!advanced && <SimplePool />}
               {advanced && lmtPositionsLoading && (
                 <MainContentWrapper>
                   <PositionsLoadingPlaceholder />

@@ -447,7 +447,6 @@ export function useDefaultsFromURLSearch(): SwapState {
   const parsedSwapState = useMemo(() => {
     return queryParametersToSwapState(parsedQs)
   }, [parsedQs])
-
   useEffect(() => {
     if (!chainId) return
     // const inputCurrencyId = chainId === SupportedChainId.SEPOLIA ? FUSDC_SEPOLIA.address : FUSDC_MUMBAI.address // parsedSwapState[Field.INPUT].currencyId ?? undefined

@@ -914,7 +914,9 @@ export function useDerivedLmtMintInfo(
   }, [account, provider, vaultContract])
 
   if (currencyA?.symbol === 'LLP') {
-    if (llpBal.current === 0) {
+    if (!Number(typedValue)) {
+      errorMessage = <Trans> Enter an amount</Trans>
+    } else if (llpBal.current === 0) {
       errorMessage = <Trans> LLP</Trans>
     } else if (Number(typedValue) <= llpBal.current) {
       errorMessage = null
