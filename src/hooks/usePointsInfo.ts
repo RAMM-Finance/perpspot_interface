@@ -3,6 +3,8 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { useEffect, useState } from 'react'
 import { PositionDetails } from 'types/position'
+import {useReferralContract} from 'hooks/useContract'
+import { ethers } from 'ethers'
 
 interface UseV3PositionsResults {
   loading: boolean
@@ -113,57 +115,70 @@ const GenesisAddressses = [
   "0xc56bc1a93909508b0f6e57a32a5c2cc8b4940c08",
   "0x9F6c6910A8B1199251a9E213a50a8ba3DFA8d7BE",
   "0x65f106ec944aF77914d6DF5EaC6488a147a5d054",
-
+  "0xa6F473548CB679d60Cebf7C00e9b37816f0b1E17", 
+  "0xF3Bdf46dD9036EaE38373BB4b98C144e3F3b67c2", 
+  "0x861a2b7d36F21B8873AdAE86AeB5A02C03f6C022", 
+  "0xC9742649495A090e7C901d0b12a4657393189654", 
+  "0xF7764A9B664a3905192d95Aa43201033258871C6"
 ]
 
 export function useUsingCode() {
   const { account, provider, chainId } = useWeb3React()
 
-  // const referralContract = useReferralContract()
+  const referralContract = useReferralContract()
 
   const [codeUsing, setCodeUsing] = useState(false)
   const [result, setResult] = useState(0)
 
-  // useEffect(() => {
-  //   if (!account ||!provider ||!referralContract) return
-  //   const call = async () => {
-  //     try {
-  //       const result = await referralContract.userReferralCodes(account)
-  //       setCodeUsing(result != ethers.constants.HashZero)
-  //     } catch (error) {
-  //       console.log('codeowner err')
-  //     }
-  //   }
-  //   call()
-  // }, [account, referralContract])
-
   useEffect(() => {
-    const getBeacon = async () => {
-      if (account && provider && chainId) {
-        try {
-          const result = await fetch(`https://beacon.degenscore.com/v1/beacon/${account.toLowerCase()}`)
-          const result2 = await fetch(`https://beacon.degenscore.com/v2/beacon/${account.toLowerCase()}`)
-
-          const aa = "0xEDF7b675a2fE3c27efb263fb4c204A3f0fb17D46"
-          const isBeacon = await fetch(`https://beacon.degenscore.com/v1/beacon/${aa.toLowerCase()}`)
-
-          setResult(isBeacon.status)
-          setCodeUsing(result.status === 200 || result2.status===200)
-        } catch (err) {
-          console.log('BEACON ERR', err)
-        }
+    if (!account ||!provider ||!referralContract) return
+    const call = async () => {
+      try {
+        const result = await referralContract.userReferralCodes(account)
+        setCodeUsing(result != ethers.constants.HashZero)
+      } catch (error) {
+        console.log('codeowner err')
       }
     }
+
     if (account) {
       if (GenesisAddressses.find((val) => val.toLowerCase() === account.toLowerCase())) {
         setCodeUsing(true)
       } else {
-        getBeacon()
+        call()
       }
     }
-  }, [account, provider, chainId])
-  console.log('isBeacon', result)
-  return true
+
+    call()
+  }, [account, referralContract])
+
+  // useEffect(() => {
+  //   const getBeacon = async () => {
+  //     if (account && provider && chainId) {
+  //       try {
+  //         const result = await fetch(`https://beacon.degenscore.com/v1/beacon/${account.toLowerCase()}`)
+  //         const result2 = await fetch(`https://beacon.degenscore.com/v2/beacon/${account.toLowerCase()}`)
+
+  //         const aa = "0xEDF7b675a2fE3c27efb263fb4c204A3f0fb17D46"
+  //         const isBeacon = await fetch(`https://beacon.degenscore.com/v1/beacon/${aa.toLowerCase()}`)
+
+  //         setResult(isBeacon.status)
+  //         setCodeUsing(result.status === 200 || result2.status===200)
+  //       } catch (err) {
+  //         console.log('BEACON ERR', err)
+  //       }
+  //     }
+  //   }
+  //   if (account) {
+  //     if (GenesisAddressses.find((val) => val.toLowerCase() === account.toLowerCase())) {
+  //       setCodeUsing(true)
+  //     } else {
+  //       getBeacon()
+  //     }
+  //   }
+  // }, [account, provider, chainId])
+  // console.log('isBeacon', result)
+  return codeUsing
 }
 
 // export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {

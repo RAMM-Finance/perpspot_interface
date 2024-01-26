@@ -326,7 +326,7 @@ export function useDerivedAddPositionInfo(
     }
 
     if (!usingCode) {
-      inputError = inputError ?? <Trans>Not whitelisted</Trans>
+      inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
     }
 
     if (!parsedMargin || parsedMargin.isZero()) {

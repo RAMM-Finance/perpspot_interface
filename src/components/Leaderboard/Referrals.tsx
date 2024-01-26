@@ -534,8 +534,10 @@ const Referrals = () => {
             ))}
 
             {/*codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>*/}
-            {codesNonZero ? (<SmallButtonPrimary onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>):
-            (<SmallButtonPrimary>Fill out all codes</SmallButtonPrimary>)} 
+            {codesNonZero ? codeUsing?
+              (<SmallButtonPrimary disabled={refCodesExist?.[0]} onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>):
+              (<SmallButtonPrimary disabled={true} >Need to be using code</SmallButtonPrimary>)
+            : (<SmallButtonPrimary>Fill out code</SmallButtonPrimary>)} 
 
           </InputWrapper>
         )}{' '}
@@ -727,7 +729,7 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>LP Fee Collected</ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary>Advanced LP Fee Collected</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
                     ${Math.round(Number(totalCollected))?.toString()}
                   </ThemedText.BodySecondary>
@@ -736,8 +738,8 @@ const Referrals = () => {
 
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>Rebates this week(coming soon)</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>$0.00</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary>My Point Multiplier</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>1.00</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
             </div>
