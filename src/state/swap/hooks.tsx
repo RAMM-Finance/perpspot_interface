@@ -28,6 +28,7 @@ import {
   Field,
   replaceSwapState,
   selectCurrency,
+  selectPair,
   setActiveTab,
   setBorrowManagerAddress,
   setHideClosedLeveragePositions,
@@ -50,6 +51,7 @@ export function useSwapState(): AppState['swap'] {
 }
 
 export function useSwapActionHandlers(): {
+  onPairSelection: (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => void
   onCurrencySelection: (field: Field, currency: Currency) => void
   onSwitchTokens: (leverage: boolean) => void
   onUserInput: (field: Field, typedValue: string) => void
@@ -65,6 +67,21 @@ export function useSwapActionHandlers(): {
   onSwitchSwapModalTab: (tab: string) => void
 } {
   const dispatch = useAppDispatch()
+
+  const onPairSelection = useCallback(
+    (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => {
+      dispatch(
+        selectPair({
+          fieldIn,
+          fieldOut,
+          currencyIdIn: currencyIn.isToken ? currencyIn.address : currencyIn.isNative ? 'ETH' : '',
+          currencyIdOut: currencyOut.isToken ? currencyOut.address : currencyOut.isNative ? 'ETH' : '',
+        })
+      )
+    },
+    [dispatch]
+  )
+
   const onCurrencySelection = useCallback(
     (field: Field, currency: Currency) => {
       dispatch(
@@ -163,8 +180,9 @@ export function useSwapActionHandlers(): {
   )
 
   return {
-    onSwitchTokens,
+    onPairSelection,
     onCurrencySelection,
+    onSwitchTokens,
     onUserInput,
     onChangeRecipient,
     onLeverageFactorChange,
@@ -175,7 +193,6 @@ export function useSwapActionHandlers(): {
     onLTVChange,
     onBorrowManagerAddress,
     onPremiumChange,
-
     onSwitchSwapModalTab,
   }
 }
@@ -260,7 +277,6 @@ export function useDerivedSwapInfo(): {
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
     recipient,
   } = useSwapState()
-
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -396,16 +412,16 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
     // Defaults to having the native currency selected
-    // inputCurrency = getAddress('0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A')
-    // outputCurrency = getAddress('0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9')
+    // inputCurrency = getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
+    // outputCurrency = getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
     const storedCurrencyIn = localStorage.getItem('currencyIn')
     const storedCurrencyOut = localStorage.getItem('currencyOut')
     inputCurrency = storedCurrencyIn
       ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
-      : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+      : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
     outputCurrency = storedCurrencyOut
       ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
-      : getAddress('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
+      : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''

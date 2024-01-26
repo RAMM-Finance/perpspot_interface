@@ -137,6 +137,8 @@ export default function SimplePool() {
     {}
   )
 
+  console.log(parsedAmounts[Field.CURRENCY_A])
+
   const atMaxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
     (accumulator, field) => {
       return {
@@ -538,7 +540,9 @@ export default function SimplePool() {
                 style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
               >
                 <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
-                <ThemedText.BodySecondary fontSize={12}>{`Variable Premium Rate ~50%` + `  + swap fees`}</ThemedText.BodySecondary>
+                <ThemedText.BodySecondary fontSize={12}>
+                  {`Variable Premium Rate ~50%` + `  + swap fees`}
+                </ThemedText.BodySecondary>
               </RowBetween>
             ) : (
               <>

@@ -6,14 +6,12 @@ import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
-import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
 import useDebounce from 'hooks/useDebounce'
-import { usePoolsData } from 'hooks/useLMTPools'
 import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
@@ -29,7 +27,6 @@ import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { UserAddedToken } from 'types/tokens'
-import { formatDollar } from 'utils/formatNumbers'
 
 const LOGO_SIZE = 20
 
@@ -116,7 +113,7 @@ export default function PoolSelect({
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-  const { onCurrencySelection } = useSwapActionHandlers()
+  const { onCurrencySelection, onPairSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -201,8 +198,11 @@ export default function PoolSelect({
   ])
 
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
+    localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+    localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
+    // onPairSelection(Field.INPUT, Field.OUTPUT, currencyIn, currencyOut)
   }, [])
 
   const inputRef = useRef<HTMLInputElement>()
@@ -298,42 +298,44 @@ export default function PoolSelect({
     }
   }, [data])
 
-  const poolData = usePoolsData()
+  console.log(availablePools)
 
-  const dataInfo = useMemo(() => {
-    if (poolData && data) {
-      const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
+  // const poolData = usePoolsData()
 
-      return availablePools?.map((pool: any) => {
-        if (
-          Object.keys(lowerCasePool).find(
-            (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`
-          )
-        ) {
-          return {
-            ...pool,
-            tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
-            volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
-          }
-        } else {
-          return pool
-        }
-      })
-    } else {
-      return null
-    }
-  }, [poolData, data, availablePools])
+  // const dataInfo = useMemo(() => {
+  //   if (poolData && data) {
+  //     const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
+
+  //     return availablePools?.map((pool: any) => {
+  //       if (
+  //         Object.keys(lowerCasePool).find(
+  //           (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`
+  //         )
+  //       ) {
+  //         return {
+  //           ...pool,
+  //           tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
+  //           volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
+  //         }
+  //       } else {
+  //         return pool
+  //       }
+  //     })
+  //   } else {
+  //     return null
+  //   }
+  // }, [poolData, data, availablePools])
 
   interface PoolSelectorRowProps {
     currencyId: string[]
-    tvl: number
-    volume: number
+    tvl?: number
+    volume?: number
     onCurrencySelect: (currencyIn: Currency, currencyOut: Currency) => void
     fee: number
     chainId: number | undefined
   }
 
-  function PoolSelectorRow({ onCurrencySelect, currencyId, fee, tvl, volume, chainId }: PoolSelectorRowProps) {
+  function PoolSelectorRow({ onCurrencySelect, currencyId, fee, chainId }: PoolSelectorRowProps) {
     // const { chainId } = useWeb3React()
     const {
       [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -392,50 +394,49 @@ export default function PoolSelect({
         delt = price.minus(priceData.price24hAgo).div(price).times(100)
       }
       return [price, delt]
-
     }, [priceData, pool])
 
     return (
-      <MouseoverTooltip
-        text={
-          <div style={{ display: 'flex', gap: '5px' }}>
-            <ThemedText.BodySmall color="textPrimary">TVL:</ThemedText.BodySmall>
-            <ThemedText.BodySmall color="textSecondary">{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
-            <ThemedText.BodySmall color="textPrimary">Volume:</ThemedText.BodySmall>
-            <ThemedText.BodySmall color="textSecondary">
-              {formatDollar({ num: volume, digits: 0 })}
-            </ThemedText.BodySmall>
-          </div>
-        }
+      // <MouseoverTooltip
+      //   text={
+      //     <div style={{ display: 'flex', gap: '5px' }}>
+      //       <ThemedText.BodySmall color="textPrimary">TVL:</ThemedText.BodySmall>
+      //       <ThemedText.BodySmall color="textSecondary">{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
+      //       <ThemedText.BodySmall color="textPrimary">Volume:</ThemedText.BodySmall>
+      //       <ThemedText.BodySmall color="textSecondary">
+      //         {formatDollar({ num: volume, digits: 0 })}
+      //       </ThemedText.BodySmall>
+      //     </div>
+      //   }
+      // >
+      <Container
+        disabled={false}
+        active={active}
+        onClick={() => {
+          token0 && token1 && onCurrencySelect(token0, token1)
+        }}
       >
-        <Container
-          disabled={false}
-          active={active}
-          onClick={() => {
-            token0 && token1 && onCurrencySelect(token0, token1)
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={20} margin />
-            <Label style={{ display: 'flex', gap: '2px' }}>
-              <ThemedText.BodySmall color="textSecondary" fontWeight={800}>
-                {labelIn}
-              </ThemedText.BodySmall>
-              {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}/
-              <ThemedText.BodySmall fontWeight={800}>{labelOut}</ThemedText.BodySmall>
-              <ThemedText.BodySmall fontSize="10px">({fee / 10000}%)</ThemedText.BodySmall>
-            </Label>
-          </div>
-          {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={20} margin />
+          <Label style={{ display: 'flex', gap: '2px' }}>
+            <ThemedText.BodySmall color="textSecondary" fontWeight={800}>
+              {labelIn}
+            </ThemedText.BodySmall>
+            {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}/
+            <ThemedText.BodySmall fontWeight={800}>{labelOut}</ThemedText.BodySmall>
+            <ThemedText.BodySmall fontSize="10px">({fee / 10000}%)</ThemedText.BodySmall>
+          </Label>
+        </div>
+        {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
         <ThemedText.BodySmall>{formatDollar({ num: volume, digits: 0 })}</ThemedText.BodySmall>*/}
-          <ThemedText.BodySmall>
-            <DeltaText delta={delta?.toNumber()}>
-              {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
-            </DeltaText>
-          </ThemedText.BodySmall>
-          <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.TokenNonTx)}</ThemedText.BodySmall>
-        </Container>
-      </MouseoverTooltip>
+        <ThemedText.BodySmall>
+          <DeltaText delta={delta?.toNumber()}>
+            {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
+          </DeltaText>
+        </ThemedText.BodySmall>
+        <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.TokenNonTx)}</ThemedText.BodySmall>
+      </Container>
+      // </MouseoverTooltip>
     )
   }
 
@@ -468,16 +469,14 @@ export default function PoolSelect({
           </AutoColumn>
         ) : (
           <Column style={{ gap: '3px' }}>
-            {dataInfo &&
-              dataInfo.map((curr: any) => {
+            {availablePools &&
+              availablePools.map((curr: any) => {
                 return (
                   <PoolSelectorRow
                     currencyId={[curr.token0, curr.token1]}
                     onCurrencySelect={handleCurrencySelect}
                     key={`${curr.token0}-${curr.token1}-${curr.fee}`}
                     fee={curr?.fee}
-                    tvl={curr.tvl}
-                    volume={curr.volume}
                     chainId={chainId}
                   />
                 )

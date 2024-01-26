@@ -632,6 +632,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const navigate = useNavigate()
 
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
+    localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+    localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
     onCurrencySelection(Field.INPUT, currencyIn)
     onCurrencySelection(Field.OUTPUT, currencyOut)
   }, [])
@@ -710,10 +712,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       ref={ref}
       onClick={() => {
         if (token0 && token1) {
-          handleCurrencySelect(token0, token1)
           navigate({
             pathname: '/swap',
           })
+          handleCurrencySelect(token0, token1)
         }
       }}
       data-testid={`token-table-row-${currencyIda?.symbol}`}

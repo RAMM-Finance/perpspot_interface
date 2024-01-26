@@ -63,7 +63,7 @@ export const PoolSelector = ({
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-  const { onCurrencySelection } = useSwapActionHandlers()
+  const { onCurrencySelection, onPairSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -156,6 +156,8 @@ export const PoolSelector = ({
 
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      onCurrencySelection(Field.INPUT, currencyIn)
+      onCurrencySelection(Field.OUTPUT, currencyOut)
       navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
     },
     [navigate]
