@@ -156,8 +156,16 @@ export const PoolSelector = ({
 
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      onCurrencySelection(Field.INPUT, currencyIn)
-      onCurrencySelection(Field.OUTPUT, currencyOut)
+      if (
+        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'LDO') ||
+        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC')
+      ) {
+        onCurrencySelection(Field.INPUT, currencyOut)
+        onCurrencySelection(Field.OUTPUT, currencyIn)
+      } else {
+        onCurrencySelection(Field.INPUT, currencyIn)
+        onCurrencySelection(Field.OUTPUT, currencyOut)
+      }
       navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
     },
     [navigate]

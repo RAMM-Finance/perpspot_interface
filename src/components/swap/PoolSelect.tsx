@@ -198,10 +198,20 @@ export default function PoolSelect({
   ])
 
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
-    localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
-    localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-    onCurrencySelection(Field.INPUT, currencyIn)
-    onCurrencySelection(Field.OUTPUT, currencyOut)
+    if (
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'LDO') ||
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC')
+    ) {
+      localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))
+      localStorage.setItem('currencyOut', JSON.stringify(currencyIn.wrapped.address))
+      onCurrencySelection(Field.INPUT, currencyOut)
+      onCurrencySelection(Field.OUTPUT, currencyIn)
+    } else {
+      localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+      localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
+      onCurrencySelection(Field.INPUT, currencyIn)
+      onCurrencySelection(Field.OUTPUT, currencyOut)
+    }
     // onPairSelection(Field.INPUT, Field.OUTPUT, currencyIn, currencyOut)
   }, [])
 

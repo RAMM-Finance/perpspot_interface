@@ -47,8 +47,8 @@ import {
   useMarginTradingState,
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
-import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
+import { ActiveSwapTab, Field } from 'state/swap/actions'
+import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -195,7 +195,7 @@ const TradeTabContent = () => {
   const { account, chainId } = useWeb3React()
   // const tab = useSelector((state: any) => state.swap.tab)
 
-  const { onSwitchTokens, onCurrencySelection, onUserInput } = useSwapActionHandlers()
+  const { onSwitchTokens, onCurrencySelection, onUserInput, onActiveTabChange } = useSwapActionHandlers()
 
   // const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -310,7 +310,7 @@ const TradeTabContent = () => {
     return !inputError
   }, [inputError])
 
-  // const { activeTab } = useSwapState()
+  const { activeTab } = useSwapState()
 
   const toggleWalletDrawer = useToggleWalletDrawer()
   const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
@@ -440,6 +440,17 @@ const TradeTabContent = () => {
       return [currencies[Field.OUTPUT], currencies[Field.INPUT]]
     }
   }, [currencies, baseCurrencyIsInputToken])
+
+  // const [baseCurrency, quoteCurrency] = useMemo(() => {
+  //   if (
+  //     (currencies[Field.INPUT]?.symbol === 'WETH' && currencies[Field.OUTPUT]?.symbol === 'LDO') ||
+  //     (currencies[Field.INPUT]?.symbol === 'WETH' && currencies[Field.OUTPUT]?.symbol === 'wBTC')
+  //   ) {
+  //     return [currencies[Field.OUTPUT], currencies[Field.INPUT]]
+  //   } else {
+  //     return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
+  //   }
+  // }, [currencies])
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
@@ -686,7 +697,9 @@ const TradeTabContent = () => {
           >
             <ArrowContainer
               onClick={() => {
-                onSwitchTokens(true)
+                activeTab === ActiveSwapTab.LONG
+                  ? onActiveTabChange(ActiveSwapTab.SHORT)
+                  : onActiveTabChange(ActiveSwapTab.LONG)
               }}
               color={theme.textPrimary}
             >
