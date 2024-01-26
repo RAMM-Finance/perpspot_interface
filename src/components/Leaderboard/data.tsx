@@ -251,7 +251,7 @@ export function usePointsData() {
     call()
   }, [account, referralContract])
 
-  console.log('lpPositions',lpPositions, collectData )
+  // console.log('lpPositions',lpPositions, collectData )
 
   const PointsData = useMemo(() => {
     const addDataProcessed = addData?.map((entry: any) => ({
@@ -406,10 +406,10 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log(
-    'timeWeightedDeposits',
-    timeWeightedDeposits, lpPositionsByUniqueLps, refereeActivity, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
-  )
+  // console.log(
+  //   'timeWeightedDeposits',
+  //   timeWeightedDeposits, lpPositionsByUniqueLps, refereeActivity, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
+  // )
   return useMemo(() => {
     return {
       tradeProcessedByTrader,

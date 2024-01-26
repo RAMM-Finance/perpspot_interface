@@ -15,6 +15,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import useSelectChain from 'hooks/useSelectChain'
 import { SupportedChainId } from 'constants/chains'
+import { ethers } from 'ethers'
 
 const ModalWrapper = styled.div`
   display: flex;
@@ -89,14 +90,18 @@ export default function JoinModal() {
   console.log(activeCodes)
 
   useEffect(() => {
-    const code = path ? defaultAbiCoder.encode(['uint256'], [path]).toString() : undefined
+    // const code = path ? defaultAbiCoder.encode(['uint256'], [path]).toString() : undefined
+    const code = path? ethers.utils.formatBytes32String(path.toString()) : undefined
     if (!code || !referralContract) return
 
     const call = async () => {
       try {
         const result = await referralContract.codeOwners(code)
-        console.log('owner', result)
-        setCodeExists(result != '0x0000000000000000000000000000000000000000')
+        const usedAmount = await referralContract.codeUsedAmount(code)
+        const maxAmount = await referralContract.getMaxValues()
+        const maxValue = maxAmount[1]
+
+        setCodeExists(result != '0x0000000000000000000000000000000000000000' && usedAmount.lt(maxValue))
       } catch (error) {
         console.log('codeowner err', error)
       }
@@ -111,7 +116,8 @@ export default function JoinModal() {
     const call = async () => {
       try {
         const result = await referralContract.codesByOwners(account, 0)
-        const decoded = defaultAbiCoder.decode(['uint256'], result)
+        const decoded = ethers.utils.parseBytes32String(result)
+        // const decoded = defaultAbiCoder.decode(['uint256'], result)
         setActiveCodes(decoded.toString())
       } catch (error) {
         setActiveCodes(undefined)
@@ -122,9 +128,26 @@ export default function JoinModal() {
     call()
   }, [account])
 
+  useEffect(()=>{
+    if (!account || !referralContract) return
+
+    const call = async () => {
+      try {
+        const code = ethers.utils.formatBytes32String(path.toString())
+        const result = await referralContract.callStatic.registerCode( code)
+      } catch (error) {
+        console.log('code activate err', error)
+      }
+    }
+
+    call()
+
+  }, [account])
+
   const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
-      const bytes32 = defaultAbiCoder.encode(['uint256'], [path]).toString()
+      const bytes32 = ethers.utils.formatBytes32String(path.toString())
+      // defaultAbiCoder.encode(['uint256'], [path]).toString()
       const response = await referralContract?.setReferralCodeByUser(bytes32)
       return response as TransactionResponse
     } catch (err) {

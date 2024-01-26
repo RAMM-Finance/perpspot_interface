@@ -144,7 +144,8 @@ export function useUsingCode() {
           const result = await fetch(`https://beacon.degenscore.com/v1/beacon/${account.toLowerCase()}`)
           const result2 = await fetch(`https://beacon.degenscore.com/v2/beacon/${account.toLowerCase()}`)
 
-          const isBeacon = await fetch(`https://beacon.degenscore.com/v2/beacon/0xb92505a3364B7C7E333c05B44cE1E55377fC43cA`)
+          const aa = "0xEDF7b675a2fE3c27efb263fb4c204A3f0fb17D46"
+          const isBeacon = await fetch(`https://beacon.degenscore.com/v1/beacon/${aa.toLowerCase()}`)
 
           setResult(isBeacon.status)
           setCodeUsing(result.status === 200 || result2.status===200)

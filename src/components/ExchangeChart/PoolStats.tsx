@@ -129,6 +129,7 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
   }, [chainId, pool])
 
   const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
+  console.log('priceadata>????', priceData, priceLoading)
   const contract0 = useTokenContract(pool?.token0?.address)
   const contract1 = useTokenContract(pool?.token1?.address)
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [poolAddress ?? ''])
