@@ -385,6 +385,30 @@ export default function PoolSelect({
     }, [chainId, pool])
     const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
 
+    const currentPricePool = useMemo(() => {
+      if (!pool || priceData ) return undefined
+      const token0 = pool.token0
+      const token1 = pool.token1
+      let price = new BN(Number(pool.token0Price.quotient.toString()))
+      if(price.toString() == "0")price = new BN(Number(pool.token1Price.quotient.toString()))
+        if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+          // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+          return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+        } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+          return new BN(1).div(price.div( new BN( 10** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
+        } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+          return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+        } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
+          return price
+        } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
+          return price
+        } else {
+          return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+        }
+      return price
+    }, [priceData, pool])
+
+
     const [currPrice, delta] = useMemo(() => {
       if (!priceData) return [undefined, undefined]
       let price = priceData.priceNow
@@ -441,10 +465,12 @@ export default function PoolSelect({
         <ThemedText.BodySmall>{formatDollar({ num: volume, digits: 0 })}</ThemedText.BodySmall>*/}
         <ThemedText.BodySmall>
           <DeltaText delta={delta?.toNumber()}>
-            {formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx)}%
+
+            {delta ?(formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx) +"%")
+              : "-"}
           </DeltaText>
         </ThemedText.BodySmall>
-        <ThemedText.BodySmall>{formatBNToString(currPrice, NumberType.TokenNonTx)}</ThemedText.BodySmall>
+        <ThemedText.BodySmall>{formatBNToString(currPrice??currentPricePool, NumberType.TokenNonTx)}</ThemedText.BodySmall>
       </Container>
       // </MouseoverTooltip>
     )
