@@ -133,6 +133,31 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
   const contract1 = useTokenContract(pool?.token1?.address)
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [poolAddress ?? ''])
   const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [poolAddress ?? ''])
+
+  const currentPricePool = useMemo(() => {
+    if (!pool ) return undefined
+    const token0 = pool.token0
+    const token1 = pool.token1
+    let price = new BN(Number(pool.token0Price.quotient.toString()))
+    if(price.toString() == "0")price = new BN(Number(pool.token1Price.quotient.toString()))
+      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+        // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+        return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+        return new BN(1).div(price.div( new BN( 10** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+        return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
+        return price
+      } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
+        return price
+      } else {
+        return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      }
+    return price
+  }, [priceData, pool])
+
+
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
     if (!pool || !poolData) return [null, false, null, null, null, null, null]
 
@@ -144,7 +169,13 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
         volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
       }
     }
-    if (!priceData) return [null, false, null, null, null,volume, tvl, null]
+
+    
+    if (!priceData) {
+
+      return [null , false, null, null, null,volume, tvl, null]
+    }
+
 
     let price = priceData.priceNow
     let invertPrice = price.lt(1)
@@ -181,14 +212,14 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
     <StatsWrapper>
       <Stat
         dataCy="current-price"
-        value={currentPrice}
+        value={currentPrice || currentPricePool}
         baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
             <Trans>Oracle Price</Trans>
           </ThemedText.BodySmall>
         }
-        loading={loading}
+        loading={false}
       />
       <Stat
         dataCy="delta-24h"
