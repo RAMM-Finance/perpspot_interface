@@ -129,22 +129,22 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
   }, [chainId, pool])
 
   const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
-  console.log('priceadata>????', priceData, priceLoading)
   const contract0 = useTokenContract(pool?.token0?.address)
   const contract1 = useTokenContract(pool?.token1?.address)
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [poolAddress ?? ''])
   const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [poolAddress ?? ''])
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!priceData || !pool || !poolData) return [null, false, null, null, null, null, null]
+    if (!pool || !poolData) return [null, false, null, null, null, null, null]
 
     let tvl
     let volume
-    if (Object.keys(poolData).find((pair: any) => `${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`)) {
+    if (Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)) {
       {
-        tvl = new BN(poolData[`${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
-        volume = new BN(poolData[`${pool.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
+        tvl = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
+        volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
       }
     }
+    if (!priceData) return [null, false, null, null, null,volume, tvl, null]
 
     let price = priceData.priceNow
     let invertPrice = price.lt(1)
@@ -232,7 +232,7 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
             <Trans>TVL</Trans>
           </ThemedText.BodySmall>
         }
-        loading={loading}
+        loading={false}
       />
       <Stat
         dataCy="liq-above"
@@ -243,7 +243,7 @@ export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number
             <Trans>Total Volume</Trans>
           </ThemedText.BodySmall>
         }
-        loading={loading}
+        loading={false}
       />
     </StatsWrapper>
   )

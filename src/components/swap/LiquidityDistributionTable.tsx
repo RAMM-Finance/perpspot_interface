@@ -41,23 +41,44 @@ const LiquidityDistributionTable = ({
   }, [chainId, pool])
   const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
 
+  // const currentPrice = useMemo(() => {
+  //   if (!priceData || !pool) return undefined
+  //   let price = priceData.priceNow
+  //   let invertPrice = price.lt(1)
+  //   if (
+  //     pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
+  //     pool.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+  //   )
+  //     invertPrice = false
+  //   setInverse(false)
+  //   if (invertPrice) {
+  //     setInverse(true)
+  //     price = new BN(1).div(price)
+  //   }
+  //   return price
+  // }, [priceData, pool])
   const currentPrice = useMemo(() => {
-    if (!priceData || !pool) return undefined
-    let price = priceData.priceNow
-    let invertPrice = price.lt(1)
-    if (
-      pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
-      pool.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
-    )
-      invertPrice = false
-    setInverse(false)
-    if (invertPrice) {
-      setInverse(true)
-      price = new BN(1).div(price)
-    }
+    if (!pool || !token0 || !token1) return undefined
+    let price = new BN(Number(pool.token0Price.quotient.toString()))
+    if(price.toString() == "0")price = new BN(Number(pool.token1Price.quotient.toString()))
+      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+        setInverse(false)
+        // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+        return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+        return new BN(1).div(price.div( new BN( 10** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+        return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
+        setInverse(true)
+        return price
+      } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
+        return price
+      } else {
+        return price
+      }
     return price
   }, [priceData, pool])
-
   //spread logic
   const negMax = useMemo(() => {
     if (bin && currentPrice && token0 && token1) {
@@ -144,7 +165,7 @@ const LiquidityDistributionTable = ({
       ref.current?.scrollTo({ top: 400 })
     }
   }, [bin])
-
+  console.log('currentprice', currentPrice)
   return (
     <>
       <Title>
@@ -260,10 +281,10 @@ const LiquidityDistributionTable = ({
 
         <PriceWrapper>
           {token0 && token1 && (
-            <ThemedText.BodyPrimary>{formatBNToString(currentPrice, NumberType.TokenNonTx)}</ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary>{formatBNToString(currentPrice)}</ThemedText.BodyPrimary>
           )}
           {token0 && token1 && (
-            <ThemedText.BodyPrimary>{formatBNToString(currentPrice, NumberType.TokenNonTx)}</ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary>{formatBNToString(currentPrice)}</ThemedText.BodyPrimary>
           )}
         </PriceWrapper>
         <LDHeaderRow>
