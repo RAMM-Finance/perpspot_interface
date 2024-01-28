@@ -81,6 +81,11 @@ export const LMT_VAULT_MANAGER: AddressMap={
   [SupportedChainId.ARBITRUM_ONE]: "0xd5328446304530679d960F09fA7673464171c7cE"
 }
 
+export const LIM_WETH: AddressMap={
+  [SupportedChainId.ARBITRUM_ONE]: "0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C"
+}
+
+
 
 // celo v3 addresses
 const CELO_V3_CORE_FACTORY_ADDRESSES = '0xAfE208a311B21f13EF87E33A90049fC17A7acDEc'

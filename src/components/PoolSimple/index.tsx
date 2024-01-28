@@ -18,7 +18,7 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { BigNumber } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useVaultContract } from 'hooks/useContract'
+import { useVaultContract,useLimweth } from 'hooks/useContract'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Swap'
@@ -43,6 +43,7 @@ export default function SimplePool() {
   const [buy, setBuy] = useState<boolean>(true)
   const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract()
+  const limweth = useLimweth()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()
@@ -226,6 +227,7 @@ export default function SimplePool() {
     LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
+
   //callStatic for deposit
   const cb = useCallback(async (): Promise<BigNumber> => {
     try {
@@ -255,6 +257,92 @@ export default function SimplePool() {
         setValue(0)
       })
   }, [vaultContract, parsedAmounts, cb, account, chainId, provider, buy])
+
+  const limWethMintCallback = useCallback(async() : Promise<TransactionResponse>=>{
+
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
+      if ( amountIn && account) response = await limweth?.deposit(amountIn, account)
+      return response as TransactionResponse
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, limweth, provider, parsedAmounts, baseCurrency])
+
+  const limWethWithdrawCallback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('redeeminput',  amountIn, account)
+      if ( amountIn && account)
+        response = await limweth?.redeem(amountIn, account, account)
+      return response as TransactionResponse
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, limweth, provider, parsedAmounts])
+
+  const handleLimWethDeposit = useCallback(() => {
+    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    limWethMintCallback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setError(undefined)
+        addTransaction(response, {
+          type: TransactionType.MINT_LLP,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        return response.hash
+      })
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setError(error.message)
+      })
+  }, [limWethMintCallback, account, limweth, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
+
+
+  const handleLimWethRedeem = useCallback(() => {
+    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    limWethWithdrawCallback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setError(undefined)
+        addTransaction(response, {
+          type: TransactionType.MINT_LLP,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        return response.hash
+      })
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setError(error.message)
+      })
+  }, [limWethWithdrawCallback, account, limweth, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
+
+
+
+
+
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {

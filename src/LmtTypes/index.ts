@@ -58,6 +58,8 @@ export type { Arbitrageur } from "./src/periphery/Arbitrageur";
 export { Arbitrageur__factory } from "./factories/src/periphery/Arbitrageur__factory";
 export type { DataProvider } from "./src/periphery/DataProvider";
 export { DataProvider__factory } from "./factories/src/periphery/DataProvider__factory";
+export type { LIM_Token } from "./src/periphery/LIM_Token";
+export { LIM_Token__factory } from "./factories/src/periphery/LIM_Token__factory";
 export type { ERC721Enumerable } from "./src/periphery/ERC721Enumerable";
 export { ERC721Enumerable__factory } from "./factories/src/periphery/ERC721Enumerable__factory";
 export type { AggregatorV3Interface } from "./src/periphery/LPVault.sol/AggregatorV3Interface";
