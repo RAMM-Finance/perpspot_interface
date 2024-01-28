@@ -302,7 +302,7 @@ export default function PoolSelect({
             token1: ethers.utils.getAddress(val.token1),
             fee: val.fee,
           }
-        })
+        }).slice(0, 5)
     } else {
       return undefined
     }

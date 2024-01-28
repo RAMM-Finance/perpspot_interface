@@ -175,7 +175,7 @@ export default function TokenTable() {
             )
             .map((val: Pool) => {
               return { token0: val.token0, token1: val.token1, fee: val.fee }
-            })
+            }).slice(0, 5)
         )
         setLoading(false)
       } catch (error) {

@@ -140,7 +140,7 @@ export default function AboutModal() {
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">1. No Liquidations.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            No more forced price-based liquidations. HODL ur levered position under any price action.
+            No more forced price-based liquidations. No more maintenance margin. HODL ur levered position under any price action.
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>
