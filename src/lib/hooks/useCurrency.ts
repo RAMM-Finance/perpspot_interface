@@ -87,7 +87,8 @@ export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string
   const token: Token | undefined = address ? tokens[address] : undefined
   let tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
   if((address == "0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60" 
-    || address =="0x912CE59144191C1204E64559FE8253a0e49E6548") && token) 
+    || address =="0x912CE59144191C1204E64559FE8253a0e49E6548"
+    || "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a") && token) 
     tokenFromNetwork= new Token(token?.chainId, token?.address, token?.decimals, token?.symbol, token?.name)
 
   return tokenFromNetwork ?? token
