@@ -161,7 +161,8 @@ const LiquidityDistributionTable = ({
         return 18
       } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'GMX'){
         return 18
-      
+      } else if (token0?.wrapped.symbol === 'PENDLE' && token1?.wrapped.symbol === 'WETH'){
+        return 18
       } else {
         return 0
       }
