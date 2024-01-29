@@ -41,6 +41,7 @@ const LiquidityDistributionTable = ({
   }, [chainId, pool])
   const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
 
+  console.log('tooes',token0, token1)
   const currentPrice = useMemo(() => {
     if(!priceData){
       if (!pool || !token0 || !token1) return undefined
@@ -61,6 +62,9 @@ const LiquidityDistributionTable = ({
           return price
         } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
           return price
+        } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'GMX') {
+          setInverse(true)
+          return price.div( new BN( 10** (token0?.wrapped.decimals - token1?.wrapped.decimals)))
         } else {
           return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
         }
@@ -155,6 +159,9 @@ const LiquidityDistributionTable = ({
         return 18
       } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
         return 18
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'GMX'){
+        return 18
+      
       } else {
         return 0
       }
