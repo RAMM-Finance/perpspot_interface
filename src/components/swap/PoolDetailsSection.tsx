@@ -118,7 +118,7 @@ export function PoolDetailsSection({
           <PoolDataChartLoading />
         </MiddleContainer>
         <RightContainer>
-          <PoolSelect chainId={chainId} detailsLoading={true} />
+          <PoolSelect chainId={chainId} detailsLoading={true} dropdown={false} />
           <LiquidityDistibutionWrapper>
             <LiquidityDistributionLoading />
           </LiquidityDistibutionWrapper>
@@ -143,7 +143,7 @@ export function PoolDetailsSection({
         </PositionsWrapper>
       </MiddleContainer>
       <RightContainer>
-        <PoolSelect chainId={chainId} detailsLoading={false} />
+        <PoolSelect chainId={chainId} detailsLoading={false} dropdown={false} />
         <LiquidityDistibutionWrapper>
           <LiquidityDistributionTable
             token0={token0}

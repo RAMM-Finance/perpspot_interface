@@ -494,6 +494,10 @@ function TokenRow({
             }}
             onClick={(e) => {
               e.stopPropagation()
+              localStorage.setItem('currencyIn', JSON.stringify(token0?.wrapped.address))
+              localStorage.setItem('currencyOut', JSON.stringify(token1?.wrapped.address))
+              token0 && onCurrencySelection(Field.INPUT, token0)
+              token1 && onCurrencySelection(Field.OUTPUT, token1)
               if (currency1 && currency0 && token0 && token1) {
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },

@@ -22,6 +22,7 @@ import { ReactComponent as LogoText } from '../../assets/svg/full_logo_black.svg
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
+import Disclaimer from './Disclaimer'
 import * as styles from './style.css'
 
 const Nav = styled.nav`
@@ -72,7 +73,6 @@ export const PageTabs = () => {
   const { pathname } = useLocation()
   const { chainId: connectedChainId } = useWeb3React()
   const chainName = chainIdToBackendName(connectedChainId)
-
   const isPoolActive = useIsPoolsPage()
   const isNftPage = useIsNftPage()
   const micrositeEnabled = useMGTMMicrositeEnabled()
@@ -123,7 +123,7 @@ const Navbar = ({ blur }: { blur: boolean }) => {
   const isNftPage = useIsNftPage()
   const sellPageState = useProfilePageState((state) => state.state)
   const navigate = useNavigate()
-
+  const [warning, setWarning] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -178,11 +178,11 @@ const Navbar = ({ blur }: { blur: boolean }) => {
                   <ChainSelector />
                 </Box>
               )}
-
               <Web3Status />
             </Row>
           </Box>
         </Box>
+        {warning ? <Disclaimer setWarning={setWarning} /> : null}
         <Modal maxWidth={700} isOpen={showModal} onDismiss={handleCloseModal}>
           <AboutModal />
         </Modal>
