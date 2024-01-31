@@ -146,11 +146,13 @@ export function PoolDetailsSection({
         <PoolSelect chainId={chainId} detailsLoading={false} />
         <LiquidityDistibutionWrapper>
           <LiquidityDistributionTable
-            token0={token0}
-            token1={token1}
+            // token0={token0}
+            // token1={token1}
             bin={binData}
+            address0={token0?.address}
+            address1={token1?.address}
             fee={pool.fee}
-            pool={pool}
+            // pool={pool}
             chainId={chainId}
           />
         </LiquidityDistibutionWrapper>

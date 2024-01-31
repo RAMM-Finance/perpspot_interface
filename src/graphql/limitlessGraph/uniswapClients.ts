@@ -356,6 +356,7 @@ export function getUniswapUri(chainId?: number): string {
       return 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
     case SupportedChainId.ARBITRUM_ONE: //SupportedNetwork.ARBITRUM:
       return 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal'
+    // return `https://gateway-arbitrum.network.thegraph.com/api/${arbitrumApiKey}/subgraphs/id/FbCGRftH4a3yZugY7TnbYgPJVEv2LvMT6oF1fxPe9aJM`
     case SupportedChainId.OPTIMISM: //SupportedNetwork.OPTIMISM:
       return 'https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis'
     case SupportedChainId.POLYGON: // SupportedNetwork.POLYGON:

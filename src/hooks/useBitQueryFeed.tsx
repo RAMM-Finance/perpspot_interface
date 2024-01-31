@@ -33,8 +33,8 @@ const getQuery = (
           open: Price(minimum: Block_Number)
           close: Price(maximum: Block_Number)
         }
-        Block {
-          Time(interval: {in: hours, count: 1})
+         Block {
+          Date(interval: { in: days, count: 1 })
         }
         count
       }

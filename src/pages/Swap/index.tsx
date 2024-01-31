@@ -1,6 +1,6 @@
-import { sendAnalyticsEvent, Trace } from '@uniswap/analytics'
-import { InterfacePageName, SwapEventName } from '@uniswap/analytics-events'
-import { Currency, Token, TradeType } from '@uniswap/sdk-core'
+import { Trace } from '@uniswap/analytics'
+import { InterfacePageName } from '@uniswap/analytics-events'
+import { Currency, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
 import Footer from 'components/Footer'
@@ -11,17 +11,17 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
 import { TabContent } from 'components/Tabs'
 import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
+import { useCurrency } from 'hooks/Tokens'
 import { useBestPool } from 'hooks/useBestPool'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
-import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
 import { Row } from 'nft/components/Flex'
 import JoinModal from 'pages/Join'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { ReactNode } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
@@ -30,13 +30,9 @@ import { ThemedText } from 'theme'
 import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
-import { TOKEN_SHORTHANDS } from '../../constants/tokens'
-import { useCurrency, useDefaultActiveTokens } from '../../hooks/Tokens'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
-import useWrapCallback from '../../hooks/useWrapCallback'
 import { ActiveSwapTab, Field } from '../../state/swap/actions'
-import { useDefaultsFromURLSearch, useDerivedSwapInfo, useSwapState } from '../../state/swap/hooks'
-import { supportedChainId } from '../../utils/supportedChainId'
+import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
@@ -285,10 +281,10 @@ export function getIsValidSwapQuote(
 }
 
 export default function Swap({ className }: { className?: string }) {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const { account, chainId, provider } = useWeb3React()
 
-  const loadedUrlParams = useDefaultsFromURLSearch()
+  // const loadedUrlParams = useDefaultsFromURLSearch()
   const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
   const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
   // const [swapHeight, setSwapHeight] = useState<number>()
@@ -308,54 +304,65 @@ export default function Swap({ className }: { className?: string }) {
   // const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
 
   // token warning stuff
-  const [loadedInputCurrency, loadedOutputCurrency] = [
-    useCurrency(loadedUrlParams?.[Field.INPUT]?.currencyId),
-    useCurrency(loadedUrlParams?.[Field.OUTPUT]?.currencyId),
-  ]
-  const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
-  const urlLoadedTokens: Token[] = useMemo(
-    () => [loadedInputCurrency, loadedOutputCurrency]?.filter((c): c is Token => c?.isToken ?? false) ?? [],
-    [loadedInputCurrency, loadedOutputCurrency]
-  )
+  // const [loadedInputCurrency, loadedOutputCurrency] = [
+  //   useCurrency(loadedUrlParams?.[Field.INPUT]?.currencyId),
+  //   useCurrency(loadedUrlParams?.[Field.OUTPUT]?.currencyId),
+  // ]
+  // const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
+  // const urlLoadedTokens: Token[] = useMemo(
+  //   () => [loadedInputCurrency, loadedOutputCurrency]?.filter((c): c is Token => c?.isToken ?? false) ?? [],
+  //   [loadedInputCurrency, loadedOutputCurrency]
+  // )
 
-  const handleConfirmTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
-  }, [])
+  // const handleConfirmTokenWarning = useCallback(() => {
+  //   setDismissTokenWarning(true)
+  // }, [])
 
   // dismiss warning if all imported tokens are in active lists
-  const defaultTokens = useDefaultActiveTokens()
-  const importTokensNotInDefault = useMemo(
-    () =>
-      urlLoadedTokens &&
-      urlLoadedTokens
-        .filter((token: Token) => {
-          return !(token.address in defaultTokens)
-        })
-        .filter((token: Token) => {
-          // Any token addresses that are loaded from the shorthands map do not need to show the import URL
-          const supported = supportedChainId(chainId)
-          if (!supported) return true
-          return !Object.keys(TOKEN_SHORTHANDS).some((shorthand) => {
-            const shorthandTokenAddress = TOKEN_SHORTHANDS[shorthand][supported]
-            return shorthandTokenAddress && shorthandTokenAddress === token.address
-          })
-        }),
-    [chainId, defaultTokens, urlLoadedTokens]
-  )
+  // const defaultTokens = useDefaultActiveTokens()
+  // const importTokensNotInDefault = useMemo(
+  //   () =>
+  //     urlLoadedTokens &&
+  //     urlLoadedTokens
+  //       .filter((token: Token) => {
+  //         return !(token.address in defaultTokens)
+  //       })
+  //       .filter((token: Token) => {
+  //         // Any token addresses that are loaded from the shorthands map do not need to show the import URL
+  //         const supported = supportedChainId(chainId)
+  //         if (!supported) return true
+  //         return !Object.keys(TOKEN_SHORTHANDS).some((shorthand) => {
+  //           const shorthandTokenAddress = TOKEN_SHORTHANDS[shorthand][supported]
+  //           return shorthandTokenAddress && shorthandTokenAddress === token.address
+  //         })
+  //       }),
+  //   [chainId, defaultTokens, urlLoadedTokens]
+  // )
 
+  // const {
+  //   trade: { state: tradeState, trade },
+  //   // allowedSlippage,
+  //   // currencyBalances,
+  //   // parsedAmount,
+  //   currencies,
+  // } = useDerivedSwapInfo()
+
+  // const [inputCurrency, outputCurrency] = useMemo(() => {
+  //   return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
+  // }, [currencies])
   const {
-    trade: { state: tradeState, trade },
-    // allowedSlippage,
-    // currencyBalances,
-    // parsedAmount,
-    currencies,
-  } = useDerivedSwapInfo()
+    independentField,
+    typedValue,
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+    recipient,
+    activeTab,
+  } = useSwapState()
 
-  const [inputCurrency, outputCurrency] = useMemo(() => {
-    return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
-  }, [currencies])
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
 
-  const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
+  // const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
 
   // const baseCurrency = useMemo(() => {
   //   return inputIsToken0 ? inputCurrency : outputCurrency
@@ -363,7 +370,7 @@ export default function Swap({ className }: { className?: string }) {
 
   // const sorted = baseCurrency === inputCurrency
   // const quoteCurrency = sorted ? outputCurrency : inputCurrency
-  const [poolState, pool] = useBestPool(currencies.INPUT ?? undefined, currencies.OUTPUT ?? undefined)
+  const [poolState, pool] = useBestPool(inputCurrency ?? undefined, outputCurrency ?? undefined)
   // const theme = useTheme()
 
   // toggle wallet when disconnected
@@ -372,71 +379,67 @@ export default function Swap({ className }: { className?: string }) {
   // for expert mode
   // const [isExpertMode] = useExpertModeManager()
 
-  // swap state
-  const {
-    // independentField,
-    typedValue,
-    // recipient,
-    // leverageFactor,
-    activeTab,
-  } = useSwapState()
-
   // const isBorrowTab = ActiveSwapTab.BORROW == activeTab
 
-  const {
-    wrapType,
-    // execute: onWrap,
-    // inputError: wrapInputError,
-  } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
+  // const {
+  //   wrapType,
+  //   // execute: onWrap,
+  //   // inputError: wrapInputError,
+  // } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
 
-  const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
-    () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
-    [trade, tradeState]
-  )
+  // const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
+  //   () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
+  //   [trade, tradeState]
+  // )
 
   // reset if they close warning without tokens in params
-  const handleDismissTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
-    navigate('/swap/')
-  }, [navigate])
+  // const handleDismissTokenWarning = useCallback(() => {
+  //   setDismissTokenWarning(true)
+  //   navigate('/swap/')
+  // }, [navigate])
 
   // errors
-  const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
+  // const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
   // warnings on the greater of fiat value price impact and execution price impact
 
-  const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
+  const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
   // Handle time based logging events and event properties.
-  useEffect(() => {
-    const now = new Date()
-    // If a trade exists, and we need to log the receipt of this new swap quote:
-    if (newSwapQuoteNeedsLogging && !!trade) {
-      // Set the current datetime as the time of receipt of latest swap quote.
-      setSwapQuoteReceivedDate(now)
-      // Log swap quote.
-      sendAnalyticsEvent(
-        SwapEventName.SWAP_QUOTE_RECEIVED,
-        formatSwapQuoteReceivedEventProperties(trade, trade.gasUseEstimateUSD ?? undefined, fetchingSwapQuoteStartTime)
-      )
-      // Latest swap quote has just been logged, so we don't need to log the current trade anymore
-      // unless user inputs change again and a new trade is in the process of being generated.
-      setNewSwapQuoteNeedsLogging(false)
-      // New quote is not being fetched, so set start time of quote fetch to undefined.
-      setFetchingSwapQuoteStartTime(undefined)
-    }
-    // If another swap quote is being loaded based on changed user inputs:
-    if (routeIsLoading) {
-      setNewSwapQuoteNeedsLogging(true)
-      if (!fetchingSwapQuoteStartTime) setFetchingSwapQuoteStartTime(now)
-    }
-  }, [
-    newSwapQuoteNeedsLogging,
-    routeIsSyncing,
-    routeIsLoading,
-    fetchingSwapQuoteStartTime,
-    trade,
-    setSwapQuoteReceivedDate,
-  ])
+  // useEffect(() => {
+  //   const now = new Date()
+  //   // If a trade exists, and we need to log the receipt of this new swap quote:
+  //   if (newSwapQuoteNeedsLogging && !!trade) {
+  //     // Set the current datetime as the time of receipt of latest swap quote.
+  //     setSwapQuoteReceivedDate(now)
+  //     // Log swap quote.
+  //     sendAnalyticsEvent(
+  //       SwapEventName.SWAP_QUOTE_RECEIVED,
+  //       formatSwapQuoteReceivedEventProperties(trade, trade.gasUseEstimateUSD ?? undefined, fetchingSwapQuoteStartTime)
+  //     )
+  //     // Latest swap quote has just been logged, so we don't need to log the current trade anymore
+  //     // unless user inputs change again and a new trade is in the process of being generated.
+  //     setNewSwapQuoteNeedsLogging(false)
+  //     // New quote is not being fetched, so set start time of quote fetch to undefined.
+  //     setFetchingSwapQuoteStartTime(undefined)
+  //   }
+  //   // If another swap quote is being loaded based on changed user inputs:
+  //   if (routeIsLoading) {
+  //     setNewSwapQuoteNeedsLogging(true)
+  //     if (!fetchingSwapQuoteStartTime) setFetchingSwapQuoteStartTime(now)
+  //   }
+  // }, [
+  //   newSwapQuoteNeedsLogging,
+  //   routeIsSyncing,
+  //   routeIsLoading,
+  //   fetchingSwapQuoteStartTime,
+  //   trade,
+  //   setSwapQuoteReceivedDate,
+  // ])
+
+  // const leverageLoading = false
+  // const leveragePositions = [] as any
+  // const error = undefined
+  // const leverageSyncing = false
 
   const {
     loading: leverageLoading,
@@ -446,6 +449,8 @@ export default function Swap({ className }: { className?: string }) {
   } = useLeveragedLMTPositions(account)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
+  // const orderLoading = false
+  // const limitOrders = [] as any
 
   // const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
 
@@ -453,7 +458,6 @@ export default function Swap({ className }: { className?: string }) {
 
   const location = useLocation()
   const poolData = usePoolsData()
-
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
@@ -468,7 +472,13 @@ export default function Swap({ className }: { className?: string }) {
                 <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
               )}
             </TokenNameCell>
-            <PoolStatsSection poolData={poolData} chainId={chainId} pool={pool} />
+            <PoolStatsSection
+              poolData={poolData}
+              chainId={chainId}
+              inputAddress={inputCurrency?.wrapped.address}
+              outputAddress={outputCurrency?.wrapped.address}
+              fee={pool?.fee}
+            />
           </SwapHeaderWrapper>
           <MainWrapper>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
@@ -494,10 +504,7 @@ export default function Swap({ className }: { className?: string }) {
           <Footer />
         </PageWrapper>
         {!swapIsUnsupported ? null : (
-          <UnsupportedCurrencyFooter
-            show={swapIsUnsupported}
-            currencies={[currencies[Field.INPUT], currencies[Field.OUTPUT]]}
-          />
+          <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[inputCurrency, outputCurrency]} />
         )}
       </>
     </Trace>

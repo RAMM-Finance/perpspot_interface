@@ -1,15 +1,17 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
+import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { getFakePool, isFakePair } from 'constants/fake-tokens'
+import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
+import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
 import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
+import { usePool } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
@@ -18,13 +20,181 @@ import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
 
-const StatsWrapper = styled.div`
+export const StatsWrapper = styled.div`
   gap: 16px;
   ${textFadeIn}
   display: flex;
   flex-direction: row;
   width: 100%;
 `
+
+export function PoolStatsSection({
+  chainId,
+  inputAddress,
+  outputAddress,
+  fee,
+  poolData,
+}: {
+  chainId?: number
+  inputAddress?: string
+  outputAddress?: string
+  fee?: number
+  poolData: any
+}) {
+  const [address0, address1] = useMemo(() => {
+    if (!inputAddress || !outputAddress) return [undefined, undefined]
+
+    const inputIs0 = inputAddress.toLowerCase() < outputAddress.toLowerCase()
+
+    if (inputIs0) {
+      return [inputAddress, outputAddress]
+    } else {
+      return [outputAddress, inputAddress]
+    }
+  }, [inputAddress, outputAddress])
+
+  const currency0 = useCurrency(address0)
+  const currency1 = useCurrency(address1)
+
+  const poolAddress = useMemo(() => {
+    if (!address0 || !address1 || !fee || !chainId) return null
+    // if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
+    //   return getFakePool(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
+    // }
+    return getAddress(address0, address1, fee, chainId)
+  }, [chainId, address0, address1, fee])
+  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
+
+  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress ?? undefined)
+  const contract0 = useTokenContract(address0)
+  const contract1 = useTokenContract(address1)
+  const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
+    poolAddress ?? undefined,
+  ])
+  const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
+    poolAddress ?? undefined,
+  ])
+
+  const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
+    if (!pool || !poolData) return [null, false, null, null, null, null, null]
+
+    let tvl
+    let volume
+    if (Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)) {
+      {
+        tvl = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
+        volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
+      }
+    }
+
+    if (!priceData) {
+      return [null, false, null, null, null, volume, tvl, null]
+    }
+
+    let price = priceData.priceNow
+    const invertPrice = price.lt(1)
+    // if (
+    //   pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
+    //   pool.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+    // )
+    //   invertPrice = false
+    let delta
+    let price24hHigh
+    let price24hLow
+    let price24hAgo
+    if (invertPrice) {
+      price = new BN(1).div(price)
+      price24hAgo = new BN(1).div(priceData.price24hAgo)
+      delta = price.minus(price24hAgo).div(price).times(100)
+      price24hHigh = new BN(1).div(priceData.low24)
+      price24hLow = new BN(1).div(priceData.high24)
+    } else {
+      price24hAgo = priceData.price24hAgo
+      delta = price.minus(priceData.price24hAgo).div(price).times(100)
+      price24hHigh = priceData.high24
+      price24hLow = priceData.low24
+    }
+    // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
+    return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool]
+  }, [pool, priceData, poolData])
+
+  const baseQuoteSymbol = invertPrice
+    ? currency1?.symbol + '/' + currency0?.symbol
+    : currency0?.symbol + '/' + currency1?.symbol
+
+  const loading = loading0 || loading1 || priceLoading || !reserve0 || !reserve1 || !priceData || !pool
+
+  return (
+    <StatsWrapper>
+      <Stat
+        dataCy="current-price"
+        value={currentPrice}
+        baseQuoteSymbol={baseQuoteSymbol}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Oracle Price</Trans>
+          </ThemedText.BodySmall>
+        }
+        loading={false}
+      />
+      <Stat
+        dataCy="delta-24h"
+        value={delta24h}
+        delta={true}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h Change (Δ)</Trans>
+          </ThemedText.BodySmall>
+        }
+        loading={loading}
+      />
+      <Stat
+        dataCy="24h-low"
+        value={low24h}
+        baseQuoteSymbol={baseQuoteSymbol}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h low</Trans>
+          </ThemedText.BodySmall>
+        }
+        loading={loading}
+      />
+      <Stat
+        dataCy="24h-high"
+        value={high24h}
+        baseQuoteSymbol={baseQuoteSymbol}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h high</Trans>
+          </ThemedText.BodySmall>
+        }
+        loading={loading}
+      />
+      <Stat
+        dataCy="liq-below"
+        value={tvl}
+        dollar={true}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>TVL</Trans>
+          </ThemedText.BodySmall>
+        }
+        loading={false}
+      />
+      <Stat
+        dataCy="liq-above"
+        value={volume}
+        dollar={true}
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Total Volume</Trans>
+          </ThemedText.BodySmall>
+        }
+        loading={false}
+      />
+    </StatsWrapper>
+  )
+}
 
 const StatWrapper = styled.div`
   color: ${({ theme }) => theme.textSecondary};
@@ -46,7 +216,7 @@ const StatPrice = styled.div`
   color: ${({ theme }) => theme.textPrimary};
 `
 
-function Stat({
+export function Stat({
   dataCy,
   value,
   title,
@@ -114,168 +284,10 @@ function Stat({
   }
 }
 
-export function PoolStatsSection({ chainId, pool, poolData }: { chainId?: number; pool?: Pool; poolData: any }) {
-  const poolAddress = useMemo(() => {
-    if (!pool || !chainId) return null
-    if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
-      return getFakePool(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
-    }
-    return computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    })
-  }, [chainId, pool])
-
-  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
-  const contract0 = useTokenContract(pool?.token0?.address)
-  const contract1 = useTokenContract(pool?.token1?.address)
-  const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [poolAddress ?? ''])
-  const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [poolAddress ?? ''])
-
-  const currentPricePool = useMemo(() => {
-    if (!pool ) return undefined
-    const token0 = pool.token0
-    const token1 = pool.token1
-    let price = new BN(Number(pool.token0Price.quotient.toString()))
-    if(price.toString() == "0")price = new BN(Number(pool.token1Price.quotient.toString()))
-      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-        // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-        return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-        return new BN(1).div(price.div( new BN( 10** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
-      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-        return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
-        return price
-      } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
-        return price
-      } else {
-        return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-      }
-    return price
-  }, [priceData, pool])
-
-
-  const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!pool || !poolData) return [null, false, null, null, null, null, null]
-
-    let tvl
-    let volume
-    if (Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)) {
-      {
-        tvl = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
-        volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
-      }
-    }
-
-    
-    if (!priceData) {
-
-      return [null , false, null, null, null,volume, tvl, null]
-    }
-
-
-    let price = priceData.priceNow
-    let invertPrice = price.lt(1)
-    if (
-      pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
-      pool.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
-    )
-      invertPrice = false
-    let delta
-    let price24hHigh
-    let price24hLow
-    let price24hAgo
-    if (invertPrice) {
-      price = new BN(1).div(price)
-      price24hAgo = new BN(1).div(priceData.price24hAgo)
-      delta = price.minus(price24hAgo).div(price).times(100)
-      price24hHigh = new BN(1).div(priceData.low24)
-      price24hLow = new BN(1).div(priceData.high24)
-    } else {
-      delta = price.minus(priceData.price24hAgo).div(price).times(100)
-      price24hHigh = priceData.high24
-      price24hLow = priceData.low24
-    }
-    return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool]
-  }, [pool, priceData, poolData])
-
-  const baseQuoteSymbol = invertPrice
-    ? pool?.token0.symbol + '/' + pool?.token1.symbol
-    : pool?.token1.symbol + '/' + pool?.token0.symbol
-
-  const loading = loading0 || loading1 || priceLoading || !reserve0 || !reserve1 || !priceData || !pool
-
-  return (
-    <StatsWrapper>
-      <Stat
-        dataCy="current-price"
-        value={currentPrice || currentPricePool}
-        baseQuoteSymbol={baseQuoteSymbol}
-        title={
-          <ThemedText.BodySmall>
-            <Trans>Oracle Price</Trans>
-          </ThemedText.BodySmall>
-        }
-        loading={false}
-      />
-      <Stat
-        dataCy="delta-24h"
-        value={delta24h}
-        delta={true}
-        title={
-          <ThemedText.BodySmall>
-            <Trans>24h Change (Δ)</Trans>
-          </ThemedText.BodySmall>
-        }
-        loading={loading}
-      />
-      <Stat
-        dataCy="24h-low"
-        value={low24h}
-        baseQuoteSymbol={baseQuoteSymbol}
-        title={
-          <ThemedText.BodySmall>
-            <Trans>24h low</Trans>
-          </ThemedText.BodySmall>
-        }
-        loading={loading}
-      />
-      <Stat
-        dataCy="24h-high"
-        value={high24h}
-        baseQuoteSymbol={baseQuoteSymbol}
-        title={
-          <ThemedText.BodySmall>
-            <Trans>24h high</Trans>
-          </ThemedText.BodySmall>
-        }
-        loading={loading}
-      />
-      <Stat
-        dataCy="liq-below"
-        value={tvl}
-        dollar={true}
-        title={
-          <ThemedText.BodySmall>
-            <Trans>TVL</Trans>
-          </ThemedText.BodySmall>
-        }
-        loading={false}
-      />
-      <Stat
-        dataCy="liq-above"
-        value={volume}
-        dollar={true}
-        title={
-          <ThemedText.BodySmall>
-            <Trans>Total Volume</Trans>
-          </ThemedText.BodySmall>
-        }
-        loading={false}
-      />
-    </StatsWrapper>
+export function getAddress(address0: string, address1: string, fee: number, chainId: number): string {
+  return getCreate2Address(
+    V3_CORE_FACTORY_ADDRESSES[chainId],
+    solidityKeccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [address0, address1, fee])]),
+    POOL_INIT_CODE_HASH
   )
 }

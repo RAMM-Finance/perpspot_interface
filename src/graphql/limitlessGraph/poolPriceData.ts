@@ -49,6 +49,32 @@ const PRICE_CHART = gql`
   }
 `
 
+export const BITQUERY_PRICE_CHART = gql`
+  query MyQuery {
+    EVM(dataset: archive) {
+      DEXTradeByTokens(
+        where: {
+          Trade: {
+            Currency: { SmartContract: { is: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" } }
+            Side: { Currency: { SmartContract: { is: "0xdac17f958d2ee523a2206206994597c13d831ec7" } } }
+          }
+        }
+        limit: { count: 1 }
+      ) {
+        Block {
+          Date(interval: { in: days, count: 1 })
+        }
+        Trade {
+          high: Price(maximum: Trade_Price)
+          low: Price(minimum: Trade_Price)
+          open: Price(minimum: Block_Number)
+          close: Price(maximum: Block_Number)
+        }
+      }
+    }
+  }
+`
+
 export const POOL_PRICE_CHART_QUERY = gql`
   query poolHourDatas($startTime: Int!, $endTime: Int!, $address: String!, $amount: Int!) {
     poolHourDatas(

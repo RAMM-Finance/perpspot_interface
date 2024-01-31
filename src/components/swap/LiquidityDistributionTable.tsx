@@ -1,12 +1,11 @@
-import { NumberType } from '@uniswap/conedison/format'
-import { Currency } from '@uniswap/sdk-core'
-import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
+import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { useCurrency } from 'hooks/Tokens'
 import { BinData } from 'hooks/useLMTV2Positions'
-import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
+import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,21 +14,22 @@ import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 
 const LiquidityDistributionTable = ({
-  token0,
-  token1,
-  bin,
+  address0,
+  address1,
   fee,
-  pool,
   chainId,
+  bin,
 }: {
-  token0: Currency | undefined
-  token1: Currency | undefined
-  bin: BinData[] | undefined
-  fee?: number
-  pool?: Pool
+  address0: string | undefined
+  address1: string | undefined
+  fee: number | undefined
   chainId?: number
+  bin: BinData[] | undefined
 }) => {
   const [inverse, setInverse] = useState(false)
+  const token0 = useCurrency(address0)
+  const token1 = useCurrency(address1)
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
   const poolAddress = useMemo(() => {
     if (!pool || !chainId) return null
     return computePoolAddress({
@@ -39,33 +39,33 @@ const LiquidityDistributionTable = ({
       fee: pool.fee,
     })
   }, [chainId, pool])
-  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
+  // const bin = undefined as any
+  const priceData = undefined as any
+  // const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress ?? undefined)
 
   const currentPrice = useMemo(() => {
-    if(!priceData){
+    if (!priceData) {
       if (!pool || !token0 || !token1) return undefined
       let price = new BN(Number(pool.token0Price.quotient.toString()))
-      if(price.toString() == "0")price = new BN(Number(pool.token1Price.quotient.toString()))
-        if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-          setInverse(false)
-          // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-          return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-        } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-          setInverse(true)
+      if (price.toString() == '0') price = new BN(Number(pool.token1Price.quotient.toString()))
+      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+        setInverse(false)
+        // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+        return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+        setInverse(true)
 
-          return new BN(1).div(price.div( new BN( 10** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
-        } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-          return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-        } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
-          setInverse(true)
-          return price
-        } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
-          return price
-        } else {
-          return new BN(1).div(price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-        }
-      return price
-
+        return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+        return price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
+        setInverse(true)
+        return price
+      } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
+        return price
+      } else {
+        return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      }
     }
     if (!pool) return undefined
     let price = priceData.priceNow
@@ -81,8 +81,7 @@ const LiquidityDistributionTable = ({
       price = new BN(1).div(price)
     }
     return price
-  }, [priceData, pool])
-
+  }, [priceData, pool, token0, token1])
 
   //spread logic
   const negMax = useMemo(() => {
@@ -113,6 +112,7 @@ const LiquidityDistributionTable = ({
       )
     } else return 0
   }, [bin, currentPrice, token0, token1])
+
   const posMax = useMemo(() => {
     if (bin && currentPrice && token0 && token1) {
       return Math.max(
@@ -170,7 +170,7 @@ const LiquidityDistributionTable = ({
       ref.current?.scrollTo({ top: 400 })
     }
   }, [bin])
-  console.log('currentprice', currentPrice)
+
   return (
     <>
       <Title>
@@ -210,7 +210,7 @@ const LiquidityDistributionTable = ({
               negMax &&
               bin
                 .filter((y) =>
-                  !inverse
+                  inverse
                     ? 1 / Number(y.price)
                     : Number(y.price) / 1e18 >
                         currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
@@ -234,7 +234,7 @@ const LiquidityDistributionTable = ({
                 )
                 .map((x) => (
                   <>
-                    {!inverse ? (
+                    {inverse ? (
                       <LDDataRow
                         spread={
                           ((Number(x.token0Liquidity) - Number(x.token0Borrowed)) /
@@ -285,12 +285,8 @@ const LiquidityDistributionTable = ({
         {/* </NegativeWrapper> */}
 
         <PriceWrapper>
-          {token0 && token1 && (
-            <ThemedText.BodyPrimary>{formatBNToString(currentPrice)}</ThemedText.BodyPrimary>
-          )}
-          {token0 && token1 && (
-            <ThemedText.BodyPrimary>{formatBNToString(currentPrice)}</ThemedText.BodyPrimary>
-          )}
+          {token0 && token1 && <ThemedText.BodyPrimary>{formatBNToString(currentPrice)}</ThemedText.BodyPrimary>}
+          {token0 && token1 && <ThemedText.BodyPrimary>{formatBNToString(currentPrice)}</ThemedText.BodyPrimary>}
         </PriceWrapper>
         <LDHeaderRow>
           <LDHeaderCellIn>
@@ -318,7 +314,7 @@ const LiquidityDistributionTable = ({
               posMax &&
               bin
                 .filter((y) =>
-                  !inverse
+                  inverse
                     ? 1 / Number(y.price)
                     : Number(y.price) / 1e18 <
                         currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
@@ -342,7 +338,7 @@ const LiquidityDistributionTable = ({
                 )
                 .map((x) => (
                   <>
-                    {!inverse ? (
+                    {inverse ? (
                       <LDDataRowNeg
                         spread={
                           ((Number(x.token1Liquidity) - Number(x.token1Borrowed)) /
