@@ -164,8 +164,13 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           }
 
           try {
+            console.log('poolAddress', poolAddress)
             let denomination 
-            if(poolAddress=="0x2f5e87C9312fa29aed5c179E456625D79015299c"){
+            if(poolAddress=="0x2f5e87C9312fa29aed5c179E456625D79015299c"
+              || poolAddress == "0x0E4831319A50228B9e450861297aB92dee15B44F"
+              || poolAddress == "0xC6962004f452bE9203591991D15f6b388e09E8D0"
+              
+              ){
               denomination = 'quote'
             }else{
               denomination = 'base'

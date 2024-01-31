@@ -157,7 +157,6 @@ export function usePools(
       if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid) return [PoolState.INVALID, null]
       if (!poolParam) return [PoolState.NOT_ADDED, null]
         // console.log('2')
-      console.log('max', token0, token1, poolParam, addedPoolLoading, addedPoolValid)
       if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null]
 
       if (slot0Loading || liquidityLoading || addedPoolLoading) return [PoolState.LOADING, null]
