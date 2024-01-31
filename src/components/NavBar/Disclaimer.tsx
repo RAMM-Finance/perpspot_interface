@@ -14,9 +14,8 @@ function Disclaimer({ setWarning }: { setWarning: (val: boolean) => void }) {
   return (
     <Wrapper>
       <ThemedText.DeprecatedBlack fontSize={14} color="black">
-        Don't invest unless you are prepared to lose all the money you invest. This is a high-risk investment and you
-        should not expect to be protected if something goes wrong. Please read carefully and understand risk disclosure
-        and disclaimers before you proceed.
+        Limitless is currently in Beta. There might be minor frontend bugs. Although the contracts are 
+        undergone a lot of stateful fuzz tests, don't invest more than you are willing to lose.
       </ThemedText.DeprecatedBlack>
       <CloseIcon style={{ color: 'black' }} onClick={() => setWarning(false)} size="16" />
     </Wrapper>
