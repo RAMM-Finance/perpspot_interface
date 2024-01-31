@@ -14,7 +14,7 @@ function Disclaimer({ setWarning }: { setWarning: (val: boolean) => void }) {
   return (
     <Wrapper>
       <ThemedText.DeprecatedBlack fontSize={14} color="black">
-        Limitless is currently in Beta. There might be minor frontend bugs. Although the contracts are 
+        Limitless is currently in Beta. There might be minor frontend bugs. Although the contracts have 
         undergone a lot of stateful fuzz tests, don't invest more than you are willing to lose.
       </ThemedText.DeprecatedBlack>
       <CloseIcon style={{ color: 'black' }} onClick={() => setWarning(false)} size="16" />

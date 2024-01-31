@@ -478,6 +478,26 @@ export default function SimplePool() {
     call()
   }, [account, provider, vaultContract, attemptingTxn])
 
+
+  const [limwethSupply, setLimwethSupply] = useState<any>()
+  const [limwethBacking, setlimwethBacking] = useState<any>()
+  const [limwethUtilized, setlimwethUtilized] = useState<any>()
+
+  useEffect(()=>{
+    if (!provider || !limweth) return
+
+      const call = async() =>{
+        const supply = await limweth.totalSupply() 
+        const backing = await limweth.tokenBalance()
+        const utilized = await limweth.utilizedBalance()
+
+        setLimwethSupply(supply)
+        setlimwethBacking(backing)
+        setlimwethUtilized(utilized)
+      }
+    call()
+  },[provider, limweth])
+
   const [data, setData] = useState<any>()
   const [mW, setMW] = useState<any>()
   const [llpPrice, setLlpPrice] = useState<any>()
