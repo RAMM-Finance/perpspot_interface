@@ -8,6 +8,7 @@ import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -18,12 +19,13 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { BigNumber } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useVaultContract,useLimweth } from 'hooks/useContract'
+import { useLimweth, useVaultContract } from 'hooks/useContract'
+import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Swap'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowUpRight, ChevronDown, Maximize2 } from 'react-feather'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowUpRight, ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
 import { Info } from 'react-feather'
 import { useDerivedLmtMintInfo, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -49,15 +51,21 @@ export default function SimplePool() {
   const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
 
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
+
   const { account, chainId, provider } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
 
-  const [input, setInput] = useState('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-
   const LLP = useCurrency('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
+  const limWETH = useCurrency('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')
 
+  const [input, setInput] = useState('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+  const [output, setOutput] = useState('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
   const inputCurrency = useCurrency(input)
-  const outputCurrency = LLP
+  const outputCurrency = useCurrency(output)
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
     return buy ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
@@ -137,8 +145,6 @@ export default function SimplePool() {
     },
     {}
   )
-
-  console.log(parsedAmounts[Field.CURRENCY_A])
 
   const atMaxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
     (accumulator, field) => {
@@ -227,7 +233,6 @@ export default function SimplePool() {
     LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
-
   //callStatic for deposit
   const cb = useCallback(async (): Promise<BigNumber> => {
     try {
@@ -258,13 +263,12 @@ export default function SimplePool() {
       })
   }, [vaultContract, parsedAmounts, cb, account, chainId, provider, buy])
 
-  const limWethMintCallback = useCallback(async() : Promise<TransactionResponse>=>{
-
+  const limWethMintCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
       console.log('input', baseCurrency?.wrapped.address, amountIn, account)
-      if ( amountIn && account) response = await limweth?.deposit(amountIn, account)
+      if (amountIn && account) response = await limweth?.deposit(amountIn, account)
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
@@ -275,9 +279,8 @@ export default function SimplePool() {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
-      console.log('redeeminput',  amountIn, account)
-      if ( amountIn && account)
-        response = await limweth?.redeem(amountIn, account, account)
+      console.log('redeeminput', amountIn, account)
+      if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
@@ -309,8 +312,18 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [limWethMintCallback, account, limweth, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
-
+  }, [
+    limWethMintCallback,
+    account,
+    limweth,
+    chainId,
+    provider,
+    parsedAmounts,
+    txHash,
+    attemptingTxn,
+    error,
+    addTransaction,
+  ])
 
   const handleLimWethRedeem = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
@@ -337,12 +350,18 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [limWethWithdrawCallback, account, limweth, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
-
-
-
-
-
+  }, [
+    limWethWithdrawCallback,
+    account,
+    limweth,
+    chainId,
+    provider,
+    parsedAmounts,
+    txHash,
+    attemptingTxn,
+    error,
+    addTransaction,
+  ])
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -385,10 +404,12 @@ export default function SimplePool() {
   }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
 
   //call static for redeem
+  const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
 
   const cbredeem = useCallback(async (): Promise<BigNumber> => {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      console.log(amountIn)
       let response
       console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
       if (quoteCurrency && amountIn && account)
@@ -601,6 +622,45 @@ export default function SimplePool() {
   // Total Supply is raw supply
   // Total Backing is rawbacking
   // Utilization rate is
+
+  const chevronProps = {
+    height: 15,
+    width: 15,
+    color: theme.textSecondary,
+    cursor: 'pointer',
+  }
+
+  const dropdown = (
+    <NavDropdown
+      onClick={() => {
+        setIsOpen(false)
+      }}
+      ref={modalRef}
+      style={{
+        background: '#040609',
+        position: 'absolute',
+        height: 'fit-content',
+        zIndex: '3',
+        marginTop: '100px',
+        marginLeft: '40px',
+        width: '120px',
+      }}
+    >
+      <DropWrapper>
+        <div style={{ display: 'flex', gap: '7px', flexDirection: 'column' }}>
+          <TokenWrapper onClick={() => setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')}>
+            <CurrencyLogo currency={LLP} size="18" />
+            <ThemedText.BodySmall>LLP</ThemedText.BodySmall>
+          </TokenWrapper>
+          <TokenWrapper onClick={() => setOutput('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')}>
+            <CurrencyLogo currency={LLP} size="18" />
+            <ThemedText.BodySmall>limWETH</ThemedText.BodySmall>
+          </TokenWrapper>
+        </div>
+      </DropWrapper>
+    </NavDropdown>
+  )
+
   return (
     <Wrapper>
       <AutoColumn>
@@ -618,12 +678,17 @@ export default function SimplePool() {
             <RowStart padding="5px">
               <Logo width={25} fill="#fff" />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  <ThemedText.BodySecondary>LLP</ThemedText.BodySecondary>
-                  <ChevronDown width={16} />
+                <div ref={ref} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  <ThemedText.BodySecondary>{outputCurrency?.symbol}</ThemedText.BodySecondary>
+                  {isOpen ? (
+                    <ChevronUp onClick={() => setIsOpen(!isOpen)} {...chevronProps} />
+                  ) : (
+                    <ChevronDown onClick={() => setIsOpen(!isOpen)} {...chevronProps} />
+                  )}
                 </div>
-                <ThemedText.BodyPrimary fontSize={12}>LLP</ThemedText.BodyPrimary>
+                <ThemedText.BodyPrimary fontSize={12}>{outputCurrency?.symbol}</ThemedText.BodyPrimary>
               </div>
+              {isOpen && <>{dropdown}</>}
             </RowStart>
             <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
               <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
@@ -682,7 +747,7 @@ export default function SimplePool() {
                   }}
                   active={buy}
                 >
-                  <StyledSelectorText active={buy}>Buy LLP </StyledSelectorText>
+                  <StyledSelectorText active={buy}>Buy {outputCurrency?.symbol} </StyledSelectorText>
                 </Selector>
                 <Selector
                   onClick={() => {
@@ -691,7 +756,7 @@ export default function SimplePool() {
                   }}
                   active={!buy}
                 >
-                  <StyledSelectorText active={!buy}>Sell LLP</StyledSelectorText>
+                  <StyledSelectorText active={!buy}>Sell {outputCurrency?.symbol}</StyledSelectorText>
                 </Selector>
               </Filter>
             </FilterWrapper>
@@ -700,7 +765,7 @@ export default function SimplePool() {
               onUserInput={onFieldAInput}
               onMax={() => {
                 !buy
-                  ? onFieldAInput(llpBalance.toString())
+                  ? onFieldAInput(llpBalance.toFixed(7).toString())
                   : onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
               }}
               showMaxButton={true}
@@ -769,9 +834,15 @@ export default function SimplePool() {
             ) : liqError ? (
               <ButtonError text="Not enough liquidity"></ButtonError>
             ) : buy ? (
-              <ButtonBlue onClick={handleDeposit} text="Buy LLP"></ButtonBlue>
+              <ButtonBlue
+                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleLimWethDeposit}
+                text={`Buy ${outputCurrency?.symbol}`}
+              ></ButtonBlue>
             ) : (
-              <ButtonBlue onClick={handleRedeem} text="Sell LLP"></ButtonBlue>
+              <ButtonBlue
+                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleLimWethRedeem}
+                text={`Sell ${outputCurrency?.symbol}`}
+              ></ButtonBlue>
             )}
           </CurrencyWrapper>
         </RowBetween>
@@ -963,6 +1034,29 @@ const FilterWrapper = styled.div`
   display: flex;
   margin-bottom: 6px;
   width: 100%;
+`
+
+const TokenWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  &:hover {
+    background-color: ${({ theme }) => theme.backgroundOutline};
+  }
+  border-radius: 5px;
+  cursor: pointer;
+`
+
+const DropWrapper = styled.div`
+  background-color: ${({ theme }) => theme.backgroundSurface};
+
+  border-radius: 10px;
+  width: 100%;
+  padding: 0.5rem;
+  height: fit-content;
 `
 
 const StyledSelectorText = styled.div<{ active: boolean }>`

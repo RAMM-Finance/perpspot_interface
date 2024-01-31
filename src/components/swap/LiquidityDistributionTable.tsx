@@ -42,45 +42,38 @@ const LiquidityDistributionTable = ({
   const priceData = undefined as any
   // const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress ?? undefined)
 
-  // console.log('tooes', token0, token1)
-  const [currentPrice, inverse] = useMemo(() => {
-    if (!pool) return [undefined, false]
-    const token0Price = new BN(pool.token0Price.toFixed(18))
-    if (token0Price.lt(1)) {
-      return [new BN(1).div(token0Price), false]
-    } else {
-      return [token0Price, true]
+  console.log('tooes', token0, token1)
+  const currentPrice = useMemo(() => {
+    if (!priceData) {
+      if (!pool || !token0 || !token1) return undefined
+      let price = new BN(Number(pool.token0Price.quotient.toString()))
+      if (price.toString() == '0') price = new BN(Number(pool.token1Price.quotient.toString()))
+      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+        setInverse(false)
+        // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+        return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+        setInverse(true)
+        return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+        return price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
+        setInverse(true)
+        return price
+      } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
+        return price
+      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'GMX') {
+        setInverse(false)
+        return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
+      } else if (token0?.wrapped.symbol === 'PENDLE' && token1?.wrapped.symbol === 'WETH') {
+        setInverse(false)
+        return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      } else {
+        return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+      }
     }
-  }, [pool])
-  // const currentPrice = useMemo(() => {
-  //   if (!priceData) {
-  //     if (!pool || !token0 || !token1) return undefined
-  //     let price = new BN(Number(pool.token0Price.quotient.toString()))
-  //     if (price.toString() == '0') price = new BN(Number(pool.token1Price.quotient.toString()))
-  //     if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-  //       setInverse(true)
-  //       // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-  //       return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-  //     } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-  //       setInverse(true)
-
-  //       return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
-  //     } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-  //       return price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-  //     } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
-  //       setInverse(false)
-  //       return price
-  //     } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
-  //       return price
-  //     } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'GMX') {
-  //       setInverse(true)
-  //       return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
-  //     } else {
-  //       return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-  //     }
-  //   }
-  //   return undefined
-  // }, [priceData, pool, token0, token1])
+    return undefined
+  }, [priceData, pool])
 
   //spread logic
   const negMax = useMemo(() => {
@@ -156,7 +149,7 @@ const LiquidityDistributionTable = ({
       } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'GMX') {
         return 18
       } else if (token0?.wrapped.symbol === 'PENDLE' && token1?.wrapped.symbol === 'WETH') {
-        return 18
+        return 12
       } else {
         return 0
       }
@@ -245,7 +238,7 @@ const LiquidityDistributionTable = ({
                           }
                           key={Number(x.price) / Number(`1e${liqNum}`)}
                         >
-                          <LDDataCellIn>{(1 / (Number(x.price) / Number(`1e${liqNum}`))).toFixed(4)}</LDDataCellIn>
+                          <LDDataCellIn>{(1 / (Number(x.price) / Number(`1e${liqNum}`))).toFixed(6)}</LDDataCellIn>
                           <LDDataCellOut>
                             {formatDollar({
                               num:
@@ -265,7 +258,7 @@ const LiquidityDistributionTable = ({
                           }
                           key={Number(x.price) / Number(`1e${liqNum}`)}
                         >
-                          <LDDataCellIn>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellIn>
+                          <LDDataCellIn>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(6)}</LDDataCellIn>
                           <LDDataCellOut>
                             {formatDollar({
                               num:
@@ -323,7 +316,7 @@ const LiquidityDistributionTable = ({
                           key={Number(x.price) / Number(`1e${liqNum}`)}
                         >
                           <LDDataCellInNeg>
-                            {(1 / (Number(x.price) / Number(`1e${liqNum}`))).toFixed(4)}
+                            {(1 / (Number(x.price) / Number(`1e${liqNum}`))).toFixed(6)}
                           </LDDataCellInNeg>
                           <LDDataCellOutNeg>
                             {formatDollar({
@@ -345,7 +338,7 @@ const LiquidityDistributionTable = ({
                           // spread={75 / 100}
                           key={Number(x.price) / Number(`1e${liqNum}`)}
                         >
-                          <LDDataCellInNeg>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(2)}</LDDataCellInNeg>
+                          <LDDataCellInNeg>{(Number(x.price) / Number(`1e${liqNum}`)).toFixed(6)}</LDDataCellInNeg>
                           <LDDataCellOutNeg>
                             {formatDollar({
                               num:

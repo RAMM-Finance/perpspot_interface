@@ -227,7 +227,8 @@ export default function PoolSelect({
   const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
     if (
       (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'LDO') ||
-      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC')
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'PENDLE')
     ) {
       localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))
       localStorage.setItem('currencyOut', JSON.stringify(currencyIn.wrapped.address))

@@ -866,16 +866,16 @@ export function useDerivedLmtMintInfo(
     errorMessage = errorMessage ?? <Trans>Invalid price input</Trans>
   }
 
-  if (!parsedAmounts[Field.CURRENCY_A] && !depositADisabled) {
-    errorMessage = errorMessage ?? <Trans>Enter an amount</Trans>
-  }
-
-  // if (
-  //   (!parsedAmounts[Field.CURRENCY_A] && !depositADisabled) ||
-  //   (!parsedAmounts[Field.CURRENCY_B] && !depositBDisabled)
-  // ) {
+  // if (!parsedAmounts[Field.CURRENCY_A] && !depositADisabled) {
   //   errorMessage = errorMessage ?? <Trans>Enter an amount</Trans>
   // }
+
+  if (
+    (!parsedAmounts[Field.CURRENCY_A] && !depositADisabled) ||
+    (!parsedAmounts[Field.CURRENCY_B] && !depositBDisabled)
+  ) {
+    errorMessage = errorMessage ?? <Trans>Enter an amount</Trans>
+  }
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts
 

@@ -1,14 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
-import { FeeAmount } from '@uniswap/v3-sdk'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
 import { TimePeriod } from 'graphql/data/util'
+import { useBestPool } from 'hooks/useBestPool'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { atomWithReset } from 'jotai/utils'
@@ -653,14 +652,24 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const baseCurrency = useCurrency(currencyIda?.address)
   const quoteCurrency = useCurrency(currencyIdb?.address)
+
   const [token0, token1] =
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
 
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee?? undefined)
+  const [, pool] = useBestPool(token0 ?? undefined, token1 ?? undefined)
   const currentPrice = useMemo(() => {
     if (!pool) return
+    if (
+      (token0?.symbol === 'WETH' && token1?.symbol === 'LDO') ||
+      (token0?.symbol === 'WETH' && token1?.symbol === 'wBTC') ||
+      (token0?.symbol === 'GMX' && token1?.symbol === 'WETH')
+    ) {
+      return (
+        1 / (Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`))
+      )
+    }
     return Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`)
   }, [pool])
 
@@ -674,7 +683,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
     return [undefined, undefined]
   }, [pool, tickDiscretization])
-  // console.log("rateanduti????",token0, token1, pool, 
+  // console.log("rateanduti????",token0, token1, pool,
   //   pool?.token0, pool?.token1, pool?.fee, tickLower, tickUpper
   //   )
   const { result: rateUtilData } = useRateAndUtil(
@@ -684,7 +693,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickLower,
     tickUpper
   )
-
 
   // console.log('rateutil', pool?.token0, pool?.token1, rateUtilData)
   // let tvl_

@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
+import { formatCurrencyAmount } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -14,7 +15,6 @@ import { ReactNode, useCallback, useState } from 'react'
 import { Lock } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
-import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { useCurrencyBalance } from '../../state/connection/hooks'
@@ -323,7 +323,7 @@ export default function CurrencyInputPanel({
                           Balance:{' '}
                           {llpBalance
                             ? formatLocaleNumber({ number: llpBalance, locale: DEFAULT_LOCALE })
-                            : formatCurrencyAmount(selectedCurrencyBalance, 4)}
+                            : formatCurrencyAmount(selectedCurrencyBalance)}
                         </Trans>
                       )
                     ) : null}

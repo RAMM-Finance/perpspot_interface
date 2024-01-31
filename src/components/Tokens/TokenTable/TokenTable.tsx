@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import { ethers } from 'ethers'
 import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
@@ -11,7 +12,7 @@ import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
-import {ethers} from 'ethers'
+
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
@@ -172,8 +173,6 @@ export default function TokenTable() {
               (val: Pool) =>
                 val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
                 val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-
-   
                 // ethers.utils.getAddress(val.token0) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
                 // ethers.utils.getAddress(val.token1) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
 
@@ -187,8 +186,7 @@ export default function TokenTable() {
                 // ethers.utils.getAddress(val.token1) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
 
                 ethers.utils.getAddress(val.token0) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' &&
-                ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' 
-              
+                ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66'
             )
             .map((val: Pool) => {
               return { token0: val.token0, token1: val.token1, fee: val.fee }
@@ -362,11 +360,12 @@ function HowToDetails() {
     <HowTo>
       <ThemedText.HeadlineSmall>How It Works</ThemedText.HeadlineSmall>
       <p>
-        Liquidity Providers (LPs) earn swap fees from Uniswap when the position is in range, and also 
-          earn additional premiums for out-of-range capital being lent out to traders. 
+        Liquidity Providers (LPs) earn swap fees from Uniswap when the position is in range, and also earn additional
+        premiums for out-of-range capital being lent out to traders.
       </p>
       <p>
-        LPs in individual pools therefore always earns at least Uniswap swap fees. LPs can create a new LP Position, which will automatically provide liquidity to Uniswap. 
+        LPs in individual pools therefore always earns at least Uniswap swap fees. LPs can create a new LP Position,
+        which will automatically provide liquidity to Uniswap.
       </p>
     </HowTo>
   )
