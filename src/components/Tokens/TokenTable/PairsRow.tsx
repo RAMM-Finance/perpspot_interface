@@ -6,8 +6,8 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
 import { TimePeriod } from 'graphql/data/util'
-import { useBestPool } from 'hooks/useBestPool'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
+import { usePool } from 'hooks/usePools'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { atomWithReset } from 'jotai/utils'
@@ -658,18 +658,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
 
-  const [, pool] = useBestPool(token0 ?? undefined, token1 ?? undefined)
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
   const currentPrice = useMemo(() => {
     if (!pool) return
-    if (
-      (token0?.symbol === 'WETH' && token1?.symbol === 'LDO') ||
-      (token0?.symbol === 'WETH' && token1?.symbol === 'wBTC') ||
-      (token0?.symbol === 'GMX' && token1?.symbol === 'WETH')
-    ) {
-      return (
-        1 / (Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`))
-      )
-    }
     return Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`)
   }, [pool])
 
