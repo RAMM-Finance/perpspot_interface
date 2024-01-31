@@ -25,7 +25,7 @@ interface AddPositionData {
   trader: string
 }
 
-export const CollectMultipler = 400
+export const CollectMultipler = 250
 export const VaultDivisor = 200000
 export const referralDivisor = 3
 

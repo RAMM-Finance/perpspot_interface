@@ -263,6 +263,7 @@ export function useBulkBinData(
       roundedCurrentTick - 3000,
       roundedCurrentTick + 3000,
     ]
+    console.log('params???', params)
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
   }, [pool, tickDiscretization])
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)

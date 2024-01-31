@@ -6,6 +6,7 @@ import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
 import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PoolDetailsSection } from 'components/swap/PoolDetailsSection'
+import PoolSelect from 'components/swap/PoolSelect'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
@@ -27,7 +28,6 @@ import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { PoolSelector } from '../../components/swap/PoolSelector'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
@@ -466,7 +466,7 @@ export default function Swap({ className }: { className?: string }) {
             <TokenNameCell>
               {inputCurrency && outputCurrency ? (
                 <Row>
-                  <PoolSelector fee={pool?.fee} largeWidth={false} />
+                  <PoolSelect chainId={chainId} detailsLoading={false} dropdown={true} />
                 </Row>
               ) : (
                 <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>

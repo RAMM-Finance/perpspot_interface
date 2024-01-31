@@ -86,9 +86,18 @@ export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string
   // else if(address =="0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60") return useTokenFromActiveNetwork(address)
   const token: Token | undefined = address ? tokens[address] : undefined
   let tokenFromNetwork = useTokenFromActiveNetwork(token ? undefined : address ? address : undefined)
-  if((address == "0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60" 
+  if((
+    address == "0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60" 
     || address =="0x912CE59144191C1204E64559FE8253a0e49E6548"
-    || "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a") && token) 
+    || address == "0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a"
+    || address == "0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8"
+    || address == "0x539bdE0d7Dbd336b79148AA742883198BBF60342"
+    || address == "0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555"
+    || address == "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4"
+    || address == "0x3082CC23568eA640225c2467653dB90e9250AaA0"
+    || address == "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66"
+
+    ) && token) 
     tokenFromNetwork= new Token(token?.chainId, token?.address, token?.decimals, token?.symbol, token?.name)
 
   return tokenFromNetwork ?? token
