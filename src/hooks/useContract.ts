@@ -85,9 +85,15 @@ const usdValueData: PricesMap = {
 
   '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 2.7, //ldo
   '0x912CE59144191C1204E64559FE8253a0e49E6548': 1.6, //arb
-  '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 45
-
+  '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 45, //gmx
+  '0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8': 2.5, //pendle
+  '0x539bdE0d7Dbd336b79148AA742883198BBF60342': 1.25,//magic
+  '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555': 1.1, //xpet
+  '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4': 15, //link 
+  '0x3082CC23568eA640225c2467653dB90e9250AaA0': 0.28//rdnt
 }
+
+
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
   get: (target, address: string) => (address in target ? target[address] : 0),
@@ -107,7 +113,9 @@ const DecimalValues: DecimalMap = {
   '0xaf88d065e77c8cC2239327C5EDb3A432268e5831': 6,
   '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 18, 
   '0x912CE59144191C1204E64559FE8253a0e49E6548': 18, 
-  '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 18
+  '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 18, 
+
+
 }
 
 export const tokenDecimal = new Proxy<DecimalMap>(DecimalValues, {

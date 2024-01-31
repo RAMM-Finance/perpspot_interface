@@ -174,17 +174,17 @@ export default function TokenTable() {
                 val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
 
    
-                ethers.utils.getAddress(val.token0) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
-                ethers.utils.getAddress(val.token1) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
+                // ethers.utils.getAddress(val.token0) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
+                // ethers.utils.getAddress(val.token1) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
 
-                ethers.utils.getAddress(val.token0) !== '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555' &&
-                ethers.utils.getAddress(val.token1) !== '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555' &&
+                // ethers.utils.getAddress(val.token0) !== '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555' &&
+                // ethers.utils.getAddress(val.token1) !== '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555' &&
 
-                ethers.utils.getAddress(val.token0) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
-                ethers.utils.getAddress(val.token1) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
+                // ethers.utils.getAddress(val.token0) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
+                // ethers.utils.getAddress(val.token1) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
 
-                ethers.utils.getAddress(val.token0) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
-                ethers.utils.getAddress(val.token1) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
+                // ethers.utils.getAddress(val.token0) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
+                // ethers.utils.getAddress(val.token1) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
 
                 ethers.utils.getAddress(val.token0) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' &&
                 ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' 

@@ -133,6 +133,8 @@ export function usePools(
     'PoolParams',
     poolAddresses.map((address) => [address])
   )
+  // console.log('poolAddresses', poolKeys[0], poolTokens, poolAddresses, 
+  //   slot0s[0], liquidities[0], poolParams)
 
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
@@ -154,10 +156,18 @@ export function usePools(
 
       if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid) return [PoolState.INVALID, null]
       if (!poolParam) return [PoolState.NOT_ADDED, null]
+        // console.log('2')
+      console.log('max', token0, token1, poolParam, addedPoolLoading, addedPoolValid)
       if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null]
+
       if (slot0Loading || liquidityLoading || addedPoolLoading) return [PoolState.LOADING, null]
+        // console.log('4')
+
       if (!slot0 || !liquidity) return [PoolState.NOT_EXISTS, null]
+        // console.log('5')
+
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null]
+        // console.log('6')
 
       try {
         const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)

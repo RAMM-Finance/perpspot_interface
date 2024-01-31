@@ -587,7 +587,7 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume, fee } = props
   const filterString = useAtomValue(filterStringAtom)
 
   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
@@ -658,7 +658,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
 
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, FeeAmount.LOW)
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee?? undefined)
   const currentPrice = useMemo(() => {
     if (!pool) return
     return Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`)
@@ -674,7 +674,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
     return [undefined, undefined]
   }, [pool, tickDiscretization])
-
+  // console.log("rateanduti????",token0, token1, pool, 
+  //   pool?.token0, pool?.token1, pool?.fee, tickLower, tickUpper
+  //   )
   const { result: rateUtilData } = useRateAndUtil(
     pool?.token0.address,
     pool?.token1.address,
@@ -683,6 +685,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
+
+  // console.log('rateutil', pool?.token0, pool?.token1, rateUtilData)
   // let tvl_
   // let volume_
   // let estimatedapr_
@@ -710,7 +714,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   estimatedapr_ = 25.7
   //   urate_ = 56.3
   // }
-  console.log(token0, token1)
   return (
     <RowWrapper
       ref={ref}

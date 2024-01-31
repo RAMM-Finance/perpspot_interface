@@ -96,7 +96,7 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
 
       tvWidgetRef.current?.onChartReady(function () {
         setChartReady(true)
-        tvWidgetRef.current?.applyOverrides({ "mainSeriesProperties.minTick": "10000,1,false" });
+        tvWidgetRef.current?.applyOverrides({ "mainSeriesProperties.minTick": "100000,1,false" });
 
         tvWidgetRef.current?.activeChart().dataReady(() => {
           setChartDataLoading(false)

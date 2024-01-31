@@ -37,6 +37,7 @@ export function useRateAndUtil(
       tickUpper,
     ]
     let data
+    console.log('rateutil', token0, token1, tickLower, tickUpper)
     try {
       data = DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
     } catch (err) {

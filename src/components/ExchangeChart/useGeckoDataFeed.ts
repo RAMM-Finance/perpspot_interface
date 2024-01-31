@@ -35,6 +35,8 @@ const fetchBars = async (
   token: 'base' | 'quote',
   after_timestamp: number
 ) => {
+  console.log('gecko', before_timestamp)
+  //api.geckoterminal.com/api/v2/networks/arbitrum/pools/0x0e4831319a50228b9e450861297ab92dee15b44f/ohlcv/hour?aggregate=1&before_timestamp=1705994487&limit=300&currency=token&token=base
   try {
     const response = await axios.get(
       formatEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, before_timestamp, limit, currency, token),
@@ -124,7 +126,6 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             currency_code: quoteSymbol,
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
-            invertPrice: true, 
             poolAddress,
           }
           setTimeout(() => onSymbolResolvedCallback(symbolInfo))
@@ -163,6 +164,12 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           }
 
           try {
+            let denomination 
+            if(poolAddress=="0x2f5e87C9312fa29aed5c179E456625D79015299c"){
+              denomination = 'quote'
+            }else{
+              denomination = 'base'
+            }
             const { bars, error } = await fetchBars(
               poolAddress.toLowerCase(),
               timeframe,
@@ -170,7 +177,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
               to,
               countBack,
               'token',
-              'quote',
+              denomination as "base"|"quote",
               from
             )
 
