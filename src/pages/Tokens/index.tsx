@@ -15,7 +15,7 @@ const ExploreContainer = styled.div`
   padding-top: 15px;
   flex-flow: column nowrap;
   max-width: 1480px;
-  height: 100vh;
+  height: 100%;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;
