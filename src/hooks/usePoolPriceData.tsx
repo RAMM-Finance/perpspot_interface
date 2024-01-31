@@ -49,12 +49,10 @@ export function useLatestPoolPriceData(
     price24hAgo: BN
     priceNow: BN
   } | null
-  error: any
-  loading: boolean
 } {
   // const client = new GraphQLClient(getUniswapUri(chainId))
   // poolPriceData 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1
-  const { isLoading, error, data } = useQuery(
+  const { data } = useQuery(
     ['poolPriceData', poolAddress],
     async () => {
       console.log('poolPriceData', poolAddress)
@@ -83,11 +81,9 @@ export function useLatestPoolPriceData(
 
   // fetching 24h data from
   return useMemo(() => {
-    if (isLoading || error || !data) {
+    if (!data) {
       return {
         data: null,
-        error,
-        loading: isLoading,
       }
     }
 
@@ -103,8 +99,6 @@ export function useLatestPoolPriceData(
         price24hAgo,
         priceNow,
       },
-      error: false,
-      loading: false,
     }
-  }, [data, isLoading, error])
+  }, [data])
 }

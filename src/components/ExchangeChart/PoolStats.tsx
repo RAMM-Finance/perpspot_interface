@@ -65,7 +65,7 @@ export function PoolStatsSection({
   }, [chainId, address0, address1, fee])
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
 
-  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress ?? undefined)
+  const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
@@ -122,7 +122,7 @@ export function PoolStatsSection({
     ? currency1?.symbol + '/' + currency0?.symbol
     : currency0?.symbol + '/' + currency1?.symbol
 
-  const loading = loading0 || loading1 || priceLoading || !reserve0 || !reserve1 || !priceData || !pool
+  const loading = loading0 || loading1 || !priceData || !reserve0 || !reserve1 || !priceData || !pool
 
   return (
     <StatsWrapper>

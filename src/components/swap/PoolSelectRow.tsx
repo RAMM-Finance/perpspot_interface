@@ -97,7 +97,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
       fee: pool.fee,
     })
   }, [chainId, pool])
-  const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress, chainId)
+  const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
 
   const currentPricePool = useMemo(() => {
     if (!pool || priceData) return undefined
