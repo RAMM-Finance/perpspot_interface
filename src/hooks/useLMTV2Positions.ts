@@ -255,14 +255,15 @@ export function useBulkBinData(
   const calldata = useMemo(() => {
     if (!pool || !tickDiscretization) return undefined
     const roundedCurrentTick = roundToBin(pool.tickCurrent, tickDiscretization, false)
+    const lookback = pool.fee== 500? 3000: 7000
     const params = [
       {
         token0: pool.token0.address,
         token1: pool.token1.address,
         fee: pool.fee,
       },
-      roundedCurrentTick - 3000,
-      roundedCurrentTick + 3000,
+      roundedCurrentTick - lookback,
+      roundedCurrentTick + lookback,
     ]
     console.log('params???', params)
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
