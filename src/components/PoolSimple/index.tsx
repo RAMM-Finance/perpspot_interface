@@ -453,12 +453,14 @@ export default function SimplePool() {
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
+      console.log('ereeeerr', err)
     }
   }, [account, chainId, vaultContract, provider, parsedAmounts])
 
   const [llpBalance, setLlpBalance] = useState<number>(0)
 
   const handleRedeem = useCallback(() => {
+    console.log('?????', parsedAmounts?.[Field.CURRENCY_A], account, vaultContract, chainId, provider)
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
       return
     }
@@ -835,12 +837,12 @@ export default function SimplePool() {
               <ButtonError text="Not enough liquidity"></ButtonError>
             ) : buy ? (
               <ButtonBlue
-                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleLimWethDeposit}
+                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleRedeem}
                 text={`Buy ${outputCurrency?.symbol}`}
               ></ButtonBlue>
             ) : (
               <ButtonBlue
-                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleLimWethRedeem}
+                onClick={ handleRedeem}
                 text={`Sell ${outputCurrency?.symbol}`}
               ></ButtonBlue>
             )}
