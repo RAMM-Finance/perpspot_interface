@@ -140,7 +140,7 @@ export function useMaxLeverage(
   margin?: BN, // formatted to raw amount
   inputCurrency?: Currency,
   startingLeverage = 120,
-  stepSize = 5
+  stepSize = 2
 ) {
   const calldata = useMemo(() => {
     if (!positionKey || margin?.isZero() || !margin || !inputCurrency) return undefined

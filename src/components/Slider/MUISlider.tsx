@@ -30,7 +30,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange, max }: Dis
     // },
     {
       value: max ? max * 0.1 : 10,
-      label: `${max ? max * 0.1 : 10}x`,
+      label: `${max ? Math.round(max * 0.1) : 10}x`,
     },
     {
       value: max ? max * 0.25 : 25,
