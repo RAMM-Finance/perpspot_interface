@@ -387,7 +387,7 @@ export default function PoolSelect({
     } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
       return price
     } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
-      return price
+      return price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
     } else {
       return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
     }
