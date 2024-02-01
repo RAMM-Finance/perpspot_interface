@@ -9,3 +9,4 @@ export { ERC721Enumerable__factory } from "./ERC721Enumerable__factory";
 export { NonfungiblePositionManager__factory } from "./NonfungiblePositionManager__factory";
 
 export { LIM_Token__factory } from "./LIM_Token__factory";
+export { BRP__factory } from "./BRP__factory";

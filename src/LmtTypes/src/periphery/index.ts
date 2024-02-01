@@ -10,3 +10,4 @@ export type { DataProvider } from "./DataProvider";
 export type { ERC721Enumerable } from "./ERC721Enumerable";
 export type { NonfungiblePositionManager } from "./NonfungiblePositionManager";
 export type { LIM_Token } from "./LIM_Token";
+export type { BRP } from "./BRP";

@@ -148,9 +148,6 @@ export function usePointsData() {
           }
         })
         setVaultByAddress(vaultDataByAddress)
-
-
-
    
         const uniqueTokenIds = new Set<string>()
         const uniqueTraders = new Set<string>()
@@ -406,10 +403,10 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  // console.log(
-  //   'timeWeightedDeposits',
-  //   timeWeightedDeposits, lpPositionsByUniqueLps, refereeActivity, codeUserPerReferrer?.["0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"],
-  // )
+
+  console.log("collectData",
+    collectData,lpPositionsByUniqueLps
+  )
   return useMemo(() => {
     return {
       tradeProcessedByTrader,

@@ -34,12 +34,13 @@ import {
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
   LIM_WETH,
+  BRP_ADDRESS
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
-
+import {abi as BRP_ABI} from "../abis_v2/BRP.json"
 import {abi as LIM_TokenABI} from "../abis_v2/LIM_Token.json"
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
 import { abi as VaultAbi } from '../abis_v2/LPVault.json'
@@ -56,7 +57,8 @@ import {
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
   PoolManager as LmtPoolManager,
   ReferralSystem,
-  LIM_Token
+  LIM_Token, 
+  BRP
 } from '../LmtTypes'
 import { getContract } from '../utils'
 
@@ -153,6 +155,9 @@ export function useVaultContract(withSignerIfPossible?: boolean) {
 
 export function useLimweth(withSignerIfPossible?: boolean) {
   return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI, withSignerIfPossible)
+}
+export function useBRP(withSignerIfPossible?:boolean){
+  return useContract<BRP>(BRP_ADDRESS,BRP_ABI, withSignerIfPossible )
 }
 
 // returns null on errors

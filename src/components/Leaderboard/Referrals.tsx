@@ -4,7 +4,7 @@ import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
 import { ethers } from 'ethers'
-import { useReferralContract } from 'hooks/useContract'
+import { useReferralContract,useBRP } from 'hooks/useContract'
 import { InputSection } from 'pages/Swap'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Copy } from 'react-feather'
@@ -201,6 +201,7 @@ const Referrals = () => {
   const addTransaction = useTransactionAdder()
   const { account, chainId, provider } = useWeb3React()
 
+  const BRP = useBRP()
   console.log('createReferralCode', createReferralCode)
   console.log('referralCode', referralCode)
 
@@ -272,6 +273,25 @@ const Referrals = () => {
       setReferralCode(() => referralRef?.current?.value)
     }
   }
+
+  const [simulatedRewards, setSimulatedRewards] = useState<string>()
+
+  useEffect(() =>{
+    if(!account || !BRP) return 
+
+    const call = async()=>{
+      try{
+        const result = await BRP.callStatic.claimRewards()
+        setSimulatedRewards(result.toString())
+
+
+      } catch(error){
+        console.log('claimsimerr', error)
+      }
+    }
+  })
+
+  console.log('simulatedRewards',BRP,  simulatedRewards)
 
   const referralContract = useReferralContract()
   const [activeCodes, setActiveCodes] = useState<string>()
@@ -467,8 +487,8 @@ const Referrals = () => {
   return (
     <Wrapper>
       <FilterWrapper>
-         {/*<Filter onClick={() => setReferral(!referral)}>*/}
-         <Filter>
+         <Filter onClick={() => setReferral(!referral)}>
+         {/*<Filter>*/}
           <Selector active={referral}>
             <StyledSelectorText active={referral}>User</StyledSelectorText>
           </Selector>
@@ -672,10 +692,30 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Claimable Rebates(this week)</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>My Referral Points Last Claim</ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
+              </StyledCard>
+              <StyledCard>
+                <CardWrapper>
+                  <ThemedText.SubHeader fontSize={15}>My Referral Points Now</ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
+              </StyledCard>
+
+              <StyledCard>
+                <CardWrapper>
+                  <ThemedText.SubHeader fontSize={15}>Claimable Rebates</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>Coming soon</ThemedText.BodySecondary>
+              <SmallButtonPrimary onClick={() => setShowModal(!showModal)}>Collect</SmallButtonPrimary>
+
                 </CardWrapper>
               </StyledCard>{' '}
+
             </div>
             {/* <StyledCard style={{ padding: '15px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
