@@ -42,7 +42,7 @@ const LiquidityDistributionTable = ({
   const priceData = undefined as any
   // const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress ?? undefined)
 
-  console.log('tooes', token0, token1)
+  // console.log('tooes', token0, token1)
   const [currentPrice, inverse] = useMemo(() => {
     if (!pool) return [undefined, false]
     const token0Price = new BN(pool.token0Price.toFixed(18))
@@ -55,7 +55,7 @@ const LiquidityDistributionTable = ({
     }
   }, [pool])
 
-  console.log(formatBNToString(currentPrice), inverse)
+  // console.log(formatBNToString(currentPrice), inverse)
   // const currentPrice = useMemo(() => {
   //   if (!priceData) {
   //     if (!pool || !token0 || !token1) return undefined

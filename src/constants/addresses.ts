@@ -44,10 +44,14 @@ export const LMT_MARGIN_FACILITY: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0x3611CD2B957514222a94C93e1A9a5be66b0b2841',
 }
 
+export const LMT_QUOTER: AddressMap = {
+  [SupportedChainId.ARBITRUM_ONE]: '0x37ccA4bBD0512eFC75e4Aedcdf9DC9A498330b6c',
+}
+
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_NFPM,
   // [SupportedChainId.ARBITRUM_ONE]: '0xB8EEc6875E1807A189D7fa58081230b7493Ad6c1',
-  [SupportedChainId.ARBITRUM_ONE]: '0x6D73fc6F4C299E369377C0e60CebFef2409f86A0'
+  [SupportedChainId.ARBITRUM_ONE]: '0x6D73fc6F4C299E369377C0e60CebFef2409f86A0',
 }
 
 export const LMT_POOL_MANAGER: AddressMap = {
@@ -63,7 +67,7 @@ export const LMT_BORROW_FACILITY: AddressMap = {
 export const LMT_EXECUTIONER: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x805D7593093c112dc8652958FA302472a03fce44',
   // [SupportedChainId.ARBITRUM_ONE]: '0x3956684648BC0860e251e315c3988a20f6963931',
-  [SupportedChainId.ARBITRUM_ONE]: '0x71B0F51199cDD980e6C60cf3eDb04CA275075A23'
+  [SupportedChainId.ARBITRUM_ONE]: '0x71B0F51199cDD980e6C60cf3eDb04CA275075A23',
 }
 
 export const LMT_V2_PREMIUM_COMPUTER: AddressMap = {
@@ -76,21 +80,20 @@ export const LMT_REFERRAL: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0xd6787Ac04C1012558bd371eA39F943aebc1E5255',
 }
 
-export const LMT_VAULT: AddressMap={
-  [SupportedChainId.ARBITRUM_ONE]: "0x21DA443916C869909f21BdCc2d5B00410eb5A113"
+export const LMT_VAULT: AddressMap = {
+  [SupportedChainId.ARBITRUM_ONE]: '0x21DA443916C869909f21BdCc2d5B00410eb5A113',
 }
-export const LMT_VAULT_MANAGER: AddressMap={
-  [SupportedChainId.ARBITRUM_ONE]: "0xd5328446304530679d960F09fA7673464171c7cE"
-}
-
-export const LIM_WETH: AddressMap={
-  [SupportedChainId.ARBITRUM_ONE]: "0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C"
+export const LMT_VAULT_MANAGER: AddressMap = {
+  [SupportedChainId.ARBITRUM_ONE]: '0xd5328446304530679d960F09fA7673464171c7cE',
 }
 
-export const BRP_ADDRESS: AddressMap={
-  [SupportedChainId.ARBITRUM_ONE]: "0xf95416717a29F6D95d6BD1A39E94C6Bfc2B42e3e"
+export const LIM_WETH: AddressMap = {
+  [SupportedChainId.ARBITRUM_ONE]: '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C',
 }
 
+export const BRP_ADDRESS: AddressMap = {
+  [SupportedChainId.ARBITRUM_ONE]: '0xf95416717a29F6D95d6BD1A39E94C6Bfc2B42e3e',
+}
 
 // celo v3 addresses
 const CELO_V3_CORE_FACTORY_ADDRESSES = '0xAfE208a311B21f13EF87E33A90049fC17A7acDEc'

@@ -319,13 +319,12 @@ export function AdvancedMarginTradeDetails({
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
-  const estimatedTimeToClose = useMemo(()=>{
-    if(!trade) return undefined
+  const estimatedTimeToClose = useMemo(() => {
+    if (!trade) return undefined
 
-    const rate =  trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
-    return new BN(rate/trade?.borrowRate?.toNumber())
-
-  },[trade])
+    const rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
+    return new BN(rate / trade?.borrowRate?.toNumber())
+  }, [trade])
 
   return (
     <StyledCard>
@@ -363,7 +362,7 @@ export function AdvancedMarginTradeDetails({
           label="Estimated Position Duration"
           value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={'hrs'}
+          symbolAppend="hrs"
         />
         {/*<ValueLabel
           description="Slippage from spot price"

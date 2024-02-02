@@ -140,111 +140,6 @@ const _abi = [
   {
     inputs: [
       {
-        components: [
-          {
-            components: [
-              {
-                internalType: "address",
-                name: "pool",
-                type: "address",
-              },
-              {
-                internalType: "bool",
-                name: "isToken0",
-                type: "bool",
-              },
-              {
-                internalType: "uint256",
-                name: "totalDebtOutput",
-                type: "uint256",
-              },
-              {
-                internalType: "uint256",
-                name: "totalDebtInput",
-                type: "uint256",
-              },
-              {
-                internalType: "uint32",
-                name: "lastPremiumPaymentTime",
-                type: "uint32",
-              },
-              {
-                internalType: "uint32",
-                name: "openTime",
-                type: "uint32",
-              },
-              {
-                components: [
-                  {
-                    internalType: "int24",
-                    name: "tick",
-                    type: "int24",
-                  },
-                  {
-                    internalType: "uint128",
-                    name: "liquidity",
-                    type: "uint128",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "premium",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "feeGrowthInside0LastX128",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "feeGrowthInside1LastX128",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
-                    name: "lastGrowth",
-                    type: "uint256",
-                  },
-                ],
-                internalType: "struct LiquidityLoan[]",
-                name: "borrowInfo",
-                type: "tuple[]",
-              },
-            ],
-            internalType: "struct Position",
-            name: "base",
-            type: "tuple",
-          },
-          {
-            internalType: "uint256",
-            name: "totalPosition",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "margin",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct MarginPosition",
-        name: "position",
-        type: "tuple",
-      },
-    ],
-    name: "canForceClose",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "pool",
         type: "address",
@@ -417,6 +312,69 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "trader",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "positionIsToken0",
+        type: "bool",
+      },
+      {
+        internalType: "bool",
+        name: "isAdd",
+        type: "bool",
+      },
+    ],
+    name: "getOrderId",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "trader",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "positionIsToken0",
+        type: "bool",
+      },
+    ],
+    name: "getPositionId",
+    outputs: [
+      {
+        internalType: "PositionId",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "pure",
     type: "function",
   },
   {

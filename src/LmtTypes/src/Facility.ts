@@ -27,6 +27,18 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export type PoolKeyStruct = {
+  token0: PromiseOrValue<string>;
+  token1: PromiseOrValue<string>;
+  fee: PromiseOrValue<BigNumberish>;
+};
+
+export type PoolKeyStructOutput = [string, string, number] & {
+  token0: string;
+  token1: string;
+  fee: number;
+};
+
 export type LiquidityLoanStruct = {
   tick: PromiseOrValue<BigNumberish>;
   liquidity: PromiseOrValue<BigNumberish>;
@@ -52,69 +64,18 @@ export type LiquidityLoanStructOutput = [
   lastGrowth: BigNumber;
 };
 
-export type PositionStruct = {
-  pool: PromiseOrValue<string>;
-  isToken0: PromiseOrValue<boolean>;
-  totalDebtOutput: PromiseOrValue<BigNumberish>;
-  totalDebtInput: PromiseOrValue<BigNumberish>;
-  lastPremiumPaymentTime: PromiseOrValue<BigNumberish>;
-  openTime: PromiseOrValue<BigNumberish>;
-  borrowInfo: LiquidityLoanStruct[];
-};
-
-export type PositionStructOutput = [
-  string,
-  boolean,
-  BigNumber,
-  BigNumber,
-  number,
-  number,
-  LiquidityLoanStructOutput[]
-] & {
-  pool: string;
-  isToken0: boolean;
-  totalDebtOutput: BigNumber;
-  totalDebtInput: BigNumber;
-  lastPremiumPaymentTime: number;
-  openTime: number;
-  borrowInfo: LiquidityLoanStructOutput[];
-};
-
-export type MarginPositionStruct = {
-  base: PositionStruct;
-  totalPosition: PromiseOrValue<BigNumberish>;
-  margin: PromiseOrValue<BigNumberish>;
-};
-
-export type MarginPositionStructOutput = [
-  PositionStructOutput,
-  BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
-
-export type PoolKeyStruct = {
-  token0: PromiseOrValue<string>;
-  token1: PromiseOrValue<string>;
-  fee: PromiseOrValue<BigNumberish>;
-};
-
-export type PoolKeyStructOutput = [string, string, number] & {
-  token0: string;
-  token1: string;
-  fee: number;
-};
-
 export interface FacilityInterface extends utils.Interface {
   functions: {
     "PremiumDeposit(bytes32)": FunctionFragment;
     "_initialize(address,address)": FunctionFragment;
     "approveTokens(address,address)": FunctionFragment;
-    "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "checkPositionExists(address,address,bool)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "executioner()": FunctionFragment;
     "getBorrowInfo(address,address,bool)": FunctionFragment;
     "getLastRepayTime(address,address,bool)": FunctionFragment;
+    "getOrderId(address,address,bool,bool)": FunctionFragment;
+    "getPositionId(address,address,bool)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
@@ -128,12 +89,13 @@ export interface FacilityInterface extends utils.Interface {
       | "PremiumDeposit"
       | "_initialize"
       | "approveTokens"
-      | "canForceClose"
       | "checkPositionExists"
       | "depositPremium"
       | "executioner"
       | "getBorrowInfo"
       | "getLastRepayTime"
+      | "getOrderId"
+      | "getPositionId"
       | "multicall"
       | "payPremium"
       | "setOwner"
@@ -153,10 +115,6 @@ export interface FacilityInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "approveTokens",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "canForceClose",
-    values: [MarginPositionStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "checkPositionExists",
@@ -189,6 +147,23 @@ export interface FacilityInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getLastRepayTime",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getOrderId",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<boolean>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPositionId",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -246,10 +221,6 @@ export interface FacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "canForceClose",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "checkPositionExists",
     data: BytesLike
   ): Result;
@@ -267,6 +238,11 @@ export interface FacilityInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getLastRepayTime",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getOrderId", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPositionId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
@@ -375,11 +351,6 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -410,6 +381,21 @@ export interface Facility extends BaseContract {
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<[number]>;
+
+    getOrderId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getPositionId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -467,11 +453,6 @@ export interface Facility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  canForceClose(
-    position: MarginPositionStruct,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   checkPositionExists(
     pool: PromiseOrValue<string>,
     borrower: PromiseOrValue<string>,
@@ -502,6 +483,21 @@ export interface Facility extends BaseContract {
     borrowedToken1: PromiseOrValue<boolean>,
     overrides?: CallOverrides
   ): Promise<number>;
+
+  getOrderId(
+    pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    isAdd: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getPositionId(
+    pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   multicall(
     data: PromiseOrValue<BytesLike>[],
@@ -559,11 +555,6 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -594,6 +585,21 @@ export interface Facility extends BaseContract {
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<number>;
+
+    getOrderId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getPositionId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -683,11 +689,6 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -716,6 +717,21 @@ export interface Facility extends BaseContract {
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getOrderId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getPositionId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -776,11 +792,6 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
@@ -809,6 +820,21 @@ export interface Facility extends BaseContract {
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOrderId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      isAdd: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getPositionId(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

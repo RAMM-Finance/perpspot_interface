@@ -4,7 +4,8 @@ import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
 import { ethers } from 'ethers'
-import { useReferralContract,useBRP } from 'hooks/useContract'
+import { useReferralContract } from 'hooks/useContract'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { InputSection } from 'pages/Swap'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Copy } from 'react-feather'
@@ -13,7 +14,6 @@ import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { CopyToClipboard, ThemedText } from 'theme'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
 
 import { usePointsData } from './data'
 import TierBar from './TierBar'
@@ -105,82 +105,81 @@ const Selector = styled.div<{ active: boolean }>`
 //   }
 // }
 
-function decodeResult(result:any) {
+function decodeResult(result: any) {
   try {
     // First, try decoding as string
     const decodedAsString = ethers.utils.parseBytes32String(result)
-    return decodedAsString.toString();
+    return decodedAsString.toString()
   } catch (errorString) {
     try {
       // If string decoding fails, try decoding as uint256
-      const decodedAsUint256 = defaultAbiCoder.decode(['uint256'], result);
-      return decodedAsUint256.toString();
+      const decodedAsUint256 = defaultAbiCoder.decode(['uint256'], result)
+      return decodedAsUint256.toString()
     } catch (errorUint) {
       // If both fail, handle the error (e.g., log it or return a default value)
-      console.error('Decoding failed for both string and uint256:', errorUint);
-      return ''; // or any appropriate default/fallback value
+      console.error('Decoding failed for both string and uint256:', errorUint)
+      return '' // or any appropriate default/fallback value
     }
   }
 }
 
-const useMaxData = (account:any , referralContract:any) =>{
+const useMaxData = (account: any, referralContract: any) => {
   const [maxNumber, setMaxNumber] = useState<any>()
 
-  if(!referralContract || !account) return
+  if (!referralContract || !account) return
 
-  useEffect(() =>{
-    const getMaxCode = async()=>{
-      try{
+  useEffect(() => {
+    const getMaxCode = async () => {
+      try {
         const result = await referralContract.getMaxValues()
         console.log('getting maxxxxx', result)
         setMaxNumber(result[1])
-      }catch(error){
+      } catch (error) {
         console.log('max errr', error)
       }
-
     }
-    getMaxCode() 
+    getMaxCode()
   }, [account, referralContract])
   return maxNumber
 }
 
-const useCheckCodes = (account:any , referralContract:any, refGens:any) => {
-  const [codesExist, setCodesExist] = useState<boolean[]>([]);
-  if(!referralContract || !account) return
+const useCheckCodes = (account: any, referralContract: any, refGens: any) => {
+  const [codesExist, setCodesExist] = useState<boolean[]>([])
+  if (!referralContract || !account) return
 
   useEffect(() => {
     const checkCodeExistence = async () => {
       try {
-        const checks = refGens.map((refGen:any) => {
+        const checks = refGens.map((refGen: any) => {
           if (refGen) {
             const code = ethers.utils.formatBytes32String(refGen.toString())
-            return referralContract.codeOwners(code)
-              .then((owner:any) => owner !== '0x0000000000000000000000000000000000000000')
-              .catch(() => false);
+            return referralContract
+              .codeOwners(code)
+              .then((owner: any) => owner !== '0x0000000000000000000000000000000000000000')
+              .catch(() => false)
           }
-          return Promise.resolve(false);
-        });
+          return Promise.resolve(false)
+        })
 
-        const results = await Promise.all(checks);
-        setCodesExist(results);
+        const results = await Promise.all(checks)
+        setCodesExist(results)
       } catch (error) {
-        console.error('Error checking code existence', error);
-        setCodesExist(refGens.map(() => false));
+        console.error('Error checking code existence', error)
+        setCodesExist(refGens.map(() => false))
       }
-    };
+    }
 
     if (account && referralContract) {
-      checkCodeExistence();
+      checkCodeExistence()
     }
-  }, [account, referralContract, refGens]);
+  }, [account, referralContract, refGens])
 
-  return codesExist;
-};
+  return codesExist
+}
 
 // function getByteLength(str) {
 //   return new Blob([str]).size;
 // }
-
 
 const Referrals = () => {
   const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
@@ -201,14 +200,14 @@ const Referrals = () => {
   const addTransaction = useTransactionAdder()
   const { account, chainId, provider } = useWeb3React()
 
-  const BRP = useBRP()
+  // const BRP = useBRP()
   console.log('createReferralCode', createReferralCode)
   console.log('referralCode', referralCode)
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
   }, [])
-  const acceptedCreate = createReferralCode!= null && createReferralCode != undefined
+  const acceptedCreate = createReferralCode != null && createReferralCode != undefined
   // const acceptedCreate = useMemo(() => {
   //   if (createReferralCode) {
   //     return true
@@ -245,26 +244,27 @@ const Referrals = () => {
   }
   const handleUserRefChange2 = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRefGen2(event.target.value)
-  }  
+  }
   const handleUserRefChange3 = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRefGen3(event.target.value)
-  }  
+  }
   const handleUserRefChange4 = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRefGen4(event.target.value)
-  }  
+  }
   const handleUserRefChange5 = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRefGen5(event.target.value)
   }
   const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRef(event.target.value)
   }
-  const codesNonZero = useMemo(() =>{
-    if(refGen!= '0' 
+  const codesNonZero = useMemo(() => {
+    if (
+      refGen != '0'
       //&& refGen2!= '0'&&refGen3!= '0'&&refGen4!= '0'&&refGen5!= '0'
-      )
-      return true 
-    else return false 
-  }, [refGen,refGen2,refGen3,refGen4,refGen5])
+    )
+      return true
+    else return false
+  }, [refGen, refGen2, refGen3, refGen4, refGen5])
 
   const onButtonClick = () => {
     if (referral) {
@@ -274,24 +274,23 @@ const Referrals = () => {
     }
   }
 
-  const [simulatedRewards, setSimulatedRewards] = useState<string>()
+  // const [simulatedRewards, setSimulatedRewards] = useState<string>()
 
-  useEffect(() =>{
-    if(!account || !BRP) return 
+  // useEffect(() =>{
+  //   if(!account || !BRP) return
 
-    const call = async()=>{
-      try{
-        const result = await BRP.callStatic.claimRewards()
-        setSimulatedRewards(result.toString())
+  //   const call = async()=>{
+  //     try{
+  //       const result = await BRP.callStatic.claimRewards()
+  //       setSimulatedRewards(result.toString())
 
+  //     } catch(error){
+  //       console.log('claimsimerr', error)
+  //     }
+  //   }
+  // })
 
-      } catch(error){
-        console.log('claimsimerr', error)
-      }
-    }
-  })
-
-  console.log('simulatedRewards',BRP,  simulatedRewards)
+  // console.log('simulatedRewards',BRP,  simulatedRewards)
 
   const referralContract = useReferralContract()
   const [activeCodes, setActiveCodes] = useState<string>()
@@ -313,8 +312,7 @@ const Referrals = () => {
     }
 
     call()
-  }, [account, referralContract, txHash, blockNumber ])
-
+  }, [account, referralContract, txHash, blockNumber])
 
   const [codeExists, setCodeExists] = useState(false)
 
@@ -333,8 +331,7 @@ const Referrals = () => {
         console.log('code', code, referral ? refGen : ref)
         const result = await referralContract.codeOwners(code)
         console.log('ownerownerowner', result)
-        setCodeExists(result != '0x0000000000000000000000000000000000000000'
-          && result != account)
+        setCodeExists(result != '0x0000000000000000000000000000000000000000' && result != account)
       } catch (error) {
         console.log('codeowner err', error)
       }
@@ -344,12 +341,13 @@ const Referrals = () => {
   }, [refGen, ref, account])
 
   const refGens = useMemo(() => {
-    return [refGen
-    //, refGen2, refGen3, refGen4, refGen5
+    return [
+      refGen,
+      //, refGen2, refGen3, refGen4, refGen5
     ]
-  }, [refGen, refGen2, refGen3, refGen4, refGen5]);
+  }, [refGen, refGen2, refGen3, refGen4, refGen5])
 
-  const refCodesExist = useCheckCodes(account, referralContract, refGens);
+  const refCodesExist = useCheckCodes(account, referralContract, refGens)
   const maxCodeUsage = useMaxData(account, referralContract)
 
   console.log('txHashes', txHash, txResponse)
@@ -375,8 +373,8 @@ const Referrals = () => {
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       const codes = refGens.map((code) => {
-        const paddedCode = ethers.utils.formatBytes32String(code);
-        return paddedCode;
+        const paddedCode = ethers.utils.formatBytes32String(code)
+        return paddedCode
       })
 
       const response = await referralContract?.registerCodes(codes)
@@ -406,7 +404,6 @@ const Referrals = () => {
 
     setAttemptingTxn(true)
 
-
     callback()
       .then((response) => {
         setAttemptingTxn(false)
@@ -427,8 +424,6 @@ const Referrals = () => {
         setTxHash(undefined)
         setErrorMessage(error.message)
       })
-
-
   }, [callback, account, referralContract, chainId, provider, userRef, txHash, attemptingTxn, errorMessage])
 
   const handleUseCode = useCallback(() => {
@@ -487,13 +482,13 @@ const Referrals = () => {
   return (
     <Wrapper>
       <FilterWrapper>
-         <Filter onClick={() => setReferral(!referral)}>
-         {/*<Filter>*/}
+        <Filter onClick={() => setReferral(!referral)}>
+          {/*<Filter>*/}
           <Selector active={referral}>
             <StyledSelectorText active={referral}>User</StyledSelectorText>
           </Selector>
           <Selector active={!referral}>
-            <StyledSelectorText active={!referral} >Referrer(coming soon)</StyledSelectorText>
+            <StyledSelectorText active={!referral}>Referrer(coming soon)</StyledSelectorText>
           </Selector>
         </Filter>
       </FilterWrapper>
@@ -508,7 +503,8 @@ const Referrals = () => {
               Generate Referral Code
             </ThemedText.BodySecondary>
             <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-              Looks like you don't have a referral code to share. Create new referral codes and start earning extra points and rebates! 
+              Looks like you don't have a referral code to share. Create new referral codes and start earning extra
+              points and rebates!
             </ThemedText.BodyPrimary>
             <Input
               placeholder="Enter referral code"
@@ -555,11 +551,17 @@ const Referrals = () => {
             ))}
 
             {/*codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>*/}
-            {codesNonZero ? codeUsing?
-              (<SmallButtonPrimary disabled={refCodesExist?.[0]} onClick={handleCreateReferral}>Generate Code</SmallButtonPrimary>):
-              (<SmallButtonPrimary disabled={true} >Need to be using code</SmallButtonPrimary>)
-            : (<SmallButtonPrimary>Fill out code</SmallButtonPrimary>)} 
-
+            {codesNonZero ? (
+              codeUsing ? (
+                <SmallButtonPrimary disabled={refCodesExist?.[0]} onClick={handleCreateReferral}>
+                  Generate Code
+                </SmallButtonPrimary>
+              ) : (
+                <SmallButtonPrimary disabled={true}>Need to be using code</SmallButtonPrimary>
+              )
+            ) : (
+              <SmallButtonPrimary>Fill out code</SmallButtonPrimary>
+            )}
           </InputWrapper>
         )}{' '}
         {referral && !acceptedCode && (
@@ -661,9 +663,7 @@ const Referrals = () => {
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Current Maximum Code Users</ThemedText.SubHeader>
-                  <ThemedText.BodySecondary fontSize={16}>
-                    {maxCodeUsage?.toString()}
-                  </ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>{maxCodeUsage?.toString()}</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
@@ -706,16 +706,13 @@ const Referrals = () => {
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Claimable Rebates</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>Coming soon</ThemedText.BodySecondary>
-              <SmallButtonPrimary onClick={() => setShowModal(!showModal)}>Collect</SmallButtonPrimary>
-
+                  <SmallButtonPrimary onClick={() => setShowModal(!showModal)}>Collect</SmallButtonPrimary>
                 </CardWrapper>
               </StyledCard>{' '}
-
             </div>
             {/* <StyledCard style={{ padding: '15px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>

@@ -23,71 +23,6 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export type LiquidityLoanStruct = {
-  tick: PromiseOrValue<BigNumberish>;
-  liquidity: PromiseOrValue<BigNumberish>;
-  premium: PromiseOrValue<BigNumberish>;
-  feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
-  feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
-  lastGrowth: PromiseOrValue<BigNumberish>;
-};
-
-export type LiquidityLoanStructOutput = [
-  number,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber
-] & {
-  tick: number;
-  liquidity: BigNumber;
-  premium: BigNumber;
-  feeGrowthInside0LastX128: BigNumber;
-  feeGrowthInside1LastX128: BigNumber;
-  lastGrowth: BigNumber;
-};
-
-export type PositionStruct = {
-  pool: PromiseOrValue<string>;
-  isToken0: PromiseOrValue<boolean>;
-  totalDebtOutput: PromiseOrValue<BigNumberish>;
-  totalDebtInput: PromiseOrValue<BigNumberish>;
-  lastPremiumPaymentTime: PromiseOrValue<BigNumberish>;
-  openTime: PromiseOrValue<BigNumberish>;
-  borrowInfo: LiquidityLoanStruct[];
-};
-
-export type PositionStructOutput = [
-  string,
-  boolean,
-  BigNumber,
-  BigNumber,
-  number,
-  number,
-  LiquidityLoanStructOutput[]
-] & {
-  pool: string;
-  isToken0: boolean;
-  totalDebtOutput: BigNumber;
-  totalDebtInput: BigNumber;
-  lastPremiumPaymentTime: number;
-  openTime: number;
-  borrowInfo: LiquidityLoanStructOutput[];
-};
-
-export type MarginPositionStruct = {
-  base: PositionStruct;
-  totalPosition: PromiseOrValue<BigNumberish>;
-  margin: PromiseOrValue<BigNumberish>;
-};
-
-export type MarginPositionStructOutput = [
-  PositionStructOutput,
-  BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
-
 export type PoolKeyStruct = {
   token0: PromiseOrValue<string>;
   token1: PromiseOrValue<string>;
@@ -102,24 +37,15 @@ export type PoolKeyStructOutput = [string, string, number] & {
 
 export interface IFacilityInterface extends utils.Interface {
   functions: {
-    "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256))": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256,bool)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic:
-      | "canForceClose"
-      | "depositPremium"
-      | "payPremium"
-      | "withdrawPremium"
+    nameOrSignatureOrTopic: "depositPremium" | "payPremium" | "withdrawPremium"
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "canForceClose",
-    values: [MarginPositionStruct]
-  ): string;
   encodeFunctionData(
     functionFragment: "depositPremium",
     values: [
@@ -147,10 +73,6 @@ export interface IFacilityInterface extends utils.Interface {
     ]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "canForceClose",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "depositPremium",
     data: BytesLike
@@ -191,11 +113,6 @@ export interface IFacility extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -219,11 +136,6 @@ export interface IFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
-
-  canForceClose(
-    position: MarginPositionStruct,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   depositPremium(
     key: PoolKeyStruct,
@@ -249,11 +161,6 @@ export interface IFacility extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -281,11 +188,6 @@ export interface IFacility extends BaseContract {
   filters: {};
 
   estimateGas: {
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,
@@ -311,11 +213,6 @@ export interface IFacility extends BaseContract {
   };
 
   populateTransaction: {
-    canForceClose(
-      position: MarginPositionStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     depositPremium(
       key: PoolKeyStruct,
       trader: PromiseOrValue<string>,

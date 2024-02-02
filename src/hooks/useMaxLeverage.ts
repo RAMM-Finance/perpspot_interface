@@ -1,9 +1,9 @@
 // import { SupportedChainId } from '@looksrare/sdk'
 import { Currency } from '@uniswap/sdk-core'
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES } from 'constants/addresses'
 import { useMemo } from 'react'
-import { TraderPositionKey } from 'types/lmtv2position'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 
 import { useContractCall } from './useContractCall'
@@ -136,37 +136,33 @@ const DEFAULT_MAX_LEVERAGE = '120'
 
 //{ loading: boolean; error: any; result: BN | undefined }
 export function useMaxLeverage(
-  positionKey?: TraderPositionKey,
+  // positionKey?: TraderPositionKey,
+  token0?: string,
+  token1?: string,
+  fee?: FeeAmount,
+  isToken0?: boolean,
   margin?: BN, // formatted to raw amount
   inputCurrency?: Currency,
   startingLeverage = 120,
   stepSize = 2
 ) {
   const calldata = useMemo(() => {
-    if (!positionKey || margin?.isZero() || !margin || !inputCurrency) return undefined
-    // console.log(
-    //   'useMaxLeverage:params',
-    //   margin.toString(),
-    //   startingLeverage.toString(),
-    //   inputCurrency,
-    //   positionKey,
-    //   stepSize
-    // )
+    if (!token0 || !token1 || !fee || margin?.isZero() || !margin || !inputCurrency) return undefined
     const params = [
       {
         poolKey: {
-          token0: positionKey.poolKey.token0Address,
-          token1: positionKey.poolKey.token1Address,
-          fee: positionKey.poolKey.fee,
+          token0,
+          token1,
+          fee,
         },
-        isToken0: positionKey.isToken0,
+        isToken0,
         margin: margin.shiftedBy(inputCurrency.decimals).toFixed(0),
         startingLeverage: new BN(startingLeverage).shiftedBy(18).toFixed(0),
         stepSize: new BN(stepSize).shiftedBy(18).toFixed(0),
       },
     ]
     return DataProviderSDK.INTERFACE.encodeFunctionData('computeMaxLeverage', params)
-  }, [positionKey, margin, inputCurrency, startingLeverage, stepSize])
+  }, [token0, token1, fee, isToken0, margin, inputCurrency, startingLeverage, stepSize])
 
   const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
 

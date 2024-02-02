@@ -22,9 +22,11 @@ import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
   DATA_PROVIDER_ADDRESSES,
   ENS_REGISTRAR_ADDRESSES,
+  LIM_WETH,
   LMT_MARGIN_FACILITY,
   LMT_NFT_POSITION_MANAGER,
   LMT_POOL_MANAGER,
+  LMT_QUOTER,
   LMT_REFERRAL,
   LMT_VAULT,
   MULTICALL_ADDRESS,
@@ -33,32 +35,32 @@ import {
   TICK_LENS_ADDRESSES,
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
-  LIM_WETH,
-  BRP_ADDRESS
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
+import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
-import {abi as BRP_ABI} from "../abis_v2/BRP.json"
-import {abi as LIM_TokenABI} from "../abis_v2/LIM_Token.json"
+
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
+import { abi as LIM_TokenABI } from '../abis_v2/LIM_Token.json'
 import { abi as VaultAbi } from '../abis_v2/LPVault.json'
 import { abi as MarginFacilityAbi } from '../abis_v2/MarginFacility.json'
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
 import LmtPoolManagerJson from '../abis_v2/PoolManager.json'
+import { abi as LmtQuoterAbi } from '../abis_v2/Quoter.json'
 import { abi as ReferralSystemABI } from '../abis_v2/ReferralSystem.json'
 import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
 import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
 import {
+  // BRP,
   DataProvider,
+  LIM_Token,
   LPVault,
   MarginFacility,
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
   PoolManager as LmtPoolManager,
   ReferralSystem,
-  LIM_Token, 
-  BRP
 } from '../LmtTypes'
 import { getContract } from '../utils'
 
@@ -84,18 +86,15 @@ const usdValueData: PricesMap = {
   '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1': 2200,
   '0xaf88d065e77c8cC2239327C5EDb3A432268e5831': 1,
 
-
   '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 2.7, //ldo
   '0x912CE59144191C1204E64559FE8253a0e49E6548': 1.6, //arb
   '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 45, //gmx
   '0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8': 2.5, //pendle
-  '0x539bdE0d7Dbd336b79148AA742883198BBF60342': 1.25,//magic
+  '0x539bdE0d7Dbd336b79148AA742883198BBF60342': 1.25, //magic
   '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555': 1.1, //xpet
-  '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4': 15, //link 
-  '0x3082CC23568eA640225c2467653dB90e9250AaA0': 0.28//rdnt
+  '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4': 15, //link
+  '0x3082CC23568eA640225c2467653dB90e9250AaA0': 0.28, //rdnt
 }
-
-
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
   get: (target, address: string) => (address in target ? target[address] : 0),
@@ -113,11 +112,9 @@ const DecimalValues: DecimalMap = {
   // weth -arb
   '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1': 18,
   '0xaf88d065e77c8cC2239327C5EDb3A432268e5831': 6,
-  '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 18, 
-  '0x912CE59144191C1204E64559FE8253a0e49E6548': 18, 
-  '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 18, 
-
-
+  '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60': 18,
+  '0x912CE59144191C1204E64559FE8253a0e49E6548': 18,
+  '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a': 18,
 }
 
 export const tokenDecimal = new Proxy<DecimalMap>(DecimalValues, {
@@ -141,6 +138,10 @@ export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   return useContract<MarginFacility>(LMT_MARGIN_FACILITY, MarginFacilityAbi, withSignerIfPossible)
 }
 
+export function useLmtQuoterContract(withSignerIfPossible?: boolean) {
+  return useContract<LmtQuoter>(LMT_QUOTER, LmtQuoterAbi, withSignerIfPossible)
+}
+
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
   return useContract<DataProvider>(DATA_PROVIDER_ADDRESSES, DataProviderABI, withSignerIfPossible)
 }
@@ -156,9 +157,9 @@ export function useVaultContract(withSignerIfPossible?: boolean) {
 export function useLimweth(withSignerIfPossible?: boolean) {
   return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI, withSignerIfPossible)
 }
-export function useBRP(withSignerIfPossible?:boolean){
-  return useContract<BRP>(BRP_ADDRESS,BRP_ABI, withSignerIfPossible )
-}
+// export function useBRP(withSignerIfPossible?: boolean) {
+//   return useContract<BRP>(BRP_ADDRESS, BRP_ABI, withSignerIfPossible)
+// }
 
 // returns null on errors
 export function useContract<T extends Contract = Contract>(

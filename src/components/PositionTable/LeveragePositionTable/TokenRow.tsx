@@ -353,7 +353,12 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
     </Trans>
   ),
   [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited. Your PnL is denominated in your margin.</Trans>,
-  [PositionSortMethod.REPAYTIME]: <Trans>Current borrow rate per hour, continuously paid by your deposit. This is variable, and will change based on the underlying asset's price and utilization rates. </Trans>,
+  [PositionSortMethod.REPAYTIME]: (
+    <Trans>
+      Current borrow rate per hour, continuously paid by your deposit. This is variable, and will change based on the
+      underlying asset's price and utilization rates.{' '}
+    </Trans>
+  ),
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
   [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees</Trans>,
   [PositionSortMethod.REMAINING]: (
@@ -658,21 +663,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken || !position || !existingDeposit
 
+  const estimatedTimeToClose = useMemo(() => {
+    if (!position || !rate || !totalDebtInput) return undefined
 
-  const estimatedTimeToClose = useMemo(()=>{
-    if(!position || !rate|| !totalDebtInput ) return undefined
-
-    const ratePerHour = (Number(rate)/ 1e18)/(365*24)
+    const ratePerHour = Number(rate) / 1e18 / (365 * 24)
     const premPerHour = Number(totalDebtInput) * ratePerHour
 
-    const hours = Number(position?.premiumLeft)/ premPerHour
+    const hours = Number(position?.premiumLeft) / premPerHour
 
-    return Math.round(hours *100)/100
+    return Math.round(hours * 100) / 100
+  }, [position, rate, totalDebtInput])
 
-  },[position, rate,   totalDebtInput])
-
-  console.log('timeclose', estimatedTimeToClose,  Number(position?.premiumLeft), Number(totalDebtInput))
-
+  // console.log('timeclose', estimatedTimeToClose,  Number(position?.premiumLeft), Number(totalDebtInput))
 
   if (loading) {
     return <LoadingRow />
@@ -710,11 +712,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </FlexStartRow>
           }
           repaymentTime={
-            <MouseoverTooltip text={<Trans>{"Annualized Rate: " + String((100 * Math.round((10000000 * Number(rate)) / 1e18 )) / 10000000)+ ' %'}</Trans>} disableHover={false}>
-
-            <FlexStartRow>
-              {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + ' %'}
-            </FlexStartRow>
+            <MouseoverTooltip
+              text={
+                <Trans>
+                  {'Annualized Rate: ' + String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) + ' %'}
+                </Trans>
+              }
+              disableHover={false}
+            >
+              <FlexStartRow>
+                {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + ' %'}
+              </FlexStartRow>
             </MouseoverTooltip>
           }
           PnL={
@@ -752,30 +760,32 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </FlexStartRow>
           }
           remainingPremium={
-            <MouseoverTooltip text={<Trans>{"Estimated Time Until Close: " + String(estimatedTimeToClose)+ ' hrs'}</Trans>} disableHover={false}>
-
-            <FlexStartRow>
-              {position?.premiumLeft.isGreaterThan(0) ? (
-                <AutoColumn style={{ lineHeight: 1.5 }}>
-                  <UnderlineText>
-                    <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                      {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
-                    </GreenText>
-                  </UnderlineText>
-                  <div style={{ display: 'flex', gap: '3px' }}>
+            <MouseoverTooltip
+              text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
+              disableHover={false}
+            >
+              <FlexStartRow>
+                {position?.premiumLeft.isGreaterThan(0) ? (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
                     <UnderlineText>
                       <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                        {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                        {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
                       </GreenText>
                     </UnderlineText>
-                    {position?.inputCurrency?.symbol}
-                  </div>
-                </AutoColumn>
-              ) : (
-                <RedText>0</RedText>
-              )}
-            </FlexStartRow>
-             </MouseoverTooltip>
+                    <div style={{ display: 'flex', gap: '3px' }}>
+                      <UnderlineText>
+                        <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                          {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                        </GreenText>
+                      </UnderlineText>
+                      {position?.inputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                ) : (
+                  <RedText>0</RedText>
+                )}
+              </FlexStartRow>
+            </MouseoverTooltip>
           }
         />
       </StyledLoadedRow>

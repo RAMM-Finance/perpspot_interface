@@ -23,109 +23,30 @@ import type {
   PromiseOrValue,
 } from "../common";
 
-export type PoolKeyStruct = {
-  token0: PromiseOrValue<string>;
-  token1: PromiseOrValue<string>;
-  fee: PromiseOrValue<BigNumberish>;
-};
-
-export type PoolKeyStructOutput = [string, string, number] & {
-  token0: string;
-  token1: string;
-  fee: number;
-};
-
-export type OrderStruct = {
-  key: PoolKeyStruct;
-  positionIsToken0: PromiseOrValue<boolean>;
-  auctionDeadline: PromiseOrValue<BigNumberish>;
-  auctionStartTime: PromiseOrValue<BigNumberish>;
-  startOutput: PromiseOrValue<BigNumberish>;
-  minOutput: PromiseOrValue<BigNumberish>;
-  inputAmount: PromiseOrValue<BigNumberish>;
-  decayRate: PromiseOrValue<BigNumberish>;
-  margin: PromiseOrValue<BigNumberish>;
-};
-
-export type OrderStructOutput = [
-  PoolKeyStructOutput,
-  boolean,
-  number,
-  number,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber
-] & {
-  key: PoolKeyStructOutput;
-  positionIsToken0: boolean;
-  auctionDeadline: number;
-  auctionStartTime: number;
-  startOutput: BigNumber;
-  minOutput: BigNumber;
-  inputAmount: BigNumber;
-  decayRate: BigNumber;
-  margin: BigNumber;
-};
-
 export interface ExecutionerInterface extends utils.Interface {
   functions: {
-    "executeAggregator(address)": FunctionFragment;
     "executeFiller(address,bool,uint256,uint256,address,address)": FunctionFragment;
-    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)": FunctionFragment;
-    "executeUniswap(address,bool,int256,uint160,address,address)": FunctionFragment;
     "executeUniswapWithMinOutput(address,bool,int256,address,address,uint256)": FunctionFragment;
-    "getOrder(bytes32)": FunctionFragment;
-    "getRequiredOutput(((address,address,uint24),bool,uint32,uint32,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
-    "orders(bytes32)": FunctionFragment;
-    "submitOrder(address,bool,bool,uint256,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
+    "marginFacility()": FunctionFragment;
+    "owner()": FunctionFragment;
+    "poolManager()": FunctionFragment;
+    "setContracts(address,address)": FunctionFragment;
     "uniswapV3SwapCallback(int256,int256,bytes)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "executeAggregator"
-      | "executeFiller(address,bool,uint256,uint256,address,address)"
-      | "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"
-      | "executeUniswap"
+      | "executeFiller"
       | "executeUniswapWithMinOutput"
-      | "getOrder"
-      | "getRequiredOutput"
-      | "orders"
-      | "submitOrder"
+      | "marginFacility"
+      | "owner"
+      | "poolManager"
+      | "setContracts"
       | "uniswapV3SwapCallback"
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "executeAggregator",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address,bytes32)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BytesLike>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "executeUniswap",
+    functionFragment: "executeFiller",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<boolean>,
@@ -147,30 +68,17 @@ export interface ExecutionerInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getOrder",
-    values: [PromiseOrValue<BytesLike>]
+    functionFragment: "marginFacility",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "poolManager",
+    values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getRequiredOutput",
-    values: [OrderStruct]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "orders",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "submitOrder",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    functionFragment: "setContracts",
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "uniswapV3SwapCallback",
@@ -182,33 +90,24 @@ export interface ExecutionerInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "executeAggregator",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "executeFiller(address,bool,uint256,uint256,address,address,bytes32)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "executeUniswap",
+    functionFragment: "executeFiller",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "executeUniswapWithMinOutput",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getOrder", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getRequiredOutput",
+    functionFragment: "marginFacility",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "orders", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "submitOrder",
+    functionFragment: "poolManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setContracts",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -246,37 +145,11 @@ export interface Executioner extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    executeAggregator(
-      swapper: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "executeFiller(address,bool,uint256,uint256,address,address)"(
+    executeFiller(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
       inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
-      filler: PromiseOrValue<string>,
-      outIsToken0: PromiseOrValue<boolean>,
-      outputAmount: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      key: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    executeUniswap(
-      pool: PromiseOrValue<string>,
-      down: PromiseOrValue<boolean>,
-      swapIn: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -292,53 +165,15 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getOrder(
-      key: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<[OrderStructOutput]>;
+    marginFacility(overrides?: CallOverrides): Promise<[string]>;
 
-    getRequiredOutput(
-      order: OrderStruct,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    owner(overrides?: CallOverrides): Promise<[string]>;
 
-    orders(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        PoolKeyStructOutput,
-        boolean,
-        number,
-        number,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
-        key: PoolKeyStructOutput;
-        positionIsToken0: boolean;
-        auctionDeadline: number;
-        auctionStartTime: number;
-        startOutput: BigNumber;
-        minOutput: BigNumber;
-        inputAmount: BigNumber;
-        decayRate: BigNumber;
-        margin: BigNumber;
-      }
-    >;
+    poolManager(overrides?: CallOverrides): Promise<[string]>;
 
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
+    setContracts(
+      _marginFacility: PromiseOrValue<string>,
+      _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -350,37 +185,11 @@ export interface Executioner extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  executeAggregator(
-    swapper: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "executeFiller(address,bool,uint256,uint256,address,address)"(
+  executeFiller(
     filler: PromiseOrValue<string>,
     outIsToken0: PromiseOrValue<boolean>,
     outputAmount: PromiseOrValue<BigNumberish>,
     inputAmount: PromiseOrValue<BigNumberish>,
-    token0: PromiseOrValue<string>,
-    token1: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
-    filler: PromiseOrValue<string>,
-    outIsToken0: PromiseOrValue<boolean>,
-    outputAmount: PromiseOrValue<BigNumberish>,
-    inputAmount: PromiseOrValue<BigNumberish>,
-    token0: PromiseOrValue<string>,
-    token1: PromiseOrValue<string>,
-    key: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  executeUniswap(
-    pool: PromiseOrValue<string>,
-    down: PromiseOrValue<boolean>,
-    swapIn: PromiseOrValue<BigNumberish>,
-    limit: PromiseOrValue<BigNumberish>,
     token0: PromiseOrValue<string>,
     token1: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -396,53 +205,15 @@ export interface Executioner extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getOrder(
-    key: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<OrderStructOutput>;
+  marginFacility(overrides?: CallOverrides): Promise<string>;
 
-  getRequiredOutput(
-    order: OrderStruct,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  owner(overrides?: CallOverrides): Promise<string>;
 
-  orders(
-    arg0: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      PoolKeyStructOutput,
-      boolean,
-      number,
-      number,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber
-    ] & {
-      key: PoolKeyStructOutput;
-      positionIsToken0: boolean;
-      auctionDeadline: number;
-      auctionStartTime: number;
-      startOutput: BigNumber;
-      minOutput: BigNumber;
-      inputAmount: BigNumber;
-      decayRate: BigNumber;
-      margin: BigNumber;
-    }
-  >;
+  poolManager(overrides?: CallOverrides): Promise<string>;
 
-  submitOrder(
-    pool: PromiseOrValue<string>,
-    positionIsToken0: PromiseOrValue<boolean>,
-    isAdd: PromiseOrValue<boolean>,
-    deadline: PromiseOrValue<BigNumberish>,
-    startOutput: PromiseOrValue<BigNumberish>,
-    minOutput: PromiseOrValue<BigNumberish>,
-    inputAmount: PromiseOrValue<BigNumberish>,
-    decayRate: PromiseOrValue<BigNumberish>,
-    margin: PromiseOrValue<BigNumberish>,
+  setContracts(
+    _marginFacility: PromiseOrValue<string>,
+    _poolManager: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -454,43 +225,11 @@ export interface Executioner extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    executeAggregator(
-      swapper: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
-    >;
-
-    "executeFiller(address,bool,uint256,uint256,address,address)"(
+    executeFiller(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
       inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
-    >;
-
-    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
-      filler: PromiseOrValue<string>,
-      outIsToken0: PromiseOrValue<boolean>,
-      outputAmount: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      key: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
-    >;
-
-    executeUniswap(
-      pool: PromiseOrValue<string>,
-      down: PromiseOrValue<boolean>,
-      swapIn: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -510,53 +249,15 @@ export interface Executioner extends BaseContract {
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
     >;
 
-    getOrder(
-      key: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<OrderStructOutput>;
+    marginFacility(overrides?: CallOverrides): Promise<string>;
 
-    getRequiredOutput(
-      order: OrderStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    owner(overrides?: CallOverrides): Promise<string>;
 
-    orders(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        PoolKeyStructOutput,
-        boolean,
-        number,
-        number,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
-        key: PoolKeyStructOutput;
-        positionIsToken0: boolean;
-        auctionDeadline: number;
-        auctionStartTime: number;
-        startOutput: BigNumber;
-        minOutput: BigNumber;
-        inputAmount: BigNumber;
-        decayRate: BigNumber;
-        margin: BigNumber;
-      }
-    >;
+    poolManager(overrides?: CallOverrides): Promise<string>;
 
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
+    setContracts(
+      _marginFacility: PromiseOrValue<string>,
+      _poolManager: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -571,37 +272,11 @@ export interface Executioner extends BaseContract {
   filters: {};
 
   estimateGas: {
-    executeAggregator(
-      swapper: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "executeFiller(address,bool,uint256,uint256,address,address)"(
+    executeFiller(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
       inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
-      filler: PromiseOrValue<string>,
-      outIsToken0: PromiseOrValue<boolean>,
-      outputAmount: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      key: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    executeUniswap(
-      pool: PromiseOrValue<string>,
-      down: PromiseOrValue<boolean>,
-      swapIn: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -617,31 +292,15 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getOrder(
-      key: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    marginFacility(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getRequiredOutput(
-      order: OrderStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    orders(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    poolManager(overrides?: CallOverrides): Promise<BigNumber>;
 
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
+    setContracts(
+      _marginFacility: PromiseOrValue<string>,
+      _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -654,37 +313,11 @@ export interface Executioner extends BaseContract {
   };
 
   populateTransaction: {
-    executeAggregator(
-      swapper: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "executeFiller(address,bool,uint256,uint256,address,address)"(
+    executeFiller(
       filler: PromiseOrValue<string>,
       outIsToken0: PromiseOrValue<boolean>,
       outputAmount: PromiseOrValue<BigNumberish>,
       inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "executeFiller(address,bool,uint256,uint256,address,address,bytes32)"(
-      filler: PromiseOrValue<string>,
-      outIsToken0: PromiseOrValue<boolean>,
-      outputAmount: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      token0: PromiseOrValue<string>,
-      token1: PromiseOrValue<string>,
-      key: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    executeUniswap(
-      pool: PromiseOrValue<string>,
-      down: PromiseOrValue<boolean>,
-      swapIn: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -700,31 +333,15 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getOrder(
-      key: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    marginFacility(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getRequiredOutput(
-      order: OrderStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    orders(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    poolManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    submitOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      deadline: PromiseOrValue<BigNumberish>,
-      startOutput: PromiseOrValue<BigNumberish>,
-      minOutput: PromiseOrValue<BigNumberish>,
-      inputAmount: PromiseOrValue<BigNumberish>,
-      decayRate: PromiseOrValue<BigNumberish>,
-      margin: PromiseOrValue<BigNumberish>,
+    setContracts(
+      _marginFacility: PromiseOrValue<string>,
+      _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

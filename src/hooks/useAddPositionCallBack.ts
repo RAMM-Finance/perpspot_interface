@@ -12,6 +12,7 @@ import { useCallback, useMemo } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
 import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
+import { TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
@@ -50,13 +51,24 @@ export function useAddPositionCallback(
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
       // if (!marginAmount || !borrowAmount) throw new Error('missing parameters')
 
-      const { pool, swapInput, swapRoute, positionKey, premium } = trade
+      const { pool, swapInput, swapRoute, premium, inputIsToken0 } = trade
+
+      const positionKey: TraderPositionKey = {
+        poolKey: {
+          token0Address: pool.token0.address,
+          token1Address: pool.token1.address,
+          fee: pool.fee,
+        },
+        isToken0: !inputIsToken0,
+        isBorrow: false,
+        trader: account,
+      }
 
       const amountOut = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
 
       if (!amountOut) throw new Error('unable to get trade output')
 
-      const inputDecimals = inputCurrency.decimals
+      // const inputDecimals = inputCurrency.decimals
       const outputDecimals = outputCurrency.decimals
       // calculate minimum output amount
       const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
