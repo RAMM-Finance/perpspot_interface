@@ -396,7 +396,8 @@ export function usePointsData() {
         usersReferred: codeUsers && codeUsers.length,
         point: referralMultipliers[referrer] * (tradeAmount + collectAmount+vaultAmount),
         tier: referralMultipliers[referrer],
-        vaultDeposits: totalVaultDeposits
+        vaultDeposits: totalVaultDeposits, 
+        timeWeightedDeposits: vaultAmount
       }
     })
 

@@ -14,8 +14,7 @@ import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { CopyToClipboard, ThemedText } from 'theme'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
-
-import { usePointsData } from './data'
+import { usePointsData, CollectMultipler, referralDivisor} from './data'
 import TierBar from './TierBar'
 
 const Wrapper = styled.div`
@@ -275,6 +274,8 @@ const Referrals = () => {
   }
 
   const [simulatedRewards, setSimulatedRewards] = useState<string>()
+  const [lastClaimedPoints, setLastClaimedPoints] = useState<string>()
+  const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
 
   useEffect(() =>{
     if(!account || !BRP) return 
@@ -282,14 +283,20 @@ const Referrals = () => {
     const call = async()=>{
       try{
         const result = await BRP.callStatic.claimRewards()
+        const lastClaimedPoints = await BRP.lastClaimedPoints(account)
+        const lastRecordedPoints = await BRP.lastRecordedPoints(account)
         setSimulatedRewards(result.toString())
-
+        setLastClaimedPoints(lastClaimedPoints.toString())
+        setLastRecordedPoints(lastRecordedPoints.toString())
 
       } catch(error){
         console.log('claimsimerr', error)
       }
     }
+    call() 
   })
+
+
 
   console.log('simulatedRewards',BRP,  simulatedRewards)
 
@@ -371,6 +378,49 @@ const Referrals = () => {
 
     call()
   }, [account, blockNumber])
+
+  const claimRewardsCallback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      
+      const response = await BRP?.claimRewards()
+      return response as TransactionResponse
+    } catch (err) {
+      console.log('referr', err)
+      throw new Error('reff')
+    }
+  }, [account, chainId, BRP, provider])
+
+  const handleClaimRewards = useCallback(() => {
+    if (!refGens || !account || !BRP || !chainId || !provider) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    claimRewardsCallback()
+      .then((response) => {
+        setAttemptingTxn(false)
+        setTxHash(response?.hash)
+        setErrorMessage(undefined)
+        addTransaction(response, {
+          type: TransactionType.COLLECT_FEES,
+          currencyId0: 'USDC',
+          currencyId1: 'Rewards',
+          expectedCurrencyOwed0: '',
+          expectedCurrencyOwed1: ''
+        })
+        setTxResponse(response?.hash)
+        return response.hash
+      })
+      .catch((error) => {
+        console.error('referrr', error)
+        setAttemptingTxn(false)
+        setTxHash(undefined)
+        setErrorMessage(error.message)
+      })
+
+  }, [claimRewardsCallback, account, BRP, chainId, provider, txHash, attemptingTxn, errorMessage])
+
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -678,13 +728,13 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Fees earned by Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${refereeActivity && account && refereeActivity[account]?.lpAmount}
+                    ${refereeActivity && account && (refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits)/CollectMultipler}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Vault Deposits From Referees</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>limToken Deposits From Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
                   </ThemedText.BodySecondary>
@@ -692,26 +742,26 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>My Referral Points Last Claim</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>Referral Points Last Claim</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
+                    {refereeActivity && account && lastClaimedPoints}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>My Referral Points Now</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>Recently Updated Referral Points</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
+                    {refereeActivity && account && lastRecordedPoints}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
 
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Claimable Rebates</ThemedText.SubHeader>
-                  <ThemedText.BodySecondary fontSize={16}>Coming soon</ThemedText.BodySecondary>
-              <SmallButtonPrimary onClick={() => setShowModal(!showModal)}>Collect</SmallButtonPrimary>
+                  <ThemedText.SubHeader fontSize={15}>Claimable Rewards</ThemedText.SubHeader>
+                  <ThemedText.BodySecondary fontSize={16}>{simulatedRewards + " USDC"}</ThemedText.BodySecondary>
+              <SmallButtonPrimary onClick={handleClaimRewards}>Collect</SmallButtonPrimary>
 
                 </CardWrapper>
               </StyledCard>{' '}
