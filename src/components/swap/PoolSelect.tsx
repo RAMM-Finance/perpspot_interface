@@ -228,6 +228,9 @@ export default function PoolSelect({
     if (
       (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'LDO') ||
       (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'RDNT') ||
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'MAGIC') ||
+      (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'XPET') ||
       (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'PENDLE')
     ) {
       localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))

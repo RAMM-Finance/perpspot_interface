@@ -13,7 +13,7 @@ import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { LMT_VAULT } from 'constants/addresses'
+import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { BigNumber } from 'ethers'
@@ -68,6 +68,7 @@ export default function SimplePool() {
   const outputCurrency = useCurrency(output)
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
+    if (outputCurrency?.symbol === 'limWETH') setInput('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
     return buy ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [buy, inputCurrency, outputCurrency])
 
@@ -210,7 +211,7 @@ export default function SimplePool() {
         </HeaderCell>
         <HeaderCell>
           <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            Weight
+            {outputCurrency?.symbol === 'LLP' ? 'Weight' : 'My Balance'}
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
@@ -230,10 +231,15 @@ export default function SimplePool() {
   // allowance / approval
   const [vaultApprovalState, approveVault] = useApproveCallback(
     parsedAmounts[Field.CURRENCY_A],
-    LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
+    outputCurrency?.symbol === 'LLP'
+      ? LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
+      : LIM_WETH[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
-  //callStatic for deposit
+  console.log(vaultApprovalState)
+
+  //callStatic for llp deposit
+
   const cb = useCallback(async (): Promise<BigNumber> => {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
@@ -248,7 +254,15 @@ export default function SimplePool() {
   }, [account, chainId, vaultContract, provider, parsedAmounts, baseCurrency])
 
   useEffect(() => {
-    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider || !buy) {
+    if (
+      !parsedAmounts?.[Field.CURRENCY_A] ||
+      !account ||
+      !vaultContract ||
+      !chainId ||
+      !provider ||
+      !buy ||
+      outputCurrency?.symbol !== 'LLP'
+    ) {
       return
     }
 
@@ -261,7 +275,189 @@ export default function SimplePool() {
         console.log(error)
         setValue(0)
       })
-  }, [vaultContract, parsedAmounts, cb, account, chainId, provider, buy])
+  }, [
+    vaultContract,
+    parsedAmounts,
+    cb,
+    account,
+    chainId,
+    provider,
+    buy,
+    outputCurrency?.symbol,
+    quoteCurrency?.decimals,
+  ])
+
+  //call static for limweth deposit
+
+  const limWethMintStaticCallback = useCallback(async (): Promise<BigNumber> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
+      if (amountIn && account) response = await limweth?.callStatic.deposit(amountIn, account)
+      return response as BigNumber
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, limweth, provider, parsedAmounts, baseCurrency])
+
+  useEffect(() => {
+    if (
+      !parsedAmounts?.[Field.CURRENCY_A] ||
+      !account ||
+      !vaultContract ||
+      !limweth ||
+      !chainId ||
+      !provider ||
+      !buy ||
+      outputCurrency?.symbol === 'LLP'
+    ) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    limWethMintStaticCallback()
+      .then((response) => {
+        console.log('limMint', response)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
+      })
+      .catch((error) => {
+        console.log(error)
+        setValue(0)
+      })
+  }, [
+    limWethMintStaticCallback,
+    account,
+    limweth,
+    chainId,
+    provider,
+    parsedAmounts,
+    txHash,
+    attemptingTxn,
+    error,
+    addTransaction,
+    outputCurrency?.symbol,
+    buy,
+    vaultContract,
+    quoteCurrency?.decimals,
+  ])
+
+  // call llp static redeem
+
+  const cbredeem = useCallback(async (): Promise<BigNumber> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
+      if (quoteCurrency && amountIn && account)
+        response = await vaultContract?.callStatic.redeemToAnyToken(
+          quoteCurrency?.wrapped.address,
+          amountIn,
+          account,
+          account
+        )
+      return response as BigNumber
+    } catch (err) {
+      throw new Error(err.errorArgs)
+    }
+  }, [account, chainId, vaultContract, provider, parsedAmounts])
+
+  useEffect(() => {
+    if (
+      !parsedAmounts?.[Field.CURRENCY_A] ||
+      !account ||
+      !vaultContract ||
+      !chainId ||
+      !provider ||
+      buy ||
+      outputCurrency?.symbol !== 'LLP'
+    ) {
+      return
+    }
+    setAttemptingTxn(true)
+
+    cbredeem()
+      .then((response) => {
+        console.log(response)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
+        setLiqError(false)
+      })
+      .catch((error) => {
+        console.log('referrr', error)
+        if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
+      })
+  }, [
+    account,
+    vaultContract,
+    chainId,
+    provider,
+    parsedAmounts,
+    txHash,
+    attemptingTxn,
+    error,
+    buy,
+    cbredeem,
+    outputCurrency?.symbol,
+    quoteCurrency?.decimals,
+  ])
+
+  // limweth static redeem
+
+  const limWethStaticWithdrawCallback = useCallback(async (): Promise<BigNumber> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('redeeminput', amountIn, account)
+      if (amountIn && account) response = await limweth?.callStatic.redeem(amountIn, account, account)
+      return response as BigNumber
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, limweth, provider, parsedAmounts])
+
+  useEffect(() => {
+    if (
+      !parsedAmounts?.[Field.CURRENCY_A] ||
+      !account ||
+      !limweth ||
+      !chainId ||
+      !provider ||
+      buy ||
+      outputCurrency?.symbol === 'LLP'
+    ) {
+      return
+    }
+
+    setAttemptingTxn(true)
+
+    limWethStaticWithdrawCallback()
+      .then((response) => {
+        console.log(response)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
+        setLiqError(false)
+      })
+      .catch((error) => {
+        console.log('hi', error)
+        if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
+      })
+  }, [
+    limWethStaticWithdrawCallback,
+    account,
+    limweth,
+    chainId,
+    provider,
+    parsedAmounts,
+    txHash,
+    attemptingTxn,
+    error,
+    addTransaction,
+    outputCurrency?.symbol,
+    quoteCurrency?.decimals,
+    buy,
+  ])
+
+  //limWETH deposit
 
   const limWethMintCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -274,18 +470,6 @@ export default function SimplePool() {
       throw new Error('reff')
     }
   }, [account, chainId, limweth, provider, parsedAmounts, baseCurrency])
-
-  const limWethWithdrawCallback = useCallback(async (): Promise<TransactionResponse> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('redeeminput', amountIn, account)
-      if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
-      return response as TransactionResponse
-    } catch (err) {
-      throw new Error('reff')
-    }
-  }, [account, chainId, limweth, provider, parsedAmounts])
 
   const handleLimWethDeposit = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
@@ -300,7 +484,7 @@ export default function SimplePool() {
         setTxHash(response?.hash)
         setError(undefined)
         addTransaction(response, {
-          type: TransactionType.MINT_LLP,
+          type: TransactionType.MINT_limWETH,
           inputCurrencyId: '',
           outputCurrencyId: '',
         })
@@ -324,6 +508,20 @@ export default function SimplePool() {
     error,
     addTransaction,
   ])
+
+  //limweth redeem
+
+  const limWethWithdrawCallback = useCallback(async (): Promise<TransactionResponse> => {
+    try {
+      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
+      let response
+      console.log('redeeminput', amountIn, account)
+      if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
+      return response as TransactionResponse
+    } catch (err) {
+      throw new Error('reff')
+    }
+  }, [account, chainId, limweth, provider, parsedAmounts])
 
   const handleLimWethRedeem = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
@@ -362,6 +560,8 @@ export default function SimplePool() {
     error,
     addTransaction,
   ])
+
+  // llp deposit
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -403,45 +603,7 @@ export default function SimplePool() {
       })
   }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
 
-  //call static for redeem
-  const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-
-  const cbredeem = useCallback(async (): Promise<BigNumber> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      console.log(amountIn)
-      let response
-      console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
-      if (quoteCurrency && amountIn && account)
-        response = await vaultContract?.callStatic.redeemToAnyToken(
-          quoteCurrency?.wrapped.address,
-          amountIn,
-          account,
-          account
-        )
-      return response as BigNumber
-    } catch (err) {
-      throw new Error(err.errorArgs)
-    }
-  }, [account, chainId, vaultContract, provider, parsedAmounts])
-
-  useEffect(() => {
-    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider || buy) {
-      return
-    }
-    setAttemptingTxn(true)
-
-    cbredeem()
-      .then((response) => {
-        console.log(response)
-        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
-        setLiqError(false)
-      })
-      .catch((error) => {
-        console.log('referrr', error)
-        if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
-      })
-  }, [account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, buy, cbredeem])
+  // llp redeem
 
   const redeemCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -453,7 +615,6 @@ export default function SimplePool() {
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
-      console.log('ereeeerr', err)
     }
   }, [account, chainId, vaultContract, provider, parsedAmounts])
 
@@ -487,39 +648,52 @@ export default function SimplePool() {
   }, [redeemCallback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error])
 
   useEffect(() => {
-    if (!account || !provider || !vaultContract) return
+    if (!account || !provider || !vaultContract || !limweth) return
 
-    const call = async () => {
-      try {
-        const balance = await vaultContract.balanceOf(account)
-        console.log('balance', balance.toString())
-        setLlpBalance(() => Number(balance) / 1e18)
-      } catch (error) {
-        console.log('codebyowners err')
+    if (outputCurrency?.symbol === 'LLP') {
+      const call = async () => {
+        try {
+          const balance = await vaultContract.balanceOf(account)
+          console.log('balance', balance.toString())
+          setLlpBalance(() => Number(balance) / 1e18)
+        } catch (error) {
+          console.log('codebyowners err')
+        }
       }
+      call()
     }
-    call()
-  }, [account, provider, vaultContract, attemptingTxn])
-
+    if (outputCurrency?.symbol !== 'LLP') {
+      const call = async () => {
+        try {
+          const balance = await limweth.balanceOf(account)
+          console.log('balance', balance.toString())
+          setLlpBalance(() => Number(balance) / 1e18)
+        } catch (error) {
+          console.log('codebyowners err')
+        }
+      }
+      call()
+    }
+  }, [account, provider, vaultContract, attemptingTxn, outputCurrency?.symbol])
 
   const [limwethSupply, setLimwethSupply] = useState<any>()
   const [limwethBacking, setlimwethBacking] = useState<any>()
   const [limwethUtilized, setlimwethUtilized] = useState<any>()
 
-  useEffect(()=>{
+  useEffect(() => {
     if (!provider || !limweth) return
 
-      const call = async() =>{
-        const supply = await limweth.totalSupply() 
-        const backing = await limweth.tokenBalance()
-        const utilized = await limweth.utilizedBalance()
+    const call = async () => {
+      const supply = await limweth.totalSupply()
+      const backing = await limweth.tokenBalance()
+      const utilized = await limweth.utilizedBalance()
 
-        setLimwethSupply(supply)
-        setlimwethBacking(backing)
-        setlimwethUtilized(utilized)
-      }
+      setLimwethSupply(supply)
+      setlimwethBacking(backing)
+      setlimwethUtilized(utilized)
+    }
     call()
-  },[provider, limweth])
+  }, [provider, limweth])
 
   const [data, setData] = useState<any>()
   const [mW, setMW] = useState<any>()
@@ -692,52 +866,107 @@ export default function SimplePool() {
               </div>
               {isOpen && <>{dropdown}</>}
             </RowStart>
-            <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
-              <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary fontSize={12}>
-                {llpPrice && (llpPrice / 1e18).toFixed(2)}
-              </ThemedText.BodySecondary>
-            </RowBetween>
-            <RowBetween>
-              <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary fontSize={12}>
-                {data && formatDollarAmount({ num: data[0] / 1e18, long: true })}
-              </ThemedText.BodySecondary>
-            </RowBetween>
-            <RowBetween>
-              <ThemedText.BodyPrimary fontSize={12}>Total Backing (USD): </ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary fontSize={12}>
-                {data && `$${formatDollarAmount({ num: data[1] / 1e18, long: true })}`}
-              </ThemedText.BodySecondary>
-            </RowBetween>
-            {buy ? (
-              <RowBetween
-                style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
-              >
-                <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
-                <ThemedText.BodySecondary fontSize={12}>
-                  {`Variable Premium Rate ~50%` + `  + swap fees`}
-                </ThemedText.BodySecondary>
-              </RowBetween>
-            ) : (
+            {outputCurrency && outputCurrency.symbol === 'LLP' && (
               <>
-                <RowBetween
-                  style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
-                >
-                  <ThemedText.BodyPrimary fontSize={12}>Reserved: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>0.000 LLP ($0.00)</ThemedText.BodySecondary>
+                <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
+                  <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {llpPrice && (llpPrice / 1e18).toFixed(2)}
+                  </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {data && formatDollarAmount({ num: data[0] / 1e18, long: true })}
+                  </ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>Total Backing (USD): </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {data && `$${formatDollarAmount({ num: data[1] / 1e18, long: true })}`}
+                  </ThemedText.BodySecondary>
+                </RowBetween>
+                {buy ? (
+                  <RowBetween
+                    style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
+                  >
+                    <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
+                    <ThemedText.BodySecondary fontSize={12}>
+                      {`Variable Premium Rate ~50%` + `  + swap fees`}
+                    </ThemedText.BodySecondary>
+                  </RowBetween>
+                ) : (
+                  <>
+                    <RowBetween
+                      style={{
+                        marginTop: '10px',
+                        paddingTop: '20px',
+                        borderTop: `1px solid ${theme.accentActiveSoft}`,
+                      }}
+                    >
+                      <ThemedText.BodyPrimary fontSize={12}>Reserved: </ThemedText.BodyPrimary>
+                      <ThemedText.BodySecondary fontSize={12}>0.000 LLP ($0.00)</ThemedText.BodySecondary>
+                    </RowBetween>
+                    <RowBetween>
+                      <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
+                      <ThemedText.BodySecondary fontSize={12}>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
+                    </RowBetween>
+                  </>
+                )}
+
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>Utilization Rate:</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {data && ((data[2] / 1e18) * 100).toFixed(2)}%
+                  </ThemedText.BodySecondary>
                 </RowBetween>
               </>
             )}
+            {outputCurrency && outputCurrency.symbol === 'limWETH' && (
+              <>
+                <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
+                  <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {llpPrice && (llpPrice / 1e18).toFixed(2)}
+                  </ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>{limwethSupply / 1e18}</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween
+                  style={{
+                    marginBottom: '10px',
+                    paddingBottom: '20px',
+                    borderBottom: `1px solid ${theme.accentActiveSoft}`,
+                  }}
+                >
+                  <ThemedText.BodyPrimary fontSize={12}>Total Backing (USD): </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>{limwethBacking / 1e18}</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>14D Impermanent Loss </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                </RowBetween>
 
-            <RowBetween>
-              <ThemedText.BodyPrimary fontSize={12}>Utilization Rate:</ThemedText.BodyPrimary>
-              <ThemedText.BodySecondary fontSize={12}>{data && (data[2] / 1e18) * 100}%</ThemedText.BodySecondary>
-            </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>Fee Distribution:</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>80% LPs, 20% Protocol</ThemedText.BodySecondary>
+                </RowBetween>
+              </>
+            )}
           </DetailsCard>
           <CurrencyWrapper>
             <FilterWrapper>
@@ -779,6 +1008,7 @@ export default function SimplePool() {
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Sell</ThemedText.BodyPrimary>
               }
+              wethOnly={buy && outputCurrency?.symbol === 'limWETH'}
             />
             <ArrowWrapper
               onClick={() => {
@@ -809,6 +1039,7 @@ export default function SimplePool() {
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Buy</ThemedText.BodyPrimary>
               }
+              wethOnly={!buy && outputCurrency?.symbol === 'limWETH'}
             />
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
@@ -831,18 +1062,18 @@ export default function SimplePool() {
                   </>
                 )}
               </ButtonError>
-            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A])) || !value ? (
+            ) : errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value ? (
               <ButtonError text={errorMessage}></ButtonError>
             ) : liqError ? (
               <ButtonError text="Not enough liquidity"></ButtonError>
             ) : buy ? (
               <ButtonBlue
-                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleRedeem}
+                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleLimWethDeposit}
                 text={`Buy ${outputCurrency?.symbol}`}
               ></ButtonBlue>
             ) : (
               <ButtonBlue
-                onClick={ handleRedeem}
+                onClick={outputCurrency?.symbol === 'LLP' ? handleRedeem : handleLimWethRedeem}
                 text={`Sell ${outputCurrency?.symbol}`}
               ></ButtonBlue>
             )}
@@ -853,63 +1084,116 @@ export default function SimplePool() {
           <IndexWrapper>
             <IndexHeader />
 
-            {indexData &&
-              WBTCPrice &&
-              WETHPrice &&
-              indexData.map((tok: any) => {
-                return (
-                  <LoadedCellWrapper key={tok.token.symbol}>
-                    <LoadedCell style={{ paddingLeft: '20px' }}>
-                      <CurrencyLogo currency={tok.token} size="20px" />
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {tok.token.symbol}
-                      </ThemedText.BodySmall>
-                    </LoadedCell>
-                    <LoadedCell>
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {formatDollarAmount({ num: tok?.price, long: true })}
-                      </ThemedText.BodySmall>
-                    </LoadedCell>
-                    <LoadedCell>
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {formatDollarAmount({ num: tok.poolBal / Number(`1e${tok.token.decimals}`), long: true }) +
-                          ' ' +
-                          tok.token.symbol}
-                      </ThemedText.BodySmall>
-                    </LoadedCell>
-                    <LoadedCell>
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {formatDollarAmount({
-                          num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
-                          long: true,
-                        })}
-                        %
-                      </ThemedText.BodySmall>
-                    </LoadedCell>
-                    <LoadedCell>
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {formatDollarAmount({
-                          num: (Number(tok.util) / Number(`1e${18}`)) * 100,
-                          long: true,
-                        })}
-                        %
-                      </ThemedText.BodySmall>
-                    </LoadedCell>
-                    <LoadedCell>
-                      <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                        {formatDollarAmount({
-                          num:
-                            (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
-                            (1 - Number(tok.util) / Number(`1e${18}`)),
-                          long: true,
-                        }) +
-                          ' ' +
-                          tok.token.symbol}
-                      </ThemedText.BodySmall>
-                    </LoadedCell>
-                  </LoadedCellWrapper>
-                )
-              })}
+            {indexData && WBTCPrice && WETHPrice && outputCurrency?.symbol === 'LLP'
+              ? indexData.map((tok: any) => {
+                  return (
+                    <LoadedCellWrapper key={tok.token.symbol}>
+                      <LoadedCell style={{ paddingLeft: '20px' }}>
+                        <CurrencyLogo currency={tok.token} size="20px" />
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {tok.token.symbol}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({ num: tok?.price, long: true })}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({ num: tok.poolBal / Number(`1e${tok.token.decimals}`), long: true }) +
+                            ' ' +
+                            tok.token.symbol}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({
+                            num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
+                            long: true,
+                          })}
+                          %
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({
+                            num: (Number(tok.util) / Number(`1e${18}`)) * 100,
+                            long: true,
+                          })}
+                          %
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({
+                            num:
+                              (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
+                              (1 - Number(tok.util) / Number(`1e${18}`)),
+                            long: true,
+                          }) +
+                            ' ' +
+                            tok.token.symbol}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                    </LoadedCellWrapper>
+                  )
+                })
+              : indexData &&
+                WBTCPrice &&
+                WETHPrice &&
+                indexData
+                  .filter((token: any) => token.token.symbol === 'WETH')
+                  .map((tok: any) => {
+                    return (
+                      <LoadedCellWrapper key={tok.token.symbol}>
+                        <LoadedCell style={{ paddingLeft: '20px' }}>
+                          <CurrencyLogo currency={tok.token} size="20px" />
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {tok.token.symbol}
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+                        <LoadedCell>
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {formatDollarAmount({ num: tok?.price, long: true })}
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+                        <LoadedCell>
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {formatDollarAmount({ num: tok.poolBal / Number(`1e${tok.token.decimals}`), long: true }) +
+                              ' ' +
+                              tok.token.symbol}
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+                        <LoadedCell>
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {llpBalance}
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+                        <LoadedCell>
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {formatDollarAmount({
+                              num: (Number(tok.util) / Number(`1e${18}`)) * 100,
+                              long: true,
+                            })}
+                            %
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+                        <LoadedCell>
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {formatDollarAmount({
+                              num:
+                                (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
+                                (1 - Number(tok.util) / Number(`1e${18}`)),
+                              long: true,
+                            }) +
+                              ' ' +
+                              tok.token.symbol}
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+                      </LoadedCellWrapper>
+                    )
+                  })}
           </IndexWrapper>
         </AutoColumn>
         <RowBetween>

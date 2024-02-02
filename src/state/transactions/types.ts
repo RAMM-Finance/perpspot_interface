@@ -57,8 +57,10 @@ export enum TransactionType {
   CREATE_REFERRAL,
   USE_REFERRAL,
   CANCEL_LIMIT_ORDER,
-  MINT_LLP, 
-  REDEEM_LLP
+  MINT_LLP,
+  REDEEM_LLP,
+  MINT_limWETH,
+  REDEEM_limWETH,
 }
 
 interface BaseTransactionInfo {
@@ -285,8 +287,20 @@ export interface MintLLPInfo {
   outputCurrencyId: string
 }
 
-export interface RedeemLLPInfo  {
+export interface RedeemLLPInfo {
   type: TransactionType.REDEEM_LLP
+  inputCurrencyId: string
+  outputCurrencyId: string
+}
+
+export interface MintlimWETHInfo {
+  type: TransactionType.MINT_limWETH
+  inputCurrencyId: string
+  outputCurrencyId: string
+}
+
+export interface RedeemlimWETHInfo {
+  type: TransactionType.REDEEM_limWETH
   inputCurrencyId: string
   outputCurrencyId: string
 }
@@ -320,8 +334,10 @@ export type TransactionInfo =
   | CancelLimitOrderTransactionInfo
   | PremiumDepositTransactionInfo
   | PremiumWithdrawTransactionInfo
-  | MintLLPInfo 
+  | MintLLPInfo
   | RedeemLLPInfo
+  | MintlimWETHInfo
+  | RedeemlimWETHInfo
 
 export interface TransactionDetails {
   hash: string

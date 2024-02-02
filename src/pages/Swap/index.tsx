@@ -4,6 +4,7 @@ import { Currency, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
 import Footer from 'components/Footer'
+import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PoolDetailsSection } from 'components/swap/PoolDetailsSection'
 import PoolSelect from 'components/swap/PoolSelect'
@@ -282,6 +283,8 @@ export function getIsValidSwapQuote(
 
 export default function Swap({ className }: { className?: string }) {
   // const navigate = useNavigate()
+  const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
+
   const { account, chainId, provider } = useWeb3React()
 
   // const loadedUrlParams = useDefaultsFromURLSearch()
@@ -462,6 +465,7 @@ export default function Swap({ className }: { className?: string }) {
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
         <PageWrapper>
+          {warning ? null : <Disclaimer setWarning={setWarning} />}
           <SwapHeaderWrapper>
             <TokenNameCell>
               {inputCurrency && outputCurrency ? (
