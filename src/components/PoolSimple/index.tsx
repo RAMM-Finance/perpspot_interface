@@ -691,6 +691,14 @@ export default function SimplePool() {
                 <ThemedText.BodyPrimary fontSize={12}>{outputCurrency?.symbol}</ThemedText.BodyPrimary>
               </div>
               {isOpen && <>{dropdown}</>}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <ThemedText.BodyPrimary fontSize={20}>14D APR:</ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={18} style={{ color: 'green' }}>
+                  {"25.2%"}
+                </ThemedText.BodySecondary>
+              </div>
+
             </RowStart>
             <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
               <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>

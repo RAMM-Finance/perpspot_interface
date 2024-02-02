@@ -542,7 +542,8 @@ export function useDerivedReduceLimitPositionInfo(
     position,
     parsedAmount,
     parsedLimitPrice ? (baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice) : undefined,
-    outputCurrency
+    outputCurrency, 
+    inputCurrency
   )
 
   const simulate = useCallback(async () => {

@@ -558,7 +558,7 @@ const Referrals = () => {
               Generate Referral Code
             </ThemedText.BodySecondary>
             <ThemedText.BodyPrimary style={{ paddingBottom: '15px', paddingLeft: '30px', paddingRight: '30px' }}>
-              Looks like you don't have a referral code to share. Create new referral codes and start earning extra points and rebates! 
+              Looks like you don't have a referral code to share. Create new referral codes and start earning LMT and rebates! 
             </ThemedText.BodyPrimary>
             <Input
               placeholder="Enter referral code"
@@ -742,7 +742,7 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Referral Points Last Claim</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>Referral LMT Last Claim</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && lastClaimedPoints}
                   </ThemedText.BodySecondary>
@@ -750,7 +750,7 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Recently Updated Referral Points</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>Recently Updated Referral LMT</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && lastRecordedPoints}
                   </ThemedText.BodySecondary>
@@ -829,7 +829,7 @@ const Referrals = () => {
 
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.BodyPrimary>My Point Multiplier</ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary>My LMT Multiplier</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>1.00</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>

@@ -18,6 +18,9 @@ import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
+import {useVaultContract, useLimweth} from "hooks/useContract"
+
+
 
 const GridContainer = styled.div`
   display: flex;
@@ -148,6 +151,27 @@ export default function TokenTable() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
+  const vault = useVaultContract()
+  const limweth = useLimweth() 
+
+  const [vaultBal, setVaultBal] = useState<any>()
+  useEffect(()=>{
+    if(!vault ||!limweth) return 
+
+    const call= async()=>{
+      try{
+      const total = await vault.totalAssets()
+      setVaultBal(total.toString())
+      }catch(err){
+        console.log('vaultbalerr',err)
+      }
+
+    }
+    call()
+  }, [vault, limweth])
+
+  console.log('vaultbal', vaultBal)
+
   interface Pool {
     blockTimeStamp: string
     fee: number
@@ -206,7 +230,8 @@ export default function TokenTable() {
   const poolsInfo = useMemo(() => {
     if (poolData) {
       return {
-        tvl: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0),
+        tvl: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0)
+          + Number(vaultBal)/1e18,
         volume: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
       }
     } else {

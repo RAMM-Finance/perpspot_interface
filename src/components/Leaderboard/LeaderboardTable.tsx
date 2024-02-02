@@ -127,22 +127,22 @@ export default function LeaderboardTable() {
         </HeaderCell>
         <HeaderCell>
           <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
-            Trade Point
+            Trade LMT
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
           <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
-            LP Point
+            LP LMT
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
           <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
-            Referral Point
+            Referral LMT
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
         <HeaderCell>
           <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
-            Total Point
+            Total LMT
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
       </HeaderCellWrapper>

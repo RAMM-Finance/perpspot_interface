@@ -752,7 +752,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </FlexStartRow>
           }
           remainingPremium={
-            <MouseoverTooltip text={<Trans>{"Estimated Time Until Close: " + String(estimatedTimeToClose)+ ' hrs'}</Trans>} disableHover={false}>
+            <MouseoverTooltip text={
+              <Trans>{"Estimated Time Until Close: " + String(estimatedTimeToClose)+ ' hrs'}</Trans>
+
+            } disableHover={false}>
 
             <FlexStartRow>
               {position?.premiumLeft.isGreaterThan(0) ? (

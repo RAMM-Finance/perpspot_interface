@@ -55,18 +55,28 @@ const ReferralsWrapper = styled.div`
   width: 100%;
 `
 
-// const PointsWrapper = styled.div`
-//   display: flex;
-//   // border: solid ${({ theme }) => theme.backgroundOutline};
-//   background-color: ${({ theme }) => theme.backgroundSurface};
-//   border-radius: 10px;
-//   width: 100%;
-//   margin-left: 0.25rem;
-//   margin-right: 0.25rem;
-//   margin-bottom: 0.125rem;
-//   padding: 5px;
-//   height: fit-content;
-// `
+const FaqWrapper = styled.div`
+  margin-top: 50px;
+  margin-right: auto;
+  margin-left: auto;
+  width: 48%;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+`
+
+const FaqElement = styled.div`
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  :hover {
+    cursor: pointer;
+    opacity: 75%;
+  }
+`
 
 const ErrorContainer = styled.div`
   display: flex;
@@ -169,7 +179,7 @@ export default function LeaderboardPage() {
           <Points />
         </PointsWrapper>
         <Container>
-          <FilterWrapper>
+          {/*<FilterWrapper>
             <Filter>
               <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
                 <StyledSelectorText active={leaderboard}>Leaderboard</StyledSelectorText>
@@ -178,8 +188,11 @@ export default function LeaderboardPage() {
                 <StyledSelectorText active={!leaderboard}>Referrals</StyledSelectorText>
               </Selector>
             </Filter>
-          </FilterWrapper>
-          {leaderboard ? (
+          </FilterWrapper>*/}
+            <LeaderboardWrapper>
+              <LeaderboardTable />
+            </LeaderboardWrapper>
+          {/*leaderboard ? (
             <LeaderboardWrapper>
               <LeaderboardTable />
             </LeaderboardWrapper>
@@ -208,8 +221,24 @@ export default function LeaderboardPage() {
                 <Referrals />
               )}
             </ReferralsWrapper>
-          )}
-
+          )*/}
+              <FaqWrapper>
+                <FaqElement>
+                  <a
+                    href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
+                      Earning LMT
+                    </ThemedText.BodySecondary>
+                  </a>
+                  <ArrowUpRight size="20" />
+                </FaqElement>{' '}
+                <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
+                  Read our LMT documentation to better understand how to earn LMT.
+                </ThemedText.BodyPrimary>
+              </FaqWrapper>
           {/* <AchievementsWrapper>
           <ThemedText.SubHeader>
             <Header>Achievements</Header>

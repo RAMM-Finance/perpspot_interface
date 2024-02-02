@@ -100,7 +100,13 @@ export const PageTabs = () => {
           <Trans>Faucets</Trans>
         </MenuItem>*/}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
-          <Trans>Points</Trans>
+          <Trans>LMT</Trans>
+        </MenuItem>
+        <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
+          <Trans>Referral</Trans>
+        </MenuItem>
+        <MenuItem href="https://limitless.gitbook.io/limitless/intro/why-limitless" >
+          <Trans>Docs</Trans>
         </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>

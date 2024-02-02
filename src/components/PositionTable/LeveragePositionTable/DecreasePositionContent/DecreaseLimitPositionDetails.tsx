@@ -7,6 +7,12 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { RowBetween, RowFixed } from 'components/Row'
+import { MouseoverTooltip } from 'components/Tooltip'
+import {  TextWithLoadingPlaceholder, TruncatedText } from 'components/modalFooters/common'
+import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
+import { Trans } from '@lingui/macro'
+import { Separator, ThemedText } from 'theme'
 
 import { DerivedLimitReducePositionInfo } from '.'
 
@@ -36,13 +42,14 @@ export default function DecreasePositionLimitDetails({
     return existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.estimatedPnL)
   }, [txnInfo, existingPosition])
 
+
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="sm">
         <ValueLabel
-          label="Debt Reduction"
+          label="Repaying"
           value={formatBNToString(txnInfo?.startingDebtReduceAmount, NumberType.SwapTradeAmount)}
-          description="Maximum Debt Reduction"
+          description="Amount you are repaying"
           syncing={loading}
           symbolAppend={inputCurrency?.symbol}
           height="14px"
@@ -56,15 +63,44 @@ export default function DecreasePositionLimitDetails({
           height="14px"
           symbolAppend={inputCurrency?.symbol}
         />
-        <ValueLabel
+        {/*<ValueLabel
           label="Estimated PnL"
-          description="Amount the reduced position converts to, given your order price"
+          description="PnL"
           syncing={loading}
           value={formatBNToString(txnInfo?.estimatedPnL, NumberType.SwapTradeAmount)}
           delta={true}
           symbolAppend={inputCurrency?.symbol}
           height="14px"
-        />
+        />*/}
+
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans>Estimated PnL</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <TruncatedText>
+                <DeltaText delta={Number(txnInfo?.estimatedPnL)}>
+                  {txnInfo
+                    ? `(${(
+                        (Number(txnInfo?.estimatedPnL.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                        100
+                      ).toFixed(2)}%) ${formatBNToString(txnInfo?.estimatedPnL, NumberType.SwapTradeAmount)}  ${
+                        inputCurrency?.symbol
+                      }`
+                    : '-'}
+                </DeltaText>
+              </TruncatedText>
+            </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
+
+
+
       </AutoColumn>
     </StyledBGCard>
   )
