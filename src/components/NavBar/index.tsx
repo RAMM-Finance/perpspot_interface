@@ -22,18 +22,18 @@ import { ReactComponent as LogoText } from '../../assets/svg/full_logo_black.svg
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
-import Disclaimer from './Disclaimer'
 import * as styles from './style.css'
 
 const Nav = styled.nav`
   /* padding: 10px 12px; */
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   width: 100%;
-  z-index: 2;
+  z-index: 0;
   background-color: ${({ theme }) => theme.navbarBackground}; // Use theme value
   &:hover {
     font-weight: bold;
   }
+  position: initial;
 `
 
 interface MenuItemProps {
@@ -100,7 +100,13 @@ export const PageTabs = () => {
           <Trans>Faucets</Trans>
         </MenuItem>*/}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
-          <Trans>Points</Trans>
+          <Trans>LMT</Trans>
+        </MenuItem>
+        <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
+          <Trans>Referral</Trans>
+        </MenuItem>
+        <MenuItem href="https://limitless.gitbook.io/limitless/intro/why-limitless" >
+          <Trans>Docs</Trans>
         </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
@@ -123,7 +129,6 @@ const Navbar = ({ blur }: { blur: boolean }) => {
   const isNftPage = useIsNftPage()
   const sellPageState = useProfilePageState((state) => state.state)
   const navigate = useNavigate()
-  const [warning, setWarning] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -182,7 +187,6 @@ const Navbar = ({ blur }: { blur: boolean }) => {
             </Row>
           </Box>
         </Box>
-        {warning ? <Disclaimer setWarning={setWarning} /> : null}
         <Modal maxWidth={700} isOpen={showModal} onDismiss={handleCloseModal}>
           <AboutModal />
         </Modal>

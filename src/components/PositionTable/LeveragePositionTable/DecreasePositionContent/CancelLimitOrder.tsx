@@ -129,7 +129,7 @@ export const ExistingReduceOrderSection = ({
   const limitPrice = useMemo(() => {
     return order.currentOutput.div(order.inputAmount)
   }, [order])
-  const { result: estimatedPnL } = useEstimatedPnL(orderKey, position, order.inputAmount, limitPrice, outputCurrency)
+  const { result: estimatedPnL } = useEstimatedPnL(orderKey, position, order.inputAmount, limitPrice, outputCurrency, inputCurrency)
 
   const { callback: cancelCallback } = useCancelLimitOrderCallback(orderKey)
   const addTransaction = useTransactionAdder()

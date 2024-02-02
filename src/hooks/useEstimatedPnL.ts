@@ -19,18 +19,19 @@ export function useEstimatedPnL(
   existingPosition?: MarginPositionDetails,
   reduceAmount?: BN,
   limitPrice?: BN,
-  outputCurrency?: Currency
+  outputCurrency?: Currency, 
+  inputCurrency?:Currency
 ): {
   loading: boolean
   error: any
   result: TokenBN | undefined
 } {
   const calldata = useMemo(() => {
-    if (!orderKey || !existingPosition || !reduceAmount || !limitPrice || !outputCurrency) return undefined
+    if (!orderKey || !existingPosition || !reduceAmount || !limitPrice || !outputCurrency ||!inputCurrency) return undefined
     if (reduceAmount.lte(0) || limitPrice.lte(0)) return undefined
 
     const reducePercentage = reduceAmount.div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
-    const fillerOutput = reduceAmount.times(limitPrice).shiftedBy(outputCurrency.decimals).toFixed(0)
+    const fillerOutput = reduceAmount.times(limitPrice).shiftedBy(inputCurrency.decimals).toFixed(0)
     const params = [
       {
         token0: orderKey.poolKey.token0Address,
@@ -43,17 +44,17 @@ export function useEstimatedPnL(
       fillerOutput,
     ]
     return DataProviderSDK.INTERFACE.encodeFunctionData('getEstimatedPnl', params)
-  }, [orderKey, existingPosition, reduceAmount, limitPrice, outputCurrency])
+  }, [orderKey, existingPosition, reduceAmount, limitPrice, outputCurrency, inputCurrency])
 
   const { loading, error, result } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 1)
 
-  return useMemo(() => {
-    if (result && outputCurrency) {
+   return useMemo(() => {
+    if (result && outputCurrency &&  inputCurrency) {
       const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getEstimatedPnl', result)[0]
       return {
         loading,
         error,
-        result: new TokenBN(parsed.toString(), outputCurrency.wrapped, true),
+        result: new TokenBN(parsed.toString(), inputCurrency.wrapped, true),
       }
     } else {
       return {
@@ -62,5 +63,5 @@ export function useEstimatedPnL(
         result: undefined,
       }
     }
-  }, [result, loading, error, outputCurrency])
+  }, [result, loading, error, outputCurrency , inputCurrency])
 }

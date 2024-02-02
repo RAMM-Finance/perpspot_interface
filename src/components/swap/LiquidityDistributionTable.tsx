@@ -46,7 +46,12 @@ const LiquidityDistributionTable = ({
   const [currentPrice, inverse] = useMemo(() => {
     if (!pool) return [undefined, false]
     const token0Price = new BN(pool.token0Price.toFixed(18))
-    if (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') {
+    if (
+      (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') ||
+      (token0?.symbol === 'WETH' && token1?.symbol === 'LINK') ||
+      (token0?.symbol === 'WETH' && token1?.symbol === 'GMX') ||
+      (token0?.symbol === 'WETH' && token1?.symbol === 'ARB')
+    ) {
       return [new BN(1).div(token0Price), true]
     } else if (token0Price.lt(1)) {
       return [token0Price, true]
@@ -169,7 +174,7 @@ const LiquidityDistributionTable = ({
     if (bin) {
       ref.current?.scrollTo({ top: scrollPosition })
     }
-  }, [bin, scrollPosition])
+  }, [bin, scrollPosition, address0])
 
   const handleScroll = (e: any) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target
@@ -215,8 +220,10 @@ const LiquidityDistributionTable = ({
                 token0 &&
                 token1 &&
                 posMax &&
-                token0?.symbol === 'wBTC' &&
-                token1?.symbol === 'WETH'
+                ((token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') ||
+                  (token0?.symbol === 'WETH' && token1?.symbol === 'LINK') ||
+                  (token0?.symbol === 'WETH' && token1?.symbol === 'GMX') ||
+                  (token0?.symbol === 'WETH' && token1?.symbol === 'ARB'))
                 ? bin
                     .filter(
                       (y) =>
@@ -402,8 +409,10 @@ const LiquidityDistributionTable = ({
                 token0 &&
                 token1 &&
                 negMax &&
-                token0?.symbol === 'wBTC' &&
-                token1?.symbol === 'WETH'
+                ((token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') ||
+                  (token0?.symbol === 'WETH' && token1?.symbol === 'LINK') ||
+                  (token0?.symbol === 'WETH' && token1?.symbol === 'GMX') ||
+                  (token0?.symbol === 'WETH' && token1?.symbol === 'ARB'))
                 ? bin
                     .filter(
                       (y) =>

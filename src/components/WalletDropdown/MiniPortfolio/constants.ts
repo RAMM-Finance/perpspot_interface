@@ -207,6 +207,16 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Redeemed LLP`,
     [TransactionStatus.Failed]: t`Redeeming LLP failed`,
   },
+  [TransactionType.MINT_limWETH]: {
+    [TransactionStatus.Pending]: t`Minting limWETH`,
+    [TransactionStatus.Confirmed]: t`Minted limWETH`,
+    [TransactionStatus.Failed]: t`Minting limWETH failed`,
+  },
+  [TransactionType.REDEEM_limWETH]: {
+    [TransactionStatus.Pending]: t`Redeeming limWETH`,
+    [TransactionStatus.Confirmed]: t`Redeemed limWETH`,
+    [TransactionStatus.Failed]: t`Redeeming limWETH failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

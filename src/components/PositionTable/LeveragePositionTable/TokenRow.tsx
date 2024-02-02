@@ -775,10 +775,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     <div style={{ display: 'flex', gap: '3px' }}>
                       <UnderlineText>
                         <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                          {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                          {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
                         </GreenText>
                       </UnderlineText>
-                      {position?.inputCurrency?.symbol}
+                      <div style={{ display: 'flex', gap: '3px' }}>
+                        <UnderlineText>
+                          <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                            {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                          </GreenText>
+                        </UnderlineText>
+                        {position?.inputCurrency?.symbol}
+                      </div>
                     </div>
                   </AutoColumn>
                 ) : (

@@ -142,7 +142,7 @@ export default function Points() {
         <img src={affiliate} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>{userData ? userData?.totalPoints : 0}</ThemedText.BodySecondary>
-          <ThemedText.BodySmall fontWeight={300}>Total Points</ThemedText.BodySmall>
+          <ThemedText.BodySmall fontWeight={300}>Total LMT</ThemedText.BodySmall>
         </Value>
       </Point>
 
@@ -150,21 +150,21 @@ export default function Points() {
         <img src={coin} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>{userData ? userData?.tPoints : 0}</ThemedText.BodySecondary>
-          <ThemedText.BodySmall fontWeight={300}>Trade Point</ThemedText.BodySmall>
+          <ThemedText.BodySmall fontWeight={300}>Trade LMT</ThemedText.BodySmall>
         </Value>
       </Point>
       <Point>
         <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>{userData ? userData?.lpPoints : 0}</ThemedText.BodySecondary>
-          <ThemedText.BodySmall fontWeight={300}>LP Point</ThemedText.BodySmall>
+          <ThemedText.BodySmall fontWeight={300}>LP LMT</ThemedText.BodySmall>
         </Value>
       </Point>
       <Point>
         <img src={affiliate} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>{userData ? userData?.rPoints : 0}</ThemedText.BodySecondary>
-          <ThemedText.BodySmall fontWeight={300}>Referral Point</ThemedText.BodySmall>
+          <ThemedText.BodySmall fontWeight={300}>Referral LMT</ThemedText.BodySmall>
         </Value>
       </Point>
     </Wrapper>

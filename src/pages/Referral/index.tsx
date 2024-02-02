@@ -57,9 +57,9 @@ const ReferralsWrapper = styled.div`
 
 const FaqWrapper = styled.div`
   margin-top: 50px;
+  width: 48%;
   margin-right: auto;
   margin-left: auto;
-  width: 48%;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   display: flex;
@@ -143,7 +143,7 @@ const Selector = styled.div<{ active: boolean }>`
   }
 `
 
-export default function LeaderboardPage() {
+export default function ReferralPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
@@ -176,28 +176,10 @@ export default function LeaderboardPage() {
     <>
       <PageWrapper>
         <PointsWrapper>
-          <Points />
         </PointsWrapper>
         <Container>
-          {/*<FilterWrapper>
-            <Filter>
-              <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
-                <StyledSelectorText active={leaderboard}>Leaderboard</StyledSelectorText>
-              </Selector>
-              <Selector onClick={() => setLeaderboard(false)} active={!leaderboard}>
-                <StyledSelectorText active={!leaderboard}>Referrals</StyledSelectorText>
-              </Selector>
-            </Filter>
-          </FilterWrapper>*/}
-            <LeaderboardWrapper>
-              <LeaderboardTable />
-            </LeaderboardWrapper>
-          {/*leaderboard ? (
-            <LeaderboardWrapper>
-              <LeaderboardTable />
-            </LeaderboardWrapper>
 
-          ) : (
+          
             <ReferralsWrapper>
               {showConnectAWallet ? (
                 <ErrorContainer style={{ paddingTop: '50px' }}>
@@ -221,22 +203,22 @@ export default function LeaderboardPage() {
                 <Referrals />
               )}
             </ReferralsWrapper>
-          )*/}
+          
               <FaqWrapper>
                 <FaqElement>
                   <a
-                    href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt"
+                    href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/referrals"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                      Earning LMT
+                      Referral System
                     </ThemedText.BodySecondary>
                   </a>
                   <ArrowUpRight size="20" />
                 </FaqElement>{' '}
                 <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-                  Read our LMT documentation to better understand how to earn LMT.
+                  Read our Referral documentation to better understand how to earn more LMT and Rebates.
                 </ThemedText.BodyPrimary>
               </FaqWrapper>
           {/* <AchievementsWrapper>
