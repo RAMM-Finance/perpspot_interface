@@ -1,8 +1,9 @@
 import { Currency } from '@uniswap/sdk-core'
 import { TokenInfo } from '@uniswap/token-lists'
 
-import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
+import { ReactComponent as LimitlessLogo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { ReactComponent as PenLogo } from '../../assets/svg/Pendle.svg'
+import { ReactComponent as XPetLogo } from '../../assets/svg/xpet.svg'
 import AssetLogo, { AssetLogoBaseProps } from './AssetLogo'
 
 export default function CurrencyLogo(
@@ -13,7 +14,7 @@ export default function CurrencyLogo(
   if (props.currency?.symbol === 'LLP' || props.currency?.symbol === 'limWETH') {
     return (
       <>
-        <Logo style={{ marginRight: '10px' }} width={12} fill="#fff" />
+        <LimitlessLogo style={{ marginRight: '10px' }} width={12} fill="#fff" />
       </>
     )
   }
@@ -21,6 +22,13 @@ export default function CurrencyLogo(
     return (
       <>
         <PenLogo style={{ marginRight: '10px' }} width={19} fill="#fff" />
+      </>
+    )
+  }
+  if (props.currency?.symbol === 'XPET') {
+    return (
+      <>
+        <XPetLogo style={{ marginRight: '10px' }} width={19} fill="#fff" />
       </>
     )
   }

@@ -200,6 +200,7 @@ interface CurrencyInputPanelProps {
   locked?: boolean
   loading?: boolean
   llpBalance?: number
+  wethOnly?: boolean | false
 }
 
 export default function CurrencyInputPanel({
@@ -224,6 +225,7 @@ export default function CurrencyInputPanel({
   loading = false,
   label,
   llpBalance,
+  wethOnly,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -372,6 +374,7 @@ export default function CurrencyInputPanel({
           showCommonBases={showCommonBases}
           showCurrencyAmount={showCurrencyAmount}
           disableNonToken={disableNonToken}
+          wethOnly={wethOnly}
         />
       )}
     </InputPanel>

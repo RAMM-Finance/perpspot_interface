@@ -407,9 +407,12 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
     case TransactionType.PREMIUM_WITHDRAW:
       return <Trans>Withdraw Premium Summary</Trans>
     case TransactionType.MINT_LLP:
-      return <Trans>Mint LLP Summary</Trans> 
+      return <Trans>Mint LLP Summary</Trans>
     case TransactionType.REDEEM_LLP:
-      return <Trans>Redeem LLP Summary</Trans> 
-
+      return <Trans>Redeem LLP Summary</Trans>
+    case TransactionType.MINT_limWETH:
+      return <Trans>Mint limWETH Summary</Trans>
+    case TransactionType.REDEEM_limWETH:
+      return <Trans>Redeem limWETH Summary</Trans>
   }
 }

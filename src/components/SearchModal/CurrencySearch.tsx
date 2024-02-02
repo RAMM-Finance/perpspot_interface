@@ -48,6 +48,7 @@ interface CurrencySearchProps {
   showCurrencyAmount?: boolean
   disableNonToken?: boolean
   onlyShowCurrenciesWithBalance?: boolean
+  wethOnly?: boolean | false
 }
 
 export function CurrencySearch({
@@ -60,6 +61,7 @@ export function CurrencySearch({
   onDismiss,
   isOpen,
   onlyShowCurrenciesWithBalance,
+  wethOnly,
 }: CurrencySearchProps) {
   const { chainId } = useWeb3React()
   const theme = useTheme()
@@ -297,6 +299,7 @@ export function CurrencySearch({
                   isLoading={isLoading}
                   searchQuery={searchQuery}
                   isAddressSearch={isAddressSearch}
+                  wethOnly={wethOnly}
                 />
               )}
             </AutoSizer>

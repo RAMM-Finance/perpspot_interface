@@ -18,6 +18,7 @@ interface CurrencySearchModalProps {
   showCurrencyAmount?: boolean
   disableNonToken?: boolean
   onlyShowCurrenciesWithBalance?: boolean
+  wethOnly?: boolean | false
 }
 
 enum CurrencyModalView {
@@ -36,6 +37,7 @@ export default memo(function CurrencySearchModal({
   showCurrencyAmount = true,
   disableNonToken = false,
   onlyShowCurrenciesWithBalance = false,
+  wethOnly,
 }: CurrencySearchModalProps) {
   const [modalView, setModalView] = useState<CurrencyModalView>(CurrencyModalView.search)
   const lastOpen = useLast(isOpen)
@@ -87,6 +89,7 @@ export default memo(function CurrencySearchModal({
           showCurrencyAmount={showCurrencyAmount}
           disableNonToken={disableNonToken}
           onlyShowCurrenciesWithBalance={onlyShowCurrenciesWithBalance}
+          wethOnly={wethOnly}
         />
       )
       break
