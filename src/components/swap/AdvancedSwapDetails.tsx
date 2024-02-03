@@ -358,7 +358,8 @@ export function AdvancedMarginTradeDetails({
           symbolAppend={trade ? inputCurrency?.symbol : ''}
         />
         <ValueLabel
-          description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount."
+          description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
+           You can increase this by depositing more premiums on the settings section(top right of the trade panel). "
           label="Estimated Position Duration"
           value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
           syncing={syncing}

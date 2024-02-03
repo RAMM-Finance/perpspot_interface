@@ -35,6 +35,7 @@ import {
   TICK_LENS_ADDRESSES,
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
+  BRP_ADDRESS
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter'
@@ -52,6 +53,7 @@ import { abi as LmtQuoterAbi } from '../abis_v2/Quoter.json'
 import { abi as ReferralSystemABI } from '../abis_v2/ReferralSystem.json'
 import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
 import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
+import {abi as BRP_ABI} from "../abis_v2/BRP.json"
 import {
   BRP,
   DataProvider,

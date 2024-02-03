@@ -360,7 +360,7 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
     </Trans>
   ),
   [PositionSortMethod.ENTRYPRICE]: <Trans>Your Entry and Current Price</Trans>,
-  [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees</Trans>,
+  [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees+premiums</Trans>,
   [PositionSortMethod.REMAINING]: (
     <Trans>
       Remaining Premium that maintains this position. Your position is forced closed when your deposit is depleted.{' '}
@@ -620,7 +620,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     [margin, totalDebtInput]
   )
 
-  const [entryPrice, currentPrice, baseToken, quoteToken, position, existingDeposit] = useMemo(() => {
+  const [entryPrice, currentPrice, baseToken, quoteToken, position, existingDeposit, 
+  invertedEntryPrice, invertedCurrentPrice] = useMemo(() => {
     if (pool) {
       const _position = new MarginPosition(pool, details)
 
@@ -635,6 +636,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           pool.token0,
           _position,
           _position.premiumLeft.plus(_position.premiumOwed),
+          _entryPrice, 
+          _currentPrice
         ]
       } else {
         return [
@@ -644,6 +647,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           pool.token1,
           _position,
           _position.premiumLeft.plus(_position.premiumOwed),
+          new BN(1).div(_entryPrice),
+          new BN(1).div(_currentPrice),
         ]
       }
     } else {
@@ -676,9 +681,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   // console.log('timeclose', estimatedTimeToClose,  Number(position?.premiumLeft), Number(totalDebtInput))
 
+  const PnLWithPremiums = useMemo(()=>{
+    if(!position || !existingDeposit) return undefined
+    return position.PnL().minus(existingDeposit.minus(position?.premiumLeft))
+  }, [position, existingDeposit])
+
+  console.log('PnLWithPremiums',existingDeposit, position?.premiumLeft, position?.PnL().toString(), PnLWithPremiums?.toString())
+
+
   if (loading) {
     return <LoadingRow />
   }
+
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
@@ -726,6 +740,13 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </MouseoverTooltip>
           }
           PnL={
+
+            <MouseoverTooltip
+              text={<Trans>{'PnL Including premiums ' + `${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} `
+              +' ' + position?.inputCurrency?.symbol}</Trans>}
+              disableHover={false}
+            >
+
             <FlexStartRow>
               <AutoColumn style={{ lineHeight: 1.5 }}>
                 <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
@@ -739,8 +760,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 </div>
               </AutoColumn>
             </FlexStartRow>
+            </MouseoverTooltip>
+
           }
           entryPrice={
+            <MouseoverTooltip
+              text={<Trans>{'Inverted Entry/Current Price: ' + `${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                  invertedCurrentPrice,
+                  NumberType.SwapTradeAmount
+                )} `}</Trans>}
+              disableHover={false}
+            >
             <FlexStartRow>
               <AutoColumn
                 style={{
@@ -758,40 +788,35 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn>
               </AutoColumn>
             </FlexStartRow>
+            </MouseoverTooltip>
+
           }
           remainingPremium={
             <MouseoverTooltip
               text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
               disableHover={false}
             >
-              <FlexStartRow>
-                {position?.premiumLeft.isGreaterThan(0) ? (
-                  <AutoColumn style={{ lineHeight: 1.5 }}>
+            <FlexStartRow>
+              {position?.premiumLeft.isGreaterThan(0) ? (
+                <AutoColumn style={{ lineHeight: 1.5 }}>
+                  <UnderlineText>
+                    <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                      {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
+                    </GreenText>
+                  </UnderlineText>
+                  <div style={{ display: 'flex', gap: '3px' }}>
                     <UnderlineText>
                       <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                        {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
+                        {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
                       </GreenText>
                     </UnderlineText>
-                    <div style={{ display: 'flex', gap: '3px' }}>
-                      <UnderlineText>
-                        <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                          {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
-                        </GreenText>
-                      </UnderlineText>
-                      <div style={{ display: 'flex', gap: '3px' }}>
-                        <UnderlineText>
-                          <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                            {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
-                          </GreenText>
-                        </UnderlineText>
-                        {position?.inputCurrency?.symbol}
-                      </div>
-                    </div>
-                  </AutoColumn>
-                ) : (
-                  <RedText>0</RedText>
-                )}
-              </FlexStartRow>
+                    {position?.inputCurrency?.symbol}
+                  </div>
+                </AutoColumn>
+              ) : (
+                <RedText>0</RedText>
+              )}
+            </FlexStartRow>
             </MouseoverTooltip>
           }
         />
