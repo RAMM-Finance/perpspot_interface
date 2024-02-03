@@ -82,9 +82,40 @@ export function DecreasePositionDetails({
     return re
   }, [txnInfo, existingPosition, removePremium])
 
+  const PnLWithPremiums = useMemo(()=>{
+    if(!txnInfo || !existingPosition) return undefined
+    return txnInfo?.PnL.minus(existingPosition?.premiumOwed)
+  }, [txnInfo, existingPosition])
+  console.log('txninfoo', txnInfo,existingPosition?.premiumOwed.toString(), removePremium)
+
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">
+        <RowBetween>
+          <RowFixed>
+            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
+              <ThemedText.BodySmall color="textPrimary">
+                <Trans> PnL including premiums</Trans>
+              </ThemedText.BodySmall>
+            </MouseoverTooltip>
+          </RowFixed>
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
+            <ThemedText.BodySmall textAlign="right" color="textSecondary">
+              <TruncatedText>
+                <DeltaText delta={Number(PnLWithPremiums)}>
+                  {txnInfo
+                    ? `(${(
+                        (Number(PnLWithPremiums?.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                        100
+                      ).toFixed(2)}%) ${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)}  ${
+                        inputCurrency?.symbol
+                      }`
+                    : '-'}
+                </DeltaText>
+              </TruncatedText>
+            </ThemedText.BodySmall>
+          </TextWithLoadingPlaceholder>
+        </RowBetween>
         <RowBetween>
           <RowFixed>
             <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>

@@ -686,8 +686,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     return position.PnL().minus(existingDeposit.minus(position?.premiumLeft))
   }, [position, existingDeposit])
 
-  console.log('PnLWithPremiums',existingDeposit, position?.premiumLeft, position?.PnL().toString(), PnLWithPremiums?.toString())
-
 
   if (loading) {
     return <LoadingRow />

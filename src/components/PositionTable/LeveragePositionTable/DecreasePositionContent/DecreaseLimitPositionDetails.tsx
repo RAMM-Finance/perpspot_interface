@@ -43,6 +43,7 @@ export default function DecreasePositionLimitDetails({
   }, [txnInfo, existingPosition])
 
 
+
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="sm">
