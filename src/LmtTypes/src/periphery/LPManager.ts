@@ -136,11 +136,27 @@ export interface LPManagerInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "CollectedFees(address,address,uint24,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "CollectedFees"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
 }
+
+export interface CollectedFeesEventObject {
+  token0: string;
+  token1: string;
+  fee: number;
+  fee0Collected: BigNumber;
+  fee1Collected: BigNumber;
+}
+export type CollectedFeesEvent = TypedEvent<
+  [string, string, number, BigNumber, BigNumber],
+  CollectedFeesEventObject
+>;
+
+export type CollectedFeesEventFilter = TypedEventFilter<CollectedFeesEvent>;
 
 export interface InitializedEventObject {
   version: number;
@@ -281,6 +297,21 @@ export interface LPManager extends BaseContract {
   };
 
   filters: {
+    "CollectedFees(address,address,uint24,uint256,uint256)"(
+      token0?: PromiseOrValue<string> | null,
+      token1?: PromiseOrValue<string> | null,
+      fee?: null,
+      fee0Collected?: null,
+      fee1Collected?: null
+    ): CollectedFeesEventFilter;
+    CollectedFees(
+      token0?: PromiseOrValue<string> | null,
+      token1?: PromiseOrValue<string> | null,
+      fee?: null,
+      fee0Collected?: null,
+      fee1Collected?: null
+    ): CollectedFeesEventFilter;
+
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
   };

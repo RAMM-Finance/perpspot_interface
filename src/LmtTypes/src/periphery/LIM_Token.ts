@@ -369,7 +369,7 @@ export interface LIM_TokenInterface extends utils.Interface {
     "Approval(address,address,uint256)": EventFragment;
     "Deposit(address,address,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
-    "Repay(address,uint256,int256)": EventFragment;
+    "Repay(address,uint256,int256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
     "Use(address,uint256)": EventFragment;
     "Withdraw(address,address,address,uint256,uint256)": EventFragment;
@@ -432,9 +432,10 @@ export interface RepayEventObject {
   caller: string;
   amount: BigNumber;
   PnL: BigNumber;
+  exchangeRate: BigNumber;
 }
 export type RepayEvent = TypedEvent<
-  [string, BigNumber, BigNumber],
+  [string, BigNumber, BigNumber, BigNumber],
   RepayEventObject
 >;
 
@@ -1081,15 +1082,17 @@ export interface LIM_Token extends BaseContract {
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
 
-    "Repay(address,uint256,int256)"(
+    "Repay(address,uint256,int256,uint256)"(
       caller?: PromiseOrValue<string> | null,
       amount?: null,
-      PnL?: null
+      PnL?: null,
+      exchangeRate?: null
     ): RepayEventFilter;
     Repay(
       caller?: PromiseOrValue<string> | null,
       amount?: null,
-      PnL?: null
+      PnL?: null,
+      exchangeRate?: null
     ): RepayEventFilter;
 
     "Transfer(address,address,uint256)"(

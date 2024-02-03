@@ -6,6 +6,7 @@ export type { lpVaultSol };
 import type * as registrySol from "./Registry.sol";
 export type { registrySol };
 export type { Arbitrageur } from "./Arbitrageur";
+export type { BRP } from "./BRP";
 export type { DataProvider } from "./DataProvider";
 export type { LIM_Token } from "./LIM_Token";
 export type { LPManager } from "./LPManager";

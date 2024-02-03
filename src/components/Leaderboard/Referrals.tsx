@@ -4,7 +4,7 @@ import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
 import { ethers } from 'ethers'
-import { useReferralContract } from 'hooks/useContract'
+import { useBRP, useReferralContract } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { InputSection } from 'pages/Swap'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -200,7 +200,7 @@ const Referrals = () => {
   const addTransaction = useTransactionAdder()
   const { account, chainId, provider } = useWeb3React()
 
-  const BRP = undefined as any // useBRP()
+  const BRP = useBRP()
   console.log('createReferralCode', createReferralCode)
   console.log('referralCode', referralCode)
 

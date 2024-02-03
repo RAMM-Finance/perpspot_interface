@@ -172,8 +172,6 @@ export interface PoolManagerInterface extends utils.Interface {
     "provideDiscreteLiquidity((address,address,uint24),int24,int24,uint128,address)": FunctionFragment;
     "setFacilities(address)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
-    "setPoolTrusted(address)": FunctionFragment;
-    "setProvidePaused(bool)": FunctionFragment;
     "tickDiscretizations(bytes32)": FunctionFragment;
     "uniswapV3MintCallback(uint256,uint256,bytes)": FunctionFragment;
     "updateCollectedFees((address,address,uint24),int24,int24,int24)": FunctionFragment;
@@ -216,8 +214,6 @@ export interface PoolManagerInterface extends utils.Interface {
       | "provideDiscreteLiquidity"
       | "setFacilities"
       | "setOwner"
-      | "setPoolTrusted"
-      | "setProvidePaused"
       | "tickDiscretizations"
       | "uniswapV3MintCallback"
       | "updateCollectedFees"
@@ -406,14 +402,6 @@ export interface PoolManagerInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setPoolTrusted",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setProvidePaused",
-    values: [PromiseOrValue<boolean>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tickDiscretizations",
     values: [PromiseOrValue<BytesLike>]
   ): string;
@@ -548,14 +536,6 @@ export interface PoolManagerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setPoolTrusted",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setProvidePaused",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "tickDiscretizations",
     data: BytesLike
@@ -936,16 +916,6 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setPoolTrusted(
-      pool: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setProvidePaused(
-      providePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     tickDiscretizations(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -1234,16 +1204,6 @@ export interface PoolManager extends BaseContract {
 
   setOwner(
     newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setPoolTrusted(
-    pool: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setProvidePaused(
-    providePaused: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1560,16 +1520,6 @@ export interface PoolManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setPoolTrusted(
-      pool: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setProvidePaused(
-      providePaused: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     tickDiscretizations(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -1882,16 +1832,6 @@ export interface PoolManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setPoolTrusted(
-      pool: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setProvidePaused(
-      providePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     tickDiscretizations(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -2129,16 +2069,6 @@ export interface PoolManager extends BaseContract {
 
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setPoolTrusted(
-      pool: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setProvidePaused(
-      providePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

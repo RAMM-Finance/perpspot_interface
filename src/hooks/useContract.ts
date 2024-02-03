@@ -53,7 +53,7 @@ import { abi as ReferralSystemABI } from '../abis_v2/ReferralSystem.json'
 import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
 import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
 import {
-  // BRP,
+  BRP,
   DataProvider,
   LIM_Token,
   LPVault,
@@ -157,9 +157,9 @@ export function useVaultContract(withSignerIfPossible?: boolean) {
 export function useLimweth(withSignerIfPossible?: boolean) {
   return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI, withSignerIfPossible)
 }
-// export function useBRP(withSignerIfPossible?: boolean) {
-//   return useContract<BRP>(BRP_ADDRESS, BRP_ABI, withSignerIfPossible)
-// }
+export function useBRP(withSignerIfPossible?: boolean) {
+  return useContract<BRP>(BRP_ADDRESS, BRP_ABI, withSignerIfPossible)
+}
 
 // returns null on errors
 export function useContract<T extends Contract = Contract>(
