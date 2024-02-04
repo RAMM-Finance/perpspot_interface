@@ -22,6 +22,7 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -713,6 +714,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           value={
             <FlexStartRow>
+                <CurrencyLogo currency={position?.outputCurrency} size="10px" />
+
               {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
                 position?.outputCurrency?.symbol
               }`}
@@ -720,6 +723,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow>
+                <CurrencyLogo currency={position?.inputCurrency} size="10px" />
+
               {`${formatBNToString(position?.margin, NumberType.SwapTradeAmount)} ${position?.inputCurrency?.symbol}`}
             </FlexStartRow>
           }

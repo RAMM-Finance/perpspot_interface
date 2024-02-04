@@ -16,6 +16,9 @@ import { useDataProviderContract } from './useContract'
 import { useContractCall } from './useContractCall'
 import { computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
+
+import { useEffect, useState } from 'react'
 
 export function useRateAndUtil(
   token0: string | undefined,
@@ -581,24 +584,54 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const dataProvider = useDataProviderContract()
 
-  // make sure to have dataProvider provide the decimals for each token
-  const {
-    loading: loadingAdd,
-    error: errorAdd,
-    result: resultAdd,
-  } = useSingleCallResult(dataProvider, 'getAddOrders', [account])
-  const {
-    loading: loadingReduce,
-    error: errorReduce,
-    result: resultReduce,
-  } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
 
-  const loading = loadingAdd && loadingReduce
-  const error = errorAdd && errorReduce
-  const result = useMemo(() => {
-    if (!loading && !error && resultAdd && resultReduce) return [...resultAdd[0], ...resultReduce[0]]
-    else return undefined
-  }, [loading, error, resultAdd, resultReduce])
+  // make sure to have dataProvider provide the decimals for each token
+  // const {
+  //   loading: loading,
+  //   error: error,
+  //   result: result,
+  // } = useSingleCallResult(dataProvider, 'getOrders', [account])
+
+  const blockNumber = useBlockNumber()
+
+  const [orders, setOrders] = useState<any>()
+  useEffect(()=>{
+    if(!dataProvider || !account) return 
+    const call = async()=>{
+      try{
+        const orders = await dataProvider.getOrders(account)
+        setOrders(orders)
+      } catch(err){
+        console.log('err')
+      }
+    }
+    call()
+  }, [dataProvider, account,blockNumber])
+
+  // const result = 
+  // const {
+  //   loading: loadingReduce,
+  //   error: errorReduce,
+  //   result: resultReduce,
+  // } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
+
+  // const{
+  //   loading: loadingOrder, 
+  //   error: errorOrder, 
+  //   result: resultOrder
+  // } = useSingleCallResult(dataProvider, 'getOrders', [account])
+  const result = orders
+  const loading = false 
+  const error = false
+  console.log('orders', orders?.[0], result, loading, error)
+
+
+  // const loading = loadingAdd && loadingReduce
+  // const error = errorAdd && errorReduce
+  // const result = useMemo(() => {
+  //   if (!loading && !error && resultAdd && resultReduce) return [...resultAdd[0], ...resultReduce[0]]
+  //   else return undefined
+  // }, [loading, error, resultAdd, resultReduce])
 
   return useMemo(() => {
     return {

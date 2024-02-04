@@ -346,8 +346,8 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
 const HEADER_DESCRIPTIONS: Record<OrderSortMethod, ReactNode | undefined> = {
   [OrderSortMethod.PAIR]: <Trans>Pair</Trans>,
   [OrderSortMethod.LEVERAGE]: <Trans>Leverage</Trans>,
-  [OrderSortMethod.INPUT]: <Trans>Input</Trans>,
-  [OrderSortMethod.OUTPUT]: <Trans>Output</Trans>,
+  [OrderSortMethod.INPUT]: <Trans>Total Input Amount</Trans>,
+  [OrderSortMethod.OUTPUT]: <Trans>Output amount specified by your order price.</Trans>,
   [OrderSortMethod.DEADLINE]: <Trans>Valid For</Trans>,
 }
 
@@ -562,15 +562,16 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { order: details, loading } = props
 
-  const [token0Address, token1Address] = useMemo(() => {
+  const [token0Address, token1Address, inputIs1] = useMemo(() => {
     if (details) {
-      return [details.key.token0Address, details.key.token1Address]
+      return [details.key.token0Address, details.key.token1Address, details.positionIsToken0]
     }
     return [undefined, undefined]
   }, [details])
 
-  const inputCurrency = useCurrency()
-  const outputCurrency = useCurrency(token1Address)
+  console.log('orders', details)
+  const inputCurrency = useCurrency(inputIs1? token1Address: token0Address)
+  const outputCurrency = useCurrency(inputIs1? token0Address: token1Address)
   const { account, chainId, provider } = useWeb3React()
   const orderKey: OrderPositionKey | undefined = useMemo(() => {
     if (!details || !account) return undefined
@@ -617,7 +618,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       return
     }
     setAttemptingTxn(true)
-    
+
     cancelCallback()
       .then((response) => {
         setAttemptingTxn(false)
@@ -715,8 +716,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoRow gap="2px">
                 {/* {!loading ? formatBNToString(details.inputAmount, NumberType.SwapTradeAmount) : null} */}
                 {Number(details.inputAmount).toString()}
-                <CurrencyLogo currency={outputCurrency} size="13px" />
-                {outputCurrency?.symbol}
+                <CurrencyLogo currency={inputCurrency} size="13px" />
+                {inputCurrency?.symbol}
               </AutoRow>
             </FlexStartRow>
           }
@@ -724,8 +725,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow>
               <AutoRow gap="2px" justify="start">
                 {Number(details.startOutput).toString()}
-                <CurrencyLogo currency={inputCurrency} size="13px" />
-                {inputCurrency?.symbol}
+                <CurrencyLogo currency={outputCurrency} size="13px" />
+                {outputCurrency?.symbol}
               </AutoRow>
             </FlexStartRow>
           }
