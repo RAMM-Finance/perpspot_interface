@@ -732,7 +732,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <MouseoverTooltip
               text={
                 <Trans>
-                  {'Annualized Rate: ' + String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) + ' %'}
+                  {'Annualized Rate: ' + String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) + ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
                 </Trans>
               }
               disableHover={false}
