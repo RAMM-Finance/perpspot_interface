@@ -634,7 +634,8 @@ const TradeTabContent = () => {
                 <StyledNumericalInput
                   onUserInput={onPriceInput}
                   value={startingPrice ?? ''}
-                  placeholder="0"
+                  disabled={true}
+                  placeholder="Coming Soon"
                   className="limit-amount-input"
                 ></StyledNumericalInput>
                 <RowFixed>

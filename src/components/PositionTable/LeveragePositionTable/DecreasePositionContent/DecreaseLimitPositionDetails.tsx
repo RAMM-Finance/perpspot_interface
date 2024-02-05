@@ -76,7 +76,7 @@ export default function DecreasePositionLimitDetails({
 
         <RowBetween>
           <RowFixed>
-            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
+            <MouseoverTooltip text={<Trans>Estimated PnL(excluding premiums) when position is closed at current market price</Trans>}>
               <ThemedText.BodySmall color="textPrimary">
                 <Trans>Estimated PnL</Trans>
               </ThemedText.BodySmall>

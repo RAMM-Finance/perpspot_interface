@@ -426,7 +426,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                   animateShake={tooltipVisible}
                 >
                   <Aligner>
-                    <RowFixed>
+                    {/*<RowFixed>
                       {pair ? (
                         <span>
                           <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
@@ -450,7 +450,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                             : currency?.symbol) || <Trans>Select token</Trans>}
                         </StyledTokenName>
                       )}
-                    </RowFixed>
+                    </RowFixed>*/}
                     {/* <RowFixed>
                       {pair ? (
                         <span style={{ marginRight: '0.5rem' }}>
