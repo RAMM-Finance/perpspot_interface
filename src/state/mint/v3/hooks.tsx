@@ -878,12 +878,18 @@ export function useDerivedLmtMintInfo(
   }
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts
-
+  currencyBalances?.[Field.CURRENCY_A] && console.log('bal', currencyBalances?.[Field.CURRENCY_A]?.quotient.toString())
+  currencyAAmount &&
+    currencyA &&
+    console.log(
+      'amount',
+      currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(0)))?.quotient.toString()
+    )
   if (
     currencyA &&
     currencyAAmount &&
     currencyBalances?.[Field.CURRENCY_A]?.lessThan(
-      currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(100)))
+      currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(0)))
     )
   ) {
     errorMessage = <Trans>Insufficient {currencies[Field.CURRENCY_A]?.symbol} balance</Trans>
@@ -893,7 +899,7 @@ export function useDerivedLmtMintInfo(
     currencyB &&
     currencyBAmount &&
     currencyBalances?.[Field.CURRENCY_B]?.lessThan(
-      currencyBAmount.add(CurrencyAmount.fromRawAmount(currencyB, JSBI.BigInt(100)))
+      currencyBAmount.add(CurrencyAmount.fromRawAmount(currencyB, JSBI.BigInt(0)))
     )
   ) {
     errorMessage = <Trans>Insufficient {currencies[Field.CURRENCY_B]?.symbol} balance</Trans>
