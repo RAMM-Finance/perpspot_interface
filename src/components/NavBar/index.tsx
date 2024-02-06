@@ -43,11 +43,14 @@ interface MenuItemProps {
   children: ReactNode
   dataTestId?: string
   margin?: string
+  external?: boolean
 }
 
-const MenuItem = ({ href, dataTestId, id, isActive, children, margin }: MenuItemProps) => {
+const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external }: MenuItemProps) => {
   return (
     <NavLink
+      target={external ? '_blank' : ''}
+      rel={external ? 'noopener noreferrer' : ''}
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
@@ -105,7 +108,7 @@ export const PageTabs = () => {
         <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
           <Trans>Referral</Trans>
         </MenuItem>
-        <MenuItem href="https://limitless.gitbook.io/limitless/intro/why-limitless" >
+        <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
           <Trans>Docs</Trans>
         </MenuItem>
       </Tabs>

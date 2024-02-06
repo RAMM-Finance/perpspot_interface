@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
+import LineChartSimple from 'components/Charts/LineChartSimple'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -806,6 +807,24 @@ export default function SimplePool() {
     cursor: 'pointer',
   }
 
+  const chartData = useMemo(
+    () => [
+      { value: 60, date: '2010-06-10T00:00:00.000Z' },
+      { value: 50, date: '2010-06-11T00:00:00.000Z' },
+      { value: 0, date: '2010-06-12T00:00:00.000Z' },
+      { value: 30, date: '2010-06-13T00:00:00.000Z' },
+      { value: -20, date: '2010-06-14T00:00:00.000Z' },
+      { value: 30, date: '2010-06-15T00:00:00.000Z' },
+      { value: 50, date: '2010-06-16T00:00:00.000Z' },
+      { value: 0, date: '2010-06-17T00:00:00.000Z' },
+      { value: 30, date: '2010-06-18T00:00:00.000Z' },
+      { value: -10, date: '2010-06-19T00:00:00.000Z' },
+    ],
+    []
+  )
+  const getX = (d: any) => new Date(d.date).getTime()
+  const getY = (d: any) => d.value
+
   const dropdown = (
     <NavDropdown
       onClick={() => {
@@ -819,18 +838,19 @@ export default function SimplePool() {
         zIndex: '3',
         marginTop: '100px',
         marginLeft: '40px',
-        width: '120px',
+        width: 'fit-content',
       }}
     >
       <DropWrapper>
         <div style={{ display: 'flex', gap: '7px', flexDirection: 'column' }}>
-          <TokenWrapper onClick={() => setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')}>
+          <TokenWrapper disabled={false} onClick={() => setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')}>
             <CurrencyLogo currency={LLP} size="18" />
             <ThemedText.BodySmall>LLP</ThemedText.BodySmall>
           </TokenWrapper>
-          <TokenWrapper onClick={() => setOutput('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')}>
+          {/* <TokenWrapper disabled={true} onClick={() => setOutput('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')}> */}
+          <TokenWrapper disabled={true}>
             <CurrencyLogo currency={LLP} size="18" />
-            <ThemedText.BodySmall>limWETH</ThemedText.BodySmall>
+            <ThemedText.BodySmall>limWETH (Coming Soon)</ThemedText.BodySmall>
           </TokenWrapper>
         </div>
       </DropWrapper>
@@ -867,12 +887,11 @@ export default function SimplePool() {
               {isOpen && <>{dropdown}</>}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ThemedText.BodyPrimary fontSize={20}>14D APR:</ThemedText.BodyPrimary>
-                <ThemedText.BodySecondary fontSize={18} style={{ color: 'green' }}>
-                  {"25.2%"}
+                <ThemedText.BodyPrimary fontSize={14}>14D APR:</ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={13} style={{ color: theme.accentSuccess }}>
+                  25.2%
                 </ThemedText.BodySecondary>
               </div>
-
             </RowStart>
             {outputCurrency && outputCurrency.symbol === 'LLP' && (
               <>
@@ -1088,6 +1107,16 @@ export default function SimplePool() {
           </CurrencyWrapper>
         </RowBetween>
         <AutoColumn style={{ marginTop: '30px' }}>
+          {outputCurrency?.symbol === 'limWETH' && (
+            <>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <ThemedText.BodySecondary fontWeight={600}>WETH-limWETH LP: </ThemedText.BodySecondary>
+                <ThemedText.BodyPrimary>Historical Performance </ThemedText.BodyPrimary>
+              </div>
+              <LineChartSimple />
+            </>
+          )}
+
           <ThemedText.BodySecondary>LLP Index Composition</ThemedText.BodySecondary>
           <IndexWrapper>
             <IndexHeader />
@@ -1330,7 +1359,7 @@ const FilterWrapper = styled.div`
   width: 100%;
 `
 
-const TokenWrapper = styled.div`
+const TokenWrapper = styled.div<{ disabled: boolean }>`
   display: flex;
   gap: 10px;
   padding-left: 5px;
@@ -1338,7 +1367,7 @@ const TokenWrapper = styled.div`
   padding-top: 5px;
   padding-bottom: 5px;
   &:hover {
-    background-color: ${({ theme }) => theme.backgroundOutline};
+    background-color: ${({ theme, disabled }) => (disabled ? 'none' : theme.backgroundOutline)};
   }
   border-radius: 5px;
   cursor: pointer;
