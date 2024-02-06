@@ -6,10 +6,9 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useState } from 'react'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
-import { useV3NFTPositionManagerContract,useLmtNFTPositionManager } from './useContract'
+import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
 
 const MAX_UINT128 = BigNumber.from(2).pow(128).sub(1)
-
 
 export function useLMTPositionFees(
   pool?: Pool,
@@ -37,7 +36,6 @@ export function useLMTPositionFees(
           { from: owner } // need to simulate the call as the owner
         )
         .then((results) => {
-
           setAmounts([results.tokensOwed0, results.tokensOwed1])
         })
     }
@@ -52,9 +50,6 @@ export function useLMTPositionFees(
     return [undefined, undefined]
   }
 }
-
-
-
 
 // compute current + counterfactual fees for a v3 position
 export function useV3PositionFees(
@@ -85,7 +80,7 @@ export function useV3PositionFees(
           { from: owner } // need to simulate the call as the owner
         )
         .then((results) => {
-          console.log('resultsv3',results.amount0.toString(), results.amount1.toString(), owner )
+          console.log('resultsv3', results.amount0.toString(), results.amount1.toString(), owner)
           setAmounts([results.amount0, results.amount1])
         })
     }

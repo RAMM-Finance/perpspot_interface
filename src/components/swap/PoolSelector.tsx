@@ -267,7 +267,7 @@ export const PoolSelector = ({
     }
   }, [data])
 
-  const poolData = usePoolsData()
+  const { result: poolData } = usePoolsData()
 
   const dataInfo = useMemo(() => {
     if (poolData && data) {

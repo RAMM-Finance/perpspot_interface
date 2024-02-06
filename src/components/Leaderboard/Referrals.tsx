@@ -313,7 +313,6 @@ const Referrals = () => {
       } catch (error) {
         setActiveCodes(undefined)
         setCreateReferralCode(undefined)
-        console.log('codebyowners err')
       }
     }
 

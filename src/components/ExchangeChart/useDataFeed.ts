@@ -51,7 +51,7 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
             ticker: baseSymbol + '/' + quoteSymbol,
             session: '24x7',
             minmov: 1,
-            pricescale: 100,
+            pricescale: 1000,
             timezone: 'Etc/UTC',
             has_intraday: true,
             has_daily: true,

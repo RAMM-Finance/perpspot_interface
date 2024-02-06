@@ -460,7 +460,8 @@ export default function Swap({ className }: { className?: string }) {
   // const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
 
   const location = useLocation()
-  const poolData = usePoolsData()
+  const { result: poolData } = usePoolsData()
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>

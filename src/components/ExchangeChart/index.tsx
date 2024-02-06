@@ -126,7 +126,7 @@ export const PoolDataSection = ({
   const token0Contract = useTokenContract(token0?.address)
   const token1Contract = useTokenContract(token1?.address)
 
-  const poolData = usePoolsData()
+  const { result: poolData } = usePoolsData()
 
   // useLatestPoolPriceData(uniswapPoolAddress)
   // useLatestPoolDayData(uniswapPoolAddress ?? '')

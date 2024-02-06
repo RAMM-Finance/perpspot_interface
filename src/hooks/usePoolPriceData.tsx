@@ -76,6 +76,7 @@ export function useLatestPoolPriceData(
     {
       enabled: !!poolAddress,
       refetchInterval: 1000 * 20,
+      keepPreviousData: true,
     }
   )
 

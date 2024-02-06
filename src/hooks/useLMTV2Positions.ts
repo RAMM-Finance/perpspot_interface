@@ -3,9 +3,10 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
-import { useSingleCallResult } from 'lib/hooks/multicall'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
 import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
@@ -16,9 +17,6 @@ import { useDataProviderContract } from './useContract'
 import { useContractCall } from './useContractCall'
 import { computePoolAddress } from './usePools'
 import { convertToBN } from './useV3Positions'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
-
-import { useEffect, useState } from 'react'
 
 export function useRateAndUtil(
   token0: string | undefined,
@@ -40,7 +38,7 @@ export function useRateAndUtil(
       tickUpper,
     ]
     let data
-    console.log('rateutil', token0, token1, tickLower, tickUpper)
+    // console.log('rateutil', token0, token1, tickLower, tickUpper)
     try {
       data = DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
     } catch (err) {
@@ -49,7 +47,7 @@ export function useRateAndUtil(
     return data
   }, [token0, token1, fee, tickLower, tickUpper])
 
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 5)
   return useMemo(() => {
     if (!result) {
       return {
@@ -258,7 +256,7 @@ export function useBulkBinData(
   const calldata = useMemo(() => {
     if (!pool || !tickDiscretization) return undefined
     const roundedCurrentTick = roundToBin(pool.tickCurrent, tickDiscretization, false)
-    const lookback = pool.fee== 500? 3000: 7000
+    const lookback = pool.fee == 500 ? 3000 : 7000
     const params = [
       {
         token0: pool.token0.address,
@@ -584,7 +582,6 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const dataProvider = useDataProviderContract()
 
-
   // make sure to have dataProvider provide the decimals for each token
   // const {
   //   loading: loading,
@@ -595,20 +592,20 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const blockNumber = useBlockNumber()
 
   const [orders, setOrders] = useState<any>()
-  useEffect(()=>{
-    if(!dataProvider || !account) return 
-    const call = async()=>{
-      try{
+  useEffect(() => {
+    if (!dataProvider || !account) return
+    const call = async () => {
+      try {
         const orders = await dataProvider.getOrders(account)
         setOrders(orders)
-      } catch(err){
+      } catch (err) {
         console.log('err')
       }
     }
     call()
-  }, [dataProvider, account,blockNumber])
+  }, [dataProvider, account, blockNumber])
 
-  // const result = 
+  // const result =
   // const {
   //   loading: loadingReduce,
   //   error: errorReduce,
@@ -616,15 +613,14 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   // } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
 
   // const{
-  //   loading: loadingOrder, 
-  //   error: errorOrder, 
+  //   loading: loadingOrder,
+  //   error: errorOrder,
   //   result: resultOrder
   // } = useSingleCallResult(dataProvider, 'getOrders', [account])
   const result = orders
-  const loading = false 
+  const loading = false
   const error = false
   console.log('orders', orders?.[0], result, loading, error)
-
 
   // const loading = loadingAdd && loadingReduce
   // const error = errorAdd && errorReduce

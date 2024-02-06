@@ -1,13 +1,9 @@
-import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
-import { ethers } from 'ethers'
-import { PAGE_SIZE, useTopTokens } from 'graphql/data/TopTokens'
+import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
+import useAllPoolKeys from 'hooks/useAllPoolKeys'
 import { usePoolsData } from 'hooks/useLMTPools'
+import useVaultBalance from 'hooks/useVaultBalance'
 import { ReactNode, useMemo } from 'react'
-import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -18,9 +14,6 @@ import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { PHeaderRow, PLoadedRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
-import {useVaultContract, useLimweth} from "hooks/useContract"
-
-
 
 const GridContainer = styled.div`
   display: flex;
@@ -145,99 +138,32 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
 
 export default function TokenTable() {
   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
-  const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
 
-  const [data, setData] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
+  const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
+  const { poolKeys: data, isLoading: keysLoading } = useAllPoolKeys()
+  // const vaultBal = undefined as any
+  // const balanceLoading = false
+  // const data = undefined as any
+  // const keysLoading = false
+  const { result: poolData, loading: poolsLoading } = usePoolsData()
+  // const poolData = undefined as any
+  // const poolsLoading = false
 
-  const vault = useVaultContract()
-  const limweth = useLimweth() 
-
-  const [vaultBal, setVaultBal] = useState<any>()
-  useEffect(()=>{
-    if(!vault ||!limweth) return 
-
-    const call= async()=>{
-      try{
-      const total = await vault.totalAssets()
-      setVaultBal(total.toString())
-      }catch(err){
-        console.log('vaultbalerr',err)
-      }
-
-    }
-    call()
-  }, [vault, limweth])
-
-  console.log('vaultbal', vaultBal)
-
-  interface Pool {
-    blockTimeStamp: string
-    fee: number
-    id: string
-    pool: string
-    tickDiscretization: number
-    token0: string
-    token1: string
-    __typename: string
-  }
-
-  useEffect(() => {
-    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !PoolAddedQuery || loading || error) return
-    const call = async () => {
-      try {
-        setLoading(true)
-
-        const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
-        setData(
-          poolQueryData.data?.poolAddeds
-            .filter(
-              (val: Pool) =>
-                val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-                val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-                // ethers.utils.getAddress(val.token0) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
-                // ethers.utils.getAddress(val.token1) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
-
-                // ethers.utils.getAddress(val.token0) !== '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555' &&
-                // ethers.utils.getAddress(val.token1) !== '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555' &&
-
-                // ethers.utils.getAddress(val.token0) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
-                // ethers.utils.getAddress(val.token1) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
-
-                // ethers.utils.getAddress(val.token0) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
-                // ethers.utils.getAddress(val.token1) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
-
-                ethers.utils.getAddress(val.token0) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' &&
-                ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66'
-            )
-            .map((val: Pool) => {
-              return { token0: val.token0, token1: val.token1, fee: val.fee }
-            })
-        )
-        setLoading(false)
-      } catch (error) {
-        setError(error)
-        setLoading(false)
-      }
-    }
-    call()
-  }, [error, loading])
-
-  const poolData = usePoolsData()
+  const loading = poolsLoading || balanceLoading || keysLoading
+  // useRenderCount()
 
   const poolsInfo = useMemo(() => {
-    if (poolData) {
+    if (poolData && vaultBal) {
       return {
-        tvl: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0)
-          + Number(vaultBal)/1e18,
+        tvl:
+          Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+          Number(vaultBal) / 1e18,
         volume: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
       }
     } else {
       return null
     }
-  }, [poolData])
+  }, [poolData, vaultBal])
 
   const dataInfo = useMemo(() => {
     if (poolData && data) {
@@ -259,34 +185,10 @@ export default function TokenTable() {
     }
   }, [poolData, data])
 
-  const { chainId, account, provider } = useWeb3React()
-
   /* loading and error state */
-  if (!chainId || !provider) {
-    return (
-      <GridContainer>
-        <Trans>Connect Wallet to Arbitrum</Trans>
-      </GridContainer>
-    )
-  } else if (loading) {
+  if (loading) {
     return <LoadingTokenTable rowCount={PAGE_SIZE} />
-  }
-  // else if (!tokens) {
-  //   return (
-  //     <NoTokensState
-  //       message={
-  //         <>
-  //           <AlertTriangle size={16} />
-  //           <Trans>An error occurred loading tokens. Please try again.</Trans>
-  //         </>
-  //       }
-  //     />
-  //   )
-  // }
-  // else if (tokens?.length === 0) {
-  //   return <NoTokensState message={<Trans>No tokens found</Trans>} />
-  // }
-  else {
+  } else {
     return (
       <>
         <PairInfoContainer>
@@ -367,13 +269,13 @@ function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
+          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo.tvl ? formatDollar({ num: poolsInfo.volume, digits: 1 }) : '0'}
+          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>
