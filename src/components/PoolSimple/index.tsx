@@ -217,6 +217,11 @@ export default function SimplePool() {
         </HeaderCell>
         <HeaderCell>
           <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+            {outputCurrency?.symbol === 'LLP' ? 'Target Weight' : 'Total Balance'}
+          </ThemedText.SubHeaderSmall>
+        </HeaderCell>
+        <HeaderCell>
+          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Utililzation
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
@@ -769,6 +774,7 @@ export default function SimplePool() {
           price: WETHPrice?.data,
           poolBal: data[3][0],
           weight: data[4][0],
+          targetWeight: 40, 
           util: data[5][0],
           maxWith: mW[0].maxShares,
         },
@@ -777,6 +783,7 @@ export default function SimplePool() {
           price: WBTCPrice?.data,
           poolBal: data[3][1],
           weight: data[4][1],
+          targetWeight: 20, 
           util: data[5][1],
           maxWith: mW[1].maxShares,
         },
@@ -785,6 +792,7 @@ export default function SimplePool() {
           price: USDCPrice,
           poolBal: data[3][2],
           weight: data[4][2],
+          targetWeight: 20,
           util: data[5][2],
           maxWith: mW[2].maxShares,
         },
@@ -913,13 +921,25 @@ export default function SimplePool() {
                     {data && `$${formatDollarAmount({ num: data[1] / 1e18, long: true })}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                </RowBetween>
+                <RowBetween>
+                  <ThemedText.BodyPrimary fontSize={12}>Fee Distribution: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>{"80% LPs, 20% protocol"}</ThemedText.BodySecondary>
+                </RowBetween>
                 {buy ? (
                   <RowBetween
                     style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
                   >
-                    <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
+                    <ThemedText.BodyPrimary fontSize={12}>Yield Source: </ThemedText.BodyPrimary>
                     <ThemedText.BodySecondary fontSize={12}>
-                      {`Variable Premium Rate ~50%` + `  + swap fees`}
+                      {`Variable Premium Rates` + `  + Uniswap Swap Fees`}
                     </ThemedText.BodySecondary>
                   </RowBetween>
                 ) : (
@@ -1081,7 +1101,7 @@ export default function SimplePool() {
                   <>
                     <MouseoverTooltip
                       style={{ height: '25px', display: 'flex', alignItems: 'center' }}
-                      text={<Trans>Permission is required to deposit and mint LLP. </Trans>}
+                      text={<Trans>Permission is required for usage. </Trans>}
                     >
                       <Info size={18} />
                       <Trans>Approve use of {currencies?.[Field.CURRENCY_A]?.symbol}</Trans>
@@ -1152,6 +1172,16 @@ export default function SimplePool() {
                           %
                         </ThemedText.BodySmall>
                       </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({
+                            num: (Number(tok.targetWeight) ) ,
+                            long: true,
+                          })}
+                          %
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+
                       <LoadedCell>
                         <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                           {formatDollarAmount({
@@ -1283,7 +1313,7 @@ const LoadedCell = styled.div`
 
 const LoadedCellWrapper = styled.div`
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 3fr;
+  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
   padding: 10px;
   border-radius: 10px;
   :hover {
@@ -1295,7 +1325,7 @@ const LoadedCellWrapper = styled.div`
 const HeaderCell = styled.div``
 const HeaderCellWrapper = styled.div`
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 3fr;
+  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
 `
