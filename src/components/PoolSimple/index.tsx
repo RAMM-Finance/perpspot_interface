@@ -132,11 +132,13 @@ export default function SimplePool() {
   )
   const currencyBFiat = useMemo(
     () => ({
-      data: usdcValueCurrencyB ? parseFloat(value.toFixed(2).toString()) : undefined,
+      data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toFixed(2).toString()) : undefined,
       isLoading: false,
     }),
     [usdcValueCurrencyB]
   )
+
+  console.log('fields', outputCurrency, parsedAmounts[Field.CURRENCY_B])
 
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
     (accumulator, field) => {
@@ -906,7 +908,7 @@ export default function SimplePool() {
                 <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
                   <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {llpPrice && (llpPrice / 1e18).toFixed(2)}
+                    {llpPrice && (llpPrice / 1e18).toFixed(4)}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
