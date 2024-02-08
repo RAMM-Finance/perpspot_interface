@@ -112,7 +112,7 @@ export default function AddLiquidity() {
   const hasExistingPosition = !!existingPositionDetails && !positionLoading
   const { position: existingPosition } = useDerivedPositionInfo(existingPositionDetails)
 
-  // fee selection from url
+  // fee selection from url 577, 583   ===  65,129,133
   const feeAmount: FeeAmount | undefined =
     feeAmountFromUrl && Object.values(FeeAmount).includes(parseFloat(feeAmountFromUrl))
       ? parseFloat(feeAmountFromUrl)
@@ -356,7 +356,7 @@ export default function AddLiquidity() {
       if (idB === undefined) {
         navigate(`/add/${idA}`)
       } else {
-        navigate(`/add/${idA}/${idB}/${500}`)
+        navigate(`/add/${idA}/${idB}/${feeAmount}`)
       }
     },
     [handleCurrencySelect, currencyIdB, navigate]
@@ -368,7 +368,7 @@ export default function AddLiquidity() {
       if (idA === undefined) {
         navigate(`/add/${idB}`)
       } else {
-        navigate(`/add/${idA}/${idB}/${500}`)
+        navigate(`/add/${idA}/${idB}/${feeAmount}`)
       }
     },
     [handleCurrencySelect, currencyIdA, navigate]

@@ -157,16 +157,23 @@ export const PoolSelector = ({
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
       if (
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'LDO') ||
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC')
+        (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
+        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
+        (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
+        (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
       ) {
+        localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))
+        localStorage.setItem('currencyOut', JSON.stringify(currencyIn.wrapped.address))
         onCurrencySelection(Field.INPUT, currencyOut)
         onCurrencySelection(Field.OUTPUT, currencyIn)
+        navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
       } else {
+        localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+        localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
         onCurrencySelection(Field.INPUT, currencyIn)
         onCurrencySelection(Field.OUTPUT, currencyOut)
+        navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
       }
-      navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
     },
     [navigate]
   )
