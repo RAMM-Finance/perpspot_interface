@@ -899,7 +899,7 @@ export default function SimplePool() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <ThemedText.BodyPrimary fontSize={14}>14D APR:</ThemedText.BodyPrimary>
                 <ThemedText.BodySecondary fontSize={13} style={{ color: theme.accentSuccess }}>
-                  25.2%
+                  24.6%
                 </ThemedText.BodySecondary>
               </div>
             </RowStart>

@@ -17,7 +17,7 @@ function Disclaimer({ setWarning }: { setWarning: (val: boolean) => void }) {
       <ThemedText.DeprecatedBlack fontSize={14} color="black">
         Limitless is currently in Beta. There will be minor frontend bugs(if you spot them, please report). Although the
         contracts have undergone plentiful stateful fuzz tests, they are still new so don't invest more than you are
-        willing to lose.
+        willing to lose. Also, some data might not load(we are negotiating API plans). 
       </ThemedText.DeprecatedBlack>
       <CloseIcon
         style={{ color: 'black' }}
