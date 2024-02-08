@@ -21,7 +21,6 @@ interface Leader {
 
 export default function LeaderboardTable() {
   const tradePoints = usePointsData()
-  console.log('tradepoints', tradePoints)
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)
     const allUsersArrays = allUserObjects.map((point: any) => {
