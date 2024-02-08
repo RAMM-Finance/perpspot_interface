@@ -33,6 +33,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { currencyId } from 'utils/currencyId'
 import { formatDollarAmount } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
@@ -1117,6 +1118,15 @@ export default function SimplePool() {
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Buy</ThemedText.BodyPrimary>
               }
               wethOnly={!buy && outputCurrency?.symbol === 'limWETH'}
+              priceImpact={
+                buy
+                  ? computeFiatValuePriceImpact(currencyAFiat.data, value / (llpPrice / 1e18))
+                  : computeFiatValuePriceImpact(
+                      inputValue && inputValue / 1e18 / (llpPrice / 1e18),
+                      value * activePrice
+                    )
+              }
+              llp={true}
             />
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />

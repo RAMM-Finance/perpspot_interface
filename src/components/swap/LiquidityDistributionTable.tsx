@@ -1,8 +1,6 @@
-import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { BinData } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
@@ -11,6 +9,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
+
+import { Field } from '../../state/swap/actions'
+import { useSwapState } from '../../state/swap/hooks'
 
 const LiquidityDistributionTable = ({
   address0,
@@ -26,20 +27,28 @@ const LiquidityDistributionTable = ({
   bin: BinData[] | undefined
 }) => {
   // const [inverse, setInverse] = useState(false)
+  const {
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+  } = useSwapState()
+
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
+
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
   const [, pool] = usePool(token1 ?? undefined, token0 ?? undefined, fee)
-  const poolAddress = useMemo(() => {
-    if (!pool || !chainId) return null
-    return computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    })
-  }, [chainId, pool])
+  // const poolAddress = useMemo(() => {
+  //   if (!pool || !chainId) return null
+  //   return computePoolAddress({
+  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+  //     tokenA: pool.token0,
+  //     tokenB: pool.token1,
+  //     fee: pool.fee,
+  //   })
+  // }, [chainId, pool])
   // const bin = undefined as any
-  const priceData = undefined as any
+  // const priceData = undefined as any
   // const { data: priceData, loading: priceLoading } = useLatestPoolPriceData(poolAddress ?? undefined)
 
   // console.log('tooes', token0, token1)
@@ -198,7 +207,7 @@ const LiquidityDistributionTable = ({
         <LDHeaderCellIn>
           Price ({token1?.symbol}/{token0?.symbol})
         </LDHeaderCellIn>
-        <LDHeaderCellOut>Amount ({!inverse ? token1?.symbol : token0?.symbol})</LDHeaderCellOut>
+        <LDHeaderCellOut>Amount ({outputCurrency?.symbol})</LDHeaderCellOut>
       </LDHeaderRow>
       <Wrapper onScroll={handleScroll} ref={ref}>
         {!bin ? (
@@ -388,7 +397,7 @@ const LiquidityDistributionTable = ({
           <LDHeaderCellIn>
             Price ({token1?.symbol}/{token0?.symbol})
           </LDHeaderCellIn>
-          <LDHeaderCellOut>Amount ({!inverse ? token0?.symbol : token1?.symbol})</LDHeaderCellOut>
+          <LDHeaderCellOut>Amount ({inputCurrency?.symbol})</LDHeaderCellOut>
         </LDHeaderRow>
         {!bin ? (
           <AutoColumn gap="3px">

@@ -201,6 +201,7 @@ interface CurrencyInputPanelProps {
   loading?: boolean
   llpBalance?: number
   wethOnly?: boolean | false
+  llp?: boolean | false
 }
 
 export default function CurrencyInputPanel({
@@ -226,6 +227,7 @@ export default function CurrencyInputPanel({
   label,
   llpBalance,
   wethOnly,
+  llp,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -307,7 +309,7 @@ export default function CurrencyInputPanel({
           <FiatRow>
             <RowBetween>
               <LoadingOpacityContainer $loading={loading}>
-                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} llp={llp ? llp : false} />
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>
