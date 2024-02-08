@@ -1,6 +1,7 @@
 // import { BigintIsh } from '@uniswap/sdk-core'
 import { MethodParameters, toHex } from '@uniswap/v3-sdk'
 import MarginFacilityJson from 'abis_v2/MarginFacility.json'
+import { BigNumber as BN } from 'bignumber.js'
 import { Interface } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
 import { LiquidityLoan } from 'types/leveragePosition'
@@ -153,18 +154,6 @@ export abstract class MarginFacilitySDK {
       )
     }
 
-    //   function submitOrder(
-    //     address pool,
-    //     bool positionIsToken0,
-    //     bool isAdd,
-    //     uint256 deadline,
-    //     uint256 startOutput,
-    //     uint256 minOutput,
-    //     uint256 inputAmount,
-    //     uint256 decayRate,
-    //     uint256 margin
-    // )
-
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('submitOrder', [
         param.pool,
@@ -218,7 +207,7 @@ export abstract class MarginFacilitySDK {
     )
 
     // remove after withdraw premium
-    if (param.isClose) {
+    if (param.isClose || param.reducePercentage === new BN(1).shiftedBy(18).toFixed(0)) {
       calldatas.push(
         MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
           {

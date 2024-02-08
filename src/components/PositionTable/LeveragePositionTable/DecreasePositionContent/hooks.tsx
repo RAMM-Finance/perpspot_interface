@@ -249,131 +249,6 @@ export function useDerivedReducePositionInfo(
     onPositionChange,
   ])
 
-  // useEffect(() => {
-  //   const lagged = async () => {
-  //     if (
-  //       !marginFacility ||
-  //       !position ||
-  //       !parsedReduceAmount ||
-  //       !!inputError ||
-  //       !pool ||
-  //       !inputCurrency ||
-  //       !outputCurrency
-  //     ) {
-  //       setState(DerivedInfoState.INVALID)
-  //       setTxnInfo(undefined)
-  //       onPositionChange({})
-  //       setError(undefined)
-  //       return
-  //     }
-
-  //     setState(DerivedInfoState.LOADING)
-
-  //     try {
-  //       const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
-  //       const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
-  //       const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
-  //       // reducePercentage * totalPosition multiplied(or divided) current price
-
-  //       const minOutput = parsedReduceAmount
-  //         .times(price)
-  //         .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
-
-  //       const params: ReducePositionOptions = {
-  //         positionKey,
-  //         reducePercentage: reducePercent,
-  //         executionOption: 1,
-  //         slippedTickMin,
-  //         slippedTickMax,
-  //         executionData: ethers.constants.HashZero,
-  //         minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
-  //         isClose: closePosition,
-  //       }
-
-  //       const calldatas = MarginFacilitySDK.reducePositionParameters(params)
-
-  //       const bytes = await marginFacility.callStatic.multicall(calldatas)
-
-  //       const result = (MarginFacilitySDK.decodeReducePositionResult(bytes[0]) as any)[0]
-  //       const amount0 = new BN(result.amount0.toString()).shiftedBy(
-  //         position.isToken0 ? -outputCurrency.decimals : -inputCurrency.decimals
-  //       )
-  //       const amount1 = new BN(result.amount1.toString()).shiftedBy(
-  //         position.isToken0 ? -inputCurrency.decimals : -outputCurrency.decimals
-  //       )
-  //       const premium = new BN(result.premium.toString()).shiftedBy(-inputCurrency.decimals)
-  //       const reducePercentage = parsedReduceAmount.div(position.totalPosition)
-  //       const executionPrice = new Price(
-  //         outputCurrency,
-  //         inputCurrency,
-  //         position.isToken0 ? result.amount0.toString() : result.amount1.toString(),
-  //         position.isToken0
-  //           ? new BN(result.amount1.toString()).times(-1).toFixed(0)
-  //           : new BN(result.amount0.toString()).times(-1).toFixed(0)
-  //       )
-
-  //       const info: DerivedReducePositionInfo = {
-  //         PnL: new BN(result.PnL.toString()).shiftedBy(-inputCurrency.decimals),
-  //         returnedAmount: new BN(result.returnedAmount.toString()).shiftedBy(-outputCurrency.decimals),
-  //         premium,
-  //         profitFee: new BN(result.profitFee.toString()).shiftedBy(-inputCurrency.decimals),
-  //         minimumOutput: minOutput,
-  //         executionPrice,
-  //         amount0,
-  //         amount1,
-  //         margin: position.margin.times(new BN(1).minus(reducePercentage)),
-  //         totalPosition: position.totalPosition.minus(parsedReduceAmount),
-  //         totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
-  //         totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
-  //         reduceAmount: new TokenBN(parsedReduceAmount, outputCurrency.wrapped, false),
-  //         withdrawnPremium: closePosition
-  //           ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, true)
-  //           : new TokenBN(0, inputCurrency.wrapped, false),
-  //       }
-
-  //       onPositionChange({
-  //         margin: position.margin.times(new BN(1).minus(reducePercentage)),
-  //         totalPosition: position.totalPosition.minus(parsedReduceAmount),
-  //         totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
-  //         totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
-  //         premiumLeft: closePosition ? new BN(0) : undefined,
-  //       })
-  //       setTxnInfo(info)
-  //       setState(DerivedInfoState.VALID)
-  //       setError(undefined)
-  //     } catch (err) {
-  //       onPositionChange({})
-  //       setState(DerivedInfoState.INVALID)
-  //       setError(parseContractError(err))
-  //       setTxnInfo(undefined)
-  //     }
-  //   }
-
-  //   if (isLimit || inRange || existingOrderBool) {
-  //     setState(DerivedInfoState.INVALID)
-  //     setTxnInfo(undefined)
-  //     return
-  //   }
-
-  //   lagged()
-  // }, [
-  //   setState,
-  //   pool,
-  //   marginFacility,
-  //   parsedReduceAmount,
-  //   position,
-  //   positionKey,
-  //   inputCurrency,
-  //   outputCurrency,
-  //   allowedSlippage,
-  //   isLimit,
-  //   onPositionChange,
-  //   inputError,
-  //   inRange,
-  //   existingOrderBool,
-  //   closePosition,
-  // ])
-
   const contractError = useMemo(() => {
     let message: ReactNode | undefined
     if (error) {
@@ -542,7 +417,7 @@ export function useDerivedReduceLimitPositionInfo(
     position,
     parsedAmount,
     parsedLimitPrice ? (baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice) : undefined,
-    outputCurrency, 
+    outputCurrency,
     inputCurrency
   )
 
