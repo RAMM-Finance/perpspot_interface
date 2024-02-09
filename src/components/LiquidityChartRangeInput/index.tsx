@@ -99,6 +99,11 @@ export default function LiquidityChartRangeInput({
     currencyB,
     feeAmount,
   })
+  // const isLoading = false
+  // const error = undefined
+  // const formattedData = undefined as any
+  // console.log('LiquidityChartRangeInput', isLoading, formattedData)
+  // useRenderCount()
 
   const onBrushDomainChangeEnded = useCallback(
     (domain: [number, number], mode: string | undefined) => {

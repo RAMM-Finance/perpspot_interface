@@ -8,11 +8,12 @@ import { TickData, Ticks } from 'graphql/thegraph/AllV3TicksQuery'
 import { apolloClient } from 'graphql/thegraph/apollo'
 import JSBI from 'jsbi'
 import ms from 'ms.macro'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from 'react-query'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
-import { useInterfaceMulticall, useTickLens } from './useContract'
+import { useTickLens } from './useContract'
 import { PoolState, usePool } from './usePools'
 
 const PRICE_FIXED_DIGITS = 8
@@ -94,154 +95,58 @@ function useTicksFromTickLens(
 
   const tickLens = useTickLens()
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
-  const [synced, setSynced] = useState(false)
-  const { provider } = useWeb3React()
-  const multicallContract = useInterfaceMulticall()
-  const [lastSyncedBlock, setLastSyncedBlock] = useState<number>()
+  const key = useMemo(() => {
+    if (!tickLens || !tickLensArgs.length || !currencyB || !currencyA || !feeAmount) return 'missing'
+    return JSON.stringify(tickLensArgs) + currencyA?.wrapped.address + currencyB?.wrapped.address + feeAmount
+  }, [tickLensArgs, tickLens, currencyA, currencyB, feeAmount])
 
-  const fetchTicks = useCallback(async () => {
-    // console.log(
-    //   'multicall1',
-    //   tickLensArgs.length,
-    //   tickLens?.address,
-    //   provider,
-    //   !loading,
-    //   tickDataLatestSynced.length === 0
-    // )
-    if (tickLens && provider && !loading && tickDataLatestSynced.length === 0 && tickLensArgs.length > 0) {
-      const currentBlock = await provider?.getBlockNumber()
+  const {
+    data: tickData,
+    isLoading,
+    isError,
+    isSuccess,
+  } = useQuery(
+    ['tickLens', key],
+    async () => {
+      if (!tickLens || !tickLensArgs.length) throw new Error('No tickLens or tickLensArgs')
+      const promises = tickLensArgs.map((args) => tickLens.callStatic.getPopulatedTicksInWord(args[0], args[1]))
+      const callResults = await Promise.all(promises)
+      const latestTickData = callResults
+        .flatMap((result) =>
+          result.map((response: any) => {
+            return {
+              tick: response[0],
+              liquidityNet: JSBI.BigInt(response[1]),
+              price0: 0,
+              price1: 0,
+            }
+          })
+        )
+        .sort((a, b) => a.tick - b.tick)
 
-      // console.log('multicall2', loading, currentBlock, lastSyncedBlock)
-      if (!lastSyncedBlock || currentBlock > lastSyncedBlock) {
-        setLoading(true)
-        try {
-          const promises = tickLensArgs.map((args) => tickLens.callStatic.getPopulatedTicksInWord(args[0], args[1]))
-          const callResults = await Promise.all(promises)
-          // console.log('multicall3', tickLensArgs, promises, callResults)
-
-          const latestTickData = callResults
-            .flatMap((result) =>
-              result.map((response: any) => {
-                return {
-                  tick: response[0],
-                  liquidityNet: JSBI.BigInt(response[1]),
-                  price0: 0,
-                  price1: 0,
-                }
-              })
-            )
-            .sort((a, b) => a.tick - b.tick)
-          // console.log('multicall4', latestTickData)
-          setLastSyncedBlock(currentBlock)
-          setTickDataLatestSynced(latestTickData)
-          setError(false)
-        } catch (err) {
-          console.log('multicall err', err)
-          setError(true)
-        }
-      }
-      setLoading(false)
+      return latestTickData
+    },
+    {
+      keepPreviousData: true,
+      refetchInterval: ms`5s`,
     }
-  }, [tickLensArgs, tickLens, provider, lastSyncedBlock, loading, tickDataLatestSynced])
-
-  // console.log('tickData', loading, error, activeTick, tickLensArgs, tickLens, provider, tickDataLatestSynced)
-
-  // console.log('tickLensArgs', activeTick, minIndex, maxIndex, poolAddress, tickLensArgs)
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>()
-
-  useEffect(() => {
-    if (!intervalId && tickLens && provider) {
-      setIntervalId(
-        setInterval(() => {
-          fetchTicks()
-        }, ms('2.5s'))
-      )
-    }
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId)
-        setIntervalId(null)
-      }
-    }
-  }, [fetchTicks, intervalId, tickLens, provider, tickLensArgs])
-
-  // console.log('tickDataLatestSynced', loading, error, tickDataLatestSynced)
-
-  // const callStates = useSingleContractMultipleData(
-  //   tickLensArgs.length > 0 ? tickLens : undefined,
-  //   'getPopulatedTicksInWord',
-  //   tickLensArgs,
-  //   REFRESH_FREQUENCY
-  // )
-
-  // const isError = useMemo(() => callStates.some(({ error }) => error), [callStates])
-  // const isLoading = useMemo(() => callStates.some(({ loading }) => loading), [callStates])
-  // const IsSyncing = useMemo(() => callStates.some(({ syncing }) => syncing), [callStates])
-  // const isValid = useMemo(() => callStates.some(({ valid }) => valid), [callStates])
-
-  // const tickData: TickData[] = useMemo(
-  //   () =>
-  //     callStates
-  //       .map(({ result }) => result?.populatedTicks)
-  //       .reduce(
-  //         (accumulator, current) => [
-  //           ...accumulator,
-  //           ...(current?.map((tickData: TickData) => {
-  //             return {
-  //               tick: tickData.tick,
-  //               liquidityNet: JSBI.BigInt(tickData.liquidityNet),
-  //             }
-  //           }) ?? []),
-  //         ],
-  //         []
-  //       ),
-  //   [callStates]
-  // )
-
-  // tickLens?.interface.encodeFunctionData('getPopulatedTicksInWord', [poolAddress, 28])
-
-  // useEffect(() => {
-  //   async function lagged() {
-  //     let ticks = [] as any[]
-  //     if (tickLens && tickLensArgs?.length > 0) {
-  //       for (let i = 0; i < tickLensArgs.length; i++) {
-  //         const callResult = await tickLens.callStatic.getPopulatedTicksInWord(...tickLensArgs[i])
-  //         ticks.concat(callResult)
-  //       }
-  //     }
-  //     setTickDataLatestSynced
-  //   }
-  //   lagged()
-  // }, [tickLens, tickLensArgs])
+  )
 
   // reset on input change
-  useEffect(() => {
-    setTickDataLatestSynced([])
-    setLastSyncedBlock(undefined)
-  }, [currencyA, currencyB, feeAmount])
+  // useEffect(() => {
+  //   setTickDataLatestSynced([])
+  // }, [currencyA, currencyB, feeAmount])
 
   // return the latest synced tickData even if we are still loading the newest data
-  // useEffect(() => {
-  //   if (!IsSyncing && !isLoading && !isError && isValid) {
-  //     setTickDataLatestSynced(tickData.sort((a, b) => a.tick - b.tick))
-  //   }
-  // }, [isError, isLoading, IsSyncing, tickData, isValid])
+  useEffect(() => {
+    if (!isLoading && !isError && isSuccess) {
+      tickData && setTickDataLatestSynced(tickData.sort((a, b) => a.tick - b.tick))
+    }
+  }, [isError, isLoading, tickData, isSuccess])
 
-  // return useMemo(
-  //   () => ({ isLoading, IsSyncing, isError, isValid, tickData: tickDataLatestSynced }),
-  //   [isLoading, IsSyncing, isError, isValid, tickDataLatestSynced]
-  // )
   return useMemo(
-    () => ({
-      isLoading: loading,
-      IsSyncing: false,
-      isError: error,
-      isValid: true,
-      tickData: tickDataLatestSynced,
-    }),
-    [loading, error, tickDataLatestSynced]
+    () => ({ isLoading, isError, tickData: tickDataLatestSynced }),
+    [isLoading, isError, tickDataLatestSynced]
   )
 }
 

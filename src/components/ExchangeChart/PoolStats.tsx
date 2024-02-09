@@ -14,7 +14,9 @@ import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import getToken0Price from 'lib/utils/getCurrentPrice'
 import { ReactNode, useMemo } from 'react'
+import { useQuery } from 'react-query'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
@@ -75,8 +77,25 @@ export function PoolStatsSection({
     poolAddress ?? undefined,
   ])
 
+  const token0Decimals = currency0?.decimals
+  const token1Decimals = currency1?.decimals
+
+  const { data: token0Price } = useQuery(
+    ['currentPrice', poolAddress, token0Decimals, token1Decimals],
+    async () => {
+      if (!poolAddress) throw new Error('No pool address')
+      if (!token1Decimals) throw new Error('No token1 decimals')
+      if (!token0Decimals) throw new Error('No token0 decimals')
+      return await getToken0Price(poolAddress, token0Decimals, token1Decimals)
+    },
+    {
+      keepPreviousData: true,
+      refetchInterval: 1000 * 5,
+    }
+  )
+
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!pool || !poolData) return [null, false, null, null, null, null, null]
+    if (!pool || !poolData || !token0Price || !priceData) return [null, false, null, null, null, null, null]
 
     let tvl
     let volume
@@ -87,11 +106,7 @@ export function PoolStatsSection({
       }
     }
 
-    if (!priceData) {
-      return [null, false, null, null, null, volume, tvl, null]
-    }
-
-    let price = priceData.priceNow
+    let price = token0Price.lt(1) ? new BN(1).div(token0Price) : token0Price
     const invertPrice = price.lt(1)
     // if (
     //   pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
@@ -115,8 +130,8 @@ export function PoolStatsSection({
       price24hLow = priceData.low24
     }
     // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
-    return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool]
-  }, [pool, priceData, poolData])
+    return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
+  }, [pool, priceData, poolData, token0Price])
 
   const baseQuoteSymbol = invertPrice
     ? currency1?.symbol + '/' + currency0?.symbol

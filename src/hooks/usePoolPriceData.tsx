@@ -6,9 +6,9 @@ import { useQuery } from 'react-query'
 // const client = new GraphQLClient('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3')
 
 const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote') => {
-  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
+  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}&x_cg_pro_api_key=${process.env.REACT_APP_GECKO_API_KEY}`
 }
-const endpoint = 'https://api.geckoterminal.com/api/v2'
+const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
 // const getQuery = (baseAddress: string, quoteAddress: string): string => {
 //   return `
@@ -55,7 +55,7 @@ export function useLatestPoolPriceData(
   const { data } = useQuery(
     ['poolPriceData', poolAddress],
     async () => {
-      console.log('poolPriceData', poolAddress)
+      // console.log('useLatestPoolPriceData', poolAddress)
       if (!poolAddress) return null
       try {
         const response = await axios.get(formatEndpoint(poolAddress.toLocaleLowerCase(), 'token', 'quote'), {
@@ -63,19 +63,18 @@ export function useLatestPoolPriceData(
             Accept: 'application/json',
           },
         })
-
         if (response.status === 200) {
           return response.data.data.attributes.ohlcv_list
         }
-        return null
+        throw new Error('Failed to fetch pool price data')
       } catch (err) {
         console.log('poolPriceData err', err)
-        return null
+        throw new Error('Failed to fetch pool price data')
       }
     },
     {
       enabled: !!poolAddress,
-      refetchInterval: 1000 * 20,
+      refetchInterval: 1000 * 5,
       keepPreviousData: true,
     }
   )

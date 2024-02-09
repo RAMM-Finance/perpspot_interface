@@ -67,7 +67,17 @@ const PositionsWrapper = styled.div`
 function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
   if (!pool || !chainId) return undefined
   const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
-
+  console.log(
+    'symbol',
+    computePoolAddress({
+      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+      tokenA: pool.token0,
+      tokenB: pool.token1,
+      fee: pool.fee,
+    }),
+    pool.token0.address,
+    pool.token1.address
+  )
   const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
   const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
   if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
