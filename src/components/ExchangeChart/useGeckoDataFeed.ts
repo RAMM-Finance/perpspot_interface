@@ -1,4 +1,5 @@
 import axios from 'axios'
+// import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
 import { useMemo, useRef } from 'react'
 
 import {
@@ -11,7 +12,7 @@ import {
 
 const endpoint = 'https://api.geckoterminal.com/api/v2'
 
-const formatEndpoint = (
+const formatFetchBarEndpoint = (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
   aggregate: string,
@@ -23,7 +24,15 @@ const formatEndpoint = (
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
 }
 
-// const fetchLiveBar = async()
+const formatFetchLiveBarEndpoint = (
+  address: string,
+  timeframe: 'day' | 'hour' | 'minute',
+  aggregate: string,
+  currency: string,
+  token: 'base' | 'quote'
+) => {
+  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&currency=${currency}&token=${token}&limit=1`
+}
 
 const fetchBars = async (
   address: string,
@@ -35,11 +44,17 @@ const fetchBars = async (
   token: 'base' | 'quote',
   after_timestamp: number
 ) => {
-  console.log('gecko', before_timestamp)
-  //api.geckoterminal.com/api/v2/networks/arbitrum/pools/0x0e4831319a50228b9e450861297ab92dee15b44f/ohlcv/hour?aggregate=1&before_timestamp=1705994487&limit=300&currency=token&token=base
   try {
     const response = await axios.get(
-      formatEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, before_timestamp, limit, currency, token),
+      formatFetchBarEndpoint(
+        address.toLocaleLowerCase(),
+        timeframe,
+        aggregate,
+        before_timestamp,
+        limit,
+        currency,
+        token
+      ),
       {
         headers: {
           Accept: 'application/json',
@@ -47,7 +62,7 @@ const fetchBars = async (
       }
     )
 
-    console.log('gecko response: ', response)
+    // console.log('gecko response: ', response)
     if (response.status === 200) {
       const candles = response.data.data.attributes.ohlcv_list
       const bars = candles
@@ -78,6 +93,8 @@ const fetchBars = async (
     }
   }
 }
+
+const fetchLiveBar = async () => {}
 // 5min, 15min, 1hr, 4hr
 const SUPPORTED_RESOLUTIONS = { 5: '5m', 15: '15m', 60: '1h', 240: '4h', '1D': '1d' }
 
@@ -111,7 +128,6 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
           const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(chartData)
-          console.log('basesymbol', baseSymbol)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -119,7 +135,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             ticker: baseSymbol + '/' + quoteSymbol,
             session: '24x7',
             minmov: 1,
-            pricescale: 100,
+            pricescale: 1000,
             timezone: 'Etc/UTC',
             has_intraday: true,
             has_daily: true,
@@ -165,14 +181,14 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
 
           try {
             console.log('poolAddress', poolAddress)
-            let denomination 
-            if(poolAddress=="0x2f5e87C9312fa29aed5c179E456625D79015299c"
-              || poolAddress == "0x0E4831319A50228B9e450861297aB92dee15B44F"
-              || poolAddress == "0xC6962004f452bE9203591991D15f6b388e09E8D0"
-              
-              ){
+            let denomination
+            if (
+              poolAddress == '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
+              poolAddress == '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
+              poolAddress == '0xC6962004f452bE9203591991D15f6b388e09E8D0'
+            ) {
               denomination = 'quote'
-            }else{
+            } else {
               denomination = 'base'
             }
             const { bars, error } = await fetchBars(
@@ -182,7 +198,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
               to,
               countBack,
               'token',
-              denomination as "base"|"quote",
+              denomination as 'base' | 'quote',
               from
             )
 
@@ -201,10 +217,11 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
-          // const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
-          // intervalRef.current && clearInterval(intervalRef.current)
+          console.log('subscribeBars', symbolInfo, resolution)
+          const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
+          intervalRef.current && clearInterval(intervalRef.current)
           // intervalRef.current = setInterval(function () {
-          //   fetchLiveBar(chainId, poolAddress, getCustomApiSubgraph(chainId)).then((bar) => {
+          //   fetchLiveBar().then((bar) => {
           //     if (bar) {
           //       onRealtimeCallback(bar)
           //     }

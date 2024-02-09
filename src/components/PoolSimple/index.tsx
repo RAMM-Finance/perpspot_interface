@@ -33,6 +33,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { currencyId } from 'utils/currencyId'
 import { formatDollarAmount } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
@@ -138,6 +139,9 @@ export default function SimplePool() {
     [usdcValueCurrencyB]
   )
 
+  console.log('BFiat', currencyBFiat)
+  console.log('AFiat', currencyAFiat)
+
   console.log('fields', outputCurrency, parsedAmounts[Field.CURRENCY_B])
 
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
@@ -159,6 +163,14 @@ export default function SimplePool() {
     },
     {}
   )
+
+  const inputValue = useMemo(() => {
+    if (parsedAmounts[Field.CURRENCY_A]?.quotient.toString() === undefined) {
+      return undefined
+    } else {
+      return Number(parsedAmounts[Field.CURRENCY_A]?.quotient.toString())
+    }
+  }, [parsedAmounts, parsedAmounts[Field.CURRENCY_A]?.quotient.toString()])
 
   const handleCurrencySelect = useCallback(
     (currencyNew: Currency, currencyIdOther?: string): (string | undefined)[] => {
@@ -776,7 +788,7 @@ export default function SimplePool() {
           price: WETHPrice?.data,
           poolBal: data[3][0],
           weight: data[4][0],
-          targetWeight: 40, 
+          targetWeight: 40,
           util: data[5][0],
           maxWith: mW[0].maxShares,
         },
@@ -785,7 +797,7 @@ export default function SimplePool() {
           price: WBTCPrice?.data,
           poolBal: data[3][1],
           weight: data[4][1],
-          targetWeight: 20, 
+          targetWeight: 20,
           util: data[5][1],
           maxWith: mW[1].maxShares,
         },
@@ -804,6 +816,17 @@ export default function SimplePool() {
     }
   }, [data, mW, USDCPrice, WETHPrice, WBTCPrice, WETH, WBTC, USDC])
 
+  const activePrice = useMemo(() => {
+    if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
+      return WETHPrice?.data
+    } else if (inputCurrency?.symbol === 'WBTC' && WBTCPrice.data) {
+      return WBTCPrice?.data
+    } else {
+      return 1
+    }
+  }, [WETHPrice, WBTCPrice, inputCurrency])
+
+  console.log(activePrice)
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
   // Total Supply is raw supply
@@ -933,7 +956,7 @@ export default function SimplePool() {
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Fee Distribution: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>{"80% LPs, 20% protocol"}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>80% LPs, 20% protocol</ThemedText.BodySecondary>
                 </RowBetween>
                 {buy ? (
                   <RowBetween
@@ -1045,13 +1068,15 @@ export default function SimplePool() {
               onUserInput={onFieldAInput}
               onMax={() => {
                 !buy
-                  ? onFieldAInput(llpBalance.toFixed(7).toString())
+                  ? onFieldAInput(llpBalance.toFixed(5).toString())
                   : onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
               }}
               showMaxButton={true}
               currency={currencies[Field.CURRENCY_A] ?? null}
               id="add-liquidity-input-tokena"
-              fiatValue={currencyAFiat}
+              fiatValue={
+                buy ? currencyAFiat : { data: inputValue && (inputValue / 1e18) * (llpPrice / 1e18), isLoading: false }
+              }
               onCurrencySelect={buy ? handleCurrencySelect : undefined}
               llpBalance={!buy ? llpBalance : 0}
               label={
@@ -1080,7 +1105,11 @@ export default function SimplePool() {
                     }
               }
               showMaxButton={false}
-              fiatValue={currencyBFiat}
+              fiatValue={
+                buy && activePrice
+                  ? { data: value * (llpPrice / 1e18), isLoading: false }
+                  : { data: value * activePrice, isLoading: false }
+              }
               currency={currencies[Field.CURRENCY_B] ?? null}
               id="add-liquidity-input-tokenb"
               onCurrencySelect={!buy ? handleCurrencySelect : undefined}
@@ -1089,6 +1118,15 @@ export default function SimplePool() {
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Buy</ThemedText.BodyPrimary>
               }
               wethOnly={!buy && outputCurrency?.symbol === 'limWETH'}
+              priceImpact={
+                buy
+                  ? computeFiatValuePriceImpact(currencyAFiat.data, value / (llpPrice / 1e18))
+                  : computeFiatValuePriceImpact(
+                      inputValue && inputValue / 1e18 / (llpPrice / 1e18),
+                      value * activePrice
+                    )
+              }
+              llp={true}
             />
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
@@ -1177,7 +1215,7 @@ export default function SimplePool() {
                       <LoadedCell>
                         <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                           {formatDollarAmount({
-                            num: (Number(tok.targetWeight) ) ,
+                            num: Number(tok.targetWeight),
                             long: true,
                           })}
                           %

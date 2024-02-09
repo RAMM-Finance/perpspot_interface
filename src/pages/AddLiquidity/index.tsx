@@ -10,6 +10,7 @@ import { useWeb3React } from '@web3-react/core'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { sendEvent } from 'components/analytics'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
+import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { PositionPreview } from 'components/PositionPreview'
 import RateToggle from 'components/RateToggle'
 import { PoolSelector } from 'components/swap/PoolSelector'
@@ -112,7 +113,7 @@ export default function AddLiquidity() {
   const hasExistingPosition = !!existingPositionDetails && !positionLoading
   const { position: existingPosition } = useDerivedPositionInfo(existingPositionDetails)
 
-  // fee selection from url
+  // fee selection from url 577, 583   ===  65,129,133
   const feeAmount: FeeAmount | undefined =
     feeAmountFromUrl && Object.values(FeeAmount).includes(parseFloat(feeAmountFromUrl))
       ? parseFloat(feeAmountFromUrl)
@@ -356,7 +357,7 @@ export default function AddLiquidity() {
       if (idB === undefined) {
         navigate(`/add/${idA}`)
       } else {
-        navigate(`/add/${idA}/${idB}/${500}`)
+        navigate(`/add/${idA}/${idB}/${feeAmount}`)
       }
     },
     [handleCurrencySelect, currencyIdB, navigate]
@@ -368,7 +369,7 @@ export default function AddLiquidity() {
       if (idA === undefined) {
         navigate(`/add/${idB}`)
       } else {
-        navigate(`/add/${idA}/${idB}/${500}`)
+        navigate(`/add/${idA}/${idB}/${feeAmount}`)
       }
     },
     [handleCurrencySelect, currencyIdA, navigate]
@@ -411,9 +412,11 @@ export default function AddLiquidity() {
 
   const {
     result: aprUtil,
-    loading,
+    loading: rateAndUtilLoading,
     error,
   } = useRateAndUtil(pool?.token0.address, pool?.token1.address, pool?.fee, tickLower, tickUpper)
+
+  const rateLoading = rateAndUtilLoading || !aprUtil
 
   const { getDecrementLower, getIncrementLower, getDecrementUpper, getIncrementUpper, getSetFullRange } =
     useRangeHopCallbacks(baseCurrency ?? undefined, quoteCurrency ?? undefined, feeAmount, tickLower, tickUpper, pool)
@@ -1295,16 +1298,20 @@ export default function AddLiquidity() {
                             <OutlineCard>
                               <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>Estimated APR: </ThemedText.BodySmall>
-                                <ThemedText.BodySmall>
-                                  {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
-                                    `${aprUtil?.apr ? ' + swap fees' : ''}`}
-                                </ThemedText.BodySmall>
+                                <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
+                                  <ThemedText.BodySmall>
+                                    {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
+                                      `${aprUtil?.apr ? ' + swap fees' : ''}`}
+                                  </ThemedText.BodySmall>
+                                </TextWithLoadingPlaceholder>
                               </RowBetween>
                               <RowBetween>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
-                                <ThemedText.BodySmall>
-                                  {`${formatBNToString(aprUtil?.util, NumberType.TokenNonTx)} %`}
-                                </ThemedText.BodySmall>
+                                <TextWithLoadingPlaceholder syncing={rateLoading} width={80} height="14px">
+                                  <ThemedText.BodySmall>
+                                    {`${formatBNToString(aprUtil?.util, NumberType.TokenNonTx)} %`}
+                                  </ThemedText.BodySmall>
+                                </TextWithLoadingPlaceholder>
                               </RowBetween>
                             </OutlineCard>
                           </DynamicSection>

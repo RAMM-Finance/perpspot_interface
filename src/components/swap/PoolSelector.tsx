@@ -1,31 +1,23 @@
-import { Currency, Token } from '@uniswap/sdk-core'
+import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
-import { SearchInput } from 'components/SearchModal/styleds'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
-import { useCurrency, useDefaultActiveTokens } from 'hooks/Tokens'
-import useDebounce from 'hooks/useDebounce'
+import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
-import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
-import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
 import { Box } from 'nft/components/Box'
 import { Portal } from 'nft/components/common/Portal'
 import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
-import { ChangeEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dispatch, SetStateAction } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { FixedSizeList } from 'react-window'
-import { useAllTokenBalances } from 'state/connection/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { UserAddedToken } from 'types/tokens'
 
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
@@ -57,7 +49,6 @@ export const PoolSelector = ({
   setSelectPair?: Dispatch<SetStateAction<boolean>>
   fee?: number
 }) => {
-  const onlyShowCurrenciesWithBalance = false
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
@@ -66,12 +57,6 @@ export const PoolSelector = ({
   const { onCurrencySelection, onPairSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-
-  // const {chainId} = useWeb3React()
-  const [searchQuery, setSearchQuery] = useState<string>('')
-
-  const debouncedQuery = useDebounce(searchQuery, 200)
-  const defaultTokens = useDefaultActiveTokens()
 
   const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
   // Timeout token loader after 3 seconds to avoid hanging in a loading state.
@@ -82,70 +67,7 @@ export const PoolSelector = ({
     return () => clearTimeout(tokenLoaderTimer)
   }, [])
 
-  const filteredTokens: Token[] = useMemo(() => {
-    return Object.values(defaultTokens).filter(getTokenFilter(debouncedQuery))
-  }, [defaultTokens, debouncedQuery])
-
-  const [balances, balancesAreLoading] = useAllTokenBalances()
-
-  const sortedTokens: Token[] = useMemo(
-    () =>
-      !balancesAreLoading
-        ? filteredTokens
-            .filter((token) => {
-              if (onlyShowCurrenciesWithBalance) {
-                return balances[token.address]?.greaterThan(0)
-              }
-
-              // If there is no query, filter out unselected user-added tokens with no balance.
-              if (!debouncedQuery && token instanceof UserAddedToken) {
-                if (inputCurrency?.equals(token) || outputCurrency?.equals(token)) return true
-                return balances[token.address]?.greaterThan(0)
-              }
-              return true
-            })
-            .sort(tokenComparator.bind(null, balances))
-        : [],
-    [
-      balances,
-      balancesAreLoading,
-      debouncedQuery,
-      filteredTokens,
-      inputCurrency,
-      outputCurrency,
-      onlyShowCurrenciesWithBalance,
-    ]
-  )
-
-  const isLoading = Boolean(balancesAreLoading && !tokenLoaderTimerElapsed)
-
-  const filteredSortedTokens = useSortTokensByQuery(debouncedQuery, sortedTokens)
-
-  const fixedList = useRef<FixedSizeList>()
-
-  const native = useNativeCurrency()
-  const wrapped = native.wrapped
-
-  const searchCurrencies: Currency[] = useMemo(() => {
-    const s = debouncedQuery.toLowerCase().trim()
-
-    const tokens = filteredSortedTokens.filter((t) => !(t.equals(wrapped) || t.isNative))
-    const shouldShowWrapped =
-      !onlyShowCurrenciesWithBalance || (!balancesAreLoading && balances[wrapped.address]?.greaterThan(0))
-    const natives = (native.equals(wrapped) ? [wrapped] : shouldShowWrapped ? [native, wrapped] : [native]).filter(
-      (n) => n.symbol?.toLowerCase()?.indexOf(s) !== -1 || n.name?.toLowerCase()?.indexOf(s) !== -1
-    )
-
-    return [...natives, ...tokens]
-  }, [
-    debouncedQuery,
-    filteredSortedTokens,
-    onlyShowCurrenciesWithBalance,
-    balancesAreLoading,
-    balances,
-    wrapped,
-    native,
-  ])
+  const isLoading = Boolean(!tokenLoaderTimerElapsed)
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -157,25 +79,26 @@ export const PoolSelector = ({
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
       if (
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'LDO') ||
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC')
+        (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
+        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
+        (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
+        (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
       ) {
+        localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))
+        localStorage.setItem('currencyOut', JSON.stringify(currencyIn.wrapped.address))
         onCurrencySelection(Field.INPUT, currencyOut)
         onCurrencySelection(Field.OUTPUT, currencyIn)
+        navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
       } else {
+        localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+        localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
         onCurrencySelection(Field.INPUT, currencyIn)
         onCurrencySelection(Field.OUTPUT, currencyOut)
+        navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
       }
-      navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
     },
     [navigate]
   )
-
-  const inputRef = useRef<HTMLInputElement>()
-  const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const input = event.target.value
-    setSearchQuery(input)
-  }, [])
 
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
@@ -303,15 +226,6 @@ export const PoolSelector = ({
       }
     >
       <Row flexDirection="column">
-        <SearchInput
-          type="text"
-          id="token-search-input"
-          placeholder="Search name or paste address"
-          autoComplete="off"
-          value={searchQuery}
-          ref={inputRef as RefObject<HTMLInputElement>}
-          onChange={handleInput}
-        />
         <PoolListContainer>
           <PoolListHeader>Pool (fee)</PoolListHeader>
           <PoolListHeader>TVL</PoolListHeader>

@@ -210,7 +210,7 @@ export default function PositionListItem({
 
   const shouldHidePosition = hasURL(token0?.symbol) || hasURL(token1?.symbol)
 
-  const { result: data } = useRateAndUtil(
+  const { result: data, loading: rateLoading } = useRateAndUtil(
     pool?.token0.address,
     pool?.token1.address,
     pool?.fee,
@@ -309,6 +309,9 @@ export default function PositionListItem({
                    <Trans>Max:</Trans>
                  </ExtentsText> */}
               <Trans>
+                {/* <TextWithLoadingPlaceholder syncing={rateLoading}>
+
+                </TextWithLoadingPlaceholder> */}
                 <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + '+ swap fees'}</span>
                 {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
                    <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}

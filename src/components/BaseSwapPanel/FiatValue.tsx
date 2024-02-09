@@ -21,10 +21,12 @@ export function FiatValue({
   fiatValue,
   priceImpact,
   height,
+  llp,
 }: {
   fiatValue?: { data?: number; isLoading: boolean }
   priceImpact?: Percent
   height?: string
+  llp?: boolean
 }) {
   const theme = useTheme()
   const priceImpactColor = useMemo(() => {
@@ -46,7 +48,13 @@ export function FiatValue({
           {priceImpact && (
             <span style={{ color: priceImpactColor }}>
               {' '}
-              <MouseoverTooltip text={t`Slippage+total fees relative to total trade input`}>
+              <MouseoverTooltip
+                text={
+                  llp
+                    ? t`1% fees apply when moving away from target weight`
+                    : t`Slippage+total fees relative to total trade input`
+                }
+              >
                 (<Trans>{formatPriceImpact(priceImpact)}</Trans>)
               </MouseoverTooltip>
             </span>

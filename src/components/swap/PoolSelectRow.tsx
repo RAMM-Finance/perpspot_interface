@@ -60,7 +60,6 @@ interface PoolSelectorRowProps {
 }
 
 function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal }: PoolSelectorRowProps) {
-  // const { chainId } = useWeb3React()
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
@@ -73,18 +72,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
-  // const decimal = useMemo(() => {
-  //   if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'WETH') {
-  //     return 10
-  //   } else if (token1?.wrapped.symbol === 'WETH' && token0?.wrapped.symbol === 'USDC') {
-  //     return -12
-  //   } else if (token1?.wrapped.symbol === 'wBTC' && token0?.wrapped.symbol === 'USDC') {
-  //     return -2
-  //   } else {
-  //     return 0
-  //   }
-  // }, [token0, token1])
-  // const currentPrice = (Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${decimal}`)).toFixed(1)
+
   const labelIn = token0?.symbol as string
   const labelOut = token1?.symbol as string
   const active = token0?.wrapped.address === inputCurrencyId && token1?.wrapped.address === outputCurrencyId
@@ -106,7 +94,6 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
     let price = new BN(Number(pool.token0Price.quotient.toString()))
     if (price.toString() == '0') price = new BN(Number(pool.token1Price.quotient.toString()))
     if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-      // return price.div( new BN( 10** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
       return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
     } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
       return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
@@ -143,18 +130,6 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
   }, [priceData, pool])
 
   return (
-    // <MouseoverTooltip
-    //   text={
-    //     <div style={{ display: 'flex', gap: '5px' }}>
-    //       <ThemedText.BodySmall color="textPrimary">TVL:</ThemedText.BodySmall>
-    //       <ThemedText.BodySmall color="textSecondary">{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
-    //       <ThemedText.BodySmall color="textPrimary">Volume:</ThemedText.BodySmall>
-    //       <ThemedText.BodySmall color="textSecondary">
-    //         {formatDollar({ num: volume, digits: 0 })}
-    //       </ThemedText.BodySmall>
-    //     </div>
-    //   }
-    // >
     <Container
       disabled={false}
       active={active}
@@ -169,13 +144,11 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
           <ThemedText.BodySmall color="textSecondary" fontWeight={800}>
             {labelIn}
           </ThemedText.BodySmall>
-          {/*/<ThemedText.BodySmall fontWeight={800}>{labelOut + `(${fee / 10000}%)`}</ThemedText.BodySmall>*/}/
-          <ThemedText.BodySmall fontWeight={800}>{labelOut}</ThemedText.BodySmall>
+          /<ThemedText.BodySmall fontWeight={800}>{labelOut}</ThemedText.BodySmall>
           <ThemedText.BodySmall fontSize="10px">({fee / 10000}%)</ThemedText.BodySmall>
         </Label>
       </div>
-      {/*<ThemedText.BodySmall>{formatDollar({ num: tvl, digits: 0 })}</ThemedText.BodySmall>
-      <ThemedText.BodySmall>{formatDollar({ num: volume, digits: 0 })}</ThemedText.BodySmall>*/}
+
       <ThemedText.BodySmall>
         <DeltaText delta={delta?.toNumber()}>
           {delta ? formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx) + '%' : '-'}
@@ -185,7 +158,6 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
         {formatBNToString(currPrice ?? currentPricePool, NumberType.TokenNonTx)}
       </ThemedText.BodySmall>
     </Container>
-    // </MouseoverTooltip>
   )
 }
 

@@ -79,24 +79,21 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         client_id: defaultChartProps.clientId,
         user_id: defaultChartProps.userId,
         description: 'https://www.geckoterminal.com/',
-        //fullscreen: defaultChartProps.fullscreen,
-        // autosize: defaultChartProps.autosize,
         custom_css_url: defaultChartProps.custom_css_url,
         autosize: true,
         overrides: {
           ...defaultChartProps.overrides,
         },
-        interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
+        interval: '15', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
         favorites: defaultChartProps.favorites,
         custom_formatters: defaultChartProps.custom_formatters,
-
       }
 
       tvWidgetRef.current = new widget(widgetOptions as any)
 
       tvWidgetRef.current?.onChartReady(function () {
         setChartReady(true)
-        tvWidgetRef.current?.applyOverrides({ "mainSeriesProperties.minTick": "100000,1,false" });
+        tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
 
         tvWidgetRef.current?.activeChart().dataReady(() => {
           setChartDataLoading(false)

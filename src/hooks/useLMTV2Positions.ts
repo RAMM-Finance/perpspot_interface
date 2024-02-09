@@ -46,8 +46,9 @@ export function useRateAndUtil(
     }
     return data
   }, [token0, token1, fee, tickLower, tickUpper])
-
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 5)
+  // useRenderCount()
+  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 3)
+  // console.log('rateutil', result, loading, syncing)
   return useMemo(() => {
     if (!result) {
       return {
@@ -71,93 +72,6 @@ export function useRateAndUtil(
       }
     }
   }, [result, loading, error, syncing])
-  // const dataProvider = useDataProviderContract()
-  // const blockNumber = useBlockNumber()
-  // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
-
-  // const [data, setData] = useState<{ apr: BN; util: BN }>()
-  // const [loading, setLoading] = useState(false)
-  // const [error, setError] = useState<any>()
-  // const [lastParams, setLastParams] = useState<{
-  //   token0: string
-  //   token1: string
-  //   fee: number
-  //   tickLower: number
-  //   tickUpper: number
-  // }>()
-
-  // useEffect(() => {
-  //   if (loading) return
-
-  //   if (!token0 || !token1 || !fee || !tickLower || !tickUpper || !dataProvider || !blockNumber) {
-  //     setData(undefined)
-  //     setError(undefined)
-  //     return
-  //   }
-
-  //   if (
-  //     lastBlockNumber &&
-  //     lastBlockNumber === blockNumber &&
-  //     lastParams?.fee === fee &&
-  //     lastParams.token0 === token0 &&
-  //     lastParams.token1 === token1 &&
-  //     lastParams.tickLower === tickLower &&
-  //     lastParams.tickUpper === tickUpper
-  //   ) {
-  //     return
-  //   }
-
-  //   if (lastBlockNumber && lastBlockNumber === blockNumber && error) {
-  //     return
-  //   }
-
-  //   const call = async () => {
-  //     try {
-  //       setLoading(true)
-  //       setBlockNumber(blockNumber)
-  //       const result = await dataProvider.callStatic.getUtilAndAPR(
-  //         {
-  //           token0: token0 as string,
-  //           token1: token1 as string,
-  //           fee: fee as number,
-  //         },
-  //         tickLower as number,
-  //         tickUpper as number
-  //       )
-  //       const apr = new BN(result[0].toString()).shiftedBy(-18)
-  //       const util = new BN(result[1].toString()).shiftedBy(-18)
-  //       setData({
-  //         apr,
-  //         util,
-  //       })
-  //       setLastParams({
-  //         token0,
-  //         token1,
-  //         fee,
-  //         tickLower,
-  //         tickUpper,
-  //       })
-  //       setLoading(false)
-  //     } catch (error) {
-  //       if (error !== error) {
-  //         setError(error)
-  //       }
-  //       setLoading(false)
-  //       setData(undefined)
-  //       console.log('instant rate', error)
-  //     }
-  //   }
-
-  //   call()
-  // }, [dataProvider, loading, blockNumber, token0, lastBlockNumber, token1, fee, tickLower, tickUpper])
-
-  // return useMemo(() => {
-  //   return {
-  //     result: data,
-  //     loading,
-  //     error,
-  //   }
-  // }, [data, loading, error])
 }
 
 export function useInstantaeneousRate(
