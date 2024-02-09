@@ -181,7 +181,6 @@ export default function PoolSelect({
   }
 
   const availablePools = useGetPoolsAndData()
-  console.log(availablePools)
 
   const pair = useMemo(() => {
     if (!availablePools) {
