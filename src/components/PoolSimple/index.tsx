@@ -1075,7 +1075,7 @@ export default function SimplePool() {
               currency={currencies[Field.CURRENCY_A] ?? null}
               id="add-liquidity-input-tokena"
               fiatValue={
-                buy ? currencyAFiat : { data: inputValue && inputValue / 1e18 / (llpPrice / 1e18), isLoading: false }
+                buy ? currencyAFiat : { data: inputValue && (inputValue / 1e18) * (llpPrice / 1e18), isLoading: false }
               }
               onCurrencySelect={buy ? handleCurrencySelect : undefined}
               llpBalance={!buy ? llpBalance : 0}
@@ -1107,7 +1107,7 @@ export default function SimplePool() {
               showMaxButton={false}
               fiatValue={
                 buy && activePrice
-                  ? { data: value / (llpPrice / 1e18), isLoading: false }
+                  ? { data: value * (llpPrice / 1e18), isLoading: false }
                   : { data: value * activePrice, isLoading: false }
               }
               currency={currencies[Field.CURRENCY_B] ?? null}
