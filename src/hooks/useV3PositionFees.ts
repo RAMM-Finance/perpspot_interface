@@ -25,6 +25,7 @@ export function useLMTPositionFees(
   // we can't use multicall for this because we need to simulate the call from a specific address
   // latestBlockNumber is included to ensure data stays up-to-date every block
   const [amounts, setAmounts] = useState<[BigNumber, BigNumber] | undefined>()
+
   useEffect(() => {
     if (positionManager && tokenIdHexString && owner) {
       positionManager.callStatic
@@ -36,6 +37,7 @@ export function useLMTPositionFees(
           { from: owner } // need to simulate the call as the owner
         )
         .then((results) => {
+          console.log('feeeeees', tokenId?.toString(), results.tokensOwed0.toString(), results.tokensOwed1.toString())
           setAmounts([results.tokensOwed0, results.tokensOwed1])
         })
     }

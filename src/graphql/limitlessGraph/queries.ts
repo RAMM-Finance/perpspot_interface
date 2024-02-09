@@ -45,7 +45,7 @@ export const LiquidityWithdrawnQuery = `
 
 export const AddOrderQuery = `
   query {
-    orderAddeds {
+    orderAddeds(orderBy: blockTimestamp) {
       pool
       positionIsToken0
       trader
@@ -57,9 +57,37 @@ export const AddOrderQuery = `
       margin
       inputAmount
       blockTimestamp
+      transactionHash
     }
   }
 `
+export const CancelOrderQuery = `
+  query {
+    orderCanceleds(orderBy: blockTimestamp)  {
+      pool
+      positionIsToken0
+      trader
+      isAdd
+      blockTimestamp
+      transactionHash
+    }
+  }
+`
+
+export const ForceClosedQuery = `
+  query {
+    forceCloseds(orderBy: blockTimestamp)  {
+      pool
+      positionIsToken0
+      trader
+      forcedClosedAmount      
+      blockTimestamp
+      blockNumber
+      transactionHash
+    }
+  }
+`
+
 
 export const PoolAddedQuery = `
   query {
@@ -77,23 +105,28 @@ export const PoolAddedQuery = `
 
 export const AddQuery = `
   query {
-    marginPositionIncreaseds {
+    marginPositionIncreaseds(orderBy: blockTimestamp)  {
       pool
       positionIsToken0
       trader
-      addedAmount      
+      addedAmount    
+      filler  
       blockTimestamp
+      transactionHash
     }
   }
 `
 export const ReduceQuery = `
   query {
-    marginPositionReduceds {
+    marginPositionReduceds(orderBy: blockTimestamp)  {
       pool
       positionIsToken0
       trader
       reduceAmount      
       blockTimestamp
+      PnL
+      filler
+      transactionHash
     }
   }
 `

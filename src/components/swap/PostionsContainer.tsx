@@ -2,6 +2,7 @@ import { OrdersTable } from 'components/OrdersTable/TokenTable'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TabContent, TabNavItem } from 'components/Tabs'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
+import {LimitActivityTab} from 'components/WalletDropdown/MiniPortfolio/Activity/LimitActivityTab'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
@@ -78,8 +79,11 @@ export function PostionsContainer({
           <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
             Orders
           </TabNavItem>
-          <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+          {/*<TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             History
+          </TabNavItem>*/}
+          <TabNavItem id={4} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
+            Activities
           </TabNavItem>
         </TabsWrapper>
         {/* {activePositionTable === 1 && <LeverageSearchBar />} */}
@@ -90,7 +94,7 @@ export function PostionsContainer({
       <TabContent id={2} activeTab={activePositionTable}>
         <OrdersTable orders={orders} loading={loadingOrders} />
       </TabContent>
-      <TabContent id={3} activeTab={activePositionTable}>
+      {/*<TabContent id={3} activeTab={activePositionTable}>
         {!account ? (
           <ActivityWrapper>
             <MissingHistoryWrapper>None</MissingHistoryWrapper>
@@ -99,6 +103,19 @@ export function PostionsContainer({
           <ActivityWrapper>
             <ActivityInnerWarpper>
               <ActivityTab account={account} />
+            </ActivityInnerWarpper>
+          </ActivityWrapper>
+        )}
+      </TabContent>*/}
+      <TabContent id={4} activeTab={activePositionTable}>
+        {!account ? (
+          <ActivityWrapper>
+            <MissingHistoryWrapper>None</MissingHistoryWrapper>
+          </ActivityWrapper>
+        ) : (
+          <ActivityWrapper>
+            <ActivityInnerWarpper>
+              <LimitActivityTab account={account} />
             </ActivityInnerWarpper>
           </ActivityWrapper>
         )}
