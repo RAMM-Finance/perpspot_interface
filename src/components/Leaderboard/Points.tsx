@@ -49,7 +49,9 @@ export default function Points() {
 
   function createUserDataObj(usersArr: any, obj: any) {
     const usersArrLP = usersArr.map((user: string) => {
-      if (Object.keys(obj.lpPositionsByUniqueLps).find((lpUser) => lpUser === user)) {
+      if (Object.keys(obj.lpPositionsByUniqueLps).find((lpUser) => lpUser === user)
+       
+         ) {
         return {
           trader: user,
           lpPoints: obj.lpPositionsByUniqueLps[user].reduce(

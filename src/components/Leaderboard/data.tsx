@@ -288,7 +288,7 @@ export function usePointsData() {
           if (vaultDataByAddress[lp]) {
             const newEntry = {
               blockTimestamp: entry.blockTimestamp,
-              shares: 52000,
+              shares: entry.shares,
               type: 'withdraw',
             }
             vaultDataByAddress[lp].push(newEntry)
@@ -489,6 +489,13 @@ export function usePointsData() {
             lpPositionsByUniqueLps[address] = []
           }
     })
+
+      Object.keys(      vaultDataByAddress).forEach((address: string) => {
+          if (!lpPositionsByUniqueLps[address]) {
+            lpPositionsByUniqueLps[address] = []
+          }
+    })
+
     }
 
     return {
@@ -559,7 +566,7 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log('collectData', 
+  console.log('collectData', vaultDataByAddress, calculateTimeWeightedDeposits(vaultDataByAddress),timeWeightedDeposits,
     tradeProcessedByTrader,
     collectData, lpPositionsByUniqueLps)
   return useMemo(() => {
