@@ -275,7 +275,7 @@ function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume, digits: 1 }) : '0'}
+          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume+30000, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>
