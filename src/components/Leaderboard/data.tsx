@@ -10,6 +10,7 @@ import {
   IncreaseLiquidityQuery,
   ReduceQuery,
   WithdrawVaultQuery,
+  RegisterQuery
 } from 'graphql/limitlessGraph/queries'
 import { tokenDecimal, usdValue, useDataProviderContract, useReferralContract } from 'hooks/useContract'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
@@ -136,7 +137,7 @@ const traders=[
 const sharesPrev = [
   52000463060652438154582,
   10656463060652438154582,
-  5320046306065243815458,
+  9920046306065243815458,
   2130046306065243815458, 
   1225046306065243815458,
   528004630606524381545, 
@@ -255,6 +256,7 @@ export function usePointsData() {
         const DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
         const DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
         const WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
+        const registerQueryData = await client.query(RegisterQuery, {}).toPromise()
         console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
 
         const vaultDataByAddress: { [key: string]: any } = {}
@@ -346,7 +348,15 @@ export function usePointsData() {
         const codesUsers: { [key: string]: any } = {}
         const referralMultipliers: { [key: string]: any } = {}
 
+
+        registerQueryData?.data.registerCodes.forEach((entry:any)=>{
+          const referrer = ethers.utils.getAddress(entry.account)
+          if (!uniqueTraders.has(referrer)){
+            uniqueTraders.add(referrer)
+          } 
+        })
         const uniqueReferrers = Array.from(uniqueTraders).concat(['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
+
         try {
           await Promise.all(
             uniqueReferrers.map(async (referrer: any) => {
@@ -566,9 +576,7 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log('collectData', vaultDataByAddress, calculateTimeWeightedDeposits(vaultDataByAddress),timeWeightedDeposits,
-    tradeProcessedByTrader,
-    collectData, lpPositionsByUniqueLps)
+  console.log('collectData', refereeActivity, codeUserPerReferrer?.["0xCb45B819E881fA7a5946B6b8f92A5576faa5a3Bb"])
   return useMemo(() => {
     return {
       tradeProcessedByTrader,

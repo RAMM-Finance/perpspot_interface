@@ -195,3 +195,12 @@ export const WithdrawVaultQuery = `
     }
   }
 `
+
+export const RegisterQuery = `
+  query {
+    registerCodes {
+      blockTimestamp
+      account
+    }
+  }
+`
