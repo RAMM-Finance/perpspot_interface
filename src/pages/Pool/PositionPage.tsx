@@ -588,7 +588,9 @@ export function PositionPage() {
       !lmtPositionManager ||
       !account ||
       !tokenId ||
-      !provider
+      !provider ||
+      !feeValue1|| 
+      !feeValue0
     )
       return
     // setAttemptingTxn(true)
@@ -616,8 +618,8 @@ export function PositionPage() {
           type: TransactionType.COLLECT_FEES,
           currencyId0: currencyId(currency0ForFeeCollectionPurposes),
           currencyId1: currencyId(currency1ForFeeCollectionPurposes),
-          expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(currency0ForFeeCollectionPurposes, 0).toExact(),
-          expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(currency1ForFeeCollectionPurposes, 0).toExact(),
+          expectedCurrencyOwed0: feeValue0?.multiply(10**feeValue0?.currency.decimals).toExact(),
+          expectedCurrencyOwed1: feeValue1?.multiply(10**feeValue1?.currency.decimals).toExact(),
         })
 
         return response.hash
@@ -653,7 +655,9 @@ export function PositionPage() {
       !positionManager ||
       !account ||
       !tokenId ||
-      !provider
+      !provider || 
+      !feeValue1 ||
+      !feeValue0 
     )
       return
 
@@ -700,8 +704,8 @@ export function PositionPage() {
               type: TransactionType.COLLECT_FEES,
               currencyId0: currencyId(currency0ForFeeCollectionPurposes),
               currencyId1: currencyId(currency1ForFeeCollectionPurposes),
-              expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(currency0ForFeeCollectionPurposes, 0).toExact(),
-              expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(currency1ForFeeCollectionPurposes, 0).toExact(),
+              expectedCurrencyOwed0: feeValue0.toExact(),
+              expectedCurrencyOwed1: feeValue1.toExact(),
             })
           })
       })
@@ -721,7 +725,7 @@ export function PositionPage() {
     addTransaction,
     provider,
   ])
-
+ 
   // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
