@@ -6,7 +6,7 @@ import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
@@ -65,11 +65,14 @@ export function PoolStatsSection({
     // }
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
+
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
 
   const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
+
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)
+
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
     poolAddress ?? undefined,
   ])
@@ -90,7 +93,7 @@ export function PoolStatsSection({
     },
     {
       keepPreviousData: true,
-      refetchInterval: 1000 * 5,
+      refetchInterval: 1000 * 3,
     }
   )
 
@@ -106,32 +109,16 @@ export function PoolStatsSection({
       }
     }
 
-    let price = token0Price.lt(1) ? new BN(1).div(token0Price) : token0Price
-    const invertPrice = price.lt(1)
-    // if (
-    //   pool.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
-    //   pool.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
-    // )
-    //   invertPrice = false
-    let delta
-    let price24hHigh
-    let price24hLow
-    let price24hAgo
-    if (invertPrice) {
-      price = new BN(1).div(price)
-      price24hAgo = new BN(1).div(priceData.price24hAgo)
-      delta = price.minus(price24hAgo).div(price).times(100)
-      price24hHigh = new BN(1).div(priceData.low24)
-      price24hLow = new BN(1).div(priceData.high24)
-    } else {
-      price24hAgo = priceData.price24hAgo
-      delta = price.minus(priceData.price24hAgo).div(price).times(100)
-      price24hHigh = priceData.high24
-      price24hLow = priceData.low24
-    }
+    const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
+    const price = invertPrice ? new BN(1).div(token0Price) : token0Price
+
+    // const price24hAgo = priceData.price24hAgo
+    const delta = price.minus(priceData.price24hAgo).div(price).times(100)
+    const price24hHigh = priceData.high24
+    const price24hLow = priceData.low24
     // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
-  }, [pool, priceData, poolData, token0Price])
+  }, [pool, priceData, poolData, token0Price, chainId])
 
   const baseQuoteSymbol = invertPrice
     ? currency1?.symbol + '/' + currency0?.symbol
@@ -150,7 +137,7 @@ export function PoolStatsSection({
             <Trans>Oracle Price</Trans>
           </ThemedText.BodySmall>
         }
-        loading={false}
+        loading={loading}
       />
       <Stat
         dataCy="delta-24h"

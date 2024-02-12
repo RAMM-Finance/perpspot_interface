@@ -55,7 +55,7 @@ const configurationData = {
   session: '24x7',
   timezone: 'Etc/UTC',
   minmov: 1,
-  pricescale: 1000, // Adjust as needed
+  pricescale: 10000, // Adjust as needed
   has_intraday: true,
   intraday_multipliers: ['1', '5', '15', '30', '60'],
   has_empty_bars: false,
@@ -155,7 +155,7 @@ export function useBitQueryDataFeed() {
             ticker: baseSymbol + '/' + quoteSymbol,
             session: '24x7',
             minmov: 1,
-            pricescale: 100,
+            pricescale: 10000,
             timezone: 'Etc/UTC',
             has_intraday: true,
             has_daily: true,

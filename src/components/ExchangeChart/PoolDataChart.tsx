@@ -81,6 +81,7 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         description: 'https://www.geckoterminal.com/',
         custom_css_url: defaultChartProps.custom_css_url,
         autosize: true,
+        fullscreen: false,
         overrides: {
           ...defaultChartProps.overrides,
         },

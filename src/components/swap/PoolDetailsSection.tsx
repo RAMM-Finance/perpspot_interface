@@ -14,7 +14,8 @@ import PoolSelect from './PoolSelect'
 import { PostionsContainer } from './PostionsContainer'
 
 const Container = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
   width: 100%;
   justify-content: flex-start;
   align-content: center;
@@ -31,7 +32,7 @@ const RightContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 0.25rem;
-  width: 420px;
+  width: 100%;
   height: 100%;
 `
 

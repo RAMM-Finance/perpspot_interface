@@ -16,6 +16,28 @@ export const V2_ROUTER_ADDRESS: AddressMap = {
   [SupportedChainId.SEPOLIA]: '0x1BF285B11bb43690575A7114A08D681070C15aFE',
 }
 
+export const isWeth = (address: string, chainId?: number) => {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+  }
+  return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+}
+
+export const isUSDC = (address: string, chainId?: number) => {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return address.toLowerCase() === '0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase()
+  }
+  return address.toLowerCase() === '0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase()
+}
+
+export const getInvertPrice = (token0: string, token1: string, chainId?: number) => {
+  if (isWeth(token0, chainId) && !isUSDC(token1, chainId)) {
+    return true
+  } else if (isUSDC(token0, chainId)) {
+    return true
+  }
+  return false
+}
 
 // Utils deployed 0x51bCba8401b67FdBdA655544A346eA79107F6ef6
 // PremiumComputer deployed 0xfa4B55Cb40b703674e4922e575D9A932919A09A5
@@ -87,7 +109,7 @@ export const LMT_REFERRAL: AddressMap = {
 
 export const LMT_VAULT: AddressMap = {
   // [SupportedChainId.ARBITRUM_ONE]: '0x21DA443916C869909f21BdCc2d5B00410eb5A113',
-  [SupportedChainId.ARBITRUM_ONE]: '0xE0Cb6C672Bc20314e1BA33b3F780f1567c48c93a'
+  [SupportedChainId.ARBITRUM_ONE]: '0xE0Cb6C672Bc20314e1BA33b3F780f1567c48c93a',
 }
 export const LMT_VAULT_MANAGER: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0xd5328446304530679d960F09fA7673464171c7cE',

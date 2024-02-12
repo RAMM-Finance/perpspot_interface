@@ -17,9 +17,9 @@ export default async function getToken0Price(address: string, token0Decimals: nu
     return rawPrice
   } else {
     if (token0Decimals > token1Decimals) {
-      return rawPrice.shiftedBy(10 ** (token0Decimals - token1Decimals))
+      return rawPrice.shiftedBy(token0Decimals - token1Decimals)
     } else {
-      return rawPrice.shiftedBy(10 ** (token0Decimals - token1Decimals))
+      return rawPrice.shiftedBy(token0Decimals - token1Decimals)
     }
   }
 }

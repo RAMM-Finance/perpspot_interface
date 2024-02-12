@@ -9,7 +9,8 @@ const formatEndpoint = (address: string, currency: string, token: 'base' | 'quot
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}&x_cg_pro_api_key=${process.env.REACT_APP_GECKO_API_KEY}`
 }
 const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
-
+// 0x0be4ac7da6cd4bad60d96fbc6d091e1098afa358
+// 0x0E4831319A50228B9e450861297aB92dee15B44F
 // const getQuery = (baseAddress: string, quoteAddress: string): string => {
 //   return `
 //   {
@@ -36,6 +37,7 @@ const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
 // const endpoint = 'https://streaming.bitquery.io/graphql'
 
+// fetches 24h OHLCV data, in base token.
 export function useLatestPoolPriceData(
   // address: string | undefined | null,
   // baseAddress: string | undefined,
@@ -55,14 +57,21 @@ export function useLatestPoolPriceData(
   const { data } = useQuery(
     ['poolPriceData', poolAddress],
     async () => {
-      // console.log('useLatestPoolPriceData', poolAddress)
+      console.log('useLatestPoolPriceData', poolAddress)
       if (!poolAddress) return null
       try {
-        const response = await axios.get(formatEndpoint(poolAddress.toLocaleLowerCase(), 'token', 'quote'), {
-          headers: {
-            Accept: 'application/json',
-          },
-        })
+        const response = await axios.get(
+          formatEndpoint(
+            poolAddress.toLocaleLowerCase(),
+            'token',
+            poolAddress.toLowerCase() === '0x0e4831319a50228b9e450861297ab92dee15b44f'.toLowerCase() ? 'quote' : 'base'
+          ),
+          {
+            headers: {
+              Accept: 'application/json',
+            },
+          }
+        )
         if (response.status === 200) {
           return response.data.data.attributes.ohlcv_list
         }

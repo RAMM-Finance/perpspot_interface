@@ -180,12 +180,12 @@ export function useBulkBinData(
       roundedCurrentTick - lookback,
       roundedCurrentTick + lookback,
     ]
-    console.log('params???', params)
+    // console.log('params???', params)
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
   }, [pool, tickDiscretization])
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   return useMemo(() => {
-    if (!result) {
+    if (!result || !pool) {
       return {
         result: undefined,
         loading,
@@ -194,14 +194,25 @@ export function useBulkBinData(
       }
     } else {
       const parsed: BinData[] = DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
+      const token0Decimals = pool?.token0.decimals
+      const token1Decimals = pool?.token1.decimals
+      const processed = parsed.map((bin) => {
+        return {
+          price: new BN(bin.price.toString()).shiftedBy(-18),
+          token0Liquidity: new BN(bin.token0Liquidity.toString()).shiftedBy(-token0Decimals),
+          token1Liquidity: new BN(bin.token1Liquidity.toString()).shiftedBy(-token1Decimals),
+          token0Borrowed: new BN(bin.token0Borrowed.toString()).shiftedBy(-token0Decimals),
+          token1Borrowed: new BN(bin.token1Borrowed.toString()).shiftedBy(-token1Decimals),
+        }
+      })
       return {
-        result: parsed,
+        result: processed,
         loading,
         error,
         syncing,
       }
     }
-  }, [result, loading, error, syncing])
+  }, [result, loading, error, syncing, pool])
 
   // const dataProvider = useDataProviderContract()
   // const blockNumber = useBlockNumber()
@@ -919,11 +930,11 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
 }
 
 export interface BinData {
-  price: string
-  token0Liquidity: string
-  token1Liquidity: string
-  token0Borrowed: string
-  token1Borrowed: string
+  price: BN
+  token0Liquidity: BN
+  token1Liquidity: BN
+  token0Borrowed: BN
+  token1Borrowed: BN
 }
 export interface BinDatas {
   data: BinData[] | undefined

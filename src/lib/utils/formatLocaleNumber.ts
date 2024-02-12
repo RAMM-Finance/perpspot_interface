@@ -49,8 +49,19 @@ export function formatBNToString(
   isPrice?: boolean,
   placeholder = ''
 ): string {
+  if (n === undefined) return placeholder
+  if (n.isNaN()) return placeholder
+  // if (isPrice) {
+  //   if (n.lt(0.0001)) {
+  //     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 7, minimumFractionDigits: 5 }).format(n.toNumber())
+  //   } else if (n.lt(1)) {
+  //     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6, minimumFractionDigits: 3 }).format(n.toNumber())
+  //   } else {
+  //     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(n.toNumber())
+  //   }
+  // }
   if (isPrice) {
-    return n ? (!n.isNaN() ? formatNumberOrString(n?.toNumber(), type).split('$').join('') : placeholder) : placeholder
+    return formatNumberOrString(n?.toNumber(), type).split('$').join('')
   }
-  return n ? (!n.isNaN() ? formatNumberOrString(n?.toNumber(), type) : placeholder) : placeholder
+  return formatNumberOrString(n.toNumber(), type)
 }

@@ -4,12 +4,14 @@ import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import getToken0Price from 'lib/utils/getCurrentPrice'
 import { useMemo } from 'react'
+import { useQuery } from 'react-query'
 import { Field } from 'state/swap/actions'
 import { useSwapState } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
@@ -86,48 +88,32 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
     })
   }, [chainId, pool])
   const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
-
-  const currentPricePool = useMemo(() => {
-    if (!pool || priceData) return undefined
-    const token0 = pool.token0
-    const token1 = pool.token1
-    let price = new BN(Number(pool.token0Price.quotient.toString()))
-    if (price.toString() == '0') price = new BN(Number(pool.token1Price.quotient.toString()))
-    if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-      return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
-    } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-      return new BN(1).div(price.div(new BN(10 ** (token0?.wrapped.decimals - token1?.wrapped.decimals))))
-    } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-      return price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals)))
-    } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'ARB') {
-      return price
-    } else if (token0?.wrapped.symbol === 'LDO' && token1?.wrapped.symbol === 'WETH') {
-      return price
-    } else {
-      return new BN(1).div(price.div(new BN(10 ** (token1?.wrapped.decimals - token0?.wrapped.decimals))))
+  const token0Decimals = pool?.token0?.decimals
+  const token1Decimals = pool?.token1?.decimals
+  const { data: token0Price } = useQuery(
+    ['currentPrice', poolAddress, token0Decimals, token1Decimals],
+    async () => {
+      if (!poolAddress) throw new Error('No pool address')
+      if (!token1Decimals) throw new Error('No token1 decimals')
+      if (!token0Decimals) throw new Error('No token0 decimals')
+      return await getToken0Price(poolAddress, token0Decimals, token1Decimals)
+    },
+    {
+      keepPreviousData: true,
+      refetchInterval: 1000 * 5,
     }
-  }, [priceData, pool])
+  )
 
-  const [currPrice, delta] = useMemo(() => {
-    if (!priceData) return [undefined, undefined]
-    let price = priceData.priceNow
-    let invertPrice = false //price.lt(1)
-    if (
-      pool?.token0.address.toLowerCase() == '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f'.toLowerCase() &&
-      pool?.token1.address.toLowerCase() == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
-    )
-      invertPrice = false
+  const [currentPrice, delta] = useMemo(() => {
+    if (!priceData || !pool || !token0Price) return [undefined, undefined]
 
-    let delt
-    const price24hAgo = new BN(1).div(priceData.price24hAgo)
-    if (invertPrice) {
-      price = new BN(1).div(price)
-      delt = price.minus(price24hAgo).div(price).times(100)
-    } else {
-      delt = price.minus(priceData.price24hAgo).div(price).times(100)
-    }
+    const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
+    const price = invertPrice ? new BN(1).div(token0Price) : token0Price
+
+    const price24hAgo = priceData.price24hAgo
+    const delt = price.minus(price24hAgo).div(price).times(100)
     return [price, delt]
-  }, [priceData, pool])
+  }, [chainId, priceData, pool, token0Price])
 
   return (
     <Container
@@ -154,9 +140,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
           {delta ? formatBNToString(delta?.abs() ?? undefined, NumberType.TokenNonTx) + '%' : '-'}
         </DeltaText>
       </ThemedText.BodySmall>
-      <ThemedText.BodySmall>
-        {formatBNToString(currPrice ?? currentPricePool, NumberType.TokenNonTx)}
-      </ThemedText.BodySmall>
+      <ThemedText.BodySmall>{formatBNToString(currentPrice, NumberType.FiatTokenPrice, true)}</ThemedText.BodySmall>
     </Container>
   )
 }

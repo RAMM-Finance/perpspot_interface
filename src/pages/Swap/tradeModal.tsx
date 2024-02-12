@@ -525,6 +525,7 @@ const TradeTabContent = () => {
   }, [baseCurrencyIsInputToken, pool, currencies])
 
   // const deadline = useTransactionDeadline()
+
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal

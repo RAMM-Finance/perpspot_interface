@@ -1,4 +1,5 @@
 // import { ARBITRUM, AVALANCHE } from "config/chains";
+
 import { formatTVDate, formatTVTime } from './dateFormatters'
 
 const RED = '#fa3c58'
@@ -50,6 +51,30 @@ const chartOverrides = {
 
 export const disabledFeaturesOnMobile = ['header_saveload', 'header_fullscreen_button']
 
+// const disabledFeatures = [
+//   'volume_force_overlay',
+//   'show_logo_on_all_charts',
+//   'caption_buttons_text_if_possible',
+//   'create_volume_indicator_by_default',
+//   'header_compare',
+//   'compare_symbol',
+//   'display_market_status',
+//   'header_interval_dialog_button',
+//   'show_interval_dialog_on_key_press',
+//   'header_symbol_search',
+//   'popup_hints',
+//   'header_in_fullscreen_mode',
+//   'use_localstorage_for_settings',
+//   'right_bar_stays_on_scroll',
+//   'symbol_info',
+// ]
+// const enabledFeatures = [
+//   'side_toolbar_in_fullscreen_mode',
+//   'header_in_fullscreen_mode',
+//   'hide_resolution_in_legend',
+//   'items_favoriting',
+//   'hide_left_toolbar_by_default',
+// ]
 const disabledFeatures = [
   'volume_force_overlay',
   'show_logo_on_all_charts',
@@ -98,6 +123,34 @@ export const defaultChartProps = {
     },
     dateFormatter: {
       format: (date: any) => formatTVDate(date),
+    },
+    priceFormatterFactory: (symbolInfo: any, minTick: any) => {
+      if (symbolInfo === null) {
+        return null
+      }
+      return {
+        format: (price: any, signPositive: any) => {
+          if (price < 0.0001) {
+            return new Intl.NumberFormat('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 9,
+            }).format(price)
+          } else if (price < 1) {
+            return new Intl.NumberFormat('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 8,
+            }).format(price)
+          } else {
+            return new Intl.NumberFormat('en-US', {
+              maximumFractionDigits: 2,
+            }).format(price)
+          }
+        },
+      }
+      // if (symbolInfo.format === 'minmov') {
+
+      // }
+      // return null // The default formatter will be used.
     },
   },
 }
