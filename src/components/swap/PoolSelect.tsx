@@ -222,7 +222,7 @@ export default function PoolSelect({
     },
     {
       keepPreviousData: true,
-      refetchInterval: 1000 * 5,
+      refetchInterval: 1000 * 20,
     }
   )
 

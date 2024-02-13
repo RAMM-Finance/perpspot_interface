@@ -93,7 +93,7 @@ export function PoolStatsSection({
     },
     {
       keepPreviousData: true,
-      refetchInterval: 1000 * 3,
+      refetchInterval: 1000 * 20,
     }
   )
 

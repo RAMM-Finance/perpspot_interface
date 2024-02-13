@@ -100,7 +100,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
     },
     {
       keepPreviousData: true,
-      refetchInterval: 1000 * 5,
+      refetchInterval: 1000 * 20,
     }
   )
 
