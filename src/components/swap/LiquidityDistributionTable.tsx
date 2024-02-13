@@ -1,5 +1,6 @@
 import { NumberType } from '@uniswap/conedison/format'
 import { computePoolAddress } from '@uniswap/v3-sdk'
+import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -54,13 +55,15 @@ const LiquidityDistributionTable = ({
 
   const token0Decimals = token0?.wrapped.decimals
   const token1Decimals = token1?.wrapped.decimals
+  const { provider } = useWeb3React()
   const { data: token0Price } = useQuery(
     ['currentPrice', poolAddress, token0Decimals, token1Decimals],
     async () => {
       if (!poolAddress) throw new Error('No pool address')
       if (!token1Decimals) throw new Error('No token1 decimals')
       if (!token0Decimals) throw new Error('No token0 decimals')
-      return await getToken0Price(poolAddress, token0Decimals, token1Decimals)
+      if (!provider) throw new Error('No provider')
+      return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
     },
     {
       keepPreviousData: true,
