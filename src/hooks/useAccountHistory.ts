@@ -71,6 +71,12 @@ export function useHistoryData(address:any){
             pools.add(entry.pool)
           }
         })
+        ReduceQueryData?.data.marginPositionReduceds.forEach((entry: any) => {
+          if (!pools.has(entry.pool)) {
+            pools.add(entry.pool)
+          }
+        })
+        
         forceCloseFiltered.forEach((entry: any) => {
           if (!pools.has(entry.pool)) {
             pools.add(entry.pool)

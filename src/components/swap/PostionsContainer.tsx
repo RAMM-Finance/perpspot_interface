@@ -1,4 +1,5 @@
 import { OrdersTable } from 'components/OrdersTable/TokenTable'
+import {PremiumTable} from 'components/OrdersTable/PremiumTable'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TabContent, TabNavItem } from 'components/Tabs'
 import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
@@ -82,9 +83,13 @@ export function PostionsContainer({
           {/*<TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             History
           </TabNavItem>*/}
+          <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+            Unclaimed Premiums 
+          </TabNavItem>
           <TabNavItem id={4} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             Activities
           </TabNavItem>
+
         </TabsWrapper>
         {/* {activePositionTable === 1 && <LeverageSearchBar />} */}
       </TableHeader>
@@ -94,6 +99,10 @@ export function PostionsContainer({
       <TabContent id={2} activeTab={activePositionTable}>
         <OrdersTable orders={orders} loading={loadingOrders} />
       </TabContent>
+      <TabContent id={3} activeTab={activePositionTable}>
+        <PremiumTable orders={orders} loading={loadingOrders} />
+      </TabContent>
+
       {/*<TabContent id={3} activeTab={activePositionTable}>
         {!account ? (
           <ActivityWrapper>
