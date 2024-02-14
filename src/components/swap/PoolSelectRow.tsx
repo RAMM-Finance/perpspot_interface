@@ -89,6 +89,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
     })
   }, [chainId, pool])
   const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
+  // const priceData = undefined as any
   const token0Decimals = pool?.token0?.decimals
   const token1Decimals = pool?.token1?.decimals
   const { provider } = useWeb3React()

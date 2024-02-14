@@ -6,7 +6,7 @@ import { useQuery } from 'react-query'
 // const client = new GraphQLClient('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3')
 
 const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote') => {
-  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}&x_cg_pro_api_key=${process.env.REACT_APP_GECKO_API_KEY}`
+  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
 }
 const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 // 0x0be4ac7da6cd4bad60d96fbc6d091e1098afa358
@@ -58,8 +58,9 @@ export function useLatestPoolPriceData(
     ['poolPriceData', poolAddress],
     async () => {
       console.log('useLatestPoolPriceData', poolAddress)
-      if (!poolAddress) return null
+      if (!poolAddress) throw new Error('No pool address')
       try {
+        if (!process.env.REACT_APP_GECKO_API_KEY) throw new Error('missing key')
         const response = await axios.get(
           formatEndpoint(
             poolAddress.toLocaleLowerCase(),
@@ -69,6 +70,7 @@ export function useLatestPoolPriceData(
           {
             headers: {
               Accept: 'application/json',
+              'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
             },
           }
         )
@@ -83,7 +85,7 @@ export function useLatestPoolPriceData(
     },
     {
       enabled: !!poolAddress,
-      refetchInterval: 1000 * 5,
+      refetchInterval: 1000 * 20,
       keepPreviousData: true,
     }
   )
