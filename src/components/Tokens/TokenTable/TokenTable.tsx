@@ -1,18 +1,23 @@
+import { Trans } from '@lingui/macro'
+import { MouseoverTooltip } from 'components/Tooltip'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { validateUrlChainParam } from 'graphql/data/util'
 import useAllPoolKeys from 'hooks/useAllPoolKeys'
 import { usePoolsData } from 'hooks/useLMTPools'
 import useVaultBalance from 'hooks/useVaultBalance'
-import { ReactNode, useMemo } from 'react'
+import { atom, useAtom } from 'jotai'
+import { useAtomValue } from 'jotai/utils'
+import { ReactNode, useCallback, useMemo } from 'react'
+import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { useParams } from 'react-router-dom'
-import styled from 'styled-components/macro'
+import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
-import { PHeaderRow, PLoadedRow } from './PairsRow'
+import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
 
 const GridContainer = styled.div`
@@ -91,50 +96,113 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
     </GridContainer>
   )
 }
+enum TokenSortMethod {
+  PRICE = 'Price',
+  PERCENT_CHANGE = 'Change',
+  TOTAL_VALUE_LOCKED = 'TVL',
+  VOLUME = 'Volume',
+  APR = 'Est APR',
+  URate = 'Util Rate',
+}
 
-// export default function TokenTable() {
-//   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
-//   const { tokens, tokenSortRank, loadingTokens, sparklines } = useTopTokens(chainName)
+const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
+const sortAscendingAtom = atom<boolean>(false)
+console.log(sortAscendingAtom)
 
-//   /* loading and error state */
-//   if (loadingTokens && !tokens) {
-//     return <LoadingTokenTable rowCount={PAGE_SIZE} />
-//   } else if (!tokens) {
-//     return (
-//       <NoTokensState
-//         message={
-//           <>
-//             <AlertTriangle size={16} />
-//             <Trans>An error occurred loading tokens. Please try again.</Trans>
-//           </>
-//         }
-//       />
-//     )
-//   } else if (tokens?.length === 0) {
-//     return <NoTokensState message={<Trans>No tokens found</Trans>} />
-//   } else {
-//     return (
-//       <GridContainer>
-//         <HeaderRow />
-//         <TokenDataContainer>
-//           {tokens.map(
-//             (token, index) =>
-//               token?.address && (
-//                 <LoadedRow
-//                   key={token.address}
-//                   tokenListIndex={index}
-//                   tokenListLength={tokens.length}
-//                   token={token}
-//                   sparklineMap={sparklines}
-//                   sortRank={tokenSortRank[token.address]}
-//                 />
-//               )
-//           )}
-//         </TokenDataContainer>
-//       </GridContainer>
-//     )
-//   }
-// }
+/* keep track of sort category for token table */
+function useSetSortMethod(newSortMethod: TokenSortMethod) {
+  const [sortMethod, setSortMethod] = useAtom(sortMethodAtom)
+  const [sortAscending, setSortAscending] = useAtom(sortAscendingAtom)
+
+  return useCallback(() => {
+    if (sortMethod === newSortMethod) {
+      setSortAscending(!sortAscending)
+    } else {
+      setSortMethod(newSortMethod)
+      setSortAscending(false)
+    }
+  }, [sortMethod, setSortMethod, setSortAscending, sortAscending, newSortMethod])
+}
+
+const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
+  [TokenSortMethod.PRICE]: undefined,
+  [TokenSortMethod.PERCENT_CHANGE]: undefined,
+  [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
+    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
+  ),
+  [TokenSortMethod.VOLUME]: (
+    <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
+  ),
+  [TokenSortMethod.APR]: (
+    <Trans>
+      Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
+      liquidity between 90% and 110% of current price
+    </Trans>
+  ),
+  [TokenSortMethod.URate]: (
+    <Trans>
+      Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
+      APR.
+    </Trans>
+  ),
+}
+
+// price, TVL, volume, util rate, expected apr
+
+/* Get singular header cell for header row */
+function HeaderCell({
+  category,
+}: {
+  category: TokenSortMethod // TODO: change this to make it work for trans
+}) {
+  const theme = useTheme()
+  const sortAscending = useAtomValue(sortAscendingAtom)
+  const handleSortCategory = useSetSortMethod(category)
+  const sortMethod = useAtomValue(sortMethodAtom)
+
+  const description = HEADER_DESCRIPTIONS[category]
+
+  return (
+    <HeaderCellWrapper onClick={handleSortCategory}>
+      {sortMethod === category && (
+        <>
+          {sortAscending ? (
+            <ArrowUp size={12} strokeWidth={1.8} color={theme.accentActive} />
+          ) : (
+            <ArrowDown size={12} strokeWidth={1.8} color={theme.accentActive} />
+          )}
+        </>
+      )}
+      {category}
+      {description && (
+        <MouseoverTooltip text={description} placement="right">
+          <InfoIconContainer>
+            <Info size={14} />
+          </InfoIconContainer>
+        </MouseoverTooltip>
+      )}
+    </HeaderCellWrapper>
+  )
+}
+
+function PHeaderRow() {
+  return (
+    <TokenRow
+      header={true}
+      listNumber=""
+      tokenInfo={<Trans>Pair</Trans>}
+      price={<HeaderCell category={TokenSortMethod.PRICE} />}
+      percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
+      tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
+      volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
+      APR={<HeaderCell category={TokenSortMethod.APR} />}
+      UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
+      // volume={<HeaderCell category={""} />}
+
+      sparkLine={null}
+    />
+  )
+}
 
 export default function TokenTable() {
   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
@@ -199,7 +267,7 @@ export default function TokenTable() {
           <PHeaderRow />
           <TokenDataContainer>
             {dataInfo &&
-              dataInfo.map((dat: any) => (
+              dataInfo.map((dat: any, i: number) => (
                 <PLoadedRow
                   key={`${dat.token0}-${dat.token1}-${dat.fee}`}
                   tokenListIndex={1}
@@ -275,7 +343,7 @@ function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume+30000, digits: 1 }) : '0'}
+          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 30000, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

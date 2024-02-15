@@ -2,15 +2,10 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { MouseoverTooltip } from 'components/Tooltip'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
-import { TimePeriod } from 'graphql/data/util'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { atom, useAtom } from 'jotai'
-import { useAtomValue } from 'jotai/utils'
-import { atomWithReset } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -18,11 +13,10 @@ import {
   useCallback,
   //useEffect, useMemo, useState
 } from 'react'
-import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
-import styled, { css, useTheme } from 'styled-components/macro'
+import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
@@ -224,7 +218,7 @@ const PriceInfoCell = styled(Cell)`
   }
 `
 
-const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
+export const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   align-items: center;
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
   display: flex;
@@ -320,104 +314,104 @@ export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
   height: 4px;
 `
 
-const InfoIconContainer = styled.div`
+export const InfoIconContainer = styled.div`
   margin-left: 2px;
   display: flex;
   align-items: center;
   cursor: help;
 `
-enum TokenSortMethod {
-  PRICE = 'Price',
-  PERCENT_CHANGE = 'Change',
-  TOTAL_VALUE_LOCKED = 'TVL',
-  VOLUME = 'Volume',
-  APR = 'Est APR',
-  URate = 'Util Rate',
-}
+// enum TokenSortMethod {
+//   PRICE = 'Price',
+//   PERCENT_CHANGE = 'Change',
+//   TOTAL_VALUE_LOCKED = 'TVL',
+//   VOLUME = 'Volume',
+//   APR = 'Est APR',
+//   URate = 'Util Rate',
+// }
 
-export const filterStringAtom = atomWithReset<string>('')
-export const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
-export const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.VOLUME)
-export const sortAscendingAtom = atom<boolean>(false)
+// const filterStringAtom = atomWithReset<string>('')
+// const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
+// const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
+// const sortAscendingAtom = atom<boolean>(false)
 
-/* keep track of sort category for token table */
-export function useSetSortMethod(newSortMethod: TokenSortMethod) {
-  const [sortMethod, setSortMethod] = useAtom(sortMethodAtom)
-  const [sortAscending, setSortAscending] = useAtom(sortAscendingAtom)
+// /* keep track of sort category for token table */
+// function useSetSortMethod(newSortMethod: TokenSortMethod) {
+//   const [sortMethod, setSortMethod] = useAtom(sortMethodAtom)
+//   const [sortAscending, setSortAscending] = useAtom(sortAscendingAtom)
 
-  return useCallback(() => {
-    if (sortMethod === newSortMethod) {
-      setSortAscending(!sortAscending)
-    } else {
-      setSortMethod(newSortMethod)
-      setSortAscending(false)
-    }
-  }, [sortMethod, setSortMethod, setSortAscending, sortAscending, newSortMethod])
-}
+//   return useCallback(() => {
+//     if (sortMethod === newSortMethod) {
+//       setSortAscending(!sortAscending)
+//     } else {
+//       setSortMethod(newSortMethod)
+//       setSortAscending(false)
+//     }
+//   }, [sortMethod, setSortMethod, setSortAscending, sortAscending, newSortMethod])
+// }
 
-export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
-  [TokenSortMethod.PRICE]: undefined,
-  [TokenSortMethod.PERCENT_CHANGE]: undefined,
-  [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
-  ),
-  [TokenSortMethod.VOLUME]: (
-    <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
-  ),
-  [TokenSortMethod.APR]: (
-    <Trans>
-      Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
-      liquidity between 90% and 110% of current price
-    </Trans>
-  ),
-  [TokenSortMethod.URate]: (
-    <Trans>
-      Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
-      APR.
-    </Trans>
-  ),
-}
+// const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
+//   [TokenSortMethod.PRICE]: undefined,
+//   [TokenSortMethod.PERCENT_CHANGE]: undefined,
+//   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
+//     <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
+//   ),
+//   [TokenSortMethod.VOLUME]: (
+//     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
+//   ),
+//   [TokenSortMethod.APR]: (
+//     <Trans>
+//       Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
+//       liquidity between 90% and 110% of current price
+//     </Trans>
+//   ),
+//   [TokenSortMethod.URate]: (
+//     <Trans>
+//       Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
+//       APR.
+//     </Trans>
+//   ),
+// }
 
 // price, TVL, volume, util rate, expected apr
 
 /* Get singular header cell for header row */
-function HeaderCell({
-  category,
-}: {
-  category: TokenSortMethod // TODO: change this to make it work for trans
-}) {
-  const theme = useTheme()
-  const sortAscending = useAtomValue(sortAscendingAtom)
-  const handleSortCategory = useSetSortMethod(category)
-  const sortMethod = useAtomValue(sortMethodAtom)
+// function HeaderCell({
+//   category,
+// }: {
+//   category: TokenSortMethod // TODO: change this to make it work for trans
+// }) {
+//   const theme = useTheme()
+//   const sortAscending = useAtomValue(sortAscendingAtom)
+//   const handleSortCategory = useSetSortMethod(category)
+//   const sortMethod = useAtomValue(sortMethodAtom)
 
-  const description = HEADER_DESCRIPTIONS[category]
+//   const description = HEADER_DESCRIPTIONS[category]
 
-  return (
-    <HeaderCellWrapper onClick={handleSortCategory}>
-      {sortMethod === category && (
-        <>
-          {sortAscending ? (
-            <ArrowUp size={12} strokeWidth={1.8} color={theme.accentActive} />
-          ) : (
-            <ArrowDown size={12} strokeWidth={1.8} color={theme.accentActive} />
-          )}
-        </>
-      )}
-      {category}
-      {description && (
-        <MouseoverTooltip text={description} placement="right">
-          <InfoIconContainer>
-            <Info size={14} />
-          </InfoIconContainer>
-        </MouseoverTooltip>
-      )}
-    </HeaderCellWrapper>
-  )
-}
+//   return (
+//     <HeaderCellWrapper onClick={handleSortCategory}>
+//       {sortMethod === category && (
+//         <>
+//           {sortAscending ? (
+//             <ArrowUp size={12} strokeWidth={1.8} color={theme.accentActive} />
+//           ) : (
+//             <ArrowDown size={12} strokeWidth={1.8} color={theme.accentActive} />
+//           )}
+//         </>
+//       )}
+//       {category}
+//       {description && (
+//         <MouseoverTooltip text={description} placement="right">
+//           <InfoIconContainer>
+//             <Info size={14} />
+//           </InfoIconContainer>
+//         </MouseoverTooltip>
+//       )}
+//     </HeaderCellWrapper>
+//   )
+// }
 
 /* Token Row: skeleton row component */
-function TokenRow({
+export function TokenRow({
   header,
   listNumber,
   tokenInfo,
@@ -527,49 +521,49 @@ function TokenRow({
 }
 
 /* Header Row: top header row component for table */
-export function PHeaderRow() {
-  return (
-    <TokenRow
-      header={true}
-      listNumber=""
-      tokenInfo={<Trans>Pair</Trans>}
-      price={<HeaderCell category={TokenSortMethod.PRICE} />}
-      percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
-      tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
-      volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
-      APR={<HeaderCell category={TokenSortMethod.APR} />}
-      UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
-      // volume={<HeaderCell category={""} />}
+// export function PHeaderRow() {
+//   return (
+//     <TokenRow
+//       header={true}
+//       listNumber=""
+//       tokenInfo={<Trans>Pair</Trans>}
+//       price={<HeaderCell category={TokenSortMethod.PRICE} />}
+//       percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
+//       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
+//       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
+//       APR={<HeaderCell category={TokenSortMethod.APR} />}
+//       UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
+//       // volume={<HeaderCell category={""} />}
 
-      sparkLine={null}
-    />
-  )
-}
+//       sparkLine={null}
+//     />
+//   )
+// }
 
-/* Loading State: row component with loading bubbles */
-export function PLoadingRow(props: { first?: boolean; last?: boolean }) {
-  return (
-    <TokenRow
-      header={false}
-      listNumber={<SmallLoadingBubble />}
-      loading
-      tokenInfo={
-        <>
-          <IconLoadingBubble />
-          <MediumLoadingBubble />
-        </>
-      }
-      price={<MediumLoadingBubble />}
-      percentChange={<LoadingBubble />}
-      tvl={<LoadingBubble />}
-      volume={<LoadingBubble />}
-      APR={<LoadingBubble />}
-      UtilRate={<LoadingBubble />}
-      sparkLine={<SparkLineLoadingBubble />}
-      {...props}
-    />
-  )
-}
+// /* Loading State: row component with loading bubbles */
+// export function PLoadingRow(props: { first?: boolean; last?: boolean }) {
+//   return (
+//     <TokenRow
+//       header={false}
+//       listNumber={<SmallLoadingBubble />}
+//       loading
+//       tokenInfo={
+//         <>
+//           <IconLoadingBubble />
+//           <MediumLoadingBubble />
+//         </>
+//       }
+//       price={<MediumLoadingBubble />}
+//       percentChange={<LoadingBubble />}
+//       tvl={<LoadingBubble />}
+//       volume={<LoadingBubble />}
+//       APR={<LoadingBubble />}
+//       UtilRate={<LoadingBubble />}
+//       sparkLine={<SparkLineLoadingBubble />}
+//       {...props}
+//     />
+//   )
+// }
 
 interface LoadedRowProps {
   tokenListIndex: number
@@ -587,11 +581,11 @@ interface LoadedRowProps {
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume, fee } = props
-  const filterString = useAtomValue(filterStringAtom)
+  // const filterString = useAtomValue(filterStringAtom)
 
   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
   const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
-  const timePeriod = useAtomValue(filterTimeAtom)
+  // const timePeriod = useAtomValue(filterTimeAtom)
   const delta = 0 //token.market?.pricePercentChange?.value
   const arrow = getDeltaArrow(delta)
   const smallArrow = getDeltaArrow(delta, 14)
@@ -607,8 +601,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     token_list_index: tokenListIndex,
     // token_list_rank: sortRank,
     token_list_length: tokenListLength,
-    time_frame: timePeriod,
-    search_token_address_input: filterString,
+    // time_frame: timePeriod,
+    // search_token_address_input: filterString,
   }
   //   <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
   //   <Trans>Swap</Trans>

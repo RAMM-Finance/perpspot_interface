@@ -47,6 +47,7 @@ export function formatBNToString(
   n: BN | undefined,
   type = NumberType.SwapTradeAmount,
   isPrice?: boolean,
+  liqNumber = 0,
   placeholder = ''
 ): string {
   if (n === undefined) return placeholder
@@ -61,7 +62,16 @@ export function formatBNToString(
   //   }
   // }
   if (isPrice) {
-    return formatNumberOrString(n?.toNumber(), type).split('$').join('')
+    if (liqNumber) {
+      return formatNumberOrString(n?.toNumber() / Number(`1e${liqNumber}`), type)
+        .split('$')
+        .join('')
+    } else {
+      return formatNumberOrString(n?.toNumber(), type).split('$').join('')
+    }
+  }
+  if (liqNumber) {
+    return formatNumberOrString(n.toNumber() / Number(`1e${liqNumber}`), type)
   }
   return formatNumberOrString(n.toNumber(), type)
 }
