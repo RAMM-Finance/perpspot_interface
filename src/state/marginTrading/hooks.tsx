@@ -272,7 +272,7 @@ export function useDerivedAddPositionInfo(
   }, [userSlippageTolerance])
 
   const rawUserPremiumPercent = useMemo(() => {
-    if (userPremiumPercent === 'auto') return new Percent(JSBI.BigInt(5), JSBI.BigInt(10000))
+    if (userPremiumPercent === 'auto') return new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
     else return userPremiumPercent
   }, [userPremiumPercent])
 
@@ -539,7 +539,7 @@ export function useDerivedLimitAddPositionInfo(
   const [userPremiumPercent] = useUserPremiumDepositPercent()
 
   const rawUserPremiumPercent = useMemo(() => {
-    if (userPremiumPercent === 'auto') return new Percent(JSBI.BigInt(5), JSBI.BigInt(10000))
+    if (userPremiumPercent === 'auto') return new Percent(JSBI.BigInt(50), JSBI.BigInt(10000))
     else return userPremiumPercent
   }, [userPremiumPercent])
 
