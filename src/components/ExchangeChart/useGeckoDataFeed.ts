@@ -332,14 +332,14 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             denomination = 'quote'
           }
 
-          intervalRef.current && clearInterval(intervalRef.current)
-          intervalRef.current = setInterval(function () {
-            fetchLiveBar(poolAddress, timeframe, aggregate, denomination as 'quote' | 'base').then(({ bar }) => {
-              if (bar) {
-                onRealtimeCallback(bar)
-              }
-            })
-          }, 1000)
+          // intervalRef.current && clearInterval(intervalRef.current)
+          // intervalRef.current = setInterval(function () {
+          //   fetchLiveBar(poolAddress, timeframe, aggregate, denomination as 'quote' | 'base').then(({ bar }) => {
+          //     if (bar) {
+          //       onRealtimeCallback(bar)
+          //     }
+          //   })
+          // }, 1000)
         },
         unsubscribeBars: () => {
           intervalRef.current && clearInterval(intervalRef.current)

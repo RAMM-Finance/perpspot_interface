@@ -545,7 +545,7 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const result = orders
   const loading = false
   const error = false
-  console.log('orders', orders?.[0], result, loading, error)
+  // console.log('orders', orders?.[0], result, loading, error)
 
   // const loading = loadingAdd && loadingReduce
   // const error = errorAdd && errorReduce
