@@ -184,6 +184,10 @@ function getPrevVaultPoints(timeWeightedDepositsByTrader:any){
         currentAmount:0,
       }
     }
+
+    if(address=="0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5"){
+      timeWeightedDepositsByTrader[address].timeWeighted = 0
+    }
     i++
 
   })
@@ -576,7 +580,7 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log('collectData', refereeActivity, codeUserPerReferrer?.["0xCb45B819E881fA7a5946B6b8f92A5576faa5a3Bb"])
+  console.log('collectData',vaultDataByAddress,  timeWeightedDeposits)
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
