@@ -191,12 +191,14 @@ const LiquidityDistributionTable = ({
   const ref = useRef<HTMLInputElement>(null)
 
   const [scrollPosition, setScrollPosition] = useState(400)
+  console.log(scrollPosition)
 
   useEffect(() => {
+    setScrollPosition(400)
     if (bin) {
       ref.current?.scrollTo({ top: scrollPosition })
     }
-  }, [bin, scrollPosition, address0])
+  }, [bin])
 
   const handleScroll = (e: any) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target

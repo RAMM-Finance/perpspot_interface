@@ -107,7 +107,6 @@ enum TokenSortMethod {
 
 const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
 const sortAscendingAtom = atom<boolean>(false)
-console.log(sortAscendingAtom)
 
 /* keep track of sort category for token table */
 function useSetSortMethod(newSortMethod: TokenSortMethod) {
@@ -145,6 +144,14 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
       APR.
     </Trans>
   ),
+}
+
+function getSortedData(dataToSort: any, sortOrder: boolean, category: string) {
+  if (sortOrder) {
+    return dataToSort.sort((a: any, b: any) => (a[category] > b[category] ? 1 : -1))
+  } else {
+    return dataToSort.sort((a: any, b: any) => (a[category] > b[category] ? -1 : 1))
+  }
 }
 
 // price, TVL, volume, util rate, expected apr
@@ -207,6 +214,9 @@ function PHeaderRow() {
 export default function TokenTable() {
   const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
 
+  const sortAscending = useAtom(sortAscendingAtom)
+  const sortMethod = useAtom(sortMethodAtom)
+
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
   const { poolKeys: data, isLoading: keysLoading } = useAllPoolKeys()
   // const vaultBal = undefined as any
@@ -241,8 +251,8 @@ export default function TokenTable() {
         if (Object.keys(lowerCasePool).find((pair: any) => `${pool.token0}-${pool.token1}-${pool.fee}`)) {
           return {
             ...pool,
-            tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
-            volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
+            TVL: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
+            Volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
           }
         } else {
           return pool
@@ -267,16 +277,16 @@ export default function TokenTable() {
           <PHeaderRow />
           <TokenDataContainer>
             {dataInfo &&
-              dataInfo.map((dat: any, i: number) => (
+              getSortedData(dataInfo, sortAscending[0], sortMethod[0]).map((dat: any, i: number) => (
                 <PLoadedRow
                   key={`${dat.token0}-${dat.token1}-${dat.fee}`}
-                  tokenListIndex={1}
-                  tokenListLength={1}
+                  tokenListIndex={i++}
+                  tokenListLength={i++}
                   tokenA={dat.token0}
                   tokenB={dat.token1}
                   fee={dat.fee}
-                  tvl={dat.tvl}
-                  volume={dat.volume}
+                  tvl={dat.TVL}
+                  volume={dat.Volume}
                 />
               ))}
           </TokenDataContainer>

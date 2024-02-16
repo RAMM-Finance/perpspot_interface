@@ -1,27 +1,22 @@
 import { t } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { useWalletDrawer } from 'components/WalletDropdown'
 import { getYear, isSameDay, isSameMonth, isSameWeek, isSameYear } from 'date-fns'
 import { TransactionStatus, useTransactionListQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { PollingInterval } from 'graphql/data/util'
+import { useDefaultActiveTokens } from 'hooks/Tokens'
+import { useHistoryData } from 'hooks/useAccountHistory'
+import { tokenDecimal } from 'hooks/useContract'
 import { atom, useAtom } from 'jotai'
-import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
-import { useState,useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
 import { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
 import { ActivityRow } from './LimitActivityRow'
-import { useLocalActivities } from './parseLocal'
 import { parseRemoteActivities } from './parseRemote'
 import { Activity, ActivityMap } from './types'
-import { ethers } from 'ethers'
-import { useWeb3React } from '@web3-react/core'
-import { useCurrency } from 'hooks/Tokens'
-import {useHistoryData} from 'hooks/useAccountHistory'
-import {useDefaultActiveTokens} from "hooks/Tokens"
-import {tokenDecimal} from "hooks/useContract"
 interface ActivityGroup {
   title: string
   transactions: Array<Activity>
@@ -107,35 +102,71 @@ function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = 
 
 const lastFetchedAtom = atom<number | undefined>(0)
 
-function getDescriptor(entry:any, tokens:any){
+function getDescriptor(entry: any, tokens: any) {
   const token0Name = tokens[entry.token0]?.symbol ?? tokens[entry.token0]?.name
   const token1Name = tokens[entry.token1]?.symbol ?? tokens[entry.token1]?.name
   const token0Decimal = tokenDecimal[entry.token0]
   const token1Decimal = tokenDecimal[entry.token1]
 
-
-  if(entry.actionType== "Add Order"){
-
-    if(entry.positionIsToken0) return "Added order for " + token0Name + " with " + token1Name
-    else return "Added order for " + token1Name + " with" + token0Name
-  } else if(entry.actionType == "Cancel Order"){
-    if(entry.positionIsToken0) return "Canceled order for " + token0Name + " with " + token1Name
-    else return "Canceled order for " + token1Name + " with" + token0Name
-
-  }else if(entry.actionType == "Add Position"){
-    if(entry.positionIsToken0) return "Added " + String(Number(entry.addedAmount)/10**token0Decimal) + token0Name+ " long with "  + token1Name 
-    else return "Added " + String(Number(entry.addedAmount)/10**token1Decimal) + token1Name+ " long with " + token0Name 
-
-  } else if(entry.actionType == "Force Closed"){
-    if(entry.positionIsToken0) return "Force Closed " + String(Number(entry.forcedClosedAmount)/10**token0Decimal)+ token0Name + " for " + token0Name+"/"+token1Name
-    else return "Force Closed " + String(Number(entry.forcedClosedAmount)/10**token1Decimal)+ token1Name + " for " + token0Name+"/"+token1Name
-  } else if(entry.actionType == "Reduce Position"){
-    if(entry.positionIsToken0) return "Reduced " + String(Number(entry.reduceAmount)/10**token0Decimal) + token0Name + " for " + token0Name+"/"+token1Name
-      else return"Reduced " + String(Number(entry.reduceAmount)/10**token1Decimal) + token1Name + " for " + token0Name+"/"+token1Name
-  }
-
-else{
-    return " "
+  if (entry.actionType == 'Add Order') {
+    if (entry.positionIsToken0) return 'Added order for ' + token0Name + ' with ' + token1Name
+    else return 'Added order for ' + token1Name + ' with' + token0Name
+  } else if (entry.actionType == 'Cancel Order') {
+    if (entry.positionIsToken0) return 'Canceled order for ' + token0Name + ' with ' + token1Name
+    else return 'Canceled order for ' + token1Name + ' with' + token0Name
+  } else if (entry.actionType == 'Add Position') {
+    if (entry.positionIsToken0)
+      return (
+        'Added ' + String(Number(entry.addedAmount) / 10 ** token0Decimal) + token0Name + ' long with ' + token1Name
+      )
+    else
+      return (
+        'Added ' + String(Number(entry.addedAmount) / 10 ** token1Decimal) + token1Name + ' long with ' + token0Name
+      )
+  } else if (entry.actionType == 'Force Closed') {
+    if (entry.positionIsToken0)
+      return (
+        'Force Closed ' +
+        String(Number(entry.forcedClosedAmount) / 10 ** token0Decimal) +
+        token0Name +
+        ' for ' +
+        token0Name +
+        '/' +
+        token1Name
+      )
+    else
+      return (
+        'Force Closed ' +
+        String(Number(entry.forcedClosedAmount) / 10 ** token1Decimal) +
+        token1Name +
+        ' for ' +
+        token0Name +
+        '/' +
+        token1Name
+      )
+  } else if (entry.actionType == 'Reduce Position') {
+    if (entry.positionIsToken0)
+      return (
+        'Reduced ' +
+        String(Number(entry.reduceAmount) / 10 ** token0Decimal) +
+        token0Name +
+        ' for ' +
+        token0Name +
+        '/' +
+        token1Name
+      )
+    else
+      return (
+        'Reduced ' +
+        String(Number(entry.reduceAmount) / 10 ** token1Decimal) +
+        token1Name +
+        ' for ' +
+        token0Name +
+        '/' +
+        token1Name
+      )
+  } else {
+    return ' '
   }
 }
 export function LimitActivityTab({ account }: { account: string }) {
@@ -152,28 +183,25 @@ export function LimitActivityTab({ account }: { account: string }) {
     fetchPolicy: 'cache-first',
   })
 
-//{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
+  //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
 
   const history = useHistoryData(account)
-  const historyToShow = useMemo(()=>{
-    if(!history) return 
+  const historyToShow = useMemo(() => {
+    if (!history) return
 
-    const processedHistory:any[]=[]
-    history?.forEach((entry:any)=>{
-      const descriptor  = getDescriptor(entry, tokens)
+    const processedHistory: any[] = []
+    history?.forEach((entry: any) => {
+      const descriptor = getDescriptor(entry, tokens)
       processedHistory.push({
-        chainId: chainId, 
-        status: undefined, 
-        timestamp: Number(entry.blockTimestamp), 
-        title: entry.actionType, 
-        descriptor : descriptor?? " ", 
-        logos: undefined, 
-        currencies: undefined,//[useCurrency(entry.token0), useCurrency(entry.token1)], 
-        hash: entry.transactionHash, 
-        isOrder: ( entry.actionType == "Reduce Position")
-          ? (entry.trader != entry.filler) 
-            ? true : false 
-          : false 
+        chainId,
+        status: undefined,
+        timestamp: Number(entry.blockTimestamp),
+        title: entry.actionType,
+        descriptor: descriptor ?? ' ',
+        logos: undefined,
+        currencies: [entry.token0, entry.token1],
+        hash: entry.transactionHash,
+        isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
       })
     })
     return processedHistory
@@ -207,27 +235,22 @@ export function LimitActivityTab({ account }: { account: string }) {
     )
   else {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
-    return(
-       <PortfolioTabWrapper>
+    return (
+      <PortfolioTabWrapper>
         {historyToShow?.map((history) => (
           <ActivityGroupWrapper key={history.title}>
             {/*<ThemedText.SubHeader color="textSecondary" fontWeight={500}>
               {history.title}
             </ThemedText.SubHeader>*/}
             <Column style={{ marginBottom: '12px' }}>
-              <ActivityRow key={history.hash} activity={history} /> 
+              <ActivityRow key={history.hash} activity={history} />
               {/*activityGroup.transactions.map((activity) => (
                 <ActivityRow key={activity.hash} activity={activity} />
               ))*/}
             </Column>
           </ActivityGroupWrapper>
         ))}
-
       </PortfolioTabWrapper>
-
-      )
-
-
-
-  } 
+    )
+  }
 }
