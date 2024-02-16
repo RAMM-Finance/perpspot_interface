@@ -1,5 +1,6 @@
 import { Token } from '@uniswap/sdk-core'
 import { tickToPrice } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
 import { TickProcessed } from 'hooks/usePoolTickData'
 import JSBI from 'jsbi'
 
@@ -19,15 +20,17 @@ export default function computeSurroundingTicks(
   let previousTickProcessed: TickProcessed = {
     ...activeTickProcessed,
   }
+
   // Iterate outwards (either up or down depending on direction) from the active tick,
   // building active liquidity for every tick.
   let processedTicks: TickProcessed[] = []
   for (let i = pivot + (ascending ? 1 : -1); ascending ? i < sortedTickData.length : i >= 0; ascending ? i++ : i--) {
     const tick = Number(sortedTickData[i].tick)
+    // console.log('liquidityNet', sortedTickData[i].liquidityNet, new BN(sortedTickData[i].liquidityNet).toFixed(0))
     const currentTickProcessed: TickProcessed = {
       liquidityActive: previousTickProcessed.liquidityActive,
       tick,
-      liquidityNet: JSBI.BigInt(sortedTickData[i].liquidityNet),
+      liquidityNet: JSBI.BigInt(new BN(sortedTickData[i].liquidityNet).toFixed(0)),
       price0: tickToPrice(token0, token1, tick).toFixed(PRICE_FIXED_DIGITS),
     }
 

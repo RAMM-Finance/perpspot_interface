@@ -221,6 +221,21 @@ export default function AddLiquidity() {
     chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
   )
 
+  const handleApproveA = useCallback(() => {
+    try {
+      approveACallback()
+    } catch (err) {
+      console.log('handleApproveA', err)
+    }
+  }, [approveACallback])
+  const handleApproveB = useCallback(() => {
+    try {
+      approveBCallback()
+    } catch (err) {
+      console.log('handleApproveB', err)
+    }
+  }, [approveBCallback])
+
   const allowedSlippage = useUserSlippageToleranceWithDefault(
     outOfRange ? ZERO_PERCENT : DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE
   )
@@ -534,7 +549,7 @@ export default function AddLiquidity() {
             <RowBetween>
               {showApprovalA && (
                 <StyledButtonPrimary
-                  onClick={approveACallback}
+                  onClick={handleApproveA}
                   disabled={approvalA === ApprovalState.PENDING}
                   width={showApprovalB ? '48%' : '100%'}
                 >
@@ -549,7 +564,7 @@ export default function AddLiquidity() {
               )}
               {showApprovalB && (
                 <StyledButtonPrimary
-                  onClick={approveBCallback}
+                  onClick={handleApproveB}
                   disabled={approvalB === ApprovalState.PENDING}
                   width={showApprovalA ? '48%' : '100%'}
                 >
