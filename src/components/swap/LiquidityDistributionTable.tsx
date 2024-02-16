@@ -1,6 +1,5 @@
 import { NumberType } from '@uniswap/conedison/format'
 import { computePoolAddress } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -9,9 +8,7 @@ import { useCurrency } from 'hooks/Tokens'
 import { BinData } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import getToken0Price from 'lib/utils/getCurrentPrice'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery } from 'react-query'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -53,35 +50,40 @@ const LiquidityDistributionTable = ({
     })
   }, [chainId, pool])
 
-  const token0Decimals = token0?.wrapped.decimals
-  const token1Decimals = token1?.wrapped.decimals
-  const { provider } = useWeb3React()
-  const { data: token0Price } = useQuery(
-    ['currentPrice', poolAddress, token0Decimals, token1Decimals],
-    async () => {
-      if (!poolAddress) throw new Error('No pool address')
-      if (!token1Decimals) throw new Error('No token1 decimals')
-      if (!token0Decimals) throw new Error('No token0 decimals')
-      if (!provider) throw new Error('No provider')
-      return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
-    },
-    {
-      keepPreviousData: true,
-      refetchInterval: 1000 * 20,
-    }
-  )
+  // const token0Decimals = token0?.wrapped.decimals
+  // const token1Decimals = token1?.wrapped.decimals
+  // const { provider } = useWeb3React()
+  // const { data: token0Price } = useQuery(
+  //   ['currentPrice', poolAddress, token0Decimals, token1Decimals],
+  //   async () => {
+  //     if (!poolAddress) throw new Error('No pool address')
+  //     if (!token1Decimals) throw new Error('No token1 decimals')
+  //     if (!token0Decimals) throw new Error('No token0 decimals')
+  //     if (!provider) throw new Error('No provider')
+  //     try {
+  //       return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
+  //     } catch (err) {
+  //       throw new Error('failed to fetch token0 price')
+  //     }
+  //   },
+  //   {
+  //     keepPreviousData: true,
+  //     refetchInterval: 1000 * 20,
+  //   }
+  // )
 
   // console.log('tooes', token0, token1)
   const [currentPrice, inverse] = useMemo(() => {
-    if (!pool || !token0 || !token1 || !chainId || !token0Price) return [undefined, false]
+    if (!pool || !token0 || !token1 || !chainId) return [undefined, false]
 
     const invertPrice = getInvertPrice(token0.wrapped.address, token1.wrapped.address, chainId)
+    const token0Price = new BN(pool.token0Price.toFixed(18))
     if (invertPrice) {
       return [new BN(1).div(token0Price), true]
     } else {
       return [token0Price, false]
     }
-  }, [pool, token1, token0, chainId, token0Price])
+  }, [pool, token1, token0, chainId])
 
   //spread logic
   // const negMax = useMemo(() => {
@@ -113,8 +115,14 @@ const LiquidityDistributionTable = ({
   //   } else return 0
   // }, [bin, currentPrice, token0, token1])
 
+  const token0Price = useMemo(
+    () => (pool?.token0Price ? new BN(pool.token0Price.toFixed(18)) : undefined),
+    [pool?.token0Price]
+  )
+
   const negMax = useMemo(() => {
     if (!bin || !token0Price) return 0
+
     const processed = bin
       .filter((item) => item.price.gt(token0Price) && item.token0Liquidity.gt(0))
       .filter((item) => !(item.token0Liquidity.gt(0) && item.token1Liquidity.gt(0)))

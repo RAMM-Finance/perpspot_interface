@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -15,9 +14,7 @@ import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import getToken0Price from 'lib/utils/getCurrentPrice'
 import { ReactNode, useMemo } from 'react'
-import { useQuery } from 'react-query'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
@@ -81,26 +78,31 @@ export function PoolStatsSection({
     poolAddress ?? undefined,
   ])
 
-  const token0Decimals = currency0?.decimals
-  const token1Decimals = currency1?.decimals
-  const { provider } = useWeb3React()
-  const { data: token0Price } = useQuery(
-    ['currentPrice', poolAddress, token0Decimals, token1Decimals],
-    async () => {
-      if (!poolAddress) throw new Error('No pool address')
-      if (!token1Decimals) throw new Error('No token1 decimals')
-      if (!token0Decimals) throw new Error('No token0 decimals')
-      if (!provider) throw new Error('No provider')
-      return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
-    },
-    {
-      keepPreviousData: true,
-      refetchInterval: 1000 * 20,
-    }
-  )
+  // const token0Decimals = currency0?.decimals
+  // const token1Decimals = currency1?.decimals
+  // const { provider } = useWeb3React()
+  // const { data: token0Price } = useQuery(
+  //   ['currentPrice', poolAddress, token0Decimals, token1Decimals],
+  //   async () => {
+  //     if (!poolAddress) throw new Error('No pool address')
+  //     if (!token1Decimals) throw new Error('No token1 decimals')
+  //     if (!token0Decimals) throw new Error('No token0 decimals')
+  //     if (!provider) throw new Error('No provider')
+  //     try {
+  //       return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
+  //     } catch (err) {
+  //       console.log('token0Price err', err)
+  //       throw new Error('Failed to fetch token0 price')
+  //     }
+  //   },
+  //   {
+  //     keepPreviousData: true,
+  //     refetchInterval: 1000 * 20,
+  //   }
+  // )
 
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!pool || !poolData || !token0Price || !priceData) return [null, false, null, null, null, null, null]
+    if (!pool || !poolData || !priceData) return [null, false, null, null, null, null, null]
 
     let tvl
     let volume
@@ -112,6 +114,7 @@ export function PoolStatsSection({
     }
 
     const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
+    const token0Price = new BN(pool.token0Price.toFixed(18))
     const price = invertPrice ? new BN(1).div(token0Price) : token0Price
 
     // const price24hAgo = priceData.price24hAgo
@@ -120,7 +123,7 @@ export function PoolStatsSection({
     const price24hLow = priceData.low24
     // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
-  }, [pool, priceData, poolData, token0Price, chainId])
+  }, [pool, priceData, poolData, chainId])
 
   const baseQuoteSymbol = invertPrice
     ? currency1?.symbol + '/' + currency0?.symbol

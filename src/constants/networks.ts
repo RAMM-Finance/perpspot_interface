@@ -34,10 +34,7 @@ export const FALLBACK_URLS = {
     // "Fallback" URLs
     'https://rpc.ankr.com/eth_goerli',
   ],
-  [SupportedChainId.SEPOLIA]: [
-    "https://rpc.sepolia.dev",
-    "https://rpc2.sepolia.org/"
-  ],
+  [SupportedChainId.SEPOLIA]: ['https://rpc.sepolia.dev', 'https://rpc2.sepolia.org/'],
   [SupportedChainId.POLYGON]: [
     // "Safe" URLs
     'https://polygon-rpc.com/',
@@ -105,7 +102,10 @@ export const RPC_URLS = {
     ...FALLBACK_URLS[SupportedChainId.MAINNET],
   ],
   [SupportedChainId.GOERLI]: [`https://goerli.infura.io/v3/${INFURA_KEY}`, ...FALLBACK_URLS[SupportedChainId.GOERLI]],
-  [SupportedChainId.SEPOLIA]: [`https://sepolia.infura.io/v3/adc5205917c94ba4906bb7be28e515cd`, ...FALLBACK_URLS[SupportedChainId.SEPOLIA]],
+  [SupportedChainId.SEPOLIA]: [
+    `https://sepolia.infura.io/v3/adc5205917c94ba4906bb7be28e515cd`,
+    ...FALLBACK_URLS[SupportedChainId.SEPOLIA],
+  ],
   [SupportedChainId.OPTIMISM]: [
     `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
     ...FALLBACK_URLS[SupportedChainId.OPTIMISM],
