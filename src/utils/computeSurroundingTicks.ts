@@ -27,10 +27,12 @@ export default function computeSurroundingTicks(
   for (let i = pivot + (ascending ? 1 : -1); ascending ? i < sortedTickData.length : i >= 0; ascending ? i++ : i--) {
     const tick = Number(sortedTickData[i].tick)
     // console.log('liquidityNet', sortedTickData[i].liquidityNet, new BN(sortedTickData[i].liquidityNet).toFixed(0))
+
+    const tickData = JSBI.BigInt(new BN(sortedTickData[i].liquidityNet).toFixed(0))
     const currentTickProcessed: TickProcessed = {
       liquidityActive: previousTickProcessed.liquidityActive,
       tick,
-      liquidityNet: JSBI.BigInt(new BN(sortedTickData[i].liquidityNet).toFixed(0)),
+      liquidityNet: tickData,
       price0: tickToPrice(token0, token1, tick).toFixed(PRICE_FIXED_DIGITS),
     }
 
@@ -39,10 +41,7 @@ export default function computeSurroundingTicks(
     // it to the current processed tick we are building.
     // If we are iterating descending, we don't want to apply the net liquidity until the following tick.
     if (ascending) {
-      currentTickProcessed.liquidityActive = JSBI.add(
-        previousTickProcessed.liquidityActive,
-        JSBI.BigInt(sortedTickData[i].liquidityNet)
-      )
+      currentTickProcessed.liquidityActive = JSBI.add(previousTickProcessed.liquidityActive, tickData)
     } else if (!ascending && JSBI.notEqual(previousTickProcessed.liquidityNet, JSBI.BigInt(0))) {
       // We are iterating descending, so look at the previous tick and apply any net liquidity.
       currentTickProcessed.liquidityActive = JSBI.subtract(
