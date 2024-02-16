@@ -10,7 +10,7 @@ import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useCurrency } from 'hooks/Tokens'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useMemo } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -239,7 +239,7 @@ export function ValueLabel({
   valueDescription = '',
   hideValueDescription = true,
 }: {
-  description: string
+  description: string | ReactNode
   label: string
   value?: number | string
   syncing: boolean
@@ -295,6 +295,18 @@ function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholde
   }
 }
 
+function lmtFormatInvPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
+  if (price) {
+    if (price.greaterThan(1)) {
+      return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} `
+    } else {
+      return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} `
+    }
+  } else {
+    return placeholder
+  }
+}
+
 export function AdvancedMarginTradeDetails({
   allowedSlippage,
   syncing = false,
@@ -330,7 +342,12 @@ export function AdvancedMarginTradeDetails({
     <StyledCard>
       <AutoColumn gap="sm">
         <ValueLabel
-          description="Amount In / Amount Out"
+          description={
+            <ThemedText.BodySmall color="textSecondary" textAlign="right">
+              Inverted Price:{' '}
+              {lmtFormatInvPrice(trade?.executionPrice) ? `${lmtFormatInvPrice(trade?.executionPrice)}` : '-'}
+            </ThemedText.BodySmall>
+          }
           label="Execution Price"
           value={lmtFormatPrice(trade?.executionPrice)}
           syncing={syncing}

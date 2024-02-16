@@ -185,30 +185,28 @@ const LiquidityDistributionTable = ({
   // console.log('currentPrice', posMax, negMax, currentPrice?.toString())
 
   const liqNum = useMemo(() => {
-    if (token0 && token1) {
-      if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-        return 28
-      } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-        return 6
-      } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-        return 16
-      } else {
-        return 18
-      }
+    if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+      return 10
+    } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+      return -12
+    } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+      return -2
     } else {
-      return [undefined, undefined]
+      return 0
     }
-  }, [token0, token1])
+  }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
 
   const ref = useRef<HTMLInputElement>(null)
 
   const [scrollPosition, setScrollPosition] = useState(400)
+  console.log(scrollPosition)
 
   useEffect(() => {
+    setScrollPosition(400)
     if (bin) {
       ref.current?.scrollTo({ top: scrollPosition })
     }
-  }, [bin, scrollPosition, address0])
+  }, [bin])
 
   const handleScroll = (e: any) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target
@@ -253,35 +251,35 @@ const LiquidityDistributionTable = ({
         ) : (
           <NegativeData>
             {inverse
-              ? binsBelow
-                  .map((bin) => {
-                    return (
-                      <LDDataRow
-                        spread={bin.token1Liquidity.minus(bin.token1Borrowed).div(posMax).times(100).toNumber()}
-                        key={bin.price.toString()}
-                      >
-                        <LDDataCellIn>
-                          {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true)}
-                        </LDDataCellIn>
-                        <LDDataCellOut>
-                          {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
-                        </LDDataCellOut>
-                      </LDDataRow>
-                    )
-                  })
-                  .reverse()
+              ? binsBelow.map((bin) => {
+                  return (
+                    <LDDataRowNeg
+                      spread={bin.token1Liquidity.minus(bin.token1Borrowed).div(posMax).times(100).toNumber()}
+                      key={bin.price.toString()}
+                    >
+                      <LDDataCellIn>
+                        {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
+                      </LDDataCellIn>
+                      <LDDataCellOut>
+                        {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
+                      </LDDataCellOut>
+                    </LDDataRowNeg>
+                  )
+                })
               : binsAbove
                   .map((bin) => {
                     return (
-                      <LDDataRow
+                      <LDDataRowNeg
                         spread={((Number(bin.token0Liquidity) - Number(bin.token0Borrowed)) / negMax) * 100}
                         key={Number(bin.price)}
                       >
-                        <LDDataCellIn>{formatBNToString(bin.price, NumberType.FiatTokenPrice, true)}</LDDataCellIn>
+                        <LDDataCellIn>
+                          {formatBNToString(bin.price, NumberType.FiatTokenPrice, true, liqNum)}
+                        </LDDataCellIn>
                         <LDDataCellOut>
                           {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
                         </LDDataCellOut>
-                      </LDDataRow>
+                      </LDDataRowNeg>
                     )
                   })
                   .reverse()}
@@ -310,37 +308,35 @@ const LiquidityDistributionTable = ({
         ) : (
           <PositiveData>
             {inverse
-              ? binsAbove
-                  .map((bin) => {
-                    return (
-                      <LDDataRowNeg
-                        spread={bin.token0Liquidity.minus(bin.token0Borrowed).div(negMax).times(100).toNumber()}
-                        key={bin.price.toString()}
-                      >
-                        <LDDataCellInNeg>
-                          {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true)}
-                        </LDDataCellInNeg>
-                        <LDDataCellOutNeg>
-                          {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
-                        </LDDataCellOutNeg>
-                      </LDDataRowNeg>
-                    )
-                  })
-                  .reverse()
+              ? binsAbove.map((bin) => {
+                  return (
+                    <LDDataRow
+                      spread={bin.token0Liquidity.minus(bin.token0Borrowed).div(negMax).times(100).toNumber()}
+                      key={bin.price.toString()}
+                    >
+                      <LDDataCellInNeg>
+                        {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
+                      </LDDataCellInNeg>
+                      <LDDataCellOutNeg>
+                        {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
+                      </LDDataCellOutNeg>
+                    </LDDataRow>
+                  )
+                })
               : binsBelow
                   .map((bin) => {
                     return (
-                      <LDDataRowNeg
+                      <LDDataRow
                         spread={((Number(bin.token1Liquidity) - Number(bin.token1Borrowed)) / posMax) * 100}
                         key={Number(bin.price)}
                       >
                         <LDDataCellInNeg>
-                          {formatBNToString(bin.price, NumberType.FiatTokenPrice, true)}
+                          {formatBNToString(bin.price, NumberType.FiatTokenPrice, true, liqNum)}
                         </LDDataCellInNeg>
                         <LDDataCellOutNeg>
                           {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
                         </LDDataCellOutNeg>
-                      </LDDataRowNeg>
+                      </LDDataRow>
                     )
                   })
                   .reverse()}
