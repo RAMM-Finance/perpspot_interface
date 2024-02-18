@@ -139,7 +139,7 @@ export function PoolStatsSection({
         baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
-            <Trans>Oracle Price</Trans>
+            <Trans>Price</Trans>
           </ThemedText.BodySmall>
         }
         loading={loading}

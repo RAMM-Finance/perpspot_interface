@@ -448,7 +448,7 @@ const SwapTabContent = () => {
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
-              onCurrencySelect={handleInputSelect}
+             // onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
@@ -493,7 +493,7 @@ const SwapTabContent = () => {
                 fiatValue={fiatValueOutput}
                 priceImpact={stablecoinPriceImpact}
                 currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
+                //onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT] ?? null}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}

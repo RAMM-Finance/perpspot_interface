@@ -105,7 +105,7 @@ export default function StatsSection(props: StatsSectionProps) {
         baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
-            <Trans>Oracle Price</Trans>
+            <Trans>Price</Trans>
           </ThemedText.BodySmall>
         }
       />
