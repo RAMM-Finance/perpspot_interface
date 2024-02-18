@@ -126,8 +126,6 @@ export function useHistoryData(address:any){
 
   }, [client, account])
 
-  console.log('filtering????', addData, reduceData)
-
 
   const history = useMemo(()=>{
     if(!addOrderData || !reduceData || !addData || !cancelOrderData || !forceCloseData || !uniqueTokens) return 
