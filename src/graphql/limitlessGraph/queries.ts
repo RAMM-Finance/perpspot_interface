@@ -105,7 +105,7 @@ export const PoolAddedQuery = `
 
 export const AddQuery = `
   query {
-    marginPositionIncreaseds(orderBy: blockTimestamp)  {
+    marginPositionIncreaseds(orderBy: blockTimestamp orderDirection: desc)  {
       pool
       positionIsToken0
       trader
@@ -118,7 +118,7 @@ export const AddQuery = `
 `
 export const ReduceQuery = `
   query {
-    marginPositionReduceds(orderBy: blockTimestamp)  {
+    marginPositionReduceds(orderBy: blockTimestamp orderDirection: desc)  {
       pool
       positionIsToken0
       trader

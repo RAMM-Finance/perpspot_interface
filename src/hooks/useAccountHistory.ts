@@ -76,7 +76,7 @@ export function useHistoryData(address:any){
             pools.add(entry.pool)
           }
         })
-        
+
         forceCloseFiltered.forEach((entry: any) => {
           if (!pools.has(entry.pool)) {
             pools.add(entry.pool)
@@ -125,6 +125,8 @@ export function useHistoryData(address:any){
     call()
 
   }, [client, account])
+
+  console.log('filtering????', addData, reduceData)
 
 
   const history = useMemo(()=>{
