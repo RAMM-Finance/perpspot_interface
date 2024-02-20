@@ -75,17 +75,6 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
   </>
 )
 
-// function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
-//   return (
-//     <GridContainer>
-//       <HeaderRow />
-//       <TokenDataContainer>
-//         <LoadingRows rowCount={rowCount} />
-//       </TokenDataContainer>
-//     </GridContainer>
-//   )
-// }
-
 function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   return (
     <GridContainer>
@@ -229,6 +218,8 @@ export default function TokenTable() {
 
   const loading = poolsLoading || balanceLoading || keysLoading
   // useRenderCount()
+
+  console.log(poolData)
 
   const poolsInfo = useMemo(() => {
     if (poolData && vaultBal) {

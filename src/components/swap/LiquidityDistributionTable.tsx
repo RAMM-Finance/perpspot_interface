@@ -115,10 +115,23 @@ const LiquidityDistributionTable = ({
   //   } else return 0
   // }, [bin, currentPrice, token0, token1])
 
-  const token0Price = useMemo(
-    () => (pool?.token0Price ? new BN(pool.token0Price.toFixed(18)) : undefined),
-    [pool?.token0Price]
-  )
+  const token0Price = useMemo(() => {
+    if (pool?.token0.wrapped.symbol === 'wBTC' && pool?.token1?.wrapped.symbol === 'WETH')
+      return pool?.token0Price ? new BN(1).div(pool.token0Price.toFixed(18)) : undefined
+    return pool?.token0Price ? new BN(pool.token0Price.toFixed(18)) : undefined
+  }, [pool])
+
+  const liqNum = useMemo(() => {
+    if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
+      return -10
+    } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+      return -12
+    } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
+      return -2
+    } else {
+      return 0
+    }
+  }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
 
   const negMax = useMemo(() => {
     if (!bin || !token0Price) return 0
@@ -141,7 +154,7 @@ const LiquidityDistributionTable = ({
     if (!bin || !token0Price) return []
     return bin
       .filter((i) => i.price.gt(token0Price) && i.token0Liquidity.gt(0))
-      .filter((i) => !(i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0)))
+      .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
       .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
   }, [bin, token0Price])
 
@@ -153,6 +166,7 @@ const LiquidityDistributionTable = ({
       .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
   }, [bin, token0Price])
 
+  console.log(inverse)
   // const posMax = useMemo(() => {
   //   if (bin && currentPrice && token0 && token1) {
   //     return Math.max(
@@ -184,22 +198,9 @@ const LiquidityDistributionTable = ({
 
   // console.log('currentPrice', posMax, negMax, currentPrice?.toString())
 
-  const liqNum = useMemo(() => {
-    if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
-      return 10
-    } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
-      return -12
-    } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
-      return -2
-    } else {
-      return 0
-    }
-  }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
-
   const ref = useRef<HTMLInputElement>(null)
 
   const [scrollPosition, setScrollPosition] = useState(400)
-  // console.log(scrollPosition)
 
   useEffect(() => {
     setScrollPosition(400)

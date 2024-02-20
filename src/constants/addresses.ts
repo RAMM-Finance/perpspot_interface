@@ -30,8 +30,17 @@ export const isUSDC = (address: string, chainId?: number) => {
   return address.toLowerCase() === '0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase()
 }
 
+export const iswBTC = (address: string, chainId?: number) => {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return address.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase()
+  }
+  return address.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase()
+}
+
 export const getInvertPrice = (token0: string, token1: string, chainId?: number) => {
   if (isWeth(token0, chainId) && !isUSDC(token1, chainId)) {
+    return true
+  } else if (iswBTC(token0, chainId) && isWeth(token1, chainId)) {
     return true
   } else if (isUSDC(token0, chainId)) {
     return true
