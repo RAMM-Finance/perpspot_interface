@@ -1,4 +1,5 @@
 import { createAction } from '@reduxjs/toolkit'
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 
 export enum Field {
@@ -12,12 +13,17 @@ export enum ActiveSwapTab {
   BORROW,
   SWAP,
 }
-export const selectPair = createAction<{
-  fieldIn: Field
-  fieldOut: Field
-  currencyIdIn: string
-  currencyIdOut: string
-}>('swap/selectPair')
+// export const selectPair = createAction<{
+//   fieldIn: Field
+//   fieldOut: Field
+//   currencyIdIn: string
+//   currencyIdOut: string
+// }>('swap/selectPair')
+export const selectPool = createAction<{
+  inputCurrencyId: string
+  outputCurrencyId: string
+  poolFee: number
+}>('swap/selectPool')
 export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')
 export const switchCurrencies = createAction<{
   leverage: boolean
@@ -40,6 +46,7 @@ export const replaceSwapState = createAction<{
   borrowManagerAddress?: string
   premium?: BN
   tab: string
+  poolFee?: FeeAmount
 }>('swap/replaceSwapState')
 export const setRecipient = createAction<{ recipient: string | null }>('swap/setRecipient')
 export const setLeverageFactor = createAction<{ leverageFactor: string }>('swap/setLeverageFactor')

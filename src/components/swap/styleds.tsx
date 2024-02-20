@@ -1,3 +1,9 @@
+import {
+  LARGE_MEDIA_BREAKPOINT,
+  MAX_WIDTH_MEDIA_BREAKPOINT,
+  MEDIUM_MEDIA_BREAKPOINT,
+  SMALL_MEDIA_BREAKPOINT,
+} from 'components/Tokens/constants'
 import { TooltipContainer } from 'components/Tooltip'
 import { transparentize } from 'polished'
 import { ReactNode } from 'react'
@@ -8,11 +14,6 @@ import styled, { css } from 'styled-components/macro'
 import { AutoColumn } from '../Column'
 
 export const PageWrapper = styled.div`
-  max-height: 900px;
-  // padding: 10px 14px 0px;
-  /* max-width: 1700px; */
-  /* display: grid;
-  grid-template-columns: 2fr 0.6fr; */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -34,19 +35,29 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  min-width: 340px;
-  max-width: 340px;
-  height: 99%;
-  flex-flow: row nowrap;
-  align-items: space-evenly;
+
   margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
   transition: transform 250ms ease;
-  // background-color: ${({ theme }) => theme.backgroundSurface};
+  display: grid;
+  width: 100%;
+  grid-row: 1 / 3;
+  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 1fr;
+  }
   flex-grow: 1; /* Grow to absorb all available space */
   flex-shrink: 1; /* Allow shrinking if needed */
-  overflow-y: auto;
 `
 // export const LimitWrapper = styled.div`
 //   position: relative;

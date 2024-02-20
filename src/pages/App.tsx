@@ -41,11 +41,11 @@ import Pool from './Pool'
 import { PositionPage } from './Pool/PositionPage'
 import PoolV2 from './Pool/v2'
 import PoolFinder from './PoolFinder'
+import ReferralPage from './Referral'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
 import Swap from './Swap'
 import { RedirectPathToSwapOnly } from './Swap/redirects'
 import Tokens from './Tokens'
-import ReferralPage from './Referral'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
 const Vote = lazy(() => import('./Vote'))
@@ -62,6 +62,7 @@ const BodyWrapper = styled.div`
   min-height: 100%;
   padding: ${({ theme }) => theme.navHeight}px 0 0 0;
   align-items: center;
+  // background-color: ${({ theme }) => theme.mainBackground};
   flex: 1;
 `
 
@@ -264,7 +265,7 @@ export default function App() {
                   <Route path="pools/v2" element={<PoolV2 />} />
                   <Route path="pools" element={<Pool />} />
                   <Route path="pools/:tokenId" element={<PositionPage />} />
-                  <Route path="referral" element={<ReferralPage/>}/>
+                  <Route path="referral" element={<ReferralPage />} />
                   <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
                     <Route path=":currencyIdA" />
                     <Route path=":currencyIdA/:currencyIdB" />

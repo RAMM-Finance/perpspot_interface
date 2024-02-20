@@ -34,7 +34,7 @@ export default function SwapHeader({
 }
 
 const StyledSwapHeader = styled.div`
-  margin-bottom: 12px;
+  margin-bottom: 0.5rem;
   width: 100%;
   color: ${({ theme }) => theme.textSecondary};
 `

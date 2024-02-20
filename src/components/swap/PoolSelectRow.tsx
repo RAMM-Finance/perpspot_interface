@@ -53,7 +53,7 @@ interface PoolSelectorRowProps {
   currencyId: string[]
   tvl?: number
   volume?: number
-  onCurrencySelect: (currencyIn: Currency, currencyOut: Currency) => void
+  onCurrencySelect: (currencyIn: Currency, currencyOut: Currency, fee: number) => void
   fee: number
   chainId: number | undefined
   closeModal?: (close: boolean) => void
@@ -67,6 +67,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
 
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])
+
   const [token0, token1] =
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
       ? [baseCurrency, quoteCurrency]
@@ -122,7 +123,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
       disabled={false}
       active={active}
       onClick={() => {
-        token0 && token1 && onCurrencySelect(token0, token1)
+        token0 && token1 && pool?.fee && onCurrencySelect(token0, token1, pool.fee)
         closeModal && closeModal(false)
       }}
     >

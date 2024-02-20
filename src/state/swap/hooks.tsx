@@ -1,11 +1,8 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { getAddress } from 'ethers/lib/utils'
-import { useAllV3Routes } from 'hooks/useAllV3Routes'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
 import { useBestTrade } from 'hooks/useBestTrade'
 // import { useLimitlessPositionFromKeys } from 'hooks/useV3Positions'
@@ -27,8 +24,7 @@ import {
   ActiveSwapTab,
   Field,
   replaceSwapState,
-  selectCurrency,
-  selectPair,
+  selectPool,
   setActiveTab,
   setBorrowManagerAddress,
   setHideClosedLeveragePositions,
@@ -51,8 +47,9 @@ export function useSwapState(): AppState['swap'] {
 }
 
 export function useSwapActionHandlers(): {
-  onPairSelection: (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => void
-  onCurrencySelection: (field: Field, currency: Currency) => void
+  // onPairSelection: (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => void
+  // onCurrencySelection: (field: Field, currency: Currency) => void
+  onPoolSelection(currencyIn: Currency, currencyOut: Currency, poolFee: number): void
   onSwitchTokens: (leverage: boolean) => void
   onUserInput: (field: Field, typedValue: string) => void
   onChangeRecipient: (recipient: string | null) => void
@@ -68,31 +65,44 @@ export function useSwapActionHandlers(): {
 } {
   const dispatch = useAppDispatch()
 
-  const onPairSelection = useCallback(
-    (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => {
+  const onPoolSelection = useCallback(
+    (currencyIn: Currency, currencyOut: Currency, poolFee: number) => {
       dispatch(
-        selectPair({
-          fieldIn,
-          fieldOut,
-          currencyIdIn: currencyIn.isToken ? currencyIn.address : currencyIn.isNative ? 'ETH' : '',
-          currencyIdOut: currencyOut.isToken ? currencyOut.address : currencyOut.isNative ? 'ETH' : '',
+        selectPool({
+          inputCurrencyId: currencyIn.isToken ? currencyIn.address : currencyIn.isNative ? 'ETH' : '',
+          outputCurrencyId: currencyOut.isToken ? currencyOut.address : currencyOut.isNative ? 'ETH' : '',
+          poolFee,
         })
       )
     },
     [dispatch]
   )
 
-  const onCurrencySelection = useCallback(
-    (field: Field, currency: Currency) => {
-      dispatch(
-        selectCurrency({
-          field,
-          currencyId: currency.isToken ? currency.address : currency.isNative ? 'ETH' : '',
-        })
-      )
-    },
-    [dispatch]
-  )
+  // const onPairSelection = useCallback(
+  //   (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => {
+  //     dispatch(
+  //       selectPair({
+  //         fieldIn,
+  //         fieldOut,
+  //         currencyIdIn: currencyIn.isToken ? currencyIn.address : currencyIn.isNative ? 'ETH' : '',
+  //         currencyIdOut: currencyOut.isToken ? currencyOut.address : currencyOut.isNative ? 'ETH' : '',
+  //       })
+  //     )
+  //   },
+  //   [dispatch]
+  // )
+
+  // const onCurrencySelection = useCallback(
+  //   (field: Field, currency: Currency) => {
+  //     dispatch(
+  //       selectCurrency({
+  //         field,
+  //         currencyId: currency.isToken ? currency.address : currency.isNative ? 'ETH' : '',
+  //       })
+  //     )
+  //   },
+  //   [dispatch]
+  // )
 
   const onSwitchTokens = useCallback(
     (leverage: boolean) => {
@@ -180,8 +190,8 @@ export function useSwapActionHandlers(): {
   )
 
   return {
-    onPairSelection,
-    onCurrencySelection,
+    // onPairSelection,
+    // onCurrencySelection,
     onSwitchTokens,
     onUserInput,
     onChangeRecipient,
@@ -194,6 +204,7 @@ export function useSwapActionHandlers(): {
     onBorrowManagerAddress,
     onPremiumChange,
     onSwitchSwapModalTab,
+    onPoolSelection,
   }
 }
 
@@ -235,26 +246,26 @@ export interface BorrowCreationDetails {
 // for pos struct totalDebtInput
 // is the amount borrowed given collateral and ltv
 
-export function useBestPoolAddress(
-  inputCurrency: Currency | undefined,
-  outputCurrency: Currency | undefined
-): string | undefined {
-  const { loading, routes } = useAllV3Routes(inputCurrency, outputCurrency)
-  const { chainId } = useWeb3React()
-  if (loading || routes.length === 0 || !chainId || routes[0].pools.length === 0) {
-    return undefined
-  }
+// export function useBestPoolAddress(
+//   inputCurrency: Currency | undefined,
+//   outputCurrency: Currency | undefined
+// ): string | undefined {
+//   const { loading, routes } = useAllV3Routes(inputCurrency, outputCurrency)
+//   const { chainId } = useWeb3React()
+//   if (loading || routes.length === 0 || !chainId || routes[0].pools.length === 0) {
+//     return undefined
+//   }
 
-  const pool = routes[0].pools[0]
+//   const pool = routes[0].pools[0]
 
-  return computePoolAddress({
-    factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-    tokenA: pool.token0,
-    tokenB: pool.token1,
-    fee: pool.fee,
-    initCodeHashManualOverride: POOL_INIT_CODE_HASH,
-  })
-}
+//   return computePoolAddress({
+//     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+//     tokenA: pool.token0,
+//     tokenB: pool.token1,
+//     fee: pool.fee,
+//     initCodeHashManualOverride: POOL_INIT_CODE_HASH,
+//   })
+// }
 
 // from the current swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(): {
@@ -410,10 +421,9 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
   const typedValue = parseTokenAmountURLParameter(parsedQs.exactAmount)
   const independentField = parseIndependentFieldURLParameter(parsedQs.exactField)
 
+  let poolFee
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
     // Defaults to having the native currency selected
-    // inputCurrency = getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
-    // outputCurrency = getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
     const storedCurrencyIn = localStorage.getItem('currencyIn')
     const storedCurrencyOut = localStorage.getItem('currencyOut')
     inputCurrency = storedCurrencyIn
@@ -422,9 +432,11 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     outputCurrency = storedCurrencyOut
       ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
       : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+    poolFee = 500
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''
+    poolFee = null
   }
 
   const recipient = validatedRecipient(parsedQs.recipient)
@@ -450,6 +462,7 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     borrowManagerAddress: null,
     premium: null,
     tab: 'Long',
+    poolFee,
   }
 }
 
@@ -483,6 +496,7 @@ export function useDefaultsFromURLSearch(): SwapState {
         leverage: true,
         activeTab: ActiveSwapTab.LONG,
         tab: 'Long',
+        poolFee: parsedSwapState.poolFee ?? undefined,
       })
     )
   }, [dispatch, chainId, parsedSwapState])

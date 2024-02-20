@@ -11,12 +11,8 @@ import useGeckoDatafeed from './useGeckoDataFeed'
 // const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 
 const ChartContainer = styled.div`
-  height: 550px;
-  margin-bottom: 5px;
-  /* border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 1px 0; */
-  margin-bottom: 0.5rem;
   width: 100%;
+  height: 100%;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px;
   border-radius: 10px;
@@ -80,7 +76,7 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
         user_id: defaultChartProps.userId,
         description: 'https://www.geckoterminal.com/',
         custom_css_url: defaultChartProps.custom_css_url,
-        autosize: true,
+        autosize: false,
         fullscreen: false,
         overrides: {
           ...defaultChartProps.overrides,
@@ -124,7 +120,8 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
       <div
         style={{
           padding: '5px',
-          height: '535px',
+          height: '100%',
+          width: '100%',
           border: 'solid #98A1C03d',
           borderWidth: '0 0 0 0',
         }}

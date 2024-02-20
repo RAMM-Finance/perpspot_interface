@@ -22,7 +22,6 @@ import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency, useToken } from '../../../hooks/Tokens'
-import { Field } from '../../../state/swap/actions'
 import {
   useSwapActionHandlers,
   // useSwapState,
@@ -446,7 +445,8 @@ export function TokenRow({
   fee?: number
 }) {
   const navigate = useNavigate()
-  const { onCurrencySelection } = useSwapActionHandlers()
+  // const { onCurrencySelection } = useSwapActionHandlers()
+  const { onPoolSelection } = useSwapActionHandlers()
   const token0 = useCurrency(currency0)
   const token1 = useCurrency(currency1)
 
@@ -487,11 +487,8 @@ export function TokenRow({
             }}
             onClick={(e) => {
               e.stopPropagation()
-              localStorage.setItem('currencyIn', JSON.stringify(token0?.wrapped.address))
-              localStorage.setItem('currencyOut', JSON.stringify(token1?.wrapped.address))
-              token0 && onCurrencySelection(Field.INPUT, token0)
-              token1 && onCurrencySelection(Field.OUTPUT, token1)
-              if (currency1 && currency0 && token0 && token1) {
+              if (currency1 && currency0 && token0 && token1 && fee) {
+                onPoolSelection(token0, token1, fee)
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },
                 })
@@ -610,16 +607,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // logo, tokenname, price, tvl,
   // go to swap page
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
-  const {
-    onSwitchTokens,
-    onCurrencySelection,
-    onUserInput,
-    onChangeRecipient,
-    onLeverageFactorChange,
-    onHideClosedLeveragePositions,
-    onLeverageChange,
-    onLeverageManagerAddress,
-  } = useSwapActionHandlers()
+  const { onPoolSelection } = useSwapActionHandlers()
   // const handleInputSelect = useCallback(
   //   (inputCurrency: Currency) => {
   //     onCurrencySelection(Field.INPUT, inputCurrency)
@@ -628,12 +616,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // )
   const navigate = useNavigate()
 
-  const handleCurrencySelect = useCallback((currencyIn: Currency, currencyOut: Currency) => {
-    localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
-    localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-    onCurrencySelection(Field.INPUT, currencyIn)
-    onCurrencySelection(Field.OUTPUT, currencyOut)
-  }, [])
+  const handleCurrencySelect = useCallback(
+    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      onPoolSelection(currencyIn, currencyOut, fee)
+    },
+    [onPoolSelection]
+  )
 
   //   const {
   //   // trade: { state: tradeState, trade },
@@ -711,11 +699,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     <RowWrapper
       ref={ref}
       onClick={() => {
-        if (token0 && token1) {
+        if (token0 && token1 && pool) {
           navigate({
             pathname: '/swap',
           })
-          handleCurrencySelect(token0, token1)
+          handleCurrencySelect(token0, token1, pool.fee)
         }
       }}
       data-testid={`token-table-row-${currencyIda?.symbol}`}

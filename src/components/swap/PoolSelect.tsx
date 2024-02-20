@@ -1,15 +1,18 @@
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { computePoolAddress } from '@uniswap/v3-sdk'
+import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
+import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
+import { usePoolsData } from 'hooks/useLMTPools'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
@@ -18,7 +21,7 @@ import { Box } from 'nft/components/Box'
 import { Column, Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
-import { useGetPoolsAndData } from 'state/application/hooks'
+import { usePoolKeyList } from 'state/application/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -55,8 +58,6 @@ const Status = styled.div`
 `
 
 const ListWrapper = styled.div`
-  overflow-y: auto;
-  height: 200px;
   width: 100%;
 `
 
@@ -102,7 +103,6 @@ const Wrapper = styled.div`
 
 const DropWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
-
   margin-bottom: 0.5rem;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -111,6 +111,201 @@ const DropWrapper = styled.div`
   padding: 0.25rem;
   height: fit-content;
 `
+
+const LabelWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+`
+
+const SelectPoolWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-evenly;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+`
+
+const MainWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 0.4fr 1fr;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  margin-bottom: 0.2rem;
+`
+
+export function SelectPool() {
+  const theme = useTheme()
+
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
+
+  const { chainId } = useWeb3React()
+
+  const {
+    [Field.INPUT]: { currencyId: inputCurrencyId },
+    [Field.OUTPUT]: { currencyId: outputCurrencyId },
+    poolFee,
+  } = useSwapState()
+
+  const { onPoolSelection } = useSwapActionHandlers()
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
+
+  const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
+  // Timeout token loader after 3 seconds to avoid hanging in a loading state.
+  useEffect(() => {
+    const tokenLoaderTimer = setTimeout(() => {
+      setTokenLoaderTimerElapsed(true)
+    }, 3000)
+    return () => clearTimeout(tokenLoaderTimer)
+  }, [])
+
+  const isLoading = Boolean(!tokenLoaderTimerElapsed)
+
+  const handleCurrencySelect = useCallback(
+    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      if (
+        (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
+        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
+        (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
+        (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
+      ) {
+        onPoolSelection(currencyIn, currencyOut, fee)
+      } else {
+        onPoolSelection(currencyIn, currencyOut, fee)
+      }
+    },
+    [onPoolSelection]
+  )
+
+  const { keyList: availablePools } = usePoolKeyList()
+
+  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolFee ?? undefined)
+
+  // const poolAddress = useMemo(() => {
+  //   if (!pool || !chainId) return null
+  //   return computePoolAddress({
+  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+  //     tokenA: pool.token0,
+  //     tokenB: pool.token1,
+  //     fee: pool.fee,
+  //   })
+  // }, [chainId, pool])
+  // const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
+  const { result: poolData } = usePoolsData()
+
+  // const [currentPrice, delta] = useMemo(() => {
+  //   if (!priceData || !pool) return [undefined, undefined]
+
+  //   const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
+  //   const token0Price = new BN(pool.token0Price.toFixed(18))
+  //   const price = invertPrice ? new BN(1).div(token0Price) : token0Price
+
+  //   const price24hAgo = priceData.price24hAgo
+  //   const delt = price.minus(price24hAgo).div(price).times(100)
+  //   return [price, delt]
+  // }, [chainId, priceData, pool])
+
+  const drop = (
+    <NavDropdown
+      ref={modalRef}
+      style={{
+        background: '#040609',
+        position: 'absolute',
+        height: 'fit-content',
+        zIndex: '3',
+        marginTop: '3px',
+        width: '300px',
+        left: '0',
+        top: '110px',
+      }}
+    >
+      <DropWrapper>
+        <Row flexDirection="column">
+          <PoolListContainer>
+            <PoolListHeader>Pool</PoolListHeader>
+
+            <PoolListHeader>24h Δ</PoolListHeader>
+            <PoolListHeader>Price</PoolListHeader>
+          </PoolListContainer>
+        </Row>
+        <ListWrapper>
+          {isLoading ? (
+            <AutoColumn gap="5px">
+              <LoadingRow />
+              <LoadingRow />
+              <LoadingRow />
+              <LoadingRow />
+              <LoadingRow />
+              <LoadingRow />
+            </AutoColumn>
+          ) : (
+            <Column style={{ gap: '3px' }}>
+              {availablePools &&
+                availablePools.map((curr: any) => {
+                  return (
+                    <PoolSelectRow
+                      closeModal={setIsOpen}
+                      currencyId={[curr.token0, curr.token1]}
+                      onCurrencySelect={handleCurrencySelect}
+                      key={`${curr.token0}-${curr.token1}-${curr.fee}`}
+                      fee={curr?.fee}
+                      chainId={chainId}
+                    />
+                  )
+                })}
+            </Column>
+          )}
+        </ListWrapper>
+      </DropWrapper>
+    </NavDropdown>
+  )
+
+  const chevronProps = {
+    height: 15,
+    width: 15,
+    color: theme.textSecondary,
+  }
+
+  return (
+    <MainWrapper>
+      <SelectPoolWrapper onClick={() => setIsOpen(true)}>
+        <LabelWrapper>
+          <Row>
+            <DoubleCurrencyLogo
+              currency0={inputCurrency as Currency}
+              currency1={outputCurrency as Currency}
+              size={20}
+            />
+            <ThemedText.HeadlineSmall>{`${inputCurrency?.symbol}/${outputCurrency?.symbol}`}</ThemedText.HeadlineSmall>
+          </Row>
+          <ThemedText.BodySmall fontSize="14px">({poolFee ? poolFee / 10000 : 0}%)</ThemedText.BodySmall>
+        </LabelWrapper>
+        <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
+      </SelectPoolWrapper>
+      <PoolStatsSection
+        poolData={poolData}
+        chainId={chainId}
+        inputAddress={inputCurrency?.wrapped.address}
+        outputAddress={outputCurrency?.wrapped.address}
+        fee={pool?.fee}
+      />
+      {isOpen && <>{drop}</>}
+    </MainWrapper>
+  )
+}
 
 export default function PoolSelect({
   detailsLoading,
@@ -131,9 +326,10 @@ export default function PoolSelect({
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
+    poolFee,
   } = useSwapState()
 
-  const { onCurrencySelection, onPairSelection } = useSwapActionHandlers()
+  const { onPoolSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -149,46 +345,29 @@ export default function PoolSelect({
   const isLoading = Boolean(!tokenLoaderTimerElapsed)
 
   const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency) => {
+    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
       if (
         (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
         (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
         (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
         (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
       ) {
-        localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))
-        localStorage.setItem('currencyOut', JSON.stringify(currencyIn.wrapped.address))
-        onCurrencySelection(Field.INPUT, currencyOut)
-        onCurrencySelection(Field.OUTPUT, currencyIn)
+        onPoolSelection(currencyIn, currencyOut, fee)
       } else {
-        localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
-        localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-        onCurrencySelection(Field.INPUT, currencyIn)
-        onCurrencySelection(Field.OUTPUT, currencyOut)
+        onPoolSelection(currencyIn, currencyOut, fee)
       }
-      // onPairSelection(Field.INPUT, Field.OUTPUT, currencyIn, currencyOut)
     },
-    [onCurrencySelection]
+    [onPoolSelection]
   )
-  interface Pool {
-    blockTimeStamp: string
-    fee: number
-    id: string
-    pool: string
-    tickDiscretization: number
-    token0: string
-    token1: string
-    __typename: string
-  }
 
-  const availablePools = useGetPoolsAndData()
+  const { keyList: availablePools } = usePoolKeyList() //useGetPoolsAndData()
 
   const pair = useMemo(() => {
     if (!availablePools) {
       return undefined
     } else {
       return availablePools.find(
-        (pool: Pool) =>
+        (pool) =>
           (pool.token0 === inputCurrency?.wrapped.address && pool.token1 === outputCurrency?.wrapped.address) ||
           (pool.token1 === inputCurrency?.wrapped.address && pool.token0 === outputCurrency?.wrapped.address)
       )
@@ -207,25 +386,6 @@ export default function PoolSelect({
     })
   }, [chainId, pool])
   const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
-  // const priceData = undefined as any
-
-  // const token0Decimals = pool?.token0?.decimals
-  // const token1Decimals = pool?.token1?.decimals
-  // const { provider } = useWeb3React()
-  // const { data: token0Price } = useQuery(
-  //   ['currentPrice', poolAddress, token0Decimals, token1Decimals],
-  //   async () => {
-  //     if (!poolAddress) throw new Error('No pool address')
-  //     if (!token1Decimals) throw new Error('No token1 decimals')
-  //     if (!token0Decimals) throw new Error('No token0 decimals')
-  //     if (!provider) throw new Error('no provider')
-  //     return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
-  //   },
-  //   {
-  //     keepPreviousData: true,
-  //     refetchInterval: 1000 * 20,
-  //   }
-  // )
 
   const [currentPrice, delta] = useMemo(() => {
     if (!priceData || !pool) return [undefined, undefined]
@@ -240,17 +400,7 @@ export default function PoolSelect({
   }, [chainId, priceData, pool])
 
   const drop = (
-    <NavDropdown
-      ref={modalRef}
-      style={{
-        background: '#040609',
-        position: 'absolute',
-        height: 'fit-content',
-        zIndex: '3',
-        marginTop: '3px',
-        width: '320px',
-      }}
-    >
+    <NavDropdown ref={modalRef}>
       <DropWrapper>
         <Row flexDirection="column">
           <PoolListContainer>
@@ -369,7 +519,7 @@ export default function PoolSelect({
                     <ThemedText.BodySmall fontSize={13} fontWeight={800}>
                       {outputCurrency?.symbol}
                     </ThemedText.BodySmall>
-                    <ThemedText.BodySmall fontSize="12px">({pair?.fee / 10000}%)</ThemedText.BodySmall>
+                    <ThemedText.BodySmall fontSize="12px">({pair?.fee ? pair.fee / 10000 : 0}%)</ThemedText.BodySmall>
                   </Label>
                 </Row>
                 <ThemedText.BodyPrimary fontSize="12px">

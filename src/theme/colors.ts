@@ -129,6 +129,7 @@ type Theme = typeof darkTheme
 
 const commonTheme = {
   white: colors.white,
+  mainBackground: '#18181d',
   black: colors.black,
   chain_1: colors.networkEthereum,
   chain_3: colors.yellow400,

@@ -5,6 +5,7 @@ import { ethers } from 'ethers'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQuery } from 'react-query'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 
 import { AppState } from '../types'
@@ -20,6 +21,50 @@ import {
 export function useModalIsOpen(modal: ApplicationModal): boolean {
   const openModal = useAppSelector((state: AppState) => state.application.openModal)
   return openModal === modal
+}
+
+export function usePoolKeyList(): {
+  keyList: { token0: string; token1: string; fee: number }[] | undefined
+  loading: boolean
+  error: any
+} {
+  const { data, error, isLoading } = useQuery(
+    'poolKeyList',
+    async () => {
+      const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
+      if (!poolQueryData.data) {
+        throw new Error('No data returned from pool query')
+      }
+      console.log('fetching pools')
+      return poolQueryData.data.poolAddeds
+        .filter(
+          (val: any) =>
+            val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
+            val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
+            ethers.utils.getAddress(val.token0) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' &&
+            ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66'
+        )
+        .map((val: any) => {
+          return {
+            token0: ethers.utils.getAddress(val.token0),
+            token1: ethers.utils.getAddress(val.token1),
+            fee: val.fee,
+          }
+        })
+    },
+    {
+      keepPreviousData: true,
+      refetchInterval: 1000 * 60 * 5,
+    }
+  )
+
+  return useMemo(() => {
+    return {
+      keyList: data,
+      loading: isLoading,
+      error,
+    }
+  }, [data, isLoading, error])
 }
 
 export function useGetPoolsAndData() {
@@ -54,6 +99,7 @@ export function useGetPoolsAndData() {
         setLoading(false)
       }
     }
+    console.log('calling')
     call()
   }, [error, loading])
 

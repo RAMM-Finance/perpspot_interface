@@ -1,33 +1,36 @@
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { Currency, TradeType } from '@uniswap/sdk-core'
+import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
+import { BigNumber as BN } from 'bignumber.js'
+import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { PoolDetailsSection } from 'components/swap/PoolDetailsSection'
-import PoolSelect from 'components/swap/PoolSelect'
+import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
+import { SelectPool } from 'components/swap/PoolSelect'
+import { PostionsContainer } from 'components/swap/PostionsContainer'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 // import _ from 'lodash'
 // import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
-import { TabContent } from 'components/Tabs'
-import { TokenNameCell } from 'components/Tokens/TokenDetails/Skeleton'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { getFakeSymbol, isFakePair } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
-import { useBestPool } from 'hooks/useBestPool'
+// import { useBestPool } from 'hooks/useBestPool'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
+import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
+import { usePool } from 'hooks/usePools'
 // import Widget from 'components/Widget'
 // import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
-import { Row } from 'nft/components/Flex'
 import JoinModal from 'pages/Join'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -42,15 +45,6 @@ import TradeTabContent from './tradeModal'
 // const SwapTabContent = React.lazy(() => import('./swapModal'))
 
 // const BorrowTabContent = React.lazy(() => import('./borrowModal'));
-
-const TableHeader = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  width: 100%;
-  background-color: ${({ theme }) => theme.backgroundSurface};
-`
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -95,7 +89,6 @@ export const InputHeader = styled.div`
 export const SwapSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
-  padding: 16px;
   color: ${({ theme }) => theme.textSecondary};
   font-size: 14px;
   line-height: 20px;
@@ -166,111 +159,90 @@ export const LeverageGaugeSection = styled.div`
 
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
-  padding: 0px;
-  margin-top: 4px;
-  margin-bottom: 8px;
   width: 100%;
 `
 
-const PositionsContainer = styled.div`
-  width: calc(100% - 315px);
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
-  margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-  height: calc(100vh - 582px);
-  min-height: 150px;
-  border-radius: 10px;
-  overflow-y: scroll;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  overflow-x: scroll;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-`
+// const PositionsContainer = styled.div`
+//   width: calc(100% - 315px);
+//   background-color: ${({ theme }) => theme.backgroundSurface};
+//   border: solid 1px ${({ theme }) => theme.backgroundOutline};
+//   margin-bottom: 0.5rem;
+//   margin-left: 0.25rem;
+//   margin-right: 0.25rem;
+//   height: calc(100vh - 582px);
+//   min-height: 150px;
+//   border-radius: 10px;
+//   overflow-y: scroll;
+//   ::-webkit-scrollbar {
+//     display: none;
+//   }
+//   overflow-x: scroll;
+//   ::-webkit-scrollbar {
+//     display: none;
+//   }
+// `
 
-const StatsContainer = styled.div`
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 10px;
-  /* max-width: 1200px; */
-  padding: 18px;
-  width: 100%;
-  margin-bottom: 25px;
-  margin-left: auto;
-`
+// const StatsContainer = styled.div`
+//   background-color: ${({ theme }) => theme.backgroundSurface};
+//   border-radius: 10px;
+//   /* max-width: 1200px; */
+//   padding: 18px;
+//   width: 100%;
+//   margin-bottom: 25px;
+//   margin-left: auto;
+// `
 
-const RightContainer = styled.div`
-  display: flex;
-  width: 100%;
-  min-width: calc(100% - 420px);
-  flex-direction: column;
-  justify-content: flex-start;
-  align-content: center;
-`
+// const RightContainer = styled.div`
+//   display: flex;
+//   width: 100%;
+//   min-width: calc(100% - 420px);
+//   flex-direction: column;
+//   justify-content: flex-start;
+//   align-content: center;
+// `
 
-const ActivityWrapper = styled.section`
-  overflow: hidden;
+// const ActivityWrapper = styled.section`
+//   overflow: hidden;
 
-  background-color: ${({ theme }) => theme.backgroundSurface};
-`
-const ActivityInnerWarpper = styled.div`
-  padding: 20px 30px;
-  max-height: 390px;
-  overflow-y: auto;
+//   background-color: ${({ theme }) => theme.backgroundSurface};
+// `
+// const ActivityInnerWarpper = styled.div`
+//   padding: 20px 30px;
+//   max-height: 390px;
+//   overflow-y: auto;
 
-  ::-webkit-scrollbar {
-    background-color: transparent;
-    width: 10px;
-  }
+//   ::-webkit-scrollbar {
+//     background-color: transparent;
+//     width: 10px;
+//   }
 
-  ::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.background};
-    border: none;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-`
+//   ::-webkit-scrollbar-thumb {
+//     background-color: ${({ theme }) => theme.background};
+//     border: none;
+//   }
+//   ::-webkit-scrollbar-track {
+//     background-color: transparent;
+//   }
+// `
 
 const SwapHeaderWrapper = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
   align-items: center;
-  grid-column: span 2;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-
-  border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 1px;
-  border-radius: 10px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
+  height: 100%;
 `
 
 const MainWrapper = styled.article`
   width: 100%;
-  height: 1200px;
-  display: flex;
-`
-
-const TabsWrapper = styled.div`
-  display: flex;
-`
-
-const MissingHistoryWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-  color: ${({ theme }) => theme.textPrimary};
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 0;
+  display: grid;
+  grid-template-columns: 1.6fr 0.5fr 0.65fr;
+  grid-template-rows: 65vh 35vh;
+  @media screen and (min-width: ${BREAKPOINTS.sm}px) {
+  }
+  grid-gap: 0.5rem;
+  margin-top: 0.7rem;
 `
 
 export function getIsValidSwapQuote(
@@ -281,168 +253,91 @@ export function getIsValidSwapQuote(
   return !!swapInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
+function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
+  if (!pool || !chainId) return undefined
+  const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
+  // console.log(
+  //   'symbol',
+  //   computePoolAddress({
+  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+  //     tokenA: pool.token0,
+  //     tokenB: pool.token1,
+  //     fee: pool.fee,
+  //   }),
+  //   pool.token0.address,
+  //   pool.token1.address
+  // )
+  const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
+  const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
+  if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
+    return getFakeSymbol(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
+  }
+  return JSON.stringify({
+    poolAddress: computePoolAddress({
+      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+      tokenA: pool.token0,
+      tokenB: pool.token1,
+      fee: pool.fee,
+    }),
+    baseSymbol,
+    quoteSymbol,
+  })
+}
+
+const LeftContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const PositionsWrapper = styled.div`
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  margin-bottom: 0.5rem;
+  min-height: 30vh;
+  // height: 100%;
+  border-radius: 10px;
+  overflow-y: scroll;
+  grid-column: 1/3;
+  grid-row: 2;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  overflow-x: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+`
+
+const LiquidityDistibutionWrapper = styled.div`
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  margin-bottom: 0.5rem;
+  width: 100%;
+  border-radius: 10px;
+  padding: 1rem;
+  height: 100%;
+  grid-column: 2;
+  grid-row: 1;
+  overflow: hidden;
+`
+
 export default function Swap({ className }: { className?: string }) {
-  // const navigate = useNavigate()
   const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
   const { account, chainId, provider } = useWeb3React()
-
-  // const loadedUrlParams = useDefaultsFromURLSearch()
-  const [newSwapQuoteNeedsLogging, setNewSwapQuoteNeedsLogging] = useState(true)
-  const [fetchingSwapQuoteStartTime, setFetchingSwapQuoteStartTime] = useState<Date | undefined>()
-  // const [swapHeight, setSwapHeight] = useState<number>()
-
-  // /**
-  //  * @parms swapWrapperREf SwapWrapper componenet height
-  //  * @parms swapHeaderHeight : SwapHeaderWrapper component height
-  //  */
-
-  // const swapWrapperRef = useRef<HTMLElement>()
-  // const swapHeaderRef = useRef<HTMLElement>()
-  // const swapWrapperHeight = swapWrapperRef.current?.scrollHeight
-  // const swapHeaderHeight = swapHeaderRef.current?.scrollHeight
-
-  // const swapWidgetEnabled = useSwapWidgetEnabled()
-
-  // const { onLeverageManagerAddress, onBorrowManagerAddress } = useSwapActionHandlers()
-
-  // token warning stuff
-  // const [loadedInputCurrency, loadedOutputCurrency] = [
-  //   useCurrency(loadedUrlParams?.[Field.INPUT]?.currencyId),
-  //   useCurrency(loadedUrlParams?.[Field.OUTPUT]?.currencyId),
-  // ]
-  // const [dismissTokenWarning, setDismissTokenWarning] = useState<boolean>(false)
-  // const urlLoadedTokens: Token[] = useMemo(
-  //   () => [loadedInputCurrency, loadedOutputCurrency]?.filter((c): c is Token => c?.isToken ?? false) ?? [],
-  //   [loadedInputCurrency, loadedOutputCurrency]
-  // )
-
-  // const handleConfirmTokenWarning = useCallback(() => {
-  //   setDismissTokenWarning(true)
-  // }, [])
-
-  // dismiss warning if all imported tokens are in active lists
-  // const defaultTokens = useDefaultActiveTokens()
-  // const importTokensNotInDefault = useMemo(
-  //   () =>
-  //     urlLoadedTokens &&
-  //     urlLoadedTokens
-  //       .filter((token: Token) => {
-  //         return !(token.address in defaultTokens)
-  //       })
-  //       .filter((token: Token) => {
-  //         // Any token addresses that are loaded from the shorthands map do not need to show the import URL
-  //         const supported = supportedChainId(chainId)
-  //         if (!supported) return true
-  //         return !Object.keys(TOKEN_SHORTHANDS).some((shorthand) => {
-  //           const shorthandTokenAddress = TOKEN_SHORTHANDS[shorthand][supported]
-  //           return shorthandTokenAddress && shorthandTokenAddress === token.address
-  //         })
-  //       }),
-  //   [chainId, defaultTokens, urlLoadedTokens]
-  // )
-
-  // const {
-  //   trade: { state: tradeState, trade },
-  //   // allowedSlippage,
-  //   // currencyBalances,
-  //   // parsedAmount,
-  //   currencies,
-  // } = useDerivedSwapInfo()
-
-  // const [inputCurrency, outputCurrency] = useMemo(() => {
-  //   return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
-  // }, [currencies])
   const {
-    independentField,
-    typedValue,
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    recipient,
+
     activeTab,
+    poolFee,
   } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-
-  // const inputIsToken0 = outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
-
-  // const baseCurrency = useMemo(() => {
-  //   return inputIsToken0 ? inputCurrency : outputCurrency
-  // }, [inputIsToken0])
-
-  // const sorted = baseCurrency === inputCurrency
-  // const quoteCurrency = sorted ? outputCurrency : inputCurrency
-  const [poolState, pool] = useBestPool(inputCurrency ?? undefined, outputCurrency ?? undefined)
-  // const theme = useTheme()
-
-  // toggle wallet when disconnected
-  // const toggleWalletDrawer = useToggleWalletDrawer()
-
-  // for expert mode
-  // const [isExpertMode] = useExpertModeManager()
-
-  // const isBorrowTab = ActiveSwapTab.BORROW == activeTab
-
-  // const {
-  //   wrapType,
-  //   // execute: onWrap,
-  //   // inputError: wrapInputError,
-  // } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
-
-  // const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
-  //   () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
-  //   [trade, tradeState]
-  // )
-
-  // reset if they close warning without tokens in params
-  // const handleDismissTokenWarning = useCallback(() => {
-  //   setDismissTokenWarning(true)
-  //   navigate('/swap/')
-  // }, [navigate])
-
-  // errors
-  // const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
-  // warnings on the greater of fiat value price impact and execution price impact
+  const [poolState, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolFee ?? undefined)
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
-
-  // Handle time based logging events and event properties.
-  // useEffect(() => {
-  //   const now = new Date()
-  //   // If a trade exists, and we need to log the receipt of this new swap quote:
-  //   if (newSwapQuoteNeedsLogging && !!trade) {
-  //     // Set the current datetime as the time of receipt of latest swap quote.
-  //     setSwapQuoteReceivedDate(now)
-  //     // Log swap quote.
-  //     sendAnalyticsEvent(
-  //       SwapEventName.SWAP_QUOTE_RECEIVED,
-  //       formatSwapQuoteReceivedEventProperties(trade, trade.gasUseEstimateUSD ?? undefined, fetchingSwapQuoteStartTime)
-  //     )
-  //     // Latest swap quote has just been logged, so we don't need to log the current trade anymore
-  //     // unless user inputs change again and a new trade is in the process of being generated.
-  //     setNewSwapQuoteNeedsLogging(false)
-  //     // New quote is not being fetched, so set start time of quote fetch to undefined.
-  //     setFetchingSwapQuoteStartTime(undefined)
-  //   }
-  //   // If another swap quote is being loaded based on changed user inputs:
-  //   if (routeIsLoading) {
-  //     setNewSwapQuoteNeedsLogging(true)
-  //     if (!fetchingSwapQuoteStartTime) setFetchingSwapQuoteStartTime(now)
-  //   }
-  // }, [
-  //   newSwapQuoteNeedsLogging,
-  //   routeIsSyncing,
-  //   routeIsLoading,
-  //   fetchingSwapQuoteStartTime,
-  //   trade,
-  //   setSwapQuoteReceivedDate,
-  // ])
-
-  // const leverageLoading = false
-  // const leveragePositions = [] as any
-  // const error = undefined
-  // const leverageSyncing = false
 
   const {
     loading: leverageLoading,
@@ -453,78 +348,50 @@ export default function Swap({ className }: { className?: string }) {
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
-  // const orderLoading = false
-  // const limitOrders = [
-  //   {
-  //     key: {
-  //       token0Address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-  //       token1Address: '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4',
-  //       fee: 300,
-  //     },
-  //     isAdd: true,
-  //     positionIsToken0: true,
-  //     auctionDeadline: 1707609706,
-  //     auctionStartTime: 1707604706,
-  //     startOutput: new BN(0.02),
-  //     minOutput: new BN(0.01),
-  //     inputAmount: new BN(200),
-  //     decayRate: new BN(0.01),
-  //     margin: new BN(200),
-  //     currentOutput: new BN(0.015),
-  //   },
-  // ]
-  // const orderLoading = false
-  // const limitOrders = [] as any
-
-  // const { result: binData } = useBulkBinData(pool?.token0?.address, pool?.token1?.address, pool?.fee, pool?.tickCurrent)
-
-  // const currentPrice = Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192
-
   const location = useLocation()
   const { result: poolData } = usePoolsData()
+
+  const chartSymbol = useMemo(() => getSymbol(pool ?? undefined, chainId), [pool, chainId])
+  const { result: binData } = useBulkBinData(pool ?? undefined)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <>
         <PageWrapper>
           {warning ? null : <Disclaimer setWarning={setWarning} />}
-          <SwapHeaderWrapper>
-            <TokenNameCell>
+
+          <MainWrapper>
+            <SwapHeaderWrapper>
               {inputCurrency && outputCurrency ? (
-                <Row>
-                  <PoolSelect chainId={chainId} detailsLoading={false} dropdown={true} />
-                </Row>
+                <SelectPool />
               ) : (
                 <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
               )}
-            </TokenNameCell>
-            <PoolStatsSection
-              poolData={poolData}
-              chainId={chainId}
-              inputAddress={inputCurrency?.wrapped.address}
-              outputAddress={outputCurrency?.wrapped.address}
-              fee={pool?.fee}
-            />
-          </SwapHeaderWrapper>
-          <MainWrapper>
+              {chartSymbol && chainId && <PoolDataChart symbol={chartSymbol} chainId={chainId} />}
+            </SwapHeaderWrapper>
+
+            <LiquidityDistibutionWrapper>
+              <LiquidityDistributionTable
+                bin={binData}
+                address0={pool?.token0.address}
+                address1={pool?.token1?.address}
+                fee={pool?.fee}
+                chainId={chainId}
+              />
+            </LiquidityDistibutionWrapper>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
               {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
-              <TabContent id={ActiveSwapTab.SWAP} activeTab={activeTab}>
-                <SwapTabContent />
-              </TabContent>
+              {activeTab === ActiveSwapTab.SWAP && <SwapTabContent />}
             </SwapWrapper>
-            <RightContainer>
-              <PoolDetailsSection
+            <PositionsWrapper>
+              <PostionsContainer
                 account={account}
                 orders={limitOrders}
                 loadingOrders={orderLoading}
                 positions={leveragePositions}
                 loadingPositions={leverageLoading}
-                chainId={chainId}
-                pool={pool}
-                poolState={poolState}
               />
-            </RightContainer>
+            </PositionsWrapper>
           </MainWrapper>
           {location.pathname.substring(0, 6) === '/join/' ? <JoinModal /> : null}
           <Footer />

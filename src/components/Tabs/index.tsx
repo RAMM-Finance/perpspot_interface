@@ -27,7 +27,6 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
 const SettingWrapper = styled.div`
   display: flex;
   margin-right: 20px;
-  margin-top: 17px;
 `
 
 // the order of displayed base currencies from left to right is always in sort order
@@ -171,7 +170,7 @@ const TabElement = styled.button<{
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 6px 8px;
+  padding: 0.25rem;
   justify-content: center;
   height: 100%;
   border: none;
@@ -195,8 +194,6 @@ const TabElement = styled.button<{
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  margin-right: ${({ last }) => (last ? '8px' : '0')};
-  margin-top: 15px;
 
   :hover {
     user-select: initial;
@@ -208,18 +205,5 @@ const TabElement = styled.button<{
     color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
     // background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
     transition: left 0.5s;
-  }
-`
-
-const SwapBtn = styled(TabElement)`
-  cursor: ${({ isTrade }) => (isTrade === 0 ? 'pointer' : 'default')};
-  :hover {
-    user-select: initial;
-    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
-  }
-  :active {
-    user-select: initial;
-    color: ${({ isTrade, theme }) => (isTrade === 0 ? theme.textSecondary : 'none')};
-    background: ${({ isTrade, theme }) => (isTrade === 0 ? theme.deprecated_primary5 : 'none')};
   }
 `

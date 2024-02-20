@@ -154,7 +154,6 @@ export function PoolDetailsSection({
         </PositionsWrapper>
       </MiddleContainer>
       <RightContainer>
-        <PoolSelect chainId={chainId} detailsLoading={false} dropdown={false} />
         <LiquidityDistibutionWrapper>
           <LiquidityDistributionTable
             // token0={token0}

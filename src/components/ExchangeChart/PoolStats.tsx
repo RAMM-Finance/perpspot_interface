@@ -78,29 +78,6 @@ export function PoolStatsSection({
     poolAddress ?? undefined,
   ])
 
-  // const token0Decimals = currency0?.decimals
-  // const token1Decimals = currency1?.decimals
-  // const { provider } = useWeb3React()
-  // const { data: token0Price } = useQuery(
-  //   ['currentPrice', poolAddress, token0Decimals, token1Decimals],
-  //   async () => {
-  //     if (!poolAddress) throw new Error('No pool address')
-  //     if (!token1Decimals) throw new Error('No token1 decimals')
-  //     if (!token0Decimals) throw new Error('No token0 decimals')
-  //     if (!provider) throw new Error('No provider')
-  //     try {
-  //       return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
-  //     } catch (err) {
-  //       console.log('token0Price err', err)
-  //       throw new Error('Failed to fetch token0 price')
-  //     }
-  //   },
-  //   {
-  //     keepPreviousData: true,
-  //     refetchInterval: 1000 * 20,
-  //   }
-  // )
-
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
     if (!pool || !poolData || !priceData) return [null, false, null, null, null, null, null]
 
@@ -150,7 +127,7 @@ export function PoolStatsSection({
         delta={true}
         title={
           <ThemedText.BodySmall>
-            <Trans>24h Change (Δ)</Trans>
+            <Trans>24h Change</Trans>
           </ThemedText.BodySmall>
         }
         loading={loading}
@@ -206,7 +183,9 @@ export function PoolStatsSection({
 const StatWrapper = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 12px;
-  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   width: 100%;
   font-weight: 900;
   border-rounded: 10px;

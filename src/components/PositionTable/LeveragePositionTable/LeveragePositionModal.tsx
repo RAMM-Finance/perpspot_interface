@@ -63,6 +63,7 @@ const TabElement = styled(BaseButton)<{ isActive: boolean; first?: boolean; last
   cursor: pointer;
   padding: 0.5rem 0.35rem;
   margin-right: 0.25rem;
+  margin: 0;
   outline: none;
   border-radius: 10px;
   border: 1px solid ${({ theme }) => theme.background};
@@ -120,7 +121,6 @@ const ActionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 0.5rem;
-  padding-top: 0.5rem;
   align-items: center;
   justify-content: flex-start;
   border-right: 1px solid ${({ theme }) => theme.backgroundOutline};

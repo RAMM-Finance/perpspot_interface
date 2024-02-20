@@ -1,4 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit'
+import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { parsedQueryString } from 'hooks/useParsedQueryString'
 
@@ -6,8 +7,7 @@ import {
   ActiveSwapTab,
   Field,
   replaceSwapState,
-  selectCurrency,
-  selectPair,
+  selectPool,
   setActiveTab,
   setBorrowManagerAddress,
   setHideClosedLeveragePositions,
@@ -34,6 +34,7 @@ export interface SwapState {
   readonly [Field.OUTPUT]: {
     readonly currencyId: string | undefined | null
   }
+  readonly poolFee: FeeAmount | undefined | null
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
   readonly leverageFactor: string | null
@@ -76,6 +77,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
             borrowManagerAddress,
             premium,
             tab,
+            poolFee,
           },
         }
       ) => {
@@ -100,50 +102,16 @@ export default createReducer<SwapState>(initialState, (builder) =>
           borrowManagerAddress: borrowManagerAddress ?? null,
           premium: premium ?? null,
           tab: tab ?? 'Long',
+          poolFee: null,
         }
       }
     )
-    .addCase(selectCurrency, (state, { payload: { currencyId, field } }) => {
-      const otherField = field === Field.INPUT ? Field.OUTPUT : Field.INPUT
-      if (currencyId === state[otherField].currencyId) {
-        // the case where we have to swap the order
-        return {
-          ...state,
-          independentField: state.independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT,
-          [field]: { currencyId },
-          [otherField]: { currencyId: state[field].currencyId },
-        }
-      } else if (field === Field.INPUT) {
-        // the normal case
-        localStorage.setItem('currencyIn', JSON.stringify(currencyId))
-        return {
-          ...state,
-          originInputId: currencyId,
-          [field]: { currencyId },
-        }
-      } else if (field === Field.OUTPUT) {
-        localStorage.setItem('currencyOut', JSON.stringify(currencyId))
-        return {
-          ...state,
-          originInputId: currencyId,
-          [field]: { currencyId },
-        }
-      } else {
-        return {
-          ...state,
-          [field]: { currencyId },
-        }
-      }
-    })
-    .addCase(selectPair, (state, { payload: { fieldIn, fieldOut, currencyIdIn, currencyIdOut } }) => {
-      localStorage.setItem('currencyIn', JSON.stringify(currencyIdIn))
-      localStorage.setItem('currencyOut', JSON.stringify(currencyIdOut))
+    .addCase(selectPool, (state, { payload: { inputCurrencyId, outputCurrencyId, poolFee } }) => {
       return {
         ...state,
-        originInputId: currencyIdIn,
-        originOutputId: currencyIdOut,
-        [fieldIn]: { currencyIdIn },
-        [fieldOut]: { currencyIdOut },
+        [Field.INPUT]: { currencyId: inputCurrencyId },
+        [Field.OUTPUT]: { currencyId: outputCurrencyId },
+        poolFee,
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {

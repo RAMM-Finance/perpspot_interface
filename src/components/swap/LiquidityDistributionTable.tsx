@@ -28,7 +28,6 @@ const LiquidityDistributionTable = ({
   chainId?: number
   bin: BinData[] | undefined
 }) => {
-  // const [inverse, setInverse] = useState(false)
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
@@ -40,6 +39,7 @@ const LiquidityDistributionTable = ({
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
   const [, pool] = usePool(token1 ?? undefined, token0 ?? undefined, fee)
+
   const poolAddress = useMemo(() => {
     if (!pool || !chainId) return null
     return computePoolAddress({
@@ -199,7 +199,7 @@ const LiquidityDistributionTable = ({
   const ref = useRef<HTMLInputElement>(null)
 
   const [scrollPosition, setScrollPosition] = useState(400)
-  console.log(scrollPosition)
+  // console.log(scrollPosition)
 
   useEffect(() => {
     setScrollPosition(400)

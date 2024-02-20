@@ -55,11 +55,14 @@ import { ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, 
 
 const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
-  padding: 1rem;
-  padding-top: 0rem;
+  padding: 0.75rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
+  width: 100%;
+  height: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
 `
 
 function largerPercentValue(a?: Percent, b?: Percent) {
@@ -80,16 +83,14 @@ const SwapTabContent = () => {
 
   const {
     onSwitchTokens,
-    onCurrencySelection,
+
     onUserInput,
     onChangeRecipient,
     onLeverageFactorChange,
-    // onLeverageChange,
     onPremiumChange,
-    onSwitchSwapModalTab,
   } = useSwapActionHandlers()
 
-  const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()
+  const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
   const {
     trade: { state: tradeState, trade },
@@ -100,18 +101,7 @@ const SwapTabContent = () => {
     inputError: swapInputError,
   } = useDerivedSwapInfo()
 
-  const {
-    independentField,
-    typedValue,
-    recipient,
-    // leverageFactor,
-    // leverage,
-    // leverageManagerAddress,
-    // activeTab,
-    // ltv,
-    // borrowManagerAddress,
-    // premium,
-  } = useSwapState()
+  const { independentField, typedValue, recipient } = useSwapState()
 
   const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash, showLeverageConfirm }, setSwapState] =
     useState<{
@@ -322,17 +312,17 @@ const SwapTabContent = () => {
     }
   }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash, onLeverageFactorChange, onPremiumChange])
 
-  const handleInputSelect = useCallback(
-    (inputCurrency: Currency) => {
-      onCurrencySelection(Field.INPUT, inputCurrency)
-    },
-    [onCurrencySelection]
-  )
+  // const handleInputSelect = useCallback(
+  //   (inputCurrency: Currency) => {
+  //     onCurrencySelection(Field.INPUT, inputCurrency)
+  //   },
+  //   [onCurrencySelection]
+  // )
 
-  const handleOutputSelect = useCallback(
-    (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
-    [onCurrencySelection]
-  )
+  // const handleOutputSelect = useCallback(
+  //   (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
+  //   [onCurrencySelection]
+  // )
 
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onUserInput(Field.INPUT, maxInputAmount.toExact())
@@ -433,7 +423,7 @@ const SwapTabContent = () => {
         fiatValueOutput={fiatValueTradeOutput}
       />
 
-      <div style={{ display: 'relative' }}>
+      <div style={{ display: 'relative', marginTop: '1rem' }}>
         <InputSection>
           <InputHeader>
             <ThemedText.BodySecondary fontWeight={400}>
@@ -448,7 +438,7 @@ const SwapTabContent = () => {
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
-             // onCurrencySelect={handleInputSelect}
+              // onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
@@ -457,7 +447,6 @@ const SwapTabContent = () => {
             />
           </Trace>
         </InputSection>
-
         <ArrowWrapper clickable={isSupportedChain(chainId)}>
           <TraceEvent
             events={[BrowserEvent.onClick]}
@@ -479,7 +468,7 @@ const SwapTabContent = () => {
         </ArrowWrapper>
       </div>
       <div>
-        <div>
+        <div style={{ display: 'relative', marginBottom: '1rem' }}>
           <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
             <ThemedText.BodySecondary fontWeight={400}>
               <Trans>Buy</Trans>

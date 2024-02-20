@@ -54,7 +54,7 @@ export const PoolSelector = ({
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
-  const { onCurrencySelection, onPairSelection } = useSwapActionHandlers()
+  const { onPoolSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -84,20 +84,18 @@ export const PoolSelector = ({
         (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
         (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
       ) {
-        localStorage.setItem('currencyIn', JSON.stringify(currencyOut.wrapped.address))
-        localStorage.setItem('currencyOut', JSON.stringify(currencyIn.wrapped.address))
-        onCurrencySelection(Field.INPUT, currencyOut)
-        onCurrencySelection(Field.OUTPUT, currencyIn)
+        onPoolSelection(currencyIn, currencyOut, fee)
         navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
       } else {
-        localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
-        localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-        onCurrencySelection(Field.INPUT, currencyIn)
-        onCurrencySelection(Field.OUTPUT, currencyOut)
+        onPoolSelection(currencyIn, currencyOut, fee)
+        // localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+        // localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
+        // onCurrencySelection(Field.INPUT, currencyIn)
+        // onCurrencySelection(Field.OUTPUT, currencyOut)
         navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
       }
     },
-    [navigate]
+    [onPoolSelection, navigate]
   )
 
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
