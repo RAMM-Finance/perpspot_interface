@@ -166,7 +166,7 @@ const LiquidityDistributionTable = ({
       .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
   }, [bin, token0Price])
 
-  console.log(inverse)
+  // console.log(inverse)
   // const posMax = useMemo(() => {
   //   if (bin && currentPrice && token0 && token1) {
   //     return Math.max(

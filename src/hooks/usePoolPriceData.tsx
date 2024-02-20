@@ -8,34 +8,9 @@ import { useQuery } from 'react-query'
 const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote') => {
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
 }
-const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
-// 0x0be4ac7da6cd4bad60d96fbc6d091e1098afa358
-// 0x0E4831319A50228B9e450861297aB92dee15B44F
-// const getQuery = (baseAddress: string, quoteAddress: string): string => {
-//   return `
-//   {
-//     EVM(network: arbitrum, dataset: combined) {
-//       DEXTradeByTokens(
-//         where: {Trade: {Side: {Currency: {SmartContract: {is: "${baseAddress}"}}}, Currency: {SmartContract: {is: "${quoteAddress}"}}}}
-//         limit: {count: 1}
-//         orderBy: {descending: Block_Number}
-//       ) {
-//         Trade {
-//           high: Price(maximum: Trade_Price)
-//           low: Price(minimum: Trade_Price)
-//           open: Price(minimum: Block_Number)
-//           close: Price(maximum: Block_Number)
-//         }
-//          Block {
-//           Date(interval: { in: days, count: 1 })
-//         }
-//       }
-//     }
-//   }
-//   `
-// }
 
-// const endpoint = 'https://streaming.bitquery.io/graphql'
+const apiKey = process.env.REACT_APP_GECKO_API_KEY
+const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
 // fetches 24h OHLCV data, in base token.
 export function useLatestPoolPriceData(
@@ -58,7 +33,7 @@ export function useLatestPoolPriceData(
       console.log('useLatestPoolPriceData', poolAddress)
       if (!poolAddress) throw new Error('No pool address')
       try {
-        if (!process.env.REACT_APP_GECKO_API_KEY) throw new Error('missing key')
+        if (!apiKey) throw new Error('missing key')
         const response = await axios.get(
           formatEndpoint(
             poolAddress.toLocaleLowerCase(),
@@ -68,7 +43,7 @@ export function useLatestPoolPriceData(
           {
             headers: {
               Accept: 'application/json',
-              'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
+              'x-cg-pro-api-key': apiKey,
             },
           }
         )

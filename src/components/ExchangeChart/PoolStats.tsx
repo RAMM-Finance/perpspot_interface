@@ -30,29 +30,17 @@ export const StatsWrapper = styled.div`
 
 export function PoolStatsSection({
   chainId,
-  inputAddress,
-  outputAddress,
+  address0,
+  address1,
   fee,
   poolData,
 }: {
   chainId?: number
-  inputAddress?: string
-  outputAddress?: string
+  address0?: string
+  address1?: string
   fee?: number
   poolData: any
 }) {
-  const [address0, address1] = useMemo(() => {
-    if (!inputAddress || !outputAddress) return [undefined, undefined]
-
-    const inputIs0 = inputAddress.toLowerCase() < outputAddress.toLowerCase()
-
-    if (inputIs0) {
-      return [inputAddress, outputAddress]
-    } else {
-      return [outputAddress, inputAddress]
-    }
-  }, [inputAddress, outputAddress])
-
   const currency0 = useCurrency(address0)
   const currency1 = useCurrency(address1)
 

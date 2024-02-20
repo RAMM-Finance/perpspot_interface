@@ -194,29 +194,7 @@ export function SelectPool() {
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolFee ?? undefined)
 
-  // const poolAddress = useMemo(() => {
-  //   if (!pool || !chainId) return null
-  //   return computePoolAddress({
-  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-  //     tokenA: pool.token0,
-  //     tokenB: pool.token1,
-  //     fee: pool.fee,
-  //   })
-  // }, [chainId, pool])
-  // const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
   const { result: poolData } = usePoolsData()
-
-  // const [currentPrice, delta] = useMemo(() => {
-  //   if (!priceData || !pool) return [undefined, undefined]
-
-  //   const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
-  //   const token0Price = new BN(pool.token0Price.toFixed(18))
-  //   const price = invertPrice ? new BN(1).div(token0Price) : token0Price
-
-  //   const price24hAgo = priceData.price24hAgo
-  //   const delt = price.minus(price24hAgo).div(price).times(100)
-  //   return [price, delt]
-  // }, [chainId, priceData, pool])
 
   const drop = (
     <NavDropdown
@@ -281,7 +259,7 @@ export function SelectPool() {
 
   return (
     <MainWrapper>
-      <SelectPoolWrapper onClick={() => setIsOpen(true)}>
+      <SelectPoolWrapper onClick={() => setIsOpen(!isOpen)}>
         <LabelWrapper>
           <Row>
             <DoubleCurrencyLogo
@@ -298,8 +276,8 @@ export function SelectPool() {
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}
-        inputAddress={inputCurrency?.wrapped.address}
-        outputAddress={outputCurrency?.wrapped.address}
+        address0={pool?.token0.address}
+        address1={pool?.token1.address}
         fee={pool?.fee}
       />
       {isOpen && <>{drop}</>}
