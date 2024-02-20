@@ -27,6 +27,7 @@ import { PageTabs } from '../components/NavBar'
 import NavBar from '../components/NavBar'
 import Polling from '../components/Polling'
 import Popups from '../components/Popups'
+import ScaffoldingAccount from '../components/account/ScaffoldingAccount'
 import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
 import AddLiquidity from './AddLiquidity'
@@ -43,6 +44,7 @@ import PoolV2 from './Pool/v2'
 import PoolFinder from './PoolFinder'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
 import Swap from './Swap'
+import Account from './Account'
 import { RedirectPathToSwapOnly } from './Swap/redirects'
 import Tokens from './Tokens'
 import ReferralPage from './Referral'
@@ -233,8 +235,9 @@ export default function App() {
             <Suspense fallback={<Loader />}>
               {isLoaded ? (
                 <Routes>
-                  <Route path="/" element={<Swap />} />
-
+                  {/* <Route path="/" element={<Swap />} /> */}
+                  <Route path="/" element={<Account />} />
+                  
                   <Route path="tokens" element={<Tokens />}>
                     <Route path=":chainName" />
                   </Route>
@@ -268,7 +271,7 @@ export default function App() {
                   <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
                     <Route path=":currencyIdA" />
                     <Route path=":currencyIdA/:currencyIdB" />
-                  </Route>
+                  </Route> 
                   <Route path="add" element={<RedirectDuplicateTokenIds />}>
                     {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
                     <Route path=":currencyIdA" />
@@ -292,10 +295,12 @@ export default function App() {
 
                   <Route path="*" element={<Navigate to="/not-found" replace />} />
                   <Route path="/not-found" element={<NotFound />} />
+
                 </Routes>
               ) : (
                 <Loader />
               )}
+
             </Suspense>
           </BodyWrapper>
           <MobileBottomBar>

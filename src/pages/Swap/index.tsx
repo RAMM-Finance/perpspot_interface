@@ -489,23 +489,23 @@ export default function Swap({ className }: { className?: string }) {
         <PageWrapper>
           {warning ? null : <Disclaimer setWarning={setWarning} />}
           <SwapHeaderWrapper>
-            <TokenNameCell>
-              {inputCurrency && outputCurrency ? (
-                <Row>
-                  <PoolSelect chainId={chainId} detailsLoading={false} dropdown={true} />
-                </Row>
-              ) : (
-                <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
-              )}
-            </TokenNameCell>
-            <PoolStatsSection
-              poolData={poolData}
-              chainId={chainId}
-              inputAddress={inputCurrency?.wrapped.address}
-              outputAddress={outputCurrency?.wrapped.address}
-              fee={pool?.fee}
-            />
-          </SwapHeaderWrapper>
+              <TokenNameCell>
+                {inputCurrency && outputCurrency ? (
+                  <Row>
+                    <PoolSelect chainId={chainId} detailsLoading={false} dropdown={true} />
+                  </Row>
+                ) : (
+                  <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
+                )}
+              </TokenNameCell>
+              <PoolStatsSection
+                poolData={poolData}
+                chainId={chainId}
+                inputAddress={inputCurrency?.wrapped.address}
+                outputAddress={outputCurrency?.wrapped.address}
+                fee={pool?.fee}
+              />
+            </SwapHeaderWrapper>
           <MainWrapper>
             <SwapWrapper chainId={chainId} className={className} id="swap-page">
               {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
