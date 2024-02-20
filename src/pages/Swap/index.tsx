@@ -30,7 +30,7 @@ import { useLocation } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
-import { BREAKPOINTS, ThemedText } from 'theme'
+import { ThemedText } from 'theme'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -229,7 +229,6 @@ const SwapHeaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  width: 100%;
   align-items: center;
   height: 100%;
 `
@@ -237,10 +236,8 @@ const SwapHeaderWrapper = styled.div`
 const MainWrapper = styled.article`
   width: 100%;
   display: grid;
-  grid-template-columns: 1.6fr 0.5fr 0.65fr;
+  grid-template-columns: 1.7fr 0.6fr 0.7fr;
   grid-template-rows: 65vh 35vh;
-  @media screen and (min-width: ${BREAKPOINTS.sm}px) {
-  }
   grid-gap: 0.5rem;
   margin-top: 0.7rem;
 `
@@ -256,22 +253,12 @@ export function getIsValidSwapQuote(
 function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
   if (!pool || !chainId) return undefined
   const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
-  // console.log(
-  //   'symbol',
-  //   computePoolAddress({
-  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-  //     tokenA: pool.token0,
-  //     tokenB: pool.token1,
-  //     fee: pool.fee,
-  //   }),
-  //   pool.token0.address,
-  //   pool.token1.address
-  // )
   const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
   const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
   if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
     return getFakeSymbol(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
   }
+
   return JSON.stringify({
     poolAddress: computePoolAddress({
       factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
@@ -283,11 +270,6 @@ function getSymbol(pool: Pool | undefined, chainId: number | undefined): string 
     quoteSymbol,
   })
 }
-
-const LeftContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`
 
 const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -316,8 +298,6 @@ const LiquidityDistibutionWrapper = styled.div`
   border-radius: 10px;
   padding: 1rem;
   height: 100%;
-  grid-column: 2;
-  grid-row: 1;
   overflow: hidden;
 `
 

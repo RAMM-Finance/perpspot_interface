@@ -1,9 +1,3 @@
-import {
-  LARGE_MEDIA_BREAKPOINT,
-  MAX_WIDTH_MEDIA_BREAKPOINT,
-  MEDIUM_MEDIA_BREAKPOINT,
-  SMALL_MEDIA_BREAKPOINT,
-} from 'components/Tokens/constants'
 import { TooltipContainer } from 'components/Tooltip'
 import { transparentize } from 'polished'
 import { ReactNode } from 'react'
@@ -35,29 +29,12 @@ export const PageWrapper = styled.div`
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-
   margin-bottom: 0.5rem;
   transition: transform 250ms ease;
   display: grid;
   width: 100%;
-  grid-row: 1 / 3;
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr;
-  }
-  flex-grow: 1; /* Grow to absorb all available space */
-  flex-shrink: 1; /* Allow shrinking if needed */
+  flex-grow: 1;
+  flex-shrink: 1;
 `
 // export const LimitWrapper = styled.div`
 //   position: relative;
