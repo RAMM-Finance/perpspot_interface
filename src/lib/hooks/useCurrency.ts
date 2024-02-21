@@ -96,7 +96,11 @@ export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string
     || address == "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4"
     || address == "0x3082CC23568eA640225c2467653dB90e9250AaA0"
     || address == "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66"
-
+    || address == "0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0"
+    || address == "0x18c11FD286C5EC11c3b683Caa813B77f5163A122"
+    || address == "0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978"
+    || address == "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66"
+    || address == "0x6694340fc020c5e6b96567843da2df01b2ce1eb6"
     ) && token) 
     tokenFromNetwork= new Token(token?.chainId, token?.address, token?.decimals, token?.symbol, token?.name)
 
