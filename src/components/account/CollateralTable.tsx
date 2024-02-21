@@ -105,7 +105,7 @@ type TCollateral = {
   balance?: string
   composition: string | { isIcon: boolean; src: string[] }
   apy?: string
-  value: { dollar: any; percent: string | null }
+  value: number 
   actions: string
   price: number
 }
@@ -168,18 +168,7 @@ const CollateralTable = ({ collateral }: ICollateralTableProps) => {
               if (key === 'value')
                 return (
                   <TableData key={key}>
-                    {value.percent ? (
-                      <TableText textAlign="left">
-                        {value.dollar}
-                        {value.percent && (
-                          <PlusText>
-                            <br /> {value.percent}
-                          </PlusText>
-                        )}
-                      </TableText>
-                    ) : (
-                      <TableText textAlign="center">{value.dollar}</TableText>
-                    )}
+                    <TableText textAlign="left">{value.toFixed(3)}</TableText>
                   </TableData>
                 )
               if (key === 'actions')
@@ -203,7 +192,7 @@ const CollateralTable = ({ collateral }: ICollateralTableProps) => {
               if (key === 'price')
                 return (
                   <TableData key={key}>
-                    <TableText textAlign="left">{Number(value).toFixed(4)}</TableText>
+                    <TableText textAlign="left">${Number(value).toFixed(4)}</TableText>
                   </TableData>
                 )
               if (key === 'composition' && value.isIcon)
