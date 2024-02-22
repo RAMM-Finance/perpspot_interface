@@ -104,7 +104,18 @@ const Selector = styled.div<{ active: boolean }>`
 //     }
 //   }
 // }
-
+function canRefer(address:any){
+  if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0x817A10B23332573e1D1f1D04Aa24aCe7e72318ba"))
+    return true 
+  else if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0xd16E596d6F9556e0fC79A15DD26c22349912B4dA") )
+    return true 
+  else if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0x95e46c08d802a24aC2357217FFdceBa17FcCa082") )
+    return true 
+  else if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0xFc2Dc5e8D28cA4974010bdA2222045A43803A888") )
+    return true 
+  
+  else return false 
+}
 function decodeResult(result: any) {
   try {
     // First, try decoding as string
@@ -523,7 +534,9 @@ const Referrals = () => {
   }, [activeCodes])
 
   console.log('maxcode', maxCodeUsage)
-
+  const accountCanRefer = useMemo(()=>{
+    return canRefer(account)
+  }, [account])
   return (
     <Wrapper>
       <FilterWrapper>
@@ -533,7 +546,7 @@ const Referrals = () => {
             <StyledSelectorText active={referral}>User</StyledSelectorText>
           </Selector>
           <Selector active={!referral}>
-            <StyledSelectorText active={!referral}>Referrer(coming soon)</StyledSelectorText>
+            <StyledSelectorText active={!referral}>Referrer</StyledSelectorText>
           </Selector>
         </Filter>
       </FilterWrapper>
@@ -552,10 +565,10 @@ const Referrals = () => {
               rebates!
             </ThemedText.BodyPrimary>
             <Input
-              placeholder="Enter referral code"
+              placeholder={!accountCanRefer? "Coming soon": "Create Referral Code"}
               id="refferal-code"
               ref={referralRef}
-              disabled={false}
+              disabled={!accountCanRefer}
               onChange={handleUserRefChange}
             ></Input>
             {/*<Input
