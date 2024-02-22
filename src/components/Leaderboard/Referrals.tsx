@@ -113,6 +113,8 @@ function canRefer(address:any){
     return true 
   else if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0xFc2Dc5e8D28cA4974010bdA2222045A43803A888") )
     return true 
+  else if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0x5455d09d5a5B962eEdD8C0C9451eabe8cD0e61FF") )
+    return true 
 
   else return false 
 }
