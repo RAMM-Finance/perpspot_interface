@@ -30,7 +30,7 @@ export function useLatestPoolPriceData(
   const { data } = useQuery(
     ['poolPriceData', poolAddress],
     async () => {
-      console.log('useLatestPoolPriceData', poolAddress)
+      // console.log('useLatestPoolPriceData', poolAddress)
       if (!poolAddress) throw new Error('No pool address')
       try {
         if (!apiKey) throw new Error('missing key')
@@ -52,7 +52,7 @@ export function useLatestPoolPriceData(
         }
         throw new Error('Failed to fetch pool price data')
       } catch (err) {
-        console.log('poolPriceData err', err)
+        // console.log('poolPriceData err', err)
         throw new Error('Failed to fetch pool price data')
       }
     },

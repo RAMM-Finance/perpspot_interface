@@ -426,13 +426,14 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     // Defaults to having the native currency selected
     const storedCurrencyIn = localStorage.getItem('currencyIn')
     const storedCurrencyOut = localStorage.getItem('currencyOut')
+    const storedPoolFee = localStorage.getItem('poolFee')
     inputCurrency = storedCurrencyIn
       ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
-      : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
+      : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
     outputCurrency = storedCurrencyOut
       ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
-      : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-    poolFee = 500
+      : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
+    poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''

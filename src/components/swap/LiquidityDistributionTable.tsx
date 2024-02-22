@@ -199,19 +199,39 @@ const LiquidityDistributionTable = ({
   // console.log('currentPrice', posMax, negMax, currentPrice?.toString())
 
   const ref = useRef<HTMLInputElement>(null)
+  const upperRef = useRef<HTMLInputElement>(null)
 
-  const [scrollPosition, setScrollPosition] = useState(400)
+  const startHeight = useMemo(() => {
+    if (!upperRef.current?.offsetHeight || !ref.current?.offsetHeight || !bin) {
+      localStorage.removeItem('scroll')
+      return 0
+    }
+    if (upperRef.current.offsetHeight > ref.current.offsetHeight) return upperRef.current.offsetHeight
+    localStorage.removeItem('scroll')
+    return 0
+  }, [bin])
+
+  const localData = localStorage.getItem('scroll') === null
+
+  const [scrollPosition, setScrollPosition] = useState(() => {
+    return localData ? startHeight : parseInt(JSON.parse(localStorage.getItem('scroll') || '{}'), 10)
+  })
 
   useEffect(() => {
-    setScrollPosition(400)
-    if (bin) {
-      ref.current?.scrollTo({ top: scrollPosition })
+    if (startHeight) {
+      setScrollPosition(() => {
+        return localData ? startHeight : parseInt(JSON.parse(localStorage.getItem('scroll') || '{}'), 10)
+      })
+      if (bin) {
+        ref.current?.scrollTo({ top: scrollPosition })
+      }
     }
-  }, [bin])
+  }, [bin, startHeight, scrollPosition, localData])
 
   const handleScroll = (e: any) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target
     const position = scrollTop
+    localStorage.setItem('scroll', JSON.stringify(position))
     setScrollPosition(position)
   }
 
@@ -250,7 +270,7 @@ const LiquidityDistributionTable = ({
             <LoadingRow />
           </AutoColumn>
         ) : (
-          <NegativeData>
+          <NegativeData ref={upperRef}>
             {inverse
               ? binsBelow.map((bin) => {
                   return (
