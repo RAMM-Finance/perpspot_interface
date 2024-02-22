@@ -527,8 +527,8 @@ const Referrals = () => {
   return (
     <Wrapper>
       <FilterWrapper>
-        {/*<Filter onClick={() => setReferral(!referral)}>*/}
-          <Filter>
+        <Filter onClick={() => setReferral(!referral)}>
+          {/*<Filter>*/}
           <Selector active={referral}>
             <StyledSelectorText active={referral}>User</StyledSelectorText>
           </Selector>
