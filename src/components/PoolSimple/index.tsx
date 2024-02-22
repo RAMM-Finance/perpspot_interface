@@ -1120,10 +1120,10 @@ export default function SimplePool() {
               wethOnly={!buy && outputCurrency?.symbol === 'limWETH'}
               priceImpact={
                 buy
-                  ? computeFiatValuePriceImpact(value / (llpPrice / 1e18), currencyAFiat.data)
+                  ? computeFiatValuePriceImpact(currencyAFiat.data, value * (llpPrice / 1e18))
                   : computeFiatValuePriceImpact(
-                      value * activePrice,
-                      inputValue && inputValue / 1e18 / (llpPrice / 1e18)
+                      inputValue && (inputValue / 1e18) * (llpPrice / 1e18),
+                      value * activePrice
                     )
               }
               llp={true}
