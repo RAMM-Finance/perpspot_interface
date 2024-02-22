@@ -113,7 +113,7 @@ function canRefer(address:any){
     return true 
   else if(ethers.utils.getAddress(address) == ethers.utils.getAddress("0xFc2Dc5e8D28cA4974010bdA2222045A43803A888") )
     return true 
-  
+
   else return false 
 }
 function decodeResult(result: any) {
@@ -530,7 +530,7 @@ const Referrals = () => {
   }, [tradeProcessedByTrader, account])
 
   const referralLink = useMemo(() => {
-    return `${window.location.href.substring(0, window.location.href.length - 11)}join/${activeCodes}`
+    return `${window.location.href.substring(0, window.location.href.length - 11)}/#join/${activeCodes}`
   }, [activeCodes])
 
   console.log('maxcode', maxCodeUsage)
