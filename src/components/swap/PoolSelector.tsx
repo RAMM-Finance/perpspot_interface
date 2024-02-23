@@ -34,7 +34,10 @@ const PoolListContainer = styled.div`
   padding-left: 1vw;
 `
 
-const SelectorRow = styled(Row)``
+const SelectorScrollBox = styled.div`
+  overflow: auto;
+  max-height: 400px;
+`
 
 export const PoolSelector = ({
   largeWidth,
@@ -223,6 +226,7 @@ export const PoolSelector = ({
           : { position: 'absolute', height: 'fit-content', zIndex: '3' }
       }
     >
+    <SelectorScrollBox> 
       <Row flexDirection="column">
         <PoolListContainer>
           <PoolListHeader>Pool (fee)</PoolListHeader>
@@ -231,26 +235,27 @@ export const PoolSelector = ({
           <PoolListHeader></PoolListHeader>
         </PoolListContainer>
       </Row>
-      <Row>
-        <Column paddingX="8">
-          {dataInfo &&
-            dataInfo.map((curr: any) => {
-              return (
-                <PoolSelectorRow
-                  currencyId={[curr.token0, curr.token1]}
-                  onCurrencySelect={handleCurrencySelect}
-                  key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                  fee={curr?.fee}
-                  setIsOpen={setIsOpen}
-                  setSelectPair={setSelectPair}
-                  selectPair={selectPair}
-                  tvl={curr.tvl}
-                  volume={curr.volume}
-                />
-              )
-            })}
-        </Column>
-      </Row>
+        <Row>
+          <Column paddingX="8">
+            {dataInfo &&
+              dataInfo.map((curr: any) => {
+                return (
+                  <PoolSelectorRow
+                    currencyId={[curr.token0, curr.token1]}
+                    onCurrencySelect={handleCurrencySelect}
+                    key={`${curr.token0}-${curr.token1}-${curr.fee}`}
+                    fee={curr?.fee}
+                    setIsOpen={setIsOpen}
+                    setSelectPair={setSelectPair}
+                    selectPair={selectPair}
+                    tvl={curr.tvl}
+                    volume={curr.volume}
+                  />
+                )
+              })}
+          </Column>
+        </Row>
+      </SelectorScrollBox>
     </NavDropdown>
   )
 
