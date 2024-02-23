@@ -471,6 +471,9 @@ export function usePointsData() {
         amount0Collected = amount0Collected - Number(sameTokenIdDecreases[i].amount0)
         amount1Collected = amount1Collected - Number(sameTokenIdDecreases[i].amount1)
       }
+      amount0Collected = amount0Collected >0 ? amount0Collected:0
+      amount1Collected = amount1Collected >0 ? amount1Collected:0
+
 
       let lpAddress = ethers.utils.getAddress(entry.operator)
       if (sameTokenIdCollects.length > 0) lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
@@ -580,7 +583,7 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log('collectData',vaultDataByAddress,  timeWeightedDeposits)
+  console.log('collectData',collectData, decreaseLiqData, vaultDataByAddress, lpPositionsByUniqueLps, timeWeightedDeposits)
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
