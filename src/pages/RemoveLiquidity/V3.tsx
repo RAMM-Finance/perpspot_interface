@@ -421,7 +421,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                     </AutoRow>
                   </RowBetween>
                   <Slider
-                    max={maximumWithdrawablePercentage}
+                    max={100}
                     value={percentForSlider}
                     onChange={onPercentSelectForSlider}
                   />
