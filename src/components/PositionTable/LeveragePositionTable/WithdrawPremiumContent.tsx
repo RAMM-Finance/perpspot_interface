@@ -27,9 +27,12 @@ import Toggle from 'components/Toggle'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { MarginFacility } from 'LmtTypes'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useQuery } from 'react-query'
 import { Text } from 'rebass'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -107,16 +110,27 @@ const CloseText = styled(ThemedText.LabelSmall)<{ isActive: boolean }>`
   color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textPrimary)};
 `
 
+interface WithdrawPremiumParams {
+  account?: string
+  marginFacility?: MarginFacility
+  positionKey: TraderPositionKey
+  inputCurrency?: Currency
+  outputCurrency?: Currency
+  parsedAmount?: BN
+  position?: MarginPositionDetails
+  withdrawAll?: boolean
+}
+
 function useDerivedWithdrawPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
-  setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPos: AlteredPositionProperties) => void,
   withdrawAll: boolean
 ): {
   txnInfo: DerivedWithdrawPremiumInfo | undefined
   inputError: ReactNode | undefined
+  tradeState: DerivedInfoState
 } {
   const marginFacility = useMarginFacilityContract()
   const inputCurrency = useCurrency(
@@ -126,105 +140,153 @@ function useDerivedWithdrawPremiumInfo(
     position?.isToken0 ? positionKey.poolKey.token0Address : positionKey.poolKey.token1Address
   )
 
-  const [txnInfo, setTxnInfo] = useState<DerivedWithdrawPremiumInfo>()
-  const [contractError, setContractError] = useState<React.ReactNode>()
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
-
   const { account } = useWeb3React()
+
+  const blockNumber = useBlockNumber()
+  const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>()
 
   const parsedAmount = useMemo(() => parseBN(amount), [amount])
 
-  useEffect(() => {
-    const lagged = async () => {
-      if (
-        !marginFacility ||
-        !position ||
-        !parsedAmount ||
-        parsedAmount.isLessThanOrEqualTo(0) ||
-        !pool ||
-        !inputCurrency ||
-        !outputCurrency ||
-        !account
-      ) {
-        setState(DerivedInfoState.INVALID)
-        setTxnInfo(undefined)
-        onPositionChange({})
-        return
-      }
+  const queryKeys = useMemo(() => {
+    if (
+      !marginFacility ||
+      !parsedAmount ||
+      !blockNumber ||
+      !inputCurrency ||
+      !outputCurrency ||
+      parsedAmount.isLessThanOrEqualTo(0)
+    )
+      return []
 
-      setState(DerivedInfoState.LOADING)
+    if (lastBlockNumber && lastBlockNumber + 3 < blockNumber) {
+      return ['withdrawPremium', lastBlockNumber, parsedAmount.toString(), withdrawAll]
+    }
 
+    return ['withdrawPremium', blockNumber, parsedAmount.toString(), withdrawAll]
+  }, [blockNumber, marginFacility, parsedAmount, lastBlockNumber, inputCurrency, outputCurrency, withdrawAll])
+
+  const simulateTxn = useCallback(async (params: WithdrawPremiumParams) => {
+    if (
+      !params.marginFacility ||
+      !params.positionKey ||
+      !params.inputCurrency ||
+      !params.outputCurrency ||
+      !params.positionKey ||
+      !params.parsedAmount ||
+      !params.position ||
+      params.parsedAmount.isLessThanOrEqualTo(0) ||
+      !params.account
+    ) {
+      throw new Error('invalid params')
+    }
+    // simulate the txn
+    await params.marginFacility.callStatic.withdrawPremium(
+      {
+        token0: params.positionKey.poolKey.token0Address,
+        token1: params.positionKey.poolKey.token1Address,
+        fee: params.positionKey.poolKey.fee,
+      },
+      params.positionKey.isToken0,
+      params.withdrawAll
+        ? params.position.premiumLeft.shiftedBy(params.inputCurrency.decimals).toFixed(0)
+        : params.parsedAmount.shiftedBy(params.inputCurrency.decimals).toFixed(0),
+      params.withdrawAll ?? false
+    )
+  }, [])
+
+  const { isLoading, isError, data, error } = useQuery({
+    staleTime: 30 * 1000, // 30s
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
+    enabled: !!queryKeys.length,
+    queryKey: queryKeys,
+    queryFn: async () => {
+      if (!blockNumber) throw new Error('missing block number')
       try {
-        await marginFacility.callStatic.withdrawPremium(
-          {
-            token0: positionKey.poolKey.token0Address,
-            token1: positionKey.poolKey.token1Address,
-            fee: positionKey.poolKey.fee,
-          },
-          positionKey.isToken0,
-          withdrawAll
-            ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
-            : parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-          withdrawAll
-        )
+        await simulateTxn({
+          account,
+          marginFacility: marginFacility ?? undefined,
+          positionKey,
+          inputCurrency: inputCurrency ?? undefined,
+          outputCurrency: outputCurrency ?? undefined,
+          parsedAmount,
+        })
+        setLastBlockNumber(blockNumber)
+        return true
+      } catch (err) {
+        console.log('deposit premium error', err)
+        throw err
+      }
+    },
+  })
 
-        const info: DerivedWithdrawPremiumInfo = {
+  useEffect(() => {
+    if (parsedAmount && position && data) {
+      onPositionChange({ premiumLeft: withdrawAll ? new BN(0) : position?.premiumLeft.minus(parsedAmount) })
+    } else {
+      if (position) {
+        onPositionChange({})
+      }
+    }
+  }, [parsedAmount, position, data, onPositionChange, withdrawAll])
+
+  const inputError = useMemo(() => {
+    let _error: React.ReactNode | undefined
+
+    if (!parsedAmount || parsedAmount.isLessThanOrEqualTo(0)) {
+      _error = _error ?? <Trans>Enter an amount</Trans>
+    }
+    if (!withdrawAll && parsedAmount && position && parsedAmount.gt(position.premiumLeft)) {
+      _error = _error ?? <Trans>Withdraw amount exceeds current deposit</Trans>
+    }
+
+    if (isError && error) {
+      _error = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
+    }
+
+    return _error
+  }, [parsedAmount, position, withdrawAll, isError, error])
+
+  return useMemo(() => {
+    if (data && position && parsedAmount && inputCurrency && !!queryKeys.length) {
+      return {
+        txnInfo: {
           newDepositAmount: withdrawAll
             ? new TokenBN(0, inputCurrency.wrapped, false)
             : new TokenBN(position.premiumLeft.minus(parsedAmount), inputCurrency.wrapped, false),
           amount: withdrawAll
             ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, false)
             : new TokenBN(parsedAmount, inputCurrency.wrapped, false),
-        }
-
-        onPositionChange({
-          premiumLeft: info.newDepositAmount,
-        })
-
-        setTxnInfo(info)
-        setState(DerivedInfoState.VALID)
-        setContractError(undefined)
-      } catch (err) {
-        setState(DerivedInfoState.INVALID)
-        setContractError(err)
-        setTxnInfo(undefined)
-        onPositionChange({})
+        },
+        tradeState: isLoading ? DerivedInfoState.LOADING : DerivedInfoState.VALID,
+        inputError,
       }
     }
 
-    lagged()
-  }, [
-    setState,
-    onPositionChange,
-    pool,
-    marginFacility,
-    account,
-    parsedAmount,
-    position,
-    positionKey,
-    inputCurrency,
-    outputCurrency,
-    withdrawAll,
-  ])
-
-  const inputError = useMemo(() => {
-    let error: React.ReactNode | undefined
-
-    if (!parsedAmount || parsedAmount.isLessThanOrEqualTo(0)) {
-      error = error ?? <Trans>Enter an amount</Trans>
+    if (isError || !!inputError) {
+      return {
+        txnInfo: undefined,
+        tradeState: DerivedInfoState.INVALID,
+        inputError,
+      }
     }
-    if (!withdrawAll && parsedAmount && position && parsedAmount.gt(position.premiumLeft)) {
-      error = error ?? <Trans>Withdraw amount exceeds current deposit</Trans>
-    }
-    return error
-  }, [parsedAmount, position, withdrawAll])
 
-  return useMemo(() => {
+    if (isLoading) {
+      return {
+        txnInfo: undefined,
+        tradeState: DerivedInfoState.LOADING,
+        inputError,
+      }
+    }
+
     return {
-      txnInfo,
+      txnInfo: undefined,
+      tradeState: DerivedInfoState.INVALID,
       inputError,
     }
-  }, [txnInfo, inputError])
+  }, [inputError, position, data, isLoading, isError, parsedAmount, inputCurrency, queryKeys, withdrawAll])
 }
 
 export function WithdrawPremiumContent({
@@ -247,17 +309,17 @@ export function WithdrawPremiumContent({
   const [txHash, setTxHash] = useState<string>()
   const [showDetails, setShowDetails] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
+  // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   const [errorMessage, setErrorMessage] = useState<string>()
   const [withdrawAll, setWithdrawAll] = useState<boolean>(false)
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
-  const { txnInfo, inputError } = useDerivedWithdrawPremiumInfo(
+  const { txnInfo, inputError, tradeState } = useDerivedWithdrawPremiumInfo(
     amount,
     positionKey,
     position,
-    setTradeState,
+    // setTradeState,
     onPositionChange,
     withdrawAll
   )

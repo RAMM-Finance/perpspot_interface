@@ -11,6 +11,7 @@ import { MulticallUpdater } from 'lib/state/multicall'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
 import { SystemThemeUpdater } from 'theme/components/ThemeToggle'
@@ -69,6 +70,7 @@ createRoot(container).render(
               </Web3Provider>
             </LanguageProvider>
           </HashRouter>
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </FeatureFlagsProvider>
     </Provider>

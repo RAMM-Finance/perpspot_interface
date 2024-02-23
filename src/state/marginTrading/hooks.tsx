@@ -179,16 +179,6 @@ export function useDerivedAddPositionInfo(
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
   const usingCode = useUsingCode()
-  // const {
-  //   [MarginField.MARGIN]: margin,
-  //   [MarginField.LEVERAGE_FACTOR]: leverageFactor,
-  //   isLimitOrder,
-  // } = useMarginTradingState()
-
-  // const {
-  //   [Field.INPUT]: { currencyId: inputCurrencyId },
-  //   [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  // } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)

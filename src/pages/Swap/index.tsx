@@ -339,7 +339,6 @@ export default function Swap({ className }: { className?: string }) {
       <>
         <PageWrapper>
           {warning ? null : <Disclaimer setWarning={setWarning} />}
-
           <MainWrapper>
             <SwapHeaderWrapper>
               {inputCurrency && outputCurrency ? (

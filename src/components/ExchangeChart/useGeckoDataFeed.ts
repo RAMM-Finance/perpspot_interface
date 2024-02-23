@@ -282,10 +282,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
                 nextBar = array[index + 1]
               }
 
-              if (
-                (prevBar && (bar.high > prevBar?.high * 20 || bar.low < prevBar?.low / 20)) ||
-                (nextBar && (bar.high > nextBar?.high * 20 || bar.low < nextBar?.low / 20))
-              ) {
+              if ((prevBar && bar.high > prevBar?.open * 2) || (nextBar && bar.high > nextBar?.open * 2)) {
                 return false
               }
               return true

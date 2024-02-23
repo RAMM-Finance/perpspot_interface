@@ -6,6 +6,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
+import PoolSelectModal from 'components/Modal/poolModal'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -197,58 +198,44 @@ export function SelectPool() {
   const { result: poolData } = usePoolsData()
 
   const drop = (
-    <NavDropdown
-      ref={modalRef}
-      style={{
-        background: '#040609',
-        position: 'absolute',
-        height: 'fit-content',
-        zIndex: '3',
-        marginTop: '3px',
-        width: '300px',
-        left: '0',
-        top: '110px',
-      }}
-    >
-      <DropWrapper>
-        <Row flexDirection="column">
-          <PoolListContainer>
-            <PoolListHeader>Pool</PoolListHeader>
+    <DropWrapper>
+      <Row flexDirection="column">
+        <PoolListContainer>
+          <PoolListHeader>Pool</PoolListHeader>
 
-            <PoolListHeader>24h Δ</PoolListHeader>
-            <PoolListHeader>Price</PoolListHeader>
-          </PoolListContainer>
-        </Row>
-        <ListWrapper>
-          {isLoading ? (
-            <AutoColumn gap="5px">
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-            </AutoColumn>
-          ) : (
-            <Column style={{ gap: '3px' }}>
-              {availablePools &&
-                availablePools.map((curr: any) => {
-                  return (
-                    <PoolSelectRow
-                      closeModal={setIsOpen}
-                      currencyId={[curr.token0, curr.token1]}
-                      onCurrencySelect={handleCurrencySelect}
-                      key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                      fee={curr?.fee}
-                      chainId={chainId}
-                    />
-                  )
-                })}
-            </Column>
-          )}
-        </ListWrapper>
-      </DropWrapper>
-    </NavDropdown>
+          <PoolListHeader>24h Δ</PoolListHeader>
+          <PoolListHeader>Price</PoolListHeader>
+        </PoolListContainer>
+      </Row>
+      <ListWrapper>
+        {isLoading ? (
+          <AutoColumn gap="5px">
+            <LoadingRow />
+            <LoadingRow />
+            <LoadingRow />
+            <LoadingRow />
+            <LoadingRow />
+            <LoadingRow />
+          </AutoColumn>
+        ) : (
+          <Column style={{ gap: '3px' }}>
+            {availablePools &&
+              availablePools.map((curr: any) => {
+                return (
+                  <PoolSelectRow
+                    closeModal={setIsOpen}
+                    currencyId={[curr.token0, curr.token1]}
+                    onCurrencySelect={handleCurrencySelect}
+                    key={`${curr.token0}-${curr.token1}-${curr.fee}`}
+                    fee={curr?.fee}
+                    chainId={chainId}
+                  />
+                )
+              })}
+          </Column>
+        )}
+      </ListWrapper>
+    </DropWrapper>
   )
 
   const chevronProps = {
@@ -280,7 +267,9 @@ export function SelectPool() {
         address1={pool?.token1.address}
         fee={pool?.fee}
       />
-      {isOpen && <>{drop}</>}
+      <PoolSelectModal isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
+        {drop}
+      </PoolSelectModal>
     </MainWrapper>
   )
 }
