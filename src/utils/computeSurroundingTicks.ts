@@ -8,6 +8,18 @@ import { Ticks } from '../graphql/thegraph/AllV3TicksQuery'
 
 const PRICE_FIXED_DIGITS = 8
 
+
+function safeParseToBigInt(liquidityNet:any) {
+  if (isNaN(liquidityNet) || liquidityNet === undefined || liquidityNet === null) {
+    // Handle the invalid case, perhaps log an error or set a default value
+    console.error("Invalid liquidityNet value:", liquidityNet)
+    return JSBI.BigInt(0); // Default value or throw an error
+  } else {
+    // It's safe to parse
+    return JSBI.BigInt(new BN(liquidityNet).toFixed(0))
+  }
+}
+
 // Computes the numSurroundingTicks above or below the active tick.
 export default function computeSurroundingTicks(
   token0: Token,
@@ -28,7 +40,8 @@ export default function computeSurroundingTicks(
     const tick = Number(sortedTickData[i].tick)
     // console.log('liquidityNet', sortedTickData[i].liquidityNet, new BN(sortedTickData[i].liquidityNet).toFixed(0))
 
-    const tickData = JSBI.BigInt(new BN(sortedTickData[i].liquidityNet).toFixed(0))
+    // const tickData = JSBI.BigInt(new BN(sortedTickData[i].liquidityNet).toFixed(0))
+    const tickData = safeParseToBigInt(sortedTickData[i].liquidityNet)
     const currentTickProcessed: TickProcessed = {
       liquidityActive: previousTickProcessed.liquidityActive,
       tick,
