@@ -30,16 +30,21 @@ export function useLatestPoolPriceData(
   const { data } = useQuery(
     ['poolPriceData', poolAddress],
     async () => {
-      // console.log('useLatestPoolPriceData', poolAddress)
       if (!poolAddress) throw new Error('No pool address')
       try {
         if (!apiKey) throw new Error('missing key')
+        let denomination
+        if (
+          poolAddress === '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
+          poolAddress === '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
+          poolAddress === '0xC6962004f452bE9203591991D15f6b388e09E8D0'
+        ) {
+          denomination = 'quote'
+        } else {
+          denomination = 'base'
+        }
         const response = await axios.get(
-          formatEndpoint(
-            poolAddress.toLocaleLowerCase(),
-            'token',
-            poolAddress.toLowerCase() === '0x0e4831319a50228b9e450861297ab92dee15b44f'.toLowerCase() ? 'quote' : 'base'
-          ),
+          formatEndpoint(poolAddress.toLocaleLowerCase(), 'token', denomination as 'base' | 'quote'),
           {
             headers: {
               Accept: 'application/json',

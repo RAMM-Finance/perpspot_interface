@@ -319,7 +319,6 @@ export function WithdrawPremiumContent({
     amount,
     positionKey,
     position,
-    // setTradeState,
     onPositionChange,
     withdrawAll
   )
@@ -343,6 +342,7 @@ export function WithdrawPremiumContent({
       if (!position) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
+
       const response = await marginFacility.withdrawPremium(
         {
           token0: positionKey.poolKey.token0Address,

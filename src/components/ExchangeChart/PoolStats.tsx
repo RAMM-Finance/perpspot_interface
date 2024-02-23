@@ -6,7 +6,7 @@ import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
@@ -46,9 +46,6 @@ export function PoolStatsSection({
 
   const poolAddress = useMemo(() => {
     if (!address0 || !address1 || !fee || !chainId) return null
-    // if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
-    //   return getFakePool(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
-    // }
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
 
@@ -78,8 +75,13 @@ export function PoolStatsSection({
       }
     }
 
-    const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
+    // const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
     const token0Price = new BN(pool.token0Price.toFixed(18))
+    const d1 = token0Price.minus(priceData.priceNow).abs()
+    const d2 = new BN(1).div(token0Price).minus(priceData.priceNow).abs()
+
+    const invertPrice = d1.gt(d2)
+
     const price = invertPrice ? new BN(1).div(token0Price) : token0Price
 
     // const price24hAgo = priceData.price24hAgo
@@ -88,7 +90,7 @@ export function PoolStatsSection({
     const price24hLow = priceData.low24
     // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
-  }, [pool, priceData, poolData, chainId])
+  }, [pool, priceData, poolData])
 
   const baseQuoteSymbol = invertPrice
     ? currency1?.symbol + '/' + currency0?.symbol
@@ -151,7 +153,7 @@ export function PoolStatsSection({
             <Trans>TVL</Trans>
           </ThemedText.BodySmall>
         }
-        loading={false}
+        loading={loading}
       />
       <Stat
         dataCy="liq-above"
@@ -162,7 +164,7 @@ export function PoolStatsSection({
             <Trans>Total Volume</Trans>
           </ThemedText.BodySmall>
         }
-        loading={false}
+        loading={loading}
       />
     </StatsWrapper>
   )
