@@ -1,30 +1,25 @@
-import { Trans } from '@lingui/macro'
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
-import { ButtonPrimary } from 'components/Button'
 import Footer from 'components/Footer'
 import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
-import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useState } from 'react'
+import { ArrowUpRight } from 'react-feather'
+import { NavLink } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { ArrowUpRight } from 'react-feather'
-import { ExternalLink } from '../../theme'
-import { AutoColumn } from 'components/Column'
 
-
+import bannerIBG from '../../components/Leaderboard/bannerIBG.png'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   width: 100%;
-  height: 100vh;
+  height: 100%;
 `
 const LeaderboardWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -38,15 +33,32 @@ const LeaderboardWrapper = styled.div`
     display: none;
   }
 `
+// Achievements
 const AchievementsWrapper = styled.div`
-  // border: solid ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 10px;
   width: 100%;
-  padding: 5px;
   height: 250px;
-  padding-bottom: 20px;
 `
+const AchievementsBoxWrapper = styled.div`
+  display: flex;
+  gap: 20px;
+  margin: 18px 0;
+`
+const AchievementsBox = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  border: ${({ theme }) => `1px solid ${theme.accentAction}`};
+  border-radius: 12px;
+  height: 160px;
+  padding: 16px;
+  gap: 15px;
+`
+
+const PriceBox = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
+
 const ReferralsWrapper = styled.div`
   // border: solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
@@ -86,10 +98,6 @@ const ErrorContainer = styled.div`
   padding: 5px;
   width: 100%;
 `
-const Header = styled.div`
-  padding-left: 20px;
-  padding-top: 10px;
-`
 
 const Container = styled.div`
   display: flex;
@@ -106,6 +114,7 @@ const PointsWrapper = styled.div`
   justify-content: start;
   width: 90%;
   grid-column: span 2;
+  margin-top: 15px;
   margin-bottom: 1rem;
   margin-left: 7.5%;
   // border: solid 1px ${({ theme }) => theme.backgroundOutline};
@@ -143,6 +152,73 @@ const Selector = styled.div<{ active: boolean }>`
   }
 `
 
+/* Banner */
+const BannerWrapper = styled.div`
+  position: relative;
+  margin-top: 16px;
+  height: 400px;
+  margin: auto;
+  width: 88%;
+  border-radius: 12px;
+  padding: 16px;
+  background-position: center;
+  background-size: cover;
+  /* background-image: linear-gradient(to bottom, rgba(7, 7, 7, 0.5) 40%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%), url(${bannerIBG}); */
+`
+const BannerIBG = styled.img`
+  width: 100%;
+  height: 100%;
+  opacity: 0.4;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  opacity: cover;
+`
+
+const BannerTextWrapper = styled.div`
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin-left: -5px;
+`
+
+const BannerText = styled.h1`
+  font-size: 62px;
+  letter-spacing: 4px;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  color: ${({ theme }) => theme.accentTextLightPrimary};
+`
+
+const BannerBtn = styled.button`
+  background-color: ${({ theme }) => theme.accentActionSoft};
+  color: ${({ theme }) => theme.accentTextLightPrimary};
+  padding: 10px 20px;
+  text-align: center;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  width: 235px;
+  font-size: 18px;
+  border-radius: 12px;
+  transition: 150ms ease background-color;
+  &:hover {
+    background-color: ${({ theme }) => theme.accentTextDarkPrimary};
+  }
+`
+
+const BannerBtnWrapper = styled.div`
+  margin-top: 15px;
+  display: flex;
+  gap: 25px;
+`
+
 export default function LeaderboardPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
@@ -175,10 +251,80 @@ export default function LeaderboardPage() {
   return (
     <>
       <PageWrapper>
+        <BannerWrapper>
+          <BannerIBG src={bannerIBG} alt="banner_backgroundImg" />
+          <BannerTextWrapper>
+            <BannerText>LMT Season 1</BannerText>
+            <BannerBtnWrapper>
+              <NavLink to="/referral">
+                <BannerBtn>Join Points Program</BannerBtn>
+              </NavLink>
+              <NavLink to="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt">
+                <BannerBtn>Find out more</BannerBtn>
+              </NavLink>
+            </BannerBtnWrapper>
+          </BannerTextWrapper>
+        </BannerWrapper>
         <PointsWrapper>
           <Points />
         </PointsWrapper>
         <Container>
+          <AchievementsWrapper>
+            <ThemedText.SubHeader>Active Achievements</ThemedText.SubHeader>
+            <AchievementsBoxWrapper>
+              <AchievementsBox>
+                <ThemedText.HeadlineSmall color="textSecondary">Be the Bank</ThemedText.HeadlineSmall>
+                <ThemedText.BodyPrimary lineHeight={1.5}>
+                  Depositing into LP Pool earns points <br /> based on the initial deposit amount.
+                </ThemedText.BodyPrimary>
+                <PriceBox>
+                  <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
+                    +4pts /
+                    <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
+                      dollar
+                    </ThemedText.PriceSmall>
+                  </ThemedText.PriceSmall>
+                  <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
+                    perday
+                  </ThemedText.PriceSmall>
+                </PriceBox>
+              </AchievementsBox>
+              <AchievementsBox>
+                <ThemedText.HeadlineSmall color="textSecondary">Be the Bank</ThemedText.HeadlineSmall>
+                <ThemedText.BodyPrimary lineHeight={1.5}>
+                  Depositing into LP Pool earns points <br /> based on the initial deposit amount.
+                </ThemedText.BodyPrimary>
+                <PriceBox>
+                  <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
+                    +4pts /
+                    <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
+                      dollar
+                    </ThemedText.PriceSmall>
+                  </ThemedText.PriceSmall>
+                  <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
+                    perday
+                  </ThemedText.PriceSmall>
+                </PriceBox>
+              </AchievementsBox>
+              <AchievementsBox>
+                <ThemedText.HeadlineSmall color="textSecondary">Be the Bank</ThemedText.HeadlineSmall>
+                <ThemedText.BodyPrimary lineHeight={1.5}>
+                  Depositing into LP Pool earns points <br /> based on the initial deposit amount.
+                </ThemedText.BodyPrimary>
+                <PriceBox>
+                  <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
+                    +4pts /
+                    <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
+                      dollar
+                    </ThemedText.PriceSmall>
+                  </ThemedText.PriceSmall>
+                  <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
+                    perday
+                  </ThemedText.PriceSmall>
+                </PriceBox>
+              </AchievementsBox>
+            </AchievementsBoxWrapper>
+          </AchievementsWrapper>
           {/*<FilterWrapper>
             <Filter>
               <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
@@ -189,9 +335,9 @@ export default function LeaderboardPage() {
               </Selector>
             </Filter>
           </FilterWrapper>*/}
-            <LeaderboardWrapper>
-              <LeaderboardTable />
-            </LeaderboardWrapper>
+          <LeaderboardWrapper>
+            <LeaderboardTable />
+          </LeaderboardWrapper>
           {/*leaderboard ? (
             <LeaderboardWrapper>
               <LeaderboardTable />
@@ -222,49 +368,23 @@ export default function LeaderboardPage() {
               )}
             </ReferralsWrapper>
           )*/}
-              <FaqWrapper>
-                <FaqElement>
-                  <a
-                    href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                      Earning LMT
-                    </ThemedText.BodySecondary>
-                  </a>
-                  <ArrowUpRight size="20" />
-                </FaqElement>{' '}
-                <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-                  Read our LMT documentation to better understand how to earn LMT.
-                </ThemedText.BodyPrimary>
-              </FaqWrapper>
-          {/* <AchievementsWrapper>
-          <ThemedText.SubHeader>
-            <Header>Achievements</Header>
-          </ThemedText.SubHeader>
-          {showConnectAWallet ? (
-            <ErrorContainer>
-              <TraceEvent
-                events={[BrowserEvent.onClick]}
-                name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                properties={{ received_swap_quote: false }}
-                element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+          <FaqWrapper>
+            <FaqElement>
+              <a
+                href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <ButtonPrimary
-                  style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                  onClick={toggleWalletDrawer}
-                >
-                  <Trans>
-                    <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                  </Trans>
-                </ButtonPrimary>
-              </TraceEvent>
-            </ErrorContainer>
-          ) : (
-            <Achievements />
-          )}
-        </AchievementsWrapper> */}
+                <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
+                  Earning LMT
+                </ThemedText.BodySecondary>
+              </a>
+              <ArrowUpRight size="20" />
+            </FaqElement>{' '}
+            <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
+              Read our LMT documentation to better understand how to earn LMT.
+            </ThemedText.BodyPrimary>
+          </FaqWrapper>
         </Container>
       </PageWrapper>
       <Footer />
