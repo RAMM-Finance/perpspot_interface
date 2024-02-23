@@ -124,9 +124,15 @@ const SelectPoolWrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
+  max-width: 250px;
   justify-content: space-evenly;
   padding-right: 0.5rem;
   padding-left: 0.5rem;
+  border-radius: 10px;
+  &:hover {
+    background-color: ${({ theme }) => theme.backgroundOutline};
+  }
+  cursor: pointer;
 `
 
 const MainWrapper = styled.div`
@@ -177,16 +183,7 @@ export function SelectPool() {
 
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      if (
-        (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
-        (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
-        (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
-      ) {
-        onPoolSelection(currencyIn, currencyOut, fee)
-      } else {
-        onPoolSelection(currencyIn, currencyOut, fee)
-      }
+      onPoolSelection(currencyIn, currencyOut, fee)
     },
     [onPoolSelection]
   )
@@ -248,15 +245,19 @@ export function SelectPool() {
     <MainWrapper>
       <SelectPoolWrapper onClick={() => setIsOpen(!isOpen)}>
         <LabelWrapper>
-          <Row>
-            <DoubleCurrencyLogo
-              currency0={inputCurrency as Currency}
-              currency1={outputCurrency as Currency}
-              size={20}
-            />
-            <ThemedText.HeadlineSmall>{`${inputCurrency?.symbol}/${outputCurrency?.symbol}`}</ThemedText.HeadlineSmall>
+          <Row gap="10">
+            <Row>
+              <DoubleCurrencyLogo
+                currency0={inputCurrency as Currency}
+                currency1={outputCurrency as Currency}
+                size={18}
+              />
+              <ThemedText.HeadlineSmall
+                fontSize={15}
+              >{`${inputCurrency?.symbol}/${outputCurrency?.symbol}`}</ThemedText.HeadlineSmall>
+            </Row>
+            <ThemedText.BodySmall fontSize="14px">({poolFee ? poolFee / 10000 : 0}%)</ThemedText.BodySmall>
           </Row>
-          <ThemedText.BodySmall fontSize="14px">({poolFee ? poolFee / 10000 : 0}%)</ThemedText.BodySmall>
         </LabelWrapper>
         <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
       </SelectPoolWrapper>
@@ -313,16 +314,7 @@ export default function PoolSelect({
 
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      if (
-        (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
-        (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
-        (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
-      ) {
-        onPoolSelection(currencyIn, currencyOut, fee)
-      } else {
-        onPoolSelection(currencyIn, currencyOut, fee)
-      }
+      onPoolSelection(currencyIn, currencyOut, fee)
     },
     [onPoolSelection]
   )
@@ -476,7 +468,7 @@ export default function PoolSelect({
                   <DoubleCurrencyLogo
                     currency0={inputCurrency as Currency}
                     currency1={outputCurrency as Currency}
-                    size={20}
+                    size={16}
                   />
                   <Label style={{ display: 'flex', gap: '2px' }}>
                     <ThemedText.BodySmall color="textSecondary" fontSize={13} fontWeight={800}>

@@ -107,11 +107,29 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     )
     .addCase(selectPool, (state, { payload: { inputCurrencyId, outputCurrencyId, poolFee } }) => {
-      return {
-        ...state,
-        [Field.INPUT]: { currencyId: inputCurrencyId },
-        [Field.OUTPUT]: { currencyId: outputCurrencyId },
-        poolFee,
+      if (
+        outputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase() &&
+        inputCurrencyId.toLocaleLowerCase() !== '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase()
+      ) {
+        localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
+        localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
+        localStorage.setItem('poolFee', JSON.stringify(poolFee))
+        return {
+          ...state,
+          [Field.INPUT]: { currencyId: outputCurrencyId },
+          [Field.OUTPUT]: { currencyId: inputCurrencyId },
+          poolFee,
+        }
+      } else {
+        localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
+        localStorage.setItem('currencyOut', JSON.stringify(outputCurrencyId))
+        localStorage.setItem('poolFee', JSON.stringify(poolFee))
+        return {
+          ...state,
+          [Field.INPUT]: { currencyId: inputCurrencyId },
+          [Field.OUTPUT]: { currencyId: outputCurrencyId },
+          poolFee,
+        }
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {
