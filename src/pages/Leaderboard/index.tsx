@@ -270,14 +270,14 @@ export default function LeaderboardPage() {
         </PointsWrapper>
         <Container>
           <AchievementsWrapper>
-            <ThemedText.SubHeader>Active Achievements</ThemedText.SubHeader>
+            {/*<ThemedText.SubHeader>Active Achievements</ThemedText.SubHeader>*/}
             <AchievementsBoxWrapper>
               <AchievementsBox>
-                <ThemedText.HeadlineSmall color="textSecondary">Be the Bank</ThemedText.HeadlineSmall>
+                <ThemedText.HeadlineSmall color="textSecondary">Trade your way up</ThemedText.HeadlineSmall>
                 <ThemedText.BodyPrimary lineHeight={1.5}>
-                  Depositing into LP Pool earns points <br /> based on the initial deposit amount.
+                  The more you trade, the higher your trade LMT rewards are. 
                 </ThemedText.BodyPrimary>
-                <PriceBox>
+                {/*<PriceBox>
                   <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
                     +4pts /
                     <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
@@ -287,14 +287,14 @@ export default function LeaderboardPage() {
                   <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
                     perday
                   </ThemedText.PriceSmall>
-                </PriceBox>
+                </PriceBox>*/}
               </AchievementsBox>
               <AchievementsBox>
-                <ThemedText.HeadlineSmall color="textSecondary">Be the Bank</ThemedText.HeadlineSmall>
+                <ThemedText.HeadlineSmall color="textSecondary">LP to earn yield + LMT</ThemedText.HeadlineSmall>
                 <ThemedText.BodyPrimary lineHeight={1.5}>
-                  Depositing into LP Pool earns points <br /> based on the initial deposit amount.
+                  Earn LMT by holding LLP or collecting fees as an advanced LP <br /> 
                 </ThemedText.BodyPrimary>
-                <PriceBox>
+                {/*<PriceBox>
                   <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
                     +4pts /
                     <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
@@ -304,14 +304,14 @@ export default function LeaderboardPage() {
                   <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
                     perday
                   </ThemedText.PriceSmall>
-                </PriceBox>
+                </PriceBox>*/}
               </AchievementsBox>
               <AchievementsBox>
-                <ThemedText.HeadlineSmall color="textSecondary">Be the Bank</ThemedText.HeadlineSmall>
+                <ThemedText.HeadlineSmall color="textSecondary">Refer to earn</ThemedText.HeadlineSmall>
                 <ThemedText.BodyPrimary lineHeight={1.5}>
-                  Depositing into LP Pool earns points <br /> based on the initial deposit amount.
+                  Refer others and earn a portion of your referees' LMT
                 </ThemedText.BodyPrimary>
-                <PriceBox>
+                {/*<PriceBox>
                   <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
                     +4pts /
                     <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
@@ -321,7 +321,7 @@ export default function LeaderboardPage() {
                   <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
                     perday
                   </ThemedText.PriceSmall>
-                </PriceBox>
+                </PriceBox>*/}
               </AchievementsBox>
             </AchievementsBoxWrapper>
           </AchievementsWrapper>
