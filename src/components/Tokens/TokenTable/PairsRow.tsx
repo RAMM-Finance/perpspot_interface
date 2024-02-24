@@ -1,10 +1,14 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
+import { computePoolAddress } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
+import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
+import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, useMemo } from 'react'
@@ -34,7 +38,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from '../constants'
 import { LoadingBubble } from '../loading'
-import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
+import { DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
 
 const Cell = styled.div`
   display: flex;
@@ -49,7 +53,7 @@ const StyledTokenRow = styled.div<{
   background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
   font-size: 12px;
-  grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 5fr;
+  grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 2fr 5fr;
   padding-left: 1rem;
   padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -86,13 +90,12 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     //grid-template-columns: 1fr 6.5fr 4.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-    grid-template-columns: 5fr 5fr 4fr 3fr 6fr 6fr 6fr;
+    grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 2fr 5fr;
     font-size: 12px;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 7.5fr 4.5fr 4.5fr 4.5fr 1.7fr;
-  }
+    grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 2fr 5fr;
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     grid-template-columns: 1fr 10fr 5fr 5fr 1.2fr;
@@ -415,7 +418,7 @@ export function TokenRow({
   listNumber,
   tokenInfo,
   price,
-  percentChange,
+  // percentChange,
   tvl,
   volume,
   APR,
@@ -424,6 +427,7 @@ export function TokenRow({
   currency0,
   currency1,
   fee,
+  priceChange,
   ...rest
 }: {
   first?: boolean
@@ -432,10 +436,11 @@ export function TokenRow({
   loading?: boolean
   tvl: ReactNode
   price: ReactNode
-  percentChange: ReactNode
+  // percentChange: ReactNode
   sparkLine?: ReactNode
   tokenInfo: ReactNode
   volume: ReactNode
+  priceChange: ReactNode
   APR: ReactNode
   UtilRate: ReactNode
   currency0?: string
@@ -458,6 +463,9 @@ export function TokenRow({
 
       <PriceCell data-testid="price-cell" sortable={header}>
         {price}
+      </PriceCell>
+      <PriceCell data-testid="price-change-cell" sortable={header}>
+        {priceChange}
       </PriceCell>
       {/*<PercentChangeCell data-testid="percent-change-cell" sortable={header}>
         {percentChange}
@@ -641,10 +649,29 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
-  const currentPrice = useMemo(() => {
-    if (!pool) return
-    return Number(pool?.sqrtRatioX96) ** 2 / 2 ** 192 / Number(`1e${pool?.token1.decimals - pool?.token0.decimals}`)
-  }, [pool])
+  const poolAddress = useMemo(() => {
+    if (!pool || !chainId) return null
+    return computePoolAddress({
+      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+      tokenA: pool.token0,
+      tokenB: pool.token1,
+      fee: pool.fee,
+    })
+  }, [chainId, pool])
+
+  const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
+
+  const [currentPrice, priceDelta] = useMemo(() => {
+    if (!priceData || !pool) return [undefined, undefined]
+
+    const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
+    const token0Price = new BN(pool.token0Price.toFixed(18))
+    const price = invertPrice ? new BN(1).div(token0Price) : token0Price
+
+    const price24hAgo = priceData.price24hAgo
+    const delt = price.minus(price24hAgo).div(price).times(100)
+    return [price, delt]
+  }, [chainId, priceData, pool])
 
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const [tickLower, tickUpper] = useMemo(() => {
@@ -730,17 +757,25 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         price={
           <ClickableContent>
             <PriceInfoCell>
-              <Price>{formatDollarAmount({ num: currentPrice, long: true })}</Price>
+              <Price>{formatDollarAmount({ num: currentPrice?.toNumber(), long: true })}</Price>
               <span>{token0?.symbol + '/' + token1?.symbol}</span>
             </PriceInfoCell>
           </ClickableContent>
         }
-        percentChange={
+        priceChange={
           <ClickableContent>
-            <ArrowCell>{arrow}</ArrowCell>
-            <DeltaText delta={delta}>{formattedDelta}</DeltaText>
+            <PriceInfoCell>
+              <DeltaText delta={priceDelta?.toNumber()}>{}</DeltaText>{' '}
+              {priceDelta ? formatBNToString(priceDelta?.abs() ?? undefined, NumberType.TokenNonTx) + '%' : '-'}
+            </PriceInfoCell>
           </ClickableContent>
         }
+        // percentChange={
+        //   <ClickableContent>
+        //     <ArrowCell>{arrow}</ArrowCell>
+        //     <DeltaText delta={delta}>{formattedDelta}</DeltaText>
+        //   </ClickableContent>
+        // }
         tvl={<ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>}
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={

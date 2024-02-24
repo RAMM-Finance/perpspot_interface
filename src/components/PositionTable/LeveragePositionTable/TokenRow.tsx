@@ -1,15 +1,19 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
-import Row, { RowBetween } from 'components/Row'
+import Row, { RowBetween, RowStart } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -18,11 +22,11 @@ import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
+import { useSwapActionHandlers } from 'state/swap/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -50,7 +54,7 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 12px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   min-width: 390px;
@@ -81,15 +85,15 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -367,6 +371,7 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
       Remaining Premium that maintains this position. Your position is forced closed when your deposit is depleted.{' '}
     </Trans>
   ),
+  [PositionSortMethod.ACTIONS]: '',
   // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
   // [PositionSortMethod.RECENT_PREMIUM]: (
   //   <Trans>Recent Premium (Total Premium Paid)</Trans>
@@ -383,7 +388,7 @@ const SortingEnabled = {
   [PositionSortMethod.ENTRYPRICE]: false,
   [PositionSortMethod.PNL]: false,
   [PositionSortMethod.REMAINING]: true,
-  // [PositionSortMethod.ACTIONS]: false,
+  [PositionSortMethod.ACTIONS]: false,
 }
 
 /* Get singular header cell for header row */
@@ -434,12 +439,14 @@ function PositionRow({
   entryPrice,
   positionKey,
   remainingPremium,
+  actions,
   ...rest
 }: {
   first?: boolean
   header: boolean
   loading?: boolean
   value: ReactNode
+  actions: ReactNode
   collateral: ReactNode
   repaymentTime: ReactNode
   positionInfo: ReactNode
@@ -507,9 +514,9 @@ function PositionRow({
       <PriceCell data-testid="premium-cell" sortable={header}>
         {PnL}
       </PriceCell>
-      {/* <ActionCell data-testid="action-cell" sortable={header}>
+      <ActionCell data-testid="action-cell" sortable={header}>
         {actions}
-      </ActionCell> */}
+      </ActionCell>
       {/* <SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
   )
@@ -544,6 +551,7 @@ export function HeaderRow() {
       entryPrice={<HeaderCell category={PositionSortMethod.ENTRYPRICE} />}
       remainingPremium={<HeaderCell category={PositionSortMethod.REMAINING} />}
       repaymentTime={<HeaderCell category={PositionSortMethod.REPAYTIME} />}
+      actions={<HeaderCell category={PositionSortMethod.ACTIONS} />}
     />
   )
 }
@@ -572,6 +580,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
       PnL={<LoadingBubble />}
       entryPrice={<LoadingBubble />}
       remainingPremium={<LoadingBubble />}
+      actions={<LoadingBubble />}
       {...props}
     />
   )
@@ -593,6 +602,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
   const { account } = useWeb3React()
+  const theme = useTheme()
 
   const positionKey: TraderPositionKey = useMemo(() => {
     return {
@@ -616,13 +626,31 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
+  const { onPoolSelection } = useSwapActionHandlers()
+
   const leverageFactor = useMemo(
     () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
     [margin, totalDebtInput]
   )
 
-  const [entryPrice, currentPrice, baseToken, quoteToken, position, existingDeposit, 
-  invertedEntryPrice, invertedCurrentPrice] = useMemo(() => {
+  const handleCurrencySelect = useCallback(
+    (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      e.stopPropagation()
+      onPoolSelection(currencyIn, currencyOut, fee)
+    },
+    [onPoolSelection]
+  )
+
+  const [
+    entryPrice,
+    currentPrice,
+    baseToken,
+    quoteToken,
+    position,
+    existingDeposit,
+    invertedEntryPrice,
+    invertedCurrentPrice,
+  ] = useMemo(() => {
     if (pool) {
       const _position = new MarginPosition(pool, details)
 
@@ -637,8 +665,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           pool.token0,
           _position,
           _position.premiumLeft.plus(_position.premiumOwed),
-          _entryPrice, 
-          _currentPrice
+          _entryPrice,
+          _currentPrice,
         ]
       } else {
         return [
@@ -665,6 +693,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     position?.isToken0
   )
 
+  const _pnlCurrency: CurrencyAmount<Currency> | undefined = useMemo(() => {
+    if (!position) return undefined
+    return CurrencyAmount.fromRawAmount(
+      position.inputCurrency,
+      new BN(position.PnL().toNumber()).shiftedBy(position.inputCurrency.decimals).toFixed(0)
+    )
+  }, [position])
+
+  console.log(position?.inputCurrency, _pnlCurrency)
+
+  const pnlUSD = useUSDPrice(_pnlCurrency)
+
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
 
   const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken || !position || !existingDeposit
@@ -682,16 +722,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   // console.log('timeclose', estimatedTimeToClose,  Number(position?.premiumLeft), Number(totalDebtInput))
 
-  const PnLWithPremiums = useMemo(()=>{
-    if(!position || !existingDeposit) return undefined
+  const PnLWithPremiums = useMemo(() => {
+    if (!position || !existingDeposit) return undefined
     return position.PnL().minus(existingDeposit.minus(position?.premiumLeft))
   }, [position, existingDeposit])
-
 
   if (loading) {
     return <LoadingRow />
   }
-
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
@@ -714,7 +752,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           value={
             <FlexStartRow>
-                <CurrencyLogo currency={position?.outputCurrency} size="10px" />
+              <CurrencyLogo currency={position?.outputCurrency} size="10px" />
 
               {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
                 position?.outputCurrency?.symbol
@@ -723,7 +761,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow>
-                <CurrencyLogo currency={position?.inputCurrency} size="10px" />
+              <CurrencyLogo currency={position?.inputCurrency} size="10px" />
 
               {`${formatBNToString(position?.margin, NumberType.SwapTradeAmount)} ${position?.inputCurrency?.symbol}`}
             </FlexStartRow>
@@ -732,7 +770,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <MouseoverTooltip
               text={
                 <Trans>
-                  {'Annualized Rate: ' + String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) + ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
+                  {'Annualized Rate: ' +
+                    String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) +
+                    ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
                 </Trans>
               }
               disableHover={false}
@@ -743,84 +783,105 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </MouseoverTooltip>
           }
           PnL={
-
             <MouseoverTooltip
-              text={<Trans>{'PnL Including premiums ' + `${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} `
-              +' ' + position?.inputCurrency?.symbol}</Trans>}
+              text={
+                <Trans>
+                  <RowStart>
+                    {'PnL Including premiums: ' +
+                      `${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
+                      ' ' +
+                      position?.inputCurrency?.symbol}
+                  </RowStart>
+                  <RowStart>{'PnL in USD: ' + ` $${pnlUSD.data?.toFixed(2)}`}</RowStart>
+                </Trans>
+              }
               disableHover={false}
             >
-
-            <FlexStartRow>
-              <AutoColumn style={{ lineHeight: 1.5 }}>
-                <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                  {position && `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} `}
-                </DeltaText>
-                <div>
+              <FlexStartRow>
+                <AutoColumn style={{ lineHeight: 1.5 }}>
                   <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                    {position && `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                    {position && `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} `}
                   </DeltaText>
-                  {' ' + position?.inputCurrency?.symbol}
-                </div>
-              </AutoColumn>
-            </FlexStartRow>
+                  <div>
+                    <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
+                      {position &&
+                        `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                    </DeltaText>
+                    {' ' + position?.inputCurrency?.symbol}
+                  </div>
+                </AutoColumn>
+              </FlexStartRow>
             </MouseoverTooltip>
-
           }
           entryPrice={
             <MouseoverTooltip
-              text={<Trans>{'Inverted Entry/Current Price: ' + `${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                  invertedCurrentPrice,
-                  NumberType.SwapTradeAmount
-                )} `}</Trans>}
+              text={
+                <Trans>
+                  {'Inverted Entry/Current Price: ' +
+                    `${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                      invertedCurrentPrice,
+                      NumberType.SwapTradeAmount
+                    )} `}
+                </Trans>
+              }
               disableHover={false}
             >
-            <FlexStartRow>
-              <AutoColumn
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  justifyContent: 'center',
-                  lineHeight: 1.5,
-                }}
-              >
-                {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                  currentPrice,
-                  NumberType.SwapTradeAmount
-                )} `}
-                <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn>
-              </AutoColumn>
-            </FlexStartRow>
+              <FlexStartRow>
+                <AutoColumn
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    justifyContent: 'center',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                    currentPrice,
+                    NumberType.SwapTradeAmount
+                  )} `}
+                  <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn>
+                </AutoColumn>
+              </FlexStartRow>
             </MouseoverTooltip>
-
           }
           remainingPremium={
             <MouseoverTooltip
               text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
               disableHover={false}
             >
-            <FlexStartRow>
-              {position?.premiumLeft.isGreaterThan(0) ? (
-                <AutoColumn style={{ lineHeight: 1.5 }}>
-                  <UnderlineText>
-                    <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                      {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
-                    </GreenText>
-                  </UnderlineText>
-                  <div style={{ display: 'flex', gap: '3px' }}>
+              <FlexStartRow>
+                {position?.premiumLeft.isGreaterThan(0) ? (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
                     <UnderlineText>
                       <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                        {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                        {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
                       </GreenText>
                     </UnderlineText>
-                    {position?.inputCurrency?.symbol}
-                  </div>
-                </AutoColumn>
-              ) : (
-                <RedText>0</RedText>
-              )}
-            </FlexStartRow>
+                    <div style={{ display: 'flex', gap: '3px' }}>
+                      <UnderlineText>
+                        <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                          {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                        </GreenText>
+                      </UnderlineText>
+                      {position?.inputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                ) : (
+                  <RedText>0</RedText>
+                )}
+              </FlexStartRow>
             </MouseoverTooltip>
+          }
+          actions={
+            <SmallButtonPrimary
+              style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+              onClick={(e) =>
+                handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
+              }
+            >
+              <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
+            </SmallButtonPrimary>
           }
         />
       </StyledLoadedRow>

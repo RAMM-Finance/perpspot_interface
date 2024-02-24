@@ -87,11 +87,12 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
 }
 enum TokenSortMethod {
   PRICE = 'Price',
-  PERCENT_CHANGE = 'Change',
+  // PERCENT_CHANGE = 'Change',
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
   APR = 'Est APR',
   URate = 'Util Rate',
+  PRICE_CHANGE = 'Price Change',
 }
 
 const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
@@ -114,7 +115,7 @@ function useSetSortMethod(newSortMethod: TokenSortMethod) {
 
 const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
-  [TokenSortMethod.PERCENT_CHANGE]: undefined,
+  // [TokenSortMethod.PERCENT_CHANGE]: undefined,
   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
     <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
   ),
@@ -133,6 +134,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
       APR.
     </Trans>
   ),
+  [TokenSortMethod.PRICE_CHANGE]: <Trans>24H Change in Price</Trans>,
 }
 
 function getSortedData(dataToSort: any, sortOrder: boolean, category: string) {
@@ -188,7 +190,8 @@ function PHeaderRow() {
       listNumber=""
       tokenInfo={<Trans>Pair</Trans>}
       price={<HeaderCell category={TokenSortMethod.PRICE} />}
-      percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
+      priceChange={<HeaderCell category={TokenSortMethod.PRICE_CHANGE} />}
+      // percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
       APR={<HeaderCell category={TokenSortMethod.APR} />}
@@ -218,8 +221,6 @@ export default function TokenTable() {
 
   const loading = poolsLoading || balanceLoading || keysLoading
   // useRenderCount()
-
-  console.log(poolData)
 
   const poolsInfo = useMemo(() => {
     if (poolData && vaultBal) {

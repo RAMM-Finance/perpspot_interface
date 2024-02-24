@@ -777,7 +777,6 @@ export default function SimplePool() {
 
   const WETHPrice = useUSDPrice(WETHCurrencyAmount)
   const WBTCPrice = useUSDPrice(WBTCCurrencyAmount)
-  // const USDCPrice = useUSDPrice(USDCCurrencyAmount)
   const USDCPrice = 1
 
   const indexData = useMemo(() => {
@@ -826,7 +825,6 @@ export default function SimplePool() {
     }
   }, [WETHPrice, WBTCPrice, inputCurrency])
 
-  console.log(activePrice)
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
   // Total Supply is raw supply
@@ -1096,7 +1094,15 @@ export default function SimplePool() {
               </ArrowContainer>
             </ArrowWrapper>
             <CurrencyInputPanel
-              value={value.toPrecision(4)}
+              value={
+                !buy
+                  ? value.toPrecision(4)
+                  : value
+                  ? value.toPrecision(4)
+                  : currencyAFiat.data
+                  ? formatDollarAmount({ num: currencyAFiat.data / (llpPrice / 1e18), long: true })
+                  : '0'
+              }
               onUserInput={
                 buy
                   ? onFieldBInput
@@ -1106,9 +1112,11 @@ export default function SimplePool() {
               }
               showMaxButton={false}
               fiatValue={
-                buy && activePrice
-                  ? { data: value * (llpPrice / 1e18), isLoading: false }
-                  : { data: value * activePrice, isLoading: false }
+                !buy && activePrice
+                  ? { data: value * activePrice, isLoading: false }
+                  : !value && currencyAFiat.data
+                  ? { data: currencyAFiat.data / (llpPrice / 1e18) / (llpPrice / 1e18), isLoading: false }
+                  : { data: value * (llpPrice / 1e18), isLoading: false }
               }
               currency={currencies[Field.CURRENCY_B] ?? null}
               id="add-liquidity-input-tokenb"
