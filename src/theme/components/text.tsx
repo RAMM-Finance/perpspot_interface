@@ -19,6 +19,12 @@ export const ThemedText = {
   BodyPrimary(props: TextProps) {
     return <TextWrapper fontWeight={400} fontSize={14} color="textPrimary" {...props} />
   },
+  CellName(props: TextProps) {
+    return <TextWrapper fontWeight={500} fontSize={16} color="textPrimary" {...props} />
+  },
+  CellValue(props: TextProps) {
+    return <TextWrapper fontWeight={400} fontSize={15} color="textSecondary" {...props} />
+  },
   BodySecondary(props: TextProps) {
     return <TextWrapper fontWeight={400} fontSize={14} color="textSecondary" {...props} />
   },

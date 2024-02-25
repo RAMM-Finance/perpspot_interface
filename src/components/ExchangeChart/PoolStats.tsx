@@ -10,17 +10,17 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
-import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
+import { useAppPoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
 
-export const StatsWrapper = styled.div`
+const StatsWrapper = styled.div`
   gap: 16px;
   ${textFadeIn}
   display: flex;
@@ -51,7 +51,8 @@ export function PoolStatsSection({
 
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
 
-  const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
+  // const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
+  const PoolsOHLC = useAppPoolOHLC()
 
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)
@@ -64,8 +65,9 @@ export function PoolStatsSection({
   ])
 
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!pool || !poolData || !priceData) return [null, false, null, null, null, null, null]
-
+    if (!pool || !poolData || !address0 || !address1) return [null, false, null, null, null, null, null]
+    const id = `${address0.toLowerCase()}-${address1.toLowerCase()}-${fee}`
+    const OHLC = PoolsOHLC[id]
     let tvl
     let volume
     if (Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)) {
@@ -73,6 +75,12 @@ export function PoolStatsSection({
         tvl = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
         volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
       }
+    }
+    const priceData = {
+      priceNow: new BN(OHLC?.priceNow),
+      price24hAgo: new BN(OHLC?.price24hAgo),
+      high24: new BN(OHLC?.high24),
+      low24: new BN(OHLC?.low24),
     }
 
     // const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
@@ -90,20 +98,20 @@ export function PoolStatsSection({
     const price24hLow = priceData.low24
     // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
-  }, [pool, priceData, poolData])
+  }, [pool, poolData, PoolsOHLC, address0, address1, fee])
 
   const baseQuoteSymbol = invertPrice
     ? currency1?.symbol + '/' + currency0?.symbol
     : currency0?.symbol + '/' + currency1?.symbol
 
-  const loading = loading0 || loading1 || !priceData || !reserve0 || !reserve1 || !priceData || !pool
+  const loading = loading0 || loading1 || !reserve0 || !reserve1 || !pool
 
   return (
     <StatsWrapper>
       <Stat
         dataCy="current-price"
         value={currentPrice}
-        baseQuoteSymbol={baseQuoteSymbol}
+        // baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
             <Trans>Price</Trans>
@@ -125,7 +133,7 @@ export function PoolStatsSection({
       <Stat
         dataCy="24h-low"
         value={low24h}
-        baseQuoteSymbol={baseQuoteSymbol}
+        // baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
             <Trans>24h low</Trans>
@@ -136,7 +144,7 @@ export function PoolStatsSection({
       <Stat
         dataCy="24h-high"
         value={high24h}
-        baseQuoteSymbol={baseQuoteSymbol}
+        // baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
             <Trans>24h high</Trans>
@@ -181,7 +189,6 @@ const StatWrapper = styled.div`
   border-rounded: 10px;
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
-  border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
 type NumericStat = BN | undefined | null

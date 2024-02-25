@@ -68,12 +68,6 @@ import {
   StyledNumericalInput,
 } from '.'
 
-const TokenName = styled.span`
-  color: ${({ theme }) => theme.textPrimary};
-  font-size: 12px;
-  font-weight: 600;
-  margin-left: 0.25rem;
-`
 const Wrapper = styled.div`
   padding: 0.75rem;
   padding-left: 1rem;
@@ -86,7 +80,7 @@ const Wrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: 100%;
-  height: 50rem;
+  // height: 50rem;
   ::-webkit-scrollbar {
     display: none;
   }

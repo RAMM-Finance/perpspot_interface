@@ -35,7 +35,6 @@ export function usePoolKeyList(): {
       if (!poolQueryData.data) {
         throw new Error('No data returned from pool query')
       }
-      console.log('fetching pools')
       return poolQueryData.data.poolAddeds
         .filter(
           (val: any) =>
@@ -54,7 +53,8 @@ export function usePoolKeyList(): {
     },
     {
       keepPreviousData: true,
-      refetchInterval: 1000 * 60 * 5,
+      refetchInterval: 1000 * 60 * 10,
+      refetchOnWindowFocus: false,
     }
   )
 
@@ -65,73 +65,6 @@ export function usePoolKeyList(): {
       error,
     }
   }, [data, isLoading, error])
-}
-
-export function useGetPoolsAndData() {
-  const [data, setData] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
-  interface Pool {
-    blockTimeStamp: string
-    fee: number
-    id: string
-    pool: string
-    tickDiscretization: number
-    token0: string
-    token1: string
-    __typename: string
-  }
-
-  useEffect(() => {
-    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !PoolAddedQuery || loading || error) return
-    const call = async () => {
-      try {
-        setLoading(true)
-
-        const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
-
-        setData(poolQueryData)
-
-        setLoading(false)
-      } catch (error) {
-        setError(error)
-        setLoading(false)
-      }
-    }
-    console.log('calling')
-    call()
-  }, [error, loading])
-
-  const availablePools = useMemo(() => {
-    if (data) {
-      return data.data?.poolAddeds
-        .filter(
-          (val: Pool) =>
-            val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-            val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-            // ethers.utils.getAddress(val.token0) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
-            // ethers.utils.getAddress(val.token1) !== '0x539bdE0d7Dbd336b79148AA742883198BBF60342' &&
-            // ethers.utils.getAddress(val.token0) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
-            // ethers.utils.getAddress(val.token1) !== '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4' &&
-            // ethers.utils.getAddress(val.token0) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
-            // ethers.utils.getAddress(val.token1) !== '0x3082CC23568eA640225c2467653dB90e9250AaA0' &&
-            ethers.utils.getAddress(val.token0) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' &&
-            ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66'
-        )
-        .map((val: Pool) => {
-          return {
-            token0: ethers.utils.getAddress(val.token0),
-            token1: ethers.utils.getAddress(val.token1),
-            fee: val.fee,
-          }
-        })
-    } else {
-      return undefined
-    }
-  }, [data])
-
-  return availablePools
 }
 
 /** @ref https://dashboard.moonpay.com/api_reference/client_side_api#ip_addresses */
@@ -154,6 +87,14 @@ async function getMoonpayAvailability(): Promise<boolean> {
   const res = await fetch(`${moonpayApiURI}/v4/ip_address?apiKey=${moonpayPublishableKey}`)
   const data = await (res.json() as Promise<MoonpayIPAddressesResponse>)
   return data.isBuyAllowed ?? false
+}
+
+export function useRawPoolKeyList() {
+  return useAppSelector((state: AppState) => state.application.poolList)
+}
+
+export function useAppPoolOHLC() {
+  return useAppSelector((state: AppState) => state.application.poolPriceData)
 }
 
 export function useFiatOnrampAvailability(shouldCheck: boolean, callback?: () => void) {

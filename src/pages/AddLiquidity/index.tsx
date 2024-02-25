@@ -728,38 +728,7 @@ export default function AddLiquidity() {
                   {!hasExistingPosition && (
                     <>
                       <AutoColumn style={{ paddingBottom: '15px' }} gap="md">
-                        {/* <RowBetween paddingBottom="20px">
-                          <ThemedText.BodyPrimary>
-                            <Trans>Select Pair</Trans>
-                          </ThemedText.BodyPrimary>
-                        </RowBetween> */}
                         <RowBetween justify="start" gap="0px">
-                          {/* <CurrencyDropdown
-                            value={formattedAmounts[Field.CURRENCY_A]}
-                            onUserInput={onFieldAInput}
-                            hideInput={true}
-                            onMax={() => {
-                              onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-                            }}
-                            onCurrencySelect={handleCurrencyASelect}
-                            showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-                            currency={currencies[Field.CURRENCY_A] ?? null}
-                            id="add-liquidity-input-tokena"
-                            showCommonBases
-                          />
-                          <CurrencyDropdown
-                            value={formattedAmounts[Field.CURRENCY_B]}
-                            hideInput={true}
-                            onUserInput={onFieldBInput}
-                            onCurrencySelect={handleCurrencyBSelect}
-                            onMax={() => {
-                              onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-                            }}
-                            showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                            currency={currencies[Field.CURRENCY_B] ?? null}
-                            id="add-liquidity-input-tokenb"
-                            showCommonBases
-                          /> */}
                           <PoolSelector
                             selectPair={selectPair}
                             setSelectPair={setSelectPair}

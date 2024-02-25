@@ -116,48 +116,8 @@ export function useInstantaeneousRate(
       }
     }
   }, [result, loading, error, syncing])
-
-  // const dataProvider = useDataProviderContract()
-  // const blockNumber = useBlockNumber()
-  // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
-  // const [data, setData] = useState<any>()
-  // const [loading, setLoading] = useState(false)
-  // const [error, setError] = useState<any>()
-  // useEffect(() => {
-  //   if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber) || !dataProvider)
-  //     return
-  //   if (positionIsToken0 == undefined) return
-  //   const call = async () => {
-  //     try {
-  //       setLoading(true)
-  //       const result = await dataProvider.getPostInstantaeneousRate(
-  //         {
-  //           token0: token0 as string,
-  //           token1: token1 as string,
-  //           fee: fee as number,
-  //         },
-  //         trader as string,
-  //         positionIsToken0 as boolean
-  //       )
-  //       setData(result)
-  //       setLoading(false)
-  //       setBlockNumber(blockNumber)
-  //     } catch (error) {
-  //       setError(error)
-  //       setLoading(false)
-  //       console.log('instant rate', error)
-  //     }
-  //   }
-  //   call()
-  // }, [dataProvider, loading, lastBlockNumber, blockNumber, token0, token1, fee, trader, positionIsToken0])
-  // return useMemo(() => {
-  //   if (!data) {
-  //     return null
-  //   } else {
-  //     return data
-  //   }
-  // }, [data])
 }
+
 // BinData[] |
 export function useBulkBinData(
   pool: Pool | undefined
@@ -507,13 +467,6 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
   const dataProvider = useDataProviderContract()
 
-  // make sure to have dataProvider provide the decimals for each token
-  // const {
-  //   loading: loading,
-  //   error: error,
-  //   result: result,
-  // } = useSingleCallResult(dataProvider, 'getOrders', [account])
-
   const blockNumber = useBlockNumber()
 
   const [orders, setOrders] = useState<any>()
@@ -530,29 +483,9 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
     call()
   }, [dataProvider, account, blockNumber])
 
-  // const result =
-  // const {
-  //   loading: loadingReduce,
-  //   error: errorReduce,
-  //   result: resultReduce,
-  // } = useSingleCallResult(dataProvider, 'getReduceOrders', [account])
-
-  // const{
-  //   loading: loadingOrder,
-  //   error: errorOrder,
-  //   result: resultOrder
-  // } = useSingleCallResult(dataProvider, 'getOrders', [account])
   const result = orders
   const loading = false
   const error = false
-  // console.log('orders', orders?.[0], result, loading, error)
-
-  // const loading = loadingAdd && loadingReduce
-  // const error = errorAdd && errorReduce
-  // const result = useMemo(() => {
-  //   if (!loading && !error && resultAdd && resultReduce) return [...resultAdd[0], ...resultReduce[0]]
-  //   else return undefined
-  // }, [loading, error, resultAdd, resultReduce])
 
   return useMemo(() => {
     return {
@@ -567,9 +500,6 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
           : Number(order.token1Decimals.toString())
         inputDecimals = order.isAdd ? inputDecimals : outputDecimals
         outputDecimals = order.isAdd ? outputDecimals : inputDecimals
-        // const startOutput = convertToBN(order.startOutput, outputDecimals) //new BN(order.startOutput.toString()).shiftedBy(-outputDecimals)
-        // const decayRate = convertToBN(order.decayRate, 18) //new BN(order.decayRate.toString())
-        // const minOutput = convertToBN(order.minOutput, outputDecimals) //new BN(order.minOutput.toString()).shiftedBy(-outputDecimals)
         const currentOutput = convertToBN(order.currentOutput, outputDecimals) //new BN(order.currentOutput.toString()).shiftedBy(-outputDecimals)
         return {
           key: {
@@ -671,141 +601,28 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
       }
     }
   }, [result, loading, error, key, syncing])
-
-  // const { chainId } = useWeb3React()
-  // const dataProvider = useDataProviderContract()
-  // const [loading, setLoading] = useState(false)
-  // const [error, setError] = useState<any>()
-  // const [result, setResult] = useState<any>()
-  // const [lastBlockNumber, setBlockNumber] = useState<number | undefined>(undefined)
-  // const [lastParams, setLastParams] = useState<{
-  //   pool: string
-  //   trader: string
-  //   isToken0: boolean
-  // }>()
-  // const blockNumber = useBlockNumber()
-  // const { account } = useWeb3React()
-  // const params = useMemo(() => {
-  //   if (chainId && key) {
-  //     return {
-  //       pool: computePoolAddress({
-  //         factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
-  //         tokenA: key.poolKey.token0Address,
-  //         tokenB: key.poolKey.token1Address,
-  //         fee: key.poolKey.fee,
-  //       }),
-  //       trader: key.trader,
-  //       isToken0: key.isToken0,
-  //     }
-  //   } else {
-  //     return undefined
-  //   }
-  // }, [chainId, key])
-
-  // useEffect(() => {
-  //   if (!params || loading || !blockNumber || !dataProvider) return
-
-  //   if (
-  //     lastParams?.isToken0 === params.isToken0 &&
-  //     lastParams?.pool === params.pool &&
-  //     lastParams?.trader === params.trader &&
-  //     lastBlockNumber &&
-  //     lastBlockNumber === blockNumber
-  //   ) {
-  //     return
-  //   }
-  //   const call = async () => {
-  //     try {
-  //       setLoading(true)
-  //       const result = await dataProvider.callStatic.getMarginPosition(params.pool, params.trader, params.isToken0)
-  //       setLastParams(params)
-  //       setResult(result)
-  //       setLoading(false)
-  //       setBlockNumber(blockNumber)
-  //     } catch (error) {
-  //       setError(error)
-  //       setLastParams(undefined)
-  //       setLoading(false)
-  //     }
-  //   }
-  //   call()
-  // }, [dataProvider, params, blockNumber, lastBlockNumber, loading, lastParams])
-
-  // return useMemo(() => {
-  //   if (!result || !key || !account) {
-  //     return {
-  //       loading,
-  //       error,
-  //       position: undefined,
-  //     }
-  //   } else {
-  //     const position = result
-  //     const inputDecimals = position.isToken0
-  //       ? Number(position.token1Decimals.toString())
-  //       : Number(position.token0Decimals.toString())
-  //     const outputDecimals = position.isToken0
-  //       ? Number(position.token0Decimals.toString())
-  //       : Number(position.token1Decimals.toString())
-
-  //     return {
-  //       loading,
-  //       error,
-  //       position: {
-  //         poolKey: key.poolKey,
-  //         positionId: new BN(0),
-  //         isToken0: position.isToken0,
-  //         totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
-  //         totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
-  //         openTime: position.openTime,
-  //         repayTime: position.repayTime,
-  //         premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
-  //         totalPosition: convertToBN(position.totalPosition, outputDecimals),
-  //         margin: convertToBN(position.margin, inputDecimals),
-  //         premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
-  //         isBorrow: false,
-  //         premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
-  //           convertToBN(position.premiumOwed, inputDecimals)
-  //         ),
-  //         trader: account,
-  //         token0Decimals: Number(position.token0Decimals.toString()),
-  //         token1Decimals: Number(position.token1Decimals.toString()),
-  //         maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
-  //         borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
-  //           return {
-  //             tick: info.tick,
-  //             liquidity: new BN(info.liquidity.toString()),
-  //             premium: convertToBN(info.premium, inputDecimals),
-  //             feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
-  //             feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
-  //             lastGrowth: new BN(info.lastGrowth.toString()),
-  //           }
-  //         }),
-  //       },
-  //     }
-  //   }
-  // }, [loading, error, result, account, key])
 }
 
 // TODO
-export function getLimitOrderCurrentOutput(
-  auctionDeadline: number,
-  auctionStartTime: number,
-  decayRate: BN,
-  startOutput: BN,
-  minOutput: BN
-): BN {
-  const now = Math.floor(Date.now() / 1000)
-  if (now > auctionDeadline) {
-    if (now > auctionStartTime) {
-      if (decayRate.isEqualTo(0)) {
-        return startOutput
-      }
-      const decayed = decayRate.exponentiatedBy(now - auctionStartTime)
-      return decayed.times(startOutput) < minOutput ? minOutput : decayed.times(startOutput)
-    }
-  }
-  return new BN(0)
-}
+// export function getLimitOrderCurrentOutput(
+//   auctionDeadline: number,
+//   auctionStartTime: number,
+//   decayRate: BN,
+//   startOutput: BN,
+//   minOutput: BN
+// ): BN {
+//   const now = Math.floor(Date.now() / 1000)
+//   if (now > auctionDeadline) {
+//     if (now > auctionStartTime) {
+//       if (decayRate.isEqualTo(0)) {
+//         return startOutput
+//       }
+//       const decayed = decayRate.exponentiatedBy(now - auctionStartTime)
+//       return decayed.times(startOutput) < minOutput ? minOutput : decayed.times(startOutput)
+//     }
+//   }
+//   return new BN(0)
+// }
 
 export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): {
   loading: boolean
@@ -869,64 +686,6 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
       }
     }
   }, [result, loading, error, key, syncing])
-  // address pool, address trader, bool positionIsToken0, bool isAdd
-  // const MarginFacility = useMarginFacilityContract()
-  // const { chainId } = useWeb3React()
-  // const inputCurrency = useToken(key?.isToken0 ? key?.poolKey.token1Address : key?.poolKey.token0Address)
-  // const outputCurrency = useToken(key?.isToken0 ? key?.poolKey.token0Address : key?.poolKey.token1Address)
-  // const orderId = useMemo(() => {
-  //   if (key && chainId) {
-  //     const pool = computePoolAddress({
-  //       factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-  //       tokenA: key.poolKey.token0Address,
-  //       tokenB: key.poolKey.token1Address,
-  //       fee: key.poolKey.fee,
-  //     }) as string
-  //     return computeOrderId(pool, key.trader, key.isToken0, key.isAdd)
-  //   }
-  //   return undefined
-  // }, [key, chainId])
-
-  // const { loading, error, result } = useSingleCallResult(MarginFacility, 'orders', [orderId])
-
-  // return useMemo(() => {
-  //   if (loading || error || !result || !key || !inputCurrency || !outputCurrency) {
-  //     return {
-  //       loading,
-  //       error,
-  //       position: undefined,
-  //     }
-  //   }
-  //   const startOutput = convertToBN(result.startOutput, result.isAdd ? outputCurrency.decimals : inputCurrency.decimals)
-  //   const decayRate = convertToBN(result.decayRate, 18)
-  //   const minOutput = convertToBN(result.minOutput, result.isAdd ? outputCurrency.decimals : inputCurrency.decimals)
-  //   const currentOutput = getLimitOrderCurrentOutput(
-  //     result.auctionDeadline,
-  //     result.auctionStartTime,
-  //     decayRate,
-  //     startOutput,
-  //     minOutput
-  //   )
-
-  //   const position = {
-  //     key: key.poolKey,
-  //     isAdd: result.isAdd,
-  //     positionIsToken0: key.isToken0,
-  //     auctionDeadline: result.auctionDeadline,
-  //     auctionStartTime: result.auctionStartTime,
-  //     startOutput,
-  //     minOutput,
-  //     inputAmount: convertToBN(result.inputAmount, result.isAdd ? inputCurrency.decimals : outputCurrency.decimals),
-  //     decayRate,
-  //     margin: convertToBN(result.margin, inputCurrency.decimals),
-  //     currentOutput,
-  //   }
-  //   return {
-  //     loading,
-  //     error,
-  //     position,
-  //   }
-  // }, [result, loading, error, key, inputCurrency, outputCurrency])
 }
 
 export interface BinData {

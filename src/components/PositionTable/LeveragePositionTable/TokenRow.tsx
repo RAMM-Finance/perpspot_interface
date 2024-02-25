@@ -22,7 +22,7 @@ import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
-import { useSwapActionHandlers } from 'state/swap/hooks'
+import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
@@ -596,6 +596,13 @@ interface LoadedRowProps {
   position: MarginPositionDetails
 }
 
+export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
+  if (!tokenA || !tokenB || !fee) return undefined
+  const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
+  const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
+  return `${token0?.toLowerCase()}-${token1?.toLowerCase()}-${fee}`
+}
+
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
@@ -633,12 +640,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     [margin, totalDebtInput]
   )
 
+  const id = getPoolId(token0?.wrapped.address, token1?.wrapped.address, details?.poolKey.fee)
+  const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
       e.stopPropagation()
-      onPoolSelection(currencyIn, currencyOut, fee)
+      poolId !== id && id && onPoolSelection(currencyIn, currencyOut, fee, id)
     },
-    [onPoolSelection]
+    [onPoolSelection, poolId, id]
   )
 
   const [
@@ -701,7 +710,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     )
   }, [position])
 
-  console.log(position?.inputCurrency, _pnlCurrency)
+  // console.log(position?.inputCurrency, _pnlCurrency)
 
   const pnlUSD = useUSDPrice(_pnlCurrency)
 

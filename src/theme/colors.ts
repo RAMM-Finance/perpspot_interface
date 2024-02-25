@@ -100,23 +100,6 @@ export const colors = {
   purple700: '#210f2e',
 }
 
-// /* CSS HEX */
-// --dark-purple: #201426ff;
-// --black: #040505ff;
-// --rich-black: #05051Bff;
-// --white: #FFFFFFff;
-// --russian-violet: #23113Bff;
-
-// /* SCSS Gradient */
-// $gradient-top: linear-gradient(0deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-right: linear-gradient(90deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-bottom: linear-gradient(180deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-left: linear-gradient(270deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-top-right: linear-gradient(45deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-bottom-right: linear-gradient(135deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-top-left: linear-gradient(225deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-bottom-left: linear-gradient(315deg, #201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
-// $gradient-radial: radial-gradient(#201426ff, #040505ff, #05051Bff, #FFFFFFff, #23113Bff);
 export const limitlessColors = {
   darkPurple: '#201426ff',
   black: '#040505ff',
@@ -160,11 +143,8 @@ export const darkTheme = {
   userThemeColor: colors.gray900,
   background: colors.gray800,
   backgroundBackdrop: colors.gray950,
-
-  // backgroundSurface: limitlessColors.darkPurple,
-  // backgroundSurface: colors.gray900, //"#030216", //"#0d0517", //colors.black,// colors.gray900
   backgroundSurface: '#040609',
-  backgroundModule: opacify(8, colors.gray300), // #293249', // "#181926", // colors.gray800
+  backgroundModule: opacify(8, colors.gray300),
   backgroundInteractive: colors.gray700,
   backgroundFloating: opacify(12, colors.black),
   backgroundOutline: opacify(16, colors.blue300),
@@ -204,8 +184,7 @@ export const darkTheme = {
 
   stateOverlayHover: opacify(12, colors.gray300),
   stateOverlayPressed: opacify(24, colors.gray200),
-
-  searchBackground: `rgba(255,255,255,0.07)`,
+  searchBackground: `#2b3039`,
   searchOutline: `rgba(255,255,255,0.07)`,
 }
 
@@ -255,7 +234,7 @@ export const lightTheme = {
   stateOverlayHover: opacify(8, colors.gray300),
   stateOverlayPressed: opacify(24, colors.gray200),
 
-  searchBackground: `rgba(255,255,255,0.07)`,
+  searchBackground: `#2b3039`,
   searchOutline: `rgba(255,255,255,0.07)`,
 }
 

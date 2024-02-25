@@ -51,6 +51,12 @@ export interface MarginLimitOrder {
   currentOutput: BN
 }
 
+export interface PoolKey {
+  token0: string
+  token1: string
+  fee: number
+}
+
 export interface RawPoolKey {
   token0Address: string
   token1Address: string

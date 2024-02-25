@@ -45,6 +45,7 @@ export interface SwapState {
   readonly ltv: string | undefined | null
   readonly borrowManagerAddress: string | undefined | null
   readonly premium: BN | undefined | null
+  readonly poolId: string | undefined | null
   tab: string
 }
 
@@ -103,10 +104,11 @@ export default createReducer<SwapState>(initialState, (builder) =>
           premium: premium ?? null,
           tab: tab ?? 'Long',
           poolFee: null,
+          poolId: null,
         }
       }
     )
-    .addCase(selectPool, (state, { payload: { inputCurrencyId, outputCurrencyId, poolFee } }) => {
+    .addCase(selectPool, (state, { payload: { inputCurrencyId, outputCurrencyId, poolFee, id } }) => {
       if (
         outputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase() &&
         inputCurrencyId.toLocaleLowerCase() !== '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase()
@@ -119,6 +121,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
           [Field.INPUT]: { currencyId: outputCurrencyId },
           [Field.OUTPUT]: { currencyId: inputCurrencyId },
           poolFee,
+          id,
         }
       } else {
         localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
@@ -129,6 +132,7 @@ export default createReducer<SwapState>(initialState, (builder) =>
           [Field.INPUT]: { currencyId: inputCurrencyId },
           [Field.OUTPUT]: { currencyId: outputCurrencyId },
           poolFee,
+          id,
         }
       }
     })

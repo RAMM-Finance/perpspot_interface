@@ -79,16 +79,9 @@ function largerPercentValue(a?: Percent, b?: Percent) {
 const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  // const tab = useSelector((state: any) => state.swap.tab)
 
-  const {
-    onSwitchTokens,
-
-    onUserInput,
-    onChangeRecipient,
-    onLeverageFactorChange,
-    onPremiumChange,
-  } = useSwapActionHandlers()
+  const { onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange, onPremiumChange } =
+    useSwapActionHandlers()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 

@@ -13,13 +13,7 @@ const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
 // fetches 24h OHLCV data, in base token.
-export function useLatestPoolPriceData(
-  // address: string | undefined | null,
-  // baseAddress: string | undefined,
-  // quoteAddress: string | undefined,
-  poolAddress: string | undefined
-  // chainId?: number
-): {
+export function useLatestPoolPriceData(poolAddress: string | undefined): {
   data: {
     high24: BN
     low24: BN
@@ -63,7 +57,7 @@ export function useLatestPoolPriceData(
     },
     {
       enabled: !!poolAddress,
-      refetchInterval: 1000 * 20,
+      refetchInterval: 1000 * 45,
       keepPreviousData: true,
     }
   )

@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { ConnectionType } from 'connection'
 import { SupportedLocale } from 'constants/locales'
+import { PoolKey } from 'types/lmtv2position'
 
 import { DEFAULT_DEADLINE_FROM_NOW, DEFAULT_LIMIT_DEADLINE_FROM_NOW } from '../../constants/misc'
 import { updateVersion } from '../global/actions'
@@ -47,11 +48,10 @@ export interface UserState {
 
   pairs: {
     [chainId: number]: {
-      // keyed by token0Address:token1Address
       [key: string]: SerializedPair
     }
   }
-
+  pinnedPools: PoolKey[]
   timestamp: number
   URLWarningVisible: boolean
   hideUniswapWalletBanner: boolean
@@ -78,6 +78,7 @@ export const initialState: UserState = {
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
+  pinnedPools: [],
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
   hideUniswapWalletBanner: false,
@@ -106,6 +107,32 @@ const userSlice = createSlice({
     updateUserSlippedTickTolerance(state, action) {
       state.userSlippedTickTolerance = action.payload.userSlippedTickTolerance
       state.timestamp = currentTimestamp()
+    },
+    updatePinnedPools(state, action) {
+      // console.log('updatePinnedPools1', action.payload.add, action.payload.poolKey)
+      // state.pinnedPools = []
+      // console.log('updatePinnedPools1', action.payload.add, action.payload.poolKey)
+      if (action.payload.add) {
+        state.pinnedPools.push(action.payload.poolKey)
+      } else {
+        console.log('updatePinnedPools2', action.payload.add, action.payload.poolKey)
+        const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
+          action.payload.poolKey.fee
+        }`
+
+        const index = state.pinnedPools.findIndex((i) => {
+          const { token0, token1, fee } = i
+          const id = `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
+          return id === id2
+        })
+
+        if (index >= 0) {
+          state.pinnedPools.splice(index, 1)
+        }
+      }
+    },
+    setPinnedPools(state, action) {
+      state.pinnedPools = action.payload.pinnedPools
     },
     updateUserPremiumDepositPercent(state, action) {
       state.userPremiumDepositPercent = action.payload.userPremiumDepositPercent
@@ -169,6 +196,10 @@ const userSlice = createSlice({
         }
       }
 
+      if (!state.pinnedPools) {
+        state.pinnedPools = []
+      }
+
       if (!state.userLimitDeadline) {
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
@@ -212,5 +243,7 @@ export const {
   updateUserPremiumDepositPercent,
   updateUserSlippedTickTolerance,
   updateUserLimitDeadline,
+  updatePinnedPools,
+  setPinnedPools,
 } = userSlice.actions
 export default userSlice.reducer

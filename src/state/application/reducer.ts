@@ -1,6 +1,7 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit'
 import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
+import { PoolKey } from 'types/lmtv2position'
 
 export type PopupContent =
   | {
@@ -45,6 +46,17 @@ export interface ApplicationState {
   readonly fiatOnramp: { available: boolean; availabilityChecked: boolean }
   readonly openModal: ApplicationModal | null
   readonly popupList: PopupList
+  readonly poolList: PoolKey[]
+  readonly poolPriceData: {
+    [id: string]: {
+      pool: PoolKey
+      priceNow: number
+      price24hAgo: number
+      delta24h: number
+      high24: number
+      low24: number
+    }
+  }
 }
 
 const initialState: ApplicationState = {
@@ -52,6 +64,8 @@ const initialState: ApplicationState = {
   chainId: null,
   openModal: null,
   popupList: [],
+  poolPriceData: {},
+  poolList: [],
 }
 
 const applicationSlice = createSlice({
@@ -78,6 +92,12 @@ const applicationSlice = createSlice({
         },
       ])
     },
+    updatePoolPriceData(state, action) {
+      state.poolPriceData = action.payload
+    },
+    updatePoolList(state, action) {
+      state.poolList = action.payload
+    },
     removePopup(state, { payload: { key } }) {
       state.popupList.forEach((p) => {
         if (p.key === key) {
@@ -88,6 +108,13 @@ const applicationSlice = createSlice({
   },
 })
 
-export const { updateChainId, setFiatOnrampAvailability, setOpenModal, addPopup, removePopup } =
-  applicationSlice.actions
+export const {
+  updateChainId,
+  setFiatOnrampAvailability,
+  setOpenModal,
+  addPopup,
+  removePopup,
+  updatePoolPriceData,
+  updatePoolList,
+} = applicationSlice.actions
 export default applicationSlice.reducer

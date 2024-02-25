@@ -1,6 +1,7 @@
 import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
@@ -78,27 +79,30 @@ export const PoolSelector = ({
   if (location.pathname !== '/add/' && setSelectPair) {
     setSelectPair(false)
   }
-
+  const id = getPoolId(inputCurrency?.wrapped.address, outputCurrency?.wrapped.address, fee)
+  const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      if (
-        (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
-        (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
-        (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
-        (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
-      ) {
-        onPoolSelection(currencyIn, currencyOut, fee)
-        navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
-      } else {
-        onPoolSelection(currencyIn, currencyOut, fee)
-        // localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
-        // localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-        // onCurrencySelection(Field.INPUT, currencyIn)
-        // onCurrencySelection(Field.OUTPUT, currencyOut)
-        navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
+      if (id && poolId !== id) {
+        if (
+          (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
+          (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
+          (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
+          (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
+        ) {
+          onPoolSelection(currencyIn, currencyOut, fee, id)
+          navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+        } else {
+          onPoolSelection(currencyIn, currencyOut, fee, id)
+          // localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
+          // localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
+          // onCurrencySelection(Field.INPUT, currencyIn)
+          // onCurrencySelection(Field.OUTPUT, currencyOut)
+          navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
+        }
       }
     },
-    [onPoolSelection, navigate]
+    [onPoolSelection, navigate, id]
   )
 
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
@@ -226,15 +230,15 @@ export const PoolSelector = ({
           : { position: 'absolute', height: 'fit-content', zIndex: '3' }
       }
     >
-    <SelectorScrollBox> 
-      <Row flexDirection="column">
-        <PoolListContainer>
-          <PoolListHeader>Pool (fee)</PoolListHeader>
-          <PoolListHeader>TVL</PoolListHeader>
-          <PoolListHeader>Vol</PoolListHeader>
-          <PoolListHeader></PoolListHeader>
-        </PoolListContainer>
-      </Row>
+      <SelectorScrollBox>
+        <Row flexDirection="column">
+          <PoolListContainer>
+            <PoolListHeader>Pool (fee)</PoolListHeader>
+            <PoolListHeader>TVL</PoolListHeader>
+            <PoolListHeader>Vol</PoolListHeader>
+            <PoolListHeader></PoolListHeader>
+          </PoolListContainer>
+        </Row>
         <Row>
           <Column paddingX="8">
             {dataInfo &&

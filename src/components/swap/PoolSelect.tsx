@@ -1,116 +1,62 @@
-import { NumberType } from '@uniswap/conedison/format'
+// import Menu from '@mui/material/Menu'
+// import MenuItem from '@mui/material/MenuItem'
+import Menu from '@mui/material/Menu'
 import { Currency } from '@uniswap/sdk-core'
-import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
-import PoolSelectModal from 'components/Modal/poolModal'
-import { NavDropdown } from 'components/NavBar/NavDropdown'
-import { RowBetween } from 'components/Row'
-import { LoadingBubble } from 'components/Tokens/loading'
-import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
-import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { useOnClickOutside } from 'hooks/useOnClickOutside'
-import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { Box } from 'nft/components/Box'
-import { Column, Row } from 'nft/components/Flex'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp } from 'react-feather'
-import { usePoolKeyList } from 'state/application/hooks'
+import { Row } from 'nft/components/Flex'
+import { useCallback, useMemo, useState } from 'react'
+import React from 'react'
+import { ChevronDown, Star } from 'react-feather'
+import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import styled, { useTheme } from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/user/hooks'
+import styled, { keyframes, useTheme } from 'styled-components/macro'
+import { BREAKPOINTS, ThemedText } from 'theme'
+import { PoolKey } from 'types/lmtv2position'
 
-import * as styles from './PoolSelector.css'
-import PoolSelectRow from './PoolSelectRow'
-
-const LOGO_SIZE = 20
-
-const PoolListHeader = styled(ThemedText.BodySmall)`
-  font-size: 12px;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-`
-const PoolListContainer = styled.div`
+const PoolListHeaderRow = styled.div`
   display: grid;
-  grid-template-columns: 2.4fr 0.8fr 1fr;
+  grid-template-columns: 1.5fr 1fr 1fr;
   width: 100%;
-  padding-left: 0.5vw;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  justify-items: flex-start;
+  align-items: center;
+  margin-bottom: 0.4rem;
 `
 
-const Label = styled.div`
-  font-size: 12px;
-  margin-left: 5px;
-  width: 8rem;
-`
-const Status = styled.div`
+const PoolListContainer = styled.div`
   display: flex;
-  align-items: center;
-  width: ${LOGO_SIZE}px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  max-height: 30vh;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  display: absolute;
+  // width: 30rem;
+  // border: solid 2px ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.surface1};
+  padding: 0.5rem;
+  border-radius: 10px;
+  gap: 0.25rem;
 `
 
 const ListWrapper = styled.div`
   width: 100%;
-`
-
-const Container = styled.button<{ disabled: boolean; active: boolean }>`
-  background: ${({ theme, active }) => (active ? theme.accentActiveSoft : 'none')};
-  border: none;
-  border-radius: 5px;
-  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
-  cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-  display: grid;
-  grid-template-columns: 2.4fr 0.8fr 1fr;
-  line-height: 10px;
-  align-items: center;
-  padding: 3px;
-
-  margin-bottom: 5px;
-  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
-  text-align: left;
-  transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
-    background-color;
-  width: 100%;
-
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
-    width: 100%;
-  }
-
-  &:hover {
-    background-color: ${({ disabled, theme }) => (disabled ? 'none' : theme.backgroundOutline)};
-  }
-`
-
-const Wrapper = styled.div`
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-  border-radius: 10px;
-  width: 97%;
-  padding: 0.25rem;
-  height: fit-content;
-`
-
-const DropWrapper = styled.div`
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 0.5rem;
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-  border-radius: 10px;
-  width: 97%;
-  padding: 0.25rem;
-  height: fit-content;
+  overflow-y: auto;
+  scrollbar-width: none;
+  overscroll-behavior: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 `
 
 const LabelWrapper = styled.div`
@@ -120,24 +66,34 @@ const LabelWrapper = styled.div`
   justify-content: center;
 `
 
-const SelectPoolWrapper = styled.div`
+const SelectPoolWrapper = styled.button`
   display: flex;
   flex-direction: row;
-  width: 100%;
+  // width: 100%;
   max-width: 250px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   justify-content: space-evenly;
+  align-items: center;
   padding-right: 0.5rem;
   padding-left: 0.5rem;
   border-radius: 10px;
-  &:hover {
-    background-color: ${({ theme }) => theme.backgroundOutline};
-  }
   cursor: pointer;
+  border: none;
+`
+
+const ChevronIcon = styled(ChevronDown)<{ $rotated: boolean }>`
+  @media screen and (max-width: ${BREAKPOINTS.md}px) {
+    rotate: 180deg;
+  }
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  color: ${({ theme }) => theme.textSecondary};
+  transition: transform 0.3s ease;
+  transform: ${({ $rotated }) => ($rotated ? 'rotate(180deg)' : 'none')};
 `
 
 const MainWrapper = styled.div`
   display: grid;
-  grid-template-columns: 0.4fr 1fr;
+  grid-template-columns: 0.35fr 1fr;
   width: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -147,17 +103,148 @@ const MainWrapper = styled.div`
   border-width: 1px;
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.7rem;
+`
+
+const PoolListHeader = styled.div`
+  font-size: 15px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.textTertiary};
+`
+
+const RowWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  justify-items: flex-start;
+  align-items: center;
+  padding: 0.5rem;
+  :hover {
+    background-color: ${({ theme }) => theme.backgroundInteractive};
+  }
+`
+
+const PoolLabelWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+`
+
+export const HollowStar = () => {
+  const theme = useTheme()
+  return <Star color={theme.backgroundOutline} size={16} stroke="white" fill="none" />
+}
+
+export const FilledStar = () => {
+  const theme = useTheme()
+  return <Star color={theme.backgroundOutline} size={16} fill="white" />
+}
+
+const DeltaText = styled.span<{ delta: number | undefined }>`
+  font-size: 14px;
+  color: ${({ theme, delta }) =>
+    delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
+`
+
+const Pin = styled.button`
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  margin-right: 0.5rem;
+`
+
+const PoolSelectRow = ({ poolKey }: { poolKey: PoolKey }) => {
+  const poolOHLCDatas = useAppPoolOHLC()
+  const token0 = useCurrency(poolKey.token0)
+  const token1 = useCurrency(poolKey.token1)
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
+  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+  const poolOHLCData = poolOHLCDatas[id]
+  const delta = poolOHLCData?.delta24h
+
+  const { onPoolSelection } = useSwapActionHandlers()
+
+  const baseQuoteSymbol = useMemo(() => {
+    if (pool && poolOHLCData) {
+      const token0Price = new BN(pool.token0Price.toFixed(18))
+      const geckoPrice = new BN(poolOHLCData.priceNow)
+      const d1 = token0Price.minus(geckoPrice).abs()
+      const d2 = new BN(1).div(token0Price).minus(geckoPrice).abs()
+      if (d1.lt(d2)) {
+        return `${pool.token0?.symbol}/${pool.token1?.symbol}`
+      }
+      return `${pool.token1?.symbol}/${pool.token0?.symbol}`
+    }
+    return null
+  }, [pool, poolOHLCData])
+
+  const addPinnedPool = useAddPinnedPool()
+  const removePinnedPool = useRemovePinnedPool()
+  const pinnedPools = usePinnedPools()
+
+  const isPinned = useMemo(() => {
+    return pinnedPools?.some((p) => {
+      const _id = `${p.token0.toLowerCase()}-${p.token1.toLowerCase()}-${p.fee}`
+      return _id === id
+    })
+  }, [id, pinnedPools])
+
+  const handleClick = useCallback(
+    (e: any) => {
+      isPinned
+        ? removePinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
+        : addPinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
+      e.stopPropagation()
+    },
+    [isPinned, removePinnedPool, addPinnedPool, poolKey.token0, poolKey.token1, poolKey.fee]
+  )
+
+  const { poolId } = useSwapState()
+  const handleRowClick = useCallback(() => {
+    if (token0 && token1 && poolId !== id) {
+      onPoolSelection(token0, token1, poolKey.fee, id)
+    }
+  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id])
+
+  return (
+    <RowWrapper onClick={handleRowClick}>
+      <Row>
+        <Pin onClick={handleClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
+        <PoolLabelWrapper>
+          <ThemedText.LabelSmall>{baseQuoteSymbol}</ThemedText.LabelSmall>
+          <ThemedText.BodyPrimary fontSize={12}>{pool?.fee ? `${pool?.fee / 10000}%` : ''}</ThemedText.BodyPrimary>
+        </PoolLabelWrapper>
+      </Row>
+      <ThemedText.BodyPrimary fontSize={14}>
+        {poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}
+      </ThemedText.BodyPrimary>
+      <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
+    </RowWrapper>
+  )
+}
+
+const fadeIn = keyframes`
+  from { opacity: .25 }
+  to { opacity: 1 }
+`
+
+const StyledMenu = styled(Menu)`
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  animation: ${fadeIn} 0.5s;
+  & .MuiMenu-paper {
+    border-radius: 10px;
+    border: solid 1px ${({ theme }) => theme.backgroundOutline};
+    background-color: ${({ theme }) => theme.surface1};
+  }
 `
 
 export function SelectPool() {
-  const theme = useTheme()
-
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
-
   const { chainId } = useWeb3React()
 
   const {
@@ -166,100 +253,45 @@ export function SelectPool() {
     poolFee,
   } = useSwapState()
 
-  const { onPoolSelection } = useSwapActionHandlers()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-
-  const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
-  // Timeout token loader after 3 seconds to avoid hanging in a loading state.
-  useEffect(() => {
-    const tokenLoaderTimer = setTimeout(() => {
-      setTokenLoaderTimerElapsed(true)
-    }, 3000)
-    return () => clearTimeout(tokenLoaderTimer)
-  }, [])
-
-  const isLoading = Boolean(!tokenLoaderTimerElapsed)
-
-  const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      onPoolSelection(currencyIn, currencyOut, fee)
-    },
-    [onPoolSelection]
-  )
-
-  const { keyList: availablePools } = usePoolKeyList()
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolFee ?? undefined)
 
   const { result: poolData } = usePoolsData()
+  const poolList = useRawPoolKeyList()
 
-  const drop = (
-    <DropWrapper>
-      <Row flexDirection="column">
-        <PoolListContainer>
-          <PoolListHeader>Pool</PoolListHeader>
+  const [anchorEl, setAnchorEl] = useState(null)
+  const open = Boolean(anchorEl)
 
-          <PoolListHeader>24h Δ</PoolListHeader>
-          <PoolListHeader>Price</PoolListHeader>
-        </PoolListContainer>
-      </Row>
-      <ListWrapper>
-        {isLoading ? (
-          <AutoColumn gap="5px">
-            <LoadingRow />
-            <LoadingRow />
-            <LoadingRow />
-            <LoadingRow />
-            <LoadingRow />
-            <LoadingRow />
-          </AutoColumn>
-        ) : (
-          <Column style={{ gap: '3px' }}>
-            {availablePools &&
-              availablePools.map((curr: any) => {
-                return (
-                  <PoolSelectRow
-                    closeModal={setIsOpen}
-                    currencyId={[curr.token0, curr.token1]}
-                    onCurrencySelect={handleCurrencySelect}
-                    key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                    fee={curr?.fee}
-                    chainId={chainId}
-                  />
-                )
-              })}
-          </Column>
-        )}
-      </ListWrapper>
-    </DropWrapper>
-  )
+  const handleClick = (event: any) => {
+    setAnchorEl(event.currentTarget)
+  }
 
-  const chevronProps = {
-    height: 15,
-    width: 15,
-    color: theme.textSecondary,
+  const handleClose = () => {
+    setAnchorEl(null)
   }
 
   return (
     <MainWrapper>
-      <SelectPoolWrapper onClick={() => setIsOpen(!isOpen)}>
+      {/* <SimpleMenu /> */}
+      <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
         <LabelWrapper>
           <Row gap="10">
-            <Row>
-              <DoubleCurrencyLogo
-                currency0={inputCurrency as Currency}
-                currency1={outputCurrency as Currency}
-                size={18}
-              />
+            <DoubleCurrencyLogo
+              currency0={inputCurrency as Currency}
+              currency1={outputCurrency as Currency}
+              size={25}
+            />
+            <AutoColumn justify="flex-start">
               <ThemedText.HeadlineSmall
-                fontSize={15}
+                fontSize={20}
               >{`${inputCurrency?.symbol}/${outputCurrency?.symbol}`}</ThemedText.HeadlineSmall>
-            </Row>
-            <ThemedText.BodySmall fontSize="14px">({poolFee ? poolFee / 10000 : 0}%)</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize="14px">({poolFee ? poolFee / 10000 : 0}%)</ThemedText.BodySmall>
+            </AutoColumn>
           </Row>
         </LabelWrapper>
-        <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
+        <ChevronIcon $rotated={open} />
       </SelectPoolWrapper>
       <PoolStatsSection
         poolData={poolData}
@@ -268,260 +300,41 @@ export function SelectPool() {
         address1={pool?.token1.address}
         fee={pool?.fee}
       />
-      <PoolSelectModal isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
-        {drop}
-      </PoolSelectModal>
+      <StyledMenu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={open}
+        onClose={handleClose}
+        style={{ position: 'absolute' }}
+      >
+        {/* <PoolSearchBar /> */}
+        <PoolListContainer>
+          <PoolListHeaderRow>
+            <PoolListHeader style={{ marginLeft: '10px' }}>Pairs</PoolListHeader>
+            <PoolListHeader>Last Price</PoolListHeader>
+            <PoolListHeader>24h</PoolListHeader>
+          </PoolListHeaderRow>
+          {poolList.length === 0 ? null : (
+            <ListWrapper>
+              {poolList.map((poolKey) => {
+                const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+                return <PoolSelectRow key={id} poolKey={poolKey} />
+              })}
+            </ListWrapper>
+          )}
+        </PoolListContainer>
+      </StyledMenu>
     </MainWrapper>
   )
 }
 
-export default function PoolSelect({
-  detailsLoading,
-  chainId,
-  dropdown,
-}: {
-  detailsLoading: boolean
-  chainId: number | undefined
-  dropdown: boolean
-}) {
-  const theme = useTheme()
-
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
-
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    poolFee,
-  } = useSwapState()
-
-  const { onPoolSelection } = useSwapActionHandlers()
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
-
-  const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
-  // Timeout token loader after 3 seconds to avoid hanging in a loading state.
-  useEffect(() => {
-    const tokenLoaderTimer = setTimeout(() => {
-      setTokenLoaderTimerElapsed(true)
-    }, 3000)
-    return () => clearTimeout(tokenLoaderTimer)
-  }, [])
-
-  const isLoading = Boolean(!tokenLoaderTimerElapsed)
-
-  const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      onPoolSelection(currencyIn, currencyOut, fee)
-    },
-    [onPoolSelection]
-  )
-
-  const { keyList: availablePools } = usePoolKeyList() //useGetPoolsAndData()
-
-  const pair = useMemo(() => {
-    if (!availablePools) {
-      return undefined
-    } else {
-      return availablePools.find(
-        (pool) =>
-          (pool.token0 === inputCurrency?.wrapped.address && pool.token1 === outputCurrency?.wrapped.address) ||
-          (pool.token1 === inputCurrency?.wrapped.address && pool.token0 === outputCurrency?.wrapped.address)
-      )
-    }
-  }, [availablePools, inputCurrency, outputCurrency])
-
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, pair?.fee ?? undefined)
-
-  const poolAddress = useMemo(() => {
-    if (!pool || !chainId) return null
-    return computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    })
-  }, [chainId, pool])
-  const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
-
-  const [currentPrice, delta] = useMemo(() => {
-    if (!priceData || !pool) return [undefined, undefined]
-
-    const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
-    const token0Price = new BN(pool.token0Price.toFixed(18))
-    const price = invertPrice ? new BN(1).div(token0Price) : token0Price
-
-    const price24hAgo = priceData.price24hAgo
-    const delt = price.minus(price24hAgo).div(price).times(100)
-    return [price, delt]
-  }, [chainId, priceData, pool])
-
-  const drop = (
-    <NavDropdown ref={modalRef}>
-      <DropWrapper>
-        <Row flexDirection="column">
-          <PoolListContainer>
-            <PoolListHeader>Pool</PoolListHeader>
-
-            <PoolListHeader>24h Δ</PoolListHeader>
-            <PoolListHeader>Price</PoolListHeader>
-          </PoolListContainer>
-        </Row>
-        <ListWrapper>
-          {isLoading || detailsLoading ? (
-            <AutoColumn gap="5px">
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-              <LoadingRow />
-            </AutoColumn>
-          ) : (
-            <Column style={{ gap: '3px' }}>
-              {availablePools &&
-                availablePools.map((curr: any) => {
-                  return (
-                    <PoolSelectRow
-                      closeModal={setIsOpen}
-                      currencyId={[curr.token0, curr.token1]}
-                      onCurrencySelect={handleCurrencySelect}
-                      key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                      fee={curr?.fee}
-                      chainId={chainId}
-                    />
-                  )
-                })}
-            </Column>
-          )}
-        </ListWrapper>
-      </DropWrapper>
-    </NavDropdown>
-  )
-
-  const chevronProps = {
-    height: 15,
-    width: 15,
-    color: theme.textSecondary,
+const formatBN = (n: BN) => {
+  if (n.lt(0.0001)) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 7, minimumFractionDigits: 5 }).format(n.toNumber())
+  } else if (n.lt(1)) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6, minimumFractionDigits: 3 }).format(n.toNumber())
+  } else {
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(n.toNumber())
   }
-
-  return (
-    <>
-      {!dropdown ? (
-        <Wrapper>
-          <Row flexDirection="column">
-            <PoolListContainer>
-              <PoolListHeader>Pool</PoolListHeader>
-              <PoolListHeader>24h Δ</PoolListHeader>
-              <PoolListHeader>Price</PoolListHeader>
-            </PoolListContainer>
-          </Row>
-          <ListWrapper>
-            {isLoading || detailsLoading ? (
-              <AutoColumn gap="5px">
-                <LoadingRow />
-                <LoadingRow />
-                <LoadingRow />
-                <LoadingRow />
-                <LoadingRow />
-                <LoadingRow />
-                <LoadingRow />
-              </AutoColumn>
-            ) : (
-              <Column style={{ gap: '3px' }}>
-                {availablePools &&
-                  availablePools.map((curr: any) => {
-                    return (
-                      <PoolSelectRow
-                        currencyId={[curr.token0, curr.token1]}
-                        onCurrencySelect={handleCurrencySelect}
-                        key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                        fee={curr?.fee}
-                        chainId={chainId}
-                      />
-                    )
-                  })}
-              </Column>
-            )}
-          </ListWrapper>
-        </Wrapper>
-      ) : (
-        <Box position="relative" ref={ref}>
-          <Row
-            as="button"
-            gap="8"
-            className={styles.ChainSelector}
-            onClick={() => setIsOpen(!isOpen)}
-            style={{
-              padding: '10px',
-              height: 'fit-content',
-              width: '300px',
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            <>
-              <RowBetween style={{ paddingLeft: '10px' }} gap="8">
-                <Row>
-                  <DoubleCurrencyLogo
-                    currency0={inputCurrency as Currency}
-                    currency1={outputCurrency as Currency}
-                    size={16}
-                  />
-                  <Label style={{ display: 'flex', gap: '2px' }}>
-                    <ThemedText.BodySmall color="textSecondary" fontSize={13} fontWeight={800}>
-                      {inputCurrency?.symbol}
-                    </ThemedText.BodySmall>
-                    /
-                    <ThemedText.BodySmall fontSize={13} fontWeight={800}>
-                      {outputCurrency?.symbol}
-                    </ThemedText.BodySmall>
-                    <ThemedText.BodySmall fontSize="12px">({pair?.fee ? pair.fee / 10000 : 0}%)</ThemedText.BodySmall>
-                  </Label>
-                </Row>
-                <ThemedText.BodyPrimary fontSize="12px">
-                  <DeltaText delta={delta?.toNumber()}>
-                    {delta ? formatBNToString(delta.abs() ?? undefined, NumberType.TokenNonTx) + '%' : '-'}
-                  </DeltaText>{' '}
-                </ThemedText.BodyPrimary>
-                <ThemedText.BodyPrimary fontSize="12px">
-                  {formatBNToString(currentPrice, NumberType.FiatTokenPrice, true)}
-                </ThemedText.BodyPrimary>
-              </RowBetween>
-              <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
-            </>
-          </Row>
-          {isOpen && <>{drop}</>}
-        </Box>
-      )}
-    </>
-  )
 }
-
-const LoadingRow = () => {
-  return <LoadingSquare />
-}
-const LoadingSquare = styled(LoadingBubble)`
-  width: 100%;
-  height: 25px;
-
-  border: none;
-  border-radius: 5px;
-  color: ${({ theme }) => theme.textPrimary};
-
-  display: grid;
-  grid-template-columns: 3fr 1fr 1fr;
-  line-height: 10px;
-  align-items: center;
-
-  text-align: left;
-  transition: ${({ theme }) => theme.transition.duration.medium} ${({ theme }) => theme.transition.timing.ease}
-    background-color;
-  width: 100%;
-
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
-    width: 100%;
-  }
-`

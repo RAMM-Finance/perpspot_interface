@@ -4,6 +4,7 @@ import { Currency } from '@uniswap/sdk-core'
 import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
@@ -28,6 +29,7 @@ import { roundToBin } from 'utils/roundToBin'
 import { useCurrency, useToken } from '../../../hooks/Tokens'
 import {
   useSwapActionHandlers,
+  useSwapState,
   // useSwapState,
 } from '../../../state/swap/hooks'
 import { ButtonPrimary } from '../../Button'
@@ -454,6 +456,7 @@ export function TokenRow({
   const { onPoolSelection } = useSwapActionHandlers()
   const token0 = useCurrency(currency0)
   const token1 = useCurrency(currency1)
+  const { poolId } = useSwapState()
 
   const rowCells = (
     <>
@@ -494,9 +497,10 @@ export function TokenRow({
               lineHeight: '1',
             }}
             onClick={(e) => {
+              const id = getPoolId(currency0, currency1, fee)
               e.stopPropagation()
-              if (currency1 && currency0 && token0 && token1 && fee) {
-                onPoolSelection(token0, token1, fee)
+              if (currency1 && currency0 && token0 && token1 && fee && id && poolId !== id) {
+                onPoolSelection(token0, token1, fee, id)
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },
                 })
@@ -623,12 +627,15 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   //   [onCurrencySelection]
   // )
   const navigate = useNavigate()
-
+  const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      onPoolSelection(currencyIn, currencyOut, fee)
+      const id = getPoolId(currencyIn?.wrapped.address, currencyOut?.wrapped.address, fee)
+      if (currencyIn && currencyOut && id && poolId !== id) {
+        onPoolSelection(currencyIn, currencyOut, fee, id)
+      }
     },
-    [onPoolSelection]
+    [onPoolSelection, poolId]
   )
 
   //   const {

@@ -7,6 +7,7 @@ import { L2_DEADLINE_FROM_NOW } from 'constants/misc'
 import JSBI from 'jsbi'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
+import { PoolKey } from 'types/lmtv2position'
 import { UserAddedToken } from 'types/tokens'
 
 import { V2_FACTORY_ADDRESSES } from '../../constants/addresses'
@@ -18,6 +19,7 @@ import {
   addSerializedToken,
   updateHideClosedPositions,
   updateHideUniswapWalletBanner,
+  updatePinnedPools,
   updateUserClientSideRouter,
   updateUserDeadline,
   updateUserExpertMode,
@@ -168,6 +170,32 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
     () => [userPremiumDepositPercent, setUserPremiumDepositPercent],
     [setUserPremiumDepositPercent, userPremiumDepositPercent]
   )
+}
+
+export function useAddPinnedPool(): (poolKey: PoolKey) => void {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (poolKey: PoolKey) => {
+      dispatch(updatePinnedPools({ add: true, poolKey, index: 0 }))
+    },
+    [dispatch]
+  )
+}
+
+export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (poolKey: PoolKey) => {
+      dispatch(updatePinnedPools({ add: false, poolKey }))
+    },
+    [dispatch]
+  )
+}
+
+export function usePinnedPools(): PoolKey[] {
+  return useAppSelector((state) => {
+    return state.user.pinnedPools
+  })
 }
 
 export function useUserSlippedTickTolerance(): [Percent | 'auto', (slippageTolerance: Percent | 'auto') => void] {

@@ -41,6 +41,7 @@ function Updaters() {
       <ApplicationUpdater />
       <TransactionUpdater />
       <MulticallUpdater />
+      {/* <PoolListUpdater /> */}
       <LogsUpdater />
     </>
   )

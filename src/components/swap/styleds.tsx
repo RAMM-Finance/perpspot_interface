@@ -11,9 +11,7 @@ export const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  /* border: solid ${({ theme }) => theme.backgroundOutline};
-  border-width: 0 0 1px 0; */
-  width: 99.5%;
+  width: 100%;
   margin-right: 0.125rem;
   margin-left: 0.125rem;
 
@@ -24,21 +22,20 @@ export const PageWrapper = styled.div`
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     padding-top: 20px;
   }
+  margin-top: 0.4rem;
 `
 
 // Mostly copied from `AppBody` but it was getting too hard to maintain backwards compatibility.
 export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   position: relative;
-  margin-bottom: 0.5rem;
   transition: transform 250ms ease;
   display: grid;
   width: 100%;
   flex-grow: 1;
   flex-shrink: 1;
+  grid-column: 3;
+  grid-row: 1 / 4;
 `
-// export const LimitWrapper = styled.div`
-//   position: relative;
-// `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
   border-radius: 999px;

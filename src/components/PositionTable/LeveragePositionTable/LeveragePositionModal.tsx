@@ -268,13 +268,13 @@ export function LeveragePositionModal(props: TradeModalProps) {
   ) : null
 }
 
-const CloseWrapper = styled.div`
-  display: flex;
-  justify-content: end;
-  margin-top: 8px;
-  margin-right: 8px;
-  padding: 0px;
-`
+// const CloseWrapper = styled.div`
+//   display: flex;
+//   justify-content: end;
+//   margin-top: 8px;
+//   margin-right: 8px;
+//   padding: 0px;
+// `
 
 const PositionInfoHeader = styled(TextWrapper)`
   font-size: 18px;

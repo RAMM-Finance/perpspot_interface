@@ -40,6 +40,8 @@ export const iswBTC = (address: string, chainId?: number) => {
 export const getInvertPrice = (token0: string, token1: string, chainId?: number) => {
   if (isWeth(token0, chainId) && !isUSDC(token1, chainId)) {
     return true
+  } else if (isUSDC(token0, chainId)) {
+    return true
   } else if (iswBTC(token0, chainId) && isWeth(token1, chainId)) {
     return true
   } else if (isUSDC(token0, chainId)) {

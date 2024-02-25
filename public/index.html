@@ -88,7 +88,7 @@
       -moz-osx-font-smoothing: grayscale;
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
       background-color: #000;
-
+/* 
       ::-webkit-scrollbar {
         background-color: transparent;
       }
@@ -101,7 +101,7 @@
       ::-webkit-scrollbar-track {
         border-left: 1px solid #98A1C03d;
         background-color: transparent;
-      }
+      } */
     }
 
     /* Use this to apply network-specific gradient backgrounds, in RadialGradientByChainUpdater.ts */
@@ -121,6 +121,14 @@
     body,
     #root {
       min-height: 100%;
+    }
+
+    body,html {
+      overscroll-behavior-x: none
+    }
+
+    ::-webkit-scrollbar {
+      display: none
     }
 
     /* @media (prefers-color-scheme: dark) {
