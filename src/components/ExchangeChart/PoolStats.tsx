@@ -55,6 +55,7 @@ export function PoolStatsSection({
 
   // const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
   const PoolsOHLC = useAppPoolOHLC()
+  console.log(PoolsOHLC)
 
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)

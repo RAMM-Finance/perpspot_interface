@@ -10,6 +10,7 @@ import { useAtomValue } from 'jotai/utils'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { useParams } from 'react-router-dom'
+import { useAppPoolOHLC } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -92,7 +93,7 @@ enum TokenSortMethod {
   VOLUME = 'Volume',
   APR = 'Est APR',
   URate = 'Util Rate',
-  PRICE_CHANGE = 'Price Change',
+  PRICE_CHANGE = '24h Change',
 }
 
 const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
@@ -209,6 +210,11 @@ export default function TokenTable() {
   const sortAscending = useAtom(sortAscendingAtom)
   const sortMethod = useAtom(sortMethodAtom)
 
+  const PoolsOHLC = useAppPoolOHLC()
+  const PoolsOHLCArr = Object.keys(PoolsOHLC).map((key) => {
+    return { id: key, ...PoolsOHLC[key] }
+  })
+
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
   const { poolKeys: data, isLoading: keysLoading } = useAllPoolKeys()
   // const vaultBal = undefined as any
@@ -236,15 +242,17 @@ export default function TokenTable() {
   }, [poolData, vaultBal])
 
   const dataInfo = useMemo(() => {
-    if (poolData && data) {
+    if (poolData && PoolsOHLCArr) {
       const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
 
-      return data.map((pool: any) => {
-        if (Object.keys(lowerCasePool).find((pair: any) => `${pool.token0}-${pool.token1}-${pool.fee}`)) {
+      return PoolsOHLCArr.map((pool: any) => {
+        if (Object.keys(lowerCasePool).find((pair: any) => pool.id)) {
           return {
             ...pool,
-            TVL: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
-            Volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
+            TVL: lowerCasePool[`${pool.id}`]?.totalValueLocked,
+            Volume: lowerCasePool[`${pool.id}`]?.volume,
+            Price: pool.priceNow,
+            [`24h Change`]: pool.delta24h,
           }
         } else {
           return pool
@@ -253,7 +261,9 @@ export default function TokenTable() {
     } else {
       return null
     }
-  }, [poolData, data])
+  }, [poolData, PoolsOHLCArr])
+
+  console.log(dataInfo)
 
   /* loading and error state */
   if (loading) {
@@ -274,11 +284,13 @@ export default function TokenTable() {
                   key={`${dat.token0}-${dat.token1}-${dat.fee}`}
                   tokenListIndex={i++}
                   tokenListLength={i++}
-                  tokenA={dat.token0}
-                  tokenB={dat.token1}
-                  fee={dat.fee}
+                  tokenA={dat.pool.token0Address}
+                  tokenB={dat.pool.token1Address}
+                  fee={dat.pool.fee}
                   tvl={dat.TVL}
                   volume={dat.Volume}
+                  price={dat.priceNow}
+                  delta={dat.delta24h}
                 />
               ))}
           </TokenDataContainer>

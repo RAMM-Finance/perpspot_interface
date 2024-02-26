@@ -709,9 +709,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       new BN(position.PnL().toNumber()).shiftedBy(position.inputCurrency.decimals).toFixed(0)
     )
   }, [position])
-
-  // console.log(position?.inputCurrency, _pnlCurrency)
-
+  // call once with 1 token
   const pnlUSD = useUSDPrice(_pnlCurrency)
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)

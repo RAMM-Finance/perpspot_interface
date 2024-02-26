@@ -1,15 +1,11 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
-import { computePoolAddress } from '@uniswap/v3-sdk'
-import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, useMemo } from 'react'
@@ -40,7 +36,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from '../constants'
 import { LoadingBubble } from '../loading'
-import { DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
+import { DeltaText } from '../TokenDetails/PriceChart'
 
 const Cell = styled.div`
   display: flex;
@@ -55,7 +51,7 @@ const StyledTokenRow = styled.div<{
   background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
   font-size: 12px;
-  grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 2fr 5fr;
+  grid-template-columns: 4fr 4fr 3.5fr 4.5fr 4fr 4fr 2fr 5fr;
   padding-left: 1rem;
   padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -324,95 +320,6 @@ export const InfoIconContainer = styled.div`
   align-items: center;
   cursor: help;
 `
-// enum TokenSortMethod {
-//   PRICE = 'Price',
-//   PERCENT_CHANGE = 'Change',
-//   TOTAL_VALUE_LOCKED = 'TVL',
-//   VOLUME = 'Volume',
-//   APR = 'Est APR',
-//   URate = 'Util Rate',
-// }
-
-// const filterStringAtom = atomWithReset<string>('')
-// const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
-// const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
-// const sortAscendingAtom = atom<boolean>(false)
-
-// /* keep track of sort category for token table */
-// function useSetSortMethod(newSortMethod: TokenSortMethod) {
-//   const [sortMethod, setSortMethod] = useAtom(sortMethodAtom)
-//   const [sortAscending, setSortAscending] = useAtom(sortAscendingAtom)
-
-//   return useCallback(() => {
-//     if (sortMethod === newSortMethod) {
-//       setSortAscending(!sortAscending)
-//     } else {
-//       setSortMethod(newSortMethod)
-//       setSortAscending(false)
-//     }
-//   }, [sortMethod, setSortMethod, setSortAscending, sortAscending, newSortMethod])
-// }
-
-// const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
-//   [TokenSortMethod.PRICE]: undefined,
-//   [TokenSortMethod.PERCENT_CHANGE]: undefined,
-//   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-//     <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
-//   ),
-//   [TokenSortMethod.VOLUME]: (
-//     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
-//   ),
-//   [TokenSortMethod.APR]: (
-//     <Trans>
-//       Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
-//       liquidity between 90% and 110% of current price
-//     </Trans>
-//   ),
-//   [TokenSortMethod.URate]: (
-//     <Trans>
-//       Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
-//       APR.
-//     </Trans>
-//   ),
-// }
-
-// price, TVL, volume, util rate, expected apr
-
-/* Get singular header cell for header row */
-// function HeaderCell({
-//   category,
-// }: {
-//   category: TokenSortMethod // TODO: change this to make it work for trans
-// }) {
-//   const theme = useTheme()
-//   const sortAscending = useAtomValue(sortAscendingAtom)
-//   const handleSortCategory = useSetSortMethod(category)
-//   const sortMethod = useAtomValue(sortMethodAtom)
-
-//   const description = HEADER_DESCRIPTIONS[category]
-
-//   return (
-//     <HeaderCellWrapper onClick={handleSortCategory}>
-//       {sortMethod === category && (
-//         <>
-//           {sortAscending ? (
-//             <ArrowUp size={12} strokeWidth={1.8} color={theme.accentActive} />
-//           ) : (
-//             <ArrowDown size={12} strokeWidth={1.8} color={theme.accentActive} />
-//           )}
-//         </>
-//       )}
-//       {category}
-//       {description && (
-//         <MouseoverTooltip text={description} placement="right">
-//           <InfoIconContainer>
-//             <Info size={14} />
-//           </InfoIconContainer>
-//         </MouseoverTooltip>
-//       )}
-//     </HeaderCellWrapper>
-//   )
-// }
 
 /* Token Row: skeleton row component */
 export function TokenRow({
@@ -529,51 +436,6 @@ export function TokenRow({
   return <StyledTokenRow {...rest}>{rowCells}</StyledTokenRow>
 }
 
-/* Header Row: top header row component for table */
-// export function PHeaderRow() {
-//   return (
-//     <TokenRow
-//       header={true}
-//       listNumber=""
-//       tokenInfo={<Trans>Pair</Trans>}
-//       price={<HeaderCell category={TokenSortMethod.PRICE} />}
-//       percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
-//       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
-//       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
-//       APR={<HeaderCell category={TokenSortMethod.APR} />}
-//       UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
-//       // volume={<HeaderCell category={""} />}
-
-//       sparkLine={null}
-//     />
-//   )
-// }
-
-// /* Loading State: row component with loading bubbles */
-// export function PLoadingRow(props: { first?: boolean; last?: boolean }) {
-//   return (
-//     <TokenRow
-//       header={false}
-//       listNumber={<SmallLoadingBubble />}
-//       loading
-//       tokenInfo={
-//         <>
-//           <IconLoadingBubble />
-//           <MediumLoadingBubble />
-//         </>
-//       }
-//       price={<MediumLoadingBubble />}
-//       percentChange={<LoadingBubble />}
-//       tvl={<LoadingBubble />}
-//       volume={<LoadingBubble />}
-//       APR={<LoadingBubble />}
-//       UtilRate={<LoadingBubble />}
-//       sparkLine={<SparkLineLoadingBubble />}
-//       {...props}
-//     />
-//   )
-// }
-
 interface LoadedRowProps {
   tokenListIndex: number
   tokenListLength: number
@@ -585,20 +447,16 @@ interface LoadedRowProps {
   fee: number
   tvl?: number
   volume?: number
+  price?: number
+  delta?: number
 }
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume, fee } = props
-  // const filterString = useAtomValue(filterStringAtom)
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume, fee, price, delta } = props
 
   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
   const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
-  // const timePeriod = useAtomValue(filterTimeAtom)
-  const delta = 0 //token.market?.pricePercentChange?.value
-  const arrow = getDeltaArrow(delta)
-  const smallArrow = getDeltaArrow(delta, 14)
-  const formattedDelta = formatDelta(delta)
 
   const currencyIda = useToken(tokenA)
   const currencyIdb = useToken(tokenB)
@@ -613,19 +471,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     // time_frame: timePeriod,
     // search_token_address_input: filterString,
   }
-  //   <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
-  //   <Trans>Swap</Trans>
-  // </MenuItem>
-  // logo, tokenname, price, tvl,
-  // go to swap page
+
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   const { onPoolSelection } = useSwapActionHandlers()
-  // const handleInputSelect = useCallback(
-  //   (inputCurrency: Currency) => {
-  //     onCurrencySelection(Field.INPUT, inputCurrency)
-  //   },
-  //   [onCurrencySelection]
-  // )
+
   const navigate = useNavigate()
   const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
@@ -638,15 +487,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     [onPoolSelection, poolId]
   )
 
-  //   const {
-  //   // trade: { state: tradeState, trade },
-  //   // allowedSlippage,
-  //   // currencyBalances,
-  //   // parsedAmount,
-  //   currencies,
-  //   // inputError: swapInputError,
-  // } = useDerivedSwapInfo()
-
   const baseCurrency = useCurrency(currencyIda?.address)
   const quoteCurrency = useCurrency(currencyIdb?.address)
 
@@ -656,29 +496,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
-  const poolAddress = useMemo(() => {
-    if (!pool || !chainId) return null
-    return computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    })
-  }, [chainId, pool])
-
-  const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
-
-  const [currentPrice, priceDelta] = useMemo(() => {
-    if (!priceData || !pool) return [undefined, undefined]
-
-    const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
-    const token0Price = new BN(pool.token0Price.toFixed(18))
-    const price = invertPrice ? new BN(1).div(token0Price) : token0Price
-
-    const price24hAgo = priceData.price24hAgo
-    const delt = price.minus(price24hAgo).div(price).times(100)
-    return [price, delt]
-  }, [chainId, priceData, pool])
 
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const [tickLower, tickUpper] = useMemo(() => {
@@ -701,34 +518,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
-  // console.log('rateutil', pool?.token0, pool?.token1, rateUtilData)
-  // let tvl_
-  // let volume_
-  // let estimatedapr_
-  // let urate_
-
-  // if (
-  //   currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-  //   currencyIdb?.address == '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9'
-  // ) {
-  //   tvl_ = 2313000000
-  //   volume_ = 1300000
-  //   estimatedapr_ = 23.5
-  //   urate_ = 42.32
-  // } else if (
-  //   currencyIda?.address == '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A' &&
-  //   currencyIdb?.address == '0xf24Ce4A61c1894219576f652cDF781BBB257Ec8F'
-  // ) {
-  //   tvl_ = 1530000000
-  //   volume_ = 210000
-  //   estimatedapr_ = 32.1
-  //   urate_ = 77.6
-  // } else {
-  //   tvl_ = 3212000000
-  //   volume_ = 2830000
-  //   estimatedapr_ = 25.7
-  //   urate_ = 56.3
-  // }
   return (
     <RowWrapper
       ref={ref}
@@ -764,7 +553,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         price={
           <ClickableContent>
             <PriceInfoCell>
-              <Price>{formatDollarAmount({ num: currentPrice?.toNumber(), long: true })}</Price>
+              <Price>{formatDollarAmount({ num: price, long: true })}</Price>
               <span>{token0?.symbol + '/' + token1?.symbol}</span>
             </PriceInfoCell>
           </ClickableContent>
@@ -772,8 +561,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         priceChange={
           <ClickableContent>
             <PriceInfoCell>
-              <DeltaText delta={priceDelta?.toNumber()}>{}</DeltaText>{' '}
-              {priceDelta ? formatBNToString(priceDelta?.abs() ?? undefined, NumberType.TokenNonTx) + '%' : '-'}
+              <DeltaText delta={delta}>{delta ? (delta * 100).toFixed(2) + '%' : '-'}</DeltaText>
             </PriceInfoCell>
           </ClickableContent>
         }
