@@ -22,7 +22,7 @@ interface DiscreteSliderInputMarksProps {
 export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLeverage }: DiscreteSliderMarksProps) {
   const isMaxLeverageRounded = max && maxLeverage && Math.round(Number(maxLeverage)) > max;
   const handleChange = (event: Event, newValue: number | number[]) => {
-    onChange(Math.round(newValue as number))
+    onChange(newValue as number);
   }
 
   const marks = [
