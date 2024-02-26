@@ -166,9 +166,13 @@ const MainWrapper = styled.article`
   width: 100%;
   display: grid;
   grid-template-columns: 1.7fr 0.6fr 0.7fr;
-  grid-template-rows: 7vh 50vh 25vh;
-  grid-gap: 0.75rem;
+  /* grid-template-rows: 7vh 50vh 25vh; */
+  /* grid-gap: 0.75rem; */
   margin-top: 0.75rem;
+
+  grid-template-rows: 0 50vh 25vh;
+  grid-column-gap: 0.75rem;
+  /* margin-bottom: 0.75rem; */
 `
 
 export function getIsValidSwapQuote(
@@ -204,6 +208,7 @@ const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
   // min-height: 30vh;
   border-radius: 10px;
   width: 100%;
@@ -269,9 +274,9 @@ export default function Swap({ className }: { className?: string }) {
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
         <MainWrapper>
-          <PinWrapper>
+          {/* <PinWrapper>
             <PinnedPools />
-          </PinWrapper>
+          </PinWrapper> */}
           <SwapHeaderWrapper>
             {inputCurrency && outputCurrency ? (
               <SelectPool />
