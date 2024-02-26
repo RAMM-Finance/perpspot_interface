@@ -80,7 +80,7 @@ const Wrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: 100%;
-  // height: 50rem;
+  /* // height: 50rem; */
   ::-webkit-scrollbar {
     display: none;
   }

@@ -169,7 +169,7 @@ const MainWrapper = styled.article`
   /* grid-template-rows: 7vh 50vh 25vh; */
   /* grid-gap: 0.75rem; */
   margin-top: 0.75rem;
-
+  
   grid-template-rows: 0 50vh 25vh;
   grid-column-gap: 0.75rem;
   /* margin-bottom: 0.75rem; */
@@ -209,13 +209,14 @@ const PositionsWrapper = styled.div`
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
   margin-top: 0.75rem;
-  // min-height: 30vh;
   border-radius: 10px;
+  /* max-height: 250px; */
   width: 100%;
   height: 100%;
   overflow-y: scroll;
   grid-column: 1 / 3;
   grid-row: 3;
+  max-height: 400px;
   ::-webkit-scrollbar {
     display: none;
   }
