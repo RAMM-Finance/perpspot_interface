@@ -808,6 +808,7 @@ const TradeTabContent = () => {
               initialValue={
                 debouncedLeverageFactor === '' ? 0 : Math.round(Number(debouncedLeverageFactor) * 1000) / 1000
               }
+              maxLeverage = {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : null}
               onChange={(val) => onDebouncedLeverageFactor(val.toString())}
             />
           </>

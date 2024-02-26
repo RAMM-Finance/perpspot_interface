@@ -9,6 +9,7 @@ import { useTheme } from 'styled-components'
 interface DiscreteSliderMarksProps {
   initialValue: number
   max?: number
+  maxLeverage: string | null
   onChange: (val: number) => void
 }
 
@@ -18,10 +19,10 @@ interface DiscreteSliderInputMarksProps {
   onInputChange: (val: string) => void
 }
 
-export default function DiscreteSliderMarks({ initialValue, onChange, max }: DiscreteSliderMarksProps) {
+export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLeverage }: DiscreteSliderMarksProps) {
+  const isMaxLeverageRounded = max && maxLeverage && Math.round(Number(maxLeverage)) > max;
   const handleChange = (event: Event, newValue: number | number[]) => {
-    if(newValue as number && max && newValue as number >= max) return onChange(Math.floor(newValue as number) + 1);
-    onChange(newValue as number)
+    onChange(Math.round(newValue as number))
   }
 
   const marks = [
@@ -46,13 +47,13 @@ export default function DiscreteSliderMarks({ initialValue, onChange, max }: Dis
       label: `${max ? max * 0.75 : 75}x`,
     },
     {
-      value: max ? max : 100,
-      label: `${max ? max : 100}x`,
+      value: max ? (isMaxLeverageRounded ? max + 1 : max) : 100,
+      label: `${max ? (isMaxLeverageRounded ? max + 1 : max) : 100}x`,
     },
   ]
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: '100%' }}>
       <Slider
         aria-label="Custom marks"
         value={initialValue}
@@ -61,7 +62,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange, max }: Dis
         marks={marks}
         step={0.001}
         min={0}
-        max={max ? max : 100}
+        max={max ? (isMaxLeverageRounded ? max + 1 : max) : 100}
         size="small"
         sx={{
           '& .MuiSlider-markLabel': {
