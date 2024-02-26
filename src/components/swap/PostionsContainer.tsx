@@ -102,7 +102,6 @@ export function PostionsContainer({
       <TabContent id={3} activeTab={activePositionTable}>
         <PremiumTable orders={orders} loading={loadingOrders} />
       </TabContent>
-
       {/*<TabContent id={3} activeTab={activePositionTable}>
         {!account ? (
           <ActivityWrapper>

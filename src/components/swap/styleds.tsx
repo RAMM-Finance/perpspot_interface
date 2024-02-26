@@ -34,7 +34,7 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   flex-grow: 1;
   flex-shrink: 1;
   grid-column: 3;
-  grid-row: 1 / 4;
+  /* grid-row: 1 / 4; */
 `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`
