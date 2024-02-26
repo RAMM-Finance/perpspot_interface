@@ -20,7 +20,7 @@ interface DiscreteSliderInputMarksProps {
 
 export default function DiscreteSliderMarks({ initialValue, onChange, max }: DiscreteSliderMarksProps) {
   const handleChange = (event: Event, newValue: number | number[]) => {
-    if(newValue as number && max && newValue as number >= max) return onChange(Math.floor(newValue) + 1);
+    if(newValue as number && max && newValue as number >= max) return onChange(Math.floor(newValue as number) + 1);
     onChange(newValue as number)
   }
 
