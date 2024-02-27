@@ -4,6 +4,7 @@
   "description": "Uniswap Interface",
   "homepage": ".",
   "license": "GPL-3.0-or-later",
+  "proxy": "https://limitlessfi.vercel.app/",
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "contracts:compile:abi": "typechain --target ethers-v5 --out-dir src/abis/types \"./src/abis/**/*.json\"",
