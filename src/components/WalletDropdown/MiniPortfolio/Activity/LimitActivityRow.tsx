@@ -11,6 +11,7 @@ import { PortfolioLogo } from '../PortfolioLogo'
 import PortfolioRow from '../PortfolioRow'
 import { useTimeStamp } from './parseRemote'
 
+
 const ActivityRowDescriptor = styled(ThemedText.BodySmall)`
   color: ${({ theme }) => theme.textSecondary};
   // ${EllipsisStyle}

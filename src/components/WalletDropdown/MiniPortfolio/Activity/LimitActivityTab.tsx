@@ -17,10 +17,31 @@ import { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
 import { ActivityRow } from './LimitActivityRow'
 import { parseRemoteActivities } from './parseRemote'
 import { Activity, ActivityMap } from './types'
+import { ActivitiesHeaderRow } from 'components/ActivitiesTable/ActivitesRow'
+
+const GridContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  justify-content: flex-start;
+  align-items: flex-start;
+`
+
+export const ActivitiesDataContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  height: 100%;
+  width: 100%;
+`
+
 interface ActivityGroup {
   title: string
   transactions: Array<Activity>
 }
+
 
 const sortActivities = (a: Activity, b: Activity) => b.timestamp - a.timestamp
 
@@ -236,12 +257,10 @@ export function LimitActivityTab({ account }: { account: string }) {
   else {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (
-      <PortfolioTabWrapper>
+      <GridContainer>
+        <ActivitiesHeaderRow />
         {historyToShow?.map((history) => (
           <ActivityGroupWrapper key={history.title}>
-            {/*<ThemedText.SubHeader color="textSecondary" fontWeight={500}>
-              {history.title}
-            </ThemedText.SubHeader>*/}
             <Column style={{ marginBottom: '12px' }}>
               <ActivityRow key={history.hash} activity={history} />
               {/*activityGroup.transactions.map((activity) => (
@@ -250,7 +269,7 @@ export function LimitActivityTab({ account }: { account: string }) {
             </Column>
           </ActivityGroupWrapper>
         ))}
-      </PortfolioTabWrapper>
+      </GridContainer>
     )
   }
 }

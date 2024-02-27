@@ -122,9 +122,7 @@ export function PostionsContainer({
           </ActivityWrapper>
         ) : (
           <ActivityWrapper>
-            <ActivityInnerWarpper>
               <LimitActivityTab account={account} />
-            </ActivityInnerWarpper>
           </ActivityWrapper>
         )}
       </TabContent>
