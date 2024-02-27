@@ -69,7 +69,6 @@ const LabelWrapper = styled.div`
 const SelectPoolWrapper = styled.button`
   display: flex;
   flex-direction: row;
-  // width: 100%;
   max-width: 250px;
   background-color: ${({ theme }) => theme.backgroundSurface};
   justify-content: space-evenly;
@@ -79,6 +78,7 @@ const SelectPoolWrapper = styled.button`
   border-radius: 10px;
   cursor: pointer;
   border: none;
+  width: max-content;
 `
 
 const ChevronIcon = styled(ChevronDown)<{ $rotated: boolean }>`
@@ -104,6 +104,7 @@ const MainWrapper = styled.div`
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
+  gap: 0.7rem;
 `
 
 const PoolListHeader = styled.div`

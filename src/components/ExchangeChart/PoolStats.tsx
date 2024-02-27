@@ -24,8 +24,10 @@ const StatsWrapper = styled.div`
   gap: 16px;
   ${textFadeIn}
   display: flex;
+  flex-wrap: nowrap;
   flex-direction: row;
   width: 100%;
+  white-space: nowrap;
 `
 
 export function PoolStatsSection({
