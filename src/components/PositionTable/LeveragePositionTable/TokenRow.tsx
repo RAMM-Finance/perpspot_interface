@@ -7,7 +7,7 @@ import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
-import Row, { RowBetween, RowStart } from 'components/Row'
+import Row, { RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
@@ -703,14 +703,15 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   )
 
   const _pnlCurrency: CurrencyAmount<Currency> | undefined = useMemo(() => {
-    if (!position) return undefined
+    if (!position?.inputCurrency) return undefined
     return CurrencyAmount.fromRawAmount(
       position.inputCurrency,
-      new BN(position.PnL().toNumber()).shiftedBy(position.inputCurrency.decimals).toFixed(0)
+      new BN(1).shiftedBy(position.inputCurrency.decimals).toFixed(0)
     )
-  }, [position])
+  }, [position?.inputCurrency])
   // call once with 1 token
-  const pnlUSD = useUSDPrice(_pnlCurrency)
+
+  const usdPNLCurrency = useUSDPrice(_pnlCurrency)
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
 
@@ -733,6 +734,19 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     if (!position || !existingDeposit) return undefined
     return position.PnL().minus(existingDeposit.minus(position?.premiumLeft))
   }, [position, existingDeposit])
+
+  const pnlInfo = useMemo(() => {
+    if (!usdPNLCurrency?.data || !PnLWithPremiums || !position || !existingDeposit)
+      return {
+        pnlUSD: 0,
+        pnlPremiumsUSD: 0,
+      }
+    return {
+      pnlUSD: position?.PnL().toNumber() * usdPNLCurrency.data,
+      pnlPremiumsUSD: PnLWithPremiums?.toNumber() * usdPNLCurrency.data,
+      premiumsPaid: existingDeposit?.toNumber() * usdPNLCurrency.data,
+    }
+  }, [usdPNLCurrency?.data, position, PnLWithPremiums, existingDeposit])
 
   if (loading) {
     return <LoadingRow />
@@ -793,13 +807,26 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <MouseoverTooltip
               text={
                 <Trans>
-                  <RowStart>
-                    {'PnL Including premiums: ' +
-                      `${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
-                      ' ' +
-                      position?.inputCurrency?.symbol}
-                  </RowStart>
-                  <RowStart>{'PnL in USD: ' + ` $${pnlUSD.data?.toFixed(2)}`}</RowStart>
+                  <AutoColumn style={{ width: '200px' }} gap="5px">
+                    <RowBetween>
+                      <div>PnL (USD):</div>
+                      <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
+                    </RowBetween>
+                    <RowBetween>
+                      <div>Premiums paid:</div>
+                      <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.premiumsPaid?.toFixed(2)}`}</DeltaText>
+                    </RowBetween>
+                    <RowBetween>
+                      <div>PnL inc. prem:</div>
+                      {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
+                        ' ' +
+                        position?.inputCurrency?.symbol}
+                    </RowBetween>
+                    <RowBetween>
+                      <div>PnL inc. prem (USD):</div>
+                      <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{` $${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
+                    </RowBetween>
+                  </AutoColumn>
                 </Trans>
               }
               disableHover={false}

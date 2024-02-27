@@ -23,7 +23,7 @@ export const selectPool = createAction<{
   inputCurrencyId: string
   outputCurrencyId: string
   poolFee: number
-  id: string
+  poolId: string
 }>('swap/selectPool')
 export const selectCurrency = createAction<{ field: Field; currencyId: string }>('swap/selectCurrency')
 export const switchCurrencies = createAction<{

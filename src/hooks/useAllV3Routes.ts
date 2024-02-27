@@ -3,8 +3,6 @@ import { Pool, Route } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { useMemo } from 'react'
 
-import { useV3SwapPools } from './useV3SwapPools'
-
 /**
  * Returns true if poolA is equivalent to poolB
  * @param poolA one of the two pools
@@ -64,7 +62,11 @@ export function useAllV3Routes(
   currencyOut?: Currency
 ): { loading: boolean; routes: Route<Currency, Currency>[] } {
   const { chainId } = useWeb3React()
-  const { pools, loading: poolsLoading } = useV3SwapPools(currencyIn, currencyOut)
+  // const { pools, loading: poolsLoading } = useV3SwapPools(currencyIn, currencyOut)
+  // console.log(pools)
+  // console.log(poolsLoading)
+  const pools: Pool[] = []
+  const poolsLoading = false
 
   return useMemo(() => {
     if (poolsLoading || !chainId || !pools || !currencyIn || !currencyOut) return { loading: true, routes: [] }

@@ -151,61 +151,72 @@ const LiquidityDistributionTable = ({
   }, [bin, token0Price])
 
   const binsAbove = useMemo(() => {
-    if (!bin || !token0Price) return []
+    if (!bin || !currentPrice) return []
+    if (token0?.symbol === 'wBTC' && token1?.symbol === 'USDC') {
+      return bin
+        .filter((i) => i.price.toNumber() > currentPrice.toNumber() && i.token0Liquidity.gt(0))
+        .filter((i) => i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0))
+        .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
+    }
+    if (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') {
+      return bin
+        .filter((i) => i.price.gt(currentPrice) && i.token0Liquidity.gt(0))
+        .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
+        .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
+    }
+    if (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') {
+      return bin
+        .filter((i) => i.price.toNumber() < 1 / currentPrice.toNumber() && i.token0Liquidity.gt(0))
+        .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
+        .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
+    }
     return bin
-      .filter((i) => i.price.gt(token0Price) && i.token0Liquidity.gt(0))
+      .filter((i) => i.price.gt(currentPrice) && i.token0Liquidity.gt(0))
       .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
       .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
-  }, [bin, token0Price])
+  }, [bin, currentPrice, token0?.symbol, token1?.symbol])
 
   const binsBelow = useMemo(() => {
-    if (!bin || !token0Price) return []
+    if (!bin || !currentPrice) return []
+    if (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') {
+      return bin
+        .filter((i) => i.price.toNumber() > 1 / currentPrice.toNumber() && i.token1Liquidity.gt(0))
+        .filter((i) => i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0))
+        .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
+    }
+    if (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') {
+      return bin
+        .filter((i) => i.price.lt(currentPrice) && i.token1Liquidity.gt(0))
+        .filter((i) => !(i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0)))
+        .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
+    }
     return bin
-      .filter((i) => i.price.lt(token0Price) && i.token1Liquidity.gt(0))
+      .filter((i) => i.price.lt(currentPrice) && i.token1Liquidity.gt(0))
       .filter((i) => !(i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0)))
       .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
-  }, [bin, token0Price])
-
-  // console.log(inverse)
-  // const posMax = useMemo(() => {
-  //   if (bin && currentPrice && token0 && token1) {
-  //     return Math.max(
-  //       ...bin
-  //         .filter(
-  //           (y) =>
-  //             Number(y.price) / 1e18 <
-  //               currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
-  //             Number(y.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
-  //         )
-  //         .filter(
-  //           (z) =>
-  //             !(
-  //               Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) > 0 &&
-  //               Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
-  //             )
-  //         )
-  //         .filter(
-  //           (a) =>
-  //             formatDollar({
-  //               num: (Number(a.token1Liquidity) - Number(a.token1Borrowed)) / Number(`1e${token1?.wrapped.decimals}`),
-  //               dollarSign: false,
-  //             }) !== '0.00'
-  //         )
-  //         .map((x) => (Number(x.token1Liquidity) - Number(x.token1Borrowed)) / Number(`1e${token1?.wrapped.decimals}`))
-  //     )
-  //   } else return 0
-  // }, [bin, currentPrice, token0, token1])
-
-  // console.log('currentPrice', posMax, negMax, currentPrice?.toString())
+  }, [bin, currentPrice, token0?.symbol, token1?.symbol])
 
   const ref = useRef<HTMLInputElement>(null)
   const upperRef = useRef<HTMLInputElement>(null)
+  const lowerRef = useRef<HTMLInputElement>(null)
 
   const startHeight = useMemo(() => {
-    if (!upperRef.current?.offsetHeight || !ref.current?.offsetHeight || !bin) {
+    if (!upperRef.current?.offsetHeight || !ref.current?.offsetHeight || !lowerRef.current?.offsetHeight || !bin) {
       localStorage.removeItem('scroll')
       return 0
     }
+    if (
+      upperRef.current.offsetHeight > ref.current.offsetHeight &&
+      lowerRef.current.offsetHeight > ref.current.offsetHeight
+    )
+      return upperRef.current.offsetHeight - ref.current.offsetHeight / 2
+
+    if (
+      upperRef.current.offsetHeight > ref.current.offsetHeight &&
+      lowerRef.current.offsetHeight > ref.current.offsetHeight
+    )
+      return upperRef.current.offsetHeight * 0.5
+
     if (upperRef.current.offsetHeight > ref.current.offsetHeight) return upperRef.current.offsetHeight
     localStorage.removeItem('scroll')
     return 0
@@ -282,7 +293,7 @@ const LiquidityDistributionTable = ({
                         {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
                       </LDDataCellIn>
                       <LDDataCellOut>
-                        {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
+                        {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
                       </LDDataCellOut>
                     </LDDataRowNeg>
                   )
@@ -327,7 +338,7 @@ const LiquidityDistributionTable = ({
             <LoadingRow />
           </AutoColumn>
         ) : (
-          <PositiveData>
+          <PositiveData ref={lowerRef}>
             {inverse
               ? binsAbove.map((bin) => {
                   return (

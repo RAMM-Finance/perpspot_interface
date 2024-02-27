@@ -1,10 +1,12 @@
 import { NetworkStatus } from '@apollo/client'
 import { Currency, CurrencyAmount, Price, SupportedChainId, TradeType } from '@uniswap/sdk-core'
+import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
 import { useMemo } from 'react'
+import { useQuery } from 'react-query'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
@@ -52,6 +54,61 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
   const { numerator, denominator } = trade.routes[0].midPrice
   const price = new Price(currencyAmount?.currency, nativeOnChain(chainId), denominator, numerator)
   return { data: price.quote(currencyAmount), isLoading: false }
+}
+
+const apiKey = process.env.REACT_APP_GECKO_API_KEY
+
+export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
+  const symbol = useMemo(() => {
+    if (currency?.symbol === 'wBTC') return 'bitcoin'
+    if (currency?.symbol === 'USDC') return 'usd'
+    if (currency?.symbol === 'UNI') return 'uniswap'
+    if (currency?.symbol == 'STG') return 'stargate-finance'
+    if (currency?.symbol == 'ARB') return 'arbitrum'
+    if (currency?.symbol == 'RDNT') return 'radient'
+    if (currency?.symbol == 'XPET') return 'xpet-tech'
+    if (currency?.symbol == 'GNS') return 'gains-network'
+    if (currency?.symbol == 'CRV') return 'curve-dao-token'
+    if (currency?.symbol == 'LDO') return 'lido-dao'
+    return currency?.symbol
+  }, [currency])
+  const currencyAmount = useMemo(() => {
+    if (amount && currency) return BnToCurrencyAmount(amount, currency)
+    else return undefined
+  }, [amount, currency])
+  const { data } = useQuery(
+    ['usdPrice', currency],
+    async () => {
+      if (!currency || !symbol) throw new Error('Currency not found')
+      try {
+        if (!apiKey) throw new Error('missing key')
+
+        const response = await axios.get(`https://pro-api.coingecko.com/api/v3/coins/${symbol.toLocaleLowerCase()}`, {
+          headers: {
+            Accept: 'application/json',
+            'x-cg-pro-api-key': apiKey,
+          },
+        })
+        if (response.status === 200) {
+          return response.data
+        }
+        throw new Error('Failed to fetch token data')
+      } catch (err) {
+        throw new Error('Failed to fetch token data')
+      }
+    },
+    {
+      enabled: !!currency,
+      refetchInterval: 1000 * 45,
+      keepPreviousData: true,
+    }
+  )
+  return useMemo(() => {
+    if (!data || !currencyAmount) {
+      return { data: undefined, isLoading: false }
+    }
+    return { data: data.market_data.current_price.usd * parseFloat(currencyAmount.toExact()), isLoading: false }
+  }, [data, currencyAmount])
 }
 
 export function useUSDPriceBN(

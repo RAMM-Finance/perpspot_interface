@@ -122,6 +122,7 @@ const RowWrapper = styled.div`
   :hover {
     background-color: ${({ theme }) => theme.backgroundInteractive};
   }
+  cursor: pointer;
 `
 
 const PoolLabelWrapper = styled.div`
@@ -158,12 +159,12 @@ const Pin = styled.button`
   margin-right: 0.5rem;
 `
 
-const PoolSelectRow = ({ poolKey }: { poolKey: PoolKey }) => {
+const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+  const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = poolOHLCDatas[id]
   const delta = poolOHLCData?.delta24h
 
@@ -206,10 +207,30 @@ const PoolSelectRow = ({ poolKey }: { poolKey: PoolKey }) => {
 
   const { poolId } = useSwapState()
   const handleRowClick = useCallback(() => {
+    console.log(poolId)
     if (token0 && token1 && poolId !== id) {
-      onPoolSelection(token0, token1, poolKey.fee, id)
+      if (
+        token1.wrapped.address.toLocaleLowerCase() ===
+          '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase() &&
+        token0.wrapped.address.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
+      ) {
+        onPoolSelection(token1, token0, poolKey.fee, id)
+      } else if (
+        token0.wrapped.address.toLocaleLowerCase() ===
+          '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase() &&
+        token1.wrapped.address.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
+      ) {
+        onPoolSelection(token0, token1, poolKey.fee, id)
+      } else if (
+        token0.wrapped.address.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
+      ) {
+        onPoolSelection(token0, token1, poolKey.fee, id)
+      } else {
+        onPoolSelection(token1, token0, poolKey.fee, id)
+      }
+      handleClose()
     }
-  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id])
+  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id, handleClose])
 
   return (
     <RowWrapper onClick={handleRowClick}>
@@ -320,7 +341,7 @@ export function SelectPool() {
             <ListWrapper>
               {poolList.map((poolKey) => {
                 const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-                return <PoolSelectRow key={id} poolKey={poolKey} />
+                return <PoolSelectRow key={id} poolKey={poolKey} handleClose={handleClose} />
               })}
             </ListWrapper>
           )}

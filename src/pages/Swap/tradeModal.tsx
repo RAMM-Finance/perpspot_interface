@@ -33,7 +33,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { PoolState, usePool } from 'hooks/usePools'
-import { useUSDPriceBN } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
@@ -321,12 +321,13 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
-  const fiatValueTradeMargin = useUSDPriceBN(trade?.margin, currencies[Field.INPUT] ?? undefined)
-  const fiatValueTradeInput = useUSDPriceBN(
+  const fiatValueTradeMargin = useUSDPriceBNV2(trade?.margin, currencies[Field.INPUT] ?? undefined)
+  const fiatValueTradeInput = useUSDPriceBNV2(
     trade?.margin.plus(trade?.borrowAmount),
     currencies[Field.INPUT] ?? undefined
   )
-  const fiatValueTradeOutput = useUSDPriceBN(trade?.swapOutput, currencies[Field.OUTPUT] ?? undefined)
+  const fiatValueTradeOutput = useUSDPriceBNV2(trade?.swapOutput, currencies[Field.OUTPUT] ?? undefined)
+
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
   /**
    * the approval state is NOT_APPROVED + pool with no liquidity, approvalAmount
@@ -808,7 +809,7 @@ const TradeTabContent = () => {
               initialValue={
                 debouncedLeverageFactor === '' ? 0 : Math.round(Number(debouncedLeverageFactor) * 1000) / 1000
               }
-              maxLeverage = {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : null}
+              maxLeverage={maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : null}
               onChange={(val) => onDebouncedLeverageFactor(val.toString())}
             />
           </>

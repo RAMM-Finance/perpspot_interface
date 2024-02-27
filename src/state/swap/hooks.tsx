@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { getAddress } from 'ethers/lib/utils'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
 import { useBestTrade } from 'hooks/useBestTrade'
@@ -50,7 +49,7 @@ export function useSwapState(): AppState['swap'] {
 export function useSwapActionHandlers(): {
   // onPairSelection: (fieldIn: Field, fieldOut: Field, currencyIn: Currency, currencyOut: Currency) => void
   // onCurrencySelection: (field: Field, currency: Currency) => void
-  onPoolSelection(currencyIn: Currency, currencyOut: Currency, poolFee: number, id: string): void
+  onPoolSelection(currencyIn: Currency, currencyOut: Currency, poolFee: number, poolId: string): void
   onSwitchTokens: (leverage: boolean) => void
   onUserInput: (field: Field, typedValue: string) => void
   onChangeRecipient: (recipient: string | null) => void
@@ -67,13 +66,13 @@ export function useSwapActionHandlers(): {
   const dispatch = useAppDispatch()
 
   const onPoolSelection = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, poolFee: number, id: string) => {
+    (currencyIn: Currency, currencyOut: Currency, poolFee: number, poolId: string) => {
       dispatch(
         selectPool({
           inputCurrencyId: currencyIn.isToken ? currencyIn.address : currencyIn.isNative ? 'ETH' : '',
           outputCurrencyId: currencyOut.isToken ? currencyOut.address : currencyOut.isNative ? 'ETH' : '',
           poolFee,
-          id,
+          poolId,
         })
       )
     },
@@ -430,6 +429,7 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     const storedCurrencyIn = localStorage.getItem('currencyIn')
     const storedCurrencyOut = localStorage.getItem('currencyOut')
     const storedPoolFee = localStorage.getItem('poolFee')
+    const storedPoolId = localStorage.getItem('poolId')
     inputCurrency = storedCurrencyIn
       ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
       : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
@@ -437,11 +437,14 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
       ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
       : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
     poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
-    poolId = getPoolId(inputCurrency, outputCurrency, poolFee)
+    poolId = storedPoolId
+      ? JSON.parse(localStorage.getItem('poolId') || '{}')
+      : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''
     poolFee = null
+    poolId = null
   }
   const recipient = validatedRecipient(parsedQs.recipient)
 
