@@ -169,11 +169,15 @@ const MainWrapper = styled.article`
   grid-template-columns: 1.7fr 0.6fr 0.7fr;
   /* grid-template-rows: 7vh 50vh 25vh; */
   /* grid-gap: 0.75rem; */
+  /* margin-bottom: 0.75rem; */
   margin-top: 0.75rem;
-  
   grid-template-rows: 0 50vh 30vh;
   grid-column-gap: 0.75rem;
-  /* margin-bottom: 0.75rem; */
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 2fr 0 0.5fr;
+    grid-column-gap: 0.5rem;
+  }
 `
 
 export function getIsValidSwapQuote(
@@ -224,6 +228,10 @@ const PositionsWrapper = styled.div`
   ::-webkit-scrollbar {
     display: none;
   }
+
+  @media (max-width: 1200px) {
+    grid-column: 1 / 3;
+  }
 `
 
 const LiquidityDistibutionWrapper = styled.div`
@@ -231,12 +239,17 @@ const LiquidityDistibutionWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.5rem;
   width: 100%;
+  min-width: 230px;
   border-radius: 10px;
   padding: 1rem;
   height: 100%;
   overflow: hidden;
   grid-column: 2;
   grid-row: 2 / 3;
+
+  @media (max-width: 1200px) {
+    display: none;
+  }
 `
 
 const PinWrapper = styled.div`
