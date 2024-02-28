@@ -25,6 +25,7 @@ export const AutoColumn = styled.div<{
   grid-row-gap: ${({ gap, theme }) => (gap && theme.grids[gap as Gap]) || gap};
   justify-items: ${({ justify }) => justify && justify};
   flex-grow: ${({ grow }) => grow && 1};
+  white-space: nowrap;
 `
 
 export default Column

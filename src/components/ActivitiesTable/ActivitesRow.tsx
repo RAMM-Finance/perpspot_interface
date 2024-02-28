@@ -1,11 +1,8 @@
 import {
-  LARGE_MEDIA_BREAKPOINT,
-  MAX_WIDTH_MEDIA_BREAKPOINT,
-  MEDIUM_MEDIA_BREAKPOINT,
   SMALL_MEDIA_BREAKPOINT,
 } from 'components/Tokens/constants'
 import styled, { css } from 'styled-components/macro'
-import { ClickableStyle, ThemedText } from 'theme'
+import { ClickableStyle } from 'theme'
 
 const Cell = styled.div`
   display: flex;
@@ -13,76 +10,15 @@ const Cell = styled.div`
   justify-content: flex-start;
   font-size: 12px;
 `
-
-const StyledActivityRow = styled.div<{
-  first?: boolean
-  last?: boolean
-  loading?: boolean
-}>`
-  background-color: transparent;
-  display: grid;
-  font-size: 16px;
-  grid-template-columns: 1fr 1.3fr 1fr 1fr 1.3fr 1fr 0.1fr;
-  line-height: 24px;
-  min-width: 390px;
-  ${({ first, last }) => css`
-    height: ${first || last ? '72px' : '64px'};
-    padding-top: ${first ? '8px' : '0px'};
-    padding-bottom: ${last ? '8px' : '0px'};
-  `}
-  transition: ${({
-    theme: {
-      transition: { duration, timing },
-    },
-  }) => css`background-color ${duration.medium} ${timing.ease}`};
-  width: 100%;
-  transition-duration: ${({ theme }) => theme.transition.duration.fast};
-
-  &:hover {
-    ${({ loading, theme }) =>
-      !loading &&
-      css`
-        background-color: ${theme.hoverDefault};
-      `}
-    ${({ last }) =>
-      last &&
-      css`
-        border-radius: 0px 0px 8px 8px;
-      `}
-  }
-
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 1fr 1fr 0.75fr 1fr 1fr 0.1fr;
-  }
-
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 1fr 1fr 0.75fr 1fr 1fr 0.1fr;
-  }
-
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 1fr 1fr 0.75fr 1fr 1fr 0.1fr;
-  }
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 2fr 3fr;
-    min-width: unset;
-    border-bottom: 0.5px solid ${({ theme }) => theme.backgroundModule};
-
-    :last-of-type {
-      border-bottom: none;
-    }
-  }
-`
-
 const StyledHeaderRow = styled.div<{
   first?: boolean
   last?: boolean
   loading?: boolean
 }>`
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+  display: grid;
+  grid-template-columns: 0.1fr 0.7fr 0.7fr 0.5fr 0.8fr 1fr 0.5fr 1fr;
   cursor: pointer;
   background-color: transparent;
-  display: grid;
   min-width: 390px;
   line-height: 24px;
   border-bottom: 1px solid;
@@ -122,10 +58,10 @@ const HeaderCell = styled.div<{ onClick?: () => void; isFirst?: boolean }>`
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
   display: flex;
   gap: 6px;
-  justify-content: ${({ isFirst }) => (isFirst ? 'flex-center' : 'flex-start')};
+  justify-content: ${({ isFirst }) => (isFirst ? 'start' : 'center')};
   width: 100%;
-  padding-right: 8px;
-  padding-left: 8px;
+  padding-right: ${({ isFirst }) => (isFirst ? '8px' : '3px')};;
+  padding-left: ${({ isFirst }) => (isFirst ? '8px' : '0')};;
 
   &:hover {
     ${ClickableStyle}
@@ -143,6 +79,7 @@ export function ActivitiesHeaderRow() {
       <HeaderCell>Size</HeaderCell>
       <HeaderCell>PnL</HeaderCell>
       <HeaderCell>Fee</HeaderCell>
+      <HeaderCell>Time</HeaderCell>
     </StyledHeaderRow>
   )
 }

@@ -4,7 +4,9 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import styled, { css, keyframes } from 'styled-components/macro'
 
 export const PortfolioRowWrapper = styled(Row)<{ onClick?: any }>`
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 0.1fr 0.7fr 0.7fr 0.5fr 0.8fr 1fr 0.5fr 1fr;
+  gap: 3px;
   height: 68px;
 
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} background-color`};
@@ -37,11 +39,27 @@ export default function PortfolioRow({
   return (
     <PortfolioRowWrapper onClick={onClick}>
       {left}
-      <AutoColumn grow>
+      <AutoColumn justify="center" grow>
         {title}
+      </AutoColumn>
+      <AutoColumn justify="center" grow>
+        margin
+      </AutoColumn>
+      <AutoColumn justify="center" grow>
+        price
+      </AutoColumn>
+      <AutoColumn justify="center" grow>
         {descriptor}
       </AutoColumn>
-      {right && <EndColumn>{right}</EndColumn>}
+      <AutoColumn justify="center" grow>
+        pnl
+      </AutoColumn>
+      <AutoColumn justify="center" grow>
+        fee
+      </AutoColumn>
+      <AutoColumn justify="center" grow>
+        {right}
+      </AutoColumn>
     </PortfolioRowWrapper>
   )
 }

@@ -11,7 +11,6 @@ import { PortfolioLogo } from '../PortfolioLogo'
 import PortfolioRow from '../PortfolioRow'
 import { useTimeStamp } from './parseRemote'
 
-
 const ActivityRowDescriptor = styled(ThemedText.BodySmall)`
   color: ${({ theme }) => theme.textSecondary};
   // ${EllipsisStyle}
@@ -21,8 +20,8 @@ const StyledTimestamp = styled(ThemedText.Caption)`
   color: ${({ theme }) => theme.textSecondary};
   font-variant: small;
   font-feature-settings: 'tnum' on, 'lnum' on, 'ss02' on;
+  white-space: nowrap;
 `
-
 export function ActivityRow({
   activity: { chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash, isOrder },
 }: {
@@ -30,6 +29,14 @@ export function ActivityRow({
 }) {
   const { ENSName } = useENSName(otherAccount)
   const timeSince = useTimeStamp(timestamp)
+  // size descript modified
+  const modifiedDescriptor = descriptor
+    .replace(/\d+(\.\d+)?/, (match: any) => {
+      const roundedNumber = Math.round(parseFloat(match) * 1e6) / 1e6
+      return roundedNumber.toString()
+    })
+    .split(/(?:for|long)\s/i)[0]
+    .trim()
 
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
 
@@ -56,7 +63,7 @@ export function ActivityRow({
         }
         descriptor={
           <ActivityRowDescriptor color="textSecondary">
-            {descriptor}
+            {modifiedDescriptor}
             {ENSName ?? otherAccount}
           </ActivityRowDescriptor>
         }

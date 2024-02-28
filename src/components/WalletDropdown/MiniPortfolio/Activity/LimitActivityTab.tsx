@@ -1,6 +1,5 @@
 import { t } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
-import Column from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { useWalletDrawer } from 'components/WalletDropdown'
 import { getYear, isSameDay, isSameMonth, isSameWeek, isSameYear } from 'date-fns'
@@ -14,10 +13,10 @@ import { useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
 
 import { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
-import { ActivityRow } from './LimitActivityRow'
 import { parseRemoteActivities } from './parseRemote'
 import { Activity, ActivityMap } from './types'
 import { ActivitiesHeaderRow } from 'components/ActivitiesTable/ActivitesRow'
+import HistoryTable from 'components/ActivitiesTable/HistoryTable'
 
 const GridContainer = styled.div`
   display: flex;
@@ -28,7 +27,7 @@ const GridContainer = styled.div`
   align-items: flex-start;
 `
 
-export const ActivitiesDataContainer = styled.div`
+const ActivitiesDataContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -97,16 +96,6 @@ const createGroups = (activities?: Array<Activity>) => {
 
   return transactionGroups.filter((transactionInformation) => transactionInformation.transactions.length > 0)
 }
-
-const ActivityGroupWrapper = styled(Column)`
-  margin-top: 16px;
-  gap: 8px;
-  border-bottom: 1px solid;
-  border-color: ${({ theme }) => theme.backgroundOutline};
-  :last-child {
-    border: none;
-  }
-`
 
 function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = {}): Array<Activity> {
   const txHashes = [...new Set([...Object.keys(localMap), ...Object.keys(remoteMap)])]
@@ -259,16 +248,7 @@ export function LimitActivityTab({ account }: { account: string }) {
     return (
       <GridContainer>
         <ActivitiesHeaderRow />
-        {historyToShow?.map((history) => (
-          <ActivityGroupWrapper key={history.title}>
-            <Column style={{ marginBottom: '12px' }}>
-              <ActivityRow key={history.hash} activity={history} />
-              {/*activityGroup.transactions.map((activity) => (
-                <ActivityRow key={activity.hash} activity={activity} />
-              ))*/}
-            </Column>
-          </ActivityGroupWrapper>
-        ))}
+        <HistoryTable historyToShow={historyToShow}/>
       </GridContainer>
     )
   }
