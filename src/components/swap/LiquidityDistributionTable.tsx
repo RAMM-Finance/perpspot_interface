@@ -133,6 +133,8 @@ const LiquidityDistributionTable = ({
     }
   }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
 
+  console.log(token0?.symbol, token1?.symbol, inverse)
+
   const negMax = useMemo(() => {
     if (!bin || !token0Price) return 0
 
@@ -154,7 +156,7 @@ const LiquidityDistributionTable = ({
     if (!bin || !currentPrice) return []
     if (token0?.symbol === 'wBTC' && token1?.symbol === 'USDC') {
       return bin
-        .filter((i) => i.price.toNumber() > currentPrice.toNumber() && i.token0Liquidity.gt(0))
+        .filter((i) => i.price.toNumber() < currentPrice.toNumber() && i.token0Liquidity.gt(0))
         .filter((i) => i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0))
         .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
     }
@@ -162,13 +164,19 @@ const LiquidityDistributionTable = ({
       return bin
         .filter((i) => i.price.gt(currentPrice) && i.token0Liquidity.gt(0))
         .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
-        .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
+        .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0.00004))
     }
     if (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') {
       return bin
         .filter((i) => i.price.toNumber() < 1 / currentPrice.toNumber() && i.token0Liquidity.gt(0))
         .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
         .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
+    }
+    if (token0?.symbol === 'WETH' && token1?.symbol === 'ARB') {
+      return bin
+        .filter((i) => i.price.toNumber() > currentPrice.toNumber() && i.token1Liquidity.gt(0))
+        .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
+        .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
     }
     return bin
       .filter((i) => i.price.gt(currentPrice) && i.token0Liquidity.gt(0))
@@ -180,15 +188,24 @@ const LiquidityDistributionTable = ({
     if (!bin || !currentPrice) return []
     if (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') {
       return bin
-        .filter((i) => i.price.toNumber() > 1 / currentPrice.toNumber() && i.token1Liquidity.gt(0))
-        .filter((i) => i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0))
-        .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
+        .filter((i) => i.price.toNumber() > currentPrice.toNumber() && i.token1Liquidity.gt(0))
+        .filter((i) => !(i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0)))
+        .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0.00000001))
     }
-    if (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') {
+    if (
+      (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') ||
+      (token0?.symbol === 'MAGIC' && token1?.symbol === 'WETH')
+    ) {
       return bin
         .filter((i) => i.price.lt(currentPrice) && i.token1Liquidity.gt(0))
         .filter((i) => !(i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0)))
         .filter((i) => i.token1Liquidity.minus(i.token1Borrowed).gt(0))
+    }
+    if (token0?.symbol === 'WETH' && token1?.symbol === 'ARB') {
+      return bin
+        .filter((i) => i.price.toNumber() < currentPrice.toNumber() && i.token0Liquidity.gt(0))
+        .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
+        .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
     }
     return bin
       .filter((i) => i.price.lt(currentPrice) && i.token1Liquidity.gt(0))
@@ -280,6 +297,24 @@ const LiquidityDistributionTable = ({
             <LoadingRow />
             <LoadingRow />
           </AutoColumn>
+        ) : token1.symbol === 'ARB' ? (
+          <NegativeData ref={upperRef}>
+            {binsAbove.map((bin) => {
+              return (
+                <LDDataRowNeg
+                  spread={((Number(bin.token0Liquidity) - Number(bin.token0Borrowed)) / negMax) * 100}
+                  key={Number(bin.price)}
+                >
+                  <LDDataCellIn>
+                    {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
+                  </LDDataCellIn>
+                  <LDDataCellOut>
+                    {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
+                  </LDDataCellOut>
+                </LDDataRowNeg>
+              )
+            })}
+          </NegativeData>
         ) : (
           <NegativeData ref={upperRef}>
             {inverse
@@ -293,7 +328,7 @@ const LiquidityDistributionTable = ({
                         {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
                       </LDDataCellIn>
                       <LDDataCellOut>
-                        {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
+                        {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
                       </LDDataCellOut>
                     </LDDataRowNeg>
                   )
@@ -337,9 +372,27 @@ const LiquidityDistributionTable = ({
             <LoadingRow />
             <LoadingRow />
           </AutoColumn>
+        ) : token1?.symbol === 'ARB' ? (
+          <PositiveData ref={lowerRef}>
+            {binsBelow.map((bin) => {
+              return (
+                <LDDataRow
+                  spread={((Number(bin.token0Liquidity) - Number(bin.token0Borrowed)) / negMax) * 100}
+                  key={Number(bin.price)}
+                >
+                  <LDDataCellIn>
+                    {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
+                  </LDDataCellIn>
+                  <LDDataCellOut>
+                    {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
+                  </LDDataCellOut>
+                </LDDataRow>
+              )
+            })}
+          </PositiveData>
         ) : (
           <PositiveData ref={lowerRef}>
-            {inverse
+            {inverse && token1?.symbol !== 'ARB'
               ? binsAbove.map((bin) => {
                   return (
                     <LDDataRow

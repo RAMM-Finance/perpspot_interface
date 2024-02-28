@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
+import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
@@ -13,7 +13,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { useUSDPrice } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -702,16 +702,13 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     position?.isToken0
   )
 
-  const _pnlCurrency: CurrencyAmount<Currency> | undefined = useMemo(() => {
+  const _pnlCurrency: BN | undefined = useMemo(() => {
     if (!position?.inputCurrency) return undefined
-    return CurrencyAmount.fromRawAmount(
-      position.inputCurrency,
-      new BN(1).shiftedBy(position.inputCurrency.decimals).toFixed(0)
-    )
+    return new BN(1)
   }, [position?.inputCurrency])
   // call once with 1 token
 
-  const usdPNLCurrency = useUSDPrice(_pnlCurrency)
+  const usdPNLCurrency = useUSDPriceBNV2(_pnlCurrency, position?.inputCurrency)
 
   const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
 

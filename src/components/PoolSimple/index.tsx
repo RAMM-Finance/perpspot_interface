@@ -23,7 +23,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useLimweth, useVaultContract } from 'hooks/useContract'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
-import { useUSDPrice } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Swap'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUpRight, ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
@@ -760,14 +760,14 @@ export default function SimplePool() {
   const WBTC = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
   const USDC = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
 
-  const WETHCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+  const WETHCurrencyAmount: BN | undefined = useMemo(() => {
     if (!WETH) return undefined
-    return CurrencyAmount.fromRawAmount(WETH, new BN(1).shiftedBy(WETH.decimals).toFixed(0))
+    return new BN(1)
   }, [WETH])
 
-  const WBTCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+  const WBTCCurrencyAmount: BN | undefined = useMemo(() => {
     if (!WBTC) return undefined
-    return CurrencyAmount.fromRawAmount(WBTC, new BN(1).shiftedBy(WBTC.decimals).toFixed(0))
+    return new BN(1)
   }, [WBTC])
 
   // const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
@@ -775,8 +775,8 @@ export default function SimplePool() {
   //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
   // }, [USDC])
 
-  const WETHPrice = useUSDPrice(WETHCurrencyAmount)
-  const WBTCPrice = useUSDPrice(WBTCCurrencyAmount)
+  const WETHPrice = useUSDPriceBNV2(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
+  const WBTCPrice = useUSDPriceBNV2(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
   const USDCPrice = 1
 
   const indexData = useMemo(() => {
@@ -1115,7 +1115,7 @@ export default function SimplePool() {
                 !buy && activePrice
                   ? { data: value * activePrice, isLoading: false }
                   : !value && currencyAFiat.data
-                  ? { data: currencyAFiat.data / (llpPrice / 1e18) / (llpPrice / 1e18), isLoading: false }
+                  ? { data: currencyAFiat.data, isLoading: false }
                   : { data: value * (llpPrice / 1e18), isLoading: false }
               }
               currency={currencies[Field.CURRENCY_B] ?? null}
