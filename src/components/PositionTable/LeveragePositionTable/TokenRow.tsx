@@ -138,7 +138,6 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   line-height: 16px;
   width: 100%;
   justify-content: center;
-
   &:hover {
     background-color: transparent;
   }
@@ -225,14 +224,15 @@ const RedText = styled.span`
 `
 
 const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
-  align-items: center;
-  flex-flow: row nowrap;
+  /* display: flex; */
+  /* align-items: center; */
+  /* flex-flow: row nowrap; */
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
-  display: flex;
   gap: 4px;
-  justify-content: flex-start;
-  width: 100%;
-
+  /* justify-content: flex-start; */
+  /* width: 100%; */
+  /* width: 900px; */
+  white-space: nowrap;
   &:hover {
     ${ClickableStyle}
   }
@@ -256,6 +256,7 @@ const StyledLink = styled(Link)`
 const StyledLoadedRow = styled.div`
   text-decoration: none;
   cursor: pointer;
+  white-space: nowrap;
 `
 
 const TokenInfoCell = styled(Cell)`
@@ -605,6 +606,7 @@ export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+  const [isInverted, setInverted] = useState(false);
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
@@ -853,23 +855,33 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     alignItems:'center',
                     justifyContent:'center',
                     lineHeight: 1.5,
-                    marginRight: '2px'
+                    paddingLeft:'3px',
+                    position:'relative',
+                    bottom:'7px',
                   }}
                 >
-                  <AutoColumn >  
-                  {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                    currentPrice,
-                    NumberType.SwapTradeAmount
-                  )} `} 
-                  </AutoColumn>
-                  {/* <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn> */}
-                  {/* <AutoColumn> Inverted Entry/Current Price: </AutoColumn> */}
-                  <AutoColumn> inverted </AutoColumn>
-                  <AutoColumn> 
-                    {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                      invertedCurrentPrice,
-                  NumberType.SwapTradeAmount
-                     )} ` }
+                  {isInverted ? 
+                      <>
+                      {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
+                         <AutoColumn>
+                          {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                            invertedCurrentPrice,
+                            NumberType.SwapTradeAmount
+                          )} `}
+                        </AutoColumn>
+                      </>
+                      :
+                      <>
+                        <AutoColumn> 
+                          {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                            currentPrice,
+                          NumberType.SwapTradeAmount
+                          )} `}
+                        </AutoColumn>
+                      </>
+                  }
+                  <AutoColumn style={{position:'absolute', bottom:'1px', top:'1px', padding: '13px' }} onClick={(e) => {e.stopPropagation(); setInverted(!isInverted)}}>
+                    <ThemedText.DeprecatedDarkGray fontWeight={500} fontSize={14} padding={'0 10px 5px 10px'}>invert</ThemedText.DeprecatedDarkGray>
                   </AutoColumn>
                 </AutoColumn>
               </FlexStartRow>

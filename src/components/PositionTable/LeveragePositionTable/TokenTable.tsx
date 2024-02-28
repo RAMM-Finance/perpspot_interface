@@ -21,6 +21,8 @@ const GridContainer = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   justify-content: flex-start;
   align-items: flex-start;
+  flex-wrap: nowrap;
+  /* min-width: 1000px; */
 `
 
 const NoTokenDisplay = styled.div`
