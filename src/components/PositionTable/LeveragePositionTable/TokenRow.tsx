@@ -224,13 +224,13 @@ const RedText = styled.span`
 `
 
 const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
-  /* display: flex; */
+  display: flex;
   /* align-items: center; */
   /* flex-flow: row nowrap; */
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
   gap: 4px;
   /* justify-content: flex-start; */
-  /* width: 100%; */
+  width: 100%;
   /* width: 900px; */
   white-space: nowrap;
   &:hover {
@@ -257,8 +257,9 @@ const StyledLoadedRow = styled.div`
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
+  width: 100%;
+  min-width: 700px;
 `
-
 const TokenInfoCell = styled(Cell)`
   gap: 8px;
   line-height: 24px;

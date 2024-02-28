@@ -220,7 +220,6 @@ const PositionsWrapper = styled.div`
   overflow-y: scroll;
   grid-column: 1 / 3;
   grid-row: 3;
-  min-width: 1000px;
   ::-webkit-scrollbar {
     display: none;
   }
@@ -231,7 +230,10 @@ const PositionsWrapper = styled.div`
 
   @media (max-width: 1200px) {
     grid-column: 1 / 3;
-  }
+  } 
+  /* @media (max-width: 100px) {
+    grid-column: 1;
+  } */
 `
 
 const LiquidityDistibutionWrapper = styled.div`
