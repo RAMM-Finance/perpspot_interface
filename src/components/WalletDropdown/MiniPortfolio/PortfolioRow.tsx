@@ -25,12 +25,14 @@ const EndColumn = styled(Column)`
 export default function PortfolioRow({
   left,
   title,
+  margin,
   descriptor,
   right,
   onClick,
 }: {
   left: React.ReactNode
   title: React.ReactNode
+  margin?: React.ReactNode
   descriptor?: React.ReactNode
   right?: React.ReactNode
   setIsHover?: (b: boolean) => void
@@ -43,19 +45,19 @@ export default function PortfolioRow({
         {title}
       </AutoColumn>
       <AutoColumn justify="center" grow>
-        margin
+        {margin}
       </AutoColumn>
       <AutoColumn justify="center" grow>
-        price
+        -
       </AutoColumn>
       <AutoColumn justify="center" grow>
         {descriptor}
       </AutoColumn>
       <AutoColumn justify="center" grow>
-        pnl
+        -
       </AutoColumn>
       <AutoColumn justify="center" grow>
-        fee
+        -
       </AutoColumn>
       <AutoColumn justify="center" grow>
         {right}

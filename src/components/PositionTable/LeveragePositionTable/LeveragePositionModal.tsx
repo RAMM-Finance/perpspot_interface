@@ -621,11 +621,11 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
                 </Trans>
               </ExtentsText>
 
-              {inRange && (
+              {/* {inRange && (
                 <ThemedText.DeprecatedSmall color={theme.textSecondary}>
                   <Trans>Your position will be 100% {currencyBase?.symbol} at this price.</Trans>
                 </ThemedText.DeprecatedSmall>
-              )}
+              )} */}
             </AutoColumn>
           </SecondLabel>
           <DoubleArrow>⟷</DoubleArrow>
@@ -649,11 +649,11 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
                 </Trans>
               </ExtentsText>
 
-              {inRange && (
+              {/* {inRange && (
                 <ThemedText.DeprecatedSmall color={theme.textPrimary}>
                   <Trans>Your position will be 100% {currencyQuote?.symbol} at this price.</Trans>
                 </ThemedText.DeprecatedSmall>
-              )}
+              )} */}
             </AutoColumn>
           </SecondLabel>
         </RowBetween>

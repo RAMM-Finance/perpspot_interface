@@ -845,36 +845,34 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </MouseoverTooltip>
           }
           entryPrice={
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  {'Inverted Entry/Current Price: ' +
-                    `${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                      invertedCurrentPrice,
-                      NumberType.SwapTradeAmount
-                    )} `}
-                </Trans>
-              }
-              disableHover={false}
-            >
               <FlexStartRow>
                 <AutoColumn
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
+                    display:'flex',
+                    flexDirection:'column',
+                    alignItems:'center',
+                    justifyContent:'center',
                     lineHeight: 1.5,
+                    marginRight: '2px'
                   }}
                 >
+                  <AutoColumn >  
                   {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
                     currentPrice,
                     NumberType.SwapTradeAmount
-                  )} `}
-                  <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn>
+                  )} `} 
+                  </AutoColumn>
+                  {/* <AutoColumn>{`${baseToken?.symbol}/${quoteToken?.symbol}`}</AutoColumn> */}
+                  {/* <AutoColumn> Inverted Entry/Current Price: </AutoColumn> */}
+                  <AutoColumn> inverted </AutoColumn>
+                  <AutoColumn> 
+                    {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                      invertedCurrentPrice,
+                  NumberType.SwapTradeAmount
+                     )} ` }
+                  </AutoColumn>
                 </AutoColumn>
               </FlexStartRow>
-            </MouseoverTooltip>
           }
           remainingPremium={
             <MouseoverTooltip

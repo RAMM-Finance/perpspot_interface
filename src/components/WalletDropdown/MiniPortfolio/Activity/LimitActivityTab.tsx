@@ -198,7 +198,6 @@ export function LimitActivityTab({ account }: { account: string }) {
   const history = useHistoryData(account)
   const historyToShow = useMemo(() => {
     if (!history) return
-
     const processedHistory: any[] = []
     history?.forEach((entry: any) => {
       const descriptor = getDescriptor(entry, tokens)
@@ -216,8 +215,6 @@ export function LimitActivityTab({ account }: { account: string }) {
     })
     return processedHistory
   }, [history])
-
-  console.log('historyData', history, historyToShow)
 
   // We only refetch remote activity if the user renavigates to the activity tab by changing tabs or opening the drawer
   useEffect(() => {

@@ -24,12 +24,10 @@ export function useHistoryData(address:any){
   const [cancelOrderData, setCancelOrderData] = useState<any>()
   const dataProvider = useDataProviderContract()
   const [uniqueTokens, setUniqueTokens] = useState<any>()
-
-
+  
   const account = useMemo(()=>{
     return ethers.utils.getAddress(address)
   }, [address])
-
   useEffect(()=>{
     if (!client || !dataProvider) return
 
