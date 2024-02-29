@@ -100,8 +100,8 @@ export const SmallButtonPrimary = styled(ButtonPrimary)`
   width: auto;
   font-size: 12px;
   padding: ${({ padding }) => padding ?? '8px 12px'};
-  min-width: 100px;
   border-radius: 10px;
+  white-space: wrap;
 `
 
 const BaseButtonLight = styled(BaseButton)`

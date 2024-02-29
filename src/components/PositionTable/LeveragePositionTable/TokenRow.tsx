@@ -54,10 +54,10 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 12px;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  min-width: 390px;
+  min-width: 725px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '8px' : '0px'};
@@ -225,13 +225,12 @@ const RedText = styled.span`
 
 const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   display: flex;
-  /* align-items: center; */
+  align-items: center;
   /* flex-flow: row nowrap; */
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
   gap: 4px;
-  /* justify-content: flex-start; */
+  justify-content: flex-start;
   width: 100%;
-  /* width: 900px; */
   white-space: nowrap;
   &:hover {
     ${ClickableStyle}
@@ -258,7 +257,7 @@ const StyledLoadedRow = styled.div`
   cursor: pointer;
   white-space: nowrap;
   width: 100%;
-  min-width: 700px;
+  /* min-width: 700px; */
 `
 const TokenInfoCell = styled(Cell)`
   gap: 8px;
@@ -917,7 +916,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           actions={
             <SmallButtonPrimary
-              style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+              style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}`}}
               onClick={(e) =>
                 handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
               }
