@@ -1,7 +1,7 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit'
 import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
-import { PoolKey } from 'types/lmtv2position'
+import { PoolInfo, PoolKey } from 'types/lmtv2position'
 
 export type PopupContent =
   | {
@@ -46,7 +46,7 @@ export interface ApplicationState {
   readonly fiatOnramp: { available: boolean; availabilityChecked: boolean }
   readonly openModal: ApplicationModal | null
   readonly popupList: PopupList
-  readonly poolList: PoolKey[]
+  readonly poolList: PoolInfo[]
   readonly poolPriceData: {
     [id: string]: {
       pool: PoolKey
@@ -55,6 +55,8 @@ export interface ApplicationState {
       delta24h: number
       high24: number
       low24: number
+      base?: string
+      quote?: string
     }
   }
 }

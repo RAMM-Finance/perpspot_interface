@@ -29,24 +29,32 @@ import type {
 
 export interface LPVaultInterface extends utils.Interface {
   functions: {
-    "DOMAIN_SEPARATOR()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "burnPermissioned(address,uint256)": FunctionFragment;
     "convertToAssets(uint256)": FunctionFragment;
     "convertToShares(uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
+    "decreaseAllowance(address,uint256)": FunctionFragment;
     "depositAnyToken(address,uint256,address)": FunctionFragment;
     "getAllTokens()": FunctionFragment;
     "getData()": FunctionFragment;
+    "getTaxRate(address,bool)": FunctionFragment;
+    "getTokenPrice(address)": FunctionFragment;
+    "getWeight(address)": FunctionFragment;
+    "idealWeights(address)": FunctionFragment;
+    "increaseAllowance(address,uint256)": FunctionFragment;
+    "initialize(address,uint256,string,string)": FunctionFragment;
     "maxRedeemableInToken(address)": FunctionFragment;
+    "mintPermissioned(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
-    "nonces(address)": FunctionFragment;
-    "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "previewDeposit(uint256)": FunctionFragment;
     "previewRedeem(uint256)": FunctionFragment;
     "redeemToAnyToken(address,uint256,address,address)": FunctionFragment;
     "repayBalance(address,uint256,int256)": FunctionFragment;
+    "resetTokens()": FunctionFragment;
+    "setIdealWeight(address,uint256)": FunctionFragment;
     "setPricefeed(address)": FunctionFragment;
     "setStrategist(address)": FunctionFragment;
     "setTaxRate(uint256)": FunctionFragment;
@@ -63,24 +71,32 @@ export interface LPVaultInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "DOMAIN_SEPARATOR"
       | "allowance"
       | "approve"
       | "balanceOf"
+      | "burnPermissioned"
       | "convertToAssets"
       | "convertToShares"
       | "decimals"
+      | "decreaseAllowance"
       | "depositAnyToken"
       | "getAllTokens"
       | "getData"
+      | "getTaxRate"
+      | "getTokenPrice"
+      | "getWeight"
+      | "idealWeights"
+      | "increaseAllowance"
+      | "initialize"
       | "maxRedeemableInToken"
+      | "mintPermissioned"
       | "name"
-      | "nonces"
-      | "permit"
       | "previewDeposit"
       | "previewRedeem"
       | "redeemToAnyToken"
       | "repayBalance"
+      | "resetTokens"
+      | "setIdealWeight"
       | "setPricefeed"
       | "setStrategist"
       | "setTaxRate"
@@ -96,10 +112,6 @@ export interface LPVaultInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "DOMAIN_SEPARATOR",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "allowance",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
@@ -112,6 +124,10 @@ export interface LPVaultInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "burnPermissioned",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "convertToAssets",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -120,6 +136,10 @@ export interface LPVaultInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "decreaseAllowance",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "depositAnyToken",
     values: [
@@ -134,26 +154,43 @@ export interface LPVaultInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "getData", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "getTaxRate",
+    values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTokenPrice",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWeight",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "idealWeights",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "increaseAllowance",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "maxRedeemableInToken",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "mintPermissioned",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "nonces",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "permit",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>
-    ]
-  ): string;
   encodeFunctionData(
     functionFragment: "previewDeposit",
     values: [PromiseOrValue<BigNumberish>]
@@ -178,6 +215,14 @@ export interface LPVaultInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "resetTokens",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setIdealWeight",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "setPricefeed",
@@ -229,13 +274,13 @@ export interface LPVaultInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "DOMAIN_SEPARATOR",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "burnPermissioned",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "convertToAssets",
     data: BytesLike
@@ -246,6 +291,10 @@ export interface LPVaultInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "decreaseAllowance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "depositAnyToken",
     data: BytesLike
   ): Result;
@@ -254,13 +303,30 @@ export interface LPVaultInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getData", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getTaxRate", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getTokenPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getWeight", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "idealWeights",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "increaseAllowance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "maxRedeemableInToken",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "mintPermissioned",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "previewDeposit",
     data: BytesLike
@@ -275,6 +341,14 @@ export interface LPVaultInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "repayBalance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "resetTokens",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setIdealWeight",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -313,15 +387,17 @@ export interface LPVaultInterface extends utils.Interface {
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
-    "Deposit(address,address,uint256,uint256)": EventFragment;
-    "Repay(address,address,uint256,int256)": EventFragment;
+    "Deposit(address,address,uint256,uint256,uint256)": EventFragment;
+    "Initialized(uint8)": EventFragment;
+    "Repay(address,address,uint256,int256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
     "Use(address,address,uint256)": EventFragment;
-    "Withdraw(address,address,address,uint256,uint256)": EventFragment;
+    "Withdraw(address,address,address,uint256,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Repay"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Use"): EventFragment;
@@ -331,7 +407,7 @@ export interface LPVaultInterface extends utils.Interface {
 export interface ApprovalEventObject {
   owner: string;
   spender: string;
-  amount: BigNumber;
+  value: BigNumber;
 }
 export type ApprovalEvent = TypedEvent<
   [string, string, BigNumber],
@@ -345,22 +421,31 @@ export interface DepositEventObject {
   owner: string;
   assets: BigNumber;
   shares: BigNumber;
+  exchangeRate: BigNumber;
 }
 export type DepositEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber],
+  [string, string, BigNumber, BigNumber, BigNumber],
   DepositEventObject
 >;
 
 export type DepositEventFilter = TypedEventFilter<DepositEvent>;
+
+export interface InitializedEventObject {
+  version: number;
+}
+export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
+
+export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface RepayEventObject {
   caller: string;
   token: string;
   amount: BigNumber;
   PnL: BigNumber;
+  exchangeRate: BigNumber;
 }
 export type RepayEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber],
+  [string, string, BigNumber, BigNumber, BigNumber],
   RepayEventObject
 >;
 
@@ -369,7 +454,7 @@ export type RepayEventFilter = TypedEventFilter<RepayEvent>;
 export interface TransferEventObject {
   from: string;
   to: string;
-  amount: BigNumber;
+  value: BigNumber;
 }
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber],
@@ -393,9 +478,10 @@ export interface WithdrawEventObject {
   owner: string;
   assets: BigNumber;
   shares: BigNumber;
+  exchangeRate: BigNumber;
 }
 export type WithdrawEvent = TypedEvent<
-  [string, string, string, BigNumber, BigNumber],
+  [string, string, string, BigNumber, BigNumber, BigNumber],
   WithdrawEventObject
 >;
 
@@ -428,11 +514,9 @@ export interface LPVault extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
-
     allowance(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
+      owner: PromiseOrValue<string>,
+      spender: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -443,9 +527,15 @@ export interface LPVault extends BaseContract {
     ): Promise<ContractTransaction>;
 
     balanceOf(
-      arg0: PromiseOrValue<string>,
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    burnPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     convertToAssets(
       shares: PromiseOrValue<BigNumberish>,
@@ -458,6 +548,12 @@ export interface LPVault extends BaseContract {
     ): Promise<[BigNumber]>;
 
     decimals(overrides?: CallOverrides): Promise<[number]>;
+
+    decreaseAllowance(
+      spender: PromiseOrValue<string>,
+      subtractedValue: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     depositAnyToken(
       tokenAddress: PromiseOrValue<string>,
@@ -474,6 +570,41 @@ export interface LPVault extends BaseContract {
       [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[], BigNumber[]]
     >;
 
+    getTaxRate(
+      token: PromiseOrValue<string>,
+      increase: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { tax: BigNumber }>;
+
+    getTokenPrice(
+      tokenAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getWeight(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { weight: BigNumber }>;
+
+    idealWeights(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    increaseAllowance(
+      spender: PromiseOrValue<string>,
+      addedValue: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    initialize(
+      priceFeed: PromiseOrValue<string>,
+      _taxRate: PromiseOrValue<BigNumberish>,
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -481,23 +612,13 @@ export interface LPVault extends BaseContract {
       [BigNumber, BigNumber] & { assets: BigNumber; maxShares: BigNumber }
     >;
 
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
+    mintPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    name(overrides?: CallOverrides): Promise<[string]>;
 
     previewDeposit(
       assets: PromiseOrValue<BigNumberish>,
@@ -521,6 +642,16 @@ export interface LPVault extends BaseContract {
       tokenAddress: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       PnL: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    resetTokens(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setIdealWeight(
+      token: PromiseOrValue<string>,
+      weight: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -582,11 +713,9 @@ export interface LPVault extends BaseContract {
     ): Promise<[BigNumber]>;
   };
 
-  DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
-
   allowance(
-    arg0: PromiseOrValue<string>,
-    arg1: PromiseOrValue<string>,
+    owner: PromiseOrValue<string>,
+    spender: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -597,9 +726,15 @@ export interface LPVault extends BaseContract {
   ): Promise<ContractTransaction>;
 
   balanceOf(
-    arg0: PromiseOrValue<string>,
+    account: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  burnPermissioned(
+    who: PromiseOrValue<string>,
+    shares: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   convertToAssets(
     shares: PromiseOrValue<BigNumberish>,
@@ -612,6 +747,12 @@ export interface LPVault extends BaseContract {
   ): Promise<BigNumber>;
 
   decimals(overrides?: CallOverrides): Promise<number>;
+
+  decreaseAllowance(
+    spender: PromiseOrValue<string>,
+    subtractedValue: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   depositAnyToken(
     tokenAddress: PromiseOrValue<string>,
@@ -628,6 +769,41 @@ export interface LPVault extends BaseContract {
     [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[], BigNumber[]]
   >;
 
+  getTaxRate(
+    token: PromiseOrValue<string>,
+    increase: PromiseOrValue<boolean>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getTokenPrice(
+    tokenAddress: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getWeight(
+    token: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  idealWeights(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  increaseAllowance(
+    spender: PromiseOrValue<string>,
+    addedValue: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  initialize(
+    priceFeed: PromiseOrValue<string>,
+    _taxRate: PromiseOrValue<BigNumberish>,
+    _name: PromiseOrValue<string>,
+    _symbol: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   maxRedeemableInToken(
     tokenAddress: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -635,23 +811,13 @@ export interface LPVault extends BaseContract {
     [BigNumber, BigNumber] & { assets: BigNumber; maxShares: BigNumber }
   >;
 
-  name(overrides?: CallOverrides): Promise<string>;
-
-  nonces(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  permit(
-    owner: PromiseOrValue<string>,
-    spender: PromiseOrValue<string>,
-    value: PromiseOrValue<BigNumberish>,
-    deadline: PromiseOrValue<BigNumberish>,
-    v: PromiseOrValue<BigNumberish>,
-    r: PromiseOrValue<BytesLike>,
-    s: PromiseOrValue<BytesLike>,
+  mintPermissioned(
+    who: PromiseOrValue<string>,
+    shares: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  name(overrides?: CallOverrides): Promise<string>;
 
   previewDeposit(
     assets: PromiseOrValue<BigNumberish>,
@@ -675,6 +841,16 @@ export interface LPVault extends BaseContract {
     tokenAddress: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
     PnL: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  resetTokens(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setIdealWeight(
+    token: PromiseOrValue<string>,
+    weight: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -734,11 +910,9 @@ export interface LPVault extends BaseContract {
   ): Promise<BigNumber>;
 
   callStatic: {
-    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
-
     allowance(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
+      owner: PromiseOrValue<string>,
+      spender: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -749,9 +923,15 @@ export interface LPVault extends BaseContract {
     ): Promise<boolean>;
 
     balanceOf(
-      arg0: PromiseOrValue<string>,
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    burnPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     convertToAssets(
       shares: PromiseOrValue<BigNumberish>,
@@ -764,6 +944,12 @@ export interface LPVault extends BaseContract {
     ): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<number>;
+
+    decreaseAllowance(
+      spender: PromiseOrValue<string>,
+      subtractedValue: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     depositAnyToken(
       tokenAddress: PromiseOrValue<string>,
@@ -780,6 +966,41 @@ export interface LPVault extends BaseContract {
       [BigNumber, BigNumber, BigNumber, BigNumber[], BigNumber[], BigNumber[]]
     >;
 
+    getTaxRate(
+      token: PromiseOrValue<string>,
+      increase: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTokenPrice(
+      tokenAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getWeight(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    idealWeights(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    increaseAllowance(
+      spender: PromiseOrValue<string>,
+      addedValue: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    initialize(
+      priceFeed: PromiseOrValue<string>,
+      _taxRate: PromiseOrValue<BigNumberish>,
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -787,23 +1008,13 @@ export interface LPVault extends BaseContract {
       [BigNumber, BigNumber] & { assets: BigNumber; maxShares: BigNumber }
     >;
 
-    name(overrides?: CallOverrides): Promise<string>;
-
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
+    mintPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    name(overrides?: CallOverrides): Promise<string>;
 
     previewDeposit(
       assets: PromiseOrValue<BigNumberish>,
@@ -827,6 +1038,14 @@ export interface LPVault extends BaseContract {
       tokenAddress: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       PnL: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    resetTokens(overrides?: CallOverrides): Promise<void>;
+
+    setIdealWeight(
+      token: PromiseOrValue<string>,
+      weight: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -890,49 +1109,56 @@ export interface LPVault extends BaseContract {
     "Approval(address,address,uint256)"(
       owner?: PromiseOrValue<string> | null,
       spender?: PromiseOrValue<string> | null,
-      amount?: null
+      value?: null
     ): ApprovalEventFilter;
     Approval(
       owner?: PromiseOrValue<string> | null,
       spender?: PromiseOrValue<string> | null,
-      amount?: null
+      value?: null
     ): ApprovalEventFilter;
 
-    "Deposit(address,address,uint256,uint256)"(
+    "Deposit(address,address,uint256,uint256,uint256)"(
       caller?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assets?: null,
-      shares?: null
+      shares?: null,
+      exchangeRate?: null
     ): DepositEventFilter;
     Deposit(
       caller?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assets?: null,
-      shares?: null
+      shares?: null,
+      exchangeRate?: null
     ): DepositEventFilter;
 
-    "Repay(address,address,uint256,int256)"(
+    "Initialized(uint8)"(version?: null): InitializedEventFilter;
+    Initialized(version?: null): InitializedEventFilter;
+
+    "Repay(address,address,uint256,int256,uint256)"(
       caller?: PromiseOrValue<string> | null,
       token?: PromiseOrValue<string> | null,
       amount?: null,
-      PnL?: null
+      PnL?: null,
+      exchangeRate?: null
     ): RepayEventFilter;
     Repay(
       caller?: PromiseOrValue<string> | null,
       token?: PromiseOrValue<string> | null,
       amount?: null,
-      PnL?: null
+      PnL?: null,
+      exchangeRate?: null
     ): RepayEventFilter;
 
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
-      amount?: null
+      value?: null
     ): TransferEventFilter;
     Transfer(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
-      amount?: null
+      value?: null
     ): TransferEventFilter;
 
     "Use(address,address,uint256)"(
@@ -946,28 +1172,28 @@ export interface LPVault extends BaseContract {
       amount?: null
     ): UseEventFilter;
 
-    "Withdraw(address,address,address,uint256,uint256)"(
+    "Withdraw(address,address,address,uint256,uint256,uint256)"(
       caller?: PromiseOrValue<string> | null,
       receiver?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assets?: null,
-      shares?: null
+      shares?: null,
+      exchangeRate?: null
     ): WithdrawEventFilter;
     Withdraw(
       caller?: PromiseOrValue<string> | null,
       receiver?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assets?: null,
-      shares?: null
+      shares?: null,
+      exchangeRate?: null
     ): WithdrawEventFilter;
   };
 
   estimateGas: {
-    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<BigNumber>;
-
     allowance(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
+      owner: PromiseOrValue<string>,
+      spender: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -978,8 +1204,14 @@ export interface LPVault extends BaseContract {
     ): Promise<BigNumber>;
 
     balanceOf(
-      arg0: PromiseOrValue<string>,
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    burnPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     convertToAssets(
@@ -994,6 +1226,12 @@ export interface LPVault extends BaseContract {
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
+    decreaseAllowance(
+      spender: PromiseOrValue<string>,
+      subtractedValue: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     depositAnyToken(
       tokenAddress: PromiseOrValue<string>,
       assets: PromiseOrValue<BigNumberish>,
@@ -1005,28 +1243,53 @@ export interface LPVault extends BaseContract {
 
     getData(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTaxRate(
+      token: PromiseOrValue<string>,
+      increase: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTokenPrice(
+      tokenAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getWeight(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    idealWeights(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    increaseAllowance(
+      spender: PromiseOrValue<string>,
+      addedValue: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    initialize(
+      priceFeed: PromiseOrValue<string>,
+      _taxRate: PromiseOrValue<BigNumberish>,
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
+    mintPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    name(overrides?: CallOverrides): Promise<BigNumber>;
 
     previewDeposit(
       assets: PromiseOrValue<BigNumberish>,
@@ -1050,6 +1313,16 @@ export interface LPVault extends BaseContract {
       tokenAddress: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       PnL: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    resetTokens(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setIdealWeight(
+      token: PromiseOrValue<string>,
+      weight: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1110,11 +1383,9 @@ export interface LPVault extends BaseContract {
   };
 
   populateTransaction: {
-    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     allowance(
-      arg0: PromiseOrValue<string>,
-      arg1: PromiseOrValue<string>,
+      owner: PromiseOrValue<string>,
+      spender: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1125,8 +1396,14 @@ export interface LPVault extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
-      arg0: PromiseOrValue<string>,
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    burnPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     convertToAssets(
@@ -1141,6 +1418,12 @@ export interface LPVault extends BaseContract {
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    decreaseAllowance(
+      spender: PromiseOrValue<string>,
+      subtractedValue: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     depositAnyToken(
       tokenAddress: PromiseOrValue<string>,
       assets: PromiseOrValue<BigNumberish>,
@@ -1152,28 +1435,53 @@ export interface LPVault extends BaseContract {
 
     getData(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getTaxRate(
+      token: PromiseOrValue<string>,
+      increase: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTokenPrice(
+      tokenAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getWeight(
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    idealWeights(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    increaseAllowance(
+      spender: PromiseOrValue<string>,
+      addedValue: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    initialize(
+      priceFeed: PromiseOrValue<string>,
+      _taxRate: PromiseOrValue<BigNumberish>,
+      _name: PromiseOrValue<string>,
+      _symbol: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     maxRedeemableInToken(
       tokenAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    nonces(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    permit(
-      owner: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      value: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
-      v: PromiseOrValue<BigNumberish>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
+    mintPermissioned(
+      who: PromiseOrValue<string>,
+      shares: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     previewDeposit(
       assets: PromiseOrValue<BigNumberish>,
@@ -1197,6 +1505,16 @@ export interface LPVault extends BaseContract {
       tokenAddress: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       PnL: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    resetTokens(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setIdealWeight(
+      token: PromiseOrValue<string>,
+      weight: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -9,7 +9,7 @@ import { useAtomValue, useUpdateAtom } from 'jotai/utils'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 
-import { filterStringAtom } from './state'
+import { poolFilterStringAtom } from './state'
 
 const ICON_SIZE = '20px'
 const SearchBarContainer = styled.div`
@@ -67,10 +67,10 @@ const SearchInput = styled.input`
 `
 
 export default function PoolSearchBar() {
-  const currentString = useAtomValue(filterStringAtom)
+  const currentString = useAtomValue(poolFilterStringAtom)
   const [localFilterString, setLocalFilterString] = useState(currentString)
-  const setFilterString = useUpdateAtom(filterStringAtom)
-  const debouncedLocalFilterString = useDebounce(localFilterString, 300)
+  const setFilterString = useUpdateAtom(poolFilterStringAtom)
+  const debouncedLocalFilterString = useDebounce(localFilterString, 500)
 
   useEffect(() => {
     setLocalFilterString(currentString)

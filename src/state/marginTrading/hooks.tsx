@@ -1297,8 +1297,8 @@ const useSimulateMarginTrade = (
 
     const {
       totalPosition: newTotalPosition,
-      totalInputDebt: newTotalInputDebt,
-      margin: newMargin,
+      // totalInputDebt: newTotalInputDebt,
+      // margin: newMargin,
       borrowInfo,
       fees,
     } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
@@ -1364,9 +1364,6 @@ const useSimulateMarginTrade = (
 
     return {
       data: simulation,
-      // userParams: `${margin.toString()}-${JSON.stringify(
-      //   positionKey
-      // )}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(5)}`,
     }
   }, [
     positionKey,
@@ -1540,10 +1537,7 @@ const useSimulateMarginTrade = (
             setLoading(false)
             setSyncing(false)
           } else {
-            // console.log('fetching9', _result, to, calldata)
-            // console.log('derived:result', _result, userParams)
             setResult(data)
-            // setLastParams(userParams)
             setSimulationError(undefined)
             setLoading(false)
             setSyncing(false)

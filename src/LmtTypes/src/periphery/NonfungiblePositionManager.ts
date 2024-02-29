@@ -143,7 +143,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
-    "cleanDust(address)": FunctionFragment;
     "collect((uint256,address))": FunctionFragment;
     "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))": FunctionFragment;
     "fetchLatestTotalFeeGrowth(uint256)": FunctionFragment;
@@ -173,7 +172,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "burn"
-      | "cleanDust"
       | "collect"
       | "decreaseLiquidity"
       | "fetchLatestTotalFeeGrowth"
@@ -209,10 +207,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "burn",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "cleanDust",
-    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "collect",
@@ -313,7 +307,6 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "cleanDust", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "collect", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseLiquidity",
@@ -522,11 +515,6 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    cleanDust(
-      token: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     collect(
       params: NonfungiblePositionManager.CollectParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -686,11 +674,6 @@ export interface NonfungiblePositionManager extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  cleanDust(
-    token: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   collect(
     params: NonfungiblePositionManager.CollectParamsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -847,11 +830,6 @@ export interface NonfungiblePositionManager extends BaseContract {
 
     burn(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    cleanDust(
-      token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1112,11 +1090,6 @@ export interface NonfungiblePositionManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    cleanDust(
-      token: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     collect(
       params: NonfungiblePositionManager.CollectParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1243,11 +1216,6 @@ export interface NonfungiblePositionManager extends BaseContract {
 
     burn(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    cleanDust(
-      token: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

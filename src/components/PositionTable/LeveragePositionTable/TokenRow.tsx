@@ -472,6 +472,7 @@ function PositionRow({
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
   }, [])
+
   const rowCells = (
     <>
       <LeveragePositionModal
@@ -598,7 +599,7 @@ interface LoadedRowProps {
 }
 
 export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
-  if (!tokenA || !tokenB || !fee) return undefined
+  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key')
   const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
   const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
   return `${token0?.toLowerCase()}-${token1?.toLowerCase()}-${fee}`

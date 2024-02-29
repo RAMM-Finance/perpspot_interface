@@ -1,27 +1,20 @@
-import { TimePeriod } from 'graphql/data/util'
 import { atom, useAtom } from 'jotai'
 import { atomWithReset } from 'jotai/utils'
 import { useCallback } from 'react'
 
-export enum PositionSortMethod {
-  BORROWED_AMOUNT = 'Borrowed',
-  COLLATERAL = 'Collateral',
-  REPAYTIME = 'Time Left',
-  REMAINING = 'Prem. Left',
-  ACTIONS = 'Actions',
-  LTV = 'LTV',
-  // UNUSED_PREMIUM = 'Unused Premium'
+export enum PoolSortMethod {
+  PRICE = 'Price',
+  DELTA = 'Delta',
 }
 
-export const filterStringAtom = atomWithReset<string>('')
-export const filterTimeAtom = atom<TimePeriod>(TimePeriod.DAY)
-export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.REPAYTIME)
-export const sortAscendingAtom = atom<boolean>(false)
+export const poolFilterStringAtom = atomWithReset<string>('')
+export const poolSortMethodAtom = atom<PoolSortMethod>(PoolSortMethod.PRICE)
+export const poolSortAscendingAtom = atom<boolean>(false)
 
 /* keep track of sort category for token table */
-export function useSetSortMethod(newSortMethod: PositionSortMethod) {
-  const [sortMethod, setSortMethod] = useAtom(sortMethodAtom)
-  const [sortAscending, setSortAscending] = useAtom(sortAscendingAtom)
+export function useSetPoolSortMethod(newSortMethod: PoolSortMethod) {
+  const [sortMethod, setSortMethod] = useAtom(poolSortMethodAtom)
+  const [sortAscending, setSortAscending] = useAtom(poolSortAscendingAtom)
 
   return useCallback(() => {
     if (sortMethod === newSortMethod) {

@@ -8,8 +8,8 @@ import { ApplicationModal } from 'state/application/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
-import { filterTimeAtom } from './state'
 import FilterOption from './FilterOption'
+import { filterTimeAtom } from './state'
 
 export const DISPLAYS: Record<TimePeriod, string> = {
   [TimePeriod.HOUR]: '1H',
@@ -38,6 +38,7 @@ const InternalMenuItem = styled.div`
     text-decoration: none;
   }
 `
+
 const InternalLinkMenuItem = styled(InternalMenuItem)`
   display: flex;
   flex-direction: row;

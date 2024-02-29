@@ -232,6 +232,7 @@ export interface MarginFacilityInterface extends utils.Interface {
   functions: {
     "PremiumDeposit(bytes32)": FunctionFragment;
     "_initialize(address,address)": FunctionFragment;
+    "addFiller(address)": FunctionFragment;
     "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "approveTokens(address,address)": FunctionFragment;
     "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256),address,address,bool)": FunctionFragment;
@@ -246,6 +247,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     "getPosition(address,address,bool)": FunctionFragment;
     "getPositionId(address,address,bool)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
+    "isWhitelistedFiller(address)": FunctionFragment;
     "multicall(bytes[])": FunctionFragment;
     "orders(bytes32)": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
@@ -262,6 +264,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "PremiumDeposit"
       | "_initialize"
+      | "addFiller"
       | "addPosition"
       | "approveTokens"
       | "canForceClose"
@@ -276,6 +279,7 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "getPosition"
       | "getPositionId"
       | "initialize"
+      | "isWhitelistedFiller"
       | "multicall"
       | "orders"
       | "payPremium"
@@ -295,6 +299,10 @@ export interface MarginFacilityInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "_initialize",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addFiller",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "addPosition",
@@ -393,6 +401,10 @@ export interface MarginFacilityInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "isWhitelistedFiller",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "multicall",
     values: [PromiseOrValue<BytesLike>[]]
   ): string;
@@ -464,6 +476,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     functionFragment: "_initialize",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addFiller", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "addPosition",
     data: BytesLike
@@ -511,6 +524,10 @@ export interface MarginFacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isWhitelistedFiller",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "orders", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "payPremium", data: BytesLike): Result;
@@ -541,7 +558,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     "ForceClosed(address,bool,address,uint256,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "MarginPositionIncreased(address,bool,address,address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256)": EventFragment;
+    "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256,int256)": EventFragment;
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "OrderCanceled(address,bool,address,bool)": EventFragment;
     "PremiumDeposited(address,address,bool,uint256)": EventFragment;
@@ -617,9 +634,10 @@ export interface MarginPositionReducedEventObject {
   reduceAmount: BigNumber;
   premiumPaid: BigNumber;
   feePaid: BigNumber;
+  PnL: BigNumber;
 }
 export type MarginPositionReducedEvent = TypedEvent<
-  [string, boolean, string, string, BigNumber, BigNumber, BigNumber],
+  [string, boolean, string, string, BigNumber, BigNumber, BigNumber, BigNumber],
   MarginPositionReducedEventObject
 >;
 
@@ -735,6 +753,11 @@ export interface MarginFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    addFiller(
+      filler: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     addPosition(
       key: PoolKeyStruct,
       param: AddParamsStruct,
@@ -828,6 +851,11 @@ export interface MarginFacility extends BaseContract {
       ex: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    isWhitelistedFiller(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -936,6 +964,11 @@ export interface MarginFacility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  addFiller(
+    filler: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   addPosition(
     key: PoolKeyStruct,
     param: AddParamsStruct,
@@ -1029,6 +1062,11 @@ export interface MarginFacility extends BaseContract {
     ex: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  isWhitelistedFiller(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   multicall(
     data: PromiseOrValue<BytesLike>[],
@@ -1137,6 +1175,11 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    addFiller(
+      filler: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     addPosition(
       key: PoolKeyStruct,
       param: AddParamsStruct,
@@ -1236,6 +1279,11 @@ export interface MarginFacility extends BaseContract {
       ex: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    isWhitelistedFiller(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     multicall(
       data: PromiseOrValue<BytesLike>[],
@@ -1377,14 +1425,15 @@ export interface MarginFacility extends BaseContract {
       feePaid?: null
     ): MarginPositionIncreasedEventFilter;
 
-    "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256)"(
+    "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256,int256)"(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
       trader?: PromiseOrValue<string> | null,
       filler?: null,
       reduceAmount?: null,
       premiumPaid?: null,
-      feePaid?: null
+      feePaid?: null,
+      PnL?: null
     ): MarginPositionReducedEventFilter;
     MarginPositionReduced(
       pool?: PromiseOrValue<string> | null,
@@ -1393,7 +1442,8 @@ export interface MarginFacility extends BaseContract {
       filler?: null,
       reduceAmount?: null,
       premiumPaid?: null,
-      feePaid?: null
+      feePaid?: null,
+      PnL?: null
     ): MarginPositionReducedEventFilter;
 
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)"(
@@ -1470,6 +1520,11 @@ export interface MarginFacility extends BaseContract {
     _initialize(
       pm: PromiseOrValue<string>,
       ex: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    addFiller(
+      filler: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1567,6 +1622,11 @@ export interface MarginFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    isWhitelistedFiller(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     multicall(
       data: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1644,6 +1704,11 @@ export interface MarginFacility extends BaseContract {
     _initialize(
       pm: PromiseOrValue<string>,
       ex: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addFiller(
+      filler: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1739,6 +1804,11 @@ export interface MarginFacility extends BaseContract {
       pm: PromiseOrValue<string>,
       ex: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    isWhitelistedFiller(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     multicall(

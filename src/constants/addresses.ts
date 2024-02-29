@@ -83,7 +83,7 @@ export const LMT_MARGIN_FACILITY: AddressMap = {
 }
 
 export const LMT_QUOTER: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0x37ccA4bBD0512eFC75e4Aedcdf9DC9A498330b6c',
+  [SupportedChainId.ARBITRUM_ONE]: '0x3b01980457a865c61d7c86E9aAE9eAE7F6a40175',
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {

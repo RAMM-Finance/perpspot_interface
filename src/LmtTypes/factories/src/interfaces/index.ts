@@ -8,4 +8,5 @@ export { INonfungiblePositionManager__factory } from "./INonfungiblePositionMana
 export { IPoolManager__factory } from "./IPoolManager__factory";
 export { IQuoterV2__factory } from "./IQuoterV2__factory";
 export { ISwapper__factory } from "./ISwapper__factory";
+export { ITickLens__factory } from "./ITickLens__factory";
 export { IWETH9__factory } from "./IWETH9__factory";

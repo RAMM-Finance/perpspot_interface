@@ -13,6 +13,12 @@ export interface LiquidityLoan {
   lastGrowth: BN
 }
 
+export interface PoolKey {
+  token0: string
+  token1: string
+  fee: FeeAmount
+}
+
 export interface BaseFacilityPositionDetails {
   poolKey: RawPoolKey
   isToken0: boolean
@@ -51,10 +57,16 @@ export interface MarginLimitOrder {
   currentOutput: BN
 }
 
-export interface PoolKey {
+export interface PoolInfo {
   token0: string
   token1: string
   fee: number
+  symbol0: string
+  symbol1: string
+  name0: string
+  name1: string
+  decimals0: number
+  decimals1: number
 }
 
 export interface RawPoolKey {
