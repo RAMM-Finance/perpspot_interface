@@ -25,7 +25,7 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../../common";
+} from "../../../common";
 
 export type PoolKeyStruct = {
   token0: PromiseOrValue<string>;
@@ -39,7 +39,7 @@ export type PoolKeyStructOutput = [string, string, number] & {
   fee: number;
 };
 
-export declare namespace LPManager {
+export declare namespace LPManager2 {
   export type PositionStruct = {
     token0Amount: PromiseOrValue<BigNumberish>;
     token1Amount: PromiseOrValue<BigNumberish>;
@@ -72,7 +72,7 @@ export declare namespace LPManager {
   };
 }
 
-export interface LPManagerInterface extends utils.Interface {
+export interface LPManager2Interface extends utils.Interface {
   functions: {
     "getPosition(uint256)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
@@ -165,12 +165,12 @@ export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
-export interface LPManager extends BaseContract {
+export interface LPManager2 extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: LPManagerInterface;
+  interface: LPManager2Interface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -195,7 +195,7 @@ export interface LPManager extends BaseContract {
     getPosition(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[LPManager.PositionStructOutput]>;
+    ): Promise<[LPManager2.PositionStructOutput]>;
 
     initialize(
       _vault: PromiseOrValue<string>,
@@ -227,7 +227,7 @@ export interface LPManager extends BaseContract {
   getPosition(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<LPManager.PositionStructOutput>;
+  ): Promise<LPManager2.PositionStructOutput>;
 
   initialize(
     _vault: PromiseOrValue<string>,
@@ -259,7 +259,7 @@ export interface LPManager extends BaseContract {
     getPosition(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<LPManager.PositionStructOutput>;
+    ): Promise<LPManager2.PositionStructOutput>;
 
     initialize(
       _vault: PromiseOrValue<string>,

@@ -270,23 +270,39 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             }
 
             // filter extreme values
-            const filteredBars = bars.filter((bar, index, array) => {
-              let prevBar = null
-              let nextBar = null
-              if (index === 0) {
-                nextBar = array[index + 1]
-              } else if (index === array.length - 1) {
-                prevBar = array[index - 1]
-              } else {
-                prevBar = array[index - 1]
-                nextBar = array[index + 1]
-              }
+            const avgHighDeviation =
+              bars
+                .map((bar) => {
+                  return Math.abs(bar.high - bar.open)
+                })
+                .reduce((a, b) => a + b, 0) / bars.length
+            const avgLowDeviation =
+              bars
+                .map((bar) => {
+                  return Math.abs(bar.low - bar.open)
+                })
+                .reduce((a, b) => a + b, 0) / bars.length
 
-              if ((prevBar && bar.high > prevBar?.open * 2) || (nextBar && bar.high > nextBar?.open * 2)) {
-                return false
+            const filteredBars = bars.map((bar, index, array) => {
+              const highDeviation = Math.abs(bar.high - bar.open)
+              const lowDeviation = Math.abs(bar.low - bar.open)
+              let high = bar.high
+              let low = bar.low
+              if (avgHighDeviation * 3 < highDeviation) {
+                high = bar.open + avgHighDeviation * 3
               }
-              return true
+              if (avgLowDeviation * 3 < lowDeviation) {
+                low = bar.open - avgLowDeviation * 3
+              }
+              return {
+                open: bar.open,
+                close: bar.close,
+                time: bar.time,
+                high,
+                low,
+              }
             })
+
             // console.log(`[getBars]: returned ${data.length} bar(s)`, data[0]);
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
@@ -319,15 +335,15 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             aggregate = '5'
           }
 
-          let denomination = 'base'
+          const denomination = 'base'
 
-          if (
-            poolAddress == '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
-            poolAddress == '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
-            poolAddress == '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-          ) {
-            denomination = 'quote'
-          }
+          // if (
+          //   poolAddress == '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
+          //   poolAddress == '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
+          //   poolAddress == '0xC6962004f452bE9203591991D15f6b388e09E8D0'
+          // ) {
+          //   denomination = 'quote'
+          // }
 
           // intervalRef.current && clearInterval(intervalRef.current)
           // intervalRef.current = setInterval(function () {
@@ -343,5 +359,20 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
         },
       },
     }
-  }, [chainId])
+  }, [])
+}
+
+function filterOHLCBar(bar: any, index: number, array: any[]) {
+  let prevBar
+  let nextBar
+  if (index === 0) {
+    nextBar = array[index + 1]
+  } else if (index === array.length - 1) {
+    prevBar = array[index - 1]
+  } else {
+    prevBar = array[index - 1]
+    nextBar = array[index + 1]
+  }
+
+  return true
 }

@@ -473,6 +473,7 @@ function PositionRow({
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
   }, [])
+
   const rowCells = (
     <>
       <LeveragePositionModal
@@ -599,7 +600,7 @@ interface LoadedRowProps {
 }
 
 export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
-  if (!tokenA || !tokenB || !fee) return undefined
+  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key')
   const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
   const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
   return `${token0?.toLowerCase()}-${token1?.toLowerCase()}-${fee}`
@@ -607,7 +608,7 @@ export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const [isInverted, setInverted] = useState(false);
+  const [isInverted, setInverted] = useState(false)
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
@@ -848,44 +849,52 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </MouseoverTooltip>
           }
           entryPrice={
-              <FlexStartRow>
+            <FlexStartRow>
+              <AutoColumn
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1.5,
+                  paddingLeft: '3px',
+                  position: 'relative',
+                  bottom: '7px',
+                }}
+              >
+                {isInverted ? (
+                  <>
+                    {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
+                    <AutoColumn>
+                      {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                        invertedCurrentPrice,
+                        NumberType.SwapTradeAmount
+                      )} `}
+                    </AutoColumn>
+                  </>
+                ) : (
+                  <>
+                    <AutoColumn>
+                      {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                        currentPrice,
+                        NumberType.SwapTradeAmount
+                      )} `}
+                    </AutoColumn>
+                  </>
+                )}
                 <AutoColumn
-                  style={{
-                    display:'flex',
-                    flexDirection:'column',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    lineHeight: 1.5,
-                    paddingLeft:'3px',
-                    position:'relative',
-                    bottom:'7px',
+                  style={{ position: 'absolute', bottom: '1px', top: '1px', padding: '13px' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setInverted(!isInverted)
                   }}
                 >
-                  {isInverted ? 
-                      <>
-                      {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
-                         <AutoColumn>
-                          {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                            invertedCurrentPrice,
-                            NumberType.SwapTradeAmount
-                          )} `}
-                        </AutoColumn>
-                      </>
-                      :
-                      <>
-                        <AutoColumn> 
-                          {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                            currentPrice,
-                          NumberType.SwapTradeAmount
-                          )} `}
-                        </AutoColumn>
-                      </>
-                  }
-                  <AutoColumn style={{position:'absolute', bottom:'1px', top:'1px', padding: '13px' }} onClick={(e) => {e.stopPropagation(); setInverted(!isInverted)}}>
-                    <ThemedText.DeprecatedDarkGray fontWeight={500} fontSize={14} padding={'0 10px 5px 10px'}>invert</ThemedText.DeprecatedDarkGray>
-                  </AutoColumn>
+                  <ThemedText.DeprecatedDarkGray fontWeight={500} fontSize={14} padding="0 10px 5px 10px">
+                    invert
+                  </ThemedText.DeprecatedDarkGray>
                 </AutoColumn>
-              </FlexStartRow>
+              </AutoColumn>
+            </FlexStartRow>
           }
           remainingPremium={
             <MouseoverTooltip

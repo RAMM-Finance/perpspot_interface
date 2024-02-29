@@ -65,8 +65,8 @@ export function useAllV3Routes(
 ): { loading: boolean; routes: Route<Currency, Currency>[] } {
   const { chainId } = useWeb3React()
   const { pools, loading: poolsLoading } = useV3SwapPools(currencyIn, currencyOut)
-  console.log(pools)
-  console.log(poolsLoading)
+  // console.log(pools)
+  // console.log(poolsLoading)
   // const pools: Pool[] = []
   // const poolsLoading = false
 

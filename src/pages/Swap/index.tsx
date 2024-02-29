@@ -8,6 +8,7 @@ import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
@@ -26,6 +27,7 @@ import JoinModal from 'pages/Join'
 import React, { useMemo, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useAppPoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
@@ -230,7 +232,7 @@ const PositionsWrapper = styled.div`
 
   @media (max-width: 1200px) {
     grid-column: 1 / 3;
-  } 
+  }
   /* @media (max-width: 100px) {
     grid-column: 1;
   } */
@@ -283,8 +285,45 @@ export default function Swap({ className }: { className?: string }) {
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const location = useLocation()
-  const chartSymbol = useMemo(() => getSymbol(pool ?? undefined, chainId), [pool, chainId])
+  const poolsOHLC = useAppPoolOHLC()
+  const chartSymbol = useMemo(() => {
+    if (pool && poolsOHLC && chainId) {
+      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
+      if (!poolsOHLC[id]) return null
+
+      const base = poolsOHLC[id]?.base
+      if (!base) {
+        const token0Price = new BN(pool.token0Price.toFixed(18))
+        const d1 = token0Price.minus(poolsOHLC[id].price24hAgo).abs()
+        const d2 = new BN(1).div(token0Price).minus(poolsOHLC[id].price24hAgo).abs()
+        return JSON.stringify({
+          poolAddress: computePoolAddress({
+            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+            tokenA: pool.token0,
+            tokenB: pool.token1,
+            fee: pool.fee,
+          }),
+          baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
+          quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
+        })
+      }
+      const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
+      return JSON.stringify({
+        poolAddress: computePoolAddress({
+          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+          tokenA: pool.token0,
+          tokenB: pool.token1,
+          fee: pool.fee,
+        }),
+        baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
+        quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
+      })
+    }
+    return null
+  }, [poolsOHLC, pool, chainId])
+
   const { result: binData } = useBulkBinData(pool ?? undefined)
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>

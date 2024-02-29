@@ -16,6 +16,8 @@ interface HydratedPool {
   delta24h: number
   high24: number
   low24: number
+  base?: string
+  quote?: string
 }
 
 const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote') => {
@@ -82,6 +84,8 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       if (responses[i].status !== 200) throw new Error('Failed to fetch pool price data')
     }
 
+    // data.meta.base.address
+
     // parse data
     const parsed: Record<string, HydratedPool> = {}
     responses.forEach((res, i) => {
@@ -93,7 +97,8 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       const delta24h = (priceNow - price24hAgo) / price24hAgo
 
       const { token0, token1, fee } = list[i]
-
+      const base = res?.data?.meta?.base?.address
+      const quote = res?.data?.meta?.quote?.address
       parsed[`${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`] = {
         high24,
         low24,
@@ -105,6 +110,8 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
           token1Address: token1,
           fee,
         },
+        base,
+        quote,
       }
     })
 

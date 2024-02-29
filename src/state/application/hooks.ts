@@ -1,9 +1,7 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
-import { ethers } from 'ethers'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
+import { useLmtQuoterContract } from 'hooks/useContract'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
@@ -28,33 +26,21 @@ export function usePoolKeyList(): {
   loading: boolean
   error: any
 } {
+  const lmtQuoter = useLmtQuoterContract()
   const { data, error, isLoading } = useQuery(
-    'poolKeyList',
+    ['poolKeyList', lmtQuoter ? 'dataProvider' : ''],
     async () => {
-      const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
-      if (!poolQueryData.data) {
-        throw new Error('No data returned from pool query')
-      }
-      return poolQueryData.data.poolAddeds
-        .filter(
-          (val: any) =>
-            val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-            val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-            ethers.utils.getAddress(val.token0) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66' &&
-            ethers.utils.getAddress(val.token1) !== '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66'
-        )
-        .map((val: any) => {
-          return {
-            token0: ethers.utils.getAddress(val.token0),
-            token1: ethers.utils.getAddress(val.token1),
-            fee: val.fee,
-          }
-        })
+      if (!lmtQuoter) throw new Error('DataProvider contract not found')
+      const poolKeys = await lmtQuoter.callStatic.getPoolKeys()
+      return poolKeys
     },
     {
+      enabled: !!lmtQuoter,
       keepPreviousData: true,
       refetchInterval: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchIntervalInBackground: false,
     }
   )
 

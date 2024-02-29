@@ -61,6 +61,40 @@ export type LiquidityLoanStructOutput = [
 };
 
 export declare namespace Quoter {
+  export type PoolInfoStruct = {
+    token0: PromiseOrValue<string>;
+    token1: PromiseOrValue<string>;
+    symbol0: PromiseOrValue<string>;
+    symbol1: PromiseOrValue<string>;
+    fee: PromiseOrValue<BigNumberish>;
+    name0: PromiseOrValue<string>;
+    name1: PromiseOrValue<string>;
+    decimals0: PromiseOrValue<BigNumberish>;
+    decimals1: PromiseOrValue<BigNumberish>;
+  };
+
+  export type PoolInfoStructOutput = [
+    string,
+    string,
+    string,
+    string,
+    number,
+    string,
+    string,
+    number,
+    number
+  ] & {
+    token0: string;
+    token1: string;
+    symbol0: string;
+    symbol1: string;
+    fee: number;
+    name0: string;
+    name1: string;
+    decimals0: number;
+    decimals1: number;
+  };
+
   export type QuoteExactInputParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
@@ -86,16 +120,27 @@ export declare namespace Quoter {
 
 export interface QuoterInterface extends utils.Interface {
   functions: {
+    "getPoolKeys()": FunctionFragment;
     "quoteExactInput(((address,address,uint24),bool,uint256,uint256,address))": FunctionFragment;
   };
 
-  getFunction(nameOrSignatureOrTopic: "quoteExactInput"): FunctionFragment;
+  getFunction(
+    nameOrSignatureOrTopic: "getPoolKeys" | "quoteExactInput"
+  ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "getPoolKeys",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "quoteExactInput",
     values: [Quoter.QuoteExactInputParamsStruct]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "getPoolKeys",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "quoteExactInput",
     data: BytesLike
@@ -131,11 +176,19 @@ export interface Quoter extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    getPoolKeys(
+      overrides?: CallOverrides
+    ): Promise<[Quoter.PoolInfoStructOutput[]]>;
+
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  getPoolKeys(
+    overrides?: CallOverrides
+  ): Promise<Quoter.PoolInfoStructOutput[]>;
 
   quoteExactInput(
     params: Quoter.QuoteExactInputParamsStruct,
@@ -143,6 +196,10 @@ export interface Quoter extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    getPoolKeys(
+      overrides?: CallOverrides
+    ): Promise<Quoter.PoolInfoStructOutput[]>;
+
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
       overrides?: CallOverrides
@@ -168,6 +225,8 @@ export interface Quoter extends BaseContract {
   filters: {};
 
   estimateGas: {
+    getPoolKeys(overrides?: CallOverrides): Promise<BigNumber>;
+
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -175,6 +234,8 @@ export interface Quoter extends BaseContract {
   };
 
   populateTransaction: {
+    getPoolKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }

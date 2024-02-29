@@ -133,7 +133,7 @@ const LiquidityDistributionTable = ({
     }
   }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
 
-  console.log(token0?.symbol, token1?.symbol, inverse)
+  // console.log(token0?.symbol, token1?.symbol, inverse)
 
   const negMax = useMemo(() => {
     if (!bin || !token0Price) return 0

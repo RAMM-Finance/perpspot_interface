@@ -70,6 +70,7 @@ export function PoolStatsSection({
     if (!pool || !poolData || !address0 || !address1) return [null, false, null, null, null, null, null]
     const id = `${address0.toLowerCase()}-${address1.toLowerCase()}-${fee}`
     const OHLC = PoolsOHLC[id]
+    if (!OHLC) return [null, false, null, null, null, null, null]
     let tvl
     let volume
     if (Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)) {
@@ -85,26 +86,20 @@ export function PoolStatsSection({
       low24: new BN(OHLC?.low24),
     }
 
-    // const invertPrice = getInvertPrice(pool.token0.address, pool.token1.address, chainId)
     const token0Price = new BN(pool.token0Price.toFixed(18))
-    const d1 = token0Price.minus(priceData.priceNow).abs()
-    const d2 = new BN(1).div(token0Price).minus(priceData.priceNow).abs()
-
-    const invertPrice = d1.gt(d2)
-
+    const d1 = token0Price.minus(priceData.price24hAgo).abs()
+    const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
+    let invertPrice = d2.lt(d1)
+    if (OHLC?.base) {
+      invertPrice = OHLC?.base.toLowerCase() === pool.token1.address.toLowerCase()
+    }
     const price = invertPrice ? new BN(1).div(token0Price) : token0Price
 
-    // const price24hAgo = priceData.price24hAgo
     const delta = price.minus(priceData.price24hAgo).div(price).times(100)
     const price24hHigh = priceData.high24
     const price24hLow = priceData.low24
-    // console.log('price stuff', delta.toString(), price.toString(), priceData.price24hAgo.toString())
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
   }, [pool, poolData, PoolsOHLC, address0, address1, fee])
-
-  const baseQuoteSymbol = invertPrice
-    ? currency1?.symbol + '/' + currency0?.symbol
-    : currency0?.symbol + '/' + currency1?.symbol
 
   const loading = loading0 || loading1 || !reserve0 || !reserve1 || !pool
 
