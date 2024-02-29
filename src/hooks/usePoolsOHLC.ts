@@ -124,7 +124,7 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
 
   const { data, error, isLoading } = useQuery(queryKey, fetchData, {
     enabled: list ? list.length > 0 : false,
-    refetchInterval: 1000 * 30,
+    refetchInterval: 1000 * 10,
     keepPreviousData: true,
   })
 

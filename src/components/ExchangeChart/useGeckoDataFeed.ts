@@ -130,7 +130,7 @@ const fetchLiveBar = async (
       }
     )
 
-    // console.log('gecko response: ', response)
+    console.log('gecko response: ', response)
     if (response.status === 200) {
       const candles = response.data.data.attributes.ohlcv_list
       const bar = {
@@ -335,24 +335,24 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             aggregate = '5'
           }
 
-          const denomination = 'base'
+          let denomination = 'base'
 
-          // if (
-          //   poolAddress == '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
-          //   poolAddress == '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
-          //   poolAddress == '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-          // ) {
-          //   denomination = 'quote'
-          // }
+          if (
+            poolAddress == '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
+            poolAddress == '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
+            poolAddress == '0xC6962004f452bE9203591991D15f6b388e09E8D0'
+          ) {
+            denomination = 'quote'
+          }
 
-          // intervalRef.current && clearInterval(intervalRef.current)
-          // intervalRef.current = setInterval(function () {
-          //   fetchLiveBar(poolAddress, timeframe, aggregate, denomination as 'quote' | 'base').then(({ bar }) => {
-          //     if (bar) {
-          //       onRealtimeCallback(bar)
-          //     }
-          //   })
-          // }, 1000)
+          intervalRef.current && clearInterval(intervalRef.current)
+          intervalRef.current = setInterval(function () {
+            fetchLiveBar(poolAddress, timeframe, aggregate, denomination as 'quote' | 'base').then(({ bar }) => {
+              if (bar) {
+                onRealtimeCallback(bar)
+              }
+            })
+          }, 10000)
         },
         unsubscribeBars: () => {
           intervalRef.current && clearInterval(intervalRef.current)
