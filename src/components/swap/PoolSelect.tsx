@@ -15,6 +15,7 @@ import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, Star } from 'react-feather'
 import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
+import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/user/hooks'
@@ -205,29 +206,14 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     [isPinned, removePinnedPool, addPinnedPool, poolKey.token0, poolKey.token1, poolKey.fee]
   )
 
+  const { onMarginChange } = useMarginTradingActionHandlers()
+
   const { poolId } = useSwapState()
   const handleRowClick = useCallback(() => {
     console.log(poolId)
     if (token0 && token1 && poolId !== id) {
-      if (
-        token1.wrapped.address.toLocaleLowerCase() ===
-          '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase() &&
-        token0.wrapped.address.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
-      ) {
-        onPoolSelection(token1, token0, poolKey.fee, id)
-      } else if (
-        token0.wrapped.address.toLocaleLowerCase() ===
-          '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase() &&
-        token1.wrapped.address.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
-      ) {
-        onPoolSelection(token0, token1, poolKey.fee, id)
-      } else if (
-        token0.wrapped.address.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
-      ) {
-        onPoolSelection(token0, token1, poolKey.fee, id)
-      } else {
-        onPoolSelection(token1, token0, poolKey.fee, id)
-      }
+      onMarginChange('')
+      onPoolSelection(token0, token1, poolKey.fee, id)
       handleClose()
     }
   }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id, handleClose])

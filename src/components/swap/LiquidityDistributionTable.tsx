@@ -1,6 +1,7 @@
 import { NumberType } from '@uniswap/conedison/format'
 import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
+import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -9,11 +10,9 @@ import { BinData } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
-import { Field } from '../../state/swap/actions'
-import { useSwapState } from '../../state/swap/hooks'
 
 const LiquidityDistributionTable = ({
   address0,
@@ -28,13 +27,7 @@ const LiquidityDistributionTable = ({
   chainId?: number
   bin: BinData[] | undefined
 }) => {
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
-
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
+  const navigate = useNavigate()
 
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
@@ -133,8 +126,6 @@ const LiquidityDistributionTable = ({
     }
   }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
 
-  console.log(token0?.symbol, token1?.symbol, inverse)
-
   const negMax = useMemo(() => {
     if (!bin || !token0Price) return 0
 
@@ -154,7 +145,10 @@ const LiquidityDistributionTable = ({
 
   const binsAbove = useMemo(() => {
     if (!bin || !currentPrice) return []
-    if (token0?.symbol === 'wBTC' && token1?.symbol === 'USDC') {
+    if (
+      (token0?.symbol === 'wBTC' && token1?.symbol === 'USDC') ||
+      (token0?.symbol === 'STG' && token1?.symbol === 'WETH')
+    ) {
       return bin
         .filter((i) => i.price.toNumber() < currentPrice.toNumber() && i.token0Liquidity.gt(0))
         .filter((i) => i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0))
@@ -186,7 +180,11 @@ const LiquidityDistributionTable = ({
 
   const binsBelow = useMemo(() => {
     if (!bin || !currentPrice) return []
-    if (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') {
+    if (
+      (token0?.symbol === 'wBTC' && token1?.symbol === 'WETH') ||
+      (token0?.symbol === 'WETH' && token1?.symbol === 'LINK') ||
+      (token0?.symbol === 'WETH' && token1?.symbol === 'GMX')
+    ) {
       return bin
         .filter((i) => i.price.toNumber() > currentPrice.toNumber() && i.token1Liquidity.gt(0))
         .filter((i) => !(i.token0Liquidity.gt(0) && i.token1Liquidity.gt(0)))
@@ -203,7 +201,7 @@ const LiquidityDistributionTable = ({
     }
     if (token0?.symbol === 'WETH' && token1?.symbol === 'ARB') {
       return bin
-        .filter((i) => i.price.toNumber() < currentPrice.toNumber() && i.token0Liquidity.gt(0))
+        .filter((i) => i.price.toNumber() > currentPrice.toNumber() && i.token0Liquidity.gt(0))
         .filter((i) => !(i.token1Liquidity.gt(0) && i.token0Liquidity.gt(0)))
         .filter((i) => i.token0Liquidity.minus(i.token0Borrowed).gt(0))
     }
@@ -273,12 +271,12 @@ const LiquidityDistributionTable = ({
     <>
       <Title>
         <ThemedText.BodySecondary>Borrowable Liquidity</ThemedText.BodySecondary>
-        {/*<SmallButtonPrimary
+        <SmallButtonPrimary
           onClick={() => navigate('/add/' + token0?.wrapped.address + '/' + token1?.wrapped.address + '/' + `${fee}`)}
           style={{ height: '25px', borderRadius: '8px' }}
         >
           Earn
-        </SmallButtonPrimary>*/}
+        </SmallButtonPrimary>
       </Title>
       {/* <NegativeWrapper> */}
       <LDHeaderRow>
@@ -560,6 +558,7 @@ const NegativeData = styled.div`
 `
 
 const PositiveData = styled.div`
+  margin-bottom: 50px;
   // overflow-y: scroll;
   //   max-height: 300px
   //   margin-top: 1rem;

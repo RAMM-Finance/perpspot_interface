@@ -90,19 +90,19 @@ export const PoolSelector = ({
           (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
           (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
         ) {
-          onPoolSelection(currencyIn, currencyOut, fee, id)
           navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+          onPoolSelection(currencyIn, currencyOut, fee, id)
         } else {
+          navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
           onPoolSelection(currencyIn, currencyOut, fee, id)
           // localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
           // localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
           // onCurrencySelection(Field.INPUT, currencyIn)
           // onCurrencySelection(Field.OUTPUT, currencyOut)
-          navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
         }
       }
     },
-    [onPoolSelection, navigate, id]
+    [onPoolSelection, navigate, id, poolId]
   )
 
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool

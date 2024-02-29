@@ -606,7 +606,7 @@ export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const [isInverted, setInverted] = useState(false);
+  const [isInverted, setInverted] = useState(false)
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
@@ -696,6 +696,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
+  console.log(position)
+
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
     position?.pool?.token1?.address,
@@ -743,7 +745,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     return {
       pnlUSD: position?.PnL().toNumber() * usdPNLCurrency.data,
       pnlPremiumsUSD: PnLWithPremiums?.toNumber() * usdPNLCurrency.data,
-      premiumsPaid: existingDeposit?.toNumber() * usdPNLCurrency.data,
+      premiumsPaid: position?.premiumOwed.minus(position?.premiumLeft).toNumber() * usdPNLCurrency.data,
     }
   }, [usdPNLCurrency?.data, position, PnLWithPremiums, existingDeposit])
 
@@ -813,7 +815,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     </RowBetween>
                     <RowBetween>
                       <div>Premiums paid:</div>
-                      <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.premiumsPaid?.toFixed(2)}`}</DeltaText>
+                      <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid?.toFixed(2)}`}</DeltaText>
                     </RowBetween>
                     <RowBetween>
                       <div>PnL inc. prem:</div>
@@ -847,44 +849,52 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </MouseoverTooltip>
           }
           entryPrice={
-              <FlexStartRow>
+            <FlexStartRow>
+              <AutoColumn
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1.5,
+                  paddingLeft: '3px',
+                  position: 'relative',
+                  bottom: '7px',
+                }}
+              >
+                {isInverted ? (
+                  <>
+                    {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
+                    <AutoColumn>
+                      {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                        invertedCurrentPrice,
+                        NumberType.SwapTradeAmount
+                      )} `}
+                    </AutoColumn>
+                  </>
+                ) : (
+                  <>
+                    <AutoColumn>
+                      {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
+                        currentPrice,
+                        NumberType.SwapTradeAmount
+                      )} `}
+                    </AutoColumn>
+                  </>
+                )}
                 <AutoColumn
-                  style={{
-                    display:'flex',
-                    flexDirection:'column',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    lineHeight: 1.5,
-                    paddingLeft:'3px',
-                    position:'relative',
-                    bottom:'7px',
+                  style={{ position: 'absolute', bottom: '1px', top: '1px', padding: '13px' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setInverted(!isInverted)
                   }}
                 >
-                  {isInverted ? 
-                      <>
-                      {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
-                         <AutoColumn>
-                          {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                            invertedCurrentPrice,
-                            NumberType.SwapTradeAmount
-                          )} `}
-                        </AutoColumn>
-                      </>
-                      :
-                      <>
-                        <AutoColumn> 
-                          {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                            currentPrice,
-                          NumberType.SwapTradeAmount
-                          )} `}
-                        </AutoColumn>
-                      </>
-                  }
-                  <AutoColumn style={{position:'absolute', bottom:'1px', top:'1px', padding: '13px' }} onClick={(e) => {e.stopPropagation(); setInverted(!isInverted)}}>
-                    <ThemedText.DeprecatedDarkGray fontWeight={500} fontSize={14} padding={'0 10px 5px 10px'}>invert</ThemedText.DeprecatedDarkGray>
-                  </AutoColumn>
+                  <ThemedText.DeprecatedDarkGray fontWeight={500} fontSize={14} padding="0 10px 5px 10px">
+                    invert
+                  </ThemedText.DeprecatedDarkGray>
                 </AutoColumn>
-              </FlexStartRow>
+              </AutoColumn>
+            </FlexStartRow>
           }
           remainingPremium={
             <MouseoverTooltip
