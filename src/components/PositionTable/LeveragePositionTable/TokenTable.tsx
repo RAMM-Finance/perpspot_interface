@@ -22,7 +22,7 @@ const GridContainer = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   flex-wrap: nowrap;
-  /* min-width: 1000px; */
+  min-width: 700px;
 `
 
 const NoTokenDisplay = styled.div`

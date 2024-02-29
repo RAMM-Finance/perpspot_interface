@@ -216,26 +216,21 @@ const PositionsWrapper = styled.div`
   margin-bottom: 0.5rem;
   margin-top: 0.75rem;
   border-radius: 10px;
-  /* max-height: 250px; */
   width: 100%;
   height: 100%;
   overflow-y: scroll;
-  grid-column: 1 / 3;
-  grid-row: 3;
-  ::-webkit-scrollbar {
-    display: none;
-  }
   overflow-x: scroll;
+  grid-row: 3;
+  grid-area: 3 / 1 / auto / 3;
+  min-width: 725px;
   ::-webkit-scrollbar {
     display: none;
   }
 
-  @media (max-width: 1200px) {
+  @media (max-width: 1050px) {
     grid-column: 1 / 3;
+    /* grid-area: 3 / 1 / auto / 2; */
   }
-  /* @media (max-width: 100px) {
-    grid-column: 1;
-  } */
 `
 
 const LiquidityDistibutionWrapper = styled.div`

@@ -52,7 +52,7 @@ const StyledTokenRow = styled.div<{
   grid-template-columns: 1.5fr 2.5fr 2.5fr 2.5fr 2.5fr 2.5fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  min-width: 390px;
+  : 390px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '8px' : '0px'};
