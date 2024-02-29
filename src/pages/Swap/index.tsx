@@ -222,7 +222,7 @@ const PositionsWrapper = styled.div`
   overflow-x: scroll;
   grid-row: 3;
   grid-area: 3 / 1 / auto / 3;
-  min-width: 725px;
+  min-width: 740px;
   ::-webkit-scrollbar {
     display: none;
   }
