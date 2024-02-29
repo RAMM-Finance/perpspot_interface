@@ -273,7 +273,8 @@ export function useTokenSearchQuery(text: string) {
 export async function fetchLiveBar(
   chainId: number,
   poolAddress: string,
-  dataClient: ApolloClient<NormalizedCacheObject>
+  dataClient: ApolloClient<NormalizedCacheObject>,
+  token0IsBase: boolean
 ) {
   try {
     const barData = await dataClient.query({
@@ -302,7 +303,7 @@ export async function fetchLiveBar(
       }
       let lastBar = poolHourDatas[0]
 
-      const invertPrice = parseFloat(lastBar.close) < 1
+      const invertPrice = !token0IsBase
       // time: number;
       // /** Opening price */
       // open: number;
@@ -333,7 +334,9 @@ export async function fetchLiveBar(
 
       return result
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log('error fetching live bar', err)
+  }
   return
 }
 

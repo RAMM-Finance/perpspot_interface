@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
+import { customArbitrumClient } from 'graphql/limitlessGraph/uniswapClients'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
 import { useMemo, useRef } from 'react'
 
@@ -103,7 +105,7 @@ const fetchBars = async (
   }
 }
 
-const fetchLiveBar = async (
+const fetchLiveGeckoBar = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
   aggregate: string,
@@ -282,6 +284,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
                   return Math.abs(bar.low - bar.open)
                 })
                 .reduce((a, b) => a + b, 0) / bars.length
+            // console.log('avgHighDeviation', avgHighDeviation, avgLowDeviation)
 
             const filteredBars = bars.map((bar, index, array) => {
               const highDeviation = Math.abs(bar.high - bar.open)
@@ -315,39 +318,11 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
           console.log('subscribeBars', symbolInfo, resolution)
-          const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
-          let timeframe: 'hour' | 'day' | 'minute' = 'hour'
-          let aggregate = '1'
-          if (resolution === '1D') {
-            timeframe = 'day'
-            aggregate = '1'
-          } else if (resolution === '60') {
-            timeframe = 'hour'
-            aggregate = '1'
-          } else if (resolution === '240') {
-            timeframe = 'hour'
-            aggregate = '4'
-          } else if (resolution === '15') {
-            timeframe = 'minute'
-            aggregate = '15'
-          } else if (resolution === '5') {
-            timeframe = 'minute'
-            aggregate = '5'
-          }
-
-          let denomination = 'base'
-
-          if (
-            poolAddress == '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
-            poolAddress == '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
-            poolAddress == '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-          ) {
-            denomination = 'quote'
-          }
-
+          const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveBar(poolAddress, timeframe, aggregate, denomination as 'quote' | 'base').then(({ bar }) => {
+            fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
+              console.log('bar', bar)
               if (bar) {
                 onRealtimeCallback(bar)
               }

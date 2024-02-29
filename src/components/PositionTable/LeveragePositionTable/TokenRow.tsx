@@ -697,7 +697,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
-  console.log(position)
+  // console.log(position)
 
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
@@ -927,7 +927,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           actions={
             <SmallButtonPrimary
-              style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}`}}
+              style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
               onClick={(e) =>
                 handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
               }

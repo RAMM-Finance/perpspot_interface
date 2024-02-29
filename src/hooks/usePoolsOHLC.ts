@@ -114,7 +114,6 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
         quote,
       }
     })
-
     return parsed
   }, [list, chainId])
 

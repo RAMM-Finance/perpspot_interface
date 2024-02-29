@@ -105,7 +105,8 @@ export default function useDatafeed({ chainId }: { chainId: number }) {
           // console.log("[subscribe bars]", useUniswapSubgraph)
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveBar(chainId, poolAddress, getUniswapSubgraph(chainId)).then((bar) => {
+            fetchLiveBar(chainId, poolAddress, getUniswapSubgraph(chainId), true).then((bar) => {
+              console.log('bar', bar)
               if (bar) {
                 onRealtimeCallback(bar)
               }

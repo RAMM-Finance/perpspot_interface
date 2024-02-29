@@ -300,6 +300,7 @@ export default function Swap({ className }: { className?: string }) {
           }),
           baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
           quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
+          token0IsBase: d1.lt(d2),
         })
       }
       const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
