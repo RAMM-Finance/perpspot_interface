@@ -412,7 +412,7 @@ export function AdvancedMarginTradeDetails({
         <Separator />
         <ValueLabel
           description="The minimum amount you are guaranteed to receive. If the price slips any further, your transaction will revert."
-          label={`Minimum output after slippage ${allowedSlippage ? `(${allowedSlippage.toFixed(2)})` : ''}`}
+          label={`Minimum output after slippage ${'   '} ${allowedSlippage ? `(${allowedSlippage.toFixed(2)})` : ''}`}
           value={formatBNToString(trade?.minimumOutput, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? outputCurrency?.symbol : ''}
