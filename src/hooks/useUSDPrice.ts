@@ -60,16 +60,17 @@ const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
 export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
   const symbol = useMemo(() => {
-    if (currency?.symbol === 'wBTC') return 'bitcoin'
-    if (currency?.symbol === 'USDC') return 'usd'
+    if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
+    if (currency?.symbol === 'USDC') return 'usd-coin'
     if (currency?.symbol === 'UNI') return 'uniswap'
     if (currency?.symbol == 'STG') return 'stargate-finance'
     if (currency?.symbol == 'ARB') return 'arbitrum'
-    if (currency?.symbol == 'RDNT') return 'radient'
+    if (currency?.symbol == 'RDNT') return 'radiant-capital'
     if (currency?.symbol == 'XPET') return 'xpet-tech'
     if (currency?.symbol == 'GNS') return 'gains-network'
     if (currency?.symbol == 'CRV') return 'curve-dao-token'
     if (currency?.symbol == 'LDO') return 'lido-dao'
+    if (currency?.symbol == 'LINK') return 'chainlink'
     return currency?.symbol
   }, [currency])
   const currencyAmount = useMemo(() => {

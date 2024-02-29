@@ -1,7 +1,6 @@
 import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
@@ -79,7 +78,7 @@ export const PoolSelector = ({
   if (location.pathname !== '/add/' && setSelectPair) {
     setSelectPair(false)
   }
-  const id = getPoolId(inputCurrency?.wrapped.address, outputCurrency?.wrapped.address, fee)
+  const id = `${inputCurrency?.wrapped.address}-${outputCurrency?.wrapped.address}-${fee}`
   const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
