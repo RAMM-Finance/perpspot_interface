@@ -313,6 +313,7 @@ export default function Swap({ className }: { className?: string }) {
         }),
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
+        token0IsBase: !invert,
       })
     }
     return null

@@ -643,7 +643,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     [margin, totalDebtInput]
   )
 
-  const id = getPoolId(token0?.wrapped.address, token1?.wrapped.address, details?.poolKey.fee)
+  const id = getPoolId(token0Address, token1Address, details?.poolKey.fee)
   const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
