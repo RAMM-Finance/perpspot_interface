@@ -38,6 +38,22 @@ interface AdvancedSwapDetailsProps {
   //leverageTrade: LeverageTrade
 }
 
+const ResponsiveFontSizeBox = styled.div<{ fontSize?: string }>`
+  font-size: ${({ fontSize }) => fontSize || '12px'};
+  box-sizing: border-box;
+  margin: 0;
+  min-width: 0;
+  font-weight: 400;
+  color: ${({ theme }) => theme.textPrimary};
+  @media only screen and (max-width: 1480px) {
+    font-size: 10px;
+  }
+
+  @media only screen and (max-width: 1400px) {
+    font-size: 9px;
+  }
+`
+
 const StyledText = styled(ThemedText.DeprecatedBlack)`
   display: flex;
   flex-direction: row;
@@ -233,11 +249,12 @@ export function ValueLabel({
   symbolAppend,
   hideInfoTooltips = false,
   delta,
-  labelSize = '11px',
+  labelSize = '12px',
   valueSize = '12px',
   height = '14px',
   valueDescription = '',
   hideValueDescription = true,
+  responsive = false,
 }: {
   description: string | ReactNode
   label: string
@@ -251,6 +268,7 @@ export function ValueLabel({
   valueSize?: string
   valueDescription?: string
   hideValueDescription?: boolean
+  responsive?: boolean
 }) {
   // const theme = useTheme()
 
@@ -258,7 +276,11 @@ export function ValueLabel({
     <RowBetween>
       <RowFixed>
         <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
-          <ThemedText.BodySmall fontSize={labelSize}>{label}</ThemedText.BodySmall>
+          {responsive ? (
+            <ResponsiveFontSizeBox fontSize={labelSize}>{label}</ResponsiveFontSizeBox>
+          ) : (
+            <ThemedText.BodySmall fontSize={labelSize}>{label}</ThemedText.BodySmall>
+          )}
         </MouseoverTooltip>
       </RowFixed>
 
@@ -411,6 +433,9 @@ export function AdvancedMarginTradeDetails({
         />
         <Separator />
         <ValueLabel
+          labelSize="11px"
+          valueSize="11px"
+          responsive={true}
           description="The minimum amount you are guaranteed to receive. If the price slips any further, your transaction will revert."
           label={`Minimum output after slippage ${
             allowedSlippage ? `(${allowedSlippage.toFixed(2)})  ${'\u00A0'}` : ''
