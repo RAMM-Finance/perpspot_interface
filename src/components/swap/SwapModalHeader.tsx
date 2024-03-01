@@ -187,12 +187,12 @@ export default function SwapModalHeader({
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         {trade.tradeType === TradeType.EXACT_INPUT ? (
-          <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
+          <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" display="flex" flexWrap="wrap" style={{ width: '100%' }}>
             <Trans>
-              Output is estimated. You will receive at least{' '}
+              Output is estimated. You will receive at least{'\u00A0'}
               <b>
                 {trade.minimumAmountOut(allowedSlippage).toSignificant(6)} {trade.outputAmount.currency.symbol}
-              </b>{' '}
+              </b>
               or the transaction will revert.
             </Trans>
           </ThemedText.DeprecatedItalic>
@@ -344,9 +344,9 @@ export function LeverageCloseModalHeader({
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         {trade.tradeType === TradeType.EXACT_INPUT ? (
-          <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
+          <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" display="flex" flexWrap="wrap" style={{ width: '100%' }}>
             <Trans>
-              Output is estimated. You will receive at least{' '}
+              Output is estimated. You will receive at least{'\u00A0'}
               <b>
                 {trade.minimumAmountOut(allowedSlippage).toSignificant(6)} {trade.outputAmount.currency.symbol}
               </b>{' '}
@@ -534,9 +534,9 @@ export function LeverageModalHeader({
       ) : null}
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
-        <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
+        <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" display="flex" flexWrap="wrap" style={{ width: '100%' }}>
           <Trans>
-            Output is estimated. You will receive at least{' '}
+            Output is estimated. You will receive at least{'\u00A0'}
             <b>
               {formatBNToString(trade.minimumOutput, NumberType.SwapTradeAmount)} {outputCurrency?.symbol}
             </b>{' '}
