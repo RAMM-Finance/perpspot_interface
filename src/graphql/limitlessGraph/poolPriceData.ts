@@ -304,7 +304,7 @@ export async function fetchLiveBar(
 
       let lastBar = poolHourDatas[0]
 
-      const invertPrice = !token0IsBase
+      const invertPrice = token0IsBase
 
       lastBar = {
         time: lastBar.periodStartUnix * 1000,
