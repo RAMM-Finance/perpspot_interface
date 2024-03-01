@@ -4,9 +4,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import styled, { css, keyframes } from 'styled-components/macro'
 
 export const PortfolioRowWrapper = styled(Row)<{ onClick?: any }>`
-  display: grid;
-  grid-template-columns: 0.1fr 0.7fr 0.7fr 0.5fr 0.8fr 1fr 0.5fr 1fr;
-  gap: 3px;
+  gap: 12px;
   height: 68px;
 
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} background-color`};
