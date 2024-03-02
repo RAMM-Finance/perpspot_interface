@@ -192,7 +192,7 @@ const BelowRangeLimitReduceNote = () => {
             <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
           </LabelText>
           <ThemedText.DeprecatedMain fontSize={14} color={theme.textSecondary}>
-            <Trans>Position does not need limit order for reduction</Trans>
+            <Trans>No Limit Order Needed</Trans>
           </ThemedText.DeprecatedMain>
         </RowFixed>
       </RowBetween>
@@ -753,11 +753,11 @@ export default function DecreasePositionContent({
         <PercentSlider
           initialValue={
             parseBN(debouncedReduceAmount) && existingPosition
-              ? new BN(debouncedReduceAmount).div(existingPosition?.totalPosition).times(100).toFixed(1)
+              ? new BN(debouncedReduceAmount).div(existingPosition?.totalPosition).times(100).toFixed(0)
               : ''
           }
           onSlideChange={onSlideChange}
-          onInputChange={onInputChange}
+          onInputChange={() => {}}
         />
         <Row gap="5px">
           <Toggle

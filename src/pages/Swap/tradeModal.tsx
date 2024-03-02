@@ -126,7 +126,7 @@ export const OpacityHoverState = css`
 `
 
 const StyledLeverageInput = styled(NumericalInput)`
-  width: 3rem;
+  width: 4.2rem;
   text-align: right;
   padding-right: 5px;
   padding-left: 5px;

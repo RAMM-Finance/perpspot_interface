@@ -20,19 +20,15 @@ interface DiscreteSliderInputMarksProps {
 }
 
 export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLeverage }: DiscreteSliderMarksProps) {
-  const isMaxLeverageRounded = max && maxLeverage && Math.round(Number(maxLeverage)) > max;
+  const isMaxLeverageRounded = max && maxLeverage && Math.round(Number(maxLeverage)) > max
   const handleChange = (event: Event, newValue: number | number[]) => {
-    onChange(newValue as number);
+    onChange(newValue as number)
   }
 
   const marks = [
-    // {
-    //   value: 2,
-    //   label: '2',
-    // },
     {
       value: max ? max * 0.1 : 10,
-      label: `${max ? Math.round(max * 0.1) : 10}x`,
+      label: `${max ? Number((max * 0.1).toFixed(2)) : 10}x`,
     },
     {
       value: max ? max * 0.25 : 25,
