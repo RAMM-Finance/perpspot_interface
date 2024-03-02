@@ -66,7 +66,6 @@ export interface DerivedReducePositionInfo {
   premium: BN
   profitFee: BN
   reduceAmount: TokenBN
-  // newPosition: MarginPositionDetails
   minimumOutput: BN
   executionPrice: Price<Currency, Currency>
   amount0: BN

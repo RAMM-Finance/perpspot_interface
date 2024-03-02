@@ -133,7 +133,7 @@ export function useDerivedReducePositionInfo(
       totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
       reduceAmount: new TokenBN(parsedReduceAmount, outputCurrency.wrapped, false),
       withdrawnPremium: closePosition
-        ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, true)
+        ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, false)
         : new TokenBN(0, inputCurrency.wrapped, false),
     }
 
