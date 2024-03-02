@@ -277,7 +277,7 @@ export function ConfirmReducePositionHeader({
     } else {
       return undefined
     }
-  }, [txnInfo, inputCurrency])
+  }, [txnInfo, inputCurrency, outputCurrency])
   const fiatValueReduceAmount = useUSDPrice(trade?.reduceAmount)
   // const fiatValuePnL = useUSDPrice(trade?.PnL)
   const fiatValueTotalPosition = useUSDPrice(trade?.totalPosition)
