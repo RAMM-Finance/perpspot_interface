@@ -57,7 +57,7 @@ const StyledTokenRow = styled.div<{
   grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  min-width: 734px;
+  /* min-width: 390px; */
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '8px' : '0px'};
@@ -85,11 +85,11 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
@@ -132,7 +132,8 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   border-color: ${({ theme }) => theme.backgroundOutline};
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
-  padding: 0 10px;
+  /* padding: 0 10px; */
+  padding-left: 20px;
   font-size: 14px;
   height: 48px;
   line-height: 16px;

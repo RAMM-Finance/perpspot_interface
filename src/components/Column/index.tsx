@@ -1,3 +1,4 @@
+import { StringifyOptions } from 'querystring'
 import styled, { DefaultTheme } from 'styled-components/macro'
 
 type Gap = keyof DefaultTheme['grids']
@@ -19,13 +20,14 @@ export const AutoColumn = styled.div<{
   gap?: Gap | string
   justify?: 'stretch' | 'center' | 'start' | 'end' | 'flex-start' | 'flex-end' | 'space-between'
   grow?: true
+  wrap? : StringifyOptions
 }>`
   display: grid;
   grid-auto-rows: auto;
   grid-row-gap: ${({ gap, theme }) => (gap && theme.grids[gap as Gap]) || gap};
   justify-items: ${({ justify }) => justify && justify};
   flex-grow: ${({ grow }) => grow && 1};
-  white-space: nowrap;
+  white-space: ${({ wrap }) => wrap && 'nowrap'}; 
 `
 
 export default Column
