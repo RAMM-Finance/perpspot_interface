@@ -482,7 +482,7 @@ export function ConfirmLimitReducePositionHeader({
         </SwapShowAcceptChanges>
       ) : null}
 
-      <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
+      <AutoColumn justify="flex-start" gap="sm" wrap="wrap" style={{ padding: '.75rem 1rem' }}>
         <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
           <Trans>
             New position is estimated. Your position will be reduced by at least{' '}
