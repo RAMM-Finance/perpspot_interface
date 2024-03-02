@@ -301,18 +301,10 @@ export async function fetchLiveBar(
       if (poolHourDatas.length === 0 || (!token0Price && !token1Price)) {
         return undefined
       }
+
       let lastBar = poolHourDatas[0]
 
-      const invertPrice = !token0IsBase
-      // time: number;
-      // /** Opening price */
-      // open: number;
-      // /** High price */
-      // high: number;
-      // /** Low price */
-      // low: number;
-      // /** Closing price */
-      // close: number;
+      const invertPrice = token0IsBase
 
       lastBar = {
         time: lastBar.periodStartUnix * 1000,

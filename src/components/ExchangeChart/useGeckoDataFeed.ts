@@ -317,12 +317,12 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
-          console.log('subscribeBars', symbolInfo, resolution)
           const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
+          console.log('subscribeBars', token0IsBase, poolAddress)
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
             fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
-              console.log('bar', bar)
+              // console.log('bar', bar)
               if (bar) {
                 onRealtimeCallback(bar)
               }

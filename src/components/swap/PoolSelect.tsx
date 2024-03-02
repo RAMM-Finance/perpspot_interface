@@ -186,11 +186,12 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const delta = poolOHLCData?.delta24h
 
   const { onPoolSelection } = useSwapActionHandlers()
+  const poolKeyList = useRawPoolKeyList()
 
   const baseQuoteSymbol = useMemo(() => {
     if (pool && poolOHLCDatas) {
+      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
       if (poolOHLCDatas[id]) {
-        const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
         const base = poolOHLCDatas[id]?.base
         // console.log('baseQuoteSymbol', poolOHLCDatas[id])
         if (!base) {
@@ -204,7 +205,6 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
             return `${pool.token1.symbol}/${pool.token0.symbol}`
           }
         }
-
         if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
           return `${pool.token0.symbol}/${pool.token1.symbol}`
         } else {
@@ -213,7 +213,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
       }
     }
     return null
-  }, [poolOHLCDatas, pool, id])
+  }, [poolOHLCDatas, pool])
 
   const addPinnedPool = useAddPinnedPool()
   const removePinnedPool = useRemovePinnedPool()

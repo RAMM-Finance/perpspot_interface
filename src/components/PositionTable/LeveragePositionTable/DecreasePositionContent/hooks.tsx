@@ -34,9 +34,7 @@ export function useDerivedReducePositionInfo(
   position: MarginPositionDetails | undefined,
   closePosition: boolean,
   allowedSlippage: Percent,
-  // setState: (state: DerivedInfoState) => void,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
-  // inRange: boolean,
   existingOrderBool: boolean | undefined,
   inputCurrency?: Currency,
   outputCurrency?: Currency
@@ -59,6 +57,8 @@ export function useDerivedReducePositionInfo(
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
+
+  console.log('parsedReduceAmount', parsedReduceAmount?.toString())
 
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
@@ -133,7 +133,7 @@ export function useDerivedReducePositionInfo(
       totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
       reduceAmount: new TokenBN(parsedReduceAmount, outputCurrency.wrapped, false),
       withdrawnPremium: closePosition
-        ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, true)
+        ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, false)
         : new TokenBN(0, inputCurrency.wrapped, false),
     }
 
@@ -259,15 +259,6 @@ export function useDerivedReducePositionInfo(
   }, [error])
 
   return useMemo(() => {
-    let tradeState: DerivedInfoState = DerivedInfoState.INVALID
-    if (loading || syncing) {
-      tradeState = DerivedInfoState.LOADING
-    } else if (error || !!inputError) {
-      tradeState = DerivedInfoState.INVALID
-    } else {
-      tradeState = DerivedInfoState.VALID
-    }
-
     if (isLimit || existingOrderBool) {
       return {
         txnInfo: undefined,
@@ -277,20 +268,34 @@ export function useDerivedReducePositionInfo(
       }
     }
 
-    if (parsedReduceAmount && allowedSlippage) {
+    const tradeState: DerivedInfoState = DerivedInfoState.INVALID
+    if (loading || syncing) {
+      return {
+        txnInfo,
+        inputError,
+        contractError,
+        tradeState: DerivedInfoState.LOADING,
+      }
+    } else if (error || !!inputError) {
+      return {
+        txnInfo: undefined,
+        inputError,
+        contractError,
+        tradeState: DerivedInfoState.INVALID,
+      }
+    } else if (parsedReduceAmount && allowedSlippage) {
       const params = getReduceUserParams(parsedReduceAmount, allowedSlippage)
       if (lastParams === params) {
         return {
           txnInfo,
           inputError,
           contractError,
-          tradeState,
+          tradeState: DerivedInfoState.VALID,
         }
       }
     }
-
     return {
-      txnInfo,
+      txnInfo: undefined,
       inputError,
       contractError,
       tradeState,
@@ -358,53 +363,6 @@ export function useDerivedReduceLimitPositionInfo(
     if (!parsedLimitPrice || parsedLimitPrice.isLessThanOrEqualTo(0)) {
       error = error ?? <Trans>Enter a limit price</Trans>
     }
-
-    // if (parsedLimitPrice && pool && position && parsedAmount) {
-    //   /**
-    //    * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
-    //    * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
-    //    *
-    //    * isToken0 -> output is t0, input is t1
-    //    * !isToken0 -> output is t1, input is t0
-    //    * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
-    //    */
-    //   const baseIsToken0 =
-    //     (baseCurrencyIsInput && !positionKey.isToken0) || (!baseCurrencyIsInput && positionKey.isToken0)
-
-    //   /**
-    //    *
-    //    * if baseIsToken0 then limitPrice is in t1 / t0
-    //    * if !baseIsToken0 then limitPrice is in t0 / t1
-    //    *
-    //    * if baseIsT0 and isToken0 then no flip
-    //    * if baseIsT0 and !isToken0 then flip
-    //    * if !baseIsT0 and isToken0 then flip
-    //    * if !baseIsT0 and !isToken0 then no flip
-    //    */
-    //   const flippedPrice = (baseIsToken0 && !positionKey.isToken0) || (!baseIsToken0 && positionKey.isToken0)
-    //   const price = flippedPrice ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
-
-    //   if (positionKey.isToken0) {
-    //     const currentPrice = new BN(pool.token0Price.toFixed(18))
-    //     if (!price.gte(currentPrice)) {
-    //       if (baseIsToken0) {
-    //         error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-    //       } else {
-    //         error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-    //       }
-    //     }
-    //   } else {
-    //     const currentPrice = new BN(pool.token1Price.toFixed(18))
-    //     if (!price.gte(currentPrice)) {
-    //       if (baseIsToken0) {
-    //         error = error ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-    //       } else {
-    //         error = error ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-    //       }
-    //     }
-    //   }
-    // }
-
     return error
   }, [parsedAmount, parsedLimitPrice])
   const { chainId } = useWeb3React()
@@ -598,140 +556,6 @@ export function useDerivedReduceLimitPositionInfo(
     estimatedPnL,
   ])
 
-  // useEffect(() => {
-  //   const lagged = async () => {
-  //     if (
-  //       !!inputError ||
-  //       !parsedAmount ||
-  //       !parsedLimitPrice ||
-  //       !chainId ||
-  //       !inputCurrency ||
-  //       !outputCurrency ||
-  //       !deadline ||
-  //       !marginFacility ||
-  //       !existingLimitOrder ||
-  //       !position ||
-  //       !estimatedPnL
-  //     ) {
-  //       setState(DerivedInfoState.INVALID)
-  //       setTxnInfo(undefined)
-  //       onPositionChange({})
-  //       setError(undefined)
-  //       return
-  //     }
-
-  //     if (existingLimitOrder.auctionStartTime > 0) {
-  //       setState(DerivedInfoState.INVALID)
-  //       setTxnInfo(undefined)
-  //       setError(undefined)
-  //       onPositionChange({})
-  //       return
-  //     }
-
-  //     setState(DerivedInfoState.LOADING)
-
-  //     try {
-  //       // price should be input / output, if baseCurrencyIsInput then price is output / input
-  //       const price = baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
-  //       const startOutput = parsedAmount.times(price).shiftedBy(inputCurrency.decimals).toFixed(0)
-
-  //       const params: LimitOrderOptions = {
-  //         orderKey: {
-  //           poolKey: positionKey.poolKey,
-  //           trader: positionKey.trader,
-  //           isToken0: positionKey.isToken0,
-  //           isAdd: false,
-  //         },
-  //         margin: '0',
-  //         pool: computePoolAddress({
-  //           factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-  //           tokenA: inputCurrency.wrapped,
-  //           tokenB: outputCurrency.wrapped,
-  //           fee: positionKey.poolKey.fee,
-  //         }),
-  //         deadline: deadline.toString(),
-  //         inputAmount: parsedAmount.shiftedBy(outputCurrency.decimals).toFixed(0),
-  //         startOutput,
-  //         minOutput: startOutput,
-  //         decayRate: '0',
-  //         isAdd: false,
-  //       }
-
-  //       const startingDebtReduceAmount = parsedAmount.times(price).gt(position.totalDebtInput)
-  //         ? position.totalDebtInput
-  //         : parsedAmount.times(price)
-
-  //       const calldata = MarginFacilitySDK.submitLimitOrder(params)
-
-  //       await marginFacility.callStatic.multicall(calldata)
-
-  //       const reduceAmount = parsedAmount
-  //       const reducePercentage = reduceAmount.div(position.totalPosition)
-
-  //       // console.log(
-  //       //   'starting trigger price:',
-  //       //   new BN(1).shiftedBy(18).toFixed(0),
-  //       //   new Price(
-  //       //     outputCurrency,
-  //       //     inputCurrency,
-  //       //     new BN(1).shiftedBy(18).toFixed(0),
-  //       //     price.shiftedBy(18).toFixed(0)
-  //       //   ).toFixed(18),
-  //       //   price.toFixed(18)
-  //       // )
-  //       setTxnInfo({
-  //         margin: position.margin.times(new BN(1).minus(reducePercentage)),
-  //         positionReduceAmount: parsedAmount,
-  //         startingDebtReduceAmount,
-  //         minimumDebtReduceAmount: startingDebtReduceAmount,
-  //         estimatedPnL,
-  //         newTotalPosition: new TokenBN(position.totalPosition.minus(reduceAmount), outputCurrency.wrapped, false),
-  //       })
-
-  //       onPositionChange({
-  //         margin: position.margin.times(new BN(1).minus(reducePercentage)),
-  //         totalDebtInput: position.totalDebtInput.times(new BN(1).minus(reducePercentage)),
-  //         totalDebtOutput: position.totalDebtOutput.times(new BN(1).minus(reducePercentage)),
-  //         totalPosition: position.totalPosition.minus(parsedAmount),
-  //       })
-  //       setState(DerivedInfoState.VALID)
-  //       setError(undefined)
-  //     } catch (err) {
-  //       onPositionChange({})
-  //       setState(DerivedInfoState.INVALID)
-  //       setError(parseContractError(err))
-  //       setTxnInfo(undefined)
-  //     }
-  //   }
-
-  //   if (!isLimit || existingOrderBool) {
-  //     setState(DerivedInfoState.INVALID)
-  //     setTxnInfo(undefined)
-  //     setError(undefined)
-  //     return
-  //   }
-
-  //   lagged()
-  // }, [
-  //   inputError,
-  //   setState,
-  //   parsedAmount,
-  //   parsedLimitPrice,
-  //   chainId,
-  //   inputCurrency,
-  //   outputCurrency,
-  //   deadline,
-  //   marginFacility,
-  //   baseCurrencyIsInput,
-  //   positionKey,
-  //   existingOrderBool,
-  //   existingLimitOrder,
-  //   position,
-  //   isLimit,
-  //   onPositionChange,
-  //   estimatedPnL,
-  // ])
-
   const contractError = useMemo(() => {
     let message: ReactNode | undefined
 
@@ -742,15 +566,6 @@ export function useDerivedReduceLimitPositionInfo(
   }, [error])
 
   return useMemo(() => {
-    let tradeState: DerivedInfoState = DerivedInfoState.INVALID
-    if (loading || syncing) {
-      tradeState = DerivedInfoState.LOADING
-    } else if (error || !!inputError) {
-      tradeState = DerivedInfoState.INVALID
-    } else {
-      tradeState = DerivedInfoState.VALID
-    }
-
     if (!isLimit || existingOrderBool) {
       return {
         txnInfo: undefined,
@@ -759,8 +574,21 @@ export function useDerivedReduceLimitPositionInfo(
         tradeState: DerivedInfoState.INVALID,
       }
     }
-
-    if (parsedAmount && parsedLimitPrice) {
+    if (loading || syncing) {
+      return {
+        txnInfo,
+        inputError,
+        contractError,
+        tradeState: DerivedInfoState.LOADING,
+      }
+    } else if (error || !!inputError) {
+      return {
+        txnInfo: undefined,
+        inputError,
+        contractError,
+        tradeState: DerivedInfoState.INVALID,
+      }
+    } else if (parsedAmount && parsedLimitPrice) {
       const price = baseCurrencyIsInput ? new BN(1).div(parsedLimitPrice) : parsedLimitPrice
       const params = getLimitUserParams(parsedAmount, price)
       if (lastParams === params) {
@@ -772,12 +600,11 @@ export function useDerivedReduceLimitPositionInfo(
         }
       }
     }
-
     return {
-      txnInfo,
+      txnInfo: undefined,
       inputError,
       contractError,
-      tradeState,
+      tradeState: DerivedInfoState.INVALID,
     }
   }, [
     txnInfo,

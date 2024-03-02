@@ -66,7 +66,6 @@ export interface DerivedReducePositionInfo {
   premium: BN
   profitFee: BN
   reduceAmount: TokenBN
-  // newPosition: MarginPositionDetails
   minimumOutput: BN
   executionPrice: Price<Currency, Currency>
   amount0: BN
@@ -459,6 +458,33 @@ export default function DecreasePositionContent({
     setReduceAmount
   )
 
+  const onSlideChange = useCallback(
+    (val: number) => {
+      if (val > 100 || val < 0) return
+      if (val === 100 && !closePosition) setClosePosition(true)
+      if (val !== 100 && closePosition) setClosePosition(false)
+      existingPosition &&
+        onDebouncedReduceAmount(new BN(val).div(100).times(existingPosition?.totalPosition).toString())
+    },
+    [existingPosition, onDebouncedReduceAmount, closePosition]
+  )
+
+  const onInputChange = useCallback(
+    (val: string) => {
+      const valBN = parseBN(val)
+      if (!valBN) {
+        onDebouncedReduceAmount('')
+        closePosition && setClosePosition(false)
+      } else if (existingPosition) {
+        if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
+        if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
+        if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
+        setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
+      }
+    },
+    [closePosition, onDebouncedReduceAmount, existingPosition]
+  )
+
   const theme = useTheme()
 
   const loading = useMemo(
@@ -730,20 +756,8 @@ export default function DecreasePositionContent({
               ? new BN(debouncedReduceAmount).div(existingPosition?.totalPosition).times(100).toFixed(1)
               : ''
           }
-          onSlideChange={(val) => {
-            if (val > 100 || val < 0) return
-            existingPosition &&
-              onDebouncedReduceAmount(new BN(val).div(100).times(existingPosition?.totalPosition).toString())
-          }}
-          onInputChange={(val) => {
-            const valBN = parseBN(val)
-            if (!valBN) {
-              onDebouncedReduceAmount('')
-            } else if (existingPosition) {
-              if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
-              setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
-            }
-          }}
+          onSlideChange={onSlideChange}
+          onInputChange={onInputChange}
         />
         <Row gap="5px">
           <Toggle
@@ -802,7 +816,6 @@ export default function DecreasePositionContent({
                     <RotatingArrow stroke={theme.textTertiary} open={Boolean(currentState.showDetails)} />
                   </RowFixed>
                 </StyledHeaderRow>
-                {/* <Button onClick={() => setLoading(!testLoading)}>Click</Button> */}
                 <AnimatedDropdown open={currentState.showDetails}>
                   <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>
                     {!currentState.isLimit ? (

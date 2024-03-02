@@ -82,11 +82,10 @@ export function DecreasePositionDetails({
     return re
   }, [txnInfo, existingPosition, removePremium])
 
-  const PnLWithPremiums = useMemo(()=>{
-    if(!txnInfo || !existingPosition) return undefined
+  const PnLWithPremiums = useMemo(() => {
+    if (!txnInfo || !existingPosition) return undefined
     return txnInfo?.PnL.minus(existingPosition?.premiumOwed)
   }, [txnInfo, existingPosition])
-  console.log('txninfoo', txnInfo,existingPosition?.premiumOwed.toString(), removePremium)
 
   return (
     <StyledBGCard style={{ width: '100%' }}>

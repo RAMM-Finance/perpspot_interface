@@ -281,6 +281,7 @@ export default function Swap({ className }: { className?: string }) {
 
   const location = useLocation()
   const poolsOHLC = useAppPoolOHLC()
+  // const poolKeyList = useRawPoolKeyList()
   const chartSymbol = useMemo(() => {
     if (pool && poolsOHLC && chainId) {
       const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
@@ -313,10 +314,12 @@ export default function Swap({ className }: { className?: string }) {
         }),
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
+        token0IsBase: !invert,
       })
     }
     return null
   }, [poolsOHLC, pool, chainId])
+  // console.log('chartSymbol', chartSymbol)
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 

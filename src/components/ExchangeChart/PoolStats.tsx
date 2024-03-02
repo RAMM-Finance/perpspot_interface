@@ -96,8 +96,8 @@ export function PoolStatsSection({
     const price = invertPrice ? new BN(1).div(token0Price) : token0Price
 
     const delta = price.minus(priceData.price24hAgo).div(price).times(100)
-    const price24hHigh = priceData.high24
-    const price24hLow = priceData.low24
+    const price24hHigh = price.gt(priceData.high24) ? price : priceData.high24
+    const price24hLow = price.lt(priceData.low24) ? price : priceData.low24
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
   }, [pool, poolData, PoolsOHLC, address0, address1, fee])
 
