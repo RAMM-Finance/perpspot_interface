@@ -219,15 +219,14 @@ function useAllV3Ticks(
   }
 }
 
-function safeParseToBigInt(value:any) {
+function safeParseToBigInt(value: any) {
   try {
     return JSBI.BigInt(value)
   } catch (error) {
-    console.error("Failed to convert value to BigInt:", value, error)
+    console.error('Failed to convert value to BigInt:', value, error)
     return JSBI.BigInt(0)
   }
 }
-
 
 export function usePoolActiveLiquidity(
   currencyA: Currency | undefined,
@@ -292,7 +291,8 @@ export function usePoolActiveLiquidity(
     const activeTickProcessed = {
       liquidityActive: safeParseToBigInt(pool[1]?.liquidity ?? 0),
       tick: activeTick,
-      liquidityNet: Number(ticks[pivot].tick) === activeTick ? safeParseToBigInt(ticks[pivot].liquidityNet) : JSBI.BigInt(0),
+      liquidityNet:
+        Number(ticks[pivot].tick) === activeTick ? safeParseToBigInt(ticks[pivot].liquidityNet) : JSBI.BigInt(0),
       price0: tickToPrice(token0, token1, activeTick).toFixed(PRICE_FIXED_DIGITS),
     }
 
