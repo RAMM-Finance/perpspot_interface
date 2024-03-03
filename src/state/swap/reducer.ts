@@ -116,7 +116,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
         localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
         localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
         localStorage.setItem('poolFee', JSON.stringify(poolFee))
-        localStorage.setItem('poolId', JSON.stringify(poolId))
         return {
           ...state,
           [Field.INPUT]: { currencyId: outputCurrencyId },
@@ -131,7 +130,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
         localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
         localStorage.setItem('currencyOut', JSON.stringify(outputCurrencyId))
         localStorage.setItem('poolFee', JSON.stringify(poolFee))
-        localStorage.setItem('poolId', JSON.stringify(poolId))
         return {
           ...state,
           [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -145,7 +143,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
         localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
         localStorage.setItem('currencyOut', JSON.stringify(outputCurrencyId))
         localStorage.setItem('poolFee', JSON.stringify(poolFee))
-        localStorage.setItem('poolId', JSON.stringify(poolId))
         return {
           ...state,
           [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -157,7 +154,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
         localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
         localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
         localStorage.setItem('poolFee', JSON.stringify(poolFee))
-        localStorage.setItem('poolId', JSON.stringify(poolId))
         return {
           ...state,
           [Field.INPUT]: { currencyId: outputCurrencyId },

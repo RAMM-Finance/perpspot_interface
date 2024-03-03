@@ -747,7 +747,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     return {
       pnlUSD: position?.PnL().toNumber() * usdPNLCurrency.data,
       pnlPremiumsUSD: PnLWithPremiums?.toNumber() * usdPNLCurrency.data,
-      premiumsPaid: position?.premiumOwed.minus(position?.premiumLeft).toNumber() * usdPNLCurrency.data,
+      premiumsPaid: (PnLWithPremiums.toNumber() - position?.PnL().toNumber()) * usdPNLCurrency.data,
     }
   }, [usdPNLCurrency?.data, position, PnLWithPremiums, existingDeposit])
 

@@ -528,6 +528,11 @@ const TradeTabContent = () => {
 
   // const deadline = useTransactionDeadline()
 
+  function handleArrowClick() {
+    activeTab === ActiveSwapTab.LONG ? onActiveTabChange(ActiveSwapTab.SHORT) : onActiveTabChange(ActiveSwapTab.LONG)
+    handleMarginInput('')
+  }
+
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal
@@ -701,9 +706,7 @@ const TradeTabContent = () => {
           >
             <ArrowContainer
               onClick={() => {
-                activeTab === ActiveSwapTab.LONG
-                  ? onActiveTabChange(ActiveSwapTab.SHORT)
-                  : onActiveTabChange(ActiveSwapTab.LONG)
+                handleArrowClick()
               }}
               color={theme.textPrimary}
             >
