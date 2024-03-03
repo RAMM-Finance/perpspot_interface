@@ -429,7 +429,6 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
     const storedCurrencyIn = localStorage.getItem('currencyIn')
     const storedCurrencyOut = localStorage.getItem('currencyOut')
     const storedPoolFee = localStorage.getItem('poolFee')
-    const storedPoolId = localStorage.getItem('poolId')
     inputCurrency = storedCurrencyIn
       ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
       : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
@@ -437,9 +436,8 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
       ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
       : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
     poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
-    poolId = storedPoolId
-      ? JSON.parse(localStorage.getItem('poolId') || '{}')
-      : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
+    poolId =
+      '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''

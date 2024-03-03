@@ -878,13 +878,13 @@ export function useDerivedLmtMintInfo(
   }
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts
-  currencyBalances?.[Field.CURRENCY_A] && console.log('bal', currencyBalances?.[Field.CURRENCY_A]?.quotient.toString())
-  currencyAAmount &&
-    currencyA &&
-    console.log(
-      'amount',
-      currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(0)))?.quotient.toString()
-    )
+  // currencyBalances?.[Field.CURRENCY_A] && console.log('bal', currencyBalances?.[Field.CURRENCY_A]?.quotient.toString())
+  // currencyAAmount &&
+  //   currencyA &&
+  //   console.log(
+  //     'amount',
+  //     currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(0)))?.quotient.toString()
+  //   )
   if (
     currencyA &&
     currencyAAmount &&
