@@ -75,11 +75,13 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-
+  
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
-  width: 100%;
+  width: 365px;
+  /* width: 100%; */
+  /* min-width: 360px; */
   /* // height: 50rem; */
   ::-webkit-scrollbar {
     display: none;

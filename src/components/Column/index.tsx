@@ -1,4 +1,3 @@
-import { StringifyOptions } from 'querystring'
 import styled, { DefaultTheme } from 'styled-components/macro'
 
 type Gap = keyof DefaultTheme['grids']

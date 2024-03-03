@@ -167,7 +167,7 @@ const MainWrapper = styled.article`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1.7fr 0.6fr 0.7fr;
+  grid-template-columns: 1.7fr 0.6fr 350px;
   /* grid-template-rows: 7vh 50vh 25vh; */
   /* grid-gap: 0.75rem; */
   /* margin-bottom: 0.75rem; */
@@ -176,7 +176,11 @@ const MainWrapper = styled.article`
   grid-column-gap: 0.75rem;
 
   @media (max-width: 1200px) {
-    grid-template-columns: 2fr 0 0.5fr;
+    grid-template-columns: 1fr 0 370px;
+    grid-column-gap: 0.5rem;
+  }
+  @media (max-width: 1155px) {
+    grid-template-columns: 1fr 0 370px;
     grid-column-gap: 0.5rem;
   }
 `

@@ -54,6 +54,8 @@ const StyledTokenRow = styled.div<{
   background-color: transparent;
   display: grid;
   font-size: 12px;
+  column-gap: 0.75rem;
+  grid-column-gap: 0.5rem;
   grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -84,19 +86,21 @@ const StyledTokenRow = styled.div<{
       `}
   }
 
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
-  }
+  @media only screen and (max-width: 1300px) {
+    grid-template-columns: 80px 110px 105px 90px 105px 120px 100px 80px;
+  } 
 
+  /*
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
     grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
-  }
+  } */
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    display: grid;
     grid-template-columns: 2fr 3fr;
     min-width: unset;
     border-bottom: 0.5px solid ${({ theme }) => theme.backgroundModule};
@@ -133,16 +137,19 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
   /* padding: 0 10px; */
-  padding-left: 20px;
+  padding-left: 10px;
   font-size: 14px;
   height: 48px;
   line-height: 16px;
   width: 100%;
-  justify-content: center;
   &:hover {
     background-color: transparent;
   }
-
+  /* @media only screen and (max-width: 1200px) {
+    grid-template-columns: 90px 90px 110px 70px 120px 110px 120px 60px;
+    grid-column-gap: 0.75rem;
+    text-align: center;
+  }  */
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     justify-content: space-between;
   }
@@ -231,11 +238,17 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   cursor: ${({ onClick }) => (onClick ? 'pointer' : 'unset')};
   gap: 4px;
   justify-content: flex-start;
+
   width: 100%;
   white-space: nowrap;
   &:hover {
     ${ClickableStyle}
   }
+
+  @media only screen and (max-width: 1330px) {
+    justify-content: center;
+  }
+
 `
 const SparkLineCell = styled(Cell)`
   padding: 0px 24px;
@@ -395,7 +408,7 @@ const SortingEnabled = {
 
 /* Get singular header cell for header row */
 function HeaderCell({
-  category,
+  category
 }: {
   category: PositionSortMethod // TODO: change this to make it work for trans
 }) {
@@ -413,7 +426,7 @@ function HeaderCell({
       {description && (
         <MouseoverTooltip text={description} placement="right">
           <InfoIconContainer style={{ paddingRight: '0px' }}>
-            <Info size={14} />
+            <Info size={14}/>
           </InfoIconContainer>
         </MouseoverTooltip>
       )}
@@ -550,7 +563,7 @@ export function HeaderRow() {
       }
       value={<HeaderCell category={PositionSortMethod.VALUE} />}
       collateral={<HeaderCell category={PositionSortMethod.COLLATERAL} />}
-      PnL={<HeaderCell category={PositionSortMethod.PNL} />}
+      PnL={<HeaderCell category={PositionSortMethod.PNL}/>}
       entryPrice={<HeaderCell category={PositionSortMethod.ENTRYPRICE} />}
       remainingPremium={<HeaderCell category={PositionSortMethod.REMAINING} />}
       repaymentTime={<HeaderCell category={PositionSortMethod.REPAYTIME} />}
