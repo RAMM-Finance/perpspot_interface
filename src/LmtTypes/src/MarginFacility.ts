@@ -50,6 +50,7 @@ export type AddParamsStruct = {
   executionData: PromiseOrValue<BytesLike>;
   slippedTickMin: PromiseOrValue<BigNumberish>;
   slippedTickMax: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type AddParamsStructOutput = [
@@ -62,7 +63,8 @@ export type AddParamsStructOutput = [
   string,
   string,
   number,
-  number
+  number,
+  boolean
 ] & {
   margin: BigNumber;
   minOutput: BigNumber;
@@ -74,6 +76,7 @@ export type AddParamsStructOutput = [
   executionData: string;
   slippedTickMin: number;
   slippedTickMax: number;
+  marginInPosToken: boolean;
 };
 
 export type LiquidityLoanStruct = {
@@ -133,13 +136,20 @@ export type MarginPositionStruct = {
   base: PositionStruct;
   totalPosition: PromiseOrValue<BigNumberish>;
   margin: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type MarginPositionStructOutput = [
   PositionStructOutput,
   BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
+  BigNumber,
+  boolean
+] & {
+  base: PositionStructOutput;
+  totalPosition: BigNumber;
+  margin: BigNumber;
+  marginInPosToken: boolean;
+};
 
 export type ForceCloseParamsStruct = {
   trader: PromiseOrValue<string>;
@@ -233,9 +243,9 @@ export interface MarginFacilityInterface extends utils.Interface {
     "PremiumDeposit(bytes32)": FunctionFragment;
     "_initialize(address,address)": FunctionFragment;
     "addFiller(address)": FunctionFragment;
-    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24,bool),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "approveTokens(address,address)": FunctionFragment;
-    "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256),address,address,bool)": FunctionFragment;
+    "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256,bool),address,address,bool)": FunctionFragment;
     "cancelOrder(address,bool,bool)": FunctionFragment;
     "checkPositionExists(address,address,bool)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
@@ -254,9 +264,9 @@ export interface MarginFacilityInterface extends utils.Interface {
     "positions(bytes32)": FunctionFragment;
     "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256))": FunctionFragment;
     "setOwner(address)": FunctionFragment;
-    "setPauseConfig(bool,bool,bool)": FunctionFragment;
     "setProtocolContracts(address,address)": FunctionFragment;
     "submitOrder(address,bool,bool,uint256,uint256,uint256,uint256,uint256,uint256)": FunctionFragment;
+    "swapAndDepositPremium((address,address,uint24),address,bool,uint256,uint256)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256,bool)": FunctionFragment;
   };
 
@@ -286,9 +296,9 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "positions"
       | "reducePosition"
       | "setOwner"
-      | "setPauseConfig"
       | "setProtocolContracts"
       | "submitOrder"
+      | "swapAndDepositPremium"
       | "withdrawPremium"
   ): FunctionFragment;
 
@@ -433,14 +443,6 @@ export interface MarginFacilityInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setPauseConfig",
-    values: [
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setProtocolContracts",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
@@ -454,6 +456,16 @@ export interface MarginFacilityInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "swapAndDepositPremium",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
@@ -538,10 +550,6 @@ export interface MarginFacilityInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setPauseConfig",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setProtocolContracts",
     data: BytesLike
   ): Result;
@@ -550,14 +558,18 @@ export interface MarginFacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "swapAndDepositPremium",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "withdrawPremium",
     data: BytesLike
   ): Result;
 
   events: {
-    "ForceClosed(address,bool,address,uint256,uint256,uint256)": EventFragment;
+    "ForceClosed(address,bool,bool,uint256,address,uint256,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
-    "MarginPositionIncreased(address,bool,address,address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "MarginPositionIncreased(address,bool,bool,address,address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256,int256)": EventFragment;
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "OrderCanceled(address,bool,address,bool)": EventFragment;
@@ -578,13 +590,24 @@ export interface MarginFacilityInterface extends utils.Interface {
 export interface ForceClosedEventObject {
   pool: string;
   positionIsToken0: boolean;
+  marginInPosToken: boolean;
+  margin: BigNumber;
   trader: string;
   forcedClosedAmount: BigNumber;
   fillerPayAmount: BigNumber;
   rangeCondition: BigNumber;
 }
 export type ForceClosedEvent = TypedEvent<
-  [string, boolean, string, BigNumber, BigNumber, BigNumber],
+  [
+    string,
+    boolean,
+    boolean,
+    BigNumber,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ],
   ForceClosedEventObject
 >;
 
@@ -600,6 +623,7 @@ export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 export interface MarginPositionIncreasedEventObject {
   pool: string;
   positionIsToken0: boolean;
+  marginInPosToken: boolean;
   trader: string;
   filler: string;
   addedAmount: BigNumber;
@@ -611,6 +635,7 @@ export interface MarginPositionIncreasedEventObject {
 export type MarginPositionIncreasedEvent = TypedEvent<
   [
     string,
+    boolean,
     boolean,
     string,
     string,
@@ -900,10 +925,11 @@ export interface MarginFacility extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [PositionStructOutput, BigNumber, BigNumber] & {
+      [PositionStructOutput, BigNumber, BigNumber, boolean] & {
         base: PositionStructOutput;
         totalPosition: BigNumber;
         margin: BigNumber;
+        marginInPosToken: boolean;
       }
     >;
 
@@ -915,13 +941,6 @@ export interface MarginFacility extends BaseContract {
 
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -941,6 +960,15 @@ export interface MarginFacility extends BaseContract {
       inputAmount: PromiseOrValue<BigNumberish>,
       decayRate: PromiseOrValue<BigNumberish>,
       margin: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1111,10 +1139,11 @@ export interface MarginFacility extends BaseContract {
     arg0: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<
-    [PositionStructOutput, BigNumber, BigNumber] & {
+    [PositionStructOutput, BigNumber, BigNumber, boolean] & {
       base: PositionStructOutput;
       totalPosition: BigNumber;
       margin: BigNumber;
+      marginInPosToken: boolean;
     }
   >;
 
@@ -1126,13 +1155,6 @@ export interface MarginFacility extends BaseContract {
 
   setOwner(
     newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setPauseConfig(
-    addPaused: PromiseOrValue<boolean>,
-    reducePaused: PromiseOrValue<boolean>,
-    forceClosePaused: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1152,6 +1174,15 @@ export interface MarginFacility extends BaseContract {
     inputAmount: PromiseOrValue<BigNumberish>,
     decayRate: PromiseOrValue<BigNumberish>,
     margin: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  swapAndDepositPremium(
+    key: PoolKeyStruct,
+    trader: PromiseOrValue<string>,
+    borrowToken1: PromiseOrValue<boolean>,
+    toSwapAmount: PromiseOrValue<BigNumberish>,
+    minOutput: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1328,10 +1359,11 @@ export interface MarginFacility extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [PositionStructOutput, BigNumber, BigNumber] & {
+      [PositionStructOutput, BigNumber, BigNumber, boolean] & {
         base: PositionStructOutput;
         totalPosition: BigNumber;
         margin: BigNumber;
+        marginInPosToken: boolean;
       }
     >;
 
@@ -1343,13 +1375,6 @@ export interface MarginFacility extends BaseContract {
 
     setOwner(
       newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1372,6 +1397,15 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     withdrawPremium(
       key: PoolKeyStruct,
       borrowToken1: PromiseOrValue<boolean>,
@@ -1382,9 +1416,11 @@ export interface MarginFacility extends BaseContract {
   };
 
   filters: {
-    "ForceClosed(address,bool,address,uint256,uint256,uint256)"(
+    "ForceClosed(address,bool,bool,uint256,address,uint256,uint256,uint256)"(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
+      marginInPosToken?: null,
+      margin?: null,
       trader?: PromiseOrValue<string> | null,
       forcedClosedAmount?: null,
       fillerPayAmount?: null,
@@ -1393,6 +1429,8 @@ export interface MarginFacility extends BaseContract {
     ForceClosed(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
+      marginInPosToken?: null,
+      margin?: null,
       trader?: PromiseOrValue<string> | null,
       forcedClosedAmount?: null,
       fillerPayAmount?: null,
@@ -1402,9 +1440,10 @@ export interface MarginFacility extends BaseContract {
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
 
-    "MarginPositionIncreased(address,bool,address,address,uint256,uint256,uint256,uint256,uint256)"(
+    "MarginPositionIncreased(address,bool,bool,address,address,uint256,uint256,uint256,uint256,uint256)"(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
+      marginInPosToken?: null,
       trader?: PromiseOrValue<string> | null,
       filler?: null,
       addedAmount?: null,
@@ -1416,6 +1455,7 @@ export interface MarginFacility extends BaseContract {
     MarginPositionIncreased(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
+      marginInPosToken?: null,
       trader?: PromiseOrValue<string> | null,
       filler?: null,
       addedAmount?: null,
@@ -1660,13 +1700,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     setProtocolContracts(
       poolManager_: PromiseOrValue<string>,
       executioner_: PromiseOrValue<string>,
@@ -1683,6 +1716,15 @@ export interface MarginFacility extends BaseContract {
       inputAmount: PromiseOrValue<BigNumberish>,
       decayRate: PromiseOrValue<BigNumberish>,
       margin: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1844,13 +1886,6 @@ export interface MarginFacility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     setProtocolContracts(
       poolManager_: PromiseOrValue<string>,
       executioner_: PromiseOrValue<string>,
@@ -1867,6 +1902,15 @@ export interface MarginFacility extends BaseContract {
       inputAmount: PromiseOrValue<BigNumberish>,
       decayRate: PromiseOrValue<BigNumberish>,
       margin: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
