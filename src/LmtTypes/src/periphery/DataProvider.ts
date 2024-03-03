@@ -120,6 +120,7 @@ export declare namespace DataProvider {
   export type MarginPositionInfoStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
+    marginInPosToken: PromiseOrValue<boolean>;
     totalDebtOutput: PromiseOrValue<BigNumberish>;
     totalDebtInput: PromiseOrValue<BigNumberish>;
     openTime: PromiseOrValue<BigNumberish>;
@@ -137,6 +138,7 @@ export declare namespace DataProvider {
   export type MarginPositionInfoStructOutput = [
     PoolKeyStructOutput,
     boolean,
+    boolean,
     BigNumber,
     BigNumber,
     number,
@@ -152,6 +154,7 @@ export declare namespace DataProvider {
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
+    marginInPosToken: boolean;
     totalDebtOutput: BigNumber;
     totalDebtInput: BigNumber;
     openTime: number;

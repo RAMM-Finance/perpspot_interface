@@ -30,13 +30,18 @@ import type {
 export interface BRPInterface extends utils.Interface {
   functions: {
     "claimRewards()": FunctionFragment;
+    "getData(address[])": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
     "lastClaimedPoints(address)": FunctionFragment;
+    "lastRecordedLpPoints(address)": FunctionFragment;
     "lastRecordedPoints(address)": FunctionFragment;
+    "lastRecordedTradePoints(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "push(address,uint256)": FunctionFragment;
     "rewardToken()": FunctionFragment;
     "tierToRewards(uint256)": FunctionFragment;
+    "updateAllPoint(address,uint256,uint256,uint256)": FunctionFragment;
+    "updateAllPoints(address[],uint256[],uint256[],uint256[])": FunctionFragment;
     "updatePoint(address,uint256)": FunctionFragment;
     "updatePoints(address[],uint256[])": FunctionFragment;
   };
@@ -44,13 +49,18 @@ export interface BRPInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "claimRewards"
+      | "getData"
       | "initialize"
       | "lastClaimedPoints"
+      | "lastRecordedLpPoints"
       | "lastRecordedPoints"
+      | "lastRecordedTradePoints"
       | "owner"
       | "push"
       | "rewardToken"
       | "tierToRewards"
+      | "updateAllPoint"
+      | "updateAllPoints"
       | "updatePoint"
       | "updatePoints"
   ): FunctionFragment;
@@ -58,6 +68,10 @@ export interface BRPInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "claimRewards",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getData",
+    values: [PromiseOrValue<string>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
@@ -68,7 +82,15 @@ export interface BRPInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "lastRecordedLpPoints",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "lastRecordedPoints",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastRecordedTradePoints",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -85,6 +107,24 @@ export interface BRPInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateAllPoint",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateAllPoints",
+    values: [
+      PromiseOrValue<string>[],
+      PromiseOrValue<BigNumberish>[],
+      PromiseOrValue<BigNumberish>[],
+      PromiseOrValue<BigNumberish>[]
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updatePoint",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -97,13 +137,22 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "claimRewards",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getData", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "lastClaimedPoints",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "lastRecordedLpPoints",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "lastRecordedPoints",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lastRecordedTradePoints",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -114,6 +163,14 @@ export interface BRPInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "tierToRewards",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateAllPoint",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateAllPoints",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -186,6 +243,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    getData(
+      users: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[], BigNumber[], BigNumber[]]>;
+
     initialize(
       ref: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
@@ -197,7 +259,17 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    lastRecordedLpPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     lastRecordedPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    lastRecordedTradePoints(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
@@ -217,6 +289,22 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    updateAllPoint(
+      user: PromiseOrValue<string>,
+      tradePoint: PromiseOrValue<BigNumberish>,
+      lpPoint: PromiseOrValue<BigNumberish>,
+      referralPoint: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateAllPoints(
+      referrers: PromiseOrValue<string>[],
+      tradePoints: PromiseOrValue<BigNumberish>[],
+      lpPoints: PromiseOrValue<BigNumberish>[],
+      referralPoints: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     updatePoint(
       referrer: PromiseOrValue<string>,
       point: PromiseOrValue<BigNumberish>,
@@ -234,6 +322,11 @@ export interface BRP extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  getData(
+    users: PromiseOrValue<string>[],
+    overrides?: CallOverrides
+  ): Promise<[BigNumber[], BigNumber[], BigNumber[]]>;
+
   initialize(
     ref: PromiseOrValue<string>,
     token: PromiseOrValue<string>,
@@ -245,7 +338,17 @@ export interface BRP extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  lastRecordedLpPoints(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   lastRecordedPoints(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  lastRecordedTradePoints(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -265,6 +368,22 @@ export interface BRP extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  updateAllPoint(
+    user: PromiseOrValue<string>,
+    tradePoint: PromiseOrValue<BigNumberish>,
+    lpPoint: PromiseOrValue<BigNumberish>,
+    referralPoint: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateAllPoints(
+    referrers: PromiseOrValue<string>[],
+    tradePoints: PromiseOrValue<BigNumberish>[],
+    lpPoints: PromiseOrValue<BigNumberish>[],
+    referralPoints: PromiseOrValue<BigNumberish>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   updatePoint(
     referrer: PromiseOrValue<string>,
     point: PromiseOrValue<BigNumberish>,
@@ -280,6 +399,11 @@ export interface BRP extends BaseContract {
   callStatic: {
     claimRewards(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getData(
+      users: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[], BigNumber[], BigNumber[]]>;
+
     initialize(
       ref: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
@@ -291,7 +415,17 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    lastRecordedLpPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     lastRecordedPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    lastRecordedTradePoints(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -310,6 +444,22 @@ export interface BRP extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    updateAllPoint(
+      user: PromiseOrValue<string>,
+      tradePoint: PromiseOrValue<BigNumberish>,
+      lpPoint: PromiseOrValue<BigNumberish>,
+      referralPoint: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateAllPoints(
+      referrers: PromiseOrValue<string>[],
+      tradePoints: PromiseOrValue<BigNumberish>[],
+      lpPoints: PromiseOrValue<BigNumberish>[],
+      referralPoints: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     updatePoint(
       referrer: PromiseOrValue<string>,
@@ -349,6 +499,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    getData(
+      users: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     initialize(
       ref: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
@@ -360,7 +515,17 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    lastRecordedLpPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     lastRecordedPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    lastRecordedTradePoints(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -378,6 +543,22 @@ export interface BRP extends BaseContract {
     tierToRewards(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    updateAllPoint(
+      user: PromiseOrValue<string>,
+      tradePoint: PromiseOrValue<BigNumberish>,
+      lpPoint: PromiseOrValue<BigNumberish>,
+      referralPoint: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateAllPoints(
+      referrers: PromiseOrValue<string>[],
+      tradePoints: PromiseOrValue<BigNumberish>[],
+      lpPoints: PromiseOrValue<BigNumberish>[],
+      referralPoints: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     updatePoint(
@@ -398,6 +579,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    getData(
+      users: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     initialize(
       ref: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
@@ -409,7 +595,17 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    lastRecordedLpPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     lastRecordedPoints(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    lastRecordedTradePoints(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -427,6 +623,22 @@ export interface BRP extends BaseContract {
     tierToRewards(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    updateAllPoint(
+      user: PromiseOrValue<string>,
+      tradePoint: PromiseOrValue<BigNumberish>,
+      lpPoint: PromiseOrValue<BigNumberish>,
+      referralPoint: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateAllPoints(
+      referrers: PromiseOrValue<string>[],
+      tradePoints: PromiseOrValue<BigNumberish>[],
+      lpPoints: PromiseOrValue<BigNumberish>[],
+      referralPoints: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     updatePoint(

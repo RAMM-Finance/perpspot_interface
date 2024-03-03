@@ -291,12 +291,19 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
               const lowDeviation = Math.abs(bar.low - bar.open)
               let high = bar.high
               let low = bar.low
-              if (avgHighDeviation * 3 < highDeviation) {
-                high = bar.open + avgHighDeviation * 3
+              let close = bar.close
+              if(high/close > 1.05){
+                high = close
               }
-              if (avgLowDeviation * 3 < lowDeviation) {
-                low = bar.open - avgLowDeviation * 3
+              if(close/low < 0.95){
+                low=close
               }
+              // if (avgHighDeviation * 3 < highDeviation) {
+              //   high = bar.open + avgHighDeviation * 3
+              // }
+              // if (avgLowDeviation * 3 < lowDeviation) {
+              //   low = bar.open - avgLowDeviation * 3
+              // }
               return {
                 open: bar.open,
                 close: bar.close,

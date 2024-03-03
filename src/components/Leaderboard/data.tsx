@@ -12,7 +12,7 @@ import {
   WithdrawVaultQuery,
   RegisterQuery
 } from 'graphql/limitlessGraph/queries'
-import { tokenDecimal, usdValue, useDataProviderContract, useReferralContract } from 'hooks/useContract'
+import { tokenDecimal, usdValue, useDataProviderContract, useReferralContract, useBRP } from 'hooks/useContract'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -216,6 +216,47 @@ function getPrevTradePoints(tradeProcessedByTrader:any){
     })
   })
   return tradeProcessedByTrader
+}
+
+export function useStoredData(addresses:any){
+  const brp = useBRP()
+
+  const [pointsData, setPointsData] = useState<any>()
+
+  useEffect(()=>{
+    if(!brp) return 
+
+    const call = async()=>{
+      try{
+        const [tradePoints, lpPoints, referralPoints] = await brp.getData(addresses)
+
+        const data = addresses.map((address:any, index:any) => {
+          // Convert BigNumber to number. Adjust precision as needed.
+          const tPoints = tradePoints[index].toNumber();
+          const lPoints = lpPoints[index].toNumber();
+          const rPoints = referralPoints[index].toNumber();
+          const totalPoints = tPoints + lPoints + rPoints;
+
+          return { lPoints, rPoints, tPoints, totalPoints, trader: address };
+        });
+
+        // Rank the data based on totalPoints
+        const rankedData = data.map((item:any, index:any, arr:any) => {
+          // Determine rank based on totalPoints
+          const rank = arr.sort((a:any, b:any) => b.totalPoints - a.totalPoints).findIndex((sortedItem:any) => sortedItem.trader === item.trader) + 1;
+          return { ...item, rank };
+        });
+
+        setPointsData(rankedData);
+
+      } catch(err){
+        console.log('prev data errr',err)
+      }
+    }
+    call()
+  })
+
+  return pointsData
 }
 
 export function usePointsData() {

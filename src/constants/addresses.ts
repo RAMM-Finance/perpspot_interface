@@ -54,6 +54,11 @@ export const getInvertPrice = (token0: string, token1: string, chainId?: number)
 // PremiumComputer deployed 0xfa4B55Cb40b703674e4922e575D9A932919A09A5
 // MarginPositionHelper deployed 0xAa8Eda1f1203010F079998fA831B6aF734a0e23E
 
+//new
+// PremiumComputer deployed 0x3E4CB1BC3fe748Dc24Bdb9256AAe2248D35f1334
+// MatchingEngine deployed 0x14b8e2609DE022acD286A06885d5c9eA7dB29B73
+// MarginPositionHelper deployed 0x32349F3da50153D79745B7E14DD7DECE0D6B9FA7
+
 // LMT V2 CONSTANTS
 
 // Compiled 81 Solidity files successfully
@@ -74,7 +79,9 @@ export const DATA_PROVIDER_ADDRESSES: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_DATA_PROVIDER,
   //0xfdA3E8c8134685c42f22f4B75e275949a6BbA454
   //0xE59886e7e5B51c4b2191f3081ca57412cd7ebcED
-  [SupportedChainId.ARBITRUM_ONE]: '0xb3272b993206B93C7DB3c6eD43B447CB98Fd6e1b',
+  // [SupportedChainId.ARBITRUM_ONE]: '0xb3272b993206B93C7DB3c6eD43B447CB98Fd6e1b',
+  [SupportedChainId.ARBITRUM_ONE]: '0x2b683e221268bD783339E24D594ccd60D12D3A6B',
+
 }
 
 export const LMT_MARGIN_FACILITY: AddressMap = {

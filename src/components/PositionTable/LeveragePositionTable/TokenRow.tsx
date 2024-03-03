@@ -87,8 +87,12 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: 1300px) {
-    grid-template-columns: 80px 110px 105px 90px 105px 120px 100px 80px;
-  } 
+    grid-template-columns: 90px 140px 105px 90px 105px 120px 110px 80px;
+  }
+
+  /* @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
+    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
+  }
 
   /*
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
@@ -142,6 +146,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   height: 48px;
   line-height: 16px;
   width: 100%;
+  /* justify-content: center; */
   &:hover {
     background-color: transparent;
   }
@@ -244,11 +249,9 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   &:hover {
     ${ClickableStyle}
   }
-
-  @media only screen and (max-width: 1330px) {
+  @media only screen and (max-width: 1300px) {
     justify-content: center;
   }
-
 `
 const SparkLineCell = styled(Cell)`
   padding: 0px 24px;
@@ -408,7 +411,7 @@ const SortingEnabled = {
 
 /* Get singular header cell for header row */
 function HeaderCell({
-  category
+  category,
 }: {
   category: PositionSortMethod // TODO: change this to make it work for trans
 }) {
@@ -426,7 +429,7 @@ function HeaderCell({
       {description && (
         <MouseoverTooltip text={description} placement="right">
           <InfoIconContainer style={{ paddingRight: '0px' }}>
-            <Info size={14}/>
+            <Info size={14} />
           </InfoIconContainer>
         </MouseoverTooltip>
       )}
@@ -563,7 +566,7 @@ export function HeaderRow() {
       }
       value={<HeaderCell category={PositionSortMethod.VALUE} />}
       collateral={<HeaderCell category={PositionSortMethod.COLLATERAL} />}
-      PnL={<HeaderCell category={PositionSortMethod.PNL}/>}
+      PnL={<HeaderCell category={PositionSortMethod.PNL} />}
       entryPrice={<HeaderCell category={PositionSortMethod.ENTRYPRICE} />}
       remainingPremium={<HeaderCell category={PositionSortMethod.REMAINING} />}
       repaymentTime={<HeaderCell category={PositionSortMethod.REPAYTIME} />}
