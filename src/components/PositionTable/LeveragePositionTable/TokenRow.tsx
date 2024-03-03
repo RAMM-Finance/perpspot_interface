@@ -84,7 +84,11 @@ const StyledTokenRow = styled.div<{
       `}
   }
 
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
+  @media only screen and (max-width: 1300px) {
+    grid-template-columns: 90px 140px 105px 90px 105px 120px 110px 80px;
+  }
+  
+  /* @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
     grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
   }
 
@@ -94,7 +98,7 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
-  }
+  } */
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     grid-template-columns: 2fr 3fr;
@@ -133,12 +137,12 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
   /* padding: 0 10px; */
-  padding-left: 20px;
+  padding-left: 10px;
   font-size: 14px;
   height: 48px;
   line-height: 16px;
   width: 100%;
-  justify-content: center;
+  /* justify-content: center; */
   &:hover {
     background-color: transparent;
   }
@@ -235,6 +239,9 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   white-space: nowrap;
   &:hover {
     ${ClickableStyle}
+  }
+  @media only screen and (max-width: 1300px) {
+    justify-content: center;
   }
 `
 const SparkLineCell = styled(Cell)`
