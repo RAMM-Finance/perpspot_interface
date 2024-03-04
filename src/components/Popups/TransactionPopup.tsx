@@ -34,7 +34,8 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
   const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
 
   return (
-    <PortfolioRow
+    <PortfolioRow 
+      isPopUp={true}
       left={
         success ? (
           <Column>

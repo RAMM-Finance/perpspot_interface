@@ -86,8 +86,8 @@ const StyledTokenRow = styled.div<{
       `}
   }
 
-  @media only screen and (max-width: 1300px) {
-    grid-template-columns: 90px 140px 105px 90px 105px 120px 110px 80px;
+  @media only screen and (max-width: 1400px) {
+    grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px;
   }
 
   /* @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
@@ -140,13 +140,11 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   border-color: ${({ theme }) => theme.backgroundOutline};
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
-  /* padding: 0 10px; */
-  padding-left: 10px;
+  padding: 0 10px;
   font-size: 14px;
   height: 48px;
   line-height: 16px;
   width: 100%;
-  /* justify-content: center; */
   &:hover {
     background-color: transparent;
   }
@@ -248,9 +246,6 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   white-space: nowrap;
   &:hover {
     ${ClickableStyle}
-  }
-  @media only screen and (max-width: 1300px) {
-    justify-content: center;
   }
 `
 const SparkLineCell = styled(Cell)`
@@ -360,6 +355,17 @@ const ResponsiveButtonPrimary = styled(SmallMaxButton)`
     flex: 1 1 auto;
     width: 100%;
   `};
+`
+
+const InvertBtn = styled.button`
+  color: ${({ theme }) => theme.textTertiary};
+  font-weight: 500;
+  font-size: 14px;
+  padding: 0 10px 5px 4px;
+  display: inline;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
 `
 
 // const ActionsContainer = styled(AutoColumn)`
@@ -791,19 +797,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </ClickableContent>
           }
           value={
-            <FlexStartRow>
+            <FlexStartRow style={{flexWrap:'wrap', lineHeight: 1}}>
               <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-
-              {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)} ${
-                position?.outputCurrency?.symbol
-              }`}
+                <span>{`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}</span>
+                <span>{`${position?.outputCurrency?.symbol }`}</span>
             </FlexStartRow>
           }
           collateral={
-            <FlexStartRow>
+            <FlexStartRow style={{flexWrap:'wrap', lineHeight: 1}}>
               <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-
-              {`${formatBNToString(position?.margin, NumberType.SwapTradeAmount)} ${position?.inputCurrency?.symbol}`}
+              <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
+              <span>{position?.inputCurrency?.symbol}</span>
             </FlexStartRow>
           }
           repaymentTime={
@@ -868,49 +872,35 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           entryPrice={
             <FlexStartRow>
-              <AutoColumn
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  lineHeight: 1.5,
-                  paddingLeft: '3px',
-                  position: 'relative',
-                  bottom: '7px',
-                }}
-              >
+              <AutoColumn style={{lineHeight: 1.5}}>
                 {isInverted ? (
                   <>
                     {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
                     <AutoColumn>
-                      {`${formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                        invertedCurrentPrice,
-                        NumberType.SwapTradeAmount
-                      )} `}
+                      <span>{formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}</span>
+                      <span>{formatBNToString(invertedCurrentPrice,NumberType.SwapTradeAmount)}
+                        <InvertBtn  onClick={(e) => {
+                          e.stopPropagation()
+                          setInverted(!isInverted)}}>
+                            invert
+                        </InvertBtn> 
+                      </span>
                     </AutoColumn>
                   </>
                 ) : (
                   <>
                     <AutoColumn>
-                      {`${formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/${formatBNToString(
-                        currentPrice,
-                        NumberType.SwapTradeAmount
-                      )} `}
+                      <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>
+                      <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}  
+                        <InvertBtn  onClick={(e) => {
+                          e.stopPropagation()
+                          setInverted(!isInverted)}}>
+                            invert
+                        </InvertBtn> 
+                      </span>
                     </AutoColumn>
                   </>
                 )}
-                <AutoColumn
-                  style={{ position: 'absolute', bottom: '1px', top: '1px', padding: '13px' }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setInverted(!isInverted)
-                  }}
-                >
-                  <ThemedText.DeprecatedDarkGray fontWeight={500} fontSize={14} padding="0 10px 5px 10px">
-                    invert
-                  </ThemedText.DeprecatedDarkGray>
-                </AutoColumn>
               </AutoColumn>
             </FlexStartRow>
           }

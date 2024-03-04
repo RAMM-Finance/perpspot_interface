@@ -27,6 +27,7 @@ export default function PortfolioRow({
   descriptor,
   right,
   onClick,
+  isPopUp,
 }: {
   left: React.ReactNode
   title: React.ReactNode
@@ -35,25 +36,35 @@ export default function PortfolioRow({
   right?: React.ReactNode
   setIsHover?: (b: boolean) => void
   onClick?: () => void
+  isPopUp?: boolean
 }) {
   return (
     <PortfolioRowWrapper onClick={onClick}>
       {left}
-      <AutoColumn justify="center" grow>
-        {title}
-      </AutoColumn>
-      <AutoColumn justify="center" grow>
-        {margin}
-      </AutoColumn>
-      <AutoColumn justify="center" grow></AutoColumn>
-      <AutoColumn justify="center" grow>
-        {descriptor}
-      </AutoColumn>
-      <AutoColumn justify="center" grow></AutoColumn>
-      <AutoColumn justify="center" grow></AutoColumn>
-      <AutoColumn justify="center" grow>
-        {right}
-      </AutoColumn>
+      {isPopUp ? (
+        <AutoColumn justify="center" grow>
+          {title}
+          {descriptor}
+        </AutoColumn>
+      ) : (
+        <>
+          <AutoColumn justify="center" grow>
+            {title}
+          </AutoColumn>
+          <AutoColumn justify="center" grow>
+            {margin}
+          </AutoColumn>
+          <AutoColumn justify="center" grow></AutoColumn>
+          <AutoColumn justify="center" grow>
+            {descriptor}
+          </AutoColumn>
+          <AutoColumn justify="center" grow></AutoColumn>
+          <AutoColumn justify="center" grow></AutoColumn>
+          <AutoColumn justify="center" grow>
+            {right}
+          </AutoColumn>
+        </>
+      )}
     </PortfolioRowWrapper>
   )
 }
