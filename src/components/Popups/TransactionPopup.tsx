@@ -17,7 +17,6 @@ import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
 export const Descriptor = styled(ThemedText.BodySmall)`
   display: flex;
   flex-flow: row nowrap;
-  white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
 `

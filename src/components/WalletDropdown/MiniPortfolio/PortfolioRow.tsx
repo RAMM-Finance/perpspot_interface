@@ -45,18 +45,12 @@ export default function PortfolioRow({
       <AutoColumn justify="center" grow>
         {margin}
       </AutoColumn>
-      <AutoColumn justify="center" grow>
-        -
-      </AutoColumn>
+      <AutoColumn justify="center" grow></AutoColumn>
       <AutoColumn justify="center" grow>
         {descriptor}
       </AutoColumn>
-      <AutoColumn justify="center" grow>
-        -
-      </AutoColumn>
-      <AutoColumn justify="center" grow>
-        -
-      </AutoColumn>
+      <AutoColumn justify="center" grow></AutoColumn>
+      <AutoColumn justify="center" grow></AutoColumn>
       <AutoColumn justify="center" grow>
         {right}
       </AutoColumn>

@@ -167,7 +167,7 @@ const MainWrapper = styled.article`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1.6fr 0.6fr 380px;
+  grid-template-columns: 1.6fr 0.6fr 360px;
   /* grid-template-rows: 7vh 50vh 25vh; */
   /* grid-gap: 0.75rem; */
   /* margin-bottom: 0.75rem; */
@@ -175,8 +175,8 @@ const MainWrapper = styled.article`
   grid-template-rows: 0 50vh 30vh;
   grid-column-gap: 0.75rem;
 
-  @media (max-width: 1265px) {
-    grid-template-columns: 1fr 0 380px;
+  @media only screen and (max-width: 1265px) {
+    grid-template-columns: 1fr 0 360px;
     grid-column-gap: 0.5rem;
   }
 `
