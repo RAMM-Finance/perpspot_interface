@@ -305,10 +305,12 @@ const PairInfoContainer = styled.div`
   margin-left: auto;
   margin-right: auto;
   // max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT};
-  padding-bottom: 2rem;
+  padding-bottom: 1.2rem;
   padding-top: 1rem;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 1.2rem; 
 `
 
 interface TVLInfoProps {
@@ -332,7 +334,7 @@ const HowTo = styled.div`
   padding: 0.75rem;
   border-radius: 10px;
   font-size: 0.8rem;
-  margin-left: 1rem;
+  /* margin-left: 1rem; */
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
 `
 
