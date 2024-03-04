@@ -109,24 +109,22 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     )
     .addCase(selectPool, (state, { payload: { inputCurrencyId, outputCurrencyId, poolFee, poolId } }) => {
-      if (
-        outputCurrencyId.toLocaleLowerCase() === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase() &&
-        inputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
-      ) {
-        localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
-        localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
-        localStorage.setItem('poolFee', JSON.stringify(poolFee))
-        return {
-          ...state,
-          [Field.INPUT]: { currencyId: outputCurrencyId },
-          [Field.OUTPUT]: { currencyId: inputCurrencyId },
-          poolFee,
-          poolId,
+      if (inputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()) {
+        if (
+          outputCurrencyId.toLocaleLowerCase() === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase() ||
+          outputCurrencyId.toLocaleLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase()
+        ) {
+          localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
+          localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
+          localStorage.setItem('poolFee', JSON.stringify(poolFee))
+          return {
+            ...state,
+            [Field.INPUT]: { currencyId: outputCurrencyId },
+            [Field.OUTPUT]: { currencyId: inputCurrencyId },
+            poolFee,
+            poolId,
+          }
         }
-      } else if (
-        inputCurrencyId.toLocaleLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase() &&
-        outputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
-      ) {
         localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
         localStorage.setItem('currencyOut', JSON.stringify(outputCurrencyId))
         localStorage.setItem('poolFee', JSON.stringify(poolFee))
@@ -137,20 +135,23 @@ export default createReducer<SwapState>(initialState, (builder) =>
           poolFee,
           poolId,
         }
-      } else if (
-        inputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()
-      ) {
-        localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
-        localStorage.setItem('currencyOut', JSON.stringify(outputCurrencyId))
-        localStorage.setItem('poolFee', JSON.stringify(poolFee))
-        return {
-          ...state,
-          [Field.INPUT]: { currencyId: inputCurrencyId },
-          [Field.OUTPUT]: { currencyId: outputCurrencyId },
-          poolFee,
-          poolId,
+      }
+      if (outputCurrencyId.toLocaleLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLocaleLowerCase()) {
+        if (
+          inputCurrencyId.toLocaleLowerCase() === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase() ||
+          inputCurrencyId.toLocaleLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase()
+        ) {
+          localStorage.setItem('currencyIn', JSON.stringify(inputCurrencyId))
+          localStorage.setItem('currencyOut', JSON.stringify(outputCurrencyId))
+          localStorage.setItem('poolFee', JSON.stringify(poolFee))
+          return {
+            ...state,
+            [Field.INPUT]: { currencyId: inputCurrencyId },
+            [Field.OUTPUT]: { currencyId: outputCurrencyId },
+            poolFee,
+            poolId,
+          }
         }
-      } else {
         localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
         localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
         localStorage.setItem('poolFee', JSON.stringify(poolFee))
@@ -161,6 +162,16 @@ export default createReducer<SwapState>(initialState, (builder) =>
           poolFee,
           poolId,
         }
+      }
+      localStorage.setItem('currencyIn', JSON.stringify(outputCurrencyId))
+      localStorage.setItem('currencyOut', JSON.stringify(inputCurrencyId))
+      localStorage.setItem('poolFee', JSON.stringify(poolFee))
+      return {
+        ...state,
+        [Field.INPUT]: { currencyId: outputCurrencyId },
+        [Field.OUTPUT]: { currencyId: inputCurrencyId },
+        poolFee,
+        poolId,
       }
     })
     .addCase(switchCurrencies, (state, { payload: { leverage } }) => {

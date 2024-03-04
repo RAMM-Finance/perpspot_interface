@@ -246,7 +246,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
       onPoolSelection(token0, token1, poolKey.fee, id)
       handleClose()
     }
-  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id, handleClose])
+  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id, handleClose, onMarginChange])
 
   return (
     <RowWrapper onClick={handleRowClick}>

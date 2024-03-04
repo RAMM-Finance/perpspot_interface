@@ -670,6 +670,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      console.log('in', currencyIn)
+      console.log('out', currencyOut)
       e.stopPropagation()
       poolId !== id && id && onPoolSelection(currencyIn, currencyOut, fee, id)
     },

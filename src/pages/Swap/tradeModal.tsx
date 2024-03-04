@@ -75,7 +75,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  
+
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
@@ -531,8 +531,8 @@ const TradeTabContent = () => {
   // const deadline = useTransactionDeadline()
 
   function handleArrowClick() {
-    activeTab === ActiveSwapTab.LONG ? onActiveTabChange(ActiveSwapTab.SHORT) : onActiveTabChange(ActiveSwapTab.LONG)
     handleMarginInput('')
+    activeTab === ActiveSwapTab.LONG ? onActiveTabChange(ActiveSwapTab.SHORT) : onActiveTabChange(ActiveSwapTab.LONG)
   }
 
   return (

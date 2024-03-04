@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
 import React, { useCallback } from 'react'
+import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
@@ -45,11 +46,14 @@ export default function SwapTabHeader({
   const { activeTab } = useSwapState()
   const { onActiveTabChange } = useSwapActionHandlers()
 
+  const { onMarginChange } = useMarginTradingActionHandlers()
+
   const handleTabChange = useCallback(
     (active: ActiveSwapTab) => {
+      onMarginChange('')
       onActiveTabChange(active)
     },
-    [onActiveTabChange]
+    [onActiveTabChange, onMarginChange]
   )
   return (
     <div

@@ -83,6 +83,7 @@ export const routingApi = createApi({
   reducerPath: 'routingApi',
   baseQuery: fetchBaseQuery({
     baseUrl: 'https://api.uniswap.org/v1/',
+    mode: 'no-cors',
   }),
   endpoints: (build) => ({
     getQuote: build.query<GetQuoteResult, GetQuoteArgs>({
