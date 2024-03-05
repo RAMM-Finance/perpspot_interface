@@ -228,16 +228,16 @@ export function useStoredData(addresses:any){
 
     const call = async()=>{
       try{
-        const [tradePoints, lpPoints, referralPoints] = await brp.getData(addresses)
+        const [tradePoints, lpPoints_, referralPoints] = await brp.getData(addresses)
 
         const data = addresses.map((address:any, index:any) => {
           // Convert BigNumber to number. Adjust precision as needed.
           const tPoints = tradePoints[index].toNumber();
-          const lPoints = lpPoints[index].toNumber();
+          const lpPoints = lpPoints_[index].toNumber();
           const rPoints = referralPoints[index].toNumber();
-          const totalPoints = tPoints + lPoints + rPoints;
+          const totalPoints = tPoints + lpPoints + rPoints;
 
-          return { lPoints, rPoints, tPoints, totalPoints, trader: address };
+          return { lpPoints, rPoints, tPoints, totalPoints, trader: address };
         });
 
         // Rank the data based on totalPoints
