@@ -20,6 +20,8 @@ const PageWrapper = styled.div`
   justify-content: center;
   width: 100%;
   height: 100%;
+  min-width: 800px;
+  margin: auto;
 `
 const LeaderboardWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -116,11 +118,11 @@ const PointsWrapper = styled.div`
   grid-column: span 2;
   margin-top: 15px;
   margin-bottom: 1rem;
-  margin-left: 7.5%;
+  margin-left: 6%;
   // border: solid 1px ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   // background-color: ${({ theme }) => theme.backgroundSurface};
-  padding: 7px;
+  padding: 7px 0;
 `
 
 const Filter = styled.div`

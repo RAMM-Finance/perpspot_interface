@@ -12,7 +12,15 @@ const Wrapper = styled.div`
   display: grid;
   grid-template-columns: auto auto auto auto auto;
   width: 100%;
-`
+  @media only screen and (max-width: 800px) {
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    row-gap: 1.5rem;
+    column-gap: 2.5rem;
+  }`
 const Point = styled.div`
   display: flex;
   justify-content: start;
