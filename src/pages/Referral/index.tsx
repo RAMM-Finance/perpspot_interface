@@ -66,6 +66,10 @@ const FaqWrapper = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 20px;
+  min-width: 280px;
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+    margin-top: 0;
+  }
 `
 
 const FaqElement = styled.div`

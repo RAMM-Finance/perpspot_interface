@@ -807,14 +807,14 @@ const Referrals = () => {
               </div>
             </div>
             </StyledCard> */}
-            <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
+            <ReferralAcceptBtnBox>
               <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
-            </StyledCard>
+            </ReferralAcceptBtnBox>
           </ActiveWrapper>
         )}
         {referral && acceptedCode && (
           <ActiveWrapper style={{ paddingTop: '40px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+            <ReferralAcceptContainer>
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Active Referral Code</ThemedText.BodyPrimary>
@@ -844,7 +844,7 @@ const Referrals = () => {
                   <ThemedText.BodySecondary fontSize={16}>1.00</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-            </div>
+            </ReferralAcceptContainer>
             <ThemedText.BodySmall style={{ paddingLeft: '10px' }}>Rebates Distribution History</ThemedText.BodySmall>{' '}
             {/*<StyledCard style={{ padding: '15px' }}>
               <div style={{ display: 'flex', padding: '10px' }}>
@@ -866,9 +866,9 @@ const Referrals = () => {
                 </div>
               </div>
             </StyledCard>*/}
-            <StyledCard style={{ display: 'flex', justifyContent: 'center', padding: '25px', marginTop: '50px' }}>
+            <ReferralAcceptBtnBox>
               <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
-            </StyledCard>
+            </ReferralAcceptBtnBox>
           </ActiveWrapper>
         )}
       </ContentWrapper>
@@ -886,6 +886,29 @@ const StyledCard = styled.div`
   background-color: ${({ theme }) => theme.surface1};
   border-radius: 10px;
   padding: 10px;
+`
+const ReferralAcceptContainer = styled.div`
+  display: grid; 
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+    display: flex;
+    flex-direction: column;
+    & > div {
+      height: 100px; 
+    }
+  }
+`
+const ReferralAcceptBtnBox  = styled(StyledCard)`
+  display: flex; 
+  justify-content: center;
+  padding: 25px;
+  margin-top: 50px;
+
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+    margin-top: 0;
+  }
 `
 const ContentWrapper = styled.div<{ active: boolean }>`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
