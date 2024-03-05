@@ -135,8 +135,6 @@ export default function Points() {
 
   console.log(usersData)
 
-  console.log(userData)
-
   return (
     <Wrapper>
       <Point style={{ border: 'none' }}>

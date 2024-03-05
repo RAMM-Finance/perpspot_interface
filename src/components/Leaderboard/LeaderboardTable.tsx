@@ -155,7 +155,7 @@ export default function LeaderboardTable() {
     return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
   }
 
-  // const prevData = useStoredData(addresses)
+  const prevData = useStoredData(addresses)
 
   const combinedData = useMemo(()=>{
     if(!prevData || !userData) return 
