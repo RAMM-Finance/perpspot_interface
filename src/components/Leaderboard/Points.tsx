@@ -20,6 +20,11 @@ const Wrapper = styled.div`
     flex-wrap: wrap;
     row-gap: 1.5rem;
     column-gap: 2.5rem;
+    & > * {
+      flex-basis: auto; 
+      min-width: 200px;
+      max-width: 250px;
+    }
   }`
 const Point = styled.div`
   display: flex;

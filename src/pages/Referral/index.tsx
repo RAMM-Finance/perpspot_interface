@@ -178,49 +178,46 @@ export default function ReferralPage() {
         <PointsWrapper>
         </PointsWrapper>
         <Container>
-
-          
-            <ReferralsWrapper>
-              {showConnectAWallet ? (
-                <ErrorContainer style={{ paddingTop: '50px' }}>
-                  <TraceEvent
-                    events={[BrowserEvent.onClick]}
-                    name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                    properties={{ received_swap_quote: false }}
-                    element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+          <ReferralsWrapper>
+            {showConnectAWallet ? (
+              <ErrorContainer style={{ paddingTop: '50px' }}>
+                <TraceEvent
+                  events={[BrowserEvent.onClick]}
+                  name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
+                  properties={{ received_swap_quote: false }}
+                  element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+                >
+                  <ButtonPrimary
+                    style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                    onClick={toggleWalletDrawer}
                   >
-                    <ButtonPrimary
-                      style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                      onClick={toggleWalletDrawer}
-                    >
-                      <Trans>
-                        <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                      </Trans>
-                    </ButtonPrimary>
-                  </TraceEvent>
-                </ErrorContainer>
-              ) : (
-                <Referrals />
-              )}
-            </ReferralsWrapper>
-          
-              <FaqWrapper>
-                <FaqElement>
-                  <a
-                    href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/referrals"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                      Referral System
-                    </ThemedText.BodySecondary>
-                  </a>
-                  <ArrowUpRight size="20" />
-                </FaqElement>{' '}
-                <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-                  Read our Referral documentation to better understand how to earn more LMT and Rebates.
-                </ThemedText.BodyPrimary>
-              </FaqWrapper>
+                    <Trans>
+                      <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
+                    </Trans>
+                  </ButtonPrimary>
+                </TraceEvent>
+              </ErrorContainer>
+            ) : (
+              <Referrals />
+            )}
+          </ReferralsWrapper>
+          <FaqWrapper>
+            <FaqElement>
+              <a
+                href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/referrals"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
+                  Referral System
+                </ThemedText.BodySecondary>
+              </a>
+              <ArrowUpRight size="20" />
+            </FaqElement>{' '}
+            <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
+              Read our Referral documentation to better understand how to earn more LMT and Rebates.
+            </ThemedText.BodyPrimary>
+          </FaqWrapper>
           {/* <AchievementsWrapper>
           <ThemedText.SubHeader>
             <Header>Achievements</Header>
