@@ -133,7 +133,7 @@ export const ReduceQuery = `
 
 export const IncreaseLiquidityQuery = `
   query {
-    increaseLiquidities {
+    increaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {
       tokenId
       liquidity
       amount0
@@ -145,7 +145,7 @@ export const IncreaseLiquidityQuery = `
 `
 export const DecreaseLiquidityQuery = `
   query {
-    decreaseLiquidities {
+    decreaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {
       tokenId
       liquidity
       amount0
@@ -158,7 +158,7 @@ export const DecreaseLiquidityQuery = `
 
 export const CollectQuery = `
   query {
-    collects {
+    collects(orderBy: blockTimestamp orderDirection: desc) {
       tokenId
       amount0
       amount1
@@ -172,7 +172,7 @@ export const CollectQuery = `
 
 export const DepositVaultQuery = `
   query {
-    deposits {
+    deposits(orderBy: blockTimestamp orderDirection: desc) {
       caller
       owner
       assets
@@ -185,7 +185,7 @@ export const DepositVaultQuery = `
 
 export const WithdrawVaultQuery = `
   query {
-    withdraws {
+    withdraws(orderBy: blockTimestamp orderDirection: desc) {
       caller
       owner
       assets

@@ -318,17 +318,17 @@ export function usePointsData() {
           vaultDataByAddress[lp].push(newEntry)
         })
         let i=0
-        addresses.forEach((address:any)=>{
-          if (!vaultDataByAddress[address]) {
-            vaultDataByAddress[address] = []
-          }
-          vaultDataByAddress[address].push({
-              blockTimestamp: "1707349156", 
-              shares: sharesPrev[i], 
-              type:'deposit'
-            })
-          i++
-        })
+        // addresses.forEach((address:any)=>{
+        //   if (!vaultDataByAddress[address]) {
+        //     vaultDataByAddress[address] = []
+        //   }
+        //   vaultDataByAddress[address].push({
+        //       blockTimestamp: "1707349156", 
+        //       shares: sharesPrev[i], 
+        //       type:'deposit'
+        //     })
+        //   i++
+        // })
         // "1707349156"
         WithdrawQuery?.data?.withdraws.forEach((entry: any) => {
           const lp = ethers.utils.getAddress(entry.owner)

@@ -211,20 +211,12 @@ const combineAndSumData = (data1: any[], data2: any[]) => {
 
   // Helper function to add or update the combined data map
   const addOrUpdateData = (data: any) => {
-    const existingData = combinedDataMap.get(data.trader);
-    if (existingData) {
-      // If the trader already exists in the map, sum up the points
-      combinedDataMap.set(data.trader, {
-        ...data,
-        lpPoints: existingData.lpPoints + data.lpPoints,
-        rPoints: existingData.rPoints + data.rPoints,
-        tPoints: existingData.tPoints + data.tPoints,
-        totalPoints: existingData.totalPoints + data.totalPoints,
-      });
-    } else {
-      // If the trader doesn't exist, add it to the map
-      combinedDataMap.set(data.trader, data);
-    }
+    let existingData = combinedDataMap.get(data.trader) || { trader: data.trader, lpPoints: 0, rPoints: 0, tPoints: 0, totalPoints: 0 };
+    existingData.lpPoints += data.lpPoints;
+    existingData.rPoints += data.rPoints;
+    existingData.tPoints += data.tPoints;
+    existingData.totalPoints += data.totalPoints;
+    combinedDataMap.set(data.trader, existingData);
   };
 
   // Process the first dataset
@@ -234,14 +226,20 @@ const combineAndSumData = (data1: any[], data2: any[]) => {
   data2.forEach(addOrUpdateData);
 
   // Convert the map back to an array
-  const combinedDataArray = Array.from(combinedDataMap.values());
+  let combinedDataArray = Array.from(combinedDataMap.values());
 
-  // Optionally, sort by totalPoints if needed
+  // Sort by totalPoints in descending order
   combinedDataArray.sort((a, b) => b.totalPoints - a.totalPoints);
+
+  // Assign ranks based on totalPoints
+  combinedDataArray = combinedDataArray.map((item, index, arr) => ({
+    ...item,
+    // Rank is index + 1; adjust if you need to handle ties differently
+    rank: index + 1
+  }));
 
   return combinedDataArray;
 };
-
 
 const LoadedCell = styled.div`
   padding-bottom: 10px;
