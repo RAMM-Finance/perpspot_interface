@@ -254,7 +254,7 @@ export function useStoredData(addresses:any){
       }
     }
     call()
-  })
+  }, [brp, addresses])
 
   return pointsData
 }

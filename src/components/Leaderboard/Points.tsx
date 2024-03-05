@@ -127,7 +127,7 @@ export default function Points() {
 
   const usersData = useMemo(() => {
     return createUserDataObj(usersArr, tradePoints)
-  }, [usersArr, tradePoints])
+  }, [usersArr])
 
   const userData = useMemo(() => {
     return usersData.find((user: any) => user.trader === account)

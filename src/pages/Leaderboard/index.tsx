@@ -339,7 +339,7 @@ export default function LeaderboardPage() {
           </FilterWrapper>*/}
           <LeaderboardWrapper>
             <LeaderboardTable />
-          </LeaderboardWrapper>
+          </LeaderboardWrapper> 
           {/*leaderboard ? (
             <LeaderboardWrapper>
               <LeaderboardTable />

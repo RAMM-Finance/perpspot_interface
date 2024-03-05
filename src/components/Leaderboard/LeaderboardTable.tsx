@@ -111,8 +111,9 @@ export default function LeaderboardTable() {
 
   const userData = useMemo(() => {
     return createUserDataObj(usersArr, tradePoints)
-  }, [usersArr, tradePoints])
+  }, [usersArr])
 
+  console.log('userData', userData);
   function LeaderboardHeader() {
     return (
       <HeaderCellWrapper>
@@ -154,14 +155,13 @@ export default function LeaderboardTable() {
     return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
   }
 
-  const prevData = useStoredData(addresses)
+  // const prevData = useStoredData(addresses)
 
-  console.log('userdata', prevData, userData)
   return (
     <>
       <LeaderboardHeader />
 
-      {userData.map((user: any) => {
+       {userData.map((user: any) => { 
         return (
           <LoadedCellWrapper key={user.trader}>
             <LoadedCell>
@@ -195,10 +195,6 @@ export default function LeaderboardTable() {
           </LoadedCellWrapper>
         )
       })}
-
-
-
-
     </>
   )
 }
