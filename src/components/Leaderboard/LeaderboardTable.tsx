@@ -157,11 +157,19 @@ export default function LeaderboardTable() {
 
   // const prevData = useStoredData(addresses)
 
+  const combinedData = useMemo(()=>{
+    if(!prevData || !userData) return 
+
+    return combineAndSumData(prevData, userData);
+
+  }, [prevData, userData])
+
+  console.log('userdata', prevData, userData)
   return (
     <>
       <LeaderboardHeader />
 
-       {userData.map((user: any) => { 
+      {combinedData?.map((user: any) => {
         return (
           <LoadedCellWrapper key={user.trader}>
             <LoadedCell>
@@ -198,6 +206,42 @@ export default function LeaderboardTable() {
     </>
   )
 }
+const combineAndSumData = (data1: any[], data2: any[]) => {
+  const combinedDataMap = new Map();
+
+  // Helper function to add or update the combined data map
+  const addOrUpdateData = (data: any) => {
+    const existingData = combinedDataMap.get(data.trader);
+    if (existingData) {
+      // If the trader already exists in the map, sum up the points
+      combinedDataMap.set(data.trader, {
+        ...data,
+        lpPoints: existingData.lpPoints + data.lpPoints,
+        rPoints: existingData.rPoints + data.rPoints,
+        tPoints: existingData.tPoints + data.tPoints,
+        totalPoints: existingData.totalPoints + data.totalPoints,
+      });
+    } else {
+      // If the trader doesn't exist, add it to the map
+      combinedDataMap.set(data.trader, data);
+    }
+  };
+
+  // Process the first dataset
+  data1.forEach(addOrUpdateData);
+
+  // Process the second dataset
+  data2.forEach(addOrUpdateData);
+
+  // Convert the map back to an array
+  const combinedDataArray = Array.from(combinedDataMap.values());
+
+  // Optionally, sort by totalPoints if needed
+  combinedDataArray.sort((a, b) => b.totalPoints - a.totalPoints);
+
+  return combinedDataArray;
+};
+
 
 const LoadedCell = styled.div`
   padding-bottom: 10px;
