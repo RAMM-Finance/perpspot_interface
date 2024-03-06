@@ -52,7 +52,6 @@ import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/s
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';
@@ -420,17 +419,19 @@ const TradeTabContent = () => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
 
-  const stablecoinPriceImpact = useMemo(
-    () =>
-      !isLimitOrder
-        ? tradeIsLoading || !trade
-          ? undefined
-          : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data)
-        : lmtIsLoading || !limitTrade
-        ? undefined
-        : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
-    [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade, lmtIsLoading, limitTrade, isLimitOrder]
-  )
+  // add once api works on limitlessfi.app
+
+  // const stablecoinPriceImpact = useMemo(
+  //   () =>
+  //     !isLimitOrder
+  //       ? tradeIsLoading || !trade
+  //         ? undefined
+  //         : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data)
+  //       : lmtIsLoading || !limitTrade
+  //       ? undefined
+  //       : computeFiatValuePriceImpact(fiatValueTradeInput.data, fiatValueTradeOutput.data),
+  //   [fiatValueTradeInput, fiatValueTradeOutput, tradeIsLoading, trade, lmtIsLoading, limitTrade, isLimitOrder]
+  // )
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
@@ -532,6 +533,7 @@ const TradeTabContent = () => {
 
   function handleArrowClick() {
     handleMarginInput('')
+    onDebouncedLeverageFactor('')
     activeTab === ActiveSwapTab.LONG ? onActiveTabChange(ActiveSwapTab.SHORT) : onActiveTabChange(ActiveSwapTab.LONG)
   }
 
@@ -740,7 +742,7 @@ const TradeTabContent = () => {
               showMaxButton={false}
               hideBalance={false}
               fiatValue={fiatValueTradeOutput}
-              priceImpact={stablecoinPriceImpact}
+              // priceImpact={stablecoinPriceImpact}
               currency={currencies[Field.OUTPUT] ?? null}
               otherCurrency={currencies[Field.INPUT] ?? null}
               showCommonBases={true}

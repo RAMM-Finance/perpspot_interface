@@ -263,18 +263,16 @@ export default function TokenTable() {
     }
   }, [poolData, PoolsOHLCArr])
 
-  console.log(dataInfo)
-
   /* loading and error state */
-  if (loading) {
-    return <LoadingTokenTable rowCount={PAGE_SIZE} />
-  } else {
-    return (
-      <>
-        <PairInfoContainer>
-          <TVLInfoContainer poolsInfo={poolsInfo} />
-          <HowToDetails />
-        </PairInfoContainer>
+  return (
+    <>
+      <PairInfoContainer>
+        <TVLInfoContainer poolsInfo={poolsInfo} />
+        <HowToDetails />
+      </PairInfoContainer>
+      {loading ? (
+        <LoadingTokenTable rowCount={PAGE_SIZE} />
+      ) : (
         <GridContainer>
           <PHeaderRow />
           <TokenDataContainer>
@@ -295,9 +293,9 @@ export default function TokenTable() {
               ))}
           </TokenDataContainer>
         </GridContainer>
-      </>
-    )
-  }
+      )}
+    </>
+  )
 }
 
 const PairInfoContainer = styled.div`
@@ -310,7 +308,7 @@ const PairInfoContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  row-gap: 1.2rem; 
+  row-gap: 1.2rem;
 `
 
 interface TVLInfoProps {

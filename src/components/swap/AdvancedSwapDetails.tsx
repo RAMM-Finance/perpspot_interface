@@ -10,7 +10,8 @@ import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useCurrency } from 'hooks/Tokens'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReactNode, useMemo } from 'react'
+import { ReversedArrowsIcon } from 'nft/components/icons'
+import { ReactNode, useMemo, useState } from 'react'
 import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -257,7 +258,7 @@ export function ValueLabel({
   responsive = false,
 }: {
   description: string | ReactNode
-  label: string
+  label: string | ReactNode
   value?: number | string
   syncing: boolean
   symbolAppend?: string
@@ -320,9 +321,11 @@ function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholde
 function lmtFormatInvPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
   if (price) {
     if (price.greaterThan(1)) {
-      return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} `
+      const symbol = price?.baseCurrency.symbol + '/' + price?.quoteCurrency.symbol
+      return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
     } else {
-      return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} `
+      const symbol = price.quoteCurrency.symbol + '/' + price.baseCurrency.symbol
+      return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
     }
   } else {
     return placeholder
@@ -344,7 +347,7 @@ export function AdvancedMarginTradeDetails({
   allowedSlippage?: Percent
 }) {
   const theme = useTheme()
-
+  const [inverted, setInverted] = useState<boolean>(false)
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
@@ -364,14 +367,22 @@ export function AdvancedMarginTradeDetails({
     <StyledCard>
       <AutoColumn gap="sm">
         <ValueLabel
-          description={
-            <ThemedText.BodySmall color="textSecondary" textAlign="right">
-              Inverted Price:{' '}
-              {lmtFormatInvPrice(trade?.executionPrice) ? `${lmtFormatInvPrice(trade?.executionPrice)}` : '-'}
-            </ThemedText.BodySmall>
+          description=""
+          hideInfoTooltips={true}
+          label={
+            <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+              <div>{inverted ? 'Inverted Price' : 'Execution Price'}</div>
+              <MouseoverTooltip text="invert" placement="right">
+                <div
+                  onClick={() => setInverted(!inverted)}
+                  style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                >
+                  <ReversedArrowsIcon />
+                </div>
+              </MouseoverTooltip>
+            </div>
           }
-          label="Execution Price"
-          value={lmtFormatPrice(trade?.executionPrice)}
+          value={inverted ? lmtFormatInvPrice(trade?.executionPrice) : lmtFormatPrice(trade?.executionPrice)}
           syncing={syncing}
         />
         <ValueLabel
