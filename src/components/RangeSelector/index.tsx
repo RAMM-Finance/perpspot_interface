@@ -4,6 +4,7 @@ import { AutoColumn } from 'components/Column'
 import StepCounter from 'components/InputStepCounter/InputStepCounter'
 import { RowBetween } from 'components/Row'
 import { Bound } from 'state/mint/v3/actions'
+import styled from 'styled-components/macro'
 
 // currencyA is the base token
 export default function RangeSelector({
@@ -40,9 +41,16 @@ export default function RangeSelector({
   const leftPrice = isSorted ? priceLower : priceUpper?.invert()
   const rightPrice = isSorted ? priceUpper : priceLower?.invert()
 
+  const StepCounterWrapper = styled(RowBetween)`
+    @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+      display: flex;
+      flex-direction: column;
+      row-gap: 1rem;
+    }
+  `
   return (
     <AutoColumn gap="md">
-      <RowBetween>
+      <StepCounterWrapper>
         <StepCounter
           value={ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER] ? '0' : leftPrice?.toSignificant(6) ?? ''}
           onUserInput={onLeftRangeInput}
@@ -71,7 +79,7 @@ export default function RangeSelector({
           tokenB={currencyB?.symbol}
           title={<Trans>Max Price</Trans>}
         />
-      </RowBetween>
+      </StepCounterWrapper>
     </AutoColumn>
   )
 }

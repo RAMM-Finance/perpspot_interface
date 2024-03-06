@@ -19,7 +19,7 @@ export default function RateToggle({
   const isSorted = tokenA && tokenB && tokenA.sortsBefore(tokenB)
 
   return tokenA && tokenB ? (
-    <div style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }} onClick={handleRateToggle}>
+    <div style={{ width: 'fit-content', display: 'flex', alignItems: 'center'}} onClick={handleRateToggle}>
       <ToggleWrapper width="fit-content">
         <ToggleElement isActive={isSorted}>
           <Trans>

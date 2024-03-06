@@ -122,7 +122,7 @@ export const SectionWrapper = styled.div`
 `
 
 export const LeftSection = styled(AutoColumn)`
-  width: 45%;
+  width: 50%;
 `
 
 export const RightSection = styled(AutoColumn)`

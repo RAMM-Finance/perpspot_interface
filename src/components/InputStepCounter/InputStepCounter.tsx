@@ -39,6 +39,9 @@ const FocusedOutlineCard = styled(OutlineCard)<{ active?: boolean; pulsing?: boo
   border-color: ${({ active, theme }) => active && theme.accentAction};
   padding: 12px;
   animation: ${({ pulsing, theme }) => pulsing && pulse(theme.accentAction)} 0.8s linear;
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+    min-width: 250px;
+  }
 `
 
 const StyledInput = styled(NumericalInput)<{ usePercent?: boolean }>`

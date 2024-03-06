@@ -31,7 +31,7 @@ import {
   useV3MintActionHandlers,
   useV3MintState,
 } from 'state/mint/v3/hooks'
-import { useTheme } from 'styled-components/macro'
+import styled, { useTheme } from 'styled-components/macro'
 import { addressesAreEquivalent } from 'utils/addressesAreEquivalent'
 import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 
@@ -84,6 +84,11 @@ import {
   StyledInput,
   Wrapper,
 } from './styled'
+
+const PriceAndToggleWrapper = styled(RowBetween)`
+  flex-wrap: wrap;
+  row-gap: 1rem;
+`
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
@@ -755,7 +760,7 @@ export default function AddLiquidity() {
                                   <Trans>Select Price Range</Trans>
                                 </ThemedText.BodySecondary>
                               </RowBetween>
-                              <RowBetween>
+                              <PriceAndToggleWrapper>
                                 {price && baseCurrency && quoteCurrency && !noLiquidity && (
                                   <Trans>
                                     <div
@@ -813,7 +818,7 @@ export default function AddLiquidity() {
                                     }}
                                   />
                                 ) : null}
-                              </RowBetween>
+                              </PriceAndToggleWrapper>
                               <RowBetween>
                                 {!noLiquidity && <PresetsButtons onSetRecommendedRange={handleSetRecommendedRange} />}
                               </RowBetween>
@@ -974,12 +979,12 @@ export default function AddLiquidity() {
 
                           {invalidRange ? (
                             <YellowCard padding="8px 12px" $borderRadius="12px">
-                              <RowBetween>
+                              <Row>
                                 <AlertTriangle stroke={theme.deprecated_yellow3} size="16px" />
                                 <ThemedText.DeprecatedYellow ml="12px" fontSize="12px">
                                   <Trans>Invalid range selected. The min price must be lower than the max price.</Trans>
                                 </ThemedText.DeprecatedYellow>
-                              </RowBetween>
+                              </Row>
                             </YellowCard>
                           ) : null}
                         </DynamicSection>
