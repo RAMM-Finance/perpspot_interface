@@ -16,6 +16,7 @@ import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { ReversedArrowsIcon } from 'nft/components/icons'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -799,14 +800,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             </ClickableContent>
           }
           value={
-            <FlexStartRow style={{flexWrap:'wrap', lineHeight: 1}}>
+            <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                <span>{`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}</span>
-                <span>{`${position?.outputCurrency?.symbol }`}</span>
+              <span>{`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}</span>
+              <span>{`${position?.outputCurrency?.symbol}`}</span>
             </FlexStartRow>
           }
           collateral={
-            <FlexStartRow style={{flexWrap:'wrap', lineHeight: 1}}>
+            <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <CurrencyLogo currency={position?.inputCurrency} size="10px" />
               <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
               <span>{position?.inputCurrency?.symbol}</span>
@@ -874,35 +875,36 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           entryPrice={
             <FlexStartRow>
-              <AutoColumn style={{lineHeight: 1.5}}>
-                {isInverted ? (
-                  <>
-                    {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
-                    <AutoColumn>
-                      <span>{formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}</span>
-                      <span>{formatBNToString(invertedCurrentPrice,NumberType.SwapTradeAmount)}
-                        <InvertBtn  onClick={(e) => {
-                          e.stopPropagation()
-                          setInverted(!isInverted)}}>
-                            invert
-                        </InvertBtn> 
-                      </span>
-                    </AutoColumn>
-                  </>
-                ) : (
-                  <>
-                    <AutoColumn>
-                      <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>
-                      <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}  
-                        <InvertBtn  onClick={(e) => {
-                          e.stopPropagation()
-                          setInverted(!isInverted)}}>
-                            invert
-                        </InvertBtn> 
-                      </span>
-                    </AutoColumn>
-                  </>
-                )}
+              <AutoColumn style={{ lineHeight: 1.5 }}>
+                <RowBetween gap="5px">
+                  {isInverted ? (
+                    <>
+                      {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
+                      <AutoColumn>
+                        <span>{formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}</span>
+                        <span>{formatBNToString(invertedCurrentPrice, NumberType.SwapTradeAmount)}</span>
+                      </AutoColumn>
+                    </>
+                  ) : (
+                    <>
+                      <AutoColumn>
+                        <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>
+                        <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
+                      </AutoColumn>
+                    </>
+                  )}
+                  <MouseoverTooltip text="invert" placement="right">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setInverted(!isInverted)
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                    >
+                      <ReversedArrowsIcon />
+                    </div>
+                  </MouseoverTooltip>
+                </RowBetween>
               </AutoColumn>
             </FlexStartRow>
           }
