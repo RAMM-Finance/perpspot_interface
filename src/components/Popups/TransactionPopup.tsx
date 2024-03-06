@@ -13,6 +13,8 @@ import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
+import { useActivePopups } from 'state/application/hooks'
+import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 
 export const Descriptor = styled(ThemedText.BodySmall)`
   display: flex;
@@ -21,7 +23,6 @@ export const Descriptor = styled(ThemedText.BodySmall)`
   text-overflow: ellipsis;
 `
 
-const Wrapper = styled.div``
 
 function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chainId: number }) {
   const success = tx.receipt?.status === 1
@@ -92,6 +93,18 @@ const Popup = styled.div`
     }
   `}
 `
+const StatusPopup = styled.div`
+  width: 350px;
+  height: 30px;
+  position: fixed;
+  bottom: 8vh;
+  right: 1vw;
+  background-color: ${({ theme }) => theme.popup};
+  /* border: 1px solid red; */
+  border-radius: 16px;
+  padding: 4px;
+  padding-right: 35px;
+`
 
 export default function TransactionPopup({ hash, removeThisPopup }: { hash: string; removeThisPopup: () => void }) {
   const { chainId } = useWeb3React()
@@ -110,4 +123,39 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
         </Popup>
       )
   }
+}
+
+
+export function TransactionStatusPopup() {
+  const activePopups:any = useActivePopups();
+  // const { account  } : any = useWeb3React();
+
+  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+
+  console.log('---------activePopups-----',activePopups )
+  return (
+    <StatusPopup>
+     {activePopups.map((item: any) => (
+        <TransactionStatusPopupItem key={item.key} hash={item.content.txn.hash} />
+      ))}
+    </StatusPopup>
+  )
+}
+
+function TransactionStatusPopupItem({ hash, removeThisPopup }: { hash?: string; removeThisPopup?: () => void }) {
+  const tx:any = useTransaction(hash)
+  const { chainId  } : any = useWeb3React();
+  // const success = tx.receipt?.status === 1
+  const tokens = useCombinedActiveList()
+  const activity:any = parseLocalActivity(tx, chainId, tokens)
+  const { ENSName } = useENSName(activity?.otherAccount)
+  return (
+    <div>
+      <ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>
+      <Descriptor color="textSecondary">
+        {activity.descriptor}
+        {ENSName ?? activity.otherAccount}
+      </Descriptor>
+    </div>
+  )
 }

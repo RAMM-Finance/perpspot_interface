@@ -41,6 +41,7 @@ import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
+import { TransactionStatusPopup } from 'components/Popups/TransactionPopup'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -368,6 +369,8 @@ export default function Swap({ className }: { className?: string }) {
       {!swapIsUnsupported ? null : (
         <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[inputCurrency, outputCurrency]} />
       )}
+      {/* statusPopup */}
+      {/* <TransactionStatusPopup /> */}
     </Trace>
   )
 }
