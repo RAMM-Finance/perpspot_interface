@@ -90,6 +90,10 @@ export const FALLBACK_URLS = {
     'https://bsc-dataseed4.defibit.io',
     'https://rpc.ankr.com/bsc',
   ],
+  [SupportedChainId.BERA]: [
+    // "Safe" URLs
+    'https://artio.rpc.berachain.com/',
+  ],
 }
 
 /**
@@ -106,6 +110,7 @@ export const RPC_URLS = {
     `https://sepolia.infura.io/v3/adc5205917c94ba4906bb7be28e515cd`,
     ...FALLBACK_URLS[SupportedChainId.SEPOLIA],
   ],
+  [SupportedChainId.BERA]: [`https://artio.rpc.berachain.com/`, ...FALLBACK_URLS[SupportedChainId.BERA]],
   [SupportedChainId.OPTIMISM]: [
     `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
     ...FALLBACK_URLS[SupportedChainId.OPTIMISM],

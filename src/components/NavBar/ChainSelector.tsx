@@ -13,7 +13,7 @@ import { Portal } from 'nft/components/common/Portal'
 import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
 import { useCallback, useRef, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp } from 'react-feather'
+import { AlertTriangle } from 'react-feather'
 import { useTheme } from 'styled-components/macro'
 
 import * as styles from './ChainSelector.css'
@@ -27,6 +27,7 @@ const NETWORK_SELECTOR_CHAINS = [
   SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.CELO,
   SupportedChainId.BNB,
+  SupportedChainId.BERA,
 ]
 
 interface ChainSelectorProps {
@@ -74,15 +75,17 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   const dropdown = (
     <NavDropdown top="56" left={leftAlign ? '0' : 'auto'} right={leftAlign ? 'auto' : '0'} ref={modalRef}>
       <Column paddingX="8">
-        {NETWORK_SELECTOR_CHAINS.map((chainId: SupportedChainId) => (
-          <ChainSelectorRow
-            disabled={isUniWallet && chainId === SupportedChainId.CELO}
-            onSelectChain={onSelectChain}
-            targetChain={chainId}
-            key={chainId}
-            isPending={chainId === pendingChainId}
-          />
-        ))}
+        {NETWORK_SELECTOR_CHAINS.filter((chainId: SupportedChainId) => chainId === 42161 || chainId === 80085).map(
+          (chainId: SupportedChainId) => (
+            <ChainSelectorRow
+              disabled={isUniWallet && chainId === SupportedChainId.CELO}
+              onSelectChain={onSelectChain}
+              targetChain={chainId}
+              key={chainId}
+              isPending={chainId === pendingChainId}
+            />
+          )
+        )}
       </Column>
     </NavDropdown>
   )
@@ -96,29 +99,29 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   return (
     <Box position="relative" ref={ref}>
       <MouseoverTooltip text={t`Your wallet's current network is unsupported.`} disableHover={isSupported}>
-        {account && <Row
-          as="button"
-          gap="8"
-          className={styles.ChainSelector}
-          background={isOpen ? 'accentActiveSoft' : 'none'}
-          onClick={() =>
-            //setIsOpen(!isOpen)
-            onSelectChain(42161)
-          }
-        >
-          {chainId == 42161 ? '' : 'Connect to Arbitrum'}
-
-          {!isSupported ? (
-            <AlertTriangle size={18} color={theme.textSecondary} />
-          ) : (
-            <img src={info.logoUrl} alt={info.label} className={styles.Image} data-testid="chain-selector-logo" />
-          )}
-          {/*isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />*/}
-        </Row>}
+        {account && (
+          <Row
+            as="button"
+            gap="8"
+            className={styles.ChainSelector}
+            background={isOpen ? 'accentActiveSoft' : 'none'}
+            onClick={() => {
+              setIsOpen(!isOpen)
+            }}
+          >
+            Select Network
+            {!isSupported ? (
+              <AlertTriangle size={18} color={theme.textSecondary} />
+            ) : (
+              <img src={info.logoUrl} alt={info.label} className={styles.Image} data-testid="chain-selector-logo" />
+            )}
+            {/*isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />*/}
+          </Row>
+        )}
       </MouseoverTooltip>
       {
         //isOpen
-        false && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)
+        isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)
       }
     </Box>
   )

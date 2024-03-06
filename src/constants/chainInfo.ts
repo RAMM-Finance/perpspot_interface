@@ -1,3 +1,4 @@
+import berachainLogo from 'assets/images/berachain.png'
 import bnbCircleLogoUrl from 'assets/images/bnbCircle.svg'
 import celoCircleLogoUrl from 'assets/images/celoCircle.png'
 import ethereumLogoUrl from 'assets/images/ethereum-logo.png'
@@ -224,7 +225,17 @@ const CHAIN_INFO: ChainInfoMap = {
     logoUrl: ethereumLogoUrl,
     nativeCurrency: { name: 'Sepolia Ether', symbol: 'sepoliaETH', decimals: 18 },
     color: darkTheme.chain_5,
-  }
+  },
+  [SupportedChainId.BERA]: {
+    networkType: NetworkType.L1,
+    docs: 'https://limitless.gitbook.io/limitless',
+    explorer: 'https://artio.beratrail.io/',
+    infoLink: 'https://limitless.gitbook.io/limitless',
+    label: 'Berachain Artio',
+    logoUrl: berachainLogo,
+    nativeCurrency: { name: 'Berachain BERA', symbol: 'BERA', decimals: 18 },
+    color: darkTheme.chain_5,
+  },
 }
 
 export function getChainInfo(chainId: SupportedL1ChainId): L1ChainInfo
