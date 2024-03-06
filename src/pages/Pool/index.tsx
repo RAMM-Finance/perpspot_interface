@@ -59,14 +59,11 @@ const PageWrapper = styled.div`
   width: 100%;
   height: 100%;
   margin-bottom: 20px;
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    max-width: 800px;
-  `};
-
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
+  min-width: 720px;
+  margin: auto;
+  /* ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
     max-width: 500px;
-  `};
+  `};  */
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding-top: 48px;

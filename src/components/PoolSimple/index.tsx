@@ -40,6 +40,17 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { Field } from '../../state/mint/v3/actions'
+import { LARGE_MEDIA_BREAKPOINT, MAX_WIDTH_MEDIA_BREAKPOINT, MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+
+const AddLiquidityRow = styled(RowBetween)`
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    display: grid;
+    width: 100%;
+    grid-template-rows: 0.9fr 1fr;
+    row-gap: 10px;
+  }
+`
+
 // TransactionType.MINT_LLP
 export default function SimplePool() {
   const theme = useTheme()
@@ -229,7 +240,7 @@ export default function SimplePool() {
             {outputCurrency?.symbol === 'LLP' ? 'Weight' : 'My Balance'}
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
-        <HeaderCell>
+        <HeaderCell isWrap={true}>
           <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             {outputCurrency?.symbol === 'LLP' ? 'Target Weight' : 'Total Balance'}
           </ThemedText.SubHeaderSmall>
@@ -239,7 +250,7 @@ export default function SimplePool() {
             Utililzation
           </ThemedText.SubHeaderSmall>
         </HeaderCell>
-        <HeaderCell>
+        <HeaderCell isWrap={true}>
           <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
             Maxiumum Withdrawable
           </ThemedText.SubHeaderSmall>
@@ -900,7 +911,7 @@ export default function SimplePool() {
             </ThemedText.BodyPrimary>
           </AutoColumn>
         </RowStart>
-        <RowBetween align="start">
+        <AddLiquidityRow align="start">
           <DetailsCard>
             <RowStart padding="5px">
               <Logo width={25} fill="#fff" />
@@ -1173,7 +1184,7 @@ export default function SimplePool() {
               ></ButtonBlue>
             )}
           </CurrencyWrapper>
-        </RowBetween>
+        </AddLiquidityRow>
         <AutoColumn style={{ marginTop: '30px' }}>
           {outputCurrency?.symbol === 'limWETH' && (
             <>
@@ -1350,6 +1361,12 @@ const DetailsCard = styled.div`
   height: 378px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
+
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 100%;
+    height: 99%;
+  }
+  
 `
 
 const LoadedCell = styled.div`
@@ -1370,7 +1387,13 @@ const LoadedCellWrapper = styled.div`
   justify-content: center;
 `
 
-const HeaderCell = styled.div``
+const HeaderCell = styled.div<{isWrap? : boolean}>`
+ @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    max-width: ${({ isWrap }) => (isWrap && '80px')};
+    white-space: ${({ isWrap }) => (isWrap ? 'wrap' : 'nowrap')};
+    /* text-align: ${({ isWrap }) => (isWrap ? 'center' : 'left')}; */
+  }
+`
 const HeaderCellWrapper = styled.div`
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
@@ -1422,6 +1445,9 @@ const CurrencyWrapper = styled.div`
   flex-direction: column;
   gap: 5px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 90vw;
+   }
 `
 
 const Filter = styled.div`

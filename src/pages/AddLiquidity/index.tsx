@@ -747,7 +747,7 @@ export default function AddLiquidity() {
                         <Buttons />
                       </HideMedium> */}
                       <RightContainer gap="lg">
-                        <DynamicSection gap="md" disabled={!feeAmount || invalidPool}>
+                        <DynamicSection gap="md" disabled={!feeAmount || invalidPool} style={{marginTop: '5px'}}>
                           {!noLiquidity ? (
                             <>
                               <RowBetween>

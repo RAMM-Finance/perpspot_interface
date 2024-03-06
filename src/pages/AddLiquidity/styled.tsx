@@ -14,7 +14,7 @@ export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
   padding: ${({ wide }) => (wide ? '10px' : '0')};
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    max-width: 480px;
+    min-width: 520px;
   `};
 `
 export const Wrapper = styled.div`
@@ -34,11 +34,11 @@ export const ScrollablePage = styled.div`
   flex-direction: column;
   width: 90%;
   height: auto;
-
+/* 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
     max-width: 480px;
     margin: 0 auto;
-  `};
+  `}; */
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding: 48px 8px 0px;
@@ -46,6 +46,8 @@ export const ScrollablePage = styled.div`
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     padding-top: 20px;
+    min-width: 600px;
+    /* margin: auto; */
   }
 `
 
