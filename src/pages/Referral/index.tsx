@@ -192,7 +192,7 @@ export default function ReferralPage() {
                   element={InterfaceElementName.CONNECT_WALLET_BUTTON}
                 >
                   <ButtonPrimary
-                    style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
+                    style={{ padding: '8px 8px', borderRadius: '10px', width: '115px'}}
                     onClick={toggleWalletDrawer}
                   >
                     <Trans>

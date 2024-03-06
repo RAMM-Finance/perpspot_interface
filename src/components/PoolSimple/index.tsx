@@ -905,7 +905,7 @@ export default function SimplePool() {
         <RowStart style={{ marginBottom: '20px' }}>
           <AutoColumn gap="5px">
             <ThemedText.DeprecatedMediumHeader color="textSecondary">Buy / Sell LLP</ThemedText.DeprecatedMediumHeader>
-            <ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary flexWrap="wrap">
               By minting LLP you will gain index exposure to BTC, ETH, and USDC while earning fees from uniswap+premiums
               and points from Limitless.
             </ThemedText.BodyPrimary>
@@ -1447,6 +1447,7 @@ const CurrencyWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     width: 90vw;
+    min-width: 500px;
    }
 `
 

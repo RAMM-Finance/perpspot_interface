@@ -23,6 +23,7 @@ import { HideSmall, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
 
 import { LoadingRows } from './styleds'
+import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 
 const Filter = styled.div`
   display: flex;
@@ -164,9 +165,11 @@ const ResponsiveButtonPrimary = styled(ButtonPrimary)`
 `
 
 const MainContentWrapper = styled.main`
+  position: relative;
   width: 100%;
-  margin-right: auto;
-  margin-left: auto;
+  min-height: 300px;
+  min-width: 500px;
+  margin: auto;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
