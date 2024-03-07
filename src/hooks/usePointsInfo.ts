@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { PositionDetails } from 'types/position'
 import {useReferralContract} from 'hooks/useContract'
 import { ethers } from 'ethers'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 
 interface UseV3PositionsResults {
   loading: boolean
@@ -129,7 +130,7 @@ export function useUsingCode() {
 
   const [codeUsing, setCodeUsing] = useState(false)
   const [result, setResult] = useState(0)
-
+  const blockNumber = useBlockNumber()
   useEffect(() => {
     if (!account ||!provider ||!referralContract) return
     const call = async () => {
@@ -150,7 +151,7 @@ export function useUsingCode() {
     }
 
     call()
-  }, [account, referralContract])
+  }, [account, referralContract,blockNumber ])
 
   // useEffect(() => {
   //   const getBeacon = async () => {

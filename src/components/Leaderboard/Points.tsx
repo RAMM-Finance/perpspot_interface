@@ -5,7 +5,8 @@ import { ThemedText } from 'theme'
 
 import affiliate from './affiliate-marketing.png'
 import coin from './coin.png'
-import { usePointsData , CollectMultipler,referralDivisor} from './data'
+import { usePointsData , CollectMultipler,referralDivisor, useStoredData} from './data'
+import {combineAndSumData, addresses} from "./LeaderboardTable"
 import star from './star_616489.png'
 
 const Wrapper = styled.div`
@@ -134,11 +135,22 @@ export default function Points() {
     return createUserDataObj(usersArr, tradePoints)
   }, [usersArr])
 
-  const userData = useMemo(() => {
-    return usersData.find((user: any) => user.trader === account)
-  }, [usersData])
+  const prevData = useStoredData(addresses)
 
-  console.log(usersData)
+  const combinedData = useMemo(()=>{
+    if(!prevData || !usersData) return 
+
+    return combineAndSumData(prevData, usersData);
+
+  }, [prevData, usersData])
+
+
+  const userData = useMemo(() => {
+    if(!combinedData ) return 
+    return combinedData.find((user: any) => user.trader === account)
+  }, [combinedData])
+
+  console.log('randkfadfaddata', prevData, combinedData)
 
   return (
     <Wrapper>
@@ -146,7 +158,7 @@ export default function Points() {
         <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>
-            {userData ? usersData.findIndex((user: any) => user.trader === account) + 1 : '-'}
+            {userData ? usersData.findIndex((user: any) => user.trader === account) : '-'}
           </ThemedText.BodySecondary>
           <ThemedText.BodySmall fontWeight={300}>My Rank</ThemedText.BodySmall>
         </Value>

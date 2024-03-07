@@ -20,7 +20,7 @@ query poolHourDatas($startTime: Int!, $address: String!) {
 
 export const LiquidityProvidedQuery = `
   query {
-    liquidityProvideds {
+    liquidityProvideds(first:1000 orderBy: blockTimestamp orderDirection: desc) {
       pool
       recipient
       liquidity
@@ -32,7 +32,7 @@ export const LiquidityProvidedQuery = `
 `
 export const LiquidityWithdrawnQuery = `
   query {
-    liquidityWithdrawns {
+    liquidityWithdrawns(first:1000 orderBy: blockTimestamp orderDirection: desc) {
       pool
       recipient
       liquidity

@@ -517,7 +517,8 @@ export function usePointsData() {
 
 
       let lpAddress = ethers.utils.getAddress(entry.operator)
-      if (sameTokenIdCollects.length > 0) lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
+      if (sameTokenIdCollects.length > 0 || lpAddress=="0x0000000000000000000000000000000000000000") 
+        lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
       if (!lpPositionsByUniqueLps[lpAddress]) {
         lpPositionsByUniqueLps[lpAddress] = []
       }
@@ -530,13 +531,6 @@ export function usePointsData() {
         amount1Collected: (usdValue[entry.token1] * amount1Collected) / 10 ** tokenDecimal[entry.token1],
       })
     })
-    // if (vaultDataByAddress)
-    //   Object.keys(vaultDataByAddress)?.forEach((address: string) => {
-    //     const lpAddress = ethers.utils.getAddress(address)
-    //     if (!lpPositionsByUniqueLps[lpAddress]) {
-    //       lpPositionsByUniqueLps[lpAddress] = []
-    //     }
-    //   })
 
     let timeWeightedDeposits = calculateTimeWeightedDeposits(vaultDataByAddress)
     if(vaultDataByAddress &&  timeWeightedDeposits) {
@@ -624,7 +618,7 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log('collectData',collectData, decreaseLiqData, vaultDataByAddress, lpPositionsByUniqueLps, timeWeightedDeposits)
+  console.log('collectData',tradeProcessedByTrader, lpPositionsByUniqueLps, refereeActivity)
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
