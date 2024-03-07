@@ -8,6 +8,7 @@ import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { StatusPopup } from 'components/Popups/TransactionPopup'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
 import { SelectPool } from 'components/swap/PoolSelect'
@@ -41,7 +42,6 @@ import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
-import { TransactionStatusPopup } from 'components/Popups/TransactionPopup'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -370,7 +370,8 @@ export default function Swap({ className }: { className?: string }) {
         <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[inputCurrency, outputCurrency]} />
       )}
       {/* statusPopup */}
-      {/* <TransactionStatusPopup /> */}
+      {(leverageLoading || orderLoading) && <StatusPopup />}
+      {/* <TransactionStatusPopup loadingOrders={orderLoading} loadingPositions={leverageLoading} /> */}
     </Trace>
   )
 }
