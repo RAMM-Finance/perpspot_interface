@@ -4,19 +4,17 @@ import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Acti
 import { PortfolioLogo } from 'components/WalletDropdown/MiniPortfolio/PortfolioLogo'
 import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import useENSName from 'hooks/useENSName'
-import { useState } from 'react'
 import { X } from 'react-feather'
-import { useActivePopups } from 'state/application/hooks'
-import { PopupContent } from 'state/application/reducer'
 import { useCombinedActiveList } from 'state/lists/hooks'
-import { useTransaction } from 'state/transactions/hooks'
+import { useIsTransactionPending, useTransaction } from 'state/transactions/hooks'
 import { TransactionDetails } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { CustomLightSpinner, ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 import Circle from '../../assets/images/blue-loader.svg'
-import FailedNetworkSwitchPopup, { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
+import { useLoadingPopup } from '../../state/loadingPopup/hooks'
+import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
 
 export const Descriptor = styled(ThemedText.BodySmall)`
   display: flex;
@@ -190,24 +188,38 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
 //   }
 //   return null
 // }
-
-export function StatusPopup() {
-  const theme = useTheme()
-  const [IsShowStatus, setShowStatus] = useState(true)
-
-  if(!IsShowStatus) return null;
-  return (
-    <StatusPopupWrapper>
-      <ThemedText.SubHeaderSmall fontSize={16} fontWeight={500}>
-        Fulfilling order request
-      </ThemedText.SubHeaderSmall>
-      <StatusClose color={theme.textSecondary} onClick={() => setShowStatus(false)} />
-      {/* <ThemedText.SubHeader fontWeight={500}>
-      </ThemedText.SubHeader> */}
-      <StatusLoadingSpinner src={Circle} alt="loader" size="24px" />
-    </StatusPopupWrapper>
-  )
+function getCurrentTransactionHash(positions: any[]): string | undefined {
+  if (positions && Array.isArray(positions) && positions.length > 0) {
+    const latestPosition = positions.find((position: any) => position?.content?.txn?.hash)
+    if (latestPosition) {
+      return latestPosition.content.txn.hash
+    }
+  }
+  return undefined
 }
 
+export function StatusPopup({ positions }: { positions: any }) {
+  const theme = useTheme()
+  const { isVisible, hidePopup, showPopup } = useLoadingPopup()
+  const transactionHash = getCurrentTransactionHash(positions)
 
-
+  const isTransactionPending = useIsTransactionPending(transactionHash)
+  if (isTransactionPending) showPopup()
+  // console.log('---------statusPopup-----', loading, error )
+  console.log('---------statusPopup-----', isVisible, isTransactionPending, positions, transactionHash)
+  return (
+    <>
+      {isVisible && (
+        <StatusPopupWrapper>
+          <ThemedText.SubHeaderSmall fontSize={16} fontWeight={500}>
+            Fulfilling order request
+          </ThemedText.SubHeaderSmall>
+          <StatusClose color={theme.textSecondary} onClick={hidePopup} />
+          {/* <ThemedText.SubHeader fontWeight={500}>
+        </ThemedText.SubHeader> */}
+          <StatusLoadingSpinner src={Circle} alt="loader" size="24px" />
+        </StatusPopupWrapper>
+      )}
+    </>
+  )
+}

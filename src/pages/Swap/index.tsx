@@ -370,8 +370,7 @@ export default function Swap({ className }: { className?: string }) {
         <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[inputCurrency, outputCurrency]} />
       )}
       {/* statusPopup */}
-      {(leverageLoading || orderLoading) && <StatusPopup />}
-      {/* <TransactionStatusPopup loadingOrders={orderLoading} loadingPositions={leverageLoading} /> */}
+      <StatusPopup positions={leveragePositions}/>
     </Trace>
   )
 }
