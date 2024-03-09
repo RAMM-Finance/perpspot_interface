@@ -39,6 +39,7 @@ import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionMo
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { useLoadingPopup } from 'state/loadingPopup/hooks'
 
 const Cell = styled.div`
   display: flex;
@@ -776,8 +777,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [usdPNLCurrency?.data, position, PnLWithPremiums, existingDeposit])
 
+  const { isVisible, hidePopup, showPopup } = useLoadingPopup()
+
   if (loading) {
-    return <LoadingRow />
+    showPopup('Loading...')
+    return <LoadingRow /> 
+  } else if(!loading && isVisible ) {
+    console.log('-------hidepopup action!------')
+    hidePopup()
   }
 
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
@@ -939,7 +946,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           actions={
             <SmallButtonPrimary
               style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
-              onClick={(e) =>
+              onClick={(e: any) =>
                 handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
               }
             >

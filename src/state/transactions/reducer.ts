@@ -2,7 +2,6 @@ import { createSlice } from '@reduxjs/toolkit'
 
 import { updateVersion } from '../global/actions'
 import { TransactionDetails } from './types'
-
 const now = () => new Date().getTime()
 
 export interface TransactionState {

@@ -59,6 +59,7 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
+import { useLoadingPopup } from 'state/loadingPopup/hooks'
 
 export interface DerivedReducePositionInfo {
   PnL: BN
@@ -387,15 +388,18 @@ export default function DecreasePositionContent({
     allowedSlippage
   )
 
+  const { showPopup, hidePopup } = useLoadingPopup();
+
   const handleReducePosition = useCallback(() => {
     if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
       return
     }
 
     setCurrentState((prev) => ({ ...prev, attemptingTxn: true }))
-
+    showPopup('Fullfilling order request')
     callback()
       .then((response) => {
+        console.log('-------Fullfillingpopup action!------')
         // setAttemptingTxn(false)
         setCurrentState((prev) => ({ ...prev, attemptingTxn: false, txHash: response?.hash, errorMessage: undefined }))
         // setTxHash(response?.hash)
@@ -410,6 +414,7 @@ export default function DecreasePositionContent({
         })
       })
       .catch((error) => {
+        hidePopup()
         console.error(error)
         setCurrentState((prev) => ({
           ...prev,

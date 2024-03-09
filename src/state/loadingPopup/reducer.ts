@@ -4,13 +4,17 @@ export const loadingPopupSlice = createSlice({
   name: 'loadingPopup',
   initialState: {
     isVisible: false,
+    text: '',
   },
   reducers: {
-    showLoadingPopup: (state) => {
+    showLoadingPopup: (state, action) => {
       state.isVisible = true;
+      state.text = action.payload;
+
     },
     hideLoadingPopup: (state) => {
       state.isVisible = false;
+      state.text = ''; 
     },
   },
 });

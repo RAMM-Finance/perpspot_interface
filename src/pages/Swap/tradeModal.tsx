@@ -66,6 +66,7 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
+import { useLoadingPopup } from 'state/loadingPopup/hooks'
 
 const Wrapper = styled.div`
   padding: 0.75rem;
@@ -463,7 +464,7 @@ const TradeTabContent = () => {
     currencies[Field.OUTPUT] ?? undefined,
     allowedSlippage
   )
-
+  const { showPopup, hidePopup } = useLoadingPopup();
   const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(orderKey)
 
   const handleAddPosition = useCallback(() => {
@@ -474,9 +475,12 @@ const TradeTabContent = () => {
 
     addPositionCallback()
       .then((hash) => {
+        console.log('-------Fullfillingpopup action!------')
+        showPopup('Fullfilling order request')
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
       })
       .catch((error) => {
+        hidePopup();
         setTradeState((currentState) => ({
           ...currentState,
           attemptingTxn: false,

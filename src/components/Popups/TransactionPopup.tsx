@@ -6,7 +6,7 @@ import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import useENSName from 'hooks/useENSName'
 import { X } from 'react-feather'
 import { useCombinedActiveList } from 'state/lists/hooks'
-import { useIsTransactionPending, useTransaction } from 'state/transactions/hooks'
+import { useTransaction } from 'state/transactions/hooks'
 import { TransactionDetails } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { CustomLightSpinner, ThemedText } from 'theme'
@@ -188,31 +188,21 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
 //   }
 //   return null
 // }
-function getCurrentTransactionHash(positions: any[]): string | undefined {
-  if (positions && Array.isArray(positions) && positions.length > 0) {
-    const latestPosition = positions.find((position: any) => position?.content?.txn?.hash)
-    if (latestPosition) {
-      return latestPosition.content.txn.hash
-    }
-  }
-  return undefined
-}
+// function useTransactionPending(data?: any): boolean {
+//   const transactionHash = getCurrentTransactionHash(data);
+//   return useIsTransactionPending(transactionHash);
+// }
 
-export function StatusPopup({ positions }: { positions: any }) {
+export function StatusPopup() {
   const theme = useTheme()
-  const { isVisible, hidePopup, showPopup } = useLoadingPopup()
-  const transactionHash = getCurrentTransactionHash(positions)
+  const { isVisible, hidePopup, text } = useLoadingPopup()
 
-  const isTransactionPending = useIsTransactionPending(transactionHash)
-  if (isTransactionPending) showPopup()
-  // console.log('---------statusPopup-----', loading, error )
-  console.log('---------statusPopup-----', isVisible, isTransactionPending, positions, transactionHash)
   return (
     <>
       {isVisible && (
         <StatusPopupWrapper>
           <ThemedText.SubHeaderSmall fontSize={16} fontWeight={500}>
-            Fulfilling order request
+           {text}
           </ThemedText.SubHeaderSmall>
           <StatusClose color={theme.textSecondary} onClick={hidePopup} />
           {/* <ThemedText.SubHeader fontWeight={500}>
