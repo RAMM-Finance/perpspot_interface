@@ -79,6 +79,8 @@ export const ForceClosedQuery = `
     forceCloseds(orderBy: blockTimestamp)  {
       pool
       positionIsToken0
+      marginInPosToken
+      margin
       trader
       forcedClosedAmount      
       blockTimestamp
@@ -108,6 +110,7 @@ export const AddQuery = `
     marginPositionIncreaseds(orderBy: blockTimestamp orderDirection: desc)  {
       pool
       positionIsToken0
+      marginInPosToken
       trader
       addedAmount    
       filler  
@@ -121,6 +124,7 @@ export const ReduceQuery = `
     marginPositionReduceds(orderBy: blockTimestamp orderDirection: desc)  {
       pool
       positionIsToken0
+      marginInPosToken
       trader
       reduceAmount      
       blockTimestamp

@@ -56,7 +56,7 @@ export const getInvertPrice = (token0: string, token1: string, chainId?: number)
 
 //new
 // PremiumComputer deployed 0x3E4CB1BC3fe748Dc24Bdb9256AAe2248D35f1334
-// MatchingEngine deployed 0x14b8e2609DE022acD286A06885d5c9eA7dB29B73
+// MatchingEngine deployed 0x06F0Fe3b99Aa42C1886c9bdb1aF55eD6Af5A0e79
 // MarginPositionHelper deployed 0x32349F3da50153D79745B7E14DD7DECE0D6B9FA7
 
 // LMT V2 CONSTANTS
