@@ -25,9 +25,11 @@ import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
-import { ClickableStyle, ThemedText } from 'theme'
+import { ClickableStyle, CustomLightSpinner, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
+import Circle from '../../../assets/images/blue-loader.svg'
+
 
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -40,6 +42,7 @@ import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 import { useLoadingPopup } from 'state/loadingPopup/hooks'
+import { useSelector } from 'react-redux'
 
 const Cell = styled.div`
   display: flex;
@@ -639,6 +642,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const { account } = useWeb3React()
   const theme = useTheme()
 
+  // for loading spinner
+  // const transactionLoading = useSelector((state: any )=> state.transactions.loading); //// Select the loading state of user transaction
+
   const positionKey: TraderPositionKey = useMemo(() => {
     return {
       trader: details.trader,
@@ -779,7 +785,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const { isVisible, hidePopup, showPopup } = useLoadingPopup()
 
-  if (loading) {
+  if (loading && !isVisible) {
     showPopup('Loading...')
     return <LoadingRow /> 
   } else if(!loading && isVisible ) {
@@ -801,6 +807,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   <GreenText>
                     {' '}
                     x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.outputCurrency.symbol}`}
+                    {/* <CustomLightSpinner style={{paddingLeft:'3px'}}size='16px' src={Circle} alt="loader"/> */}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -946,8 +953,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           actions={
             <SmallButtonPrimary
               style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
-              onClick={(e: any) =>
-                handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
+              onClick={(e) =>
+                handleCurrencySelect(e, position?.inputCurrency, position?.outputCurrency, positionKey.poolKey.fee)
               }
             >
               <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>

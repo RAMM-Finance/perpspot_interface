@@ -7,7 +7,8 @@ const now = () => new Date().getTime()
 export interface TransactionState {
   [chainId: number]: {
     [txHash: string]: TransactionDetails
-  }
+  },
+  loading: boolean
 }
 
 export const initialState: TransactionState = {}
@@ -23,6 +24,7 @@ const transactionSlice = createSlice({
       const txs = transactions[chainId] ?? {}
       txs[hash] = { hash, info, from, addedTime: now() }
       transactions[chainId] = txs
+      transactions.loading = true; //for loading spinner
     },
     removeTransaction(transactions, { payload: { chainId, hash }}) {
       const txs = transactions[chainId] ?? {}
@@ -53,6 +55,7 @@ const transactionSlice = createSlice({
       }
       tx.receipt = receipt
       tx.confirmedTime = now()
+      transactions.loading = false; //for loading spinner
     },
   },
   extraReducers: (builder) => {
