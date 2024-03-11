@@ -39,7 +39,7 @@ import {
   typeInput,
 } from './actions'
 import { SwapState } from './reducer'
-
+import{SupportedChainId} from '../../constants/chains'
 // import { useLeveragePosition } from 'hooks/useV3Positions'
 
 export function useSwapState(): AppState['swap'] {
@@ -425,19 +425,48 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
   let poolFee
   let poolId
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
-    // Defaults to having the native currency selected
-    const storedCurrencyIn = localStorage.getItem('currencyIn')
-    const storedCurrencyOut = localStorage.getItem('currencyOut')
-    const storedPoolFee = localStorage.getItem('poolFee')
-    inputCurrency = storedCurrencyIn
-      ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
-      : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-    outputCurrency = storedCurrencyOut
-      ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
-      : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
-    poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
-    poolId =
-      '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
+      const storedCurrencyIn = localStorage.getItem('currencyIn')
+      const storedCurrencyOut = localStorage.getItem('currencyOut')
+      const storedPoolFee = localStorage.getItem('poolFee')
+      inputCurrency = storedCurrencyIn
+        ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
+        : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+      outputCurrency = storedCurrencyOut
+        ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
+        : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
+      poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
+      poolId =
+        '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
+      // console.log('chainId',chainId, SupportedChainId.ARBITRUM_ONE, SupportedChainId.BERA_ARTIO)
+    // if(SupportedChainId.ARBITRUM_ONE == chainId){
+    //   const storedCurrencyIn = localStorage.getItem('currencyIn')
+    //   const storedCurrencyOut = localStorage.getItem('currencyOut')
+    //   const storedPoolFee = localStorage.getItem('poolFee')
+    //   inputCurrency = storedCurrencyIn
+    //     ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
+    //     : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+    //   outputCurrency = storedCurrencyOut
+    //     ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
+    //     : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
+    //   poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
+    //   poolId =
+    //     '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
+
+    // } else if(SupportedChainId.BERA_ARTIO == chainId){
+    //   const storedCurrencyIn = localStorage.getItem('currencyIn')
+    //   const storedCurrencyOut = localStorage.getItem('currencyOut')
+    //   const storedPoolFee = localStorage.getItem('poolFee')
+    //   inputCurrency = storedCurrencyIn
+    //     ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
+    //     : getAddress('0x174652b085C32361121D519D788AbF0D9ad1C355')
+    //   outputCurrency = storedCurrencyOut
+    //     ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
+    //     : getAddress('0x35B4c60a4677EcadaF2fe13fe3678efF724be16b')
+    //   poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
+    //   poolId =
+    //     '0x174652b085C32361121D519D788AbF0D9ad1C355-0x35B4c60a4677EcadaF2fe13fe3678efF724be16b-500'.toLocaleLowerCase()
+    // }
+
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''

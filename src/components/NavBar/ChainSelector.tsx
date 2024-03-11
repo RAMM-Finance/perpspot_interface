@@ -21,12 +21,13 @@ import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
-  SupportedChainId.MAINNET,
-  SupportedChainId.POLYGON,
-  SupportedChainId.OPTIMISM,
+  // SupportedChainId.MAINNET,
+  // SupportedChainId.POLYGON,
+  // SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM_ONE,
-  SupportedChainId.CELO,
-  SupportedChainId.BNB,
+  // SupportedChainId.CELO,
+  // SupportedChainId.BNB,
+  SupportedChainId.BERA_ARTIO
 ]
 
 interface ChainSelectorProps {
@@ -102,11 +103,11 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
           className={styles.ChainSelector}
           background={isOpen ? 'accentActiveSoft' : 'none'}
           onClick={() =>
-            //setIsOpen(!isOpen)
-            onSelectChain(42161)
+            setIsOpen(!isOpen)
+            // onSelectChain(42161)
           }
         >
-          {chainId == 42161 ? '' : 'Connect to Arbitrum'}
+          {chainId == 42161 || chainId == SupportedChainId.BERA_ARTIO ? '' : 'Connect to Available Network'}
 
           {!isSupported ? (
             <AlertTriangle size={18} color={theme.textSecondary} />
@@ -117,8 +118,9 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
         </Row>}
       </MouseoverTooltip>
       {
-        //isOpen
-        false && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)
+        isOpen
+        // false
+         && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)
       }
     </Box>
   )

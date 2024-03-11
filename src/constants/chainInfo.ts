@@ -224,7 +224,23 @@ const CHAIN_INFO: ChainInfoMap = {
     logoUrl: ethereumLogoUrl,
     nativeCurrency: { name: 'Sepolia Ether', symbol: 'sepoliaETH', decimals: 18 },
     color: darkTheme.chain_5,
-  }
+  },
+  [SupportedChainId.BERA_ARTIO]: {
+    networkType: NetworkType.L2,
+    blockWaitMsBeforeWarning: ms`10m`,
+    bridge: 'https://bridge.arbitrum.io/',
+    docs: 'https://limitless.gitbook.io/limitless',
+    explorer: 'https://artio.beratrail.io/',
+    infoLink: 'https://limitless.gitbook.io/limitless',
+    label: 'Artio',
+    logoUrl: ethereumLogoUrl,
+    circleLogoUrl: arbitrumCircleLogoUrl,
+    defaultListUrl: ARBITRUM_LIST,
+    helpCenterUrl: 'https://help.uniswap.org/en/collections/3137787-uniswap-on-arbitrum',
+    nativeCurrency: { name: 'Bera', symbol: 'Bera', decimals: 18 },
+    color: darkTheme.chain_42,
+    backgroundColor: darkTheme.chain_42161_background,
+  }  
 }
 
 export function getChainInfo(chainId: SupportedL1ChainId): L1ChainInfo
