@@ -5,6 +5,14 @@ import { ReactNode } from 'react'
 
 type Receipt = AssetActivityPartsFragment['transaction']
 
+export enum ActivityDescriptionType {
+  ADD_ORDER = 'Add Order',
+  CANCLE_ORDER = 'Cancel Order',
+  ADD_POSITION = 'Add Position',
+  FORCE_CLOSED = 'Force Closed',
+  REDUCE_POSITION = 'Reduce Position',
+}
+
 export type Activity = {
   hash: string
   chainId: SupportedChainId

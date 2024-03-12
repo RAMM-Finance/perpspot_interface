@@ -16,7 +16,6 @@ import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReversedArrowsIcon } from 'nft/components/icons'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -39,6 +38,7 @@ import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionMo
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { useInvertedPrice } from 'hooks/useInvertedPrice'
 
 const Cell = styled.div`
   display: flex;
@@ -631,7 +631,8 @@ export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const [isInverted, setInverted] = useState(false)
+  const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
+
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
@@ -723,7 +724,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
-  // console.log(position)
+  console.log(position,'----position-----')
 
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
@@ -893,17 +894,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                       </AutoColumn>
                     </>
                   )}
-                  <MouseoverTooltip text="invert" placement="right">
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setInverted(!isInverted)
-                      }}
-                      style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-                    >
-                      <ReversedArrowsIcon />
-                    </div>
-                  </MouseoverTooltip>
+                  {invertedTooltipLogo}  
                 </RowBetween>
               </AutoColumn>
             </FlexStartRow>
