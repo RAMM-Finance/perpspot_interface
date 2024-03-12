@@ -151,8 +151,8 @@ export interface PoolManagerInterface extends utils.Interface {
     "borrowedLiquidities(bytes32,int24)": FunctionFragment;
     "collectFees((address,address,uint24),int24,int24)": FunctionFragment;
     "feeParams(bytes32)": FunctionFragment;
-    "findAndWithdraw((address,address,uint24),uint256,uint256,bool,uint256)": FunctionFragment;
-    "findTicks((address,address,uint24),uint256,uint256,bool,uint256,uint160)": FunctionFragment;
+    "findAndWithdraw((address,address,uint24),uint256,bool,uint256)": FunctionFragment;
+    "findTicks((address,address,uint24),uint256,bool,uint256,uint160)": FunctionFragment;
     "getGrowth(address,int24,(uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "getHashedKey((address,address,uint24))": FunctionFragment;
     "getHashedPositionKey(int24,int24,address)": FunctionFragment;
@@ -279,7 +279,6 @@ export interface PoolManagerInterface extends utils.Interface {
     values: [
       PoolKeyStruct,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>
     ]
@@ -288,7 +287,6 @@ export interface PoolManagerInterface extends utils.Interface {
     functionFragment: "findTicks",
     values: [
       PoolKeyStruct,
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>,
@@ -780,7 +778,6 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -789,7 +786,6 @@ export interface PoolManager extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1074,7 +1070,6 @@ export interface PoolManager extends BaseContract {
 
   findAndWithdraw(
     key: PoolKeyStruct,
-    margin: PromiseOrValue<BigNumberish>,
     borrowAmount: PromiseOrValue<BigNumberish>,
     borrowBelow: PromiseOrValue<boolean>,
     simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1083,7 +1078,6 @@ export interface PoolManager extends BaseContract {
 
   findTicks(
     key: PoolKeyStruct,
-    margin: PromiseOrValue<BigNumberish>,
     borrowAmount: PromiseOrValue<BigNumberish>,
     borrowBelow: PromiseOrValue<boolean>,
     simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1370,7 +1364,6 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1385,7 +1378,6 @@ export interface PoolManager extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1709,7 +1701,6 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1718,7 +1709,6 @@ export interface PoolManager extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1949,7 +1939,6 @@ export interface PoolManager extends BaseContract {
 
     findAndWithdraw(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1958,7 +1947,6 @@ export interface PoolManager extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       borrowBelow: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,

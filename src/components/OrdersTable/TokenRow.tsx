@@ -52,7 +52,7 @@ const StyledTokenRow = styled.div<{
   grid-template-columns: 1.5fr 2.5fr 2.5fr 2.5fr 2.5fr 2.5fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  : 390px;
+  :390px ;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '8px' : '0px'};
@@ -564,7 +564,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const [token0Address, token1Address, inputIs1] = useMemo(() => {
     if (details) {
-      return [details.key.token0Address, details.key.token1Address, details.positionIsToken0]
+      return [details.key.token0, details.key.token1, details.positionIsToken0]
     }
     return [undefined, undefined]
   }, [details])

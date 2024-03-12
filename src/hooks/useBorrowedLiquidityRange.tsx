@@ -14,11 +14,7 @@ export function useBorrowedLiquidityRange(
   position: MarginPositionDetails | undefined,
   pool: Pool | undefined
 ): BorrowedLiquidityRange {
-  const { tickDiscretization } = useTickDiscretization(
-    position?.poolKey.token0Address,
-    position?.poolKey.token1Address,
-    pool?.fee
-  )
+  const { tickDiscretization } = useTickDiscretization(position?.poolKey.token0, position?.poolKey.token1, pool?.fee)
 
   return useMemo(() => {
     if (!position || !pool || !tickDiscretization) return BorrowedLiquidityRange.INVALID

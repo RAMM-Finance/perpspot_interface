@@ -56,7 +56,7 @@ export const getInvertPrice = (token0: string, token1: string, chainId?: number)
 
 //new
 // PremiumComputer deployed 0x3E4CB1BC3fe748Dc24Bdb9256AAe2248D35f1334
-// MatchingEngine deployed 0x06F0Fe3b99Aa42C1886c9bdb1aF55eD6Af5A0e79 
+// MatchingEngine deployed 0x06F0Fe3b99Aa42C1886c9bdb1aF55eD6Af5A0e79
 // MarginPositionHelper deployed 0x32349F3da50153D79745B7E14DD7DECE0D6B9FA7
 
 // LMT V2 CONSTANTS
@@ -77,39 +77,30 @@ export const SEPOLIA_TICK_LENS = '0x3608234ef94d0CCF4AC46284DFb102568aac2aB2'
 
 export const DATA_PROVIDER_ADDRESSES: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_DATA_PROVIDER,
-  //0xfdA3E8c8134685c42f22f4B75e275949a6BbA454
-  //0xE59886e7e5B51c4b2191f3081ca57412cd7ebcED
-  // [SupportedChainId.ARBITRUM_ONE]: '0xb3272b993206B93C7DB3c6eD43B447CB98Fd6e1b',
-  [SupportedChainId.ARBITRUM_ONE]: '0x2b683e221268bD783339E24D594ccd60D12D3A6B',
+  [SupportedChainId.ARBITRUM_ONE]: '0xD387b1AeacE9684b31275839150d4e91bf49Fc9B',
   [SupportedChainId.BERA_ARTIO]: '0x0eb02fB0b4E9FdaD76Ce9DC474B6047220df32dc',
-
-
 }
 
 export const LMT_MARGIN_FACILITY: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_MARGIN_FACILITY,
   [SupportedChainId.ARBITRUM_ONE]: '0x3611CD2B957514222a94C93e1A9a5be66b0b2841',
   [SupportedChainId.BERA_ARTIO]: '0xAaE4021d575d31D03F7b706C8C76e6D845f3F225',
-
 }
 
 export const LMT_QUOTER: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0x3b01980457a865c61d7c86E9aAE9eAE7F6a40175',
+  [SupportedChainId.ARBITRUM_ONE]: '0x144fFc341f514C16B7faE7cB1e6a143023c17bc3',
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_NFPM,
-  // [SupportedChainId.ARBITRUM_ONE]: '0xB8EEc6875E1807A189D7fa58081230b7493Ad6c1',
   [SupportedChainId.ARBITRUM_ONE]: '0x6D73fc6F4C299E369377C0e60CebFef2409f86A0',
   [SupportedChainId.BERA_ARTIO]: '0xe4a79FA8E4880Fdd4F651eE7aF9391f21e87Cf57',
-
 }
 
 export const LMT_POOL_MANAGER: AddressMap = {
   [SupportedChainId.SEPOLIA]: SEPOLIA_POOL_MANAGER,
   [SupportedChainId.ARBITRUM_ONE]: '0x536801AaE40cb214c08f178c6727d7594a7c655b',
   [SupportedChainId.BERA_ARTIO]: '0x778D60ee8E9015AAE12b661C4cFCf62b8efd6b5f',
-
 }
 
 export const LMT_BORROW_FACILITY: AddressMap = {

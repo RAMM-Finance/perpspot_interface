@@ -106,8 +106,8 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
         priceNow,
         delta24h,
         pool: {
-          token0Address: token0,
-          token1Address: token1,
+          token0,
+          token1,
           fee,
         },
         base,

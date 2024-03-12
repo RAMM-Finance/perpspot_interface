@@ -458,29 +458,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bool",
-        name: "addPaused",
-        type: "bool",
-      },
-      {
-        internalType: "bool",
-        name: "reducePaused",
-        type: "bool",
-      },
-      {
-        internalType: "bool",
-        name: "forceClosePaused",
-        type: "bool",
-      },
-    ],
-    name: "setPauseConfig",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "poolManager_",
         type: "address",
@@ -492,6 +469,56 @@ const _abi = [
       },
     ],
     name: "setProtocolContracts",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "token0",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token1",
+            type: "address",
+          },
+          {
+            internalType: "uint24",
+            name: "fee",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct PoolKey",
+        name: "key",
+        type: "tuple",
+      },
+      {
+        internalType: "address",
+        name: "trader",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "borrowToken1",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "toSwapAmount",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "minOutput",
+        type: "uint256",
+      },
+    ],
+    name: "swapAndDepositPremium",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

@@ -77,9 +77,9 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
 
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id) {
-      onPoolSelection(token0, token1, poolKey.fee, id)
+      onPoolSelection(token0, token1, poolKey)
     }
-  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id])
+  }, [token0, token1, poolKey, onPoolSelection, poolId, id])
 
   const unpinPool = useCallback(
     (e: any) => {

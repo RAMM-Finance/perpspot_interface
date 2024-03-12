@@ -98,9 +98,11 @@ export declare namespace DataProvider {
   export type MaxLeverageParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
-    margin: PromiseOrValue<BigNumberish>;
+    marginInInput: PromiseOrValue<BigNumberish>;
+    marginInOutput: PromiseOrValue<BigNumberish>;
     startingLeverage: PromiseOrValue<BigNumberish>;
     stepSize: PromiseOrValue<BigNumberish>;
+    marginInPosToken: PromiseOrValue<boolean>;
   };
 
   export type MaxLeverageParamsStructOutput = [
@@ -108,13 +110,17 @@ export declare namespace DataProvider {
     boolean,
     BigNumber,
     BigNumber,
-    BigNumber
+    BigNumber,
+    BigNumber,
+    boolean
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
-    margin: BigNumber;
+    marginInInput: BigNumber;
+    marginInOutput: BigNumber;
     startingLeverage: BigNumber;
     stepSize: BigNumber;
+    marginInPosToken: boolean;
   };
 
   export type MarginPositionInfoStruct = {
@@ -205,6 +211,7 @@ export declare namespace DataProvider {
     currentOutput: PromiseOrValue<BigNumberish>;
     token0Decimals: PromiseOrValue<BigNumberish>;
     token1Decimals: PromiseOrValue<BigNumberish>;
+    marginInPosToken: PromiseOrValue<boolean>;
   };
 
   export type LimitOrderInfoStructOutput = [
@@ -220,7 +227,8 @@ export declare namespace DataProvider {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber
+    BigNumber,
+    boolean
   ] & {
     key: PoolKeyStructOutput;
     isAdd: boolean;
@@ -235,13 +243,14 @@ export declare namespace DataProvider {
     currentOutput: BigNumber;
     token0Decimals: BigNumber;
     token1Decimals: BigNumber;
+    marginInPosToken: boolean;
   };
 }
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
-    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256))": FunctionFragment;
-    "findTicks((address,address,uint24),uint256,uint256,bool,uint256,uint160)": FunctionFragment;
+    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "findTicks((address,address,uint24),uint256,bool,uint256,uint160)": FunctionFragment;
     "getActiveMarginPositions(address)": FunctionFragment;
     "getBinsDataInBulk((address,address,uint24),int24,int24)": FunctionFragment;
     "getBorrowedLiquidityInBin((address,address,uint24),int24)": FunctionFragment;
@@ -292,7 +301,6 @@ export interface DataProviderInterface extends utils.Interface {
     functionFragment: "findTicks",
     values: [
       PoolKeyStruct,
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<boolean>,
       PromiseOrValue<BigNumberish>,
@@ -505,7 +513,6 @@ export interface DataProvider extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       positionIsToken0: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -640,7 +647,6 @@ export interface DataProvider extends BaseContract {
 
   findTicks(
     key: PoolKeyStruct,
-    margin: PromiseOrValue<BigNumberish>,
     borrowAmount: PromiseOrValue<BigNumberish>,
     positionIsToken0: PromiseOrValue<boolean>,
     simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -769,7 +775,6 @@ export interface DataProvider extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       positionIsToken0: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -903,7 +908,6 @@ export interface DataProvider extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       positionIsToken0: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,
@@ -1031,7 +1035,6 @@ export interface DataProvider extends BaseContract {
 
     findTicks(
       key: PoolKeyStruct,
-      margin: PromiseOrValue<BigNumberish>,
       borrowAmount: PromiseOrValue<BigNumberish>,
       positionIsToken0: PromiseOrValue<boolean>,
       simulatedOutput: PromiseOrValue<BigNumberish>,

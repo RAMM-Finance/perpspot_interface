@@ -49,14 +49,13 @@ export function useAddPositionCallback(
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
-      // if (!marginAmount || !borrowAmount) throw new Error('missing parameters')
 
-      const { pool, swapInput, swapRoute, premium, inputIsToken0 } = trade
+      const { pool, swapInput, swapRoute, premium, inputIsToken0, marginInPosToken, margin } = trade
 
       const positionKey: TraderPositionKey = {
         poolKey: {
-          token0Address: pool.token0.address,
-          token1Address: pool.token1.address,
+          token0: pool.token0.address,
+          token1: pool.token1.address,
           fee: pool.fee,
         },
         isToken0: !inputIsToken0,
@@ -64,12 +63,22 @@ export function useAddPositionCallback(
         trader: account,
       }
 
-      const amountOut = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+      const swapOutput = await getOutputQuote(
+        BnToCurrencyAmount(swapInput, inputCurrency),
+        swapRoute,
+        provider,
+        chainId
+      )
 
-      if (!amountOut) throw new Error('unable to get trade output')
+      if (!swapOutput) throw new Error('unable to get trade output')
 
-      // const inputDecimals = inputCurrency.decimals
+      let amountOut: BN = new BN(swapOutput.toString())
+      if (marginInPosToken) {
+        amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
+      }
+
       const outputDecimals = outputCurrency.decimals
+
       // calculate minimum output amount
       const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
       const currentPrice = trade.inputIsToken0
@@ -83,11 +92,12 @@ export function useAddPositionCallback(
         borrowAmount: trade.borrowAmount.rawAmount(),
         minimumOutput: minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
-        simulatedOutput: amountOut.toString(),
+        simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
         depositPremium: premium.rawAmount(),
         slippedTickMin,
         slippedTickMax,
+        marginInPosToken,
       })
       const tx = {
         from: account,
@@ -131,7 +141,7 @@ export function useAddPositionCallback(
           margin: formatBNToString(trade.margin, NumberType.SwapTradeAmount),
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
-          expectedAddedPosition: formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount),
+          expectedAddedPosition: formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount),
         })
         return response.hash
       })

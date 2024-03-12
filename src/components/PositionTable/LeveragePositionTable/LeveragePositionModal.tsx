@@ -159,10 +159,10 @@ export function LeveragePositionModal(props: TradeModalProps) {
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   // console.log('existingPosition', existingPosition?.premiumDeposit.toString())
   const inputCurrency = useCurrency(
-    existingPosition?.isToken0 ? positionKey?.poolKey.token1Address : positionKey?.poolKey.token0Address
+    existingPosition?.isToken0 ? positionKey?.poolKey.token1 : positionKey?.poolKey.token0
   )
   const outputCurrency = useCurrency(
-    existingPosition?.isToken0 ? positionKey?.poolKey.token0Address : positionKey?.poolKey.token1Address
+    existingPosition?.isToken0 ? positionKey?.poolKey.token0 : positionKey?.poolKey.token1
   )
 
   // const dataLoading = positionLoading || !existingPosition || !inputCurrency || !outputCurrency
@@ -313,8 +313,8 @@ function MarginPositionInfo({
   outputCurrency?: Currency | undefined
   onClose: () => void
 }) {
-  const currency0 = useCurrency(position?.poolKey.token0Address)
-  const currency1 = useCurrency(position?.poolKey.token1Address)
+  const currency0 = useCurrency(position?.poolKey.token0)
+  const currency1 = useCurrency(position?.poolKey.token1)
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
   return (
     <PositionInfoWrapper>
@@ -527,8 +527,8 @@ const SecondLabel = styled(Card)`
 const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPositionDetails; pool?: Pool }) => {
   const [manuallyInverted, setManuallyInverted] = useState(false)
 
-  const token0 = useToken(position?.poolKey.token0Address)
-  const token1 = useToken(position?.poolKey.token1Address)
+  const token0 = useToken(position?.poolKey.token0)
+  const token1 = useToken(position?.poolKey.token1)
 
   const currency0 = token0 ? unwrappedToken(token0) : undefined
   const currency1 = token1 ? unwrappedToken(token1) : undefined

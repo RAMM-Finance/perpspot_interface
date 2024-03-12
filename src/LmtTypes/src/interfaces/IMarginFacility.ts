@@ -46,6 +46,7 @@ export type AddParamsStruct = {
   executionData: PromiseOrValue<BytesLike>;
   slippedTickMin: PromiseOrValue<BigNumberish>;
   slippedTickMax: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type AddParamsStructOutput = [
@@ -58,7 +59,8 @@ export type AddParamsStructOutput = [
   string,
   string,
   number,
-  number
+  number,
+  boolean
 ] & {
   margin: BigNumber;
   minOutput: BigNumber;
@@ -70,6 +72,7 @@ export type AddParamsStructOutput = [
   executionData: string;
   slippedTickMin: number;
   slippedTickMax: number;
+  marginInPosToken: boolean;
 };
 
 export type LiquidityLoanStruct = {
@@ -129,13 +132,20 @@ export type MarginPositionStruct = {
   base: PositionStruct;
   totalPosition: PromiseOrValue<BigNumberish>;
   margin: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type MarginPositionStructOutput = [
   PositionStructOutput,
   BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
+  BigNumber,
+  boolean
+] & {
+  base: PositionStructOutput;
+  totalPosition: BigNumber;
+  margin: BigNumber;
+  marginInPosToken: boolean;
+};
 
 export type ReduceParamStruct = {
   positionIsToken0: PromiseOrValue<boolean>;
@@ -204,7 +214,7 @@ export type ReduceReturnStructOutput = [
 
 export interface IMarginFacilityInterface extends utils.Interface {
   functions: {
-    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24,bool),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getPosition(address,address,bool)": FunctionFragment;
     "reducePosition((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256))": FunctionFragment;
   };
