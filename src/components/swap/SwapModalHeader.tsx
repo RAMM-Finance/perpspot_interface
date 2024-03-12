@@ -187,7 +187,13 @@ export default function SwapModalHeader({
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         {trade.tradeType === TradeType.EXACT_INPUT ? (
-          <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" display="flex" flexWrap="wrap" style={{ width: '100%' }}>
+          <ThemedText.DeprecatedItalic
+            fontWeight={400}
+            textAlign="left"
+            display="flex"
+            flexWrap="wrap"
+            style={{ width: '100%' }}
+          >
             <Trans>
               Output is estimated. You will receive at least{'\u00A0'}
               <b>
@@ -344,7 +350,13 @@ export function LeverageCloseModalHeader({
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         {trade.tradeType === TradeType.EXACT_INPUT ? (
-          <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" display="flex" flexWrap="wrap" style={{ width: '100%' }}>
+          <ThemedText.DeprecatedItalic
+            fontWeight={400}
+            textAlign="left"
+            display="flex"
+            flexWrap="wrap"
+            style={{ width: '100%' }}
+          >
             <Trans>
               Output is estimated. You will receive at least{'\u00A0'}
               <b>
@@ -402,7 +414,7 @@ export function LeverageModalHeader({
 }) {
   const theme = useTheme()
 
-  const [lastExecutionPrice, setLastExecutionPrice] = useState(trade.executionPrice)
+  // const [lastExecutionPrice, setLastExecutionPrice] = useState(trade.executionPrice)
   // const [priceUpdate, setPriceUpdate] = useState<number | undefined>()
 
   const fiatValueInput = useUSDPriceBN(
@@ -416,7 +428,7 @@ export function LeverageModalHeader({
     inputCurrency
   )
 
-  const fiatValueTotalOutput = useUSDPriceBN(trade?.swapOutput, outputCurrency)
+  const fiatValueTotalOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency)
 
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
@@ -479,7 +491,7 @@ export function LeverageModalHeader({
             <RowBetween align="flex-end">
               <RowFixed gap="0px">
                 <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                  {formatBNToString(trade.swapOutput, NumberType.SwapTradeAmount)}
+                  {formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)}
                 </TruncatedText>
               </RowFixed>
               <RowFixed gap="0px">
@@ -534,7 +546,13 @@ export function LeverageModalHeader({
       ) : null}
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
-        <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" display="flex" flexWrap="wrap" style={{ width: '100%' }}>
+        <ThemedText.DeprecatedItalic
+          fontWeight={400}
+          textAlign="left"
+          display="flex"
+          flexWrap="wrap"
+          style={{ width: '100%' }}
+        >
           <Trans>
             Output is estimated. You will receive at least{'\u00A0'}
             <b>

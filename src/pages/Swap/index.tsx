@@ -41,7 +41,6 @@ import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
-import { TransactionStatusPopup } from 'components/Popups/TransactionPopup'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -265,14 +264,16 @@ export default function Swap({ className }: { className?: string }) {
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-
+    poolKey,
     activeTab,
-    poolFee,
   } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolFee ?? undefined)
+  const token0 = useCurrency(poolKey?.token0)
+  const token1 = useCurrency(poolKey?.token1)
+
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 

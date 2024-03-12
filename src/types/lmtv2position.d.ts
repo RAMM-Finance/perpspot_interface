@@ -35,6 +35,7 @@ export interface BaseFacilityPositionDetails {
   token1Decimals: number
   maxWithdrawablePremium: BN
   borrowInfo: LiquidityLoan[]
+  marginInPosToken: boolean
 }
 
 export interface MarginPositionDetails extends BaseFacilityPositionDetails {
@@ -55,6 +56,7 @@ export interface MarginLimitOrder {
   decayRate: BN,
   margin: BN
   currentOutput: BN
+  marginInPosToken: boolean
 }
 
 export interface PoolInfo {
@@ -70,8 +72,8 @@ export interface PoolInfo {
 }
 
 export interface RawPoolKey {
-  token0Address: string
-  token1Address: string
+  token0: string
+  token1: string
   fee: FeeAmount
 }
 

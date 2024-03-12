@@ -10,7 +10,6 @@ import {
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from 'bignumber.js'
 import AddressInputPanel from 'components/AddressInputPanel'
 import { sendEvent } from 'components/analytics'
 import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
@@ -80,8 +79,7 @@ const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
 
-  const { onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange, onPremiumChange } =
-    useSwapActionHandlers()
+  const { onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -300,22 +298,8 @@ const SwapTabContent = () => {
     if (txHash) {
       onUserInput(Field.INPUT, '')
       onLeverageFactorChange('1')
-      // onLTVChange('')
-      onPremiumChange(new BN(0))
     }
-  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash, onLeverageFactorChange, onPremiumChange])
-
-  // const handleInputSelect = useCallback(
-  //   (inputCurrency: Currency) => {
-  //     onCurrencySelection(Field.INPUT, inputCurrency)
-  //   },
-  //   [onCurrencySelection]
-  // )
-
-  // const handleOutputSelect = useCallback(
-  //   (outputCurrency: Currency) => onCurrencySelection(Field.OUTPUT, outputCurrency),
-  //   [onCurrencySelection]
-  // )
+  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash, onLeverageFactorChange])
 
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onUserInput(Field.INPUT, maxInputAmount.toExact())
@@ -369,33 +353,6 @@ const SwapTabContent = () => {
     }
   }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
-  // const [leverageApproveAmount] = useMemo(() => {
-  //   if (inputCurrency && parsedAmounts[Field.INPUT] && outputCurrency && premium) {
-  //     return [
-  //       CurrencyAmount.fromRawAmount(
-  //         inputCurrency,
-  //         new BN(parsedAmounts[Field.INPUT]?.toExact() ?? 0).plus(premium).shiftedBy(18).toFixed(0)
-  //       ),
-  //     ]
-  //   } else {
-  //     return [undefined]
-  //   }
-  // }, [inputCurrency, parsedAmounts, outputCurrency, premium])
-
-  // const [leverageApprovalState, approveLeverageManager] = useApproveCallback(
-  //   leverageApproveAmount,
-  //   leverageManagerAddress ?? undefined
-  // )
-  // const updateLeverageAllowance = useCallback(async () => {
-  //   try {
-  //     await approveLeverageManager()
-  //   } catch (err) {
-  //     console.log('approveLeverageManager err: ', err)
-  //   }
-  // }, [approveLeverageManager])
-
-  // console.log('swapmodal log', leverageTrade, showLeverageConfirm)
-
   return (
     <Wrapper>
       <SwapHeader allowedSlippage={allowedSlippage} />
@@ -431,7 +388,6 @@ const SwapTabContent = () => {
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
-              // onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}

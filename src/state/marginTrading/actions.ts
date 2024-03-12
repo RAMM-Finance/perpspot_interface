@@ -21,11 +21,13 @@ export const replaceMarginTradeState = createAction<{
   isLimitOrder: boolean
   startingPrice?: string
   baseCurrencyIsInputToken: boolean
+  marginInPosToken: boolean
 }>('margin/replaceMarginState')
 export const setRecipient = createAction<{ recipient: string | null }>('margin/setRecipient')
 export const setHideClosedLeveragePositions = createAction<{ hideClosedLeveragePositions: boolean }>(
   'swap/setHideClosedLeveragePositions'
 )
+export const setMarginInPosToken = createAction<{ marginInPosToken: boolean }>('margin/setMarginInPostoken')
 export const setLocked = createAction<{ locked: MarginField | null }>('margin/setLocked')
 // export const setPremium = createAction<{ premium: string }>('margin/setPremium')
 

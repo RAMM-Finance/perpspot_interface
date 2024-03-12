@@ -172,9 +172,9 @@ export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; 
           {filteredOrders?.map((order) => (
             <LoadedRow
               key={
-                order.key.token0Address +
+                order.key.token0 +
                 '-' +
-                order.key.token1Address +
+                order.key.token1 +
                 '-' +
                 order.key.fee.toString() +
                 '-' +

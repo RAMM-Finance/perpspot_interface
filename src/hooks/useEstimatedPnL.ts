@@ -19,23 +19,24 @@ export function useEstimatedPnL(
   existingPosition?: MarginPositionDetails,
   reduceAmount?: BN,
   limitPrice?: BN,
-  outputCurrency?: Currency, 
-  inputCurrency?:Currency
+  outputCurrency?: Currency,
+  inputCurrency?: Currency
 ): {
   loading: boolean
   error: any
   result: TokenBN | undefined
 } {
   const calldata = useMemo(() => {
-    if (!orderKey || !existingPosition || !reduceAmount || !limitPrice || !outputCurrency ||!inputCurrency) return undefined
+    if (!orderKey || !existingPosition || !reduceAmount || !limitPrice || !outputCurrency || !inputCurrency)
+      return undefined
     if (reduceAmount.lte(0) || limitPrice.lte(0)) return undefined
 
     const reducePercentage = reduceAmount.div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
     const fillerOutput = reduceAmount.times(limitPrice).shiftedBy(inputCurrency.decimals).toFixed(0)
     const params = [
       {
-        token0: orderKey.poolKey.token0Address,
-        token1: orderKey.poolKey.token1Address,
+        token0: orderKey.poolKey.token0,
+        token1: orderKey.poolKey.token1,
         fee: orderKey.poolKey.fee,
       },
       orderKey.trader,
@@ -48,8 +49,8 @@ export function useEstimatedPnL(
 
   const { loading, error, result } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 1)
 
-   return useMemo(() => {
-    if (result && outputCurrency &&  inputCurrency) {
+  return useMemo(() => {
+    if (result && outputCurrency && inputCurrency) {
       const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getEstimatedPnl', result)[0]
       return {
         loading,
@@ -63,5 +64,5 @@ export function useEstimatedPnL(
         result: undefined,
       }
     }
-  }, [result, loading, error, outputCurrency , inputCurrency])
+  }, [result, loading, error, outputCurrency, inputCurrency])
 }

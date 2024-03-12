@@ -98,9 +98,11 @@ export declare namespace Quoter {
   export type QuoteExactInputParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
-    margin: PromiseOrValue<BigNumberish>;
+    marginInInput: PromiseOrValue<BigNumberish>;
+    marginInOutput: PromiseOrValue<BigNumberish>;
     borrowAmount: PromiseOrValue<BigNumberish>;
     quoter: PromiseOrValue<string>;
+    marginInPosToken: PromiseOrValue<boolean>;
   };
 
   export type QuoteExactInputParamsStructOutput = [
@@ -108,20 +110,24 @@ export declare namespace Quoter {
     boolean,
     BigNumber,
     BigNumber,
-    string
+    BigNumber,
+    string,
+    boolean
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
-    margin: BigNumber;
+    marginInInput: BigNumber;
+    marginInOutput: BigNumber;
     borrowAmount: BigNumber;
     quoter: string;
+    marginInPosToken: boolean;
   };
 }
 
 export interface QuoterInterface extends utils.Interface {
   functions: {
     "getPoolKeys()": FunctionFragment;
-    "quoteExactInput(((address,address,uint24),bool,uint256,uint256,address))": FunctionFragment;
+    "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool))": FunctionFragment;
   };
 
   getFunction(

@@ -650,7 +650,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const { margin, totalDebtInput } = details
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
-      return [details.poolKey.token0Address, details.poolKey.token1Address]
+      return [details.poolKey.token0, details.poolKey.token1]
     }
     return [undefined, undefined]
   }, [details])
@@ -669,14 +669,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const id = getPoolId(token0Address, token1Address, details?.poolKey.fee)
   const { poolId } = useSwapState()
-  const handleCurrencySelect = useCallback(
+  const handlePoolSelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      console.log('in', currencyIn)
-      console.log('out', currencyOut)
       e.stopPropagation()
-      poolId !== id && id && onPoolSelection(currencyIn, currencyOut, fee, id)
+      poolId !== id &&
+        id &&
+        onPoolSelection(currencyIn, currencyOut, {
+          token0: details.poolKey.token0,
+          token1: details.poolKey.token1,
+          fee,
+        })
     },
-    [onPoolSelection, poolId, id]
+    [onPoolSelection, poolId, id, details]
   )
 
   const [
@@ -940,7 +944,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <SmallButtonPrimary
               style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
               onClick={(e) =>
-                handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
+                handlePoolSelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
               }
             >
               <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
