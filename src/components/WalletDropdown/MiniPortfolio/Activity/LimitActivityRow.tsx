@@ -119,12 +119,9 @@ export function ActivityRow({
             <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
               {actionDescription}
               {isInverted ? (
-                priceNumber < 1 ?
-                (<ActivityPrice>{`Price: ${( priceNumber / 1 as number).toFixed(7)}`}</ActivityPrice>)
-                :
-                (<ActivityPrice>{`Price: ${( 1 / priceNumber as number).toFixed(7)}`}</ActivityPrice>)
+                (<ActivityPrice>{`Price: ${( 1 / priceNumber as number).toFixed(5)}`}</ActivityPrice>)
               ) : (
-                <ActivityPrice>{`Price: ${priceNumber > 1 ? priceNumber.toFixed(2) : priceNumber.toFixed(5)}`}</ActivityPrice>
+                <ActivityPrice>{`Price: ${priceNumber.toFixed(5)}`}</ActivityPrice>
               )}
               {invertedTooltipLogo}
               {pnlNumber && (
