@@ -125,13 +125,23 @@ function getDescriptor(entry: any, tokens: any) {
     if (entry.positionIsToken0) return 'Canceled order for ' + token0Name + ' with ' + token1Name
     else return 'Canceled order for ' + token1Name + ' with' + token0Name
   } else if (entry.actionType == 'Add Position') {
+    const price = entry.marginIsPosToken 
+      ? entry.positionIsToken0
+          ? (Number(entry.addedAmount)/ 10 ** token0Decimal)/ (Number(entry.borrowAmount)/ 10 ** token1Decimal)
+          : (Number(entry.addedAmount)/ 10 ** token1Decimal)/ (Number(entry.borrowAmount)/ 10 ** token0Decimal)
+      : entry.positionIsToken0
+          ? (Number(entry.addedAmount)/ 10 ** token0Decimal)/ ((Number(entry.marginAmount)+Number(entry.borrowAmount))/ 10 ** token1Decimal)
+          : (Number(entry.addedAmount)/ 10 ** token1Decimal)/ ((Number(entry.marginAmount)+Number(entry.borrowAmount))/ 10 ** token0Decimal)
+    const margin = entry.marginIsPosToken
+      ? entry.positionIsToken0? Number(entry.marginAmount/10**token0Decimal) : Number(entry.marginAmount/10**token1Decimal)
+      : entry.positionIsToken0? Number(entry.marginAmount/10**token1Decimal) : Number(entry.marginAmount/10**token0Decimal)
     if (entry.positionIsToken0)
       return (
-        'Added ' + String(Number(entry.addedAmount) / 10 ** token0Decimal) + token0Name + ' long with ' + token1Name
+        'Added ' + String(Number(entry.addedAmount) / 10 ** token0Decimal) + token0Name + '  with ' + String(margin) + (entry.marginIsPosToken? token0Name: token1Name)
       )
     else
       return (
-        'Added ' + String(Number(entry.addedAmount) / 10 ** token1Decimal) + token1Name + ' long with ' + token0Name
+        'Added ' + String(Number(entry.addedAmount) / 10 ** token1Decimal) + token1Name + '  with ' + String(margin) + (entry.marginIsPosToken? token1Name: token0Name)
       )
   } else if (entry.actionType == 'Force Closed') {
     if (entry.positionIsToken0)
@@ -149,18 +159,23 @@ function getDescriptor(entry: any, tokens: any) {
         'Force Closed ' +
         String(Number(entry.forcedClosedAmount) / 10 ** token1Decimal) +
         token1Name +
-        ' for ' +
+        ' from ' +
         token0Name +
         '/' +
         token1Name
       )
   } else if (entry.actionType == 'Reduce Position') {
+    const price = String(-(Number(entry.amount0) / 10 ** token0Decimal) / (Number(entry.amount1) / 10 ** token1Decimal))
+    const PnL = entry.marginIsPosToken 
+      ? entry.positionIsToken0? Number(entry.PnL)/10 ** token0Decimal: Number(entry.PnL)/10 ** token1Decimal
+      : entry.positionIsToken0? Number(entry.PnL)/10 ** token1Decimal: Number(entry.PnL)/10 ** token0Decimal
+
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
         String(Number(entry.reduceAmount) / 10 ** token0Decimal) +
         token0Name +
-        ' for ' +
+        ' from ' +
         token0Name +
         '/' +
         token1Name
@@ -196,6 +211,7 @@ export function LimitActivityTab({ account }: { account: string }) {
   //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
 
   const history = useHistoryData(account)
+  console.log('history', history)
   const historyToShow = useMemo(() => {
     if (!history) return
     const processedHistory: any[] = []
@@ -244,7 +260,7 @@ export function LimitActivityTab({ account }: { account: string }) {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (
       <GridContainer>
-        <ActivitiesHeaderRow />
+        {/*<ActivitiesHeaderRow />*/}
         <HistoryTable historyToShow={historyToShow}/>
       </GridContainer>
     )

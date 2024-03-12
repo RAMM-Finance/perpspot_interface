@@ -33,7 +33,6 @@ import {
   typeInput,
 } from './actions'
 import { SwapState } from './reducer'
-
 // import { useLeveragePosition } from 'hooks/useV3Positions'
 
 export function useSwapState(): AppState['swap'] {

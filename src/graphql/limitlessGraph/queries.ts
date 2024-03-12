@@ -82,7 +82,8 @@ export const ForceClosedQuery = `
       marginInPosToken
       margin
       trader
-      forcedClosedAmount      
+      forcedClosedAmount     
+      rangeCondition 
       blockTimestamp
       blockNumber
       transactionHash
@@ -113,6 +114,8 @@ export const AddQuery = `
       marginInPosToken
       trader
       addedAmount    
+      marginAmount
+      borrowAmount
       filler  
       blockTimestamp
       transactionHash
@@ -130,6 +133,8 @@ export const ReduceQuery = `
       blockTimestamp
       PnL
       filler
+      amount0
+      amount1 
       transactionHash
     }
   }
