@@ -1,5 +1,6 @@
 import { t } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import HistoryTable from 'components/ActivitiesTable/HistoryTable'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { useWalletDrawer } from 'components/WalletDropdown'
 import { getYear, isSameDay, isSameMonth, isSameWeek, isSameYear } from 'date-fns'
@@ -12,11 +13,9 @@ import { atom, useAtom } from 'jotai'
 import { useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
 
-import { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
+import { PortfolioSkeleton } from '../PortfolioRow'
 import { parseRemoteActivities } from './parseRemote'
 import { Activity, ActivityDescriptionType, ActivityMap } from './types'
-import { ActivitiesHeaderRow } from 'components/ActivitiesTable/ActivitesRow'
-import HistoryTable from 'components/ActivitiesTable/HistoryTable'
 
 const GridContainer = styled.div`
   display: flex;
@@ -40,7 +39,6 @@ interface ActivityGroup {
   title: string
   transactions: Array<Activity>
 }
-
 
 const sortActivities = (a: Activity, b: Activity) => b.timestamp - a.timestamp
 
@@ -120,29 +118,75 @@ function getDescriptor(entry: any, tokens: any) {
   // console.log('------getDescriptor token name', tokens[entry.token0]?.name, token0Name, token1Name)
   // console.log('------getDescriptor entry', entry);
   if (entry.actionType == ActivityDescriptionType.ADD_ORDER) {
-    if (entry.positionIsToken0) return 'Added order for ' + token0Name + ' with ' + token1Name
-    else return 'Added order for ' + token1Name + ' with' + token0Name
-  } else if (entry.actionType == ActivityDescriptionType.CANCLE_ORDER) {
-    if (entry.positionIsToken0) return 'Canceled order for ' + token0Name + ' with ' + token1Name
-    else return 'Canceled order for ' + token1Name + ' with' + token0Name
-  } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
-    const price = entry.marginIsPosToken 
-      ? entry.positionIsToken0
-          ? (Number(entry.addedAmount)/ 10 ** token0Decimal)/ (Number(entry.borrowAmount)/ 10 ** token1Decimal)
-          : (Number(entry.addedAmount)/ 10 ** token1Decimal)/ (Number(entry.borrowAmount)/ 10 ** token0Decimal)
+    const price = entry.marginIsPosToken
+      ? entry.positionisToken0
+        ? token0Decimal / entry.startoutput
+        : token1Decimal / entry.startoutput
       : entry.positionIsToken0
-          ? (Number(entry.addedAmount)/ 10 ** token0Decimal)/ ((Number(entry.marginAmount)+Number(entry.borrowAmount))/ 10 ** token1Decimal)
-          : (Number(entry.addedAmount)/ 10 ** token1Decimal)/ ((Number(entry.marginAmount)+Number(entry.borrowAmount))/ 10 ** token0Decimal)
-    const margin = entry.marginIsPosToken
-      ? entry.positionIsToken0? Number(entry.marginAmount/10**token0Decimal) : Number(entry.marginAmount/10**token1Decimal)
-      : entry.positionIsToken0? Number(entry.marginAmount/10**token1Decimal) : Number(entry.marginAmount/10**token0Decimal)
+      ? token1Decimal / entry.inputAmount
+      : token0Decimal / entry.inputAmount
     if (entry.positionIsToken0)
       return (
-        'Added ' + String(Number(entry.addedAmount) / 10 ** token0Decimal) + token0Name + '  with ' + String(margin) + (entry.marginIsPosToken? token0Name: token1Name) +`, Pair: ${token0Name}/${token1Name}` + `, Price: ${price.toFixed(7)}`
+        'Added order for ' +
+        token0Name +
+        ' with ' +
+        token1Name +
+        `, Pair: ${token0Name}/${token1Name}` +
+        `, Price: ${price}`
       )
     else
       return (
-        'Added ' + String(Number(entry.addedAmount) / 10 ** token1Decimal) + token1Name + '  with ' + String(margin) + (entry.marginIsPosToken? token1Name: token0Name) + `, Pair: ${token0Name}/${token1Name}` + `, Price: ${price.toFixed(7)}`
+        'Added order for ' +
+        token1Name +
+        ' with' +
+        token0Name +
+        `, Pair: ${token0Name}/${token1Name}` +
+        `, Price: ${price}`
+      )
+  } else if (entry.actionType == ActivityDescriptionType.CANCLE_ORDER) {
+    if (entry.positionIsToken0)
+      return 'Canceled order for ' + token0Name + ' with ' + token1Name + `, Pair: ${token0Name}/${token1Name}`
+    else return 'Canceled order for ' + token1Name + ' with' + token0Name
+  } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
+    const price = entry.marginIsPosToken
+      ? entry.positionIsToken0
+        ? Number(entry.addedAmount) / 10 ** token0Decimal / (Number(entry.borrowAmount) / 10 ** token1Decimal)
+        : Number(entry.addedAmount) / 10 ** token1Decimal / (Number(entry.borrowAmount) / 10 ** token0Decimal)
+      : entry.positionIsToken0
+      ? Number(entry.addedAmount) /
+        10 ** token0Decimal /
+        ((Number(entry.marginAmount) + Number(entry.borrowAmount)) / 10 ** token1Decimal)
+      : Number(entry.addedAmount) /
+        10 ** token1Decimal /
+        ((Number(entry.marginAmount) + Number(entry.borrowAmount)) / 10 ** token0Decimal)
+    const margin = entry.marginIsPosToken
+      ? entry.positionIsToken0
+        ? Number(entry.marginAmount / 10 ** token0Decimal)
+        : Number(entry.marginAmount / 10 ** token1Decimal)
+      : entry.positionIsToken0
+      ? Number(entry.marginAmount / 10 ** token1Decimal)
+      : Number(entry.marginAmount / 10 ** token0Decimal)
+    if (entry.positionIsToken0)
+      return (
+        'Added ' +
+        String(Number(entry.addedAmount) / 10 ** token0Decimal) +
+        token0Name +
+        '  with ' +
+        String(margin) +
+        (entry.marginIsPosToken ? token0Name : token1Name) +
+        `, Pair: ${token0Name}/${token1Name}` +
+        `, Price: ${price.toFixed(7)}`
+      )
+    else
+      return (
+        'Added ' +
+        String(Number(entry.addedAmount) / 10 ** token1Decimal) +
+        token1Name +
+        '  with ' +
+        String(margin) +
+        (entry.marginIsPosToken ? token1Name : token0Name) +
+        `, Pair: ${token0Name}/${token1Name}` +
+        `, Price: ${price.toFixed(7)}`
       )
   } else if (entry.actionType == ActivityDescriptionType.FORCE_CLOSED) {
     if (entry.positionIsToken0)
@@ -167,10 +211,14 @@ function getDescriptor(entry: any, tokens: any) {
       )
   } else if (entry.actionType == ActivityDescriptionType.REDUCE_POSITION) {
     const price = String(-(Number(entry.amount0) / 10 ** token0Decimal) / (Number(entry.amount1) / 10 ** token1Decimal))
-    const PnL = entry.marginIsPosToken 
-      ? entry.positionIsToken0? Number(entry.PnL)/10 ** token0Decimal: Number(entry.PnL)/10 ** token1Decimal
-      : entry.positionIsToken0? Number(entry.PnL)/10 ** token1Decimal: Number(entry.PnL)/10 ** token0Decimal
-    const marginToken= entry.marginIsPosToken ? token0Name : token1Name;
+    const PnL = entry.marginIsPosToken
+      ? entry.positionIsToken0
+        ? Number(entry.PnL) / 10 ** token0Decimal
+        : Number(entry.PnL) / 10 ** token1Decimal
+      : entry.positionIsToken0
+      ? Number(entry.PnL) / 10 ** token1Decimal
+      : Number(entry.PnL) / 10 ** token0Decimal
+    const marginToken = entry.marginIsPosToken ? token0Name : token1Name
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
@@ -179,7 +227,7 @@ function getDescriptor(entry: any, tokens: any) {
         ' from ' +
         token0Name +
         '/' +
-        token1Name + 
+        token1Name +
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${Number(price).toFixed(7)}` +
         ` Pnl: ${PnL.toFixed(8)} ${marginToken}`
@@ -269,7 +317,7 @@ export function LimitActivityTab({ account }: { account: string }) {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (
       <GridContainer>
-        <HistoryTable historyToShow={historyToShow}/>
+        <HistoryTable historyToShow={historyToShow} />
       </GridContainer>
     )
   }
