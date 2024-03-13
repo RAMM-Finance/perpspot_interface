@@ -48,7 +48,7 @@ import { RedirectPathToSwapOnly } from './Swap/redirects'
 import Tokens from './Tokens'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
-const Vote = lazy(() => import('./Vote'))
+// const Vote = lazy(() => import('./Vote'))
 const Wallet = lazy(() => import('./Wallet'))
 // const NftExplore = lazy(() => import('nft/pages/explore'))
 // const Collection = lazy(() => import('nft/pages/collection'))
@@ -240,14 +240,14 @@ export default function App() {
                     <Route path=":chainName" />
                   </Route>
                   <Route path="tokens/:chainName/:tokenAddress" element={<TokenDetails />} />
-                  <Route
+                  {/* <Route
                     path="vote/*"
                     element={
                       <Suspense fallback={<LazyLoadSpinner />}>
                         <Vote />
                       </Suspense>
                     }
-                  />
+                  /> */}
                   <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
                   {micrositeEnabled && <Route path="wallet" element={<Wallet />} />}
                   <Route path="send" element={<RedirectPathToSwapOnly />} />

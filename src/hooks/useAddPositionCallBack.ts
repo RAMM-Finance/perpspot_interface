@@ -50,7 +50,17 @@ export function useAddPositionCallback(
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
 
-      const { pool, swapInput, swapRoute, premium, inputIsToken0, marginInPosToken, margin } = trade
+      const {
+        pool,
+        swapInput,
+        swapRoute,
+        premium,
+        inputIsToken0,
+        marginInPosToken,
+        margin,
+        premiumInPosToken,
+        premiumSwapRoute,
+      } = trade
 
       const positionKey: TraderPositionKey = {
         poolKey: {
@@ -77,6 +87,18 @@ export function useAddPositionCallback(
         amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
       }
 
+      let minPremiumOutput: string | undefined
+      if (premiumInPosToken) {
+        const output = await getOutputQuote(
+          BnToCurrencyAmount(premium, outputCurrency),
+          premiumSwapRoute,
+          provider,
+          chainId
+        )
+        if (!output) throw new Error('Quoter Error')
+        minPremiumOutput = output.toString()
+      }
+
       const outputDecimals = outputCurrency.decimals
 
       // calculate minimum output amount
@@ -98,6 +120,8 @@ export function useAddPositionCallback(
         slippedTickMin,
         slippedTickMax,
         marginInPosToken,
+        premiumInPosToken,
+        minPremiumOutput,
       })
       const tx = {
         from: account,

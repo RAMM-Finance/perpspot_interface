@@ -387,7 +387,7 @@ export function AdvancedMarginTradeDetails({
           label="Initial Premium deposit"
           value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={trade ? inputCurrency?.symbol : ''}
+          symbolAppend={trade ? (trade.premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) : ''}
         />
         <ValueLabel
           description="Variable Premium Rate. Rate % * borrow amount is the hourly amount your premium deposit is depleted."

@@ -7,6 +7,7 @@ import {
   setLimit,
   setLocked,
   setMarginInPosToken,
+  setPremiumInPosToken,
   setPrice,
   setRecipient,
   typeInput,
@@ -22,29 +23,20 @@ export interface MarginTradeState {
   readonly startingPrice: string | undefined
   readonly baseCurrencyIsInputToken: boolean
   readonly marginInPosToken: boolean
+  readonly premiumInPosToken: boolean
 }
 
-// const initialState: MarginTradeState = queryParametersToSwapState(parsedQueryString())
-// const tabReducerInit = { tab: 'long' }
 const initialState: MarginTradeState = {
   lockedField: MarginField.MARGIN,
-  // typedValue: '',
-  // inputCurrencyId: null,
-  // outputCurrencyId: null,
   [MarginField.MARGIN]: null,
-  // [MarginField.BORROW]: null,
   [MarginField.LEVERAGE_FACTOR]: null,
   recipient: null,
   isLimitOrder: false,
   startingPrice: undefined,
   marginInPosToken: false,
   baseCurrencyIsInputToken: false,
-  // premium: null,
+  premiumInPosToken: false,
 }
-
-// export const tabReducer = createReducer(tabReducerInit, (builder) =>
-//   builder.addCase(setSwapTab, (state, { payload: { tab } }) => ({ ...state, tab }))
-// )
 
 export default createReducer<MarginTradeState>(initialState, (builder) =>
   builder
@@ -63,22 +55,20 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             startingPrice,
             baseCurrencyIsInputToken,
             marginInPosToken,
+            premiumInPosToken,
           },
         }
       ) => {
         return {
           lockedField,
-          // typedValue: '',
-          // inputCurrencyId,
-          // outputCurrencyId,
           [MarginField.MARGIN]: margin,
-          // [MarginField.BORROW]: borrow,
           [MarginField.LEVERAGE_FACTOR]: leverageFactor,
           recipient,
           isLimitOrder,
           startingPrice,
           baseCurrencyIsInputToken,
           marginInPosToken,
+          premiumInPosToken,
         }
       }
     )
@@ -119,6 +109,12 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
       return {
         ...state,
         baseCurrencyIsInputToken,
+      }
+    })
+    .addCase(setPremiumInPosToken, (state, { payload: { premiumInPosToken } }) => {
+      return {
+        ...state,
+        premiumInPosToken,
       }
     })
 )

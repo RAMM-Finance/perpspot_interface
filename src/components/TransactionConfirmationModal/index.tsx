@@ -1,22 +1,14 @@
 import { Trans } from '@lingui/macro'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import backgroundImage from 'assets/images/visualbg.png'
 import Badge from 'components/Badge'
-import { PopupAlertTriangle } from 'components/Popups/FailedNetworkSwitchPopup'
-import { Descriptor } from 'components/Popups/TransactionPopup'
-import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Activity/parseLocal'
-import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId, SupportedL2ChainId } from 'constants/chains'
-import { useCurrency } from 'hooks/Tokens'
 import useCurrencyLogoURIs from 'lib/hooks/useCurrencyLogoURIs'
 import { ReactNode, useCallback, useState } from 'react'
 import { AlertCircle, AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
 import { Text } from 'rebass'
-import { useCombinedActiveList } from 'state/lists/hooks'
 import { useIsTransactionConfirmed, useTransaction } from 'state/transactions/hooks'
-import { ReduceLeveragePositionTransactionInfo, TransactionDetails } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { isL2ChainId } from 'utils/chains'
 
@@ -97,7 +89,7 @@ function ConfirmationPendingContent({
   )
 }
 
-export function TransactionSubmittedContent({
+function TransactionSubmittedContent({
   onDismiss,
   chainId,
   hash,
@@ -184,20 +176,6 @@ export function TransactionSubmittedContent({
   )
 }
 
-const ReduceWrapper = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  justify-content: flex-start;
-  background-image: url(${backgroundImage});
-  background-size: contain;
-  background-repeat: no-repeat;
-  border-radius: 20px;
-  opacity: 1;
-  outline: 1px solid ${({ theme }) => theme.backgroundOutline};
-  padding: 1.25rem;
-`
-
 export interface TransactionPositionDetails {
   pnl: number
   initialCollateral: number
@@ -207,123 +185,6 @@ export interface TransactionPositionDetails {
   markPrice: number
   leverageFactor: number
   quoteBaseSymbol: string
-}
-
-const AmboyText = styled.div<{ color: string; size: number }>`
-  font-family: 'Parkinson Amboy Black', Roboto;
-  font-size: ${({ size }) => size}px;
-  color: ${({ color }) => color};
-`
-
-const AgencyB = styled.div<{ color: string; size: number }>`
-  font-family: 'AGENCYB', Roboto;
-  font-size: ${({ size }) => size}px;
-  color: ${({ color }) => color};
-`
-const CenterRow = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
-  align-items: center;
-`
-
-const CloseItem = styled.div`
-  align-self: flex-end;
-  justify-self: flex-end;
-`
-
-export function ReduceLeverageTransactionPopupContent({
-  tx,
-  chainId,
-  removeThisPopup,
-}: {
-  tx: TransactionDetails
-  chainId: number
-  removeThisPopup: () => void
-}) {
-  // const theme = useTheme()
-
-  // const { connector } = useWeb3React()
-  const tokens = useCombinedActiveList()
-  const activity = parseLocalActivity(tx, chainId, tokens)
-
-  const {
-    pnl,
-    // initialCollateral,
-    inputCurrencyId,
-    outputCurrencyId,
-    // entryPrice,
-    // markPrice,
-    // leverageFactor,
-    // quoteBaseSymbol,
-  } = tx.info as ReduceLeveragePositionTransactionInfo
-
-  const success = tx.receipt?.status === 1
-
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
-
-  if (!activity) {
-    return null
-  }
-
-  const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
-
-  return success ? (
-    <ReduceWrapper>
-      TODO
-      {/* <CenterRow>
-        <AmboyText size={36} color="#ffffff">
-          Closed Position
-        </AmboyText>
-        <CloseItem>
-          <CloseIcon onClick={removeThisPopup} />
-        </CloseItem>
-      </CenterRow>
-      <AgencyB size={24} color="#ffffff">
-        {`${formatNumber(leverageFactor, NumberType.SwapTradeAmount)}x | Long ${outputCurrency?.symbol} / ${
-          inputCurrency?.symbol
-        }`}
-      </AgencyB>
-      <AmboyText size={48} color={pnl > 0 ? '#00ff0c' : '#ff2a00'}>
-        {`${formatNumber((pnl / initialCollateral) * 100)}%`}
-      </AmboyText>
-      <AgencyB size={24} color="#ffffff">
-        (
-        {pnl > 0
-          ? `+ ${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`
-          : `${formatNumber(pnl, NumberType.SwapTradeAmount)} ${inputCurrency?.symbol}`}
-        )
-      </AgencyB>
-      <CenterRow>
-        <div style={{ margin: '3px' }}>
-          <AgencyB size={24} color="#ffffff">{`Entry Price: `}</AgencyB>
-        </div>
-
-        <AgencyB size={24} color="#f600ff">{` ${formatNumber(entryPrice)} ${quoteBaseSymbol}`}</AgencyB>
-      </CenterRow>
-      <CenterRow>
-        <div style={{ margin: '3px' }}>
-          <AgencyB size={24} color="#ffffff">{`Mark Price: `}</AgencyB>
-        </div>
-        <AgencyB size={24} color="#f600ff">{` ${formatNumber(markPrice)} ${quoteBaseSymbol}`}</AgencyB>
-      </CenterRow>
-      <LogoGradient width={150} height={50} /> */}
-    </ReduceWrapper>
-  ) : (
-    <PortfolioRow
-      left={<PopupAlertTriangle />}
-      title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
-      descriptor={
-        typeof activity.descriptor === 'string' ? (
-          <Descriptor color="textSecondary">{activity.descriptor}</Descriptor>
-        ) : (
-          activity.descriptor
-        )
-      }
-      onClick={() => window.open(explorerUrl, '_blank')}
-    />
-  )
 }
 
 export function ConfirmationModalContent({
@@ -499,41 +360,6 @@ export default function TransactionConfirmationModal({
   pendingText,
   content,
   currencyToAdd,
-}: ConfirmationModalProps) {
-  const { chainId } = useWeb3React()
-
-  if (!chainId) return null
-
-  // confirmation screen
-  return (
-    <Modal isOpen={isOpen} $scrollOverlay={true} onDismiss={onDismiss} maxHeight={90}>
-      {isL2ChainId(chainId) && (hash || attemptingTxn) ? (
-        <L2Content chainId={chainId} hash={hash} onDismiss={onDismiss} pendingText={pendingText} />
-      ) : attemptingTxn ? (
-        <ConfirmationPendingContent onDismiss={onDismiss} pendingText={pendingText} />
-      ) : hash ? (
-        <TransactionSubmittedContent
-          chainId={chainId}
-          hash={hash}
-          onDismiss={onDismiss}
-          currencyToAdd={currencyToAdd}
-        />
-      ) : (
-        content()
-      )}
-    </Modal>
-  )
-}
-
-export function ReduceLeverageTransactionConfirmationModal({
-  isOpen,
-  onDismiss,
-  attemptingTxn,
-  hash,
-  pendingText,
-  content,
-  currencyToAdd,
-  positionData,
 }: ConfirmationModalProps) {
   const { chainId } = useWeb3React()
 
