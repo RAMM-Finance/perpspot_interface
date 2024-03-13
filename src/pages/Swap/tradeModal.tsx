@@ -40,7 +40,6 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
-import {useDefaultsFromURLSearch} from 'state/swap/hooks'
 import {
   AddLimitTrade,
   AddMarginTrade,
