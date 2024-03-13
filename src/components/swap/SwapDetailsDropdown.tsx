@@ -247,17 +247,6 @@ export function LeverageDetailsDropdown({
               )}
             </RowFixed>
             <RowFixed>
-              {/* {!trade?.gasUseEstimateUSD ||
-              showDetails ||
-              !chainId ||
-              !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
-                <GasEstimateBadge
-                  trade={trade}
-                  loading={syncing || loading}
-                  showRoute={!showDetails}
-                  disableHover={showDetails}
-                />
-              )} */}
               <RotatingArrow stroke={trade ? theme.textTertiary : theme.deprecated_bg3} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>

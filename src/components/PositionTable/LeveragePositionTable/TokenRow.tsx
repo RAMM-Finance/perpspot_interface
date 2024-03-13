@@ -6,17 +6,16 @@ import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
+import { useInvertedPrice } from 'hooks/useInvertedPrice'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReversedArrowsIcon } from 'nft/components/icons'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -40,6 +39,17 @@ import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
+export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
+  padding: 0;
+  align-items: center;
+  cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
+`
+
+export const UnderlineText = styled(Row)`
+  width: fit-content;
+  align-items: flex-start;
+  text-decoration: ${({ theme }) => `underline dashed ${theme.textPrimary}`};
+`
 const Cell = styled.div`
   display: flex;
   align-items: center;
@@ -631,7 +641,8 @@ export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
 
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const [isInverted, setInverted] = useState(false)
+  const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
+
   // const { tokenListIndex, tokenListLength, token, sortRank } = props
   const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
@@ -650,7 +661,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   const { margin, totalDebtInput } = details
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
-      return [details.poolKey.token0Address, details.poolKey.token1Address]
+      return [details.poolKey.token0, details.poolKey.token1]
     }
     return [undefined, undefined]
   }, [details])
@@ -669,14 +680,18 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const id = getPoolId(token0Address, token1Address, details?.poolKey.fee)
   const { poolId } = useSwapState()
-  const handleCurrencySelect = useCallback(
+  const handlePoolSelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      console.log('in', currencyIn)
-      console.log('out', currencyOut)
       e.stopPropagation()
-      poolId !== id && id && onPoolSelection(currencyIn, currencyOut, fee, id)
+      poolId !== id &&
+        id &&
+        onPoolSelection(currencyIn, currencyOut, {
+          token0: details.poolKey.token0,
+          token1: details.poolKey.token1,
+          fee,
+        })
     },
-    [onPoolSelection, poolId, id]
+    [onPoolSelection, poolId, id, details]
   )
 
   const [
@@ -723,7 +738,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
-  // console.log(position)
+  console.log(position, '----position-----')
 
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
@@ -893,17 +908,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                       </AutoColumn>
                     </>
                   )}
-                  <MouseoverTooltip text="invert" placement="right">
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setInverted(!isInverted)
-                      }}
-                      style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-                    >
-                      <ReversedArrowsIcon />
-                    </div>
-                  </MouseoverTooltip>
+                  {invertedTooltipLogo}
                 </RowBetween>
               </AutoColumn>
             </FlexStartRow>
@@ -940,7 +945,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <SmallButtonPrimary
               style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
               onClick={(e) =>
-                handleCurrencySelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
+                handlePoolSelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
               }
             >
               <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>

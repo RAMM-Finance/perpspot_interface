@@ -106,6 +106,11 @@ const _abi = [
             name: "margin",
             type: "uint256",
           },
+          {
+            internalType: "bool",
+            name: "marginInPosToken",
+            type: "bool",
+          },
         ],
         internalType: "struct MarginPosition[]",
         name: "",

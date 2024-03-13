@@ -238,7 +238,8 @@ export function AddMarginPositionConfirmModal({
   const pendingText = (
     <Trans>
       Borrowing {formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)} {trade?.margin?.tokenSymbol} and
-      Receiving {formatBNToString(trade?.swapOutput, NumberType.SwapTradeAmount)} {trade?.swapOutput?.tokenSymbol}
+      Receiving {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
+      {trade?.expectedAddedOutput?.tokenSymbol}
     </Trans>
   )
 

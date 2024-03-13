@@ -78,13 +78,20 @@ export type MarginPositionStruct = {
   base: PositionStruct;
   totalPosition: PromiseOrValue<BigNumberish>;
   margin: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type MarginPositionStructOutput = [
   PositionStructOutput,
   BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
+  BigNumber,
+  boolean
+] & {
+  base: PositionStructOutput;
+  totalPosition: BigNumber;
+  margin: BigNumber;
+  marginInPosToken: boolean;
+};
 
 export declare namespace IDataProvider {
   export type PremiumDepositStruct = {

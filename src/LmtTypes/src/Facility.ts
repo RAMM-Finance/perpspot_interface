@@ -79,8 +79,8 @@ export interface FacilityInterface extends utils.Interface {
     "multicall(bytes[])": FunctionFragment;
     "payPremium((address,address,uint24),bool,uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
-    "setPauseConfig(bool,bool,bool)": FunctionFragment;
     "setProtocolContracts(address,address)": FunctionFragment;
+    "swapAndDepositPremium((address,address,uint24),address,bool,uint256,uint256)": FunctionFragment;
     "withdrawPremium((address,address,uint24),bool,uint256,bool)": FunctionFragment;
   };
 
@@ -99,8 +99,8 @@ export interface FacilityInterface extends utils.Interface {
       | "multicall"
       | "payPremium"
       | "setOwner"
-      | "setPauseConfig"
       | "setProtocolContracts"
+      | "swapAndDepositPremium"
       | "withdrawPremium"
   ): FunctionFragment;
 
@@ -187,16 +187,18 @@ export interface FacilityInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setPauseConfig",
-    values: [
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<boolean>
-    ]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setProtocolContracts",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "swapAndDepositPremium",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<string>,
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawPremium",
@@ -249,11 +251,11 @@ export interface FacilityInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "payPremium", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setPauseConfig",
+    functionFragment: "setProtocolContracts",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setProtocolContracts",
+    functionFragment: "swapAndDepositPremium",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -414,16 +416,18 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     setProtocolContracts(
       poolManager_: PromiseOrValue<string>,
       executioner_: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -516,16 +520,18 @@ export interface Facility extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setPauseConfig(
-    addPaused: PromiseOrValue<boolean>,
-    reducePaused: PromiseOrValue<boolean>,
-    forceClosePaused: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   setProtocolContracts(
     poolManager_: PromiseOrValue<string>,
     executioner_: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  swapAndDepositPremium(
+    key: PoolKeyStruct,
+    trader: PromiseOrValue<string>,
+    borrowToken1: PromiseOrValue<boolean>,
+    toSwapAmount: PromiseOrValue<BigNumberish>,
+    minOutput: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -618,16 +624,18 @@ export interface Facility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setProtocolContracts(
       poolManager_: PromiseOrValue<string>,
       executioner_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -752,16 +760,18 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     setProtocolContracts(
       poolManager_: PromiseOrValue<string>,
       executioner_: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -855,16 +865,18 @@ export interface Facility extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setPauseConfig(
-      addPaused: PromiseOrValue<boolean>,
-      reducePaused: PromiseOrValue<boolean>,
-      forceClosePaused: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     setProtocolContracts(
       poolManager_: PromiseOrValue<string>,
       executioner_: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    swapAndDepositPremium(
+      key: PoolKeyStruct,
+      trader: PromiseOrValue<string>,
+      borrowToken1: PromiseOrValue<boolean>,
+      toSwapAmount: PromiseOrValue<BigNumberish>,
+      minOutput: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

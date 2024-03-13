@@ -47,8 +47,8 @@ const OrderHeader = styled(TextWrapper)`
 
 export const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
   const { account, chainId, provider } = useWeb3React()
-  const token0 = useToken(key?.poolKey.token0Address)
-  const token1 = useToken(key?.poolKey.token1Address)
+  const token0 = useToken(key?.poolKey.token0)
+  const token1 = useToken(key?.poolKey.token1)
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
@@ -129,7 +129,14 @@ export const ExistingReduceOrderSection = ({
   const limitPrice = useMemo(() => {
     return order.currentOutput.div(order.inputAmount)
   }, [order])
-  const { result: estimatedPnL } = useEstimatedPnL(orderKey, position, order.inputAmount, limitPrice, outputCurrency, inputCurrency)
+  const { result: estimatedPnL } = useEstimatedPnL(
+    orderKey,
+    position,
+    order.inputAmount,
+    limitPrice,
+    outputCurrency,
+    inputCurrency
+  )
 
   const { callback: cancelCallback } = useCancelLimitOrderCallback(orderKey)
   const addTransaction = useTransactionAdder()

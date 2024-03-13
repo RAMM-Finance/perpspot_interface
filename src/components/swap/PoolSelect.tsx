@@ -1,5 +1,3 @@
-// import Menu from '@mui/material/Menu'
-// import MenuItem from '@mui/material/MenuItem'
 import { Trans } from '@lingui/macro'
 import Menu from '@mui/material/Menu'
 import { Currency } from '@uniswap/sdk-core'
@@ -187,7 +185,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const delta = poolOHLCData?.delta24h
 
   const { onPoolSelection } = useSwapActionHandlers()
-  const poolKeyList = useRawPoolKeyList()
+  // const poolKeyList = useRawPoolKeyList()
 
   const baseQuoteSymbol = useMemo(() => {
     if (pool && poolOHLCDatas) {
@@ -245,10 +243,11 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     console.log(poolId)
     if (token0 && token1 && poolId !== id) {
       onMarginChange('')
-      onPoolSelection(token0, token1, poolKey.fee, id)
+      // onPoolSelection(token0, token1, poolKey.fee, id)
+      onPoolSelection(token0, token1, poolKey)
       handleClose()
     }
-  }, [token0, token1, poolKey.fee, onPoolSelection, poolId, id, handleClose, onMarginChange])
+  }, [token0, token1, onPoolSelection, id, poolKey, poolId, handleClose, onMarginChange])
 
   return (
     <RowWrapper onClick={handleRowClick}>
@@ -387,18 +386,18 @@ export function SelectPool() {
   const { chainId } = useWeb3React()
 
   const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    poolFee,
+    poolKey,
   } = useSwapState()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
+  const inputCurrency = useCurrency(
+    outputCurrencyId?.toLowerCase() === poolKey?.token0.toLowerCase() ? poolKey?.token1 : poolKey?.token0
+  )
 
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolFee ?? undefined)
+  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolKey?.fee ?? undefined)
 
   const { result: poolData } = usePoolsData()
-  const poolList = useRawPoolKeyList()
   const PoolsOHLC = useAppPoolOHLC()
 
   const baseQuoteSymbol = useMemo(() => {
@@ -458,7 +457,7 @@ export function SelectPool() {
                 </ThemedText.HeadlineSmall>
               </TextWithLoadingPlaceholder>
 
-              <ThemedText.BodySmall fontSize="14px">({poolFee ? poolFee / 10000 : 0}%)</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize="14px">({poolKey?.fee ? poolKey.fee / 10000 : 0}%)</ThemedText.BodySmall>
             </AutoColumn>
           </Row>
         </LabelWrapper>
