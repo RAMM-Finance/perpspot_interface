@@ -151,7 +151,6 @@ export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; 
 
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
-
   // const { filteredOrders } = useSelectOrders(orders)
   const filteredOrders = orders
   useEffect(() => {

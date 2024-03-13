@@ -40,13 +40,11 @@ const StyledTimestamp = styled.span`
 `
 function processDescriptor(descriptor: string, title?: string) {
   const modifiedDescriptor = descriptor
-    .replace(/\d+(\.\d+)?/, (match: any) => {
-      const roundedNumber = Math.round(parseFloat(match) * 1e6) / 1e6
-      return roundedNumber.toString()
+    .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
+      const roundedNumber = Math.round(parseFloat(capturedGroup) * 1e6) / 1e6
+      return `Price: ${roundedNumber.toString()}`
     })
-    .split(/(?:for|long)\s/i)[0]
     .trim()
-
   const priceIndex = modifiedDescriptor.indexOf('Price')
   const actionDescription = modifiedDescriptor.slice(0, priceIndex)
   let price = priceIndex !== -1 ? modifiedDescriptor.slice(priceIndex) : ''
@@ -55,13 +53,14 @@ function processDescriptor(descriptor: string, title?: string) {
   const priceRegex = /Price:\s*([\d.]+)/
   const priceMatch = price.match(priceRegex)
   if (priceMatch) {
-    priceNumber = parseFloat(priceMatch[1]);
+    priceNumber = parseFloat(priceMatch[1])
   }
+  // console.log(actionDescription, priceMatch, price, '-------processDescriptor------')
   let pnlNumber
   let marginToken
   if (title === ActivityDescriptionType.REDUCE_POSITION && price.includes('Pnl')) {
     // Extract the number and token following 'Pnl' using regular expression.
-    const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/;
+    const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
 
     if (pnlMatch) {
@@ -69,9 +68,7 @@ function processDescriptor(descriptor: string, title?: string) {
       marginToken = pnlMatch[2]
     }
     price = price.slice(0, price.indexOf('Pnl')).trim()
-    // console.log(pnlNumber, marginToken, priceNumber, price,'------------------')
   }
-
   return { actionDescription, pnlNumber, marginToken, priceNumber }
 }
 
@@ -84,8 +81,8 @@ export function ActivityRow({
   const timeSince = useTimeStamp(timestamp)
   // descript modified
   const { actionDescription, marginToken, pnlNumber, priceNumber } = processDescriptor(descriptor, title)
-  // console.log(   descriptor, pnlNumber, priceNumber, '-----descriptor----',)
-
+  // console.log(actionDescription, descriptor, '-----descriptor----')
+  //
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
   const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
 
@@ -118,12 +115,14 @@ export function ActivityRow({
             </ActivityTitle>
             <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
               {actionDescription}
-              {isInverted ? (
-                (<ActivityPrice>{`Price: ${( 1 / priceNumber as number).toFixed(5)}`}</ActivityPrice>)
-              ) : (
-                <ActivityPrice>{`Price: ${priceNumber.toFixed(5)}`}</ActivityPrice>
+              { priceNumber && (
+                <>
+                  <ActivityPrice>
+                    {`Price: ${isInverted ? ((1 / priceNumber) as number).toFixed(5) : priceNumber.toFixed(5)}`}
+                  </ActivityPrice>
+                  {invertedTooltipLogo}
+                </>
               )}
-              {invertedTooltipLogo}
               {pnlNumber && (
                 <ActivityPrice>
                   <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
