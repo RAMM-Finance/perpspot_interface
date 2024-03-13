@@ -21,6 +21,8 @@ export interface AddPositionOptions {
   slippedTickMax: number
   marginInPosToken: boolean
   depositPremium?: string
+  premiumInPosToken?: boolean
+  minPremiumOutput?: string
 }
 
 // struct ReduceParam {
@@ -96,18 +98,34 @@ export abstract class MarginFacilitySDK {
     const calldatas: string[] = []
 
     if (param.depositPremium) {
-      calldatas.push(
-        MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
-          {
-            token0: param.positionKey.poolKey.token0,
-            token1: param.positionKey.poolKey.token1,
-            fee: param.positionKey.poolKey.fee,
-          },
-          param.positionKey.trader,
-          param.positionKey.isToken0,
-          param.depositPremium,
-        ])
-      )
+      if (param.premiumInPosToken) {
+        calldatas.push(
+          MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
+            {
+              token0: param.positionKey.poolKey.token0,
+              token1: param.positionKey.poolKey.token1,
+              fee: param.positionKey.poolKey.fee,
+            },
+            param.positionKey.trader,
+            param.positionKey.isToken0,
+            param.depositPremium,
+          ])
+        )
+      } else {
+        calldatas.push(
+          MarginFacilitySDK.INTERFACE.encodeFunctionData('swapAndDepositPremium', [
+            {
+              token0: param.positionKey.poolKey.token0,
+              token1: param.positionKey.poolKey.token1,
+              fee: param.positionKey.poolKey.fee,
+            },
+            param.positionKey.trader,
+            param.positionKey.isToken0,
+            param.depositPremium,
+            param.minPremiumOutput,
+          ])
+        )
+      }
     }
 
     calldatas.push(

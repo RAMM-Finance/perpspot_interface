@@ -297,7 +297,6 @@ export function BaseSwapPanel({
                 </StyledTokenName>
               )}
             </RowFixed>
-            {/* {onCurrencySelect && <StyledDropDown selected={!!currency} />} */}
           </CurrencySelect>
         </InputRow>
         {Boolean(!hideInput && !hideBalance) && (
@@ -362,7 +361,6 @@ export function BaseSwapPanel({
 }
 
 const StyledDropdown = styled(Menu)``
-const Wrapper = styled.div``
 
 const TokenItem = styled.div``
 interface MarginSelectPanelProps {
@@ -471,7 +469,6 @@ export function MarginSelectPanel({
                     : currency?.symbol) || <Trans>Select token</Trans>}
                 </StyledTokenName>
               </RowFixed>
-              {/* {onCurrencySelect && <StyledDropDown selected={!!currency} />} */}
             </CurrencySelect>
           </InputRow>
           {Boolean(!hideInput && !hideBalance) && (

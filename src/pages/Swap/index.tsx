@@ -1,7 +1,7 @@
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
+import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
@@ -13,16 +13,10 @@ import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTab
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
-// import _ from 'lodash'
-// import { FakeTokens, FETH, FUSDC } from "constants/fake-tokens"
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { getFakeSymbol, isFakePair } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
-// import { useBestPool } from 'hooks/useBestPool'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-// import Widget from 'components/Widget'
-// import { useSwapWidgetEnabled } from 'featureFlags/flags/swapWidget'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useState } from 'react'
 import { ReactNode } from 'react'
@@ -77,12 +71,13 @@ export const LeverageInputSection = styled(ResponsiveHeaderText)`
   position: relative;
   font-size: 12px;
 `
+
 export const InputHeader = styled.div`
   padding-left: 6px;
   padding-top: 3px;
 `
 
-export const SwapSection = styled.div`
+const SwapSection = styled.div`
   position: relative;
   background-color: ${({ theme }) => theme.backgroundSurface};
   color: ${({ theme }) => theme.textSecondary};
@@ -95,13 +90,6 @@ export const SwapSection = styled.div`
   &:focus-within {
     border: 1px solid ${({ theme }) => theme.accentActive};
   }
-`
-
-export const InputLeverageSection = styled(SwapSection)`
-  // border-top-left-radius: 0;
-  // border-top-right-radius: 0;
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 20px;
 `
 
 export const InputSection = styled(SwapSection)`
@@ -189,26 +177,26 @@ export function getIsValidSwapQuote(
   return !!swapInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
-function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
-  if (!pool || !chainId) return undefined
-  const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
-  const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
-  const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
-  if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
-    return getFakeSymbol(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
-  }
+// function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
+//   if (!pool || !chainId) return undefined
+//   const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
+//   const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
+//   const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
+//   if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
+//     return getFakeSymbol(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
+//   }
 
-  return JSON.stringify({
-    poolAddress: computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    }),
-    baseSymbol,
-    quoteSymbol,
-  })
-}
+//   return JSON.stringify({
+//     poolAddress: computePoolAddress({
+//       factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+//       tokenA: pool.token0,
+//       tokenB: pool.token1,
+//       fee: pool.fee,
+//     }),
+//     baseSymbol,
+//     quoteSymbol,
+//   })
+// }
 
 const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -334,11 +322,12 @@ export default function Swap({ className }: { className?: string }) {
             <PinnedPools />
           </PinWrapper> */}
           <SwapHeaderWrapper>
-            {inputCurrency && outputCurrency ? (
+           <SelectPool />
+            {/*inputCurrency && outputCurrency ? (
               <SelectPool />
             ) : (
               <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
-            )}
+            )*/}
             {chartSymbol && chainId && <PoolDataChart symbol={chartSymbol} chainId={chainId} />}
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>
@@ -370,8 +359,6 @@ export default function Swap({ className }: { className?: string }) {
       {!swapIsUnsupported ? null : (
         <UnsupportedCurrencyFooter show={swapIsUnsupported} currencies={[inputCurrency, outputCurrency]} />
       )}
-      {/* statusPopup */}
-      {/* <TransactionStatusPopup /> */}
     </Trace>
   )
 }

@@ -570,7 +570,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     "ForceClosed(address,bool,bool,uint256,address,uint256,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "MarginPositionIncreased(address,bool,bool,address,address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256,int256)": EventFragment;
+    "MarginPositionReduced(address,bool,bool,address,address,uint256,uint256,uint256,int256)": EventFragment;
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "OrderCanceled(address,bool,address,bool)": EventFragment;
     "PremiumDeposited(address,address,bool,uint256)": EventFragment;
@@ -654,6 +654,7 @@ export type MarginPositionIncreasedEventFilter =
 export interface MarginPositionReducedEventObject {
   pool: string;
   positionIsToken0: boolean;
+  marginInPosToken: boolean;
   trader: string;
   filler: string;
   reduceAmount: BigNumber;
@@ -662,7 +663,17 @@ export interface MarginPositionReducedEventObject {
   PnL: BigNumber;
 }
 export type MarginPositionReducedEvent = TypedEvent<
-  [string, boolean, string, string, BigNumber, BigNumber, BigNumber, BigNumber],
+  [
+    string,
+    boolean,
+    boolean,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ],
   MarginPositionReducedEventObject
 >;
 
@@ -1465,9 +1476,10 @@ export interface MarginFacility extends BaseContract {
       feePaid?: null
     ): MarginPositionIncreasedEventFilter;
 
-    "MarginPositionReduced(address,bool,address,address,uint256,uint256,uint256,int256)"(
+    "MarginPositionReduced(address,bool,bool,address,address,uint256,uint256,uint256,int256)"(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
+      marginInPosToken?: null,
       trader?: PromiseOrValue<string> | null,
       filler?: null,
       reduceAmount?: null,
@@ -1478,6 +1490,7 @@ export interface MarginFacility extends BaseContract {
     MarginPositionReduced(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
+      marginInPosToken?: null,
       trader?: PromiseOrValue<string> | null,
       filler?: null,
       reduceAmount?: null,

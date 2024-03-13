@@ -37,24 +37,29 @@ import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
-import { MarginField, setBaseCurrencyIsInputToken, setLimit, setLocked, setPrice, typeInput } from './actions'
+import {
+  MarginField,
+  setBaseCurrencyIsInputToken,
+  setLimit,
+  setLocked,
+  setPremiumInPosToken,
+  setPrice,
+  typeInput,
+} from './actions'
 import { getOutputQuote } from './getOutputQuote'
 export function useMarginTradingState(): AppState['margin'] {
   return useAppSelector((state) => state.margin)
 }
 
 export function useMarginTradingActionHandlers(): {
-  // onCurrencySelection: (field: Field, currency: Currency) => void
-  // onSwitchTokens: () => void
   onUserInput: (field: MarginField, typedValue: string) => void
-  // onChangeRecipient: (recipient: string | null) => void
   onLeverageFactorChange: (leverage: string) => void
   onMarginChange: (margin: string) => void
-  // onBorrowChange: (borrow: string) => void
   onLockChange: (locked: MarginField | null) => void
   onChangeTradeType: (isLimit: boolean) => void
   onPriceInput: (typedValue: string) => void
   onPriceToggle: (baseCurrencyIsInputToken: boolean) => void
+  onPremiumCurrencyToggle: (premiumInPosToken: boolean) => void
 } {
   const dispatch = useAppDispatch()
 
@@ -107,18 +112,21 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onPremiumCurrencyToggle = useCallback(
+    (premiumInPosToken: boolean) => {
+      dispatch(setPremiumInPosToken({ premiumInPosToken }))
+    },
+    [dispatch]
+  )
   return {
-    // onSwitchTokens,
-    // onCurrencySelection,
     onUserInput,
-    // onChangeRecipient,
     onLeverageFactorChange,
     onMarginChange,
-    // onBorrowChange,
     onLockChange,
     onChangeTradeType,
     onPriceInput,
     onPriceToggle,
+    onPremiumCurrencyToggle,
   }
 }
 
@@ -132,12 +140,14 @@ export interface AddMarginTrade {
   allowedSlippage: Percent // should be Percent
   executionPrice: Price<Currency, Currency>
   swapRoute: Route<Currency, Currency>
-  premium: TokenBN // CurrencyAmount<Currency>
+  premium: TokenBN
   pool: Pool
   inputIsToken0: boolean
+  premiumInPosToken: boolean
   borrowRate: BN
-  swapFee: TokenBN // CurrencyAmount<Currency>
+  swapFee: TokenBN
   marginInPosToken: boolean
+  premiumSwapRoute: Route<Currency, Currency>
 }
 
 export interface PreTradeInfo {
@@ -173,7 +183,7 @@ export function useDerivedAddPositionInfo(
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
   const usingCode = useUsingCode()
-  const { marginInPosToken } = useMarginTradingState()
+  const { marginInPosToken, premiumInPosToken } = useMarginTradingState()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -291,30 +301,42 @@ export function useDerivedAddPositionInfo(
   )
 
   const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
-    if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin) return undefined
+    if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin || !pool) return undefined
 
     // premium to approve
-    const _additionalPremium = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
+    const _additionalPremiumInputToken = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
+    const price = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
+    const _additionalPremium = premiumInPosToken
+      ? _additionalPremiumInputToken.times(price)
+      : _additionalPremiumInputToken
+
+    let inputApprovalAmount: CurrencyAmount<Currency>
+    let outputApprovalAmount: CurrencyAmount<Currency>
     if (marginInPosToken) {
-      return {
-        premiumDeposit:
-          account && existingPosition
-            ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
-            : BnToCurrencyAmount(new BN(0), inputCurrency),
-        additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-        inputApprovalAmount: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-        outputApprovalAmount: BnToCurrencyAmount(parsedMargin, outputCurrency),
+      if (premiumInPosToken) {
+        inputApprovalAmount = BnToCurrencyAmount(new BN(0), outputCurrency)
+        outputApprovalAmount = BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), outputCurrency)
+      } else {
+        inputApprovalAmount = BnToCurrencyAmount(_additionalPremium, inputCurrency)
+        outputApprovalAmount = BnToCurrencyAmount(parsedMargin, outputCurrency)
       }
     } else {
-      return {
-        premiumDeposit:
-          account && existingPosition
-            ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
-            : BnToCurrencyAmount(new BN(0), inputCurrency),
-        additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-        inputApprovalAmount: BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), inputCurrency),
-        outputApprovalAmount: CurrencyAmount.fromRawAmount(outputCurrency, '0'),
+      if (premiumInPosToken) {
+        inputApprovalAmount = BnToCurrencyAmount(parsedMargin, inputCurrency)
+        outputApprovalAmount = BnToCurrencyAmount(_additionalPremium, outputCurrency)
+      } else {
+        inputApprovalAmount = BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), inputCurrency)
+        outputApprovalAmount = BnToCurrencyAmount(new BN(0), outputCurrency)
       }
+    }
+    return {
+      premiumDeposit:
+        account && existingPosition
+          ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
+          : BnToCurrencyAmount(new BN(0), inputCurrency),
+      additionalPremium: BnToCurrencyAmount(_additionalPremium, premiumInPosToken ? outputCurrency : inputCurrency),
+      inputApprovalAmount,
+      outputApprovalAmount,
     }
   }, [
     existingPosition,
@@ -325,6 +347,9 @@ export function useDerivedAddPositionInfo(
     parsedMargin,
     rawUserPremiumPercent,
     account,
+    pool,
+    inputIsToken0,
+    premiumInPosToken,
   ])
 
   const { chainId } = useWeb3React()
@@ -446,6 +471,7 @@ export function useDerivedAddPositionInfo(
   } = useSimulateMarginTrade(
     allowedSlippage,
     marginInPosToken,
+    premiumInPosToken,
     positionKey,
     pool,
     inputIsToken0,
@@ -1140,6 +1166,7 @@ const getAddUserParams = (
 const useSimulateMarginTrade = (
   allowedSlippage: Percent,
   marginInPosToken: boolean,
+  premiumInPosToken: boolean,
   positionKey?: TraderPositionKey,
   pool?: Pool,
   inputIsToken0?: boolean,
@@ -1224,6 +1251,18 @@ const useSimulateMarginTrade = (
     const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
     const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
+    let minPremiumOutput: string | undefined
+    const premiumSwapRoute = new Route(
+      [pool],
+      !inputIsToken0 ? pool.token0 : pool.token1,
+      !inputIsToken0 ? pool.token1 : pool.token0
+    )
+    if (premiumInPosToken) {
+      const output = await getOutputQuote(additionalPremium, premiumSwapRoute, provider, chainId)
+      if (!output) throw new Error('Quoter Error')
+      minPremiumOutput = output.toString()
+    }
+
     const calldata = MarginFacilitySDK.addPositionParameters({
       positionKey,
       margin: marginInPosToken
@@ -1234,10 +1273,14 @@ const useSimulateMarginTrade = (
       deadline: deadline.toString(),
       simulatedOutput: amountOut.toFixed(0),
       executionOption: 1,
-      depositPremium: new BN(additionalPremium.toExact()).shiftedBy(inputCurrency.decimals).toFixed(0),
+      depositPremium: new BN(additionalPremium.toExact())
+        .shiftedBy(premiumInPosToken ? inputCurrency.decimals : outputCurrency.decimals)
+        .toFixed(0),
       slippedTickMin,
       slippedTickMax,
       marginInPosToken,
+      premiumInPosToken,
+      minPremiumOutput,
     })
 
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
@@ -1302,7 +1345,11 @@ const useSimulateMarginTrade = (
       executionPrice,
       allowedSlippage,
       swapRoute,
-      premium: new TokenBN(additionalPremium.toExact(), inputCurrency.wrapped, false),
+      premium: new TokenBN(
+        additionalPremium.toExact(),
+        premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+        false
+      ),
       pool,
       inputIsToken0,
       borrowRate: new BN(borrowRate.toString())
@@ -1311,6 +1358,8 @@ const useSimulateMarginTrade = (
         .times(100),
       swapFee: new TokenBN(swapInput.times(pool.fee).div(1e6), inputCurrency.wrapped, false),
       marginInPosToken,
+      premiumInPosToken,
+      premiumSwapRoute,
     }
 
     return result
@@ -1333,6 +1382,7 @@ const useSimulateMarginTrade = (
     dataProvider,
     feePercent,
     marginInPosToken,
+    premiumInPosToken,
   ])
 
   const quoter = useLmtQuoterContract()
@@ -1398,7 +1448,7 @@ const useSimulateMarginTrade = (
       expectedAddedOutput: new TokenBN(quoterResult.positionOutput.toString(), outputCurrency.wrapped, true),
       swapRoute,
       allowedSlippage,
-      premium: new TokenBN(additionalPremium.toExact(), inputCurrency.wrapped, false),
+      premium: new TokenBN(additionalPremium.toExact(), additionalPremium.currency.wrapped, false),
       pool,
       fees: new TokenBN(quoterResult.feeAmount.toString(), inputCurrency.wrapped, true),
       swapInput: new TokenBN(quoterResult.swapInput.toString(), inputCurrency.wrapped, true),
@@ -1410,6 +1460,8 @@ const useSimulateMarginTrade = (
         .times(100),
       swapFee: new TokenBN(swapInput.times(pool.fee).div(1e6), inputCurrency.wrapped, false),
       marginInPosToken,
+      premiumSwapRoute: swapRoute,
+      premiumInPosToken,
     }
 
     return result
@@ -1424,6 +1476,7 @@ const useSimulateMarginTrade = (
     pool,
     quoter,
     marginInPosToken,
+    premiumInPosToken,
   ])
 
   const noAccountQueryKey = useMemo(() => {
@@ -1578,7 +1631,6 @@ const useSimulateMarginTrade = (
     marginFacility,
     txnWillFail,
   ])
-  console.log('queryKey', queryKey)
 
   const {
     data: data,

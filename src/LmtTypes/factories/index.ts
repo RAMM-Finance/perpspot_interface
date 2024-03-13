@@ -3,3 +3,4 @@
 /* eslint-disable */
 export * as lib from "./lib";
 export * as src from "./src";
+export * as test from "./test";

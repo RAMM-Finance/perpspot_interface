@@ -22,6 +22,7 @@ export const replaceMarginTradeState = createAction<{
   startingPrice?: string
   baseCurrencyIsInputToken: boolean
   marginInPosToken: boolean
+  premiumInPosToken: boolean
 }>('margin/replaceMarginState')
 export const setRecipient = createAction<{ recipient: string | null }>('margin/setRecipient')
 export const setHideClosedLeveragePositions = createAction<{ hideClosedLeveragePositions: boolean }>(
@@ -38,3 +39,5 @@ export const setPrice = createAction<{ startingPrice: string }>('margin/setPrice
 export const setBaseCurrencyIsInputToken = createAction<{ baseCurrencyIsInputToken: boolean }>(
   'margin/setBaseCurrencyIsInputToken'
 )
+
+export const setPremiumInPosToken = createAction<{ premiumInPosToken: boolean }>('margin/setPremiumInPosToken')

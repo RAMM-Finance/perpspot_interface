@@ -14,6 +14,7 @@ import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { PremiumCurrencySelector } from 'components/PremiumCurrencySelector'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
@@ -242,12 +243,19 @@ const TradeTabContent = () => {
     startingPrice,
     baseCurrencyIsInputToken,
     marginInPosToken,
+    premiumInPosToken,
   } = useMarginTradingState()
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
-  const { onLeverageFactorChange, onMarginChange, onChangeTradeType, onPriceInput, onPriceToggle } =
-    useMarginTradingActionHandlers()
+  const {
+    onLeverageFactorChange,
+    onMarginChange,
+    onChangeTradeType,
+    onPriceInput,
+    onPriceToggle,
+    onPremiumCurrencyToggle,
+  } = useMarginTradingActionHandlers()
 
   const handleSetMarginInPosToken = useCallback(() => {
     onSetMarginInPosToken(!marginInPosToken)
@@ -568,6 +576,12 @@ const TradeTabContent = () => {
             </StyledSelectorText>
           </Selector>
         </Filter>
+        <PremiumCurrencySelector
+          inputCurrency={currencies[Field.INPUT]}
+          outputCurrency={currencies[Field.OUTPUT]}
+          premiumInPosToken={premiumInPosToken}
+          onPremiumCurrencyToggle={() => onPremiumCurrencyToggle(!premiumInPosToken)}
+        />
       </FilterWrapper>
       <LimitInputWrapper>
         <AnimatedDropdown open={isLimitOrder}>

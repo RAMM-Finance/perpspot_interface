@@ -277,99 +277,26 @@ export default function LeaderboardPage() {
               <AchievementsBox>
                 <ThemedText.HeadlineSmall color="textSecondary">Trade your way up</ThemedText.HeadlineSmall>
                 <ThemedText.BodyPrimary lineHeight={1.5}>
-                  The more you trade, the higher your trade LMT rewards are. 
+                  The more you trade, the higher your trade LMT rewards are.
                 </ThemedText.BodyPrimary>
-                {/*<PriceBox>
-                  <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
-                    +4pts /
-                    <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
-                      dollar
-                    </ThemedText.PriceSmall>
-                  </ThemedText.PriceSmall>
-                  <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
-                    perday
-                  </ThemedText.PriceSmall>
-                </PriceBox>*/}
               </AchievementsBox>
               <AchievementsBox>
                 <ThemedText.HeadlineSmall color="textSecondary">LP to earn yield + LMT</ThemedText.HeadlineSmall>
                 <ThemedText.BodyPrimary lineHeight={1.5}>
-                  Earn LMT by holding LLP or collecting fees as an advanced LP <br /> 
+                  Earn LMT by holding LLP or collecting fees as an advanced LP <br />
                 </ThemedText.BodyPrimary>
-                {/*<PriceBox>
-                  <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
-                    +4pts /
-                    <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
-                      dollar
-                    </ThemedText.PriceSmall>
-                  </ThemedText.PriceSmall>
-                  <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
-                    perday
-                  </ThemedText.PriceSmall>
-                </PriceBox>*/}
               </AchievementsBox>
               <AchievementsBox>
                 <ThemedText.HeadlineSmall color="textSecondary">Refer to earn</ThemedText.HeadlineSmall>
                 <ThemedText.BodyPrimary lineHeight={1.5}>
                   Refer others and earn a portion of your referees' LMT
                 </ThemedText.BodyPrimary>
-                {/*<PriceBox>
-                  <ThemedText.PriceSmall color="textSecondary" fontWeight={300} display="flex">
-                    +4pts /
-                    <ThemedText.PriceSmall fontWeight={300} color="textTertiary" marginLeft="4px">
-                      dollar
-                    </ThemedText.PriceSmall>
-                  </ThemedText.PriceSmall>
-                  <ThemedText.PriceSmall color="textSecondary" fontWeight={600} letterSpacing={1}>
-                    perday
-                  </ThemedText.PriceSmall>
-                </PriceBox>*/}
               </AchievementsBox>
             </AchievementsBoxWrapper>
           </AchievementsWrapper>
-          {/*<FilterWrapper>
-            <Filter>
-              <Selector onClick={() => setLeaderboard(true)} active={leaderboard}>
-                <StyledSelectorText active={leaderboard}>Leaderboard</StyledSelectorText>
-              </Selector>
-              <Selector onClick={() => setLeaderboard(false)} active={!leaderboard}>
-                <StyledSelectorText active={!leaderboard}>Referrals</StyledSelectorText>
-              </Selector>
-            </Filter>
-          </FilterWrapper>*/}
           <LeaderboardWrapper>
             <LeaderboardTable />
-          </LeaderboardWrapper> 
-          {/*leaderboard ? (
-            <LeaderboardWrapper>
-              <LeaderboardTable />
-            </LeaderboardWrapper>
-
-          ) : (
-            <ReferralsWrapper>
-              {showConnectAWallet ? (
-                <ErrorContainer style={{ paddingTop: '50px' }}>
-                  <TraceEvent
-                    events={[BrowserEvent.onClick]}
-                    name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                    properties={{ received_swap_quote: false }}
-                    element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-                  >
-                    <ButtonPrimary
-                      style={{ width: '8vw', padding: '8px 8px', borderRadius: '10px' }}
-                      onClick={toggleWalletDrawer}
-                    >
-                      <Trans>
-                        <ThemedText.BodyPrimary fontWeight={800}>Connect wallet to view</ThemedText.BodyPrimary>{' '}
-                      </Trans>
-                    </ButtonPrimary>
-                  </TraceEvent>
-                </ErrorContainer>
-              ) : (
-                <Referrals />
-              )}
-            </ReferralsWrapper>
-          )*/}
+          </LeaderboardWrapper>
           <FaqWrapper>
             <FaqElement>
               <a

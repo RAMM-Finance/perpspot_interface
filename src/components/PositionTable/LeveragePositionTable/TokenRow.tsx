@@ -6,11 +6,11 @@ import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import { EditCell, UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import Row, { RowBetween } from 'components/Row'
 import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
+import { useInvertedPrice } from 'hooks/useInvertedPrice'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
@@ -38,8 +38,18 @@ import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionMo
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
-import { useInvertedPrice } from 'hooks/useInvertedPrice'
 
+export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
+  padding: 0;
+  align-items: center;
+  cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
+`
+
+export const UnderlineText = styled(Row)`
+  width: fit-content;
+  align-items: flex-start;
+  text-decoration: ${({ theme }) => `underline dashed ${theme.textPrimary}`};
+`
 const Cell = styled.div`
   display: flex;
   align-items: center;
@@ -728,7 +738,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
-  console.log(position,'----position-----')
+  console.log(position, '----position-----')
 
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
@@ -898,7 +908,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                       </AutoColumn>
                     </>
                   )}
-                  {invertedTooltipLogo}  
+                  {invertedTooltipLogo}
                 </RowBetween>
               </AutoColumn>
             </FlexStartRow>
