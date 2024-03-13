@@ -1199,6 +1199,7 @@ const useSimulateMarginTrade = (
   const feePercent = useLmtFeePercent(pool)
 
   const computeData = useCallback(async () => {
+
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
@@ -1262,6 +1263,22 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       minPremiumOutput = output.toString()
     }
+    // console.log('parameterssss', 
+    //   positionKey, marginInPosToken
+    //     ? marginInOutput.shiftedBy(outputCurrency.decimals).toFixed(0)
+    //     : marginInInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+    //     borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+    //     minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+    //     amountOut.toFixed(0),
+    //     new BN(additionalPremium.toExact())
+    //     .shiftedBy(premiumInPosToken ? inputCurrency.decimals : outputCurrency.decimals)
+    //     .toFixed(0), 
+    //     slippedTickMin,
+    //   slippedTickMax,
+    //   marginInPosToken,
+    //   premiumInPosToken,
+    //   minPremiumOutput,
+    //   )
 
     const calldata = MarginFacilitySDK.addPositionParameters({
       positionKey,
@@ -1282,6 +1299,9 @@ const useSimulateMarginTrade = (
       premiumInPosToken,
       minPremiumOutput,
     })
+    // console.log('calldata', 
+    //   calldata
+    //   )
 
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
 

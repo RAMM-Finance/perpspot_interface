@@ -15,7 +15,7 @@ import { roundToBin } from 'utils/roundToBin'
 
 import { useDataProviderContract } from './useContract'
 import { useContractCall } from './useContractCall'
-import { computePoolAddress } from './usePools'
+import { computePoolAddress,POOL_INIT_CODE_HASH_2 } from './usePools'
 import { convertToBN } from './useV3Positions'
 
 export function useRateAndUtil(
@@ -344,6 +344,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         tokenA: key.poolKey.token0,
         tokenB: key.poolKey.token1,
         fee: key.poolKey.fee,
+        initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO? POOL_INIT_CODE_HASH_2: undefined 
       }),
       key.trader,
       key.isToken0,
@@ -427,6 +428,8 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
       tokenA: key.poolKey.token0,
       tokenB: key.poolKey.token1,
       fee: key.poolKey.fee,
+      initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO? POOL_INIT_CODE_HASH_2: undefined 
+
     })
 
     return DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])

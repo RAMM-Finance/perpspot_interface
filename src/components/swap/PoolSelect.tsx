@@ -178,7 +178,6 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
-  console.log('getting pool', token0, token1, poolKey)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = poolOHLCDatas[id]
