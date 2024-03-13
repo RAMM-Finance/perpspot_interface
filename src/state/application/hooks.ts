@@ -27,22 +27,33 @@ export function usePoolKeyList(): {
   error: any
 } {
   const lmtQuoter = useLmtQuoterContract()
+  // const [poolKeys, setPoolKeys] = useState()
+
+  // const wtf = useMemo(()=>{
+  //   if(!lmtQuoter) return
+  //   const call = async()=>{
+  //     const data = await lmtQuoter.getPoolKeys()
+  //     setPoolKeys(data)
+  //   } 
+  //   call()
+  // }, [lmtQuoter])
   const { data, error, isLoading } = useQuery(
-    ['poolKeyList', lmtQuoter ? 'dataProvider' : ''],
+    ['poolKeyList', lmtQuoter?.address, lmtQuoter ? 'dataProvider' : ''],
     async () => {
       if (!lmtQuoter) throw new Error('DataProvider contract not found')
-      const poolKeys = await lmtQuoter.callStatic.getPoolKeys()
+      const poolKeys = await lmtQuoter.getPoolKeys()
       return poolKeys
     },
     {
       enabled: !!lmtQuoter,
-      keepPreviousData: true,
+      keepPreviousData: false,
       refetchInterval: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       refetchIntervalInBackground: false,
     }
   )
+  // console.log('wtf quoter', poolKeys, lmtQuoter, data)
 
   return useMemo(() => {
     return {

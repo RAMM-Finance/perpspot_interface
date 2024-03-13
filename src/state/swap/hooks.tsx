@@ -437,35 +437,6 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
       poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
       poolId =
         '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
-      // console.log('chainId',chainId, SupportedChainId.ARBITRUM_ONE, SupportedChainId.BERA_ARTIO)
-    // if(SupportedChainId.ARBITRUM_ONE == chainId){
-    //   const storedCurrencyIn = localStorage.getItem('currencyIn')
-    //   const storedCurrencyOut = localStorage.getItem('currencyOut')
-    //   const storedPoolFee = localStorage.getItem('poolFee')
-    //   inputCurrency = storedCurrencyIn
-    //     ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
-    //     : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-    //   outputCurrency = storedCurrencyOut
-    //     ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
-    //     : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
-    //   poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
-    //   poolId =
-    //     '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
-
-    // } else if(SupportedChainId.BERA_ARTIO == chainId){
-    //   const storedCurrencyIn = localStorage.getItem('currencyIn')
-    //   const storedCurrencyOut = localStorage.getItem('currencyOut')
-    //   const storedPoolFee = localStorage.getItem('poolFee')
-    //   inputCurrency = storedCurrencyIn
-    //     ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
-    //     : getAddress('0x174652b085C32361121D519D788AbF0D9ad1C355')
-    //   outputCurrency = storedCurrencyOut
-    //     ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
-    //     : getAddress('0x35B4c60a4677EcadaF2fe13fe3678efF724be16b')
-    //   poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
-    //   poolId =
-    //     '0x174652b085C32361121D519D788AbF0D9ad1C355-0x35B4c60a4677EcadaF2fe13fe3678efF724be16b-500'.toLocaleLowerCase()
-    // }
 
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
@@ -501,15 +472,90 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
   }
 }
 
+export function queryParametersToSwapStateMultichain(parsedQs: ParsedQs, chainId:any): SwapState {
+  let inputCurrency = parseCurrencyFromURLParameter(parsedQs.inputCurrency)
+  let outputCurrency = parseCurrencyFromURLParameter(parsedQs.outputCurrency)
+  const typedValue = parseTokenAmountURLParameter(parsedQs.exactAmount)
+  const independentField = parseIndependentFieldURLParameter(parsedQs.exactField)
+
+  let poolFee
+  let poolId
+  if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
+    if(SupportedChainId.ARBITRUM_ONE == chainId){
+      const storedCurrencyIn = localStorage.getItem('currencyIn')
+      const storedCurrencyOut = localStorage.getItem('currencyOut')
+      const storedPoolFee = localStorage.getItem('poolFee')
+      inputCurrency = storedCurrencyIn
+        ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
+        : getAddress('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+      outputCurrency = storedCurrencyOut
+        ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
+        : getAddress('0x912CE59144191C1204E64559FE8253a0e49E6548')
+      poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
+      poolId =
+        '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1-0x912CE59144191C1204E64559FE8253a0e49E6548-500'.toLocaleLowerCase()
+
+    } else if(SupportedChainId.BERA_ARTIO == chainId){
+      const storedCurrencyIn = localStorage.getItem('currencyIn')
+      const storedCurrencyOut = localStorage.getItem('currencyOut')
+      const storedPoolFee = localStorage.getItem('poolFee')
+      inputCurrency = storedCurrencyIn
+        ? getAddress(JSON.parse(localStorage.getItem('currencyIn') || '{}'))
+        : getAddress('0x174652b085C32361121D519D788AbF0D9ad1C355')
+      outputCurrency = storedCurrencyOut
+        ? getAddress(JSON.parse(localStorage.getItem('currencyOut') || '{}'))
+        : getAddress('0x35B4c60a4677EcadaF2fe13fe3678efF724be16b')
+      poolFee = storedPoolFee ? parseInt(JSON.parse(localStorage.getItem('poolFee') || '{}'), 10) : 500
+      poolId =
+        '0x174652b085C32361121D519D788AbF0D9ad1C355-0x35B4c60a4677EcadaF2fe13fe3678efF724be16b-500'.toLocaleLowerCase()
+    }
+
+  } else if (inputCurrency === outputCurrency) {
+    // clear output if identical
+    outputCurrency = ''
+    poolFee = null
+    poolId = null
+  }
+  const recipient = validatedRecipient(parsedQs.recipient)
+
+  return {
+    [Field.INPUT]: {
+      currencyId: inputCurrency === '' ? null : inputCurrency ?? null,
+    },
+    [Field.OUTPUT]: {
+      currencyId: outputCurrency === '' ? null : outputCurrency ?? null,
+    },
+    originInputId: inputCurrency === '' ? null : inputCurrency ?? null,
+    originOutputId: outputCurrency === '' ? null : outputCurrency ?? null,
+    typedValue,
+    independentField,
+    recipient,
+    leverageFactor: '1',
+    leverage: false,
+    hideClosedLeveragePositions: true,
+    leverageManagerAddress: null,
+    activeTab: ActiveSwapTab.LONG,
+    ltv: null,
+    borrowManagerAddress: null,
+    premium: null,
+    tab: 'Long',
+    poolFee,
+    poolId,
+  }
+}
 // updates the swap state to use the defaults for a given network
 export function useDefaultsFromURLSearch(): SwapState {
   const { chainId } = useWeb3React()
   const dispatch = useAppDispatch()
   const parsedQs = useParsedQueryString()
 
+  // const parsedSwapState = useMemo(() => {
+  //   return queryParametersToSwapState(parsedQs)
+  // }, [parsedQs])
   const parsedSwapState = useMemo(() => {
-    return queryParametersToSwapState(parsedQs)
-  }, [parsedQs])
+    return queryParametersToSwapStateMultichain(parsedQs, chainId)
+  }, [parsedQs, chainId])
+
   useEffect(() => {
     if (!chainId) return
     // const inputCurrencyId = chainId === SupportedChainId.SEPOLIA ? FUSDC_SEPOLIA.address : FUSDC_MUMBAI.address // parsedSwapState[Field.INPUT].currencyId ?? undefined

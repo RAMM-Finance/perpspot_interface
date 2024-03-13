@@ -333,11 +333,12 @@ export default function Swap({ className }: { className?: string }) {
             <PinnedPools />
           </PinWrapper> */}
           <SwapHeaderWrapper>
-            {inputCurrency && outputCurrency ? (
+           <SelectPool />
+            {/*inputCurrency && outputCurrency ? (
               <SelectPool />
             ) : (
               <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
-            )}
+            )*/}
             {chartSymbol && chainId && <PoolDataChart symbol={chartSymbol} chainId={chainId} />}
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>

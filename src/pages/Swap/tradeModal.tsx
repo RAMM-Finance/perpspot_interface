@@ -38,6 +38,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
+import {useDefaultsFromURLSearch} from 'state/swap/hooks'
 import {
   AddLimitTrade,
   AddMarginTrade,
@@ -193,6 +194,7 @@ const TradeTabContent = () => {
   const { account, chainId } = useWeb3React()
   // const tab = useSelector((state: any) => state.swap.tab)
   const { poolFee } = useSwapState()
+  // const {poolFee} = useDefaultsFromURLSearch()
   const { onUserInput, onActiveTabChange } = useSwapActionHandlers()
 
   // const [swapQuoteReceivedDate, setSwapQuoteReceivedDate] = useState<Date | undefined>()

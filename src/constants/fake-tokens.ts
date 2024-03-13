@@ -23,9 +23,17 @@ export const wbtc = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
 export const weth_a = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
 export const wbtc_a = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
 export const usdc_a = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+
+export const lusdc = "0x174652b085C32361121D519D788AbF0D9ad1C355"
+export const lweth = "0x35B4c60a4677EcadaF2fe13fe3678efF724be16b"
 export const WETH_ARBITRUM = new Token(42161, weth_a, 18, 'wETH', 'Wrapped ETH')
 export const WBTC_ARBITRUM = new Token(42161, wbtc_a, 8, 'wBTC', 'Wrapped BTC')
 export const USDC_ARBITRUM = new Token(42161, usdc_a, 6, 'USDC', "USDC")
+
+
+export const USDC_BERA = new Token(80085, lusdc, 18, 'lUSDC', 'Limitless USDC')
+export const WETH_BERA = new Token(80085, lweth, 18, 'lWETH', 'Limitless WETH')
+
 
 export const FETH_SEPOLIA = new Token(11155111, feth_s, 18, 'fETH', 'Fake ETH')
 export const FUSDC_SEPOLIA = new Token(11155111, fusdc_s, 18, 'fUSDC', 'Fake USDC')
@@ -61,11 +69,18 @@ export const TokensArbitrum: { [address: string]: Token } = {
   [USDC_ARBITRUM.address]: USDC_ARBITRUM
 }
 
+export const TokensArtio: { [address: string]: Token } = {
+  [USDC_BERA.address]: USDC_BERA,
+  [WETH_BERA.address]: WETH_BERA,
+}
+
 export const getFakeTokensMap = (chainId?: number): { [address: string]: Token } => {
   if (chainId === SupportedChainId.SEPOLIA) {
     return FakeTokensMapSepolia
   } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return TokensArbitrum
+  }else if(chainId === SupportedChainId.BERA_ARTIO){
+    return TokensArtio
   } else {
     return FakeTokensMapMumbai
   }
