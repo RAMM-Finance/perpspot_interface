@@ -632,11 +632,30 @@ interface LoadedRowProps {
   position: MarginPositionDetails
 }
 
+// export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
+//   if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key')
+//   const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
+//   const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
+//   return `${token0?.toLowerCase()}-${token1?.toLowerCase()}-${fee}`
+// }
+
 export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
-  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key')
+  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key');
+
+  // Check for specific tokens and fee to replace with equivalent tokens from arbitrum 
+  if (
+    tokenA.toLowerCase() === '0x174652b085C32361121D519D788AbF0D9ad1C355'.toLowerCase() &&
+    tokenB.toLowerCase() === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b'.toLowerCase() &&
+    fee === 500
+  ) {
+    // Replace tokenA and tokenB with their equivalents on arbitrum
+    tokenA = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+    tokenB = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  }
+
   const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
   const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
-  return `${token0?.toLowerCase()}-${token1?.toLowerCase()}-${fee}`
+  return `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
 }
 
 /* Loaded State: row component with token information */

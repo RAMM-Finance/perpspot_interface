@@ -52,7 +52,6 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
   const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
   const symbolRef = useRef<string>(symbol) // Initialize symbolRef with symbol
-  console.log('fsymbol', symbol, newChainId)
 
   useEffect(() => {
     symbolRef.current = symbol

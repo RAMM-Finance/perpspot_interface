@@ -341,7 +341,6 @@ export default function Swap({ className }: { className?: string }) {
     }
     return null
   }, [poolsOHLC, pool, chainId])
-  console.log('chartSymbol', chartSymbol, poolsOHLC)
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
