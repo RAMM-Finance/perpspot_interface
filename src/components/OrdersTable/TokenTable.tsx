@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { Token } from '@uniswap/sdk-core'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useResetAtom } from 'jotai/utils'
 import { ReactNode, useEffect } from 'react'
@@ -69,89 +68,11 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-// function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
-//   const sortMethod = useAtomValue(sortMethodAtom)
-//   const sortAscending = useAtomValue(sortAscendingAtom)
-
-//   return useMemo(() => {
-//     if (!positions) return undefined
-//     let returnedPositions = positions
-//     switch (sortMethod) {
-//       case PositionSortMethod.REPAYTIME:
-//         returnedPositions = positions.sort((a, b) => b.repayTime - a.repayTime)
-//         break
-//       case PositionSortMethod.REMAINING:
-//         returnedPositions = positions.sort((a, b) => {
-//           const now = moment()
-//           const timeLeftB = moment.duration(moment.unix(Number(b.repayTime)).add(1, 'days').diff(now))
-
-//           const premiumB =
-//             b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber() < 0
-//               ? 0
-//               : b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber()
-
-//           const timeLeftA = moment.duration(moment.unix(Number(a.repayTime)).add(1, 'days').diff(now))
-//           const premiumA =
-//             a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber() < 0
-//               ? 0
-//               : a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber()
-
-//           return premiumB - premiumA
-//         })
-//     }
-
-//     return sortAscending ? returnedPositions : returnedPositions.reverse()
-//   }, [positions, sortMethod, sortAscending])
-// }
-
-function findCurrency(address: string | undefined, tokens: { [address: string]: Token } | undefined) {
-  if (!address || !tokens) return undefined
-  return tokens[address]
-}
-
-// function useFilteredOrders(orders: MarginOrderDetails[] | undefined) {
-//   const filterString = useAtomValue(filterStringAtom)
-//   const lowercaseFilterString = useMemo(() => filterString.toLowerCase(), [filterString])
-//   const tokens = useDefaultActiveTokens()
-
-//   return useMemo(() => {
-//     if (!orders) return undefined
-//     let returnOrders = orders
-//     if (lowercaseFilterString) {
-//       returnOrders = returnOrders?.filter((order) => {
-//         const token0 = findCurrency(order?.poolKey.token0Address, tokens)
-//         const token1 = findCurrency(order?.poolKey.token1Address, tokens)
-//         const addressIncludesFilterString = order?.poolKey.token0Address?.toLowerCase().includes(lowercaseFilterString)
-//         const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
-//         const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
-//         const name1IncludesFilterString = token1?.name?.toLowerCase().includes(lowercaseFilterString)
-//         const symbol1IncludesFilterString = token1?.symbol?.toLowerCase().includes(lowercaseFilterString)
-//         return (
-//           name0IncludesFilterString ||
-//           symbol0IncludesFilterString ||
-//           addressIncludesFilterString ||
-//           name1IncludesFilterString ||
-//           symbol1IncludesFilterString
-//         )
-//       })
-//     }
-//     return returnOrders
-//   }, [orders, lowercaseFilterString, tokens])
-// }
-
-// function useSelectOrders(orders?: MarginOrderDetails[]) {
-//   // const sortedPositions = useSortedPositions(positions)
-
-//   // const filteredPositions = useFilteredPositions(sortedPositions)
-//   return { filteredOrders: orders }
-// }
-
 export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; loading?: boolean }) {
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
 
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
-
   // const { filteredOrders } = useSelectOrders(orders)
   const filteredOrders = orders
   useEffect(() => {
@@ -172,9 +93,9 @@ export function OrdersTable({ orders, loading }: { orders?: MarginLimitOrder[]; 
           {filteredOrders?.map((order) => (
             <LoadedRow
               key={
-                order.key.token0Address +
+                order.key.token0 +
                 '-' +
-                order.key.token1Address +
+                order.key.token1 +
                 '-' +
                 order.key.fee.toString() +
                 '-' +

@@ -122,11 +122,9 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
     let returnPositions = positions
     if (lowercaseFilterString) {
       returnPositions = returnPositions?.filter((position) => {
-        const token0 = findCurrency(position?.poolKey.token0Address, tokens)
-        const token1 = findCurrency(position?.poolKey.token1Address, tokens)
-        const addressIncludesFilterString = position?.poolKey.token0Address
-          ?.toLowerCase()
-          .includes(lowercaseFilterString)
+        const token0 = findCurrency(position?.poolKey.token0, tokens)
+        const token1 = findCurrency(position?.poolKey.token1, tokens)
+        const addressIncludesFilterString = position?.poolKey.token0?.toLowerCase().includes(lowercaseFilterString)
         const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
         const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
         const name1IncludesFilterString = token1?.name?.toLowerCase().includes(lowercaseFilterString)
@@ -180,9 +178,9 @@ export default function LeveragePositionsTable({
           {filteredPositions?.map((position) => (
             <LoadedRow
               key={
-                position.poolKey.token0Address +
+                position.poolKey.token0 +
                 '-' +
-                position.poolKey.token1Address +
+                position.poolKey.token1 +
                 '-' +
                 position.poolKey.fee.toString() +
                 '-' +

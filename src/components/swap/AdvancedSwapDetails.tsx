@@ -15,7 +15,7 @@ import { ReactNode, useMemo, useState } from 'react'
 import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { BorrowCreationDetails, LeverageTrade, useSwapState } from 'state/swap/hooks'
+import { LeverageTrade, useSwapState } from 'state/swap/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
@@ -336,17 +336,14 @@ export function AdvancedMarginTradeDetails({
   allowedSlippage,
   syncing = false,
   trade,
-  preTradeInfo,
-  existingPosition,
-}: // hideInfoTooltips = false,
-{
+}: {
   trade?: AddMarginTrade
   preTradeInfo?: PreTradeInfo
   existingPosition?: MarginPositionDetails
   syncing?: boolean
   allowedSlippage?: Percent
 }) {
-  const theme = useTheme()
+  // const theme = useTheme()
   const [inverted, setInverted] = useState<boolean>(false)
   const {
     [Field.INPUT]: { currencyId: inputCurrencyId },
@@ -390,7 +387,7 @@ export function AdvancedMarginTradeDetails({
           label="Initial Premium deposit"
           value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={trade ? inputCurrency?.symbol : ''}
+          symbolAppend={trade ? (trade.premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) : ''}
         />
         <ValueLabel
           description="Variable Premium Rate. Rate % * borrow amount is the hourly amount your premium deposit is depleted."
@@ -415,15 +412,6 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend="hrs"
         />
-        {/*<ValueLabel
-          description="Slippage from spot price"
-          label="Slippage"
-          value={
-            trade ? formatBNToString(new BN(trade.allowedSlippage.toFixed(18)), NumberType.SwapTradeAmount) : undefined
-          }
-          symbolAppend="%"
-          syncing={syncing}
-        />*/}
         <ValueLabel
           description="Swap fee + Origination fee "
           label="Total Fees"
@@ -455,165 +443,6 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={trade ? outputCurrency?.symbol : ''}
         />
-        {/* <RowBetween>
-          <RowFixed style={{ marginRight: '20px' }}>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The minimum amount you are guaranteed to receive. If the price slips any further, your transaction
-                  will revert.
-                </Trans>
-              }
-              disableHover={false}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-                <Trans>Minimum output</Trans> <Trans>after slippage</Trans> ({allowedSlippage?.toFixed(2)}%)
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={70}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-              <TruncatedText>
-                {`${formatBNToString(trade?.minimumOutput, NumberType.SwapTradeAmount)}  ${
-                  trade ? trade?.swapOutput?.tokenSymbol : ''
-                }`}
-              </TruncatedText>
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-      </AutoColumn>
-    </StyledCard>
-  )
-}
-
-// export function ReduceBorrowDetails({ position, loading }: { position?: LimitlessPositionDetails; loading: boolean }) {
-//   const currency0 = useCurrency(position?.token0Address)
-//   const currency1 = useCurrency(position?.token1Address)
-//   return position ? (
-//     <StyledCard marginTop="10px">
-//       <AutoColumn gap="md">
-//         <ValueLabel
-//           description="Existing collateral amount for this position."
-//           value={formatBNToString(position?.initialCollateral)}
-//           label="Current Collateral Amount"
-//           syncing={loading}
-//           symbolAppend={position?.isToken0 ? currency0?.symbol : currency1?.symbol}
-//         />
-//         <ValueLabel
-//           description="Existing borrowed amount for this position."
-//           value={formatBNToString(position?.totalDebtInput)}
-//           label="Current Borrowed Amount"
-//           syncing={loading}
-//           symbolAppend={position?.isToken0 ? currency1?.symbol : currency0?.symbol}
-//         />
-//       </AutoColumn>
-//     </StyledCard>
-//   ) : null
-// }
-
-// export const DefaultBorrowDetails: BorrowCreationDetails = {
-//   collateralAmount: undefined,
-//   borrowedAmount: undefined,
-//   quotedPremium: undefined,
-//   unusedPremium: undefined,
-//   priceImpact: undefined,
-//   ltv: undefined,
-//   state: TradeState.INVALID,
-//   existingPosition: false,
-//   existingTotalDebtInput: undefined,
-//   existingCollateral: undefined,
-// }
-
-// collateralAmount: number | undefined// CurrencyAmount<Currency> | undefined
-// borrowedAmount: number | undefined // totalDebtInput
-// quotedPremium: number | undefined
-// unusedPremium: number | undefined
-// priceImpact: Percent | undefined
-// ltv: number | undefined
-// state: TradeState
-// existingPosition: boolean | undefined
-// existingTotalDebtInput: number | undefined
-// existingCollateral: number | undefined
-
-export function AdvancedBorrowSwapDetails({
-  borrowTrade,
-  syncing = false,
-}: {
-  borrowTrade?: BorrowCreationDetails
-  syncing: boolean
-}) {
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    // leverageManagerAddress
-  } = useSwapState()
-
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
-  // const theme = useTheme()
-
-  const displayValues = useMemo(() => {
-    let additionalCollateral
-    let totalExistingCollateral
-    let totalExistingBorrowed
-    let _borrowedAmount
-    if (borrowTrade) {
-      const { collateralAmount, borrowedAmount, existingCollateral, existingTotalDebtInput } = borrowTrade
-      if (collateralAmount && borrowedAmount) {
-        totalExistingCollateral = existingCollateral
-        totalExistingBorrowed = existingTotalDebtInput
-        additionalCollateral = collateralAmount
-        _borrowedAmount = borrowedAmount
-      }
-    }
-    return {
-      additionalCollateral,
-      totalExistingCollateral,
-      totalExistingBorrowed,
-      borrowedAmount: _borrowedAmount,
-    }
-  }, [borrowTrade])
-
-  // console.log("quotedPremium: ", borrowTrade?.quotedPremium)
-  return (
-    <StyledCard>
-      <AutoColumn gap="sm">
-        <ValueLabel
-          description={
-            borrowTrade?.existingPosition ? 'Collateral Added to Position' : 'Net collateral for the transaction'
-          }
-          label={borrowTrade?.existingPosition ? 'Additonal Collateral' : 'Total Collateral'}
-          value={formatBNToString(displayValues.additionalCollateral)}
-          syncing={syncing}
-          symbolAppend={inputCurrency?.symbol}
-        />
-        <ValueLabel
-          description={
-            borrowTrade?.existingPosition
-              ? 'Total Borrow Position, added to your previous position'
-              : 'The borrowed amount you expect to receive at the current market price.'
-          }
-          label="Total Borrow Amount"
-          value={formatBNToString(displayValues.borrowedAmount)}
-          syncing={syncing}
-          symbolAppend={outputCurrency?.symbol}
-        />
-        <Separator />
-        <ValueLabel
-          description="The premium you are expected to pay, which depletes in 48hrs(after which your position will be force closed)."
-          label="Premium to deposit"
-          value={formatBNToString(borrowTrade?.quotedPremium)}
-          syncing={syncing}
-          symbolAppend={outputCurrency?.symbol}
-        />
-        {/* <ValueLabel 
-          description="The remaining premium returned."
-          label="Returned Premium"
-          value={borrowTrade?.unusedPremium?borrowTrade?.unusedPremium:0 }
-          syncing={syncing}
-          symbolAppend={outputCurrency?.symbol}
-          width={"100px"}
-        /> */}
       </AutoColumn>
     </StyledCard>
   )

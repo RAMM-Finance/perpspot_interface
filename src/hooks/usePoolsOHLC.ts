@@ -32,6 +32,30 @@ const getPoolAddress = (token0: string, token1: string, fee: number, factoryAddr
   )
 }
 
+interface PoolItem {
+  token0: string;
+  token1: string;
+  fee: number;
+}
+
+
+function adjustTokensForChain(chainId: number, pool: PoolItem): { adjustedChainId: number, adjustedPool: PoolItem } {
+  // Check for specific condition and adjust if necessary
+  if (chainId === 80085 && pool.token0 === '0x174652b085C32361121D519D788AbF0D9ad1C355' && pool.token1 === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b' && pool.fee === 500) {
+    return {
+      adjustedChainId: 42161, 
+      adjustedPool: { 
+        token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+        token1: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        fee: 500,
+      },
+    };
+  }
+  
+  return { adjustedChainId: chainId, adjustedPool: pool }
+}
+
+
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
@@ -47,12 +71,13 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
     const results = []
     // fetch data
     for (let i = 0; i < list.length; i++) {
+      const { adjustedChainId, adjustedPool } = adjustTokensForChain(chainId, list[i] as PoolItem);
       const poolAddress = getPoolAddress(
-        list[i].token0,
-        list[i].token1,
-        list[i].fee,
-        V3_CORE_FACTORY_ADDRESSES[chainId]
-      )
+        adjustedPool.token0,
+        adjustedPool.token1,
+        adjustedPool.fee,
+        V3_CORE_FACTORY_ADDRESSES[adjustedChainId]
+      );
 
       let denomination
       if (
@@ -96,7 +121,10 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       const priceNow = data[0][4]
       const delta24h = (priceNow - price24hAgo) / price24hAgo
 
-      const { token0, token1, fee } = list[i]
+      const {  adjustedPool } = adjustTokensForChain(chainId, list[i] as PoolItem);
+
+     // const { token0, token1, fee } = list[i]
+      const { token0, token1, fee } =  adjustedPool
       const base = res?.data?.meta?.base?.address
       const quote = res?.data?.meta?.quote?.address
       parsed[`${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`] = {
@@ -106,8 +134,8 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
         priceNow,
         delta24h,
         pool: {
-          token0Address: token0,
-          token1Address: token1,
+          token0,
+          token1,
           fee,
         },
         base,

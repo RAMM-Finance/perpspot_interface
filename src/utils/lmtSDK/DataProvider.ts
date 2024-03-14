@@ -16,8 +16,8 @@ export abstract class DataProviderSDK {
     startingLeverage: string
   ): string {
     const poolKey = {
-      token0: key.poolKey.token0Address,
-      token1: key.poolKey.token1Address,
+      token0: key.poolKey.token0,
+      token1: key.poolKey.token1,
       fee: key.poolKey.fee,
     }
     return DataProviderSDK.INTERFACE.encodeFunctionData('findMaxLeverageWithEstimatedSlippage', [
@@ -32,8 +32,8 @@ export abstract class DataProviderSDK {
   // getPostInstantaeneousRate(PoolKey memory poolKey, address trader, bool positionIsToken0)
   public static getPostInstantaneousRateCalldata(key: TraderPositionKey): string {
     const poolKey = {
-      token0: key.poolKey.token0Address,
-      token1: key.poolKey.token1Address,
+      token0: key.poolKey.token0,
+      token1: key.poolKey.token1,
       fee: key.poolKey.fee,
     }
     return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaeneousRate', [
@@ -61,8 +61,8 @@ export abstract class DataProviderSDK {
     sqrtPriceX160: string
   ): string {
     const poolKey = {
-      token0: key.token0Address,
-      token1: key.token1Address,
+      token0: key.token0,
+      token1: key.token1,
       fee: key.fee,
     }
     return DataProviderSDK.INTERFACE.encodeFunctionData('findTicks', [

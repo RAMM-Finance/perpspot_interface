@@ -1,6 +1,7 @@
 import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
@@ -53,15 +54,19 @@ export const PoolSelector = ({
   fee?: number
 }) => {
   const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
+    poolKey,
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
 
   const { onPoolSelection } = useSwapActionHandlers()
-  const inputCurrency = useCurrency(inputCurrencyId)
+
   const outputCurrency = useCurrency(outputCurrencyId)
+  const inputCurrency = useCurrency(
+    outputCurrencyId?.toLowerCase() === poolKey?.token0 ? poolKey?.token1 : poolKey?.token0
+  )
 
   const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
+
   // Timeout token loader after 3 seconds to avoid hanging in a loading state.
   useEffect(() => {
     const tokenLoaderTimer = setTimeout(() => {
@@ -70,15 +75,13 @@ export const PoolSelector = ({
     return () => clearTimeout(tokenLoaderTimer)
   }, [])
 
-  const isLoading = Boolean(!tokenLoaderTimerElapsed)
-
   const location = useLocation()
   const navigate = useNavigate()
 
   if (location.pathname !== '/add/' && setSelectPair) {
     setSelectPair(false)
   }
-  const id = `${inputCurrency?.wrapped.address}-${outputCurrency?.wrapped.address}-${fee}`
+  const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee) //`${inputCurrency?.wrapped.address}-${outputCurrency?.wrapped.address}-${fee}`
   const { poolId } = useSwapState()
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
@@ -89,56 +92,26 @@ export const PoolSelector = ({
           (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
           (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
         ) {
-          navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
-          onPoolSelection(currencyIn, currencyOut, fee, id)
+          navigate(`/add/${currencyIn.wrapped.address}/${currencyOut.wrapped.address}/${fee}`)
+          const token0 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped) ? currencyIn : currencyOut
+          const token1 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped) ? currencyOut : currencyIn
+          onPoolSelection(currencyIn, currencyOut, {
+            token0: token0.wrapped.address,
+            token1: token1.wrapped.address,
+            fee,
+          })
         } else {
           navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
-          onPoolSelection(currencyIn, currencyOut, fee, id)
-          // localStorage.setItem('currencyIn', JSON.stringify(currencyIn.wrapped.address))
-          // localStorage.setItem('currencyOut', JSON.stringify(currencyOut.wrapped.address))
-          // onCurrencySelection(Field.INPUT, currencyIn)
-          // onCurrencySelection(Field.OUTPUT, currencyOut)
         }
       }
     },
     [onPoolSelection, navigate, id, poolId]
   )
-
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
-
-  // const inputRef = useRef<HTMLInputElement>()
-  // const handleInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-  //   const input = event.target.value
-  //   const checksummedInput = isAddress(input)
-  //   setSearchQuery(checksummedInput || input)
-  //   fixedList.current?.scrollTo(0)
-  // }, [])
-
-  // const handleEnter = useCallback(
-  //   (e: KeyboardEvent<HTMLInputElement>) => {
-  //     if (e.key === 'Enter') {
-  //       const s = debouncedQuery.toLowerCase().trim()
-  //       if (s === native?.symbol?.toLowerCase()) {
-  //         handleCurrencySelect(native)
-  //       } else if (searchCurrencies.length > 0) {
-  //         if (
-  //           searchCurrencies[0].symbol?.toLowerCase() === debouncedQuery.trim().toLowerCase() ||
-  //           searchCurrencies.length === 1
-  //         ) {
-  //           handleCurrencySelect(searchCurrencies[0])
-  //         }
-  //       }
-  //     }
-  //   },
-  //   [debouncedQuery, native, searchCurrencies, handleCurrencySelect]
-  // )
-
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
-
   const theme = useTheme()
-
   const ref = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
@@ -219,7 +192,7 @@ export const PoolSelector = ({
       return null
     }
   }, [poolData, data, availablePools])
-
+  console.log('datainfo', dataInfo)
   const dropdown = (
     <NavDropdown
       ref={modalRef}

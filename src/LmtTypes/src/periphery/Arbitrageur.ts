@@ -13,7 +13,11 @@ import type {
   Signer,
   utils,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type {
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -71,6 +75,7 @@ export type AddParamsStruct = {
   executionData: PromiseOrValue<BytesLike>;
   slippedTickMin: PromiseOrValue<BigNumberish>;
   slippedTickMax: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type AddParamsStructOutput = [
@@ -83,7 +88,8 @@ export type AddParamsStructOutput = [
   string,
   string,
   number,
-  number
+  number,
+  boolean
 ] & {
   margin: BigNumber;
   minOutput: BigNumber;
@@ -95,6 +101,7 @@ export type AddParamsStructOutput = [
   executionData: string;
   slippedTickMin: number;
   slippedTickMax: number;
+  marginInPosToken: boolean;
 };
 
 export type ReduceParamStruct = {
@@ -248,8 +255,8 @@ export interface ArbitrageurInterface extends utils.Interface {
   functions: {
     "canForceClose(address,address,bool)": FunctionFragment;
     "canForceCloseTradePosition((address,address,uint24),address,bool)": FunctionFragment;
-    "fillAddOrder((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(uint256,uint256,uint256,bytes))": FunctionFragment;
-    "fillAddOrder_(address,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24),(uint256,uint256,uint256,bytes))": FunctionFragment;
+    "fillAddOrder((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24,bool),(uint256,uint256,uint256,bytes))": FunctionFragment;
+    "fillAddOrder_(address,(int24,uint128,uint256,uint256,uint256,uint256)[],(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24,bool),(uint256,uint256,uint256,bytes))": FunctionFragment;
     "fillReduceOrder((address,address,uint24),(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256),(uint256,uint256,uint256,bytes))": FunctionFragment;
     "fillReduceOrder_(address,(bool,uint256,uint256,address,uint256,bytes,int24,int24,uint256),(uint256,uint256,uint256,bytes))": FunctionFragment;
     "findSimulatedOutput(address,uint256,bool)": FunctionFragment;
@@ -438,8 +445,29 @@ export interface ArbitrageurInterface extends utils.Interface {
     data: BytesLike
   ): Result;
 
-  events: {};
+  events: {
+    "ForceClosed(address,bool,address,address,int256,int256,uint256,address)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "ForceClosed"): EventFragment;
 }
+
+export interface ForceClosedEventObject {
+  trader: string;
+  positionIsToken0: boolean;
+  token0: string;
+  token1: string;
+  amount0: BigNumber;
+  amount1: BigNumber;
+  returnedAmount: BigNumber;
+  returnedToken: string;
+}
+export type ForceClosedEvent = TypedEvent<
+  [string, boolean, string, string, BigNumber, BigNumber, BigNumber, string],
+  ForceClosedEventObject
+>;
+
+export type ForceClosedEventFilter = TypedEventFilter<ForceClosedEvent>;
 
 export interface Arbitrageur extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -795,7 +823,28 @@ export interface Arbitrageur extends BaseContract {
     ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    "ForceClosed(address,bool,address,address,int256,int256,uint256,address)"(
+      trader?: null,
+      positionIsToken0?: null,
+      token0?: null,
+      token1?: null,
+      amount0?: null,
+      amount1?: null,
+      returnedAmount?: null,
+      returnedToken?: null
+    ): ForceClosedEventFilter;
+    ForceClosed(
+      trader?: null,
+      positionIsToken0?: null,
+      token0?: null,
+      token1?: null,
+      amount0?: null,
+      amount1?: null,
+      returnedAmount?: null,
+      returnedToken?: null
+    ): ForceClosedEventFilter;
+  };
 
   estimateGas: {
     canForceClose(

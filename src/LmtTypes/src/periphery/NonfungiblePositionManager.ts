@@ -831,7 +831,7 @@ export interface NonfungiblePositionManager extends BaseContract {
     burn(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<boolean>;
 
     collect(
       params: NonfungiblePositionManager.CollectParamsStruct,

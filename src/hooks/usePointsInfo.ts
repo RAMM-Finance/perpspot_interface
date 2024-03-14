@@ -125,7 +125,6 @@ const GenesisAddressses = [
 
 export function useUsingCode() {
   const { account, provider, chainId } = useWeb3React()
-
   const referralContract = useReferralContract()
 
   const [codeUsing, setCodeUsing] = useState(false)
@@ -179,7 +178,7 @@ export function useUsingCode() {
   //   }
   // }, [account, provider, chainId])
   // console.log('isBeacon', result)
-  return codeUsing
+  return chainId == 80085?true: codeUsing 
 }
 
 // export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {

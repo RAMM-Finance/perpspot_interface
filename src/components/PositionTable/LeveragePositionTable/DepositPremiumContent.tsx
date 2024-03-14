@@ -122,12 +122,8 @@ function useDerivedDepositPremiumInfo(
   inputError: ReactNode | undefined
 } {
   const marginFacility = useMarginFacilityContract()
-  const inputCurrency = useCurrency(
-    position?.isToken0 ? positionKey.poolKey.token1Address : positionKey.poolKey.token0Address
-  )
-  const outputCurrency = useCurrency(
-    position?.isToken0 ? positionKey.poolKey.token0Address : positionKey.poolKey.token1Address
-  )
+  const inputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token1 : positionKey.poolKey.token0)
+  const outputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token0 : positionKey.poolKey.token1)
 
   const parsedAmount = useMemo(() => {
     return parseBN(amount)
@@ -172,8 +168,8 @@ function useDerivedDepositPremiumInfo(
     // simulate the txn
     await params.marginFacility.callStatic.depositPremium(
       {
-        token0: params.positionKey.poolKey.token0Address,
-        token1: params.positionKey.poolKey.token1Address,
+        token0: params.positionKey.poolKey.token0,
+        token1: params.positionKey.poolKey.token1,
         fee: params.positionKey.poolKey.fee,
       },
       params.account,
@@ -286,7 +282,7 @@ export function DepositPremiumContent({
     loading: boolean
   }
 }) {
-  const { position, loading: positionLoading } = positionData
+  const { position } = positionData
   // state inputs, derived, handlers for trade confirmation
   const [amount, setAmount] = useState('')
   const [attemptingTxn, setAttemptingTxn] = useState(false)

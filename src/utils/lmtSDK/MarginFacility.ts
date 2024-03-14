@@ -17,10 +17,12 @@ export interface AddPositionOptions {
   deadline: string
   simulatedOutput: string
   executionOption: number
-  // maxSlippage: string
   slippedTickMin: number
   slippedTickMax: number
+  marginInPosToken: boolean
   depositPremium?: string
+  premiumInPosToken?: boolean
+  minPremiumOutput?: string
 }
 
 // struct ReduceParam {
@@ -96,25 +98,41 @@ export abstract class MarginFacilitySDK {
     const calldatas: string[] = []
 
     if (param.depositPremium) {
-      calldatas.push(
-        MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
-          {
-            token0: param.positionKey.poolKey.token0Address,
-            token1: param.positionKey.poolKey.token1Address,
-            fee: param.positionKey.poolKey.fee,
-          },
-          param.positionKey.trader,
-          param.positionKey.isToken0,
-          param.depositPremium,
-        ])
-      )
+      if (param.premiumInPosToken) {
+        calldatas.push(
+          MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
+            {
+              token0: param.positionKey.poolKey.token0,
+              token1: param.positionKey.poolKey.token1,
+              fee: param.positionKey.poolKey.fee,
+            },
+            param.positionKey.trader,
+            param.positionKey.isToken0,
+            param.depositPremium,
+          ])
+        )
+      } else {
+        calldatas.push(
+          MarginFacilitySDK.INTERFACE.encodeFunctionData('swapAndDepositPremium', [
+            {
+              token0: param.positionKey.poolKey.token0,
+              token1: param.positionKey.poolKey.token1,
+              fee: param.positionKey.poolKey.fee,
+            },
+            param.positionKey.trader,
+            param.positionKey.isToken0,
+            param.depositPremium,
+            param.minPremiumOutput,
+          ])
+        )
+      }
     }
 
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {
-          token0: param.positionKey.poolKey.token0Address,
-          token1: param.positionKey.poolKey.token1Address,
+          token0: param.positionKey.poolKey.token0,
+          token1: param.positionKey.poolKey.token1,
           fee: param.positionKey.poolKey.fee.toString(),
         },
         {
@@ -129,6 +147,7 @@ export abstract class MarginFacilitySDK {
           executionData: [],
           slippedTickMin: param.slippedTickMin,
           slippedTickMax: param.slippedTickMax,
+          marginInPosToken: param.marginInPosToken,
         },
         [],
       ])
@@ -143,8 +162,8 @@ export abstract class MarginFacilitySDK {
       calldatas.push(
         MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
           {
-            token0: param.orderKey.poolKey.token0Address,
-            token1: param.orderKey.poolKey.token1Address,
+            token0: param.orderKey.poolKey.token0,
+            token1: param.orderKey.poolKey.token1,
             fee: param.orderKey.poolKey.fee,
           },
           param.orderKey.trader,
@@ -188,8 +207,8 @@ export abstract class MarginFacilitySDK {
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
         {
-          token0: param.positionKey.poolKey.token0Address,
-          token1: param.positionKey.poolKey.token1Address,
+          token0: param.positionKey.poolKey.token0,
+          token1: param.positionKey.poolKey.token1,
           fee: param.positionKey.poolKey.fee,
         },
         {
@@ -211,8 +230,8 @@ export abstract class MarginFacilitySDK {
       calldatas.push(
         MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
           {
-            token0: param.positionKey.poolKey.token0Address,
-            token1: param.positionKey.poolKey.token1Address,
+            token0: param.positionKey.poolKey.token0,
+            token1: param.positionKey.poolKey.token1,
             fee: param.positionKey.poolKey.fee,
           },
           param.positionKey.isToken0,
@@ -230,8 +249,8 @@ export abstract class MarginFacilitySDK {
       // PoolKey calldata key, address trader, bool isToken0, uint256 amount
 
       {
-        token0: param.positionKey.poolKey.token0Address,
-        token1: param.positionKey.poolKey.token1Address,
+        token0: param.positionKey.poolKey.token0,
+        token1: param.positionKey.poolKey.token1,
         fee: param.positionKey.poolKey.fee,
       },
       param.positionKey.trader,
@@ -248,8 +267,8 @@ export abstract class MarginFacilitySDK {
   public static withdrawPremiumParameters(param: WithdrawPremiumOptions): MethodParameters {
     const calldata: string = MarginFacilitySDK.INTERFACE.encodeFunctionData('withdrawPremium', [
       {
-        token0: param.positionKey.poolKey.token0Address,
-        token1: param.positionKey.poolKey.token1Address,
+        token0: param.positionKey.poolKey.token0,
+        token1: param.positionKey.poolKey.token1,
         fee: param.positionKey.poolKey.fee,
       },
       param.positionKey.trader,

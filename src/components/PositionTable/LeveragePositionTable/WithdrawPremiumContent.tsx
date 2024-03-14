@@ -133,12 +133,8 @@ function useDerivedWithdrawPremiumInfo(
   tradeState: DerivedInfoState
 } {
   const marginFacility = useMarginFacilityContract()
-  const inputCurrency = useCurrency(
-    position?.isToken0 ? positionKey.poolKey.token1Address : positionKey.poolKey.token0Address
-  )
-  const outputCurrency = useCurrency(
-    position?.isToken0 ? positionKey.poolKey.token0Address : positionKey.poolKey.token1Address
-  )
+  const inputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token1 : positionKey.poolKey.token0)
+  const outputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token0 : positionKey.poolKey.token1)
 
   const { account } = useWeb3React()
 
@@ -182,8 +178,8 @@ function useDerivedWithdrawPremiumInfo(
     // simulate the txn
     await params.marginFacility.callStatic.withdrawPremium(
       {
-        token0: params.positionKey.poolKey.token0Address,
-        token1: params.positionKey.poolKey.token1Address,
+        token0: params.positionKey.poolKey.token0,
+        token1: params.positionKey.poolKey.token1,
         fee: params.positionKey.poolKey.fee,
       },
       params.positionKey.isToken0,
@@ -345,8 +341,8 @@ export function WithdrawPremiumContent({
 
       const response = await marginFacility.withdrawPremium(
         {
-          token0: positionKey.poolKey.token0Address,
-          token1: positionKey.poolKey.token1Address,
+          token0: positionKey.poolKey.token0,
+          token1: positionKey.poolKey.token1,
           fee: positionKey.poolKey.fee,
         },
         positionKey.isToken0,

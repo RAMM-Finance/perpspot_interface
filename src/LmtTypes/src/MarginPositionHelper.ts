@@ -78,13 +78,20 @@ export type MarginPositionStruct = {
   base: PositionStruct;
   totalPosition: PromiseOrValue<BigNumberish>;
   margin: PromiseOrValue<BigNumberish>;
+  marginInPosToken: PromiseOrValue<boolean>;
 };
 
 export type MarginPositionStructOutput = [
   PositionStructOutput,
   BigNumber,
-  BigNumber
-] & { base: PositionStructOutput; totalPosition: BigNumber; margin: BigNumber };
+  BigNumber,
+  boolean
+] & {
+  base: PositionStructOutput;
+  totalPosition: BigNumber;
+  margin: BigNumber;
+  marginInPosToken: boolean;
+};
 
 export type PoolKeyStruct = {
   token0: PromiseOrValue<string>;
@@ -100,7 +107,7 @@ export type PoolKeyStructOutput = [string, string, number] & {
 
 export interface MarginPositionHelperInterface extends utils.Interface {
   functions: {
-    "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256),(address,address,uint24),bool,address,uint256)": FunctionFragment;
+    "canForceClose(((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256,bool),(address,address,uint24),bool,address,uint256)": FunctionFragment;
   };
 
   getFunction(nameOrSignatureOrTopic: "canForceClose"): FunctionFragment;

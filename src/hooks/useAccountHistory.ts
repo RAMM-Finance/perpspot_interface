@@ -52,7 +52,6 @@ export function useHistoryData(address: any) {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
       })
-
       const forceCloseFiltered = ForceCloseData?.data?.forceCloseds.filter((data: any) => {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
@@ -70,17 +69,17 @@ export function useHistoryData(address: any) {
         }
       })
 
-      forceCloseFiltered.forEach((entry: any) => {
+      ForceCloseData?.data?.forceCloseds.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
           pools.add(entry.pool)
         }
       })
-      addOrderFiltered.forEach((entry: any) => {
+      AddOrderData?.data?.orderAddeds.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
           pools.add(entry.pool)
         }
       })
-      cancelOrderFiltered.forEach((entry: any) => {
+      CancelOrderData?.data?.orderCanceleds.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
           pools.add(entry.pool)
         }
@@ -115,6 +114,7 @@ export function useHistoryData(address: any) {
 
     call()
   }, [client, account])
+  // console.log('????', addData, reduceData, addOrderData, cancelOrderData, forceCloseData)
 
   const history = useMemo(() => {
     if (!addOrderData || !reduceData || !addData || !cancelOrderData || !forceCloseData || !uniqueTokens) return

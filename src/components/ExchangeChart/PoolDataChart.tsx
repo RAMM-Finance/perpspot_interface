@@ -45,7 +45,8 @@ const getLanguageFromURL = (): LanguageCode | null => {
 export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: string }) => {
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
   // const { datafeed } = useDatafeed({ chainId })
-  const { datafeed } = useGeckoDatafeed({ chainId })
+  let newChainId = chainId == 80085? 42161: chainId 
+  const { datafeed } = useGeckoDatafeed({ chainId: newChainId })
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
@@ -57,7 +58,6 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
     localStorage.setItem('chartData', symbol)
     // You may need to reinitialize or update your chart here if necessary
   }, [symbol])
-
   useEffect(() => {
     // Function to initialize the TradingView widget
     const initTradingView = () => {

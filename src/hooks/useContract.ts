@@ -20,6 +20,7 @@ import { ArgentWalletDetector, EnsPublicResolver, EnsRegistrar, Erc20, Erc721, E
 import WETH_ABI from 'abis/weth.json'
 import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
+  BRP_ADDRESS,
   DATA_PROVIDER_ADDRESSES,
   ENS_REGISTRAR_ADDRESSES,
   LIM_WETH,
@@ -35,7 +36,6 @@ import {
   TICK_LENS_ADDRESSES,
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
-  BRP_ADDRESS
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter'
@@ -43,6 +43,7 @@ import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
 
+import { abi as BRP_ABI } from '../abis_v2/BRP.json'
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
 import { abi as LIM_TokenABI } from '../abis_v2/LIM_Token.json'
 import { abi as VaultAbi } from '../abis_v2/LPVault.json'
@@ -53,7 +54,6 @@ import { abi as LmtQuoterAbi } from '../abis_v2/Quoter.json'
 import { abi as ReferralSystemABI } from '../abis_v2/ReferralSystem.json'
 import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
 import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
-import {abi as BRP_ABI} from "../abis_v2/BRP.json"
 import {
   BRP,
   DataProvider,
@@ -112,7 +112,7 @@ const usdValueData: PricesMap = {
   '0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0': 7, //uni
   '0x18c11FD286C5EC11c3b683Caa813B77f5163A122': 6.5, //gns
   '0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978': 0.6, //crv
-  '0x6694340fc020c5E6B96567843da2df01b2CE1eb6': 0.6 // stg
+  '0x6694340fc020c5E6B96567843da2df01b2CE1eb6': 0.6, // stg
 }
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
@@ -125,7 +125,6 @@ const DecimalValues: DecimalMap = {
   '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9': 18,
   // fusdc
   '0x569f3140FDc0f3B9Fc2E4919C35f35D39dd2B01A': 18,
-
   // wbtc -arb
   '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f': 8,
   // weth -arb

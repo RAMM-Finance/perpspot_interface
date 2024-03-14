@@ -3,10 +3,10 @@ import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import { EditCell } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import { ConfirmCancelOrderHeader } from 'components/PositionTable/LeveragePositionTable/ConfirmModalHeaders'
 import { useCancelLimitOrderCallback } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent/CancelLimitOrder'
 import { BaseFooter } from 'components/PositionTable/LeveragePositionTable/DepositPremiumContent'
+import { EditCell } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import ConfirmModifyPositionModal from 'components/PositionTable/LeveragePositionTable/TransactionModal'
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -32,7 +32,6 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from './constants'
 import { LoadingBubble } from './loading'
-import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, OrderSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
 const Cell = styled.div`
@@ -41,6 +40,7 @@ const Cell = styled.div`
   justify-content: flex-start;
   font-size: 12px;
 `
+
 const StyledTokenRow = styled.div<{
   first?: boolean
   last?: boolean
@@ -52,7 +52,7 @@ const StyledTokenRow = styled.div<{
   grid-template-columns: 1.5fr 2.5fr 2.5fr 2.5fr 2.5fr 2.5fr 1fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  : 390px;
+  :390px ;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '8px' : '0px'};
@@ -110,17 +110,6 @@ const ClickableContent = styled.div`
   cursor: pointer;
   width: fit-content;
 `
-const ClickableName = styled(ClickableContent)`
-  gap: 8px;
-  max-width: 100%;
-`
-
-const StyledMore = styled(More)`
-  fill: ${({ theme }) => theme.textSecondary};
-  &:hover {
-    cursor: pointer;
-  }
-`
 
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
@@ -143,15 +132,6 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   }
 `
 
-const ListNumberCell = styled(Cell)<{ header: boolean }>`
-  color: ${({ theme }) => theme.textSecondary};
-  min-width: 32px;
-  font-size: 14px;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
 const DataCell = styled(Cell)<{ sortable: boolean }>`
   justify-content: flex-end;
   user-select: ${({ sortable }) => (sortable ? 'none' : 'unset')};
@@ -161,12 +141,7 @@ const DataCell = styled(Cell)<{ sortable: boolean }>`
     },
   }) => css`background-color ${duration.medium} ${timing.ease}`};
 `
-const TvlCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
+
 const NameCell = styled(Cell)`
   justify-content: flex-start;
   padding-right: 8px;
@@ -175,39 +150,6 @@ const PriceCell = styled(DataCell)`
   width: 100%;
   justify-content: flex-start;
   padding-right: 8px;
-`
-
-const ActionCell = styled(DataCell)`
-  justify-content: center;
-  align-items: center;
-  min-width: 60px;
-`
-
-const PercentChangeCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const PercentChangeInfoCell = styled(Cell)`
-  display: none;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: flex;
-    justify-content: flex-end;
-    color: ${({ theme }) => theme.textSecondary};
-    font-size: 12px;
-    line-height: 16px;
-  }
-`
-const PriceInfoCell = styled(Cell)`
-  justify-content: flex-end;
-  flex: 1;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    flex-direction: column;
-    align-items: flex-end;
-  }
 `
 
 export const GreenText = styled.span`
@@ -564,7 +506,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const [token0Address, token1Address, inputIs1] = useMemo(() => {
     if (details) {
-      return [details.key.token0Address, details.key.token1Address, details.positionIsToken0]
+      return [details.key.token0, details.key.token1, details.positionIsToken0]
     }
     return [undefined, undefined]
   }, [details])
