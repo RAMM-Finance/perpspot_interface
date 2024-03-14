@@ -1,7 +1,7 @@
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { computePoolAddress } from '@uniswap/v3-sdk'
+// import { computePoolAddress } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
@@ -16,7 +16,7 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
+import { usePool,POOL_INIT_CODE_HASH_2,computePoolAddress } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useState } from 'react'
 import { ReactNode } from 'react'
@@ -244,6 +244,28 @@ const PinWrapper = styled.div`
   grid-row: 1;
   height: 100%;
 `
+interface PoolItem {
+  token0: string|undefined;
+  token1: string|undefined;
+  fee: number|undefined;
+}
+
+function adjustTokensForChain(chainId: number|undefined, pool: PoolItem): { adjustedChainId: number|undefined, adjustedPool: any } {
+  // Check for specific condition and adjust if necessary
+  if (chainId === 80085 && pool.token0 === '0x174652b085C32361121D519D788AbF0D9ad1C355' && pool.token1 === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b' && pool.fee === 500) {
+    return {
+      adjustedChainId: 42161, 
+      adjustedPool: { 
+        token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+        token1: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        fee: 500,
+      },
+    };
+  }
+  
+  return { adjustedChainId: chainId, adjustedPool: pool }
+}
+
 
 export default function Swap({ className }: { className?: string }) {
   const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
@@ -263,6 +285,13 @@ export default function Swap({ className }: { className?: string }) {
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
+
+  const { adjustedChainId, adjustedPool } = adjustTokensForChain(chainId, {
+    token0: pool?.token0.address,
+    token1: pool?.token1.address,
+    fee: pool?.fee,
+  });
+
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
@@ -274,7 +303,10 @@ export default function Swap({ className }: { className?: string }) {
   // const poolKeyList = useRawPoolKeyList()
   const chartSymbol = useMemo(() => {
     if (pool && poolsOHLC && chainId) {
-      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
+
+      const id = getPoolId(adjustedPool.token0, adjustedPool.token1, adjustedPool.fee);
+
+      // const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
       if (!poolsOHLC[id]) return null
 
       const base = poolsOHLC[id]?.base
@@ -284,10 +316,10 @@ export default function Swap({ className }: { className?: string }) {
         const d2 = new BN(1).div(token0Price).minus(poolsOHLC[id].price24hAgo).abs()
         return JSON.stringify({
           poolAddress: computePoolAddress({
-            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-            tokenA: pool.token0,
-            tokenB: pool.token1,
-            fee: pool.fee,
+            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId==80085?42161:chainId],
+            tokenA: adjustedPool.token0,
+            tokenB: adjustedPool.token1,
+            fee: adjustedPool.fee
           }),
           baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
           quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
@@ -297,10 +329,10 @@ export default function Swap({ className }: { className?: string }) {
       const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
       return JSON.stringify({
         poolAddress: computePoolAddress({
-          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-          tokenA: pool.token0,
-          tokenB: pool.token1,
-          fee: pool.fee,
+          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId==80085?42161:chainId],
+          tokenA: adjustedPool.token0,
+          tokenB: adjustedPool.token1,
+          fee: adjustedPool.fee
         }),
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
@@ -309,7 +341,7 @@ export default function Swap({ className }: { className?: string }) {
     }
     return null
   }, [poolsOHLC, pool, chainId])
-  // console.log('chartSymbol', chartSymbol)
+  console.log('chartSymbol', chartSymbol, poolsOHLC)
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 

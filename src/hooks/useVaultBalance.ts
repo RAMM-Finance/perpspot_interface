@@ -13,12 +13,22 @@ const useVaultBalance = () => {
   const { result, error, loading, syncing } = useContractCall(LMT_VAULT, calldata, false, 5)
 
   return useMemo(() => {
+
+    let decodedResult
+    try {
+      decodedResult =result? LPVaultSDK.INTERFACE.decodeFunctionResult('totalAssets', result).toString() : undefined
+    } catch(err){
+      decodedResult = '0'
+    }
+
     return {
-      result: result ? LPVaultSDK.INTERFACE.decodeFunctionResult('totalAssets', result).toString() : undefined,
+      result: decodedResult,
       error,
       loading,
     }
   }, [loading, error, result])
 }
+
+
 
 export default useVaultBalance
