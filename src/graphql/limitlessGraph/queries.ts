@@ -43,6 +43,36 @@ export const LiquidityWithdrawnQuery = `
   }
 `
 
+export const TokensDataFromUniswapQuery = (tokenIds: string[]) => {
+  return `
+    query ($id_in: [Bytes!] = []) {
+      tokens(where: {id_in: ${JSON.stringify(tokenIds)}}) {
+        id
+        name
+        symbol
+        decimals
+        lastPriceUSD
+      }
+    }
+  `
+}
+
+
+export const TokenDataFromUniswapQuery = (tokenId: string) => {
+  return `
+  query { 
+    token(id: \"${tokenId}\") { 
+      id 
+      name
+      symbol
+      decimals
+      lastPriceUSD
+      
+    } 
+  }
+  `
+}
+
 export const AddOrderQuery = `
   query {
     orderAddeds(orderBy: blockTimestamp) {

@@ -3,14 +3,15 @@ import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contra
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { ethers } from 'ethers'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
+import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery, TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
-import { tokenDecimal, usdValue, useDataProviderContract } from './useContract'
+import { getDecimalAndUsdValueData, tokenDecimal, usdValue, useDataProviderContract } from './useContract'
+import axios from 'axios'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -65,7 +66,6 @@ export function usePoolsData(): {
           pools.add(pool)
         }
       })
-
       const uniqueTokens_ = new Map<string, any>()
       await Promise.all(
         Array.from(pools).map(async (pool: any) => {
@@ -77,6 +77,8 @@ export function usePoolsData(): {
                 ethers.utils.getAddress(token[0]),
                 ethers.utils.getAddress(token[1]),
                 token[2],
+                await getDecimalAndUsdValueData(token[0]),
+                await getDecimalAndUsdValueData(token[1])
               ])
             }
             return { poolAdress: (token[0], token[1], token[2]) }
@@ -156,10 +158,12 @@ export function usePoolsData(): {
   const slot0s = useMultipleContractSingleData(data?.uniquePools ?? [], POOL_STATE_INTERFACE, 'slot0')
   // const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
 
+
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
 
     const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData } = data
+
     const slot0ByPool: { [key: string]: any } = {}
     const slot0ByPoolAddress: { [key: string]: any } = {}
     uniquePools?.forEach((pool: any, index: any) => {
@@ -210,13 +214,19 @@ export function usePoolsData(): {
       }
 
       const tokens = uniqueTokens.get(pool)
-      const usdValueOfToken0 = usdValue[tokens[0]]
-      const usdValueOfToken1 = usdValue[tokens[1]]
+      
+      // const usdValueOfToken0 = usdValue[tokens[0]]
+      // const usdValueOfToken1 = usdValue[tokens[1]]
+
+      const token0InfoFromUniswap = tokens[3]
+      const token1InfoFromUniswap = tokens[4]
 
       return {
         pool,
-        amount0: (usdValueOfToken0 * Number(amount0)) / 10 ** tokenDecimal[tokens[0]],
-        amount1: (usdValueOfToken1 * Number(amount1)) / 10 ** tokenDecimal[tokens[1]],
+        amount0: (token0InfoFromUniswap.lastPriceUSD * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
+        amount1: (token1InfoFromUniswap.lastPriceUSD * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
+        // amount0: (usdValueOfToken0 * Number(amount0)) / 10 ** tokenDecimal[tokens[0]],
+        // amount1: (usdValueOfToken1 * Number(amount1)) / 10 ** tokenDecimal[tokens[1]],
       }
     }
 
