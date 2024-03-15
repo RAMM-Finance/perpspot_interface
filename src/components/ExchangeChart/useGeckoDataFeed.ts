@@ -56,6 +56,11 @@ const fetchBars = async (
   error: any
 }> => {
   try {
+    // Check if the timeframe is '4h', then set the limit to 1000
+    if (timeframe === 'hour' && aggregate === '4') {
+      limit = 1000;
+    }
+    // console.log('limit------- fetchbar', limit)
     const response = await axios.get(
       formatFetchBarEndpoint(
         address.toLocaleLowerCase(),
@@ -224,7 +229,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
           console.log('[getBars]: Method call', resolution)
           const { poolAddress } = symbolInfo
           const { from, to, countBack } = periodParams
-
+          // console.log(countBack, '-----countback----------');
           let timeframe: 'hour' | 'day' | 'minute' = 'hour'
           let aggregate = '1'
           if (resolution === '1D') {
@@ -272,37 +277,49 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
             }
 
             // filter extreme values
-            const avgHighDeviation =
-              bars
-                .map((bar) => {
-                  return Math.abs(bar.high - bar.open)
-                })
-                .reduce((a, b) => a + b, 0) / bars.length
-            const avgLowDeviation =
-              bars
-                .map((bar) => {
-                  return Math.abs(bar.low - bar.open)
-                })
-                .reduce((a, b) => a + b, 0) / bars.length
+            // const avgHighDeviation =
+            //   bars
+            //     .map((bar) => {
+            //       return Math.abs(bar.high - bar.open)
+            //     })
+            //     .reduce((a, b) => a + b, 0) / bars.length
+            // const avgLowDeviation =
+            //   bars
+            //     .map((bar) => {
+            //       return Math.abs(bar.low - bar.open)
+            //     })
+            //     .reduce((a, b) => a + b, 0) / bars.length
             // console.log('avgHighDeviation', avgHighDeviation, avgLowDeviation)
 
             const filteredBars = bars.map((bar, index, array) => {
-              const highDeviation = Math.abs(bar.high - bar.open)
-              const lowDeviation = Math.abs(bar.low - bar.open)
+              // Calculate wick lengths as a percentage of the bar's open-close range
+              const highWickLength = Math.abs(bar.high - bar.close)
+              const lowWickLength = Math.abs(bar.low - bar.close)
+
+              // Define max and min wick length
+              const maxWickLength = 0.4// Maximum wick length as a percentage of the bar's open-close range
+              const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
+
               let high = bar.high
               let low = bar.low
-              let close = bar.close
-              if(high/close > 1.05){
-                high = close
+
+              // Adjust high and low prices if wick lengths exceed maximum or minimum values
+              if (highWickLength > maxWickLength * (bar.close - bar.open)) {
+                  high = bar.close + maxWickLength * (bar.close - bar.open)
+              } else if (highWickLength < minWickLength * (bar.close - bar.open)) {
+                  high = bar.close + minWickLength * (bar.close - bar.open)
               }
-              if(close/low < 0.95){
-                low=close
+              if (lowWickLength > maxWickLength * (bar.close - bar.open)) {
+                  low = bar.close - maxWickLength * (bar.close - bar.open)
+              } else if (lowWickLength < minWickLength * (bar.close - bar.open)) {
+                  low = bar.close - minWickLength * (bar.close - bar.open)
               }
-              // if (avgHighDeviation * 3 < highDeviation) {
-              //   high = bar.open + avgHighDeviation * 3
+
+              // if(high/close > 1.05){
+              //   high = close
               // }
-              // if (avgLowDeviation * 3 < lowDeviation) {
-              //   low = bar.open - avgLowDeviation * 3
+              // if(close/low < 0.95){
+              //   low=close
               // }
               return {
                 open: bar.open,

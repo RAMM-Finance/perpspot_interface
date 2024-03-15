@@ -353,7 +353,7 @@ export default function Swap({ className }: { className?: string }) {
             <PinnedPools />
           </PinWrapper> */}
           <SwapHeaderWrapper>
-           <SelectPool />
+            <SelectPool />
             {/*inputCurrency && outputCurrency ? (
               <SelectPool />
             ) : (
