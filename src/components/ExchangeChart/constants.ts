@@ -15,8 +15,13 @@ const chartStyleOverrides = ['candleStyle', 'hollowCandleStyle', 'haStyle'].redu
   acc[`mainSeriesProperties.${cv}.wickDownColor`] = RED
   acc[`mainSeriesProperties.${cv}.borderUpColor`] = GREEN
   acc[`mainSeriesProperties.${cv}.borderDownColor`] = RED
+  // acc[`mainSeriesProperties.${cv}.candleStyle.wickSize`] = 1
+  // acc[`mainSeriesProperties.${cv}.wick.maxTick'`] = 1
+  // acc[`mainSeriesProperties.${cv}.drawBorder`] = false
+  // acc[`mainSeriesProperties.${cv}.wickSize`] = 1
   return acc
 }, {})
+
 // darkTheme;
 const chartOverrides = {
   'paneProperties.background': '#040609',

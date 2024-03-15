@@ -58,6 +58,7 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
     // You may need to reinitialize or update your chart here if necessary
   }, [symbol])
 
+
   useEffect(() => {
     // Function to initialize the TradingView widget
     const initTradingView = () => {
@@ -91,7 +92,6 @@ export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: st
       tvWidgetRef.current?.onChartReady(function () {
         setChartReady(true)
         tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
-
         tvWidgetRef.current?.activeChart().dataReady(() => {
           setChartDataLoading(false)
         })
