@@ -12,8 +12,7 @@ import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { AddLimitTrade, AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
-import { InterfaceTrade, TradeState } from 'state/routing/types'
-import { BorrowCreationDetails } from 'state/swap/hooks'
+import { InterfaceTrade } from 'state/routing/types'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
@@ -118,17 +117,6 @@ interface SwapDetailsInlineProps {
   syncing: boolean
   loading: boolean
   allowedSlippage: Percent
-  // leverageTrade?: LeverageTrade
-  // lmtLoading: boolean
-  // leverageInputError: boolean
-}
-
-interface BorrowDetailsDropdownProps {
-  trade?: BorrowCreationDetails
-  tradeState: TradeState
-  syncing: boolean
-  loading: boolean
-  allowedSlippage: Percent
 }
 
 export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
@@ -184,7 +172,6 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
             </RowFixed>
           </StyledHeaderRow>
         </TraceEvent>
-        {/* {trade && ( */}
         <AnimatedDropdown open={showDetails}>
           <SwapDetailsWrapper data-testid="advanced-swap-details">
             <StyledCard>
@@ -192,7 +179,6 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
             </StyledCard>
           </SwapDetailsWrapper>
         </AnimatedDropdown>
-        {/* )} */}
       </AutoColumn>
     </Wrapper>
   )
