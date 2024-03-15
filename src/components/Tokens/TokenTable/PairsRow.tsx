@@ -507,6 +507,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
 
+    console.log('helllo', currencyIda, currencyIdb, token0, token1, baseCurrency, quoteCurrency)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
 
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)

@@ -31,8 +31,8 @@ export const WBTC_ARBITRUM = new Token(42161, wbtc_a, 8, 'wBTC', 'Wrapped BTC')
 export const USDC_ARBITRUM = new Token(42161, usdc_a, 6, 'USDC', "USDC")
 
 
-export const USDC_BERA = new Token(80085, lusdc, 18, 'lUSDC', 'Limitless USDC')
-export const WETH_BERA = new Token(80085, lweth, 18, 'lWETH', 'Limitless WETH')
+export const USDC_BERA = new Token(80085, lusdc, 18, 'USDC', 'Limitless USDC')
+export const WETH_BERA = new Token(80085, lweth, 18, 'WETH', 'Limitless WETH')
 
 
 export const FETH_SEPOLIA = new Token(11155111, feth_s, 18, 'fETH', 'Fake ETH')

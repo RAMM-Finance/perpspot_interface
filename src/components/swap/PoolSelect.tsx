@@ -179,6 +179,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
+  console.log('poolhereere', pool)
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = poolOHLCDatas[id]
   const delta = poolOHLCData?.delta24h
@@ -438,6 +439,7 @@ export function SelectPool() {
   }
 
   const filteredKeys = useFilteredKeys()
+  console.log('filteredkeys', filteredKeys)
 
   return (
     <MainWrapper>

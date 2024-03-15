@@ -105,8 +105,8 @@ export const Filter = styled.div`
 
 export const FilterWrapper = styled.div`
   display: flex;
-  align-items: start;
-  0.5rem
+  align-items: center;
+  justify-content: space-between;
 `
 const LimitInputRow = styled.div`
   display: flex;
@@ -332,7 +332,10 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
-  const fiatValueTradeMargin = useUSDPriceBNV2(trade?.margin, currencies[Field.INPUT] ?? undefined)
+  const fiatValueTradeMargin = useUSDPriceBNV2(
+    trade?.margin,
+    (marginInPosToken ? currencies[Field.OUTPUT] : currencies[Field.INPUT]) ?? undefined
+  )
 
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, currencies[Field.OUTPUT] ?? undefined)
 

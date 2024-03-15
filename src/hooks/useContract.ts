@@ -65,6 +65,9 @@ import {
   ReferralSystem,
 } from '../LmtTypes'
 import { getContract } from '../utils'
+import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
+
+import axios from 'axios'
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
 const { abi: IUniswapV2Router02ABI } = IUniswapV2Router02Json
@@ -75,7 +78,16 @@ const { abi: MulticallABI } = UniswapInterfaceMulticallJson
 const { abi: NFTPositionManagerABI } = NonfungiblePositionManagerJson
 const { abi: V2MigratorABI } = V3MigratorJson
 
+
+export const getDecimalAndUsdValueData = async (tokenId: string) => {
+  const res = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
+    query: TokenDataFromUniswapQuery(tokenId)
+  })
+  return res?.data?.data?.token
+}
+
 type PricesMap = { [address: string]: number }
+
 const usdValueData: PricesMap = {
   // feth
   '0x4E3F175b38098326a34F2C8B2D07AF5fFdfc6fA9': 2000,
