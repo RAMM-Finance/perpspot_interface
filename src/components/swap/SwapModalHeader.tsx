@@ -255,7 +255,7 @@ export function LeverageModalHeader({
     trade?.margin && preTradeInfo?.additionalPremium
       ? trade?.margin?.plus(preTradeInfo?.additionalPremium.toExact())
       : undefined,
-    inputCurrency
+    trade.marginInPosToken ? outputCurrency : inputCurrency
   )
   const fiatValueTotalInput = useUSDPriceBN(
     trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined,
@@ -280,9 +280,9 @@ export function LeverageModalHeader({
                 <Text fontSize={13} fontWeight={300} marginRight="6px">
                   Payment
                 </Text>
-                <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
+                <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
                 <Text fontSize={13} fontWeight={500}>
-                  {inputCurrency?.symbol}
+                  {outputCurrency?.symbol}
                 </Text>
               </RowFixed>
             </RowBetween>

@@ -362,7 +362,12 @@ export function BaseSwapPanel({
 
 const StyledDropdown = styled(Menu)``
 
-const TokenItem = styled.div``
+const TokenItem = styled.div`
+  background: transparent;
+  &:hover {
+    cursor: pointer;
+  }
+`
 interface MarginSelectPanelProps {
   value: string
   onUserInput: (value: string) => void
@@ -517,7 +522,17 @@ export function MarginSelectPanel({
           )}
         </Container>
       </InputPanel>
-      <StyledDropdown open={open} anchorEl={anchorEl} onClose={handleClose}>
+      <StyledDropdown
+        slotProps={{ paper: { sx: { paddingX: '5px', backgroundColor: '#141a2a' } } }}
+        MenuListProps={{
+          sx: {
+            color: 'white',
+          },
+        }}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+      >
         <TokenItem onClick={onMarginTokenChange}>
           <RowFixed>
             <CurrencyLogo currency={otherCurrency} size="15px" />

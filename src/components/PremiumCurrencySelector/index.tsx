@@ -5,13 +5,36 @@ import { StyledTokenName } from 'components/BaseSwapPanel'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RowFixed } from 'components/Row'
 import { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'react-feather'
 import styled from 'styled-components'
 import { ThemedText } from 'theme'
 
-const Wrapper = styled.div``
+const Wrapper = styled.div`
+  display: flex;
+  gap: 5px;
+`
 const StyledDropdown = styled(Menu)``
-const TokenItem = styled.div``
+const TokenItem = styled.div`
+  background: transparent;
+  &:hover {
+    cursor: pointer;
+  }
+`
+const ActiveWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`
 
+const StyledRowFixed = styled(RowFixed)`
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  &:hover {
+    cursor: pointer;
+    background: #141a2a;
+  }
+`
 export function PremiumCurrencySelector({
   inputCurrency,
   outputCurrency,
@@ -35,18 +58,35 @@ export function PremiumCurrencySelector({
   }
   return (
     <Wrapper>
-      <ThemedText.LabelSmall>Premium Currency</ThemedText.LabelSmall>
-      <RowFixed onClick={handleClick}>
-        <CurrencyLogo currency={currency} size="15px" />
-        <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
-          {(currency && currency.symbol && currency.symbol.length > 20
-            ? currency.symbol.slice(0, 4) +
-              '...' +
-              currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-            : currency?.symbol) || <Trans>Select token</Trans>}
-        </StyledTokenName>
-      </RowFixed>
-      <StyledDropdown open={open} anchorEl={anchorEl} onClose={handleClose}>
+      <ActiveWrapper>
+        <ThemedText.LabelSmall fontSize={13} color="primary">
+          Premium Currency
+        </ThemedText.LabelSmall>
+        <StyledRowFixed onClick={handleClick}>
+          <CurrencyLogo currency={currency} size="15px" />
+          <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+            {(currency && currency.symbol && currency.symbol.length > 20
+              ? currency.symbol.slice(0, 4) +
+                '...' +
+                currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+              : currency?.symbol) || <Trans>Select token</Trans>}
+          </StyledTokenName>
+          {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
+        </StyledRowFixed>
+      </ActiveWrapper>
+      <StyledDropdown
+        slotProps={{
+          paper: { sx: { paddingX: '5px', backgroundColor: '#141a2a', marginTop: '5px', marginLeft: '5px' } },
+        }}
+        MenuListProps={{
+          sx: {
+            color: 'white',
+          },
+        }}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+      >
         <TokenItem onClick={onPremiumCurrencyToggle}>
           <RowFixed>
             <CurrencyLogo currency={otherCurrency} size="15px" />

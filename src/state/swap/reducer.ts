@@ -108,6 +108,11 @@ export default createReducer<SwapState>(initialState, (builder) =>
           _outputCurrencyId = inputCurrencyId
         }
       }
+      if (outputCurrencyId.toLocaleLowerCase() === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase()) {
+        _inputCurrencyId = outputCurrencyId
+        _outputCurrencyId = inputCurrencyId
+      }
+
       return {
         ...state,
         [Field.INPUT]: { currencyId: _inputCurrencyId },

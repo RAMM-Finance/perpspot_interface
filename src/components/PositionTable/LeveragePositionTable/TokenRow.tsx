@@ -640,9 +640,9 @@ interface LoadedRowProps {
 // }
 
 export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
-  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key');
+  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key')
 
-  // Check for specific tokens and fee to replace with equivalent tokens from arbitrum 
+  // Check for specific tokens and fee to replace with equivalent tokens from arbitrum
   if (
     tokenA.toLowerCase() === '0x174652b085C32361121D519D788AbF0D9ad1C355'.toLowerCase() &&
     tokenB.toLowerCase() === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b'.toLowerCase() &&
@@ -844,7 +844,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <CurrencyLogo currency={position?.inputCurrency} size="10px" />
               <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
-              <span>{position?.inputCurrency?.symbol}</span>
+              <span>{details.marginInPosToken ? position.outputCurrency.symbol : position?.inputCurrency?.symbol}</span>
             </FlexStartRow>
           }
           repaymentTime={
