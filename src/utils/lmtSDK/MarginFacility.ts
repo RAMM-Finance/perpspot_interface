@@ -100,19 +100,6 @@ export abstract class MarginFacilitySDK {
     if (param.depositPremium) {
       if (param.premiumInPosToken) {
         calldatas.push(
-          MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
-            {
-              token0: param.positionKey.poolKey.token0,
-              token1: param.positionKey.poolKey.token1,
-              fee: param.positionKey.poolKey.fee,
-            },
-            param.positionKey.trader,
-            param.positionKey.isToken0,
-            param.depositPremium,
-          ])
-        )
-      } else {
-        calldatas.push(
           MarginFacilitySDK.INTERFACE.encodeFunctionData('swapAndDepositPremium', [
             {
               token0: param.positionKey.poolKey.token0,
@@ -123,6 +110,19 @@ export abstract class MarginFacilitySDK {
             param.positionKey.isToken0,
             param.depositPremium,
             param.minPremiumOutput,
+          ])
+        )
+      } else {
+        calldatas.push(
+          MarginFacilitySDK.INTERFACE.encodeFunctionData('depositPremium', [
+            {
+              token0: param.positionKey.poolKey.token0,
+              token1: param.positionKey.poolKey.token1,
+              fee: param.positionKey.poolKey.fee,
+            },
+            param.positionKey.trader,
+            param.positionKey.isToken0,
+            param.depositPremium,
           ])
         )
       }

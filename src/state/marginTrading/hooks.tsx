@@ -936,6 +936,7 @@ const useSimulateAddLimitOrder = (
     const startOutput = totalInputWithFees.times(limitPrice)
     const slippageBn = new BN(allowedSlippage.toFixed(18)).div(100)
     const minOutput = totalInputWithFees.times(limitPrice).times(new BN(1).minus(slippageBn))
+
     // decay rate defaults to zero
     const decayRate = new BN('0')
 
@@ -1149,20 +1150,6 @@ const useSimulateAddLimitOrder = (
   ])
 }
 
-const getAddUserParams = (
-  margin: BN,
-  inputAddress: string,
-  outputAddress: string,
-  fee: number,
-  borrowAmount: BN,
-  allowedSlippage: Percent,
-  marginInPosToken: boolean
-) => {
-  return `${marginInPosToken}-${margin.toString()}-${inputAddress.toLowerCase()}-${outputAddress.toLowerCase()}-${fee}-${borrowAmount.toString()}-${allowedSlippage.toSignificant(
-    5
-  )}`
-}
-
 const useSimulateMarginTrade = (
   allowedSlippage: Percent,
   marginInPosToken: boolean,
@@ -1199,7 +1186,6 @@ const useSimulateMarginTrade = (
   const feePercent = useLmtFeePercent(pool)
 
   const computeData = useCallback(async () => {
-
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
@@ -1230,13 +1216,16 @@ const useSimulateMarginTrade = (
       inputIsToken0 ? pool.token1 : pool.token0
     )
 
+    // amount of input (minus fees) swapped for position token.
     let swapInput: BN
+    // simulatedOutput in contracts
     let amountOut: BN
     if (marginInPosToken) {
       swapInput = borrowAmount.times(new BN(1).minus(feePercent))
       const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
       if (!output) throw new Error('Quoter Error')
       amountOut = new BN(output.toString())
+      // add margin to simulatedOutput
       amountOut = amountOut.plus(marginInOutput.shiftedBy(outputCurrency.decimals))
     } else {
       swapInput = marginInInput.plus(borrowAmount).times(new BN(1).minus(feePercent))
@@ -1253,32 +1242,18 @@ const useSimulateMarginTrade = (
     const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
 
     let minPremiumOutput: string | undefined
+
     const premiumSwapRoute = new Route(
       [pool],
-      !inputIsToken0 ? pool.token0 : pool.token1,
-      !inputIsToken0 ? pool.token1 : pool.token0
+      inputIsToken0 ? pool.token1 : pool.token0,
+      inputIsToken0 ? pool.token0 : pool.token1
     )
+
     if (premiumInPosToken) {
       const output = await getOutputQuote(additionalPremium, premiumSwapRoute, provider, chainId)
       if (!output) throw new Error('Quoter Error')
-      minPremiumOutput = output.toString()
+      minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
-    // console.log('parameterssss', 
-    //   positionKey, marginInPosToken
-    //     ? marginInOutput.shiftedBy(outputCurrency.decimals).toFixed(0)
-    //     : marginInInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-    //     borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-    //     minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
-    //     amountOut.toFixed(0),
-    //     new BN(additionalPremium.toExact())
-    //     .shiftedBy(premiumInPosToken ? inputCurrency.decimals : outputCurrency.decimals)
-    //     .toFixed(0), 
-    //     slippedTickMin,
-    //   slippedTickMax,
-    //   marginInPosToken,
-    //   premiumInPosToken,
-    //   minPremiumOutput,
-    //   )
 
     const calldata = MarginFacilitySDK.addPositionParameters({
       positionKey,
@@ -1299,9 +1274,6 @@ const useSimulateMarginTrade = (
       premiumInPosToken,
       minPremiumOutput,
     })
-    // console.log('calldata', 
-    //   calldata
-    //   )
 
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
