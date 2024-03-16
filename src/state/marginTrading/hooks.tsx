@@ -1254,7 +1254,6 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
-
     const calldata = MarginFacilitySDK.addPositionParameters({
       positionKey,
       margin: marginInPosToken
