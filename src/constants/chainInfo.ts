@@ -2,6 +2,7 @@ import bnbCircleLogoUrl from 'assets/images/bnbCircle.svg'
 import celoCircleLogoUrl from 'assets/images/celoCircle.png'
 import ethereumLogoUrl from 'assets/images/ethereum-logo.png'
 import polygonCircleLogoUrl from 'assets/images/polygonCircle.png'
+import bearlogo from 'assets/images/artio.png'
 import { default as arbitrumCircleLogoUrl, default as arbitrumLogoUrl } from 'assets/svg/arbitrum_logo.svg'
 import bnbSquareLogoUrl from 'assets/svg/bnb_square_logo.svg'
 import bnbLogo from 'assets/svg/bnb-logo.svg'
@@ -233,7 +234,7 @@ const CHAIN_INFO: ChainInfoMap = {
     explorer: 'https://artio.beratrail.io/',
     infoLink: 'https://limitless.gitbook.io/limitless',
     label: 'Artio',
-    logoUrl: ethereumLogoUrl,
+    logoUrl: bearlogo,
     circleLogoUrl: arbitrumCircleLogoUrl,
     defaultListUrl: ARBITRUM_LIST,
     helpCenterUrl: 'https://help.uniswap.org/en/collections/3137787-uniswap-on-arbitrum',
