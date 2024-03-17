@@ -842,7 +842,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-              <CurrencyLogo currency={position?.inputCurrency} size="10px" />
+              <CurrencyLogo
+                currency={details.marginInPosToken ? position.outputCurrency : position?.inputCurrency}
+                size="10px"
+              />
               <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
               <span>{details.marginInPosToken ? position.outputCurrency.symbol : position?.inputCurrency?.symbol}</span>
             </FlexStartRow>
@@ -892,18 +895,45 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               disableHover={false}
             >
               <FlexStartRow>
-                <AutoColumn style={{ lineHeight: 1.5 }}>
-                  <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                    {position && `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} `}
-                  </DeltaText>
-                  <div>
+                {details.marginInPosToken ? (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
                     <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
                       {position &&
-                        `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                        invertedCurrentPrice &&
+                        invertedEntryPrice &&
+                        `${formatBNToString(
+                          details.totalPosition.times(invertedCurrentPrice.minus(invertedEntryPrice)),
+                          NumberType.SwapTradeAmount
+                        )} `}
                     </DeltaText>
-                    {' ' + position?.inputCurrency?.symbol}
-                  </div>
-                </AutoColumn>
+                    <div>
+                      <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
+                        {position &&
+                          invertedCurrentPrice &&
+                          invertedEntryPrice &&
+                          `(${(
+                            (details.totalPosition.times(invertedCurrentPrice.minus(invertedEntryPrice)).toNumber() /
+                              position?.margin.toNumber()) *
+                            100
+                          ).toFixed(2)} %)`}
+                      </DeltaText>
+                      {' ' + position?.outputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                ) : (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
+                    <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
+                      {position && `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} `}
+                    </DeltaText>
+                    <div>
+                      <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
+                        {position &&
+                          `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                      </DeltaText>
+                      {' ' + position?.inputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                )}
               </FlexStartRow>
             </MouseoverTooltip>
           }
