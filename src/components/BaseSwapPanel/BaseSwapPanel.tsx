@@ -13,7 +13,7 @@ import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import * as React from 'react'
-import { Lock } from 'react-feather'
+import { ChevronDown, ChevronUp, Lock } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 
@@ -473,6 +473,7 @@ export function MarginSelectPanel({
                       currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
                     : currency?.symbol) || <Trans>Select token</Trans>}
                 </StyledTokenName>
+                {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
               </RowFixed>
             </CurrencySelect>
           </InputRow>

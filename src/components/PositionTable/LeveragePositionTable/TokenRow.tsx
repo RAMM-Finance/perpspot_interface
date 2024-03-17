@@ -842,7 +842,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           }
           collateral={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-              <CurrencyLogo currency={position?.inputCurrency} size="10px" />
+              <CurrencyLogo
+                currency={details.marginInPosToken ? position.outputCurrency : position?.inputCurrency}
+                size="10px"
+              />
               <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
               <span>{details.marginInPosToken ? position.outputCurrency.symbol : position?.inputCurrency?.symbol}</span>
             </FlexStartRow>

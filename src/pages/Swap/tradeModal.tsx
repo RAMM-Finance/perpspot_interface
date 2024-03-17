@@ -246,6 +246,8 @@ const TradeTabContent = () => {
     premiumInPosToken,
   } = useMarginTradingState()
 
+  console.log(marginInPosToken)
+
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
   const {
@@ -326,8 +328,8 @@ const TradeTabContent = () => {
 
   const toggleWalletDrawer = useToggleWalletDrawer()
   const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(
-    () => maxAmountSpend(currencyBalances[Field.INPUT]),
-    [currencyBalances]
+    () => maxAmountSpend(marginInPosToken ? currencyBalances[Field.OUTPUT] : currencyBalances[Field.INPUT]),
+    [currencyBalances, marginInPosToken]
   )
 
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
