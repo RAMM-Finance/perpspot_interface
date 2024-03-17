@@ -1265,7 +1265,7 @@ const useSimulateMarginTrade = (
       simulatedOutput: amountOut.toFixed(0),
       executionOption: 1,
       depositPremium: new BN(additionalPremium.toExact())
-        .shiftedBy(premiumInPosToken ? inputCurrency.decimals : outputCurrency.decimals)
+        .shiftedBy(premiumInPosToken ? outputCurrency.decimals : inputCurrency.decimals)
         .toFixed(0),
       slippedTickMin,
       slippedTickMax,
