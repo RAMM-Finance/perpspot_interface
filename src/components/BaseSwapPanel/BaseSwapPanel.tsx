@@ -14,7 +14,7 @@ import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import * as React from 'react'
 import { ChevronDown, ChevronUp, Lock } from 'react-feather'
-import styled, { useTheme } from 'styled-components/macro'
+import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 
 import { useCurrencyBalance } from '../../state/connection/hooks'
@@ -228,7 +228,7 @@ export function BaseSwapPanel({
   const [modalOpen, setModalOpen] = useState(false)
   const { account, chainId } = useWeb3React()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
-  const theme = useTheme()
+  // const theme = useTheme()
 
   const handleDismissSearch = useCallback(() => {
     setModalOpen(false)

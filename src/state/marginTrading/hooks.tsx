@@ -150,7 +150,7 @@ export interface AddMarginTrade {
   premiumSwapRoute: Route<Currency, Currency>
 }
 
-export interface PreTradeInfo {
+export interface MarginTradeApprovalInfo {
   premiumDeposit: CurrencyAmount<Currency>
   additionalPremium: CurrencyAmount<Currency>
   inputApprovalAmount: CurrencyAmount<Currency>
@@ -166,7 +166,7 @@ interface DerivedAddPositionResult {
   inputError?: ReactNode
   contractError?: ReactNode
   trade?: AddMarginTrade
-  preTradeInfo?: PreTradeInfo
+  tradeApprovalInfo?: MarginTradeApprovalInfo
   existingPosition?: MarginPositionDetails
   state: LeverageTradeState
   existingLimitPosition?: MarginLimitOrder
@@ -300,7 +300,7 @@ export function useDerivedAddPositionInfo(
     outputCurrency?.decimals
   )
 
-  const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
+  const tradeApprovalInfo: MarginTradeApprovalInfo | undefined = useMemo(() => {
     if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin || !pool) return undefined
 
     // premium to approve
@@ -355,12 +355,12 @@ export function useDerivedAddPositionInfo(
   const { chainId } = useWeb3React()
 
   const [inputApprovalState] = useApproveCallback(
-    preTradeInfo?.inputApprovalAmount,
+    tradeApprovalInfo?.inputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
   const [outputApprovalState] = useApproveCallback(
-    preTradeInfo?.outputApprovalAmount,
+    tradeApprovalInfo?.outputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
@@ -399,20 +399,29 @@ export function useDerivedAddPositionInfo(
     // compare input balance to max input based on version
     const balanceIn = currencyBalances[Field.INPUT]
     const balanceOut = currencyBalances[Field.OUTPUT]
-    if (balanceIn && preTradeInfo) {
-      const amountIn = preTradeInfo.inputApprovalAmount
+    if (balanceIn && tradeApprovalInfo) {
+      const amountIn = tradeApprovalInfo.inputApprovalAmount
       if (balanceIn.lessThan(amountIn)) {
         inputError = inputError ?? <Trans>Insufficient {balanceIn.currency.symbol}</Trans>
       }
-    } else if (balanceOut && preTradeInfo && parsedMargin) {
-      const amountOut = preTradeInfo.outputApprovalAmount
+    } else if (balanceOut && tradeApprovalInfo && parsedMargin) {
+      const amountOut = tradeApprovalInfo.outputApprovalAmount
       if (balanceOut.lessThan(amountOut)) {
         inputError = inputError ?? <Trans>Insufficient {balanceOut.currency.symbol}</Trans>
       }
     }
 
     return inputError
-  }, [account, usingCode, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, preTradeInfo])
+  }, [
+    account,
+    usingCode,
+    currencies,
+    maxLeverage,
+    parsedMargin,
+    currencyBalances,
+    parsedLeverageFactor,
+    tradeApprovalInfo,
+  ])
 
   const txnWillFail = useMemo(() => {
     if (!account) {
@@ -481,10 +490,11 @@ export function useDerivedAddPositionInfo(
     existingPosition,
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
-    preTradeInfo?.additionalPremium ?? undefined,
+    tradeApprovalInfo?.additionalPremium ?? undefined,
     inputApprovalState,
     outputApprovalState,
-    txnWillFail
+    txnWillFail,
+    inputError
   )
 
   const userHasSpecifiedInputOutput = useMemo(() => {
@@ -504,7 +514,7 @@ export function useDerivedAddPositionInfo(
       currencyBalances,
       inputError,
       trade,
-      preTradeInfo,
+      tradeApprovalInfo,
       positionKey,
       existingPosition,
       state,
@@ -520,7 +530,7 @@ export function useDerivedAddPositionInfo(
       inputError,
       trade,
       existingPosition,
-      preTradeInfo,
+      tradeApprovalInfo,
       state,
       allowedSlippage,
       positionKey,
@@ -556,7 +566,7 @@ export function useDerivedLimitAddPositionInfo(
   inputError: ReactNode | undefined
   trade: AddLimitTrade | undefined
   state: LimitTradeState
-  preTradeInfo: PreTradeInfo | undefined
+  tradeApprovalInfo: MarginTradeApprovalInfo | undefined
   orderKey: OrderPositionKey | undefined
   contractError?: ReactNode
   userHasSpecifiedInputOutput: boolean
@@ -653,7 +663,7 @@ export function useDerivedLimitAddPositionInfo(
     else return userPremiumPercent
   }, [userPremiumPercent])
 
-  const preTradeInfo: PreTradeInfo | undefined = useMemo(() => {
+  const tradeApprovalInfo: MarginTradeApprovalInfo | undefined = useMemo(() => {
     if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin || !existingPosition) return undefined
 
     // premium to approve
@@ -688,7 +698,7 @@ export function useDerivedLimitAddPositionInfo(
   const { position: existingLimitPosition } = useMarginOrderPositionFromPositionId(orderKey)
 
   // const [approvalState] = useApproveCallback(
-  //   preTradeInfo?.approvalAmount,
+  //   tradeApprovalInfo?.approvalAmount,
   //   LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   // )
   const approvalState = ApprovalState.UNKNOWN
@@ -814,7 +824,7 @@ export function useDerivedLimitAddPositionInfo(
     inputCurrency,
     outputCurrency,
     existingLimitPosition,
-    preTradeInfo?.additionalPremium,
+    tradeApprovalInfo?.additionalPremium,
     approvalState,
     inputError
   )
@@ -837,11 +847,11 @@ export function useDerivedLimitAddPositionInfo(
       orderKey,
       state,
       contractError,
-      preTradeInfo,
+      tradeApprovalInfo,
       trade,
       userHasSpecifiedInputOutput,
     }),
-    [inputError, state, contractError, orderKey, preTradeInfo, trade, userHasSpecifiedInputOutput]
+    [inputError, state, contractError, orderKey, tradeApprovalInfo, trade, userHasSpecifiedInputOutput]
   )
 }
 
@@ -1166,7 +1176,8 @@ const useSimulateMarginTrade = (
   additionalPremium?: CurrencyAmount<Currency>,
   inputApprovalState?: ApprovalState,
   outputApprovalState?: ApprovalState,
-  txnWillFail?: boolean
+  txnWillFail?: boolean,
+  inputError?: ReactNode
 ): {
   state: LeverageTradeState
   result?: AddMarginTrade
@@ -1571,7 +1582,7 @@ const useSimulateMarginTrade = (
       !feePercent ||
       !positionKey ||
       !blockNumber ||
-      txnWillFail
+      !!inputError
     ) {
       return []
     }
@@ -1620,7 +1631,7 @@ const useSimulateMarginTrade = (
     inputIsToken0,
     feePercent,
     marginFacility,
-    txnWillFail,
+    inputError,
   ])
 
   const {

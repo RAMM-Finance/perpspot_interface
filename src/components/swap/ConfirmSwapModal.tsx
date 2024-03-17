@@ -6,7 +6,7 @@ import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
+import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { MarginPositionDetails } from 'types/lmtv2position'
 import { marginTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
@@ -151,7 +151,7 @@ export function AddMarginPositionConfirmModal({
   isOpen,
   attemptingTxn,
   txHash,
-  preTradeInfo,
+  tradeApprovalInfo,
   existingPosition,
   onCancel,
   outputCurrency,
@@ -160,7 +160,7 @@ export function AddMarginPositionConfirmModal({
   isOpen: boolean
   trade: AddMarginTrade | undefined
   originalTrade: AddMarginTrade | undefined
-  preTradeInfo: PreTradeInfo | undefined
+  tradeApprovalInfo: MarginTradeApprovalInfo | undefined
   attemptingTxn: boolean
   txHash: string | undefined
   allowedSlippage: Percent
@@ -172,10 +172,6 @@ export function AddMarginPositionConfirmModal({
   onCancel: () => void
   outputCurrency: Currency | undefined
   inputCurrency: Currency | undefined
-
-  // swapQuoteReceivedDate: Date | undefined
-  // fiatValueInput: { data?: number; isLoading: boolean }
-  // fiatValueOutput: { data?: number; isLoading: boolean }
 }) {
   // shouldLogModalCloseEvent lets the child SwapModalHeader component know when modal has been closed
   // and an event triggered by modal closing should be logged.
@@ -197,10 +193,10 @@ export function AddMarginPositionConfirmModal({
   }, [isOpen, onDismiss])
 
   const modalHeader = useCallback(() => {
-    return trade && preTradeInfo && existingPosition ? (
+    return trade && tradeApprovalInfo && existingPosition ? (
       <LeverageModalHeader
         trade={trade}
-        preTradeInfo={preTradeInfo}
+        tradeApprovalInfo={tradeApprovalInfo}
         existingPosition={existingPosition}
         recipient={null}
         allowedSlippage={allowedSlippage}
@@ -214,7 +210,7 @@ export function AddMarginPositionConfirmModal({
     allowedSlippage,
     onAcceptChanges,
     trade,
-    preTradeInfo,
+    tradeApprovalInfo,
     existingPosition,
     showAcceptChanges,
     inputCurrency,

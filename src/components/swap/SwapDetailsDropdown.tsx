@@ -11,11 +11,11 @@ import Row, { RowBetween, RowFixed } from 'components/Row'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
-import { AddLimitTrade, AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
+import { AddLimitTrade, AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
@@ -189,10 +189,10 @@ export function LeverageDetailsDropdown({
   existingPosition,
   loading,
   allowedSlippage,
-  preTradeInfo,
+  tradeApprovalInfo,
 }: {
   trade: AddMarginTrade | undefined
-  preTradeInfo: PreTradeInfo | undefined
+  tradeApprovalInfo: MarginTradeApprovalInfo | undefined
   existingPosition: MarginPositionDetails | undefined
   loading: boolean
   allowedSlippage: Percent
@@ -245,7 +245,7 @@ export function LeverageDetailsDropdown({
                   trade={trade}
                   syncing={loading}
                   allowedSlippage={allowedSlippage}
-                  preTradeInfo={preTradeInfo}
+                  tradeApprovalInfo={tradeApprovalInfo}
                   existingPosition={existingPosition}
                 />
               </StyledCard>
@@ -257,17 +257,7 @@ export function LeverageDetailsDropdown({
   )
 }
 
-export function AddLimitDetailsDropdown({
-  trade,
-  existingPosition,
-  loading,
-  preTradeInfo,
-}: {
-  trade: AddLimitTrade | undefined
-  preTradeInfo: PreTradeInfo | undefined
-  existingPosition: MarginLimitOrder | undefined
-  loading: boolean
-}) {
+export function AddLimitDetailsDropdown({ trade, loading }: { trade: AddLimitTrade | undefined; loading: boolean }) {
   const theme = useTheme()
   // const { chainId } = useWeb3React()
   const [showDetails, setShowDetails] = useState(true)

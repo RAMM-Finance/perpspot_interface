@@ -11,7 +11,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import { Text } from 'rebass'
-import { AddLimitTrade, PreTradeInfo } from 'state/marginTrading/hooks'
+import { AddLimitTrade } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import styled, { useTheme } from 'styled-components/macro'
 
@@ -67,13 +67,12 @@ const formatAnalyticsEventProperties = (
 
 export function AddLimitModalHeader({
   trade,
-  preTradeInfo,
+
   recipient,
   showAcceptChanges,
   onAcceptChanges,
 }: {
   trade: AddLimitTrade
-  preTradeInfo: PreTradeInfo
   recipient: string | null
   showAcceptChanges: boolean
   onAcceptChanges: () => void

@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceModalName } from '@uniswap/analytics-events'
 import { ReactNode, useCallback, useEffect } from 'react'
-import { AddLimitTrade, PreTradeInfo } from 'state/marginTrading/hooks'
+import { AddLimitTrade } from 'state/marginTrading/hooks'
 
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
@@ -15,27 +15,19 @@ export function ConfirmAddLimitOrderModal({
   trade,
   originalTrade,
   onAcceptChanges,
-  // allowedSlippage,
   onConfirm,
   onDismiss,
   tradeErrorMessage,
   isOpen,
   attemptingTxn,
   txHash,
-  preTradeInfo,
   onCancel,
-}: // existingPosition,
-// swapQuoteReceivedDate,
-// fiatValueInput,
-// fiatValueOutput,
-{
+}: {
   isOpen: boolean
   trade: AddLimitTrade | undefined
   originalTrade: AddLimitTrade | undefined
-  preTradeInfo: PreTradeInfo | undefined
   attemptingTxn: boolean
   txHash: string | undefined
-  // allowedSlippage: Percent
   onAcceptChanges: () => void
   onConfirm: () => void
   tradeErrorMessage: ReactNode | undefined
@@ -54,18 +46,10 @@ export function ConfirmAddLimitOrderModal({
   }, [onCancel, tradeErrorMessage])
 
   const modalHeader = useCallback(() => {
-    return trade && preTradeInfo ? (
-      <AddLimitModalHeader
-        trade={trade}
-        preTradeInfo={preTradeInfo}
-        // existingPosition={existingPosition}
-        recipient={null}
-        // allowedSlippage={allowedSlippage}
-        showAcceptChanges={false}
-        onAcceptChanges={onAcceptChanges}
-      />
+    return trade ? (
+      <AddLimitModalHeader trade={trade} recipient={null} showAcceptChanges={false} onAcceptChanges={onAcceptChanges} />
     ) : null
-  }, [onAcceptChanges, trade, preTradeInfo])
+  }, [onAcceptChanges, trade])
 
   const modalBottom = useCallback(() => {
     return trade ? (

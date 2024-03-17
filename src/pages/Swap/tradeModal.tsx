@@ -198,6 +198,7 @@ const TradeTabContent = () => {
   const { onUserInput, onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
 
   const { currencyBalances, currencies } = useDerivedSwapInfo()
+  console.log('currencyBalances', currencyBalances, currencies)
 
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
@@ -268,7 +269,7 @@ const TradeTabContent = () => {
   const poolNotFound = poolState !== PoolState.EXISTS
   const {
     trade,
-    preTradeInfo,
+    tradeApprovalInfo,
     state: tradeState,
     inputError,
     existingPosition,
@@ -307,12 +308,12 @@ const TradeTabContent = () => {
 
   // allowance / approval
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
-    preTradeInfo?.inputApprovalAmount,
+    tradeApprovalInfo?.inputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
   const [outputApprovalState, approveOutputCurrency] = useApproveCallback(
-    preTradeInfo?.outputApprovalAmount,
+    tradeApprovalInfo?.outputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
@@ -533,7 +534,7 @@ const TradeTabContent = () => {
         isOpen={showConfirm}
         originalTrade={tradeToConfirm}
         trade={trade}
-        preTradeInfo={preTradeInfo}
+        tradeApprovalInfo={tradeApprovalInfo}
         onConfirm={handleAddPosition}
         onDismiss={handleConfirmDismiss}
         onAcceptChanges={() => {
@@ -561,7 +562,6 @@ const TradeTabContent = () => {
         attemptingTxn={lmtAttemptingTxn}
         txHash={lmtTxHash}
         tradeErrorMessage={lmtErrorMessage ? <Trans>{lmtErrorMessage}</Trans> : undefined}
-        preTradeInfo={preTradeInfo}
       />
       <SwapHeader
         allowedSlippage={allowedSlippage}
@@ -676,7 +676,7 @@ const TradeTabContent = () => {
               // showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
-              premium={preTradeInfo?.additionalPremium}
+              premium={tradeApprovalInfo?.additionalPremium}
               showPremium={false}
               marginInPosToken={marginInPosToken}
               onMarginTokenChange={handleSetMarginInPosToken}
@@ -806,18 +806,13 @@ const TradeTabContent = () => {
         {!isLimitOrder ? (
           <LeverageDetailsDropdown
             trade={trade}
-            preTradeInfo={preTradeInfo}
+            tradeApprovalInfo={tradeApprovalInfo}
             existingPosition={existingPosition}
             loading={tradeIsLoading}
             allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
           />
         ) : (
-          <AddLimitDetailsDropdown
-            existingPosition={existingLimitOrder}
-            trade={limitTrade}
-            preTradeInfo={preTradeInfo}
-            loading={false}
-          />
+          <AddLimitDetailsDropdown trade={limitTrade} loading={false} />
         )}
       </DetailsSwapSection>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
@@ -870,15 +865,15 @@ const TradeTabContent = () => {
                       text={
                         <Trans>
                           Permission is required for Limitless to use each token.{' '}
-                          {preTradeInfo && formattedMargin
+                          {tradeApprovalInfo && formattedMargin
                             ? `Allowance of ${
                                 !marginInPosToken
                                   ? formatNumberOrString(
-                                      Number(preTradeInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                      Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
                                       NumberType.SwapTradeAmount
                                     )
                                   : formatNumberOrString(
-                                      Number(preTradeInfo.additionalPremium.toExact()),
+                                      Number(tradeApprovalInfo.additionalPremium.toExact()),
                                       NumberType.SwapTradeAmount
                                     )
                               } ${currencies[Field.INPUT]?.symbol} required.`
@@ -913,7 +908,7 @@ const TradeTabContent = () => {
                         text={
                           <Trans>
                             Permission is required for Limitless to use each token.{' '}
-                            {preTradeInfo && formattedMargin
+                            {tradeApprovalInfo && formattedMargin
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
@@ -1007,15 +1002,15 @@ const TradeTabContent = () => {
                       text={
                         <Trans>
                           Permission is required for Limitless to use each token.{' '}
-                          {preTradeInfo && formattedMargin
+                          {tradeApprovalInfo && formattedMargin
                             ? `Allowance of ${
                                 !marginInPosToken
                                   ? formatNumberOrString(
-                                      Number(preTradeInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                      Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
                                       NumberType.SwapTradeAmount
                                     )
                                   : formatNumberOrString(
-                                      Number(preTradeInfo.additionalPremium.toExact()),
+                                      Number(tradeApprovalInfo.additionalPremium.toExact()),
                                       NumberType.SwapTradeAmount
                                     )
                               } ${currencies[Field.INPUT]?.symbol} required.`
@@ -1050,7 +1045,7 @@ const TradeTabContent = () => {
                         text={
                           <Trans>
                             Permission is required for Limitless to use each token.{' '}
-                            {preTradeInfo && formattedMargin
+                            {tradeApprovalInfo && formattedMargin
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount

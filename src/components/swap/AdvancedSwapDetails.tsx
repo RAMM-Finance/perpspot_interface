@@ -12,7 +12,7 @@ import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
 import { ReactNode, useMemo, useState } from 'react'
-import { AddMarginTrade, PreTradeInfo } from 'state/marginTrading/hooks'
+import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { LeverageTrade, useSwapState } from 'state/swap/hooks'
@@ -338,7 +338,7 @@ export function AdvancedMarginTradeDetails({
   trade,
 }: {
   trade?: AddMarginTrade
-  preTradeInfo?: PreTradeInfo
+  tradeApprovalInfo?: MarginTradeApprovalInfo
   existingPosition?: MarginPositionDetails
   syncing?: boolean
   allowedSlippage?: Percent
