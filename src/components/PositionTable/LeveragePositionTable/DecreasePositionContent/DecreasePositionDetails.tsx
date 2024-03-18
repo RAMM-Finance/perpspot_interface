@@ -188,14 +188,18 @@ export function DecreasePositionDetails({
           </TextWithLoadingPlaceholder>
         </RowBetween>
         <Separator />
-        <ValueLabel
-          label="Minimum output"
-          description="The minimum amount your reduced position is guaranteed to convert to. If the price slips any further, your transaction will revert."
-          value={formatBNToString(txnInfo?.minimumOutput, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
-          syncing={loading}
-          height="14px"
-        />
+        {existingPosition?.marginInPosToken ? (
+          <></>
+        ) : (
+          <ValueLabel
+            label="Minimum output"
+            description="The minimum amount your reduced position is guaranteed to convert to. If the price slips any further, your transaction will revert."
+            value={formatBNToString(txnInfo?.minimumOutput, NumberType.SwapTradeAmount)}
+            symbolAppend={inputCurrency?.symbol}
+            syncing={loading}
+            height="14px"
+          />
+        )}
       </AutoColumn>
     </StyledBGCard>
   )

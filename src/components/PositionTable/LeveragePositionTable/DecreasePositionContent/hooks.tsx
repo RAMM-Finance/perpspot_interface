@@ -58,7 +58,6 @@ export function useDerivedReducePositionInfo(
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
-
   const inputError = useMemo(() => {
     let error: React.ReactNode | undefined
 
@@ -78,11 +77,10 @@ export function useDerivedReducePositionInfo(
     const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
     // reducePercentage * totalPosition multiplied(or divided) current price
 
-    const minOutput = parsedReduceAmount
-      .times(price)
-      .times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
+    const minOutput = position.marginInPosToken
+      ? new BN(0)
+      : parsedReduceAmount.times(price).times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
 
-    console.log('minoutput', minOutput.toString())
     const params: ReducePositionOptions = {
       positionKey,
       reducePercentage: reducePercent,
