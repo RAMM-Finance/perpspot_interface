@@ -105,7 +105,6 @@ export function PoolStatsSection({
     const price24hLow = price.lt(priceData.low24) ? price : priceData.low24
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
   }, [pool, poolData, PoolsOHLC, address0, address1, fee])
-  console.log('wtfwtfwtfwtf', pool, poolData, address0, address1, fee, PoolsOHLC)
 
   const loading = loading0 || loading1 || !reserve0 || !reserve1 || !pool
 
