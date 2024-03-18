@@ -116,11 +116,11 @@ export function useCurrentOutputCurrency(): Currency | undefined | null {
   return useCurrency(currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0)
 }
 
-export function useSelectInputCurrency(): (inputIsToken0: boolean) => void {
+export function useSelectInputCurrency(): (inputInToken0: boolean) => void {
   const dispatch = useAppDispatch()
   return useCallback(
-    (inputIsToken0: boolean) => {
-      dispatch(setInputCurrency({ inputIsToken0 }))
+    (inputInToken0: boolean) => {
+      dispatch(setInputCurrency({ inputInToken0 }))
     },
     [dispatch]
   )

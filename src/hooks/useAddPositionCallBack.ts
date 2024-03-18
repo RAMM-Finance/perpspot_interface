@@ -1,22 +1,18 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
-import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
 import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { TraderPositionKey } from 'types/lmtv2position'
-import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
-import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -108,6 +104,21 @@ export function useAddPositionCallback(
         : new BN(pool.token1Price.toFixed(18))
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
+      console.log('addPosition:callback', {
+        positionKey,
+        margin: trade.margin.rawAmount(),
+        borrowAmount: trade.borrowAmount.rawAmount(),
+        minimumOutput: minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+        deadline: deadline.toString(),
+        simulatedOutput: amountOut.toFixed(0),
+        executionOption: 1,
+        depositPremium: premium.rawAmount(),
+        slippedTickMin,
+        slippedTickMax,
+        marginInPosToken,
+        premiumInPosToken,
+        minPremiumOutput,
+      })
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
         margin: trade.margin.rawAmount(),
@@ -123,33 +134,34 @@ export function useAddPositionCallback(
         premiumInPosToken,
         minPremiumOutput,
       })
-      const tx = {
-        from: account,
-        to: LMT_MARGIN_FACILITY[chainId],
-        data: MulticallSDK.encodeMulticall(calldatas),
-      }
+      throw Error('not Implemented')
+      // const tx = {
+      //   from: account,
+      //   to: LMT_MARGIN_FACILITY[chainId],
+      //   data: MulticallSDK.encodeMulticall(calldatas),
+      // }
 
-      let gasEstimate: BigNumber
+      // let gasEstimate: BigNumber
 
-      try {
-        gasEstimate = await provider.estimateGas(tx)
-      } catch (gasError) {
-        throw new GasEstimationError()
-      }
+      // try {
+      //   gasEstimate = await provider.estimateGas(tx)
+      // } catch (gasError) {
+      //   throw new GasEstimationError()
+      // }
 
-      const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          if (tx.data !== response.data) {
-            if (!response.data || response.data.length === 0 || response.data === '0x') {
-              throw new ModifiedAddPositionError()
-            }
-          }
-          return response
-        })
-      return response
+      // const gasLimit = calculateGasMargin(gasEstimate)
+      // const response = await provider
+      //   .getSigner()
+      //   .sendTransaction({ ...tx, gasLimit })
+      //   .then((response) => {
+      //     if (tx.data !== response.data) {
+      //       if (!response.data || response.data.length === 0 || response.data === '0x') {
+      //         throw new ModifiedAddPositionError()
+      //       }
+      //     }
+      //     return response
+      //   })
+      // return response
     } catch (error: unknown) {
       throw new Error(getErrorMessage(parseContractError(error)))
     }

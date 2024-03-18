@@ -38,6 +38,7 @@ import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info, Maximize2 } from 'react-feather'
+import { useAppSelector } from 'state/hooks'
 import { MarginField } from 'state/marginTrading/actions'
 import {
   AddLimitTrade,
@@ -50,7 +51,7 @@ import {
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { ActiveSwapTab, Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useCurrentPool } from 'state/user/hooks'
+import { useCurrentPool, useSelectInputCurrency } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -515,9 +516,12 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, currencies])
 
+  const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  const switchTokens = useSelectInputCurrency()
   function handleArrowClick() {
     handleMarginInput('')
     onDebouncedLeverageFactor('')
+    switchTokens(!inputIsToken0)
     activeTab === ActiveSwapTab.LONG ? onActiveTabChange(ActiveSwapTab.SHORT) : onActiveTabChange(ActiveSwapTab.LONG)
   }
 

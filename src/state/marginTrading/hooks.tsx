@@ -1265,6 +1265,26 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
+
+    console.log('addPosition:simulate', {
+      positionKey,
+      margin: marginInPosToken
+        ? marginInOutput.shiftedBy(outputCurrency.decimals).toFixed(0)
+        : marginInInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+      borrowAmount: borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+      minimumOutput: minimumOutput.shiftedBy(outputCurrency.decimals).toFixed(0),
+      deadline: deadline.toString(),
+      simulatedOutput: amountOut.toFixed(0),
+      executionOption: 1,
+      depositPremium: new BN(additionalPremium.toExact())
+        .shiftedBy(premiumInPosToken ? outputCurrency.decimals : inputCurrency.decimals)
+        .toFixed(0),
+      slippedTickMin,
+      slippedTickMax,
+      marginInPosToken,
+      premiumInPosToken,
+      minPremiumOutput,
+    })
     const calldata = MarginFacilitySDK.addPositionParameters({
       positionKey,
       margin: marginInPosToken
