@@ -13,6 +13,10 @@ import { TransactionType } from 'state/transactions/types'
 import { TraderPositionKey } from 'types/lmtv2position'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { LMT_MARGIN_FACILITY } from 'constants/addresses'
+import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { BigNumber } from '@ethersproject/bignumber'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -134,34 +138,34 @@ export function useAddPositionCallback(
         premiumInPosToken,
         minPremiumOutput,
       })
-      throw Error('not Implemented')
-      // const tx = {
-      //   from: account,
-      //   to: LMT_MARGIN_FACILITY[chainId],
-      //   data: MulticallSDK.encodeMulticall(calldatas),
-      // }
+      // throw Error('not Implemented')
+      const tx = {
+        from: account,
+        to: LMT_MARGIN_FACILITY[chainId],
+        data: MulticallSDK.encodeMulticall(calldatas),
+      }
 
-      // let gasEstimate: BigNumber
+      let gasEstimate: BigNumber
 
-      // try {
-      //   gasEstimate = await provider.estimateGas(tx)
-      // } catch (gasError) {
-      //   throw new GasEstimationError()
-      // }
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        throw new GasEstimationError()
+      }
 
-      // const gasLimit = calculateGasMargin(gasEstimate)
-      // const response = await provider
-      //   .getSigner()
-      //   .sendTransaction({ ...tx, gasLimit })
-      //   .then((response) => {
-      //     if (tx.data !== response.data) {
-      //       if (!response.data || response.data.length === 0 || response.data === '0x') {
-      //         throw new ModifiedAddPositionError()
-      //       }
-      //     }
-      //     return response
-      //   })
-      // return response
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const response = await provider
+        .getSigner()
+        .sendTransaction({ ...tx, gasLimit })
+        .then((response) => {
+          if (tx.data !== response.data) {
+            if (!response.data || response.data.length === 0 || response.data === '0x') {
+              throw new ModifiedAddPositionError()
+            }
+          }
+          return response
+        })
+      return response
     } catch (error: unknown) {
       throw new Error(getErrorMessage(parseContractError(error)))
     }
