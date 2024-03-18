@@ -77,15 +77,15 @@ export function usePoolsData(): {
                 ethers.utils.getAddress(token[0]),
                 ethers.utils.getAddress(token[1]),
                 token[2],
-                await getDecimalAndUsdValueData(token[0]),
-                await getDecimalAndUsdValueData(token[1])
+                await getDecimalAndUsdValueData("arbitrum-one", token[0]),
+                await getDecimalAndUsdValueData("arbitrum-one", token[1])
               ])
             }
             return { poolAdress: (token[0], token[1], token[2]) }
           } else return null
         })
       )
-
+      
       return {
         uniquePools: Array.from(pools),
         uniqueTokens: uniqueTokens_,

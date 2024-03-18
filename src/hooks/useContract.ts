@@ -78,12 +78,36 @@ const { abi: MulticallABI } = UniswapInterfaceMulticallJson
 const { abi: NFTPositionManagerABI } = NonfungiblePositionManagerJson
 const { abi: V2MigratorABI } = V3MigratorJson
 
+const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
-export const getDecimalAndUsdValueData = async (tokenId: string) => {
-  const res = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
-    query: TokenDataFromUniswapQuery(tokenId)
-  })
-  return res?.data?.data?.token
+export const getDecimalAndUsdValueData = async (network: string, tokenId: string) => {
+  if (network === "arbitrum-one") {
+    let res: any = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
+      query: TokenDataFromUniswapQuery(tokenId)
+    })
+    const token = res?.data?.data?.token
+    if (token.lastPriceUSD === '0' || token.lastPriceUsd === null) {
+      try {
+        res = await axios.get(`https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
+        {
+          headers: {
+            Accept: 'application/json',
+            'x-cg-pro-api-key': apiKey,
+          },
+        })
+        const data: any = res?.data
+        const usdValues = Object.values(data).map((value: any) => value.usd)
+        
+        token.lastPriceUSD = usdValues[0].toString()
+      }
+      catch (e) {
+        console.log("COINGECKO ERROR")
+        console.log(e)
+      }
+    }
+    
+    return token
+  }
 }
 
 type PricesMap = { [address: string]: number }
