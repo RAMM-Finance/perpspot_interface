@@ -250,9 +250,6 @@ export function BaseSwapPanel({
       )}
       <Container hideInput={hideInput}>
         <InputRow>
-          {/* <div style={{ marginRight: '10px', fontSize: '15px' }}>
-            <Trans>{label}</Trans>
-          </div> */}
           {!hideInput && (
             <StyledNumericalInput
               className="token-amount-input"

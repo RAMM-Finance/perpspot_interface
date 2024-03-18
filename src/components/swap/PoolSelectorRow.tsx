@@ -3,8 +3,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
-import { Field } from 'state/swap/actions'
-import { useSwapState } from 'state/swap/hooks'
+import { useCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { formatDollar } from 'utils/formatNumbers'
 
@@ -81,11 +80,9 @@ export default function ChainSelectorRow({
   tvl,
   volume,
 }: PoolSelectorRowProps) {
-  // const { chainId } = useWeb3React()
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
+  const currentPool = useCurrentPool()
+  const inputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token0 : currentPool?.poolKey.token1
+  const outputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0
 
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])

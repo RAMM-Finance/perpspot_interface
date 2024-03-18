@@ -33,7 +33,6 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 // import { useBestPool } from 'hooks/useBestPool'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
-import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -51,6 +50,7 @@ import {
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { ActiveSwapTab, Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -193,12 +193,11 @@ export const Selector = styled.div<{ active: boolean }>`
 const TradeTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  // const tab = useSelector((state: any) => state.swap.tab)
-  const { poolKey } = useSwapState()
+  const currentPool = useCurrentPool()
+  const poolKey = currentPool?.poolKey
   const { onUserInput, onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
 
   const { currencyBalances, currencies } = useDerivedSwapInfo()
-  console.log('currencyBalances', currencyBalances, currencies)
 
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
@@ -246,8 +245,6 @@ const TradeTabContent = () => {
     marginInPosToken,
     premiumInPosToken,
   } = useMarginTradingState()
-
-  console.log(marginInPosToken)
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
@@ -427,8 +424,6 @@ const TradeTabContent = () => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
 
-  // add once api works on limitlessfi.app
-
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
     onLeverageFactorChange
@@ -448,8 +443,6 @@ const TradeTabContent = () => {
     currencies[Field.OUTPUT] ?? undefined,
     allowedSlippage
   )
-
-  const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(orderKey)
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {

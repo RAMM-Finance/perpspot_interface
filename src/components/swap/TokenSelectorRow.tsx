@@ -2,8 +2,7 @@ import { Currency } from '@uniswap/sdk-core'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
-import { Field } from 'state/swap/actions'
-import { useSwapState } from 'state/swap/hooks'
+import { useCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 
 const LOGO_SIZE = 20
@@ -64,16 +63,13 @@ interface TokenSelectorRowProps {
 }
 
 export default function ChainSelectorRow({ currencyId, isInput, onCurrencySelect }: TokenSelectorRowProps) {
-  // const { chainId } = useWeb3React()
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
-
+  const currentPool = useCurrentPool()
+  const inputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token0 : currentPool?.poolKey.token1
+  const outputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0
   const active = isInput ? currencyId === inputCurrencyId : currencyId === outputCurrencyId
   const currency = useCurrency(currencyId)
   const label = currency?.symbol as string
-  
+
   const theme = useTheme()
 
   return (

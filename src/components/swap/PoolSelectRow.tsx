@@ -10,8 +10,7 @@ import { useLatestPoolPriceData } from 'hooks/usePoolPriceData'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
-import { Field } from 'state/swap/actions'
-import { useSwapState } from 'state/swap/hooks'
+import { useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -60,10 +59,9 @@ interface PoolSelectorRowProps {
 }
 
 function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal }: PoolSelectorRowProps) {
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
+  const currentPool = useCurrentPool()
+  const inputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token0 : currentPool?.poolKey.token1
+  const outputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0
 
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])

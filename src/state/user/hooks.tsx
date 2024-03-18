@@ -1,4 +1,4 @@
-import { Percent, Token } from '@uniswap/sdk-core'
+import { Currency, Percent, Token } from '@uniswap/sdk-core'
 import { computePairAddress, Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { L2_CHAIN_IDS } from 'constants/chains'
@@ -12,11 +12,13 @@ import { UserAddedToken } from 'types/tokens'
 
 import { V2_FACTORY_ADDRESSES } from '../../constants/addresses'
 import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants/routing'
-import { useDefaultActiveTokens } from '../../hooks/Tokens'
+import { useCurrency, useDefaultActiveTokens } from '../../hooks/Tokens'
 import { AppState } from '../types'
 import {
   addSerializedPair,
   addSerializedToken,
+  setCurrentPool,
+  setInputCurrency,
   updateHideClosedPositions,
   updateHideUniswapWalletBanner,
   updatePinnedPools,
@@ -82,6 +84,56 @@ export function useExpertModeManager(): [boolean, () => void] {
   }, [expertMode, dispatch])
 
   return [expertMode, toggleSetExpertMode]
+}
+
+export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInToken0: boolean } | undefined {
+  const poolId = useAppSelector((state) => state.user.currentPool)
+  const inputInToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  return useMemo(() => {
+    if (!poolId || inputInToken0 === undefined) return undefined
+    const [token0, token1, fee] = poolId.split('-')
+    return {
+      poolKey: {
+        token0,
+        token1,
+        fee: parseInt(fee),
+      },
+      poolId,
+      inputInToken0,
+    }
+  }, [poolId, inputInToken0])
+}
+
+export function useCurrentInputCurrency(): Currency | undefined | null {
+  const currentPool = useCurrentPool()
+
+  return useCurrency(currentPool?.inputInToken0 ? currentPool?.poolKey.token0 : currentPool?.poolKey.token1)
+}
+
+export function useCurrentOutputCurrency(): Currency | undefined | null {
+  const currentPool = useCurrentPool()
+
+  return useCurrency(currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0)
+}
+
+export function useSelectInputCurrency(): (inputIsToken0: boolean) => void {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (inputIsToken0: boolean) => {
+      dispatch(setInputCurrency({ inputIsToken0 }))
+    },
+    [dispatch]
+  )
+}
+
+export function useSetCurrentPool(): (poolId: string, inputInToken0: boolean) => void {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (poolId: string, inputInToken0: boolean) => {
+      dispatch(setCurrentPool({ poolId, inputInToken0 }))
+    },
+    [dispatch]
+  )
 }
 
 export function useClientSideRouter(): [boolean, (userClientSideRouter: boolean) => void] {

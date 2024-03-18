@@ -4,7 +4,6 @@ import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
-import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { Box } from 'nft/components/Box'
@@ -15,8 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dispatch, SetStateAction } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -53,17 +51,12 @@ export const PoolSelector = ({
   setSelectPair?: Dispatch<SetStateAction<boolean>>
   fee?: number
 }) => {
-  const {
-    poolKey,
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
+  const setCurrentPool = useSetCurrentPool()
 
-  const { onPoolSelection } = useSwapActionHandlers()
-
-  const outputCurrency = useCurrency(outputCurrencyId)
-  const inputCurrency = useCurrency(
-    outputCurrencyId?.toLowerCase() === poolKey?.token0 ? poolKey?.token1 : poolKey?.token0
-  )
+  const inputCurrency = useCurrentOutputCurrency()
+  const outputCurrency = useCurrentInputCurrency()
+  const currentPool = useCurrentPool()
+  const poolKey = currentPool?.poolKey
 
   const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
 
@@ -82,7 +75,8 @@ export const PoolSelector = ({
     setSelectPair(false)
   }
   const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee) //`${inputCurrency?.wrapped.address}-${outputCurrency?.wrapped.address}-${fee}`
-  const { poolId } = useSwapState()
+  const poolId = currentPool?.poolId
+
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
       if (id && poolId !== id) {
@@ -95,17 +89,13 @@ export const PoolSelector = ({
           navigate(`/add/${currencyIn.wrapped.address}/${currencyOut.wrapped.address}/${fee}`)
           const token0 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped) ? currencyIn : currencyOut
           const token1 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped) ? currencyOut : currencyIn
-          onPoolSelection(currencyIn, currencyOut, {
-            token0: token0.wrapped.address,
-            token1: token1.wrapped.address,
-            fee,
-          })
+          setCurrentPool(id, inputCurrency?.wrapped.address.toLowerCase() === token0.wrapped.address.toLowerCase())
         } else {
           navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
         }
       }
     },
-    [onPoolSelection, navigate, id, poolId]
+    [setCurrentPool, inputCurrency, navigate, id, poolId]
   )
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected

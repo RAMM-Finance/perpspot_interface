@@ -1,10 +1,10 @@
 import { BigNumber as BN } from 'bignumber.js'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
 import { useAppPoolOHLC } from 'state/application/hooks'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { usePinnedPools, useRemovePinnedPool } from 'state/user/hooks'
+import { useCurrentPool, usePinnedPools, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components'
 import { ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
@@ -54,7 +54,8 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+
+  const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee)
   const poolOHLCData = poolOHLCDatas[id]
   const delta = poolOHLCData?.delta24h
   const baseQuoteSymbol = useMemo(() => {
@@ -71,15 +72,19 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
     return null
   }, [pool, poolOHLCData])
 
-  const { onPoolSelection } = useSwapActionHandlers()
-  const { poolId } = useSwapState()
+  // const { onPoolSelection } = useSwapActionHandlers()
+  const setCurrentPool = useSetCurrentPool()
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
   const remove = useRemovePinnedPool()
+
+  const inputIsToken0 = poolOHLCData?.base?.toLowerCase() === poolKey.token0.toLowerCase()
 
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id) {
-      onPoolSelection(token0, token1, poolKey)
+      setCurrentPool(id, inputIsToken0)
     }
-  }, [token0, token1, poolKey, onPoolSelection, poolId, id])
+  }, [token0, token1, setCurrentPool, inputIsToken0, poolId, id])
 
   const unpinPool = useCallback(
     (e: any) => {

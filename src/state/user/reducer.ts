@@ -45,17 +45,17 @@ export interface UserState {
       [address: string]: SerializedToken
     }
   }
-
   pairs: {
     [chainId: number]: {
       [key: string]: SerializedPair
     }
   }
   pinnedPools: PoolKey[]
+  currentPool: string | undefined // poolId
+  currentInputInToken0: boolean | undefined
   timestamp: number
   URLWarningVisible: boolean
   hideUniswapWalletBanner: boolean
-  // undefined means has not gone through A/B split yet
   showSurveyPopup: boolean | undefined
 }
 
@@ -73,12 +73,13 @@ export const initialState: UserState = {
   userSlippedTickTolerance: 'auto',
   userPremiumDepositPercent: 'auto',
   userLimitDeadline: DEFAULT_LIMIT_DEADLINE_FROM_NOW,
-  // userPremiumTolerance: 'auto',
   userSlippageToleranceHasBeenMigratedToAuto: true,
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
   pinnedPools: [],
+  currentPool: undefined,
+  currentInputInToken0: undefined,
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
   hideUniswapWalletBanner: false,
@@ -109,13 +110,9 @@ const userSlice = createSlice({
       state.timestamp = currentTimestamp()
     },
     updatePinnedPools(state, action) {
-      // console.log('updatePinnedPools1', action.payload.add, action.payload.poolKey)
-      // state.pinnedPools = []
-      // console.log('updatePinnedPools1', action.payload.add, action.payload.poolKey)
       if (action.payload.add) {
         state.pinnedPools.push(action.payload.poolKey)
       } else {
-        console.log('updatePinnedPools2', action.payload.add, action.payload.poolKey)
         const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
           action.payload.poolKey.fee
         }`
@@ -133,6 +130,15 @@ const userSlice = createSlice({
     },
     setPinnedPools(state, action) {
       state.pinnedPools = action.payload.pinnedPools
+    },
+    setInputCurrency(state, action) {
+      if (state.currentPool) {
+        state.currentInputInToken0 = action.payload.inputInToken0
+      }
+    },
+    setCurrentPool(state, action) {
+      state.currentPool = action.payload.poolId
+      state.currentInputInToken0 = action.payload.inputInToken0
     },
     updateUserPremiumDepositPercent(state, action) {
       state.userPremiumDepositPercent = action.payload.userPremiumDepositPercent
@@ -245,5 +251,7 @@ export const {
   updateUserLimitDeadline,
   updatePinnedPools,
   setPinnedPools,
+  setCurrentPool,
+  setInputCurrency,
 } = userSlice.actions
 export default userSlice.reducer

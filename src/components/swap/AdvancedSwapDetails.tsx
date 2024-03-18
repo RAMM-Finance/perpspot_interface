@@ -7,15 +7,13 @@ import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
-import { useCurrency } from 'hooks/Tokens'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
 import { ReactNode, useMemo, useState } from 'react'
 import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
-import { Field } from 'state/swap/actions'
-import { LeverageTrade, useSwapState } from 'state/swap/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
@@ -54,20 +52,6 @@ const ResponsiveFontSizeBox = styled.div<{ fontSize?: string }>`
     font-size: 9px;
   }
 `
-
-const StyledText = styled(ThemedText.DeprecatedBlack)`
-  display: flex;
-  flex-direction: row;
-`
-
-interface AdvancedAddLeverageDetailsProps {
-  trade?: InterfaceTrade<Currency, Currency, TradeType>
-  allowedSlippage: Percent
-  syncing?: boolean
-  hideInfoTooltips?: boolean
-  leverageFactor?: number
-  leverageTrade?: LeverageTrade
-}
 
 function TextWithLoadingPlaceholder({
   syncing,
@@ -345,13 +329,9 @@ export function AdvancedMarginTradeDetails({
 }) {
   // const theme = useTheme()
   const [inverted, setInverted] = useState<boolean>(false)
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-  } = useSwapState()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
+  const inputCurrency = useCurrentInputCurrency()
+  const outputCurrency = useCurrentOutputCurrency()
 
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined

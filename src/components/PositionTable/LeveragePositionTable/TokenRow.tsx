@@ -7,7 +7,7 @@ import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Row, { RowBetween } from 'components/Row'
-import { DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
+import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
@@ -22,7 +22,7 @@ import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
@@ -690,7 +690,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
-  const { onPoolSelection } = useSwapActionHandlers()
+  const setCurrentPool = useSetCurrentPool()
 
   const leverageFactor = useMemo(
     () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
@@ -698,19 +698,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   )
 
   const id = getPoolId(token0Address, token1Address, details?.poolKey.fee)
-  const { poolId } = useSwapState()
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
   const handlePoolSelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
       e.stopPropagation()
-      poolId !== id &&
-        id &&
-        onPoolSelection(currencyIn, currencyOut, {
-          token0: details.poolKey.token0,
-          token1: details.poolKey.token1,
-          fee,
-        })
+      poolId !== id && id && setCurrentPool(id, !details.isToken0)
     },
-    [onPoolSelection, poolId, id, details]
+    [setCurrentPool, poolId, id, details]
   )
 
   const [
@@ -757,7 +752,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
-  console.log(position, '----position-----')
+  // console.log(position, '----position-----')
 
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
@@ -775,7 +770,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const usdPNLCurrency = useUSDPriceBNV2(_pnlCurrency, position?.inputCurrency)
 
-  const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
+  // const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
 
   const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken || !position || !existingDeposit
 

@@ -423,7 +423,7 @@ export function useDerivedAddPositionInfo(
     tradeApprovalInfo,
   ])
 
-  const txnWillFail = useMemo(() => {
+  const noAccountInputError = useMemo(() => {
     if (!account) {
       if (
         !parsedMargin ||
@@ -493,7 +493,7 @@ export function useDerivedAddPositionInfo(
     tradeApprovalInfo?.additionalPremium ?? undefined,
     inputApprovalState,
     outputApprovalState,
-    txnWillFail,
+    noAccountInputError,
     inputError
   )
 
@@ -1176,7 +1176,7 @@ const useSimulateMarginTrade = (
   additionalPremium?: CurrencyAmount<Currency>,
   inputApprovalState?: ApprovalState,
   outputApprovalState?: ApprovalState,
-  txnWillFail?: boolean,
+  noAccountInputError?: boolean,
   inputError?: ReactNode
 ): {
   state: LeverageTradeState
@@ -1495,7 +1495,7 @@ const useSimulateMarginTrade = (
       !additionalPremium ||
       !quoter ||
       !blockNumber ||
-      txnWillFail
+      noAccountInputError
     ) {
       return []
     }
@@ -1527,7 +1527,7 @@ const useSimulateMarginTrade = (
     marginInPosToken,
     blockNumber,
     account,
-    txnWillFail,
+    noAccountInputError,
   ])
 
   const {

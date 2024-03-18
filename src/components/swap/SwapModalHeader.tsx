@@ -7,7 +7,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { useUSDPrice, useUSDPriceBN } from 'hooks/useUSDPrice'
 import { getPriceUpdateBasisPoints } from 'lib/utils/analytics'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import { Text } from 'rebass'
 import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
@@ -254,7 +254,16 @@ export function LeverageModalHeader({
 
   const fiatValueMargin = useUSDPriceBN(trade?.margin, trade.marginInPosToken ? outputCurrency : inputCurrency)
   const fiatValuePremium = useUSDPriceBN(trade?.premium, trade.premiumInPosToken ? outputCurrency : inputCurrency)
-
+  const fiatValuePayment = useMemo(() => {
+    if (fiatValueMargin.data && fiatValuePremium.data) {
+      return {
+        data: fiatValueMargin.data + fiatValuePremium.data,
+        isLoading: fiatValueMargin.isLoading || fiatValuePremium.isLoading,
+      }
+    } else {
+      return undefined
+    }
+  }, [fiatValueMargin, fiatValuePremium])
   const fiatValueTotalInput = useUSDPriceBN(
     trade?.margin && trade?.borrowAmount ? trade?.margin?.plus(trade?.borrowAmount) : undefined,
     inputCurrency

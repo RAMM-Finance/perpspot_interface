@@ -18,9 +18,15 @@ import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
 import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/user/hooks'
+import {
+  useAddPinnedPool,
+  useCurrentInputCurrency,
+  useCurrentOutputCurrency,
+  useCurrentPool,
+  usePinnedPools,
+  useRemovePinnedPool,
+  useSetCurrentPool,
+} from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
@@ -179,13 +185,12 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  console.log('poolhereere', pool)
+
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = poolOHLCDatas[id]
   const delta = poolOHLCData?.delta24h
 
-  const { onPoolSelection } = useSwapActionHandlers()
-  // const poolKeyList = useRawPoolKeyList()
+  // const { onPoolSelection } = useSwapActionHandlers()
 
   const baseQuoteSymbol = useMemo(() => {
     if (pool && poolOHLCDatas) {
@@ -237,17 +242,29 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
 
   const { onMarginChange } = useMarginTradingActionHandlers()
 
-  const { poolId } = useSwapState()
-  // console.log('tokenstokens', poolKey,token0, token1, poolKey.fee,pool, id)
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
+  const setCurrentPool = useSetCurrentPool()
+
+  const inputIsToken0 = useMemo(() => {
+    if (pool && poolOHLCData) {
+      const quote = poolOHLCData?.quote
+      if (quote) {
+        if (quote.toLowerCase() === pool.token0.address.toLowerCase()) {
+          return true
+        }
+      }
+    }
+    return false
+  }, [poolOHLCData, pool])
+
   const handleRowClick = useCallback(() => {
-    console.log(poolId)
     if (token0 && token1 && poolId !== id) {
       onMarginChange('')
-      // onPoolSelection(token0, token1, poolKey.fee, id)
-      onPoolSelection(token0, token1, poolKey)
+      setCurrentPool(id, inputIsToken0)
       handleClose()
     }
-  }, [token0, token1, onPoolSelection, id, poolKey, poolId, handleClose, onMarginChange])
+  }, [token0, token1, id, poolId, handleClose, inputIsToken0, setCurrentPool, onMarginChange])
 
   return (
     <RowWrapper onClick={handleRowClick}>
@@ -385,15 +402,10 @@ function useFilteredKeys() {
 export function SelectPool() {
   const { chainId } = useWeb3React()
 
-  const {
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    poolKey,
-  } = useSwapState()
-
-  const outputCurrency = useCurrency(outputCurrencyId)
-  const inputCurrency = useCurrency(
-    outputCurrencyId?.toLowerCase() === poolKey?.token0.toLowerCase() ? poolKey?.token1 : poolKey?.token0
-  )
+  const outputCurrency = useCurrentOutputCurrency()
+  const inputCurrency = useCurrentInputCurrency()
+  const currentPool = useCurrentPool()
+  const poolKey = currentPool?.poolKey
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolKey?.fee ?? undefined)
 
@@ -439,7 +451,6 @@ export function SelectPool() {
   }
 
   const filteredKeys = useFilteredKeys()
-  console.log('filteredkeys', filteredKeys)
 
   return (
     <MainWrapper>

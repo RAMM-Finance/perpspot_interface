@@ -17,17 +17,13 @@ import {
 import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
+import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency, useToken } from '../../../hooks/Tokens'
-import {
-  useSwapActionHandlers,
-  useSwapState,
-  // useSwapState,
-} from '../../../state/swap/hooks'
 import { ButtonPrimary } from '../../Button'
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -360,10 +356,12 @@ export function TokenRow({
 }) {
   const navigate = useNavigate()
   // const { onCurrencySelection } = useSwapActionHandlers()
-  const { onPoolSelection } = useSwapActionHandlers()
+  // const { onPoolSelection } = useSwapActionHandlers()
+  const setCurrentPool = useSetCurrentPool()
   const token0 = useCurrency(currency0)
   const token1 = useCurrency(currency1)
-  const { poolId } = useSwapState()
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
 
   const rowCells = (
     <>
@@ -407,11 +405,7 @@ export function TokenRow({
               const id = getPoolId(currency0, currency1, fee)
               e.stopPropagation()
               if (currency1 && currency0 && token0 && token1 && fee && id && poolId !== id) {
-                onPoolSelection(token0, token1, {
-                  token0: token0.wrapped.address,
-                  token1: token1.wrapped.address,
-                  fee,
-                })
+                setCurrentPool(id, true)
                 navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
                   state: { currency0, currency1 },
                 })
@@ -465,38 +459,20 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const currencyIda = useToken(tokenA)
   const currencyIdb = useToken(tokenB)
 
-  const exploreTokenSelectedEventProperties = {
-    chain_id: chainId,
-    token_address: currencyIda?.address,
-    token_symbol: currencyIda?.symbol,
-    token_list_index: tokenListIndex,
-    // token_list_rank: sortRank,
-    token_list_length: tokenListLength,
-    // time_frame: timePeriod,
-    // search_token_address_input: filterString,
-  }
-
-  // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
-  const { onPoolSelection } = useSwapActionHandlers()
+  const setCurrentPool = useSetCurrentPool()
 
   const navigate = useNavigate()
-  const { poolId } = useSwapState()
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
   const handleCurrencySelect = useCallback(
     (currencyIn: Currency, currencyOut: Currency, fee: number) => {
       const id = getPoolId(currencyIn?.wrapped.address, currencyOut?.wrapped.address, fee)
       if (currencyIn && currencyOut && id && poolId !== id) {
-        onPoolSelection(currencyIn, currencyOut, {
-          token0: currencyIn.wrapped.sortsBefore(currencyOut.wrapped)
-            ? currencyIn.wrapped.address
-            : currencyOut.wrapped.address,
-          token1: currencyIn.wrapped.sortsBefore(currencyOut.wrapped)
-            ? currencyOut.wrapped.address
-            : currencyIn.wrapped.address,
-          fee,
-        })
+        const inputIsToken0 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped)
+        setCurrentPool(id, inputIsToken0)
       }
     },
-    [onPoolSelection, poolId]
+    [setCurrentPool, poolId]
   )
 
   const baseCurrency = useCurrency(currencyIda?.address)
@@ -507,7 +483,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       ? [baseCurrency, quoteCurrency]
       : [quoteCurrency, baseCurrency]
 
-    console.log('helllo', currencyIda, currencyIdb, token0, token1, baseCurrency, quoteCurrency)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
 
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
@@ -520,9 +495,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
     return [undefined, undefined]
   }, [pool, tickDiscretization])
-  // console.log("rateanduti????",token0, token1, pool,
-  //   pool?.token0, pool?.token1, pool?.fee, tickLower, tickUpper
-  //   )
+
   const { result: rateUtilData } = useRateAndUtil(
     pool?.token0.address,
     pool?.token1.address,

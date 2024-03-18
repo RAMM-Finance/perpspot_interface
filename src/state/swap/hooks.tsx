@@ -11,10 +11,13 @@ import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { setMarginInPosToken } from 'state/marginTrading/actions'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
-import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
+import {
+  useCurrentInputCurrency,
+  useCurrentOutputCurrency,
+  useUserSlippageToleranceWithDefault,
+} from 'state/user/hooks'
 import { RawPoolKey } from 'types/lmtv2position'
 
-import { useCurrency } from '../../hooks/Tokens'
 import useENS from '../../hooks/useENS'
 import { isAddress } from '../../utils'
 import { useCurrencyBalances } from '../connection/hooks'
@@ -183,16 +186,10 @@ export function useDerivedSwapInfo(): {
 } {
   const { account } = useWeb3React()
 
-  const {
-    independentField,
-    typedValue,
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    recipient,
-  } = useSwapState()
+  const { independentField, typedValue, recipient } = useSwapState()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
+  const inputCurrency = useCurrentInputCurrency()
+  const outputCurrency = useCurrentOutputCurrency()
 
   // console.log('inputCurrency', inputCurrency)
   const recipientLookup = useENS(recipient ?? undefined)
@@ -260,10 +257,6 @@ export function useDerivedSwapInfo(): {
       }
     }
 
-    // if (leverage && Number(leverageFactor) <= 1) {
-    //   inputError = inputError ?? <Trans>Invalid Leverage</Trans>
-    // }
-
     // compare input balance to max input based on version
     const [balanceIn, amountIn] = [currencyBalances[Field.INPUT], trade.trade?.maximumAmountIn(allowedSlippage)]
 
@@ -288,14 +281,7 @@ export function useDerivedSwapInfo(): {
 }
 
 export function getInitialSwapState(): SwapState {
-  console.log('initial swap state')
   return {
-    [Field.INPUT]: {
-      currencyId: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-    },
-    [Field.OUTPUT]: {
-      currencyId: '0x912CE59144191C1204E64559FE8253a0e49E6548',
-    },
     typedValue: '',
     independentField: Field.INPUT,
     recipient: null,
@@ -308,6 +294,12 @@ export function getInitialSwapState(): SwapState {
       token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
       token1: '0x912CE59144191C1204E64559FE8253a0e49E6548',
       fee: 500,
+    },
+    [Field.INPUT]: {
+      currencyId: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    },
+    [Field.OUTPUT]: {
+      currencyId: '0x912CE59144191C1204E64559FE8253a0e49E6548',
     },
   }
 }

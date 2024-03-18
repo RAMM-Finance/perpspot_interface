@@ -16,7 +16,7 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-import { usePool,POOL_INIT_CODE_HASH_2,computePoolAddress } from 'hooks/usePools'
+import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useState } from 'react'
 import { ReactNode } from 'react'
@@ -24,13 +24,13 @@ import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
-import { ActiveSwapTab, Field } from '../../state/swap/actions'
+import { ActiveSwapTab } from '../../state/swap/actions'
 import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
@@ -245,52 +245,55 @@ const PinWrapper = styled.div`
   height: 100%;
 `
 interface PoolItem {
-  token0: string|undefined;
-  token1: string|undefined;
-  fee: number|undefined;
+  token0: string | undefined
+  token1: string | undefined
+  fee: number | undefined
 }
 
-function adjustTokensForChain(chainId: number|undefined, pool: PoolItem): { adjustedChainId: number|undefined, adjustedPool: any } {
+function adjustTokensForChain(
+  chainId: number | undefined,
+  pool: PoolItem
+): { adjustedChainId: number | undefined; adjustedPool: any } {
   // Check for specific condition and adjust if necessary
-  if (chainId === 80085 && pool.token0 === '0x174652b085C32361121D519D788AbF0D9ad1C355' && pool.token1 === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b' && pool.fee === 500) {
+  if (
+    chainId === 80085 &&
+    pool.token0 === '0x174652b085C32361121D519D788AbF0D9ad1C355' &&
+    pool.token1 === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b' &&
+    pool.fee === 500
+  ) {
     return {
-      adjustedChainId: 42161, 
-      adjustedPool: { 
+      adjustedChainId: 42161,
+      adjustedPool: {
         token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
         token1: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
         fee: 500,
       },
-    };
+    }
   }
-  
+
   return { adjustedChainId: chainId, adjustedPool: pool }
 }
-
 
 export default function Swap({ className }: { className?: string }) {
   const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
   const { account, chainId } = useWeb3React()
-  const {
-    [Field.INPUT]: { currencyId: inputCurrencyId },
-    [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    poolKey,
-    activeTab,
-  } = useSwapState()
+  const { activeTab } = useSwapState()
 
-  const inputCurrency = useCurrency(inputCurrencyId)
-  const outputCurrency = useCurrency(outputCurrencyId)
+  const inputCurrency = useCurrentInputCurrency()
+  const outputCurrency = useCurrentOutputCurrency()
+  const currentPool = useCurrentPool()
+  const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
-
   const { adjustedChainId, adjustedPool } = adjustTokensForChain(chainId, {
     token0: pool?.token0.address,
     token1: pool?.token1.address,
     fee: pool?.fee,
-  });
+  })
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -303,8 +306,7 @@ export default function Swap({ className }: { className?: string }) {
   // const poolKeyList = useRawPoolKeyList()
   const chartSymbol = useMemo(() => {
     if (pool && poolsOHLC && chainId) {
-
-      const id = getPoolId(adjustedPool.token0, adjustedPool.token1, adjustedPool.fee);
+      const id = getPoolId(adjustedPool.token0, adjustedPool.token1, adjustedPool.fee)
 
       // const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
       if (!poolsOHLC[id]) return null
@@ -316,10 +318,10 @@ export default function Swap({ className }: { className?: string }) {
         const d2 = new BN(1).div(token0Price).minus(poolsOHLC[id].price24hAgo).abs()
         return JSON.stringify({
           poolAddress: computePoolAddress({
-            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId==80085?42161:chainId],
+            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
             tokenA: adjustedPool.token0,
             tokenB: adjustedPool.token1,
-            fee: adjustedPool.fee
+            fee: adjustedPool.fee,
           }),
           baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
           quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
@@ -329,10 +331,10 @@ export default function Swap({ className }: { className?: string }) {
       const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
       return JSON.stringify({
         poolAddress: computePoolAddress({
-          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId==80085?42161:chainId],
+          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
           tokenA: adjustedPool.token0,
           tokenB: adjustedPool.token1,
-          fee: adjustedPool.fee
+          fee: adjustedPool.fee,
         }),
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
@@ -340,7 +342,7 @@ export default function Swap({ className }: { className?: string }) {
       })
     }
     return null
-  }, [poolsOHLC, pool, chainId])
+  }, [poolsOHLC, pool, chainId, adjustedPool])
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 

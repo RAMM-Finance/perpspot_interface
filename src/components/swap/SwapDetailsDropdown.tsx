@@ -198,7 +198,6 @@ export function LeverageDetailsDropdown({
   allowedSlippage: Percent
 }) {
   const theme = useTheme()
-  // const { chainId } = useWeb3React()
   const [showDetails, setShowDetails] = useState(true)
 
   return (
