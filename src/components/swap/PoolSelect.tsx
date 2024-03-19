@@ -18,6 +18,7 @@ import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
 import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
+import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
   useAddPinnedPool,
   useCurrentInputCurrency,
@@ -185,6 +186,9 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
+  const { onPremiumCurrencyToggle } = useMarginTradingActionHandlers()
+  const { onSetMarginInPosToken } = useSwapActionHandlers()
+  const { onMarginChange } = useMarginTradingActionHandlers()
 
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = poolOHLCDatas[id]
@@ -240,8 +244,6 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     [isPinned, removePinnedPool, addPinnedPool, poolKey.token0, poolKey.token1, poolKey.fee]
   )
 
-  const { onMarginChange } = useMarginTradingActionHandlers()
-
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
   const setCurrentPool = useSetCurrentPool()
@@ -261,10 +263,23 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id) {
       onMarginChange('')
+      onPremiumCurrencyToggle(false)
+      onSetMarginInPosToken(false)
       setCurrentPool(id, inputIsToken0)
       handleClose()
     }
-  }, [token0, token1, id, poolId, handleClose, inputIsToken0, setCurrentPool, onMarginChange])
+  }, [
+    token0,
+    token1,
+    id,
+    poolId,
+    handleClose,
+    inputIsToken0,
+    setCurrentPool,
+    onMarginChange,
+    onPremiumCurrencyToggle,
+    onSetMarginInPosToken,
+  ])
 
   return (
     <RowWrapper onClick={handleRowClick}>

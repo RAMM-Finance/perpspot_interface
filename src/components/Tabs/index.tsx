@@ -3,9 +3,11 @@ import { Percent } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import React, { useCallback } from 'react'
-import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
+import { useAppSelector } from 'state/hooks'
+import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 // import Styles from "./tabs.styles.less";
 
@@ -45,19 +47,36 @@ export default function SwapTabHeader({
   isLimitOrder?: boolean
 }) {
   const { activeTab } = useSwapState()
-  const { onActiveTabChange } = useSwapActionHandlers()
+  const { onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
 
   const { onMarginChange, onLeverageFactorChange } = useMarginTradingActionHandlers()
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler('', onLeverageFactorChange)
+  const { marginInPosToken } = useMarginTradingState()
+
+  const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  const switchTokens = useSelectInputCurrency()
 
   const handleTabChange = useCallback(
     (active: ActiveSwapTab) => {
+      if (marginInPosToken) {
+        onSetMarginInPosToken(!marginInPosToken)
+      }
+      switchTokens(!inputIsToken0)
+
       onMarginChange('')
       onDebouncedLeverageFactor('')
       onActiveTabChange(active)
     },
-    [onActiveTabChange, onMarginChange, onDebouncedLeverageFactor]
+    [
+      onActiveTabChange,
+      onMarginChange,
+      onDebouncedLeverageFactor,
+      switchTokens,
+      inputIsToken0,
+      onSetMarginInPosToken,
+      marginInPosToken,
+    ]
   )
   return (
     <div

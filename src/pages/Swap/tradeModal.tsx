@@ -259,10 +259,24 @@ const TradeTabContent = () => {
   } = useMarginTradingActionHandlers()
 
   const handleSetMarginInPosToken = useCallback(() => {
+    if (premiumInPosToken) {
+      onPremiumCurrencyToggle(false)
+    }
+    if (!premiumInPosToken) {
+      onPremiumCurrencyToggle(true)
+    }
     onSetMarginInPosToken(!marginInPosToken)
     onLeverageFactorChange('')
     onMarginChange('')
-  }, [onSetMarginInPosToken, marginInPosToken, onLeverageFactorChange, onMarginChange])
+  }, [
+    onSetMarginInPosToken,
+    marginInPosToken,
+    onLeverageFactorChange,
+    onMarginChange,
+    onPremiumCurrencyToggle,
+    premiumInPosToken,
+  ])
+
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   const poolNotFound = poolState !== PoolState.EXISTS
   const {
@@ -519,6 +533,9 @@ const TradeTabContent = () => {
   const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
   const switchTokens = useSelectInputCurrency()
   function handleArrowClick() {
+    if (marginInPosToken) {
+      onSetMarginInPosToken(!marginInPosToken)
+    }
     handleMarginInput('')
     onDebouncedLeverageFactor('')
     switchTokens(!inputIsToken0)
