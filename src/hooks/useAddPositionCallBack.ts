@@ -112,7 +112,7 @@ export function useAddPositionCallback(
         positionKey,
         margin: trade.margin.rawAmount(),
         borrowAmount: trade.borrowAmount.rawAmount(),
-        minimumOutput:  minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+        minimumOutput:  marginInPosToken?'0':minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
@@ -127,7 +127,7 @@ export function useAddPositionCallback(
         positionKey,
         margin: trade.margin.rawAmount(),
         borrowAmount: trade.borrowAmount.rawAmount(),
-        minimumOutput:  minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+        minimumOutput:  marginInPosToken?'0':minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
@@ -147,12 +147,11 @@ export function useAddPositionCallback(
 
       let gasEstimate: BigNumber
 
-      try {
-        gasEstimate = await provider.estimateGas(tx)
-      } catch (gasError) {
+      // try {
+      //   gasEstimate = await provider.estimateGas(tx)
+      // } catch (gasError) {
         // throw new GasEstimationError()
-      }
-
+      // }
       // const gasLimit = calculateGasMargin(gasEstimate)
       const response = await provider
         .getSigner()
@@ -160,6 +159,7 @@ export function useAddPositionCallback(
         .then((response) => {
           if (tx.data !== response.data) {
             if (!response.data || response.data.length === 0 || response.data === '0x') {
+              console.log('errorrrr')
               throw new ModifiedAddPositionError()
             }
           }
