@@ -116,9 +116,9 @@ export function PoolStatsSection({
         value={currentPrice}
         // baseQuoteSymbol={baseQuoteSymbol}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.TitlePurpleTertiary>
             <Trans>Price</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.TitlePurpleTertiary>
         }
         loading={loading}
       />
@@ -127,9 +127,9 @@ export function PoolStatsSection({
         value={delta24h}
         delta={true}
         title={
-          <ThemedText.BodySmall>
-            <Trans>24h Change</Trans>
-          </ThemedText.BodySmall>
+          <ThemedText.TitlePurpleTertiary>
+            <Trans>24h Change</Trans >
+          </ThemedText.TitlePurpleTertiary>
         }
         loading={loading}
       />
@@ -138,9 +138,9 @@ export function PoolStatsSection({
         value={low24h}
         // baseQuoteSymbol={baseQuoteSymbol}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.TitlePurpleTertiary>
             <Trans>24h low</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.TitlePurpleTertiary>
         }
         loading={loading}
       />
@@ -149,9 +149,9 @@ export function PoolStatsSection({
         value={high24h}
         // baseQuoteSymbol={baseQuoteSymbol}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.TitlePurpleTertiary>
             <Trans>24h high</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.TitlePurpleTertiary>
         }
         loading={loading}
       />
@@ -160,9 +160,9 @@ export function PoolStatsSection({
         value={tvl}
         dollar={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.TitlePurpleTertiary>
             <Trans>TVL</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.TitlePurpleTertiary>
         }
         loading={loading}
       />
@@ -171,9 +171,9 @@ export function PoolStatsSection({
         value={volume}
         dollar={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.TitlePurpleTertiary>
             <Trans>Total Volume</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.TitlePurpleTertiary>
         }
         loading={loading}
       />
@@ -241,9 +241,9 @@ export function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <ThemedText.BodySmall color="textSecondary">
+          <ThemedText.StatPriceText>
             {formatDollar({ num: Number(value), digits: 0 })} {baseQuoteSymbol}
-          </ThemedText.BodySmall>
+          </ThemedText.StatPriceText>
         </StatPrice>
       </StatWrapper>
     )
@@ -255,14 +255,14 @@ export function Stat({
           <StatPrice>
             <AutoRow>
               <ArrowCell>{arrow}</ArrowCell>
-              <DeltaText delta={value?.toNumber()}>
+              <DeltaText delta={value?.toNumber()} style={{fontSize: "16px", fontWeight: '400'}}>
                 {formatBNToString(value?.abs() ?? undefined, NumberType.TokenNonTx)}%
               </DeltaText>
             </AutoRow>
           </StatPrice>
         ) : (
           <StatPrice>
-            <ThemedText.BodySmall color="textSecondary">{_value}</ThemedText.BodySmall>
+            <ThemedText.StatPriceText>{_value}</ThemedText.StatPriceText>
           </StatPrice>
         )}
       </StatWrapper>

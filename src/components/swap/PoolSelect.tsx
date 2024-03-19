@@ -39,6 +39,7 @@ import {
   poolSortMethodAtom,
   useSetPoolSortMethod,
 } from './state'
+import { colors } from 'theme/colors'
 
 const PoolListHeaderRow = styled.div`
   display: grid;
@@ -117,7 +118,8 @@ const MainWrapper = styled.div`
   padding-right: 1rem;
   padding-top: 0.25rem;
   padding-bottom: 0.5rem;
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  /* border: solid ${({ theme }) => theme.backgroundOutline}; */
+  border: 1px solid #303045;
   border-width: 1px;
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -464,12 +466,11 @@ export function SelectPool() {
             />
             <AutoColumn justify="flex-start">
               <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
-                <ThemedText.HeadlineSmall fontSize={20}>
+                <ThemedText.HeadlineSmall fontSize={20} color="textTertiary">
                   {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
                 </ThemedText.HeadlineSmall>
               </TextWithLoadingPlaceholder>
-
-              <ThemedText.BodySmall fontSize="14px">({poolKey?.fee ? poolKey.fee / 10000 : 0}%)</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize="16px" fontWeight={700} color="lavenderGray">({poolKey?.fee ? poolKey.fee / 10000 : 0}%)</ThemedText.BodySmall>
             </AutoColumn>
           </Row>
         </LabelWrapper>

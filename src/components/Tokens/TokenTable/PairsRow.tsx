@@ -221,7 +221,6 @@ export const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   gap: 4px;
   justify-content: flex-start;
   width: 100%;
-
   &:hover {
     ${ClickableStyle}
   }

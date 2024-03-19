@@ -98,7 +98,8 @@ export const ClickableStyle = css`
   transition-duration: ${({ theme }) => theme.transition.duration.fast};
 
   :hover {
-    opacity: ${({ theme }) => theme.opacity.hover};
+    /* opacity: ${({ theme }) => theme.opacity.hover}; */
+    color: ${({ theme }) => theme.textSecondary};
   }
   :active {
     opacity: ${({ theme }) => theme.opacity.click};

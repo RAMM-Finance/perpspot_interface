@@ -7,9 +7,11 @@ import {LimitActivityTab} from 'components/WalletDropdown/MiniPortfolio/Activity
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
+import { darkTheme } from 'theme/colors'
 
 const TableHeader = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  /* border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline}; */
+  border-bottom: 1px solid ${darkTheme.purpleSecondary};
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;

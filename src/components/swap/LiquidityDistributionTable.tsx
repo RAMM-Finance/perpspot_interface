@@ -270,10 +270,10 @@ const LiquidityDistributionTable = ({
   return (
     <>
       <Title>
-        <ThemedText.BodySecondary>Borrowable Liquidity</ThemedText.BodySecondary>
+        <ThemedText.BodySecondary fontSize={16}>Borrowable Liquidity</ThemedText.BodySecondary>
         <SmallButtonPrimary
           onClick={() => navigate('/add/' + token0?.wrapped.address + '/' + token1?.wrapped.address + '/' + `${fee}`)}
-          style={{ height: '25px', borderRadius: '8px' }}
+          style={{ height: '25px', borderRadius: '8px', width: '65px', fontSize: '14px'}}
         >
           Earn
         </SmallButtonPrimary>

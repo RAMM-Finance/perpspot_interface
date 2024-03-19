@@ -13,7 +13,8 @@ import useGeckoDatafeed from './useGeckoDataFeed'
 const ChartContainer = styled.div`
   width: 100%;
   height: 100%;
-  border: solid ${({ theme }) => theme.backgroundOutline};
+  /* border: solid ${({ theme }) => theme.backgroundOutline}; */
+  border: 1px solid #303045;
   border-width: 1px;
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};

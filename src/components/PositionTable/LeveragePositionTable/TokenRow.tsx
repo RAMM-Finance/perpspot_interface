@@ -38,6 +38,7 @@ import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionMo
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { darkTheme } from 'theme/colors'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
@@ -54,7 +55,7 @@ const Cell = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  font-size: 12px;
+  font-size: 13px;
 `
 const StyledTokenRow = styled.div<{
   first?: boolean
@@ -148,7 +149,8 @@ const StyledMore = styled(More)`
 
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
-  border-color: ${({ theme }) => theme.backgroundOutline};
+  /* border-color: ${({ theme }) => theme.backgroundOutline}; */
+  border-color: ${darkTheme.purpleSecondary};
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
   padding: 0 10px;
@@ -201,6 +203,7 @@ const PriceCell = styled(DataCell)`
   width: 1;
   justify-content: flex-start;
   padding-right: 8px;
+  /* font-size: 12px; */
 `
 
 const ActionCell = styled(DataCell)`
@@ -255,6 +258,8 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
 
   width: 100%;
   white-space: nowrap;
+  font-size: 14px;
+  color: #807e98;
   &:hover {
     ${ClickableStyle}
   }
@@ -578,7 +583,7 @@ export function HeaderRow() {
       header={true}
       positionInfo={
         <Box marginLeft="8px">
-          <ThemedText.TableText>Position</ThemedText.TableText>
+          <ThemedText.TableText fontSize={16} color="textTertiary" fontWeight={600}>Position</ThemedText.TableText>
         </Box>
       }
       value={<HeaderCell category={PositionSortMethod.VALUE} />}
@@ -626,6 +631,7 @@ const FlexStartRow = styled(Row)`
   flex-flow: row nowrap;
   align-items: center;
   justify-content: flex-start;
+  color : ${darkTheme.lavenderGray};
 `
 
 interface LoadedRowProps {

@@ -200,7 +200,8 @@ export function getIsValidSwapQuote(
 
 const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
+  border: 1px solid #303045;
   margin-bottom: 0.5rem;
   margin-top: 0.75rem;
   border-radius: 10px;
@@ -222,7 +223,8 @@ const PositionsWrapper = styled.div`
 `
 
 const LiquidityDistibutionWrapper = styled.div`
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
+  border: 1px solid #303045;
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.5rem;
   width: 100%;

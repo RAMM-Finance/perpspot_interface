@@ -150,7 +150,8 @@ export const darkTheme = {
   backgroundOutline: opacify(16, colors.blue300),
   backgroundScrim: opacify(72, colors.gray900),
   backgroundScrolledSurface: opacify(72, colors.gray900),
-  textPrimary: colors.gray200,
+  // textPrimary: colors.gray200,
+  textPrimary: '#C8C7D8',
   textSecondary: colors.gray50,
   textTertiary: colors.gray500,
   accentAction: opacify(24, colors.blue400),
@@ -163,6 +164,11 @@ export const darkTheme = {
   inputPanel: '#1c212d',
   popup: '#2f343f',
   gold: '#c9b832',
+  
+  purpleSecondary: '#303045',
+  purpleTertiary: '#807e98',
+  lavenderGray: '#C8C7D8',
+  
   accentActionSoft: opacify(24, colors.blue400),
   accentActiveSoft: opacify(24, colors.blue400),
   accentSuccessSoft: opacify(24, colors.green400),

@@ -5,7 +5,7 @@ import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, usePinnedPools, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
-import styled from 'styled-components'
+import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 
@@ -17,7 +17,8 @@ const Wrapper = styled.div`
   flex-direction: row;
   height: 100%;
   width: 100%;
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
+  border: 1px solid #303045;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
   overflow-x: auto;
