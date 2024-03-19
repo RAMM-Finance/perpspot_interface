@@ -112,7 +112,7 @@ export function useAddPositionCallback(
         positionKey,
         margin: trade.margin.rawAmount(),
         borrowAmount: trade.borrowAmount.rawAmount(),
-        minimumOutput: minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+        minimumOutput:  minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
@@ -127,7 +127,7 @@ export function useAddPositionCallback(
         positionKey,
         margin: trade.margin.rawAmount(),
         borrowAmount: trade.borrowAmount.rawAmount(),
-        minimumOutput: minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+        minimumOutput:  minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
@@ -150,13 +150,13 @@ export function useAddPositionCallback(
       try {
         gasEstimate = await provider.estimateGas(tx)
       } catch (gasError) {
-        throw new GasEstimationError()
+        // throw new GasEstimationError()
       }
 
-      const gasLimit = calculateGasMargin(gasEstimate)
+      // const gasLimit = calculateGasMargin(gasEstimate)
       const response = await provider
         .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
+        .sendTransaction({ ...tx })
         .then((response) => {
           if (tx.data !== response.data) {
             if (!response.data || response.data.length === 0 || response.data === '0x') {
@@ -167,6 +167,7 @@ export function useAddPositionCallback(
         })
       return response
     } catch (error: unknown) {
+      console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
   }, [deadline, account, chainId, provider, trade, allowedSlippage, outputCurrency, inputCurrency])
