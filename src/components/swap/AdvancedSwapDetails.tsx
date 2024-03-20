@@ -337,10 +337,14 @@ export function AdvancedMarginTradeDetails({
     if (!trade) return undefined
 
     let rate 
-    if(trade.premiumInPosToken) rate = trade.premium.div(trade.executionPrice.toFixed()).div(trade?.borrowAmount).toNumber() * 100
+    if(trade.premiumInPosToken) {
+      if(Number(trade.executionPrice.toFixed(8))== 0) return undefined
+      rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).toNumber() * 100
+    }
     else rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
     return new BN(rate / trade?.borrowRate?.toNumber())
   }, [trade])
+
 
   return (
     <StyledCard>

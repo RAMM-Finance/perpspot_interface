@@ -341,12 +341,12 @@ export function LeverageModalHeader({
                       {formatBNToString(trade?.margin ? trade.margin : undefined, NumberType.SwapTradeAmount)}
                     </TruncatedText>
                     <CurrencyLogo
-                      currency={inputCurrency}
+                      currency={outputCurrency}
                       size="15px"
                       style={{ marginRight: '4px', marginLeft: '4px' }}
                     />
                     <Text fontSize={13} fontWeight={500}>
-                      {inputCurrency?.symbol}
+                      {outputCurrency?.symbol}
                       {' ('}
                     </Text>
                     +
@@ -357,12 +357,12 @@ export function LeverageModalHeader({
                       )}
                     </TruncatedText>
                     <CurrencyLogo
-                      currency={outputCurrency}
+                      currency={inputCurrency}
                       size="15px"
                       style={{ marginRight: '4px', marginLeft: '4px' }}
                     />
                     <Text fontSize={13} fontWeight={500}>
-                      {outputCurrency?.symbol} {') '}
+                      {inputCurrency?.symbol} {') '}
                     </Text>
                   </RowFixed>
                   <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>

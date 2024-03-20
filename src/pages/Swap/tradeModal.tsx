@@ -697,7 +697,7 @@ const TradeTabContent = () => {
             />
           </Trace>
         </InputSection>
-        <ArrowWrapper clickable={isSupportedChain(chainId)}>
+        {/*<ArrowWrapper clickable={isSupportedChain(chainId)}>
           <TraceEvent
             events={[BrowserEvent.onClick]}
             name={SwapEventName.SWAP_TOKENS_REVERSED}
@@ -715,7 +715,7 @@ const TradeTabContent = () => {
               />
             </ArrowContainer>
           </TraceEvent>
-        </ArrowWrapper>
+        </ArrowWrapper>*/}
         <OutputSwapSection showDetailsDropdown={false}>
           <InputHeader>
             <ThemedText.BodySecondary>
