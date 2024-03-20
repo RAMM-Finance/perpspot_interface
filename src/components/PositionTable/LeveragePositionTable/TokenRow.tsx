@@ -786,7 +786,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   }, [position, rate, totalDebtInput])
 
   // console.log('timeclose', estimatedTimeToClose,  Number(position?.premiumLeft), Number(totalDebtInput))
-
   const PnLWithPremiums = useMemo(() => {
     if (!position || !existingDeposit) return undefined
     return position.PnL().minus(existingDeposit.minus(position?.premiumLeft))
@@ -940,14 +939,33 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     <>
                       {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
                       <AutoColumn>
-                        <span>{formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}</span>
+                        {details.marginInPosToken ? (
+                          <span>
+                            {formatBNToString(
+                              details.totalDebtInput.div(details.totalPosition.minus(details.margin)),
+                              NumberType.SwapTradeAmount
+                            )}
+                          </span>
+                        ) : (
+                          <span>{formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}</span>
+                        )}
                         <span>{formatBNToString(invertedCurrentPrice, NumberType.SwapTradeAmount)}</span>
                       </AutoColumn>
                     </>
                   ) : (
                     <>
                       <AutoColumn>
-                        <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>
+                        {details.marginInPosToken ? (
+                          <span>
+                            {formatBNToString(
+                              new BN(1).div(details.totalDebtInput.div(details.totalPosition.minus(details.margin))),
+                              NumberType.SwapTradeAmount
+                            )}
+                            /
+                          </span>
+                        ) : (
+                          <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>
+                        )}{' '}
                         <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
                       </AutoColumn>
                     </>
