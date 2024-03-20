@@ -61,7 +61,7 @@ const PoolListContainer = styled.div`
   scrollbar-width: none;
   display: absolute;
   // width: 30rem;
-  // border: solid 2px ${({ theme }) => theme.backgroundOutline};
+  /* border: solid 2px ${({ theme }) => theme.backgroundOutline}; */
   background-color: ${({ theme }) => theme.surface1};
   padding: 0.5rem;
   border-radius: 10px;
@@ -118,13 +118,13 @@ const MainWrapper = styled.div`
   padding-right: 1rem;
   padding-top: 0.25rem;
   padding-bottom: 0.5rem;
-  /* border: solid ${({ theme }) => theme.backgroundOutline}; */
-  border: 1px solid #303045;
-  border-width: 1px;
-  border-radius: 10px;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px 1px 0 1px;
+  /* border-width: 1px; */
+  /* border-radius: 10px; */
   background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 0.7rem;
-  gap: 0.7rem;
+  /* margin-bottom: 0.7rem; */
+  /* gap: 0.7rem; */
 `
 
 const PoolListHeader = styled.div`

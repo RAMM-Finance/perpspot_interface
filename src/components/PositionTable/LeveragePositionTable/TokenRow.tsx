@@ -99,7 +99,7 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: 1400px) {
-    grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px;
+    grid-template-columns: 100px 100px 70px 100px 105px 130px 110px 80px;
   }
 
   /* @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
@@ -149,8 +149,7 @@ const StyledMore = styled(More)`
 
 const StyledHeaderRow = styled(StyledTokenRow)`
   border-bottom: 1px solid;
-  /* border-color: ${({ theme }) => theme.backgroundOutline}; */
-  border-color: ${darkTheme.purpleSecondary};
+  border-color: ${({ theme }) => theme.backgroundOutline};
   border-radius: 8px 8px 0px 0px;
   color: ${({ theme }) => theme.textSecondary};
   padding: 0 10px;

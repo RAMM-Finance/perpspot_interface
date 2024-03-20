@@ -14,6 +14,7 @@ import { poolFilterStringAtom } from './state'
 const ICON_SIZE = '20px'
 const SearchBarContainer = styled.div`
   display: flex;
+  justify-content: center;
   width: 100%;
   margin-bottom: 0.5rem;
   top: 0; // Stick to the top of the container
@@ -26,12 +27,13 @@ const SearchInput = styled.input`
   background-image: url(${searchIcon});
   background-size: 20px 20px;
   background-position: 12px center;
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
+  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
+  border: none;
   background-color: ${({ theme }) => theme.searchBackground};
   height: 100%;
-  width: 100%;
+  width: 95%;
   padding: 0.5rem 1rem;
-  border-radius: 10px;
+  border-radius: 5px;
   font-size: 14px;
   padding-left: 40px;
   color: ${({ theme }) => theme.textSecondary};
@@ -47,7 +49,8 @@ const SearchInput = styled.input`
   }
 
   ::placeholder {
-    color: ${({ theme }) => theme.textTertiary};
+    /* color: ${({ theme }) => theme.textTertiary}; */
+    color: ${({ theme }) => theme.textPrimary};
   }
 
   ::-webkit-search-cancel-button {
@@ -56,13 +59,13 @@ const SearchInput = styled.input`
     height: ${ICON_SIZE};
     width: ${ICON_SIZE};
     background-image: url(${xIcon});
-    margin-right: 10px;
+    /* margin-right: 0px; */
     background-size: ${ICON_SIZE} ${ICON_SIZE};
     cursor: pointer;
   }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    width: 100%;
+    width: 95%;
   }
 `
 

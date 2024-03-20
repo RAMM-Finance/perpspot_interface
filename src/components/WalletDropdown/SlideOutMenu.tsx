@@ -52,7 +52,6 @@ export const SlideOutMenu = ({
         <ThemedText.SubHeader fontWeight={500}>{title}</ThemedText.SubHeader>
       </Title>
     </Header>
-
     {children}
   </Menu>
 )

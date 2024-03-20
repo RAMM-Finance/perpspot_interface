@@ -7,6 +7,7 @@ import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
+import { colors } from 'theme/colors'
 // import Styles from "./tabs.styles.less";
 
 const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
@@ -30,6 +31,7 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
 const SettingWrapper = styled.div`
   display: flex;
   margin-right: 20px;
+  width: 8px;
 `
 
 // the order of displayed base currencies from left to right is always in sort order
@@ -76,7 +78,7 @@ export default function SwapTabHeader({
           isActive={activeTab === ActiveSwapTab.LONG}
           // selectedTab={selectedTab}
           tabValue="Long"
-          fontSize="14px"
+          fontSize="16px"
           first={true}
           activeTab={activeTab}
         >
@@ -87,7 +89,7 @@ export default function SwapTabHeader({
           isActive={activeTab === ActiveSwapTab.SHORT}
           // selectedTab={selectedTab}
           tabValue="Short"
-          fontSize="14px"
+          fontSize="16px"
           activeTab={activeTab}
         >
           <Trans>Short</Trans>
@@ -97,7 +99,7 @@ export default function SwapTabHeader({
           isActive={activeTab === ActiveSwapTab.SWAP}
           // selectedTab={selectedTab}
           tabValue="Swap"
-          fontSize="14px"
+          fontSize="16px"
           last={true}
           activeTab={activeTab}
         >
@@ -165,6 +167,7 @@ const TabWrapper = styled.div`
   cursor: pointer;
   outline: none;
   box-sizing: border-box;
+  column-gap: 5px;
 `
 
 const TabElement = styled.button<{
@@ -182,8 +185,10 @@ const TabElement = styled.button<{
   padding: 0.25rem;
   justify-content: center;
   height: 100%;
+  min-height: 30px;
   border: none;
   border-radius: 10px;
+  
   background: ${({ activeTab, theme, isActive }) => {
     if (isActive) {
       if (activeTab === 0) {
@@ -194,19 +199,27 @@ const TabElement = styled.button<{
         return theme.accentActiveSoft
       }
     }
-    return 'none'
+    return colors.gray650
   }};
-  color: ${({ theme }) => {
-    return theme.textSecondary
+  color: ${({ theme, isActive }) => {
+    if (isActive) return theme.textSecondary
+    return theme.textPrimary
   }};
+  opacity: ${({ theme, isActive }) => {
+    if (isActive) return 1
+    return 0.5
+  }};;
   font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  transition: background-color 0.4s ease;
+  min-width: inherit;
 
   :hover {
     user-select: initial;
     color: ${({ isTrade, theme }) => theme.textSecondary};
+    opacity: 1;
   }
 
   :active {

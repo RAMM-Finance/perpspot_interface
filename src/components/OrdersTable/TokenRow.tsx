@@ -168,8 +168,9 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   gap: 4px;
   justify-content: flex-start;
   width: 100%;
-  /* font-size: 10px; */
-
+  font-size: 14px;
+  color: #807e98;
+  
   &:hover {
     ${ClickableStyle}
   }
@@ -443,7 +444,7 @@ export function HeaderRow() {
       header={true}
       positionInfo={
         <Box marginLeft="8px">
-          <ThemedText.TableText>Order</ThemedText.TableText>
+          <ThemedText.TableText fontSize={16} color="textTertiary" fontWeight={600}>Order</ThemedText.TableText>
         </Box>
       }
       pair={<HeaderCell category={OrderSortMethod.PAIR} />}

@@ -14,6 +14,7 @@ import swap from './swap/reducer'
 import transactions from './transactions/reducer'
 import user from './user/reducer'
 import wallets from './wallets/reducer'
+import font from './fontSetting/reducer'
 
 export default {
   application,
@@ -30,5 +31,6 @@ export default {
   lists,
   logs,
   margin,
+  font,
   [routingApi.reducerPath]: routingApi.reducer,
 }

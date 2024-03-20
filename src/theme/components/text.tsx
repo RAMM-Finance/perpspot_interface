@@ -81,7 +81,7 @@ export const ThemedText = {
     return <TextWrapper fontWeight={500} fontSize="14px" color="purpleTertiary" {...props} />
   },
   StatPriceText(props: TextProps) {
-    return <TextWrapper fontWeight={500} fontSize="16px" color="lavenderGray" {...props} />
+    return <TextWrapper fontWeight={500} fontSize="14px" color="lavenderGray" {...props} />
   },
   DeprecatedMain(props: TextProps) {
     return <TextWrapper fontWeight={500} color="textSecondary" {...props} />

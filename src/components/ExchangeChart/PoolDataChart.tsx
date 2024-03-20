@@ -13,10 +13,9 @@ import useGeckoDatafeed from './useGeckoDataFeed'
 const ChartContainer = styled.div`
   width: 100%;
   height: 100%;
-  /* border: solid ${({ theme }) => theme.backgroundOutline}; */
-  border: 1px solid #303045;
-  border-width: 1px;
-  border-radius: 10px;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px 1px 0 0;
+  /* border-radius: 10px; */
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
@@ -46,7 +45,7 @@ const getLanguageFromURL = (): LanguageCode | null => {
 export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: string }) => {
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
   // const { datafeed } = useDatafeed({ chainId })
-  let newChainId = chainId == 80085? 42161: chainId 
+  const newChainId = chainId == 80085 ? 42161 : chainId
   const { datafeed } = useGeckoDatafeed({ chainId: newChainId })
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)

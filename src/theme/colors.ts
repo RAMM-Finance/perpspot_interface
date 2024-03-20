@@ -1,6 +1,22 @@
 // Based mostly on https://github.com/Uniswap/interface/blob/main/src/theme/index.tsx
 import { opacify } from './utils'
 
+export interface FontsTheme {
+  primary: string
+  helvetica: string
+  serif: string
+  monospace: string
+  handwriting: string
+}
+
+export const fontsTheme: FontsTheme = {
+  primary: 'Roboto, sans-serif',
+  helvetica: 'Helvetica, Arial, sans-serif',
+  serif: 'Georgia, "Times New Roman", Times, serif',
+  monospace: 'Consolas, "Courier New", Courier, monospace',
+  handwriting: 'Comic Sans MS, cursive, sans-serif',
+}
+
 export const colors = {
   white: '#FFFFFF',
   black: '#000000',

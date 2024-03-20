@@ -78,8 +78,9 @@ const Wrapper = styled.div`
   justify-content: flex-start;
 
   background-color: ${({ theme }) => theme.backgroundSurface};
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  /* border-radius: 10px; */
   width: 365px;
   /* width: 100%; */
   /* min-width: 360px; */

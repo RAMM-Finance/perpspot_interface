@@ -17,8 +17,7 @@ const Wrapper = styled.div`
   flex-direction: row;
   height: 100%;
   width: 100%;
-  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
-  border: 1px solid #303045;
+  border: solid 1px ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
   overflow-x: auto;

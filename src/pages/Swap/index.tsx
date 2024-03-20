@@ -159,13 +159,13 @@ const MainWrapper = styled.article`
   /* grid-template-rows: 7vh 50vh 25vh; */
   /* grid-gap: 0.75rem; */
   /* margin-bottom: 0.75rem; */
-  margin-top: 0.75rem;
+  /* margin-top: 0.75rem; */
   grid-template-rows: 0 50vh 30vh;
-  grid-column-gap: 0.75rem;
+  /* grid-column-gap: 0.75rem; */
 
   @media only screen and (max-width: 1265px) {
     grid-template-columns: 1fr 0 360px;
-    grid-column-gap: 0.5rem;
+    /* grid-column-gap: 0.5rem; */
   }
 `
 
@@ -200,17 +200,17 @@ export function getIsValidSwapQuote(
 
 const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
-  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
-  border: 1px solid #303045;
+  border: solid ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
-  margin-top: 0.75rem;
-  border-radius: 10px;
+  /* margin-top: 0.75rem; */
+  /* border-radius: 10px; */
   width: 100%;
   height: 100%;
   overflow-y: scroll;
   overflow-x: scroll;
   grid-row: 3;
   grid-area: 3 / 1 / auto / 3;
+  border-width: 2px 0 2px 1px;
   /* min-width: 740px; */
   ::-webkit-scrollbar {
     display: none;
@@ -223,13 +223,13 @@ const PositionsWrapper = styled.div`
 `
 
 const LiquidityDistibutionWrapper = styled.div`
-  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
-  border: 1px solid #303045;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px 0 0 0;
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.5rem;
   width: 100%;
   min-width: 230px;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   padding: 1rem;
   height: 100%;
   overflow: hidden;

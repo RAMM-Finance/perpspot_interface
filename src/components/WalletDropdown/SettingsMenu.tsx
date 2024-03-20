@@ -1,12 +1,13 @@
 import { Trans } from '@lingui/macro'
-import { LOCALE_LABEL, SUPPORTED_LOCALES, SupportedLocale } from 'constants/locales'
+import { LOCALE_LABEL, SupportedLocale } from 'constants/locales'
 import { useActiveLocale } from 'hooks/useActiveLocale'
 import { useLocationLinkProps } from 'hooks/useLocationLinkProps'
+import { useState } from 'react'
 import { Check } from 'react-feather'
 import { Link, useLocation } from 'react-router-dom'
+import { useFontFamily } from 'state/fontSetting/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import ThemeToggle from 'theme/components/ThemeToggle'
 
 import { GitVersionRow } from './GitVersionRow'
 import { SlideOutMenu } from './SlideOutMenu'
@@ -25,6 +26,24 @@ const InternalLinkMenuItem = styled(Link)`
   color: ${({ theme }) => theme.textPrimary};
 `
 
+const MenuItem = styled.div`
+  flex: 1;
+  color: ${({ theme }) => theme.textTertiary};
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 0;
+  justify-content: space-between;
+  text-decoration: none;
+  color: ${({ theme }) => theme.textPrimary};
+  cursor: pointer;
+
+  :hover,
+  :focus {
+    opacity: 0.7;
+  }
+`
+
 function LanguageMenuItem({ locale, isActive }: { locale: SupportedLocale; isActive: boolean }) {
   const { to, onClick } = useLocationLinkProps(locale)
   const theme = useTheme()
@@ -39,6 +58,42 @@ function LanguageMenuItem({ locale, isActive }: { locale: SupportedLocale; isAct
   )
 }
 
+enum FontKey {
+  PRIMARY = 'primary',
+  HELVETICA = 'helvetica',
+  SERIF = 'serif',
+  MONOSPACE = 'monospace',
+  HANDWRITING = 'handwriting',
+}
+
+interface FontMenuItemProps {
+  fontKey: FontKey
+  isActive: boolean
+  currentFont: string
+  setCurrentFont: (fontKey: string) => void
+}
+
+function FontMenuItem({ fontKey, currentFont, setCurrentFont }: FontMenuItemProps) {
+  const { setFont } = useFontFamily()
+  const handleClick = (fontKey: FontKey) => {
+    setCurrentFont(fontKey)
+    setFont(fontKey)
+  }
+
+  return (
+    <MenuItem onClick={() => handleClick(fontKey)}>
+      {currentFont === fontKey ? (
+        <ThemedText.BodyPrimary lineHeight={1.5} fontSize={16} fontWeight={700}>
+          {fontKey}
+        </ThemedText.BodyPrimary>
+      ) : (
+        <ThemedText.BodyPrimary lineHeight={1.5} fontSize={14}>
+          {fontKey}
+        </ThemedText.BodyPrimary>
+      )}
+    </MenuItem>
+  )
+}
 const SectionTitle = styled(ThemedText.SubHeader)`
   color: ${({ theme }) => theme.textSecondary};
   padding-bottom: 24px;
@@ -52,13 +107,14 @@ const BalanceToggleContainer = styled.div`
   padding: 16px 0;
   margin-bottom: 26px;
 `
-
 export default function SettingsMenu({ onClose }: { onClose: () => void }) {
-  const activeLocale = useActiveLocale()
+  const [currentFont, setCurrentFont] = useState('primary')
 
+  const activeLocale = useActiveLocale()
   const { pathname } = useLocation()
   const isWalletPage = pathname.includes('/wallet')
 
+  const fontKeys = Object.values(FontKey)
   return (
     <SlideOutMenu title={<Trans>Settings</Trans>} onClose={onClose}>
       <SectionTitle>
@@ -72,10 +128,20 @@ export default function SettingsMenu({ onClose }: { onClose: () => void }) {
       </BalanceToggleContainer>
 
       <SectionTitle data-testid="wallet-header">
-        <Trans>Language</Trans>
+        {/* <Trans>Language</Trans> */}
+        <Trans>Fonts</Trans>
       </SectionTitle>
-      {SUPPORTED_LOCALES.map((locale) => (
+      {/* {SUPPORTED_LOCALES.map((locale) => (
         <LanguageMenuItem locale={locale} isActive={activeLocale === locale} key={locale} />
+      ))} */}
+      {fontKeys.map((fontKey: FontKey) => (
+        <FontMenuItem
+          key={fontKey}
+          currentFont={currentFont}
+          setCurrentFont={setCurrentFont}
+          fontKey={fontKey}
+          isActive={false}
+        />
       ))}
       <GitVersionRow />
     </SlideOutMenu>
