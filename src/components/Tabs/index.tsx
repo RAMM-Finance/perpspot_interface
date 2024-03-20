@@ -49,21 +49,24 @@ export default function SwapTabHeader({
   const { activeTab } = useSwapState()
   const { onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
 
-  const { onMarginChange, onLeverageFactorChange } = useMarginTradingActionHandlers()
+  const { onMarginChange, onLeverageFactorChange, onPremiumCurrencyToggle } = useMarginTradingActionHandlers()
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler('', onLeverageFactorChange)
-  const { marginInPosToken } = useMarginTradingState()
+  const { marginInPosToken, premiumInPosToken } = useMarginTradingState()
 
   const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
   const switchTokens = useSelectInputCurrency()
 
   const handleTabChange = useCallback(
     (active: ActiveSwapTab) => {
+      if (active === activeTab) {
+        return
+      }
       if (marginInPosToken) {
         onSetMarginInPosToken(!marginInPosToken)
+        onPremiumCurrencyToggle(false)
       }
       switchTokens(!inputIsToken0)
-
       onMarginChange('')
       onDebouncedLeverageFactor('')
       onActiveTabChange(active)
@@ -76,6 +79,8 @@ export default function SwapTabHeader({
       inputIsToken0,
       onSetMarginInPosToken,
       marginInPosToken,
+      activeTab,
+      onPremiumCurrencyToggle,
     ]
   )
   return (

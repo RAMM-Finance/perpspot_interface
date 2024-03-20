@@ -692,10 +692,13 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
 
   const setCurrentPool = useSetCurrentPool()
 
-  const leverageFactor = useMemo(
-    () => (Number(margin) + Number(totalDebtInput)) / Number(margin),
-    [margin, totalDebtInput]
-  )
+  const leverageFactor = useMemo(() => {
+    if (details.marginInPosToken) {
+      return Number(details.totalPosition) / Number(margin)
+    } else {
+      return (Number(margin) + Number(totalDebtInput)) / Number(margin)
+    }
+  }, [margin, totalDebtInput])
 
   const id = getPoolId(token0Address, token1Address, details?.poolKey.fee)
   const currentPool = useCurrentPool()

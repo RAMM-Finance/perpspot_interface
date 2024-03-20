@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Button } from '@mui/material'
-import { Trace, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SwapEventName } from '@uniswap/analytics-events'
+import { Trace } from '@uniswap/analytics'
+import { InterfaceSectionName } from '@uniswap/analytics-events'
 import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
@@ -25,7 +25,7 @@ import SwapHeader from 'components/swap/SwapHeader'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
-import { isSupportedChain, SupportedChainId } from 'constants/chains'
+import { SupportedChainId } from 'constants/chains'
 import { useCurrency } from 'hooks/Tokens'
 import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
@@ -37,7 +37,7 @@ import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
-import { Info, Maximize2 } from 'react-feather'
+import { Info } from 'react-feather'
 import { useAppSelector } from 'state/hooks'
 import { MarginField } from 'state/marginTrading/actions'
 import {
@@ -58,9 +58,7 @@ import { ThemedText } from 'theme'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';
-import { ArrowWrapper } from '../../components/swap/styleds'
 import {
-  ArrowContainer,
   DetailsSwapSection,
   InputHeader,
   InputSection,
@@ -743,6 +741,7 @@ const TradeTabContent = () => {
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
               loading={tradeIsLoading}
               disabled={true}
+              bothCurrencies={true}
             />
           </Trace>
         </OutputSwapSection>
