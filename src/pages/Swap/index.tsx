@@ -18,7 +18,7 @@ import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
@@ -156,16 +156,10 @@ const MainWrapper = styled.article`
   height: 100%;
   display: grid;
   grid-template-columns: 1.6fr 0.6fr 360px;
-  /* grid-template-rows: 7vh 50vh 25vh; */
-  /* grid-gap: 0.75rem; */
-  /* margin-bottom: 0.75rem; */
-  /* margin-top: 0.75rem; */
   grid-template-rows: 0 50vh 30vh;
-  /* grid-column-gap: 0.75rem; */
 
   @media only screen and (max-width: 1265px) {
     grid-template-columns: 1fr 0 360px;
-    /* grid-column-gap: 0.5rem; */
   }
 `
 

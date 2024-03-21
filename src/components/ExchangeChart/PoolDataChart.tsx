@@ -15,7 +15,6 @@ const ChartContainer = styled.div`
   height: 100%;
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px 1px 0 0;
-  /* border-radius: 10px; */
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 

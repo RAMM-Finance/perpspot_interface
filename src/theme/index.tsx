@@ -3,9 +3,8 @@ import React, { useMemo } from 'react'
 import { createGlobalStyle, css, ThemeProvider as StyledComponentsThemeProvider } from 'styled-components/macro'
 import { useIsDarkMode } from 'theme/components/ThemeToggle'
 
-import { darkTheme, fontsTheme, lightTheme } from './colors'
+import { darkTheme, lightTheme } from './colors'
 import { darkDeprecatedTheme, lightDeprecatedTheme } from './deprecatedColors'
-import { useSelector } from 'react-redux'
 
 // todo - remove and replace imports with a new path
 export * from './components'
@@ -114,16 +113,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   return <StyledComponentsThemeProvider theme={themeObject}>{children}</StyledComponentsThemeProvider>
 }
 
-export const GlobalStyleProvider: React.FC = () => {
-  const fontFamily: any = useSelector((state: any) => state.font.fontFamily)
-  return <ThemedGlobalStyle primaryFont={fontFamily} />
-}
+// export const GlobalStyleProvider: React.FC = () => {
+//   const fontFamily: any = useSelector((state: any) => state.font.fontFamily)
+//   return <ThemedGlobalStyle primaryFont={fontFamily} />
+// }
 
-export const ThemedGlobalStyle = createGlobalStyle<{ primaryFont: string }>`
+export const ThemedGlobalStyle = createGlobalStyle`
   html {
     color: ${({ theme }) => theme.textPrimary};
-    /* background-color: ${({ theme }) => theme.background} !important; */
-    font-family:${({ primaryFont }) => primaryFont}!important // Set primary font
   }
 
   summary::-webkit-details-marker {

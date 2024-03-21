@@ -27,7 +27,6 @@ const SearchInput = styled.input`
   background-image: url(${searchIcon});
   background-size: 20px 20px;
   background-position: 12px center;
-  /* border: solid 1px ${({ theme }) => theme.backgroundOutline}; */
   border: none;
   background-color: ${({ theme }) => theme.searchBackground};
   height: 100%;
@@ -38,18 +37,12 @@ const SearchInput = styled.input`
   padding-left: 40px;
   color: ${({ theme }) => theme.textSecondary};
   transition-duration: ${({ theme }) => theme.transition.duration.fast};
-  // :hover {
-  //   background-color: ${({ theme }) => theme.backgroundSurface};
-  // }
 
   :focus {
     outline: none;
-    // background-color: ${({ theme }) => theme.backgroundSurface};
-    // border-color: ${({ theme }) => theme.accentActionSoft};
   }
 
   ::placeholder {
-    /* color: ${({ theme }) => theme.textTertiary}; */
     color: ${({ theme }) => theme.textPrimary};
   }
 
@@ -59,7 +52,6 @@ const SearchInput = styled.input`
     height: ${ICON_SIZE};
     width: ${ICON_SIZE};
     background-image: url(${xIcon});
-    /* margin-right: 0px; */
     background-size: ${ICON_SIZE} ${ICON_SIZE};
     cursor: pointer;
   }

@@ -384,12 +384,6 @@ function PositionRow({
 
   const rowCells = (
     <>
-      {/* <LeveragePositionModal
-        positionKey={positionKey}
-        selectedTab={selectedTab}
-        isOpen={showModal}
-        onClose={handleCloseModal}
-      /> */}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
@@ -402,9 +396,6 @@ function PositionRow({
           {pair}
         </EditCell>
       </PriceCell>
-      {/*<PriceCell data-testid="repaymentTime-cell" sortable={header}>
-        {repaymentTime}
-      </PriceCell>*/}
       <PriceCell data-testid="premium-cell" sortable={header}>
         <EditCell
           onClick={() => {
@@ -425,10 +416,6 @@ function PositionRow({
       <PriceCell data-testid="premium-cell" sortable={header}>
         {deadline}
       </PriceCell>
-      {/* <ActionCell data-testid="action-cell" sortable={header}>
-        {actions}
-      </ActionCell> */}
-      {/* <SparkLineCell>{sparkLine}</SparkLineCell> */}
       <NameCell>{buttons}</NameCell>
     </>
   )

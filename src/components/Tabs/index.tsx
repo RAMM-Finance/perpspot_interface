@@ -7,7 +7,6 @@ import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
-import { colors } from 'theme/colors'
 // import Styles from "./tabs.styles.less";
 
 const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
@@ -186,31 +185,40 @@ const TabElement = styled.button<{
   justify-content: center;
   height: 100%;
   min-height: 30px;
-  border: none;
+  /* border: none; */
   border-radius: 10px;
-  
-  background: ${({ activeTab, theme, isActive }) => {
+  background: ${({ theme }) => theme.surface1};
+  border: 2px solid
+    ${({ activeTab, theme, isActive }) => {
+      if (isActive) {
+        if (activeTab === 0) {
+          return theme.accentSuccessSoft
+        } else if (activeTab === 1) {
+          return theme.accentFailureSoft
+        } else {
+          return theme.accentActiveSoft
+        }
+      }
+      return theme.backgroundOutline
+    }};
+  color: ${({ activeTab, theme, isActive }) => {
     if (isActive) {
       if (activeTab === 0) {
-        return theme.accentSuccessSoft
+        return '#27ab7d'
       } else if (activeTab === 1) {
-        return theme.accentFailureSoft
+        return '#cf4c4f'
       } else {
-        return theme.accentActiveSoft
+        return '#0965aa'
       }
     }
-    return colors.gray650
-  }};
-  color: ${({ theme, isActive }) => {
-    if (isActive) return theme.textSecondary
     return theme.textPrimary
   }};
-  opacity: ${({ theme, isActive }) => {
+  opacity: ${({ isActive }) => {
     if (isActive) return 1
     return 0.5
-  }};;
+  }};
   font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 0.4s ease;
@@ -218,7 +226,28 @@ const TabElement = styled.button<{
 
   :hover {
     user-select: initial;
-    color: ${({ isTrade, theme }) => theme.textSecondary};
+    color: ${({ theme, tabValue }) => {
+      if (tabValue === 'Long') {
+        return '#27ab7d'
+      } else if (tabValue === 'Short') {
+        return '#cf4c4f'
+      } else if (tabValue === 'Swap') {
+        return '#0965aa'
+      }
+      return theme.textPrimary
+    }};
+
+    border: 2px solid
+      ${({ theme, tabValue }) => {
+        if (tabValue === 'Long') {
+          return theme.accentSuccessSoft
+        } else if (tabValue === 'Short') {
+          return theme.accentFailureSoft
+        } else if (tabValue === 'Swap') {
+          return theme.accentActiveSoft
+        }
+        return theme.backgroundOutline
+      }};
     opacity: 1;
   }
 
