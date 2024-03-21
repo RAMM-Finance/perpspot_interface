@@ -822,6 +822,7 @@ export default function DecreasePositionContent({
                       <DecreasePositionDetails
                         txnInfo={txnInfo}
                         inputCurrency={inputCurrency ?? undefined}
+                        outputCurrency={outputCurrency ?? undefined}
                         loading={loading}
                         existingPosition={existingPosition}
                         allowedSlippage={allowedSlippage}
