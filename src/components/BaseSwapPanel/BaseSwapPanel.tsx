@@ -13,13 +13,13 @@ import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
 import * as React from 'react'
-import { ChevronDown, ChevronUp, Lock } from 'react-feather'
+import { Lock } from 'react-feather'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 
 import { useCurrencyBalance } from '../../state/connection/hooks'
 import { ThemedText } from '../../theme'
-import { ButtonGray } from '../Button'
+import { BaseButton, ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
 import { RowBetween, RowFixed } from '../Row'
@@ -116,6 +116,111 @@ const CurrencySelect = styled(ButtonGray)<{
   visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
 `
 
+const MarginSelect = styled(ButtonGray)<{
+  visible: boolean
+  selected: boolean
+  hideInput?: boolean
+  disabled?: boolean
+}>`
+  align-items: center;
+  opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
+  color: ${({ selected, theme }) => (selected ? theme.white : theme.textPrimary)};
+  cursor: pointer;
+  height: unset;
+  border-radius: 8px;
+  outline: none;
+  user-select: none;
+  border: ${({ selected, theme }) => (selected ? `2px solid ${theme.accentSuccessSoft}` : 'none')};
+  font-size: 24px;
+  font-weight: 400;
+  background-color: transparent;
+  width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
+  padding: 4px 8px 4px 4px;
+  gap: 12px;
+  justify-content: space-between;
+
+  &:hover,
+  &:active {
+    background-color: ${({ theme, selected }) => (selected ? theme.backgroundInteractive : theme.accentAction)};
+  }
+
+  &:before {
+    background-size: 100%;
+    border-radius: inherit;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    content: '';
+  }
+
+  &:hover:before {
+    background-color: ${({ theme }) => theme.stateOverlayHover};
+  }
+
+  &:active:before {
+    background-color: ${({ theme }) => theme.stateOverlayPressed};
+  }
+
+  visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
+`
+
+const MarginCurrencySelect = styled(BaseButton)<{
+  visible: boolean
+  selected: boolean
+  hideInput?: boolean
+  disabled?: boolean
+}>`
+  align-items: center;
+  opacity: ${({ disabled }) => (!disabled ? 1 : 0.4)};
+  box-shadow: ${({ selected }) => (selected ? 'none' : '0px 6px 10px rgba(0, 0, 0, 0.075)')};
+  color: ${({ selected, theme }) => (selected ? theme.textPrimary : theme.white)};
+  cursor: pointer;
+  height: unset;
+  border-radius: 8px;
+  outline: none;
+  user-select: none;
+  border: none;
+  font-size: 24px;
+  font-weight: 400;
+  background-color: transparent;
+  width: ${({ hideInput }) => (hideInput ? '100%' : 'initial')};
+  padding: ${({ selected }) => (selected ? '4px 8px 4px 4px' : '6px 6px 6px 8px')};
+  gap: 12px;
+  justify-content: space-between;
+
+  &:hover,
+  &:active {
+    background-color: none;
+  }
+
+  &:before {
+    background-size: 100%;
+    border-radius: inherit;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    content: '';
+  }
+
+  &:hover:before {
+    background-color: none;
+  }
+
+  &:active:before {
+    background-color: none;
+  }
+
+  visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
+`
+
 export const InputRow = styled.div`
   display: flex;
   width: 100%;
@@ -200,6 +305,7 @@ interface BaseSwapPanelProps {
   label?: string
   showPremium?: boolean
   premium?: CurrencyAmount<Currency>
+  bothCurrencies?: boolean
 }
 
 export function BaseSwapPanel({
@@ -223,6 +329,7 @@ export function BaseSwapPanel({
   disabled = false,
   locked = false,
   loading = false,
+  bothCurrencies = false,
   ...rest
 }: BaseSwapPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -273,14 +380,40 @@ export function BaseSwapPanel({
             }}
           >
             <RowFixed>
-              {pair ? (
+              {bothCurrencies ? (
+                <>
+                  <CurrencyLogo currency={currency} size="15px" />
+                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : currency?.symbol) || <Trans>Select token</Trans>}{' '}
+                    /
+                  </StyledTokenName>
+
+                  <CurrencyLogo currency={otherCurrency} size="15px" />
+                  <StyledTokenName
+                    className="token-symbol-container"
+                    active={Boolean(otherCurrency && otherCurrency.symbol)}
+                  >
+                    {(otherCurrency && otherCurrency.symbol && otherCurrency.symbol.length > 20
+                      ? otherCurrency.symbol.slice(0, 4) +
+                        '...' +
+                        otherCurrency.symbol.slice(otherCurrency.symbol.length - 5, otherCurrency.symbol.length)
+                      : otherCurrency?.symbol) || <Trans>Select token</Trans>}
+                  </StyledTokenName>
+                </>
+              ) : pair ? (
                 <span>
                   <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
                 </span>
               ) : currency ? (
                 <CurrencyLogo currency={currency} size="15px" />
               ) : null}
-              {pair ? (
+              {bothCurrencies ? (
+                <></>
+              ) : pair ? (
                 <StyledTokenName className="pair-name-container">
                   {pair?.token0.symbol}:{pair?.token1.symbol}
                 </StyledTokenName>
@@ -453,7 +586,7 @@ export function MarginSelectPanel({
                 label="label"
               />
             )}
-            <CurrencySelect
+            <MarginCurrencySelect
               disabled={!chainAllowed}
               visible={currency !== undefined}
               selected={!!currency}
@@ -461,18 +594,39 @@ export function MarginSelectPanel({
               className="open-currency-select-button"
               onClick={handleClick}
             >
-              <RowFixed>
-                <CurrencyLogo currency={currency} size="15px" />
-                <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
-                  {(currency && currency.symbol && currency.symbol.length > 20
-                    ? currency.symbol.slice(0, 4) +
-                      '...' +
-                      currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                    : currency?.symbol) || <Trans>Select token</Trans>}
-                </StyledTokenName>
-                {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
-              </RowFixed>
-            </CurrencySelect>
+              <MarginSelect
+                visible={currency !== undefined}
+                selected={currency?.symbol === inputCurrency?.symbol}
+                onClick={onMarginTokenChange}
+              >
+                <RowFixed>
+                  <CurrencyLogo currency={inputCurrency} size="15px" />
+                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : inputCurrency?.symbol) || <Trans>Select token</Trans>}
+                  </StyledTokenName>
+                </RowFixed>
+              </MarginSelect>
+              <MarginSelect
+                visible={currency !== undefined}
+                selected={currency?.symbol === outputCurrency?.symbol}
+                onClick={onMarginTokenChange}
+              >
+                <RowFixed>
+                  <CurrencyLogo currency={outputCurrency} size="15px" />
+                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : outputCurrency?.symbol) || <Trans>Select token</Trans>}
+                  </StyledTokenName>
+                </RowFixed>
+              </MarginSelect>
+            </MarginCurrencySelect>
           </InputRow>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
@@ -520,30 +674,6 @@ export function MarginSelectPanel({
           )}
         </Container>
       </InputPanel>
-      <StyledDropdown
-        slotProps={{ paper: { sx: { paddingX: '5px', backgroundColor: '#141a2a' } } }}
-        MenuListProps={{
-          sx: {
-            color: 'white',
-          },
-        }}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-      >
-        <TokenItem onClick={onMarginTokenChange}>
-          <RowFixed>
-            <CurrencyLogo currency={otherCurrency} size="15px" />
-            <StyledTokenName className="token-symbol-container" active={Boolean(otherCurrency && otherCurrency.symbol)}>
-              {otherCurrency && otherCurrency.symbol && otherCurrency.symbol.length > 20
-                ? otherCurrency.symbol.slice(0, 4) +
-                  '...' +
-                  otherCurrency.symbol.slice(otherCurrency.symbol.length - 5, otherCurrency.symbol.length)
-                : otherCurrency?.symbol}
-            </StyledTokenName>
-          </RowFixed>
-        </TokenItem>
-      </StyledDropdown>
     </>
   )
 }

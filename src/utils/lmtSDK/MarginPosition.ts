@@ -36,6 +36,7 @@ export class MarginPosition {
   public readonly premiumLeft: BN
   public readonly totalPosition: BN
   public readonly margin: BN
+  public readonly marginInPosToken: boolean
 
   constructor(pool: Pool, details: MarginPositionDetails) {
     this.pool = pool
@@ -52,23 +53,31 @@ export class MarginPosition {
     this.premiumLeft = details.premiumLeft
     this.totalPosition = details.totalPosition
     this.margin = details.margin
+    this.marginInPosToken = details.marginInPosToken
   }
 
   // profit/loss in input token
   public PnL(): BN {
-    const entryPrice = this.isToken0 ? this.entryPrice() : new BN(1).div(this.entryPrice())
-
     const currentPrice = this.isToken0
       ? new BN(this.pool.token0Price.toFixed(18))
       : new BN(this.pool.token1Price.toFixed(18))
 
-    return this.totalPosition.times(currentPrice.minus(entryPrice))
+    if (this.marginInPosToken) {
+      const _entryPrice = this.totalDebtInput.div(this.totalPosition.minus(this.margin))
+      return this.totalPosition.times(currentPrice.minus(_entryPrice))
+    } else {
+      const entryPrice = this.isToken0 ? this.entryPrice() : new BN(1).div(this.entryPrice())
+      return this.totalPosition.times(currentPrice.minus(entryPrice))
+    }
   }
 
   /**
    * @returns entry price in token1 per unit token0
    */
   public entryPrice(): BN {
+    if (this.marginInPosToken) {
+      return this.totalDebtInput.div(this.totalPosition.minus(this.margin))
+    }
     if (this.isToken0) {
       return this.totalDebtInput.plus(this.margin).div(this.totalPosition)
     } else {

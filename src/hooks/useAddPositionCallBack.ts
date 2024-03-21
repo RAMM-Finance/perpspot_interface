@@ -59,7 +59,7 @@ export function useAddPositionCallback(
         marginInPosToken,
         margin,
         premiumInPosToken,
-        premiumSwapRoute,
+        premiumSwapRoute
       } = trade
 
       const positionKey: TraderPositionKey = {
@@ -96,7 +96,7 @@ export function useAddPositionCallback(
           chainId
         )
         if (!output) throw new Error('Quoter Error')
-        minPremiumOutput = output.toString()
+        minPremiumOutput = String(Math.ceil(Number(output.toString())/2))
       }
 
       const outputDecimals = outputCurrency.decimals
@@ -122,7 +122,7 @@ export function useAddPositionCallback(
         marginInPosToken,
         premiumInPosToken,
         minPremiumOutput,
-      })
+      }, trade)
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
         margin: trade.margin.rawAmount(),

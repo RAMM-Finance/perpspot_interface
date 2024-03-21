@@ -271,6 +271,8 @@ export function LeverageModalHeader({
 
   const fiatValueTotalOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency)
 
+  console.log(trade.marginInPosToken)
+
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
@@ -332,31 +334,72 @@ export function LeverageModalHeader({
                   Total Input
                 </Text>
               </RowFixed>
-              <Column gap="xs" style={{ alignItems: 'flex-end' }}>
-                <RowFixed gap="0px" justifyContent="flex-end">
-                  <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                    {formatBNToString(
-                      trade?.borrowAmount && trade?.margin ? trade.borrowAmount.plus(trade.margin) : undefined,
-                      NumberType.SwapTradeAmount
-                    )}
-                  </TruncatedText>
-                  <CurrencyLogo
-                    currency={inputCurrency}
-                    size="15px"
-                    style={{ marginRight: '4px', marginLeft: '4px' }}
-                  />
-                  <Text fontSize={13} fontWeight={500}>
-                    {inputCurrency?.symbol}
-                  </Text>
-                </RowFixed>
-                <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
-                  <FiatValue
-                    fiatValue={fiatValueTotalOutput}
-                    priceImpact={computeFiatValuePriceImpact(fiatValueTotalInput.data, fiatValueTotalOutput.data)}
-                    height="14px"
-                  />
-                </ThemedText.DeprecatedBody>
-              </Column>
+              {trade.premiumInPosToken ? (
+                <Column gap="xs" style={{ alignItems: 'flex-end' }}>
+                  <RowFixed gap="0px" justifyContent="flex-end">
+                    <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                      {formatBNToString(trade?.margin ? trade.margin : undefined, NumberType.SwapTradeAmount)}
+                    </TruncatedText>
+                    <CurrencyLogo
+                      currency={outputCurrency}
+                      size="15px"
+                      style={{ marginRight: '4px', marginLeft: '4px' }}
+                    />
+                    <Text fontSize={13} fontWeight={500}>
+                      {outputCurrency?.symbol}
+                      {' ('}
+                    </Text>
+                    +
+                    <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                      {formatBNToString(
+                        trade?.borrowAmount ? trade.borrowAmount : undefined,
+                        NumberType.SwapTradeAmount
+                      )}
+                    </TruncatedText>
+                    <CurrencyLogo
+                      currency={inputCurrency}
+                      size="15px"
+                      style={{ marginRight: '4px', marginLeft: '4px' }}
+                    />
+                    <Text fontSize={13} fontWeight={500}>
+                      {inputCurrency?.symbol} {') '}
+                    </Text>
+                  </RowFixed>
+                  <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
+                    <FiatValue
+                      fiatValue={fiatValueTotalOutput}
+                      priceImpact={computeFiatValuePriceImpact(fiatValueTotalInput.data, fiatValueTotalOutput.data)}
+                      height="14px"
+                    />
+                  </ThemedText.DeprecatedBody>
+                </Column>
+              ) : (
+                <Column gap="xs" style={{ alignItems: 'flex-end' }}>
+                  <RowFixed gap="0px" justifyContent="flex-end">
+                    <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
+                      {formatBNToString(
+                        trade?.borrowAmount && trade?.margin ? trade.borrowAmount.plus(trade.margin) : undefined,
+                        NumberType.SwapTradeAmount
+                      )}
+                    </TruncatedText>
+                    <CurrencyLogo
+                      currency={inputCurrency}
+                      size="15px"
+                      style={{ marginRight: '4px', marginLeft: '4px' }}
+                    />
+                    <Text fontSize={13} fontWeight={500}>
+                      {inputCurrency?.symbol}
+                    </Text>
+                  </RowFixed>
+                  <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
+                    <FiatValue
+                      fiatValue={fiatValueTotalOutput}
+                      priceImpact={computeFiatValuePriceImpact(fiatValueTotalInput.data, fiatValueTotalOutput.data)}
+                      height="14px"
+                    />
+                  </ThemedText.DeprecatedBody>
+                </Column>
+              )}
             </RowBetween>
           </AutoColumn>
           <AutoColumn gap="xs">

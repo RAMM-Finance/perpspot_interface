@@ -336,9 +336,15 @@ export function AdvancedMarginTradeDetails({
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined
 
-    const rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
+    let rate 
+    if(trade.premiumInPosToken) {
+      if(Number(trade.executionPrice.toFixed(8))== 0) return undefined
+      rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).toNumber() * 100
+    }
+    else rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
     return new BN(rate / trade?.borrowRate?.toNumber())
   }, [trade])
+
 
   return (
     <StyledCard>
