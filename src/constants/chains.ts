@@ -25,7 +25,9 @@ export enum SupportedChainId {
 
   BNB = 56,
 
-  BERA_ARTIO = 80085
+  BERA_ARTIO = 80085,
+
+  LINEA = 59144,
 }
 
 export const CHAIN_IDS_TO_NAMES = {
@@ -41,7 +43,8 @@ export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.OPTIMISM_GOERLI]: 'optimism_goerli',
   [SupportedChainId.BNB]: 'bnb',
   [SupportedChainId.SEPOLIA]: 'sepolia',
-  [SupportedChainId.BERA_ARTIO]: 'artio'
+  [SupportedChainId.BERA_ARTIO]: 'artio',
+  [SupportedChainId.LINEA]: 'linea'
 }
 
 /**
@@ -62,6 +65,7 @@ export const SUPPORTED_GAS_ESTIMATE_CHAIN_IDS = [
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.BNB,
+  SupportedChainId.LINEA,
 ] as const
 
 /**
@@ -73,6 +77,7 @@ export const UNSUPPORTED_V2POOL_CHAIN_IDS = [
   SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.BNB,
   SupportedChainId.ARBITRUM_GOERLI,
+  SupportedChainId.LINEA
 ] as const
 
 export const TESTNET_CHAIN_IDS = [
@@ -111,7 +116,8 @@ export const L2_CHAIN_IDS = [
   SupportedChainId.ARBITRUM_GOERLI,
   SupportedChainId.OPTIMISM,
   SupportedChainId.OPTIMISM_GOERLI,
-  SupportedChainId.BERA_ARTIO
+  SupportedChainId.BERA_ARTIO,
+  SupportedChainId.LINEA
 ] as const
 
 export type SupportedL2ChainId = typeof L2_CHAIN_IDS[number]

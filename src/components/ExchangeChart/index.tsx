@@ -183,6 +183,8 @@ export const PoolDataSection = ({
 
               let tvl
               let volume
+
+              
               if (Object.keys(poolData).find((pair: any) => `${token0?.address}-${token1?.address}-${pool?.fee}`)) {
                 {
                   tvl = poolData[`${token0?.address}-${token1?.address}-${pool?.fee}`].totalValueLocked

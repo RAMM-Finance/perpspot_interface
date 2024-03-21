@@ -439,6 +439,13 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } =
     'wBERA',
     'Wrapped Bera'
   ),
+  [SupportedChainId.LINEA]: new Token(
+    SupportedChainId.LINEA,
+    '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  )
 }
 
 export function isCelo(chainId: number): chainId is SupportedChainId.CELO | SupportedChainId.CELO_ALFAJORES {
