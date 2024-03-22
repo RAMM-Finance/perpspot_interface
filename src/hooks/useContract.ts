@@ -84,9 +84,7 @@ export const getDecimalAndUsdValueData = async (network: string, tokenId: string
     let res: any = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
       query: TokenDataFromUniswapQuery(tokenId),
     })
-
-    const token = res?.data?.data?.token
-
+    const token = res?.data?.data?.token ?? { lastPriceUSD: '0' }
     if (token?.lastPriceUSD === '0' || token?.lastPriceUsd === null || !token?.lastPriceUsd) {
       try {
         res = await axios.get(
@@ -101,7 +99,7 @@ export const getDecimalAndUsdValueData = async (network: string, tokenId: string
         const data: any = res?.data
         const usdValues = Object.values(data).map((value: any) => value.usd)
 
-        token.lastPriceUSD = usdValues[0].toString()
+        return { lastPriceUSD: usdValues[0].toString() }
       } catch (e) {
         console.log('COINGECKO ERROR')
         console.log(e)

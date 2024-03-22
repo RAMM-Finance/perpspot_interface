@@ -89,8 +89,6 @@ export function DecreasePositionDetails({
     return txnInfo?.PnL.minus(existingPosition?.premiumOwed)
   }, [txnInfo, existingPosition])
 
-  console.log('in', inputCurrency)
-  console.log(outputCurrency)
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">

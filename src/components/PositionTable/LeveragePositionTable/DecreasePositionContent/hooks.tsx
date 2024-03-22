@@ -92,6 +92,8 @@ export function useDerivedReducePositionInfo(
       isClose: closePosition,
     }
 
+    console.log('params', params)
+
     setLastParams(getReduceUserParams(parsedReduceAmount, allowedSlippage))
 
     const calldatas = MarginFacilitySDK.reducePositionParameters(params)

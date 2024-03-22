@@ -36,7 +36,7 @@ export function usePoolsData(): {
 } {
   const dataProvider = useDataProviderContract()
 
-  const { data, isLoading, isError, error } = useQuery(
+  const { data, isLoading, isError } = useQuery(
     ['queryPoolsData', dataProvider ? 'key' : 'missing key'],
     async () => {
       if (!dataProvider) throw Error('missing dataProvider')
@@ -152,10 +152,8 @@ export function usePoolsData(): {
 
       return {
         pool,
-        amount0: (token0InfoFromUniswap.lastPriceUSD * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
-        amount1: (token1InfoFromUniswap.lastPriceUSD * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
-        // amount0: (usdValueOfToken0 * Number(amount0)) / 10 ** tokenDecimal[tokens[0]],
-        // amount1: (usdValueOfToken1 * Number(amount1)) / 10 ** tokenDecimal[tokens[1]],
+        amount0: (token0InfoFromUniswap?.lastPriceUSD * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
+        amount1: (token1InfoFromUniswap?.lastPriceUSD * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
 
