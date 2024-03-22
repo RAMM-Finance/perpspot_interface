@@ -3,7 +3,7 @@ import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contra
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { ethers } from 'ethers'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery, TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
+import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useRef } from 'react'
@@ -11,7 +11,6 @@ import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { getDecimalAndUsdValueData, tokenDecimal, usdValue, useDataProviderContract } from './useContract'
-import axios from 'axios'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -29,29 +28,15 @@ interface PoolTVLData {
     volume: number
   }
 }
-// http://localhost:3000/#/tokens/arbitrum
+
 export function usePoolsData(): {
   loading: boolean
   result: PoolTVLData | undefined
   error: boolean
 } {
-  // const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
-  // const [uniquePools, setUniquePools] = useState<any>([])
-  // const [uniqueTokens, setUniqueTokens] = useState<any>()
-  // const [addData, setAddData] = useState<any>()
-  // const [reduceData, setReduceData] = useState<any>()
-  // const [addLiqData, setAddLiqData] = useState<any>()
-  // const [providedData, setProvidedData] = useState<any>()
-  // const [withdrawnData, setWithdrawnData] = useState<any>()
-
-  // const [loading, setLoading] = useState(false)
-  // const [error, setError] = useState<any>()
-
-  // const { account, chainId } = useWeb3React()
-  // const nfpm = useLmtNFTPositionManager()
   const dataProvider = useDataProviderContract()
-  // const referralContract = useReferralContract()
-  const { data, isLoading, isError } = useQuery(
+
+  const { data, isLoading, isError, error } = useQuery(
     ['queryPoolsData', dataProvider ? 'key' : 'missing key'],
     async () => {
       if (!dataProvider) throw Error('missing dataProvider')
@@ -77,15 +62,14 @@ export function usePoolsData(): {
                 ethers.utils.getAddress(token[0]),
                 ethers.utils.getAddress(token[1]),
                 token[2],
-                await getDecimalAndUsdValueData("arbitrum-one", token[0]),
-                await getDecimalAndUsdValueData("arbitrum-one", token[1])
+                await getDecimalAndUsdValueData('arbitrum-one', token[0]),
+                await getDecimalAndUsdValueData('arbitrum-one', token[1]),
               ])
             }
             return { poolAdress: (token[0], token[1], token[2]) }
           } else return null
         })
       )
-      
       return {
         uniquePools: Array.from(pools),
         uniqueTokens: uniqueTokens_,
@@ -102,62 +86,7 @@ export function usePoolsData(): {
     }
   )
 
-  // useEffect(() => {
-  //   if (!client || !AddQuery || loading || error || !referralContract) return
-  //   const call = async () => {
-  //     try {
-  //       setLoading(true)
-
-  //       const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
-  //       const AddQueryData = await client.query(AddQuery, {}).toPromise()
-  //       const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-  //       const ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
-  //       const WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()
-
-  //       const pools = new Set<string>()
-  //       ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
-  //         const pool = ethers.utils.getAddress(entry.pool)
-  //         if (!pools.has(pool)) {
-  //           pools.add(pool)
-  //         }
-  //       })
-
-  //       const uniqueTokens_ = new Map<string, any>()
-  //       const tokens = await Promise.all(
-  //         Array.from(pools).map(async (pool: any) => {
-  //           const token = await dataProvider?.getPoolkeys(pool)
-  //           if (token) {
-  //             const poolAdress = ethers.utils.getAddress(pool)
-  //             if (!uniqueTokens_.has(poolAdress)) {
-  //               uniqueTokens_.set(poolAdress, [
-  //                 ethers.utils.getAddress(token[0]),
-  //                 ethers.utils.getAddress(token[1]),
-  //                 token[2],
-  //               ])
-  //             }
-  //             return { poolAdress: (token[0], token[1], token[2]) }
-  //           } else return null
-  //         })
-  //       )
-
-  //       setProvidedData(ProvidedQueryData?.data.liquidityProvideds)
-  //       setWithdrawnData(WithdrawnQueryData?.data.liquidityWithdrawns)
-  //       setUniqueTokens(uniqueTokens_)
-  //       setUniquePools(Array.from(pools))
-  //       setAddData(AddQueryData.data.marginPositionIncreaseds)
-  //       setReduceData(ReduceQueryData.data.marginPositionReduceds)
-  //       setLoading(false)
-  //     } catch (error) {
-  //       setError(error)
-  //       setLoading(false)
-  //     }
-  //   }
-  //   call()
-  // }, [error, loading, referralContract, dataProvider])
-
   const slot0s = useMultipleContractSingleData(data?.uniquePools ?? [], POOL_STATE_INTERFACE, 'slot0')
-  // const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
-
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
@@ -214,7 +143,7 @@ export function usePoolsData(): {
       }
 
       const tokens = uniqueTokens.get(pool)
-      
+
       // const usdValueOfToken0 = usdValue[tokens[0]]
       // const usdValueOfToken1 = usdValue[tokens[1]]
 
@@ -289,7 +218,7 @@ export function usePoolsData(): {
       TVLDataPerPool[key] -= entry.amount0
       TVLDataPerPool[key] -= entry.amount1
     })
-  // console.log('provideddataprocessed', ProvidedDataProcessed, WithdrawDataProcessed)
+    // console.log('provideddataprocessed', ProvidedDataProcessed, WithdrawDataProcessed)
 
     Object.keys(TVLDataPerPool).forEach((key) => {
       poolToData[key] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }

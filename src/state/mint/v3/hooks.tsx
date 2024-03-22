@@ -511,7 +511,6 @@ export function useDerivedLmtMintInfo(
   feeAmount?: FeeAmount,
   baseCurrency?: Currency,
   quoteCurrency?: Currency,
-  // override for existing position
   existingPosition?: Position
 ): {
   pool?: Pool | null
@@ -653,6 +652,7 @@ export function useDerivedLmtMintInfo(
     [tickDiscretization]
   )
 
+  // console.log('rightRangeTypedValue', invertPrice, leftRangeTypedValue, rightRangeTypedValue)
   // parse typed range values and determine closest ticks
   // lower should always be a smaller tick
   const ticks = useMemo(() => {
@@ -664,8 +664,8 @@ export function useDerivedLmtMintInfo(
             (!invertPrice && typeof leftRangeTypedValue === 'boolean')
           ? tickSpaceLimits[Bound.LOWER]
           : invertPrice
-          ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization)
-          : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization),
+          ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization, true)
+          : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization, true),
       [Bound.UPPER]:
         typeof existingPosition?.tickUpper === 'number'
           ? existingPosition.tickUpper
@@ -866,10 +866,6 @@ export function useDerivedLmtMintInfo(
     errorMessage = errorMessage ?? <Trans>Invalid price input</Trans>
   }
 
-  // if (!parsedAmounts[Field.CURRENCY_A] && !depositADisabled) {
-  //   errorMessage = errorMessage ?? <Trans>Enter an amount</Trans>
-  // }
-
   if (
     (!parsedAmounts[Field.CURRENCY_A] && !depositADisabled) ||
     (!parsedAmounts[Field.CURRENCY_B] && !depositBDisabled)
@@ -878,13 +874,6 @@ export function useDerivedLmtMintInfo(
   }
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts
-  // currencyBalances?.[Field.CURRENCY_A] && console.log('bal', currencyBalances?.[Field.CURRENCY_A]?.quotient.toString())
-  // currencyAAmount &&
-  //   currencyA &&
-  //   console.log(
-  //     'amount',
-  //     currencyAAmount.add(CurrencyAmount.fromRawAmount(currencyA, JSBI.BigInt(0)))?.quotient.toString()
-  //   )
   if (
     currencyA &&
     currencyAAmount &&

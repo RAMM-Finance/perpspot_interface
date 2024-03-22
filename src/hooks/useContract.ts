@@ -18,6 +18,7 @@ import ERC721_ABI from 'abis/erc721.json'
 import ERC1155_ABI from 'abis/erc1155.json'
 import { ArgentWalletDetector, EnsPublicResolver, EnsRegistrar, Erc20, Erc721, Erc1155, Weth } from 'abis/types'
 import WETH_ABI from 'abis/weth.json'
+import axios from 'axios'
 import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
   BRP_ADDRESS,
@@ -38,6 +39,7 @@ import {
   V3_MIGRATOR_ADDRESSES,
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
+import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
@@ -65,9 +67,6 @@ import {
   ReferralSystem,
 } from '../LmtTypes'
 import { getContract } from '../utils'
-import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
-
-import axios from 'axios'
 
 const { abi: IUniswapV2PairABI } = IUniswapV2PairJson
 const { abi: IUniswapV2Router02ABI } = IUniswapV2Router02Json
@@ -81,31 +80,34 @@ const { abi: V2MigratorABI } = V3MigratorJson
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
 export const getDecimalAndUsdValueData = async (network: string, tokenId: string) => {
-  if (network === "arbitrum-one") {
+  if (network === 'arbitrum-one') {
     let res: any = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
-      query: TokenDataFromUniswapQuery(tokenId)
+      query: TokenDataFromUniswapQuery(tokenId),
     })
+
     const token = res?.data?.data?.token
-    if (token.lastPriceUSD === '0' || token.lastPriceUsd === null) {
+
+    if (token?.lastPriceUSD === '0' || token?.lastPriceUsd === null || !token?.lastPriceUsd) {
       try {
-        res = await axios.get(`https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
-        {
-          headers: {
-            Accept: 'application/json',
-            'x-cg-pro-api-key': apiKey,
-          },
-        })
+        res = await axios.get(
+          `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'x-cg-pro-api-key': apiKey,
+            },
+          }
+        )
         const data: any = res?.data
         const usdValues = Object.values(data).map((value: any) => value.usd)
-        
+
         token.lastPriceUSD = usdValues[0].toString()
-      }
-      catch (e) {
-        console.log("COINGECKO ERROR")
+      } catch (e) {
+        console.log('COINGECKO ERROR')
         console.log(e)
       }
     }
-    
+
     return token
   }
 }

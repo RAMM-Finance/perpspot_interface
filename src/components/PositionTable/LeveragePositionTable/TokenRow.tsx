@@ -639,9 +639,7 @@ interface LoadedRowProps {
 //   return `${token0?.toLowerCase()}-${token1?.toLowerCase()}-${fee}`
 // }
 
-export function getPoolId(tokenA?: string, tokenB?: string, fee?: number) {
-  if (!tokenA || !tokenB || !fee) throw new Error('Invalid pool key')
-
+export function getPoolId(tokenA: string, tokenB: string, fee: number) {
   // Check for specific tokens and fee to replace with equivalent tokens from arbitrum
   if (
     tokenA.toLowerCase() === '0x174652b085C32361121D519D788AbF0D9ad1C355'.toLowerCase() &&
@@ -700,17 +698,16 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [margin, totalDebtInput])
 
-  const id = getPoolId(token0Address, token1Address, details?.poolKey.fee)
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
   const handlePoolSelect = useCallback(
     (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      const id = getPoolId(currencyIn.wrapped.address, currencyOut.wrapped.address, fee)
       e.stopPropagation()
       poolId !== id && id && setCurrentPool(id, !details.isToken0)
     },
-    [setCurrentPool, poolId, id, details]
+    [setCurrentPool, poolId, details]
   )
-  console.log(details)
 
   const [
     entryPrice,

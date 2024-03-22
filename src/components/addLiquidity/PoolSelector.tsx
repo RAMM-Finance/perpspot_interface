@@ -20,6 +20,9 @@ import { ThemedText } from 'theme'
 
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
+import { PoolKey } from 'types/lmtv2position'
+import { useCurrency } from 'hooks/Tokens'
+import { getInputOutputCurrencies } from 'constants/pools'
 
 const PoolListHeader = styled.h4`
   font-size: 12px;
@@ -44,19 +47,20 @@ export const PoolSelector = ({
   selectPair,
   setSelectPair,
   fee,
+  inputCurrencyId,
+  outputCurrencyId
 }: {
   largeWidth: boolean
   bg?: boolean
   selectPair?: boolean
   setSelectPair?: Dispatch<SetStateAction<boolean>>
   fee?: number
+  inputCurrencyId?: string // current input id
+  outputCurrencyId?: string // current output id
 }) => {
-  const setCurrentPool = useSetCurrentPool()
 
-  const inputCurrency = useCurrentOutputCurrency()
-  const outputCurrency = useCurrentInputCurrency()
-  const currentPool = useCurrentPool()
-  const poolKey = currentPool?.poolKey
+  const inputCurrency = useCurrency(inputCurrencyId)
+  const outputCurrency = useCurrency(outputCurrencyId)
 
   const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
 
@@ -74,28 +78,22 @@ export const PoolSelector = ({
   if (location.pathname !== '/add/' && setSelectPair) {
     setSelectPair(false)
   }
-  const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee) //`${inputCurrency?.wrapped.address}-${outputCurrency?.wrapped.address}-${fee}`
-  const poolId = currentPool?.poolId
+  const currentId = useMemo(() => {
+    if (inputCurrencyId && outputCurrencyId && fee) {
+      return getPoolId(inputCurrencyId, outputCurrencyId, fee)
+    }
+    return undefined
+  }, [inputCurrencyId, outputCurrencyId, fee])
 
-  const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      if (id && poolId !== id) {
-        if (
-          (currencyIn.symbol === 'LINK' && currencyOut.symbol === 'WETH') ||
-          (currencyIn.symbol === 'WETH' && currencyOut.symbol === 'wBTC') ||
-          (currencyIn.symbol === 'ARB' && currencyOut.symbol === 'WETH') ||
-          (currencyIn.symbol === 'GMX' && currencyOut.symbol === 'WETH')
-        ) {
-          navigate(`/add/${currencyIn.wrapped.address}/${currencyOut.wrapped.address}/${fee}`)
-          const token0 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped) ? currencyIn : currencyOut
-          const token1 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped) ? currencyOut : currencyIn
-          setCurrentPool(id, inputCurrency?.wrapped.address.toLowerCase() === token0.wrapped.address.toLowerCase())
-        } else {
-          navigate(`/add/${currencyOut?.wrapped.address}/${currencyIn?.wrapped?.address}/${fee}`)
-        }
+  const handlePoolSelect = useCallback(
+    (currency0: Currency, currency1: Currency, fee: number) => {
+      const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
+      if (currentId && poolId !== currentId || selectPair && !currentId) {
+        const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
+        navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
       }
     },
-    [setCurrentPool, inputCurrency, navigate, id, poolId]
+    [inputCurrency, navigate, currentId]
   )
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
@@ -122,7 +120,6 @@ export const PoolSelector = ({
   }
 
   useEffect(() => {
-    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
     if (!client || !PoolAddedQuery || loading || error) return
     const call = async () => {
       try {
@@ -182,7 +179,7 @@ export const PoolSelector = ({
       return null
     }
   }, [poolData, data, availablePools])
-  console.log('datainfo', dataInfo)
+
   const dropdown = (
     <NavDropdown
       ref={modalRef}
@@ -205,17 +202,18 @@ export const PoolSelector = ({
           <Column paddingX="8">
             {dataInfo &&
               dataInfo.map((curr: any) => {
+                const id = getPoolId(curr.token0, curr.token1, curr.fee)
                 return (
                   <PoolSelectorRow
                     currencyId={[curr.token0, curr.token1]}
-                    onCurrencySelect={handleCurrencySelect}
+                    onPoolSelect={handlePoolSelect}
                     key={`${curr.token0}-${curr.token1}-${curr.fee}`}
                     fee={curr?.fee}
                     setIsOpen={setIsOpen}
                     setSelectPair={setSelectPair}
-                    selectPair={selectPair}
                     tvl={curr.tvl}
                     volume={curr.volume}
+                    active={currentId === id}
                   />
                 )
               })}
@@ -270,7 +268,6 @@ export const PoolSelector = ({
               >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
             </Row>
             <Row gap="8">
-              {/*<ThemedText.BodySmall>All Markets</ThemedText.BodySmall>*/}
               {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
             </Row>
           </>

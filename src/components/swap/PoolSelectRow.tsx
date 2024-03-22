@@ -85,24 +85,6 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
     })
   }, [chainId, pool])
   const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
-  // const priceData = undefined as any
-  // const token0Decimals = pool?.token0?.decimals
-  // const token1Decimals = pool?.token1?.decimals
-  // const { provider } = useWeb3React()
-  // const { data: token0Price } = useQuery(
-  //   ['currentPrice', poolAddress, token0Decimals, token1Decimals],
-  //   async () => {
-  //     if (!poolAddress) throw new Error('No pool address')
-  //     if (!token1Decimals) throw new Error('No token1 decimals')
-  //     if (!token0Decimals) throw new Error('No token0 decimals')
-  //     if (!provider) throw new Error('provider')
-  //     return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
-  //   },
-  //   {
-  //     keepPreviousData: true,
-  //     refetchInterval: 1000 * 20,
-  //   }
-  // )
 
   const [currentPrice, delta] = useMemo(() => {
     if (!priceData || !pool) return [undefined, undefined]

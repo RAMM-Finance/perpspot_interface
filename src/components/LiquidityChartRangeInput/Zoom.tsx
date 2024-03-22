@@ -117,14 +117,14 @@ export default function Zoom({
           }}
           disabled={false}
         >
-          <RefreshCcw size={13} />
+          <RefreshCcw size={16} />
         </Button>
       )}
       <Button onClick={zoomIn} disabled={false}>
-        <ZoomIn size={13} />
+        <ZoomIn size={16} />
       </Button>
       <Button onClick={zoomOut} disabled={false}>
-        <ZoomOut size={13} />
+        <ZoomOut size={16} />
       </Button>
     </Wrapper>
   )

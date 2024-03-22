@@ -352,6 +352,13 @@ export function useDerivedAddPositionInfo(
     premiumInPosToken,
   ])
 
+  console.log(
+    'tradeApprovalInfo',
+    tradeApprovalInfo?.additionalPremium.toExact(),
+    tradeApprovalInfo?.inputApprovalAmount.toExact(),
+    tradeApprovalInfo?.outputApprovalAmount.toExact()
+  )
+
   const { chainId } = useWeb3React()
 
   const [inputApprovalState] = useApproveCallback(

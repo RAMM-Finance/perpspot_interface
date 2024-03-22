@@ -69,7 +69,8 @@ export function tryParseLmtTick(
   quoteToken?: Token,
   feeAmount?: FeeAmount,
   value?: string,
-  tickSpacing?: number
+  tickSpacing?: number,
+  isLeft?: boolean
 ): number | undefined {
   if (!baseToken || !quoteToken || !feeAmount || !value) {
     return undefined
@@ -93,6 +94,11 @@ export function tryParseLmtTick(
   } else {
     // this function is agnostic to the base, will always return the correct tick
     tick = priceToClosestTick(price)
+  }
+
+  if (isLeft) {
+    console.log('ticks:parse', value, tick, nearestUsableTick(tick, tickSpacing), price)
+  } else {
   }
 
   return nearestUsableTick(tick, tickSpacing)

@@ -190,6 +190,7 @@
     "array.prototype.flatmap": "^1.2.4",
     "axios": "^1.6.5",
     "babel-plugin-istanbul": "^6.1.1",
+    "bignumber.js": "^9.1.2",
     "cids": "^1.0.0",
     "clsx": "^1.1.1",
     "copy-to-clipboard": "^3.2.0",
