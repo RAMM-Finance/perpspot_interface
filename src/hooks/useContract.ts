@@ -84,8 +84,10 @@ export const getDecimalAndUsdValueData = async (network: string, tokenId: string
     let res: any = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
       query: TokenDataFromUniswapQuery(tokenId),
     })
-    const token = res?.data?.data?.token ?? { lastPriceUSD: '0' }
-    if (token?.lastPriceUSD === '0' || token?.lastPriceUsd === null || !token?.lastPriceUsd) {
+
+    const token = res?.data?.data?.token
+
+    if (token?.lastPriceUSD === '0' || token?.lastPriceUSD === null || !token?.lastPriceUSD) {
       try {
         res = await axios.get(
           `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
