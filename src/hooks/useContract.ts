@@ -86,8 +86,9 @@ export const getDecimalAndUsdValueData = async (network: string, tokenId: string
     })
 
     const token = res?.data?.data?.token
+    console.log(token)
 
-    if (token?.lastPriceUSD === '0' || token?.lastPriceUsd === null || !token?.lastPriceUsd) {
+    if (token?.lastPriceUSD === '0' || token?.lastPriceUSD === null || !token?.lastPriceUSD) {
       try {
         res = await axios.get(
           `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,

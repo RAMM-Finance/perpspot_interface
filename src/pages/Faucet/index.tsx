@@ -2,7 +2,7 @@ import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { SupportedChainId } from 'constants/chains'
-import { FakeTokens_MUMBAI, FakeTokens_SEPOLIA } from 'constants/fake-tokens'
+import { FakeTokens_MUMBAI, FakeTokens_SEPOLIA, USDC_BERA, WETH_BERA } from 'constants/fake-tokens'
 import { useFaucetCallback } from 'hooks/useApproveCallback'
 import { MaxButton } from 'pages/Pool/styleds'
 import { useEffect, useState } from 'react'
@@ -107,11 +107,12 @@ export default function FaucetsPage() {
 
   const [isHolder, setHolder] = useState<boolean>()
 
-  const FakeTokens = chainId === SupportedChainId.SEPOLIA ? FakeTokens_SEPOLIA : FakeTokens_MUMBAI
+  // const FakeTokens = chainId === SupportedChainId.SEPOLIA ? FakeTokens_SEPOLIA : FakeTokens_MUMBAI
+  const Tokens = chainId === SupportedChainId.BERA_ARTIO ? [USDC_BERA, WETH_BERA] : []
 
   useEffect(() => {
     const getBeacon = async () => {
-      if (account && provider && chainId === SupportedChainId.SEPOLIA) {
+      if (account && provider && chainId === SupportedChainId.BERA_ARTIO) {
         try {
           const result = await fetch(`https://beacon.degenscore.com/v1/beacon/${account.toLowerCase()}`)
           setHolder(result.status === 200)
@@ -135,14 +136,18 @@ export default function FaucetsPage() {
         {account &&
           provider &&
           isHolder &&
-          chainId === SupportedChainId.SEPOLIA &&
-          FakeTokens.map((token, i) => {
+          // chainId === SupportedChainId.SEPOLIA &&
+          chainId === SupportedChainId.BERA_ARTIO &&
+          Tokens.map((token, i) => {
+            // return <div>Hi</div>
             return <Faucet key={i} token={token} />
           })}
         {!account || !provider ? (
           <ThemedText.DeprecatedLargeHeader>Connect Account</ThemedText.DeprecatedLargeHeader>
-        ) : chainId !== SupportedChainId.SEPOLIA ? (
-          <ThemedText.DeprecatedLargeHeader>Connect to Sepolia</ThemedText.DeprecatedLargeHeader>
+        // ) : chainId !== SupportedChainId.SEPOLIA ? (
+        //   <ThemedText.DeprecatedLargeHeader>Connect to Sepolia</ThemedText.DeprecatedLargeHeader>
+        ) : chainId !== SupportedChainId.BERA_ARTIO ? (
+          <ThemedText.DeprecatedLargeHeader>Connect to Bera Artio</ThemedText.DeprecatedLargeHeader>
         ) : isHolder === false ? (
           <ThemedText.DeprecatedLargeHeader>Must be Beacon Owner...</ThemedText.DeprecatedLargeHeader>
         ) : null}

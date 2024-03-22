@@ -23,6 +23,7 @@ import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.sv
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
+import { SupportedChainId } from 'constants/chains'
 
 const Nav = styled.nav`
   /* padding: 10px 12px; */
@@ -99,9 +100,11 @@ export const PageTabs = () => {
         <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
           <Trans>Earn</Trans>
         </MenuItem>
-        {/*<MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
+        {connectedChainId == SupportedChainId.BERA_ARTIO ? (
+        <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
           <Trans>Faucets</Trans>
-        </MenuItem>*/}
+        </MenuItem>
+        ) : null}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
           <Trans>LMT</Trans>
         </MenuItem>
