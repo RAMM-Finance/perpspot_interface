@@ -100,6 +100,8 @@ const GenesisAddressses = [
   '0xd8dc994FE2b075c697e5051c89b713Bf15fa9294',
   '0x6ED0B92553d2be567d0b1245aE4e66cBd1ADe51f',
   '0x5c87aa10cd753ebf828ad352aef786e289065a57',
+  // test
+  '0xA739E6DD6DA9C18c18Ca06781DC266Fc702C10c1'
 ]
 
 export default function FaucetsPage() {
@@ -163,6 +165,9 @@ const Faucet = ({ token }: { token: Token }) => {
     <AutoColumn>
       <MaxButton width="100px" onClick={onClick}>
         Faucet {token.symbol}
+        <br />
+        <br />
+        {token.address}
       </MaxButton>
     </AutoColumn>
   )
