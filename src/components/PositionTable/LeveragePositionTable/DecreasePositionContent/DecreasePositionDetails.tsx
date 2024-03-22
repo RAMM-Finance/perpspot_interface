@@ -62,9 +62,11 @@ export function DecreasePositionDetails({
   existingPosition,
   allowedSlippage,
   removePremium,
+  outputCurrency,
 }: {
   txnInfo?: DerivedReducePositionInfo
   inputCurrency?: Currency
+  outputCurrency?: Currency
   loading: boolean
   existingPosition?: MarginPositionDetails
   allowedSlippage: Percent
@@ -87,6 +89,8 @@ export function DecreasePositionDetails({
     return txnInfo?.PnL.minus(existingPosition?.premiumOwed)
   }, [txnInfo, existingPosition])
 
+  console.log('in', inputCurrency)
+  console.log(outputCurrency)
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">
@@ -101,16 +105,31 @@ export function DecreasePositionDetails({
           <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
             <ThemedText.BodySmall textAlign="right" color="textSecondary">
               <TruncatedText>
-                <DeltaText delta={Number(PnLWithPremiums)}>
-                  {txnInfo
-                    ? `(${(
-                        (Number(PnLWithPremiums?.toNumber()) / Number(existingPosition?.margin.toNumber())) *
-                        100
-                      ).toFixed(2)}%) ${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)}  ${
-                        inputCurrency?.symbol
-                      }`
-                    : '-'}
-                </DeltaText>
+                {existingPosition?.marginInPosToken ? (
+                  <DeltaText delta={Number(PnLWithPremiums)}>
+                    {txnInfo && PnLWithPremiums
+                      ? `(${(
+                          ((Number(PnLWithPremiums.toNumber()) * Number(`1e${outputCurrency?.decimals}`)) /
+                            Number(existingPosition?.margin.toNumber())) *
+                          100
+                        ).toFixed(2)}%) ${formatBNToString(
+                          PnLWithPremiums.times(Number(`1e${outputCurrency?.decimals}`)),
+                          NumberType.SwapTradeAmount
+                        )}  ${existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`
+                      : '-'}
+                  </DeltaText>
+                ) : (
+                  <DeltaText delta={Number(PnLWithPremiums)}>
+                    {txnInfo && PnLWithPremiums
+                      ? `(${(
+                          (Number(PnLWithPremiums.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                          100
+                        ).toFixed(2)}%) ${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)}  ${
+                          existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol
+                        }`
+                      : '-'}
+                  </DeltaText>
+                )}
               </TruncatedText>
             </ThemedText.BodySmall>
           </TextWithLoadingPlaceholder>
@@ -126,16 +145,32 @@ export function DecreasePositionDetails({
           <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
             <ThemedText.BodySmall textAlign="right" color="textSecondary">
               <TruncatedText>
-                <DeltaText delta={Number(txnInfo?.PnL)}>
-                  {txnInfo
-                    ? `(${(
-                        (Number(txnInfo?.PnL.toNumber()) / Number(existingPosition?.margin.toNumber())) *
-                        100
-                      ).toFixed(2)}%) ${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)}  ${
-                        inputCurrency?.symbol
-                      }`
-                    : '-'}
-                </DeltaText>
+                {existingPosition?.marginInPosToken ? (
+                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                    {txnInfo && inputCurrency && outputCurrency
+                      ? `(${(
+                          ((Number(txnInfo?.PnL.toNumber()) *
+                            Number(`1e${inputCurrency?.decimals - outputCurrency?.decimals}`)) /
+                            Number(existingPosition?.margin.toNumber())) *
+                          100
+                        ).toFixed(2)}%) ${formatBNToString(
+                          txnInfo?.PnL.times(Number(`1e${inputCurrency?.decimals - outputCurrency?.decimals}`)),
+                          NumberType.SwapTradeAmount
+                        )}  ${existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`
+                      : '-'}
+                  </DeltaText>
+                ) : (
+                  <DeltaText delta={Number(txnInfo?.PnL)}>
+                    {txnInfo
+                      ? `(${(
+                          (Number(txnInfo?.PnL.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                          100
+                        ).toFixed(2)}%) ${formatBNToString(txnInfo?.PnL, NumberType.SwapTradeAmount)}  ${
+                          existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol
+                        }`
+                      : '-'}
+                  </DeltaText>
+                )}
               </TruncatedText>
             </ThemedText.BodySmall>
           </TextWithLoadingPlaceholder>
@@ -145,8 +180,15 @@ export function DecreasePositionDetails({
             label="Returned Deposit"
             description="Position will automatically withdraw your remaining 
               premium deposit and refund you."
-            value={formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)}
-            symbolAppend={inputCurrency?.symbol}
+            value={
+              existingPosition?.marginInPosToken
+                ? formatBNToString(
+                    txnInfo?.withdrawnPremium.times(Number(`1e${outputCurrency?.decimals}`)),
+                    NumberType.SwapTradeAmount
+                  )
+                : formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)
+            }
+            symbolAppend={existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
             syncing={loading}
             height="14px"
           />
@@ -159,7 +201,7 @@ export function DecreasePositionDetails({
               : 'What you recieve is your reduced margin + PnL + returned deposit'
           }
           value={formatBNToString(receiveAmount, NumberType.SwapTradeAmount)}
-          symbolAppend={inputCurrency?.symbol}
+          symbolAppend={existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
           syncing={loading}
           height="14px"
         />
