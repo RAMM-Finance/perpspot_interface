@@ -352,13 +352,6 @@ export function useDerivedAddPositionInfo(
     premiumInPosToken,
   ])
 
-  // console.log(
-  //   'tradeApprovalInfo',
-  //   tradeApprovalInfo?.additionalPremium.toExact(),
-  //   tradeApprovalInfo?.inputApprovalAmount.toExact(),
-  //   tradeApprovalInfo?.outputApprovalAmount.toExact()
-  // )
-
   const { chainId } = useWeb3React()
 
   const [inputApprovalState] = useApproveCallback(
@@ -401,6 +394,10 @@ export function useDerivedAddPositionInfo(
 
     if (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) {
       inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
+    }
+
+    if (existingPosition && existingPosition.marginInPosToken !== marginInPosToken) {
+      inputError = inputError ?? <Trans>Existing Position uses a different margin</Trans>
     }
 
     // compare input balance to max input based on version
