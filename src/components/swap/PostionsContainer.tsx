@@ -1,9 +1,8 @@
+import { PremiumTable } from 'components/OrdersTable/PremiumTable'
 import { OrdersTable } from 'components/OrdersTable/TokenTable'
-import {PremiumTable} from 'components/OrdersTable/PremiumTable'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TabContent, TabNavItem } from 'components/Tabs'
-import { ActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/ActivityTab'
-import {LimitActivityTab} from 'components/WalletDropdown/MiniPortfolio/Activity/LimitActivityTab'
+import { LimitActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/LimitActivityTab'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
@@ -84,12 +83,11 @@ export function PostionsContainer({
             History
           </TabNavItem>*/}
           <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-            Unclaimed Premiums 
+            Unclaimed Premiums
           </TabNavItem>
           <TabNavItem id={4} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             Activities
           </TabNavItem>
-
         </TabsWrapper>
         {/* {activePositionTable === 1 && <LeverageSearchBar />} */}
       </TableHeader>
@@ -122,7 +120,7 @@ export function PostionsContainer({
           </ActivityWrapper>
         ) : (
           <ActivityWrapper>
-              <LimitActivityTab account={account} />
+            <LimitActivityTab account={account} />
           </ActivityWrapper>
         )}
       </TabContent>
