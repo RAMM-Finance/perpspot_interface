@@ -20,10 +20,10 @@ import { ThemedText } from '../../theme'
 import { BaseButton, ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
+import { StyledDropdown, TokenItem } from '../PremiumCurrencySelector/index'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
-import { StyledDropdown, TokenItem } from '../PremiumCurrencySelector/index' 
 
 const WalletBalance = styled.div`
   display: flex;
@@ -511,6 +511,7 @@ interface MarginSelectPanelProps {
   showPremium?: boolean
   premium?: CurrencyAmount<Currency>
   marginInPosToken: boolean
+  existingPosition?: boolean
   onMarginTokenChange?: () => void
 }
 
@@ -533,9 +534,9 @@ export function MarginSelectPanel({
   loading = false,
   onMarginTokenChange,
   marginInPosToken,
+  existingPosition,
   ...rest
 }: MarginSelectPanelProps) {
-  // const [modalOpen, setModalOpen] = useState(false)
   const { account, chainId } = useWeb3React()
 
   const chainAllowed = isSupportedChain(chainId)
@@ -576,14 +577,28 @@ export function MarginSelectPanel({
                 label="label"
               />
             )}
-            <CurrencySelect
-              disabled={!chainAllowed}
-              visible={currency !== undefined}
-              selected={!!currency}
-              hideInput={hideInput}
-              className="open-currency-select-button"
-              onClick={handleClick}
-            >
+            {!existingPosition ? (
+              <CurrencySelect
+                disabled={!chainAllowed}
+                visible={currency !== undefined}
+                selected={!!currency}
+                hideInput={hideInput}
+                className="open-currency-select-button"
+                onClick={handleClick}
+              >
+                <RowFixed>
+                  <CurrencyLogo currency={currency} size="15px" />
+                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : currency?.symbol) || <Trans>Select token</Trans>}
+                  </StyledTokenName>
+                  {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
+                </RowFixed>
+              </CurrencySelect>
+            ) : (
               <RowFixed>
                 <CurrencyLogo currency={currency} size="15px" />
                 <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
@@ -591,11 +606,10 @@ export function MarginSelectPanel({
                     ? currency.symbol.slice(0, 4) +
                       '...' +
                       currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                    : currency?.symbol) || <Trans>Select token</Trans>}
+                    : currency?.symbol) || null}
                 </StyledTokenName>
-                {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
               </RowFixed>
-            </CurrencySelect>
+            )}
           </InputRow>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
