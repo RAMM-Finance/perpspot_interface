@@ -5,8 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import Row, { RowBetween, RowFixed } from 'components/Row'
+import Row, { RowBetween } from 'components/Row'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
@@ -67,7 +66,7 @@ const StyledTokenRow = styled.div<{
   font-size: 12px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
   /* min-width: 390px; */
@@ -725,8 +724,19 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       const _entryPrice = _position.entryPrice()
       const _currentPrice = new BN(pool.token0Price.toFixed(18))
 
-      if (_entryPrice.isLessThan(1)) {
-        if (details.marginInPosToken) {
+      if (details.marginInPosToken) {
+        if (_entryPrice.isLessThan(1) && _currentPrice.isLessThan(1)) {
+          return [
+            new BN(1).div(_entryPrice),
+            new BN(1).div(_currentPrice),
+            pool.token1,
+            pool.token0,
+            _position,
+            _position.premiumLeft.plus(_position.premiumOwed),
+            _entryPrice,
+            _currentPrice,
+          ]
+        } else if (_entryPrice.isLessThan(1) && _currentPrice.isGreaterThan(1)) {
           return [
             new BN(1).div(_entryPrice),
             _currentPrice,
@@ -736,43 +746,52 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             _position.premiumLeft.plus(_position.premiumOwed),
             _entryPrice,
             new BN(1).div(_currentPrice),
+          ]
+        } else if (_entryPrice.isGreaterThan(1) && _currentPrice.isLessThan(1)) {
+          return [
+            _entryPrice,
+            new BN(1).div(_currentPrice),
+            pool.token1,
+            pool.token0,
+            _position,
+            _position.premiumLeft.plus(_position.premiumOwed),
+            new BN(1).div(_entryPrice),
+            _currentPrice,
           ]
         } else {
           return [
-            new BN(1).div(_entryPrice),
-            new BN(1).div(_currentPrice),
+            _entryPrice,
+            _currentPrice,
             pool.token1,
             pool.token0,
             _position,
             _position.premiumLeft.plus(_position.premiumOwed),
-            _entryPrice,
-            _currentPrice,
+            new BN(1).div(_entryPrice),
+            new BN(1).div(_currentPrice),
           ]
         }
+      } else if (_entryPrice.isLessThan(1)) {
+        return [
+          new BN(1).div(_entryPrice),
+          new BN(1).div(_currentPrice),
+          pool.token1,
+          pool.token0,
+          _position,
+          _position.premiumLeft.plus(_position.premiumOwed),
+          _entryPrice,
+          _currentPrice,
+        ]
       } else {
-        if (details.marginInPosToken) {
-          return [
-            _entryPrice,
-            new BN(1).div(_currentPrice),
-            pool.token0,
-            pool.token1,
-            _position,
-            _position.premiumLeft.plus(_position.premiumOwed),
-            new BN(1).div(_entryPrice),
-            _currentPrice,
-          ]
-        } else {
-          return [
-            _entryPrice,
-            _currentPrice,
-            pool.token0,
-            pool.token1,
-            _position,
-            _position.premiumLeft.plus(_position.premiumOwed),
-            new BN(1).div(_entryPrice),
-            new BN(1).div(_currentPrice),
-          ]
-        }
+        return [
+          _entryPrice,
+          _currentPrice,
+          pool.token0,
+          pool.token1,
+          _position,
+          _position.premiumLeft.plus(_position.premiumOwed),
+          new BN(1).div(_entryPrice),
+          new BN(1).div(_currentPrice),
+        ]
       }
     } else {
       return [undefined, undefined, undefined]
@@ -864,7 +883,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 <PositionInfo>
                   <GreenText>
                     {' '}
-                    x{`${Math.round(leverageFactor * 1000) / 1000} ${position?.outputCurrency.symbol}`}
+                    x
+                    {`${Math.round(leverageFactor * 1000) / 1000} ${position?.outputCurrency.symbol} / ${
+                      position.inputCurrency.symbol
+                    }`}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -873,24 +895,19 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <span>{`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}</span>{' '}
-                <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                  {position?.outputCurrency?.symbol}/ <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                  {position?.inputCurrency?.symbol}
-                </RowFixed>
+                <span>
+                  {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}{' '}
+                  {position?.outputCurrency?.symbol}
+                </span>
               </AutoColumn>
             </FlexStartRow>
           }
           collateral={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
-                <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                  {position?.outputCurrency?.symbol}/ <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                  {position?.inputCurrency?.symbol}
-                </RowFixed>
+                <span>
+                  {formatBNToString(position?.margin, NumberType.SwapTradeAmount)} {position?.outputCurrency?.symbol}
+                </span>
               </AutoColumn>
             </FlexStartRow>
           }
@@ -955,12 +972,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                             100
                           ).toFixed(2)} %)`}
                       </DeltaText>
-                      <RowFixed>
-                        <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                        {position?.outputCurrency?.symbol}/{' '}
-                        <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                        {position?.inputCurrency?.symbol}
-                      </RowFixed>
+                      {' ' + position?.outputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 ) : (
@@ -973,12 +985,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                         {position &&
                           `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
                       </DeltaText>
-                      <RowFixed>
-                        <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                        {position?.inputCurrency?.symbol}/{' '}
-                        <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                        {position?.outputCurrency?.symbol}
-                      </RowFixed>
+                      {' ' + position?.inputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 )}
@@ -1029,12 +1036,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                           {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
                         </GreenText>
                       </UnderlineText>
-                      <RowFixed>
-                        <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                        {position?.inputCurrency?.symbol}/{' '}
-                        <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                        {position?.outputCurrency?.symbol}
-                      </RowFixed>
+                      {position?.inputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 ) : (

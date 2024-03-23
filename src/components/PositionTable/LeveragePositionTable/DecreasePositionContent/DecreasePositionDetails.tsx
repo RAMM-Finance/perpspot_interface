@@ -103,31 +103,29 @@ export function DecreasePositionDetails({
           <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
             <ThemedText.BodySmall textAlign="right" color="textSecondary">
               <TruncatedText>
-                {existingPosition?.marginInPosToken ? (
+                {/* {existingPosition?.marginInPosToken ? (
                   <DeltaText delta={Number(PnLWithPremiums)}>
                     {txnInfo && PnLWithPremiums
                       ? `(${(
-                          ((Number(PnLWithPremiums.toNumber()) * Number(`1e${outputCurrency?.decimals}`)) /
-                            Number(existingPosition?.margin.toNumber())) *
+                          (Number(PnLWithPremiums.times(3325)) / Number(existingPosition?.margin.toNumber())) *
                           100
-                        ).toFixed(2)}%) ${formatBNToString(
-                          PnLWithPremiums.times(Number(`1e${outputCurrency?.decimals}`)),
-                          NumberType.SwapTradeAmount
-                        )}  ${existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`
-                      : '-'}
-                  </DeltaText>
-                ) : (
-                  <DeltaText delta={Number(PnLWithPremiums)}>
-                    {txnInfo && PnLWithPremiums
-                      ? `(${(
-                          (Number(PnLWithPremiums.toNumber()) / Number(existingPosition?.margin.toNumber())) *
-                          100
-                        ).toFixed(2)}%) ${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)}  ${
+                        ).toFixed(2)}%) ${formatBNToString(PnLWithPremiums.times(3325), NumberType.SwapTradeAmount)}  ${
                           existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol
                         }`
                       : '-'}
                   </DeltaText>
-                )}
+                ) : ( */}
+                <DeltaText delta={Number(PnLWithPremiums)}>
+                  {txnInfo && PnLWithPremiums
+                    ? `(${(
+                        (Number(PnLWithPremiums.toNumber()) / Number(existingPosition?.margin.toNumber())) *
+                        100
+                      ).toFixed(2)}%) ${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)}  ${
+                        existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol
+                      }`
+                    : '-'}
+                </DeltaText>
+                {/* )} */}
               </TruncatedText>
             </ThemedText.BodySmall>
           </TextWithLoadingPlaceholder>
