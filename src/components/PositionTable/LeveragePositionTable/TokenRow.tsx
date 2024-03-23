@@ -5,7 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
-import Row, { RowBetween } from 'components/Row'
+import Row, { RowBetween, RowFixed } from 'components/Row'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
@@ -24,6 +24,8 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
+
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -89,6 +91,7 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: 1400px) {
     grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px;
+    /* grid-template-columns: 120px 110px 100px 100px 105px 120px 110px 80px; */
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -770,20 +773,22 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <span>
+                <RowFixed>
+                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
                   {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}{' '}
                   {position?.outputCurrency?.symbol}
-                </span>
+                </RowFixed>
               </AutoColumn>
             </FlexStartRow>
           }
           collateral={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <span>
-                  {formatBNToString(position?.margin, NumberType.SwapTradeAmount)}{' '}
-                  {position?.marginInPosToken ? position?.outputCurrency?.symbol : position?.inputCurrency?.symbol}
-                </span>
+                <RowFixed>
+                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
+                  {formatBNToString(position?.margin, NumberType.SwapTradeAmount)}
+                  {position?.outputCurrency?.symbol}
+                </RowFixed>
               </AutoColumn>
             </FlexStartRow>
           }

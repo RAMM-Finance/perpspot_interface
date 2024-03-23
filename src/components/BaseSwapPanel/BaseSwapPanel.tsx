@@ -11,7 +11,6 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
-import * as React from 'react'
 import { ChevronDown, ChevronUp, Lock } from 'react-feather'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
@@ -24,6 +23,7 @@ import { Input as NumericalInput } from '../NumericalInput'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
+import { StyledDropdown, TokenItem } from '../PremiumCurrencySelector/index' 
 
 const WalletBalance = styled.div`
   display: flex;
