@@ -155,10 +155,8 @@ const MainWrapper = styled.article`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1.6fr 0.6fr 360px;
-  /* grid-template-rows: 7vh 50vh 25vh; */
-  /* grid-gap: 0.75rem; */
-  /* margin-bottom: 0.75rem; */
+  grid-template-columns: 1.6fr 0.6fr 365px;
+
   margin-top: 0.75rem;
   grid-template-rows: 0 50vh 30vh;
   grid-column-gap: 0.75rem;

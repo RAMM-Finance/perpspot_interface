@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import Menu from '@mui/material/Menu'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
 import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
@@ -130,7 +129,8 @@ const MarginSelect = styled(ButtonGray)<{
   border-radius: 8px;
   outline: none;
   user-select: none;
-  border: ${({ selected, theme }) => (selected ? `2px solid ${theme.accentSuccessSoft}` : 'none')};
+  border: ${({ selected, theme }) =>
+    selected ? `1.25px solid ${theme.accentActiveSoft}` : `1.25px solid ${theme.surface1}`};
   font-size: 24px;
   font-weight: 400;
   background-color: transparent;
@@ -490,26 +490,16 @@ export function BaseSwapPanel({
   )
 }
 
-const StyledDropdown = styled(Menu)``
-
-const TokenItem = styled.div`
-  background: transparent;
-  &:hover {
-    cursor: pointer;
-  }
-`
 interface MarginSelectPanelProps {
   value: string
   onUserInput: (value: string) => void
   onMax?: () => void
   showMaxButton: boolean
   onCurrencySelect?: (currency: Currency) => void
-  // currency?: Currency | null
   inputCurrency?: Currency | null
   outputCurrency?: Currency | null
   hideBalance?: boolean
   hideInput?: boolean
-  // otherCurrency?: Currency | null
   fiatValue: { data?: number; isLoading: boolean }
   priceImpact?: Percent
   id: string

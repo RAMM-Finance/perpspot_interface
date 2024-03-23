@@ -16,11 +16,9 @@ import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { Link } from 'react-router-dom'
 import { Box } from 'rebass'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
@@ -28,12 +26,7 @@ import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
 
-import {
-  LARGE_MEDIA_BREAKPOINT,
-  MAX_WIDTH_MEDIA_BREAKPOINT,
-  MEDIUM_MEDIA_BREAKPOINT,
-  SMALL_MEDIA_BREAKPOINT,
-} from './constants'
+import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
@@ -69,8 +62,6 @@ const StyledTokenRow = styled.div<{
   grid-column-gap: 0.5rem;
   grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
-  /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
-  /* min-width: 390px; */
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
     padding-top: ${first ? '8px' : '0px'};
@@ -100,19 +91,6 @@ const StyledTokenRow = styled.div<{
   @media only screen and (max-width: 1400px) {
     grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px;
   }
-
-  /* @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
-  }
-
-  /*
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.5fr;
-  }
-
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 0.9fr 0.9fr;
-  } */
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: grid;
@@ -259,21 +237,6 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
     ${ClickableStyle}
   }
 `
-const SparkLineCell = styled(Cell)`
-  padding: 0px 24px;
-  min-width: 120px;
-
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const SparkLine = styled(Cell)`
-  width: 124px;
-  height: 42px;
-`
-const StyledLink = styled(Link)`
-  text-decoration: none;
-`
 
 const StyledLoadedRow = styled.div`
   text-decoration: none;
@@ -282,56 +245,7 @@ const StyledLoadedRow = styled.div`
   width: 100%;
   /* min-width: 700px; */
 `
-const TokenInfoCell = styled(Cell)`
-  gap: 8px;
-  line-height: 24px;
-  font-size: 16px;
-  max-width: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    justify-content: flex-start;
-    flex-direction: column;
-    gap: 0px;
-    width: max-content;
-    font-weight: 500;
-  }
-`
-const TokenName = styled.div`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-`
-const TokenSymbol = styled(Cell)`
-  color: ${({ theme }) => theme.textTertiary};
-  text-transform: uppercase;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    font-size: 12px;
-    height: 16px;
-    justify-content: flex-start;
-    width: 100%;
-  }
-`
-const VolumeCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const RepaymentTimeCell = styled(DataCell)`
-  padding-right: 8px;
-  @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-
-const SmallLoadingBubble = styled(LoadingBubble)`
-  width: 25%;
-`
 const MediumLoadingBubble = styled(LoadingBubble)`
   width: 65%;
 `
@@ -357,34 +271,6 @@ const PositionInfo = styled(AutoColumn)`
   margin-left: 8px;
 `
 
-const ResponsiveButtonPrimary = styled(SmallMaxButton)`
-  border-radius: 12px;
-  font-size: 13px;
-  padding: 3px 4px;
-  width: fit-content;
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    flex: 1 1 auto;
-    width: 100%;
-  `};
-`
-
-const InvertBtn = styled.button`
-  color: ${({ theme }) => theme.textTertiary};
-  font-weight: 500;
-  font-size: 14px;
-  padding: 0 10px 5px 4px;
-  display: inline;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-`
-
-// const ActionsContainer = styled(AutoColumn)`
-//   align-items: center;
-//   display: flex;
-//   justify-content: center;
-// `
-
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.VALUE]: (
     <Trans>
@@ -407,13 +293,6 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
     </Trans>
   ),
   [PositionSortMethod.ACTIONS]: '',
-  // [PositionSortMethod.ACTIONS]: <Trans>(Reduce): reduce position size (Pay): pay premium</Trans>,
-  // [PositionSortMethod.RECENT_PREMIUM]: (
-  //   <Trans>Recent Premium (Total Premium Paid)</Trans>
-  // ),
-  // [PositionSortMethod.UNUSED_PREMIUM]: (
-  //   <Trans>Unused Premium Description</Trans>
-  // )
 }
 
 const SortingEnabled = {
@@ -498,7 +377,6 @@ function PositionRow({
   const [selectedTab, setSelectedTab] = useState<TradeModalActiveTab>()
   const [showModal, setShowModal] = useState(false)
 
-  // const collateral = (totalLiquidity - totalDebt)
   const handleConfirmDismiss = () => {
     setShowReduce(false)
   }
@@ -553,7 +431,6 @@ function PositionRow({
       <ActionCell data-testid="action-cell" sortable={header}>
         {actions}
       </ActionCell>
-      {/* <SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
   )
 
@@ -779,8 +656,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
   }, [pool, details])
 
-  // console.log(position, '----position-----')
-
   const { result: rate } = useInstantaeneousRate(
     position?.pool?.token0?.address,
     position?.pool?.token1?.address,
@@ -887,9 +762,16 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <AutoColumn gap="2px">
                 <span>{formatBNToString(position?.margin, NumberType.SwapTradeAmount)}</span>
                 <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                  {position?.outputCurrency?.symbol}/ <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                  {position?.inputCurrency?.symbol}
+                  {position.marginInPosToken ? (
+                    <>
+                      <CurrencyLogo currency={position?.outputCurrency} size="10px" />{' '}
+                      {position?.outputCurrency?.symbol}
+                    </>
+                  ) : (
+                    <>
+                      <CurrencyLogo currency={position?.inputCurrency} size="10px" /> {position?.inputCurrency?.symbol}
+                    </>
+                  )}
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -1031,9 +913,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                       </UnderlineText>
                       <RowFixed>
                         <CurrencyLogo currency={position?.inputCurrency} size="10px" />
-                        {position?.inputCurrency?.symbol}/{' '}
-                        <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                        {position?.outputCurrency?.symbol}
+                        {position?.inputCurrency?.symbol}
                       </RowFixed>
                     </div>
                   </AutoColumn>

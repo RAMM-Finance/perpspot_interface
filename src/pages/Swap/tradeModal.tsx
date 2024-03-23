@@ -80,9 +80,6 @@ const Wrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: 365px;
-  /* width: 100%; */
-  /* min-width: 360px; */
-  /* // height: 50rem; */
   ::-webkit-scrollbar {
     display: none;
   }
@@ -685,7 +682,6 @@ const TradeTabContent = () => {
               onMax={handleMaxInput}
               fiatValue={fiatValueTradeMargin}
               outputCurrency={currencies[Field.OUTPUT] ?? null}
-              // showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
               premium={tradeApprovalInfo?.additionalPremium}
@@ -695,25 +691,6 @@ const TradeTabContent = () => {
             />
           </Trace>
         </InputSection>
-        {/*<ArrowWrapper clickable={isSupportedChain(chainId)}>
-          <TraceEvent
-            events={[BrowserEvent.onClick]}
-            name={SwapEventName.SWAP_TOKENS_REVERSED}
-            element={InterfaceElementName.SWAP_TOKENS_REVERSE_ARROW_BUTTON}
-          >
-            <ArrowContainer
-              onClick={() => {
-                handleArrowClick()
-              }}
-              color={theme.textPrimary}
-            >
-              <Maximize2
-                size="10"
-                color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
-              />
-            </ArrowContainer>
-          </TraceEvent>
-        </ArrowWrapper>*/}
         <OutputSwapSection showDetailsDropdown={false}>
           <InputHeader>
             <ThemedText.BodySecondary>
