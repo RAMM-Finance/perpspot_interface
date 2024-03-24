@@ -402,13 +402,15 @@ export function TokenRow({
               lineHeight: '1',
             }}
             onClick={(e) => {
-              const id = getPoolId(currency0, currency1, fee)
               e.stopPropagation()
-              if (currency1 && currency0 && token0 && token1 && fee && id && poolId !== id) {
-                setCurrentPool(id, true)
-                navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
-                  state: { currency0, currency1 },
-                })
+              if (currency1 && currency0 && token0 && token1 && fee) {
+                const id = getPoolId(currency0, currency1, fee)
+                if (id && poolId !== id) {
+                  setCurrentPool(id, true)
+                  navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
+                    state: { currency0, currency1 },
+                  })
+                }
               }
             }}
           >

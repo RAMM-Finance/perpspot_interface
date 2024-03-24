@@ -3,6 +3,7 @@ import celoCircleLogoUrl from 'assets/images/celoCircle.png'
 import ethereumLogoUrl from 'assets/images/ethereum-logo.png'
 import polygonCircleLogoUrl from 'assets/images/polygonCircle.png'
 import bearlogo from 'assets/images/artio.png'
+import lineaLogo from 'assets/images/linea.png'
 import { default as arbitrumCircleLogoUrl, default as arbitrumLogoUrl } from 'assets/svg/arbitrum_logo.svg'
 import bnbSquareLogoUrl from 'assets/svg/bnb_square_logo.svg'
 import bnbLogo from 'assets/svg/bnb-logo.svg'
@@ -17,7 +18,7 @@ import ms from 'ms.macro'
 import { darkTheme } from 'theme/colors'
 
 import { SupportedL1ChainId, SupportedL2ChainId } from './chains'
-import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, PLASMA_BNB_LIST } from './lists'
+import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, PLASMA_BNB_LIST, LINEA_LIST } from './lists'
 
 export const AVERAGE_L1_BLOCK_TIME = ms`12s`
 
@@ -241,6 +242,20 @@ const CHAIN_INFO: ChainInfoMap = {
     nativeCurrency: { name: 'Bera', symbol: 'Bera', decimals: 18 },
     color: darkTheme.chain_42,
     backgroundColor: darkTheme.chain_42161_background,
+  },
+  [SupportedChainId.LINEA]: {
+    networkType: NetworkType.L2,
+    blockWaitMsBeforeWarning: ms`10m`,
+    bridge: 'https://bridge.linea.build/',
+    docs: 'https://docs.linea.build/',
+    explorer: 'https://lineascan.build/',
+    infoLink: 'https://limitless.gitbook.io/limitless',
+    label: 'Linea',
+    logoUrl: lineaLogo,
+    defaultListUrl: LINEA_LIST,
+    nativeCurrency: { name: 'Linea Ether', symbol: 'lineaETH', decimals: 18 },
+    color: darkTheme.chain_42,  // we need to change this to chain_59144 when determined
+    backgroundColor: darkTheme.chain_42161_background, // we need to change this to chain_59144_background when determined
   }  
 }
 

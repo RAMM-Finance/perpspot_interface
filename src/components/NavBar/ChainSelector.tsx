@@ -27,7 +27,8 @@ const NETWORK_SELECTOR_CHAINS = [
   SupportedChainId.ARBITRUM_ONE,
   // SupportedChainId.CELO,
   // SupportedChainId.BNB,
-  SupportedChainId.BERA_ARTIO
+  SupportedChainId.BERA_ARTIO,
+  SupportedChainId.LINEA
 ]
 
 interface ChainSelectorProps {
@@ -107,7 +108,7 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
             // onSelectChain(42161)
           }
         >
-          {chainId == 42161 || chainId == SupportedChainId.BERA_ARTIO ? '' : 'Connect to Available Network'}
+          {chainId == 42161 || chainId == SupportedChainId.BERA_ARTIO || chainId == SupportedChainId.LINEA ? '' : 'Connect to Available Network'}
 
           {!isSupported ? (
             <AlertTriangle size={18} color={theme.textSecondary} />

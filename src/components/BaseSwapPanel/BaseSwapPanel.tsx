@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import Menu from '@mui/material/Menu'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
 import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
@@ -12,8 +11,7 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
-import * as React from 'react'
-import { Lock } from 'react-feather'
+import { ChevronDown, ChevronUp, Lock } from 'react-feather'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 
@@ -22,6 +20,7 @@ import { ThemedText } from '../../theme'
 import { BaseButton, ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
+import { StyledDropdown, TokenItem } from '../PremiumCurrencySelector/index'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
@@ -130,7 +129,8 @@ const MarginSelect = styled(ButtonGray)<{
   border-radius: 8px;
   outline: none;
   user-select: none;
-  border: ${({ selected, theme }) => (selected ? `2px solid ${theme.accentSuccessSoft}` : 'none')};
+  border: ${({ selected, theme }) =>
+    selected ? `1.25px solid ${theme.accentActiveSoft}` : `1.25px solid ${theme.surface1}`};
   font-size: 24px;
   font-weight: 400;
   background-color: transparent;
@@ -490,26 +490,16 @@ export function BaseSwapPanel({
   )
 }
 
-const StyledDropdown = styled(Menu)``
-
-const TokenItem = styled.div`
-  background: transparent;
-  &:hover {
-    cursor: pointer;
-  }
-`
 interface MarginSelectPanelProps {
   value: string
   onUserInput: (value: string) => void
   onMax?: () => void
   showMaxButton: boolean
   onCurrencySelect?: (currency: Currency) => void
-  // currency?: Currency | null
   inputCurrency?: Currency | null
   outputCurrency?: Currency | null
   hideBalance?: boolean
   hideInput?: boolean
-  // otherCurrency?: Currency | null
   fiatValue: { data?: number; isLoading: boolean }
   priceImpact?: Percent
   id: string
@@ -521,6 +511,7 @@ interface MarginSelectPanelProps {
   showPremium?: boolean
   premium?: CurrencyAmount<Currency>
   marginInPosToken: boolean
+  existingPosition?: boolean
   onMarginTokenChange?: () => void
 }
 
@@ -543,9 +534,9 @@ export function MarginSelectPanel({
   loading = false,
   onMarginTokenChange,
   marginInPosToken,
+  existingPosition,
   ...rest
 }: MarginSelectPanelProps) {
-  // const [modalOpen, setModalOpen] = useState(false)
   const { account, chainId } = useWeb3React()
 
   const chainAllowed = isSupportedChain(chainId)
@@ -586,47 +577,39 @@ export function MarginSelectPanel({
                 label="label"
               />
             )}
-            <MarginCurrencySelect
-              disabled={!chainAllowed}
-              visible={currency !== undefined}
-              selected={!!currency}
-              hideInput={hideInput}
-              className="open-currency-select-button"
-              onClick={handleClick}
-            >
-              <MarginSelect
+            {!existingPosition ? (
+              <CurrencySelect
+                disabled={!chainAllowed}
                 visible={currency !== undefined}
-                selected={currency?.symbol === inputCurrency?.symbol}
-                onClick={onMarginTokenChange}
+                selected={!!currency}
+                hideInput={hideInput}
+                className="open-currency-select-button"
+                onClick={handleClick}
               >
                 <RowFixed>
-                  <CurrencyLogo currency={inputCurrency} size="15px" />
+                  <CurrencyLogo currency={currency} size="15px" />
                   <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
                     {(currency && currency.symbol && currency.symbol.length > 20
                       ? currency.symbol.slice(0, 4) +
                         '...' +
                         currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                      : inputCurrency?.symbol) || <Trans>Select token</Trans>}
+                      : currency?.symbol) || <Trans>Select token</Trans>}
                   </StyledTokenName>
+                  {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
                 </RowFixed>
-              </MarginSelect>
-              <MarginSelect
-                visible={currency !== undefined}
-                selected={currency?.symbol === outputCurrency?.symbol}
-                onClick={onMarginTokenChange}
-              >
-                <RowFixed>
-                  <CurrencyLogo currency={outputCurrency} size="15px" />
-                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
-                    {(currency && currency.symbol && currency.symbol.length > 20
-                      ? currency.symbol.slice(0, 4) +
-                        '...' +
-                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                      : outputCurrency?.symbol) || <Trans>Select token</Trans>}
-                  </StyledTokenName>
-                </RowFixed>
-              </MarginSelect>
-            </MarginCurrencySelect>
+              </CurrencySelect>
+            ) : (
+              <RowFixed>
+                <CurrencyLogo currency={currency} size="15px" />
+                <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                  {(currency && currency.symbol && currency.symbol.length > 20
+                    ? currency.symbol.slice(0, 4) +
+                      '...' +
+                      currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                    : currency?.symbol) || null}
+                </StyledTokenName>
+              </RowFixed>
+            )}
           </InputRow>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
@@ -674,6 +657,30 @@ export function MarginSelectPanel({
           )}
         </Container>
       </InputPanel>
+      <StyledDropdown
+        slotProps={{ paper: { sx: { paddingX: '5px', backgroundColor: '#141a2a' } } }}
+        MenuListProps={{
+          sx: {
+            color: 'white',
+          },
+        }}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+      >
+        <TokenItem onClick={onMarginTokenChange}>
+          <RowFixed>
+            <CurrencyLogo currency={otherCurrency} size="15px" />
+            <StyledTokenName className="token-symbol-container" active={Boolean(otherCurrency && otherCurrency.symbol)}>
+              {otherCurrency && otherCurrency.symbol && otherCurrency.symbol.length > 20
+                ? otherCurrency.symbol.slice(0, 4) +
+                  '...' +
+                  otherCurrency.symbol.slice(otherCurrency.symbol.length - 5, otherCurrency.symbol.length)
+                : otherCurrency?.symbol}
+            </StyledTokenName>
+          </RowFixed>
+        </TokenItem>
+      </StyledDropdown>
     </>
   )
 }

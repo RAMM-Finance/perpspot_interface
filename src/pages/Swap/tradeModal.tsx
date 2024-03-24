@@ -38,7 +38,6 @@ import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
-import { useAppSelector } from 'state/hooks'
 import { MarginField } from 'state/marginTrading/actions'
 import {
   AddLimitTrade,
@@ -49,9 +48,9 @@ import {
   useMarginTradingState,
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
-import { ActiveSwapTab, Field } from 'state/swap/actions'
+import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useCurrentPool, useSelectInputCurrency } from 'state/user/hooks'
+import { useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -80,9 +79,6 @@ const Wrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   width: 365px;
-  /* width: 100%; */
-  /* min-width: 360px; */
-  /* // height: 50rem; */
   ::-webkit-scrollbar {
     display: none;
   }
@@ -528,17 +524,7 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, currencies])
 
-  const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
-  const switchTokens = useSelectInputCurrency()
-  function handleArrowClick() {
-    if (marginInPosToken) {
-      onSetMarginInPosToken(!marginInPosToken)
-    }
-    handleMarginInput('')
-    onDebouncedLeverageFactor('')
-    switchTokens(!inputIsToken0)
-    activeTab === ActiveSwapTab.LONG ? onActiveTabChange(ActiveSwapTab.SHORT) : onActiveTabChange(ActiveSwapTab.LONG)
-  }
+  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
   return (
     <Wrapper>
@@ -685,35 +671,16 @@ const TradeTabContent = () => {
               onMax={handleMaxInput}
               fiatValue={fiatValueTradeMargin}
               outputCurrency={currencies[Field.OUTPUT] ?? null}
-              // showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
               premium={tradeApprovalInfo?.additionalPremium}
               showPremium={false}
-              marginInPosToken={marginInPosToken}
+              existingPosition={existingPosition && existingPositionOpen}
+              marginInPosToken={existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken}
               onMarginTokenChange={handleSetMarginInPosToken}
             />
           </Trace>
         </InputSection>
-        {/*<ArrowWrapper clickable={isSupportedChain(chainId)}>
-          <TraceEvent
-            events={[BrowserEvent.onClick]}
-            name={SwapEventName.SWAP_TOKENS_REVERSED}
-            element={InterfaceElementName.SWAP_TOKENS_REVERSE_ARROW_BUTTON}
-          >
-            <ArrowContainer
-              onClick={() => {
-                handleArrowClick()
-              }}
-              color={theme.textPrimary}
-            >
-              <Maximize2
-                size="10"
-                color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
-              />
-            </ArrowContainer>
-          </TraceEvent>
-        </ArrowWrapper>*/}
         <OutputSwapSection showDetailsDropdown={false}>
           <InputHeader>
             <ThemedText.BodySecondary>

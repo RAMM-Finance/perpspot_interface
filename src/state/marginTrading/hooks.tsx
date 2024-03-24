@@ -183,7 +183,7 @@ export function useDerivedAddPositionInfo(
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
   const usingCode = useUsingCode()
-  const { marginInPosToken, premiumInPosToken } = useMarginTradingState()
+  const { marginInPosToken: newMarginInPosToken, premiumInPosToken } = useMarginTradingState()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -221,6 +221,10 @@ export function useDerivedAddPositionInfo(
       return [undefined, undefined]
     }
   }, [account, inputCurrency, outputCurrency, pool])
+  const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
+
+  const marginInPosToken =
+    existingPosition && existingPosition?.openTime > 0 ? existingPosition.marginInPosToken : newMarginInPosToken
 
   const parsedBorrowAmount = useMemo(() => {
     if (parsedLeverageFactor && parsedMargin && parsedLeverageFactor.gt(1)) {
@@ -236,7 +240,6 @@ export function useDerivedAddPositionInfo(
     }
   }, [parsedLeverageFactor, parsedMargin, pool, marginInPosToken, outputCurrency])
 
-  const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
   const [userSlippageTolerance] = useUserSlippageTolerance()
   const [userPremiumPercent] = useUserPremiumDepositPercent()
 
@@ -396,6 +399,10 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
     }
 
+    if (existingPosition && existingPosition.marginInPosToken !== marginInPosToken) {
+      inputError = inputError ?? <Trans>Existing Position uses a different margin</Trans>
+    }
+
     // compare input balance to max input based on version
     const balanceIn = currencyBalances[Field.INPUT]
     const balanceOut = currencyBalances[Field.OUTPUT]
@@ -421,6 +428,8 @@ export function useDerivedAddPositionInfo(
     currencyBalances,
     parsedLeverageFactor,
     tradeApprovalInfo,
+    existingPosition,
+    marginInPosToken,
   ])
 
   const noAccountInputError = useMemo(() => {

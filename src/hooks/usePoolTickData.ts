@@ -1,6 +1,7 @@
 import { Currency } from '@uniswap/sdk-core'
 import { FeeAmount, nearestUsableTick, Pool, TICK_SPACINGS, tickToPrice } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
 import { ZERO_ADDRESS } from 'constants/misc'
 import { useAllV3TicksQuery } from 'graphql/thegraph/__generated__/types-and-hooks'
@@ -26,8 +27,8 @@ const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [
 // Tick with fields parsed to JSBIs, and active liquidity computed.
 export interface TickProcessed {
   tick: number
-  liquidityActive: JSBI
-  liquidityNet: JSBI
+  liquidityActive: BN
+  liquidityNet: BN
   price0: string
 }
 
@@ -114,9 +115,10 @@ function useTicksFromTickLens(
       const latestTickData = callResults
         .flatMap((result) =>
           result.map((response: any) => {
+            // console.log('response', response[1].toString())
             return {
               tick: response[0],
-              liquidityNet: JSBI.BigInt(response[1]),
+              liquidityNet: new BN(response[1].toString()),
               price0: 0,
               price1: 0,
             }
@@ -131,11 +133,6 @@ function useTicksFromTickLens(
       refetchInterval: ms`5s`,
     }
   )
-
-  // reset on input change
-  // useEffect(() => {
-  //   setTickDataLatestSynced([])
-  // }, [currencyA, currencyB, feeAmount])
 
   // return the latest synced tickData even if we are still loading the newest data
   useEffect(() => {
@@ -198,8 +195,6 @@ function useAllV3Ticks(
     error,
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
-
-  // console.log('useAllV3Ticks', currencyA, currencyB, feeAmount, tickLensTickData)
 
   useEffect(() => {
     if (data?.ticks.length) {
@@ -281,22 +276,15 @@ export function usePoolActiveLiquidity(
         data: undefined,
       }
     }
+    // console.log('activeTickProcessed', ticks[pivot].liquidityNet, JSBI.BigInt(ticks[pivot].liquidityNet))
 
-    // const activeTickProcessed: TickProcessed = {
-    //   liquidityActive: JSBI.BigInt(pool[1]?.liquidity ?? 0),
-    //   tick: activeTick,
-    //   liquidityNet: Number(ticks[pivot].tick) === activeTick ? JSBI.BigInt(ticks[pivot].liquidityNet) : JSBI.BigInt(0),
-    //   price0: tickToPrice(token0, token1, activeTick).toFixed(PRICE_FIXED_DIGITS),
-    // }
-    const activeTickProcessed = {
-      liquidityActive: safeParseToBigInt(pool[1]?.liquidity ?? 0),
+    const activeTickProcessed: TickProcessed = {
+      liquidityActive: new BN(pool[1]?.liquidity.toString() ?? 0),
       tick: activeTick,
-      liquidityNet:
-        Number(ticks[pivot].tick) === activeTick ? safeParseToBigInt(ticks[pivot].liquidityNet) : JSBI.BigInt(0),
+      liquidityNet: Number(ticks[pivot].tick) === activeTick ? new BN(ticks[pivot].liquidityNet) : new BN(0),
       price0: tickToPrice(token0, token1, activeTick).toFixed(PRICE_FIXED_DIGITS),
     }
 
-    // console.log('activeTickProcessed', activeTickProcessed, ticks)
     const subsequentTicks = computeSurroundingTicks(token0, token1, activeTickProcessed, ticks, pivot, true)
 
     const previousTicks = computeSurroundingTicks(token0, token1, activeTickProcessed, ticks, pivot, false)

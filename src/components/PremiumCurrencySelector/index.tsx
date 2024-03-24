@@ -13,8 +13,8 @@ const Wrapper = styled.div`
   display: flex;
   gap: 5px;
 `
-const StyledDropdown = styled(Menu)``
-const TokenItem = styled.div`
+export const StyledDropdown = styled(Menu)``
+export const TokenItem = styled.div`
   background: transparent;
   &:hover {
     cursor: pointer;

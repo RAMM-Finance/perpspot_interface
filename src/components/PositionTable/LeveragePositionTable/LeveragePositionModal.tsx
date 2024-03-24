@@ -337,7 +337,7 @@ function MarginPositionInfo({
           syncing={loading}
           value={position?.margin}
           newValue={alteredPosition?.margin}
-          appendSymbol={inputCurrency?.symbol}
+          appendSymbol={position?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
         />
         <PositionValueLabel

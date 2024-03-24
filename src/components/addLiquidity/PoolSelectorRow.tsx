@@ -5,6 +5,7 @@ import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
 import { useCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
+import { PoolKey } from 'types/lmtv2position'
 import { formatDollar } from 'utils/formatNumbers'
 
 const LOGO_SIZE = 20
@@ -58,32 +59,28 @@ interface PoolSelectorRowProps {
   currencyId: string[]
   tvl: number
   volume: number
-  onCurrencySelect: (
+  onPoolSelect: (
     currencyIn: Currency,
     currencyOut: Currency,
-
     fee: number
   ) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
   fee: number
   setSelectPair?: Dispatch<SetStateAction<boolean>>
-  selectPair?: boolean
+  active?: boolean
 }
 
-export default function ChainSelectorRow({
+export default function PoolSelectorRow({
   currencyId,
-  onCurrencySelect,
+  onPoolSelect,
   setIsOpen,
   fee,
   setSelectPair,
-  selectPair,
   tvl,
   volume,
+  active
 }: PoolSelectorRowProps) {
-  const currentPool = useCurrentPool()
-  const inputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token0 : currentPool?.poolKey.token1
-  const outputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0
-
+  
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])
   const [token0, token1] =
@@ -92,15 +89,13 @@ export default function ChainSelectorRow({
       : [quoteCurrency, baseCurrency]
   const labelIn = token0?.symbol as string
   const labelOut = token1?.symbol as string
-  const active = token0?.wrapped.address === inputCurrencyId && token1?.wrapped.address === outputCurrencyId
-
   const theme = useTheme()
 
   return (
     <Container
       disabled={false}
       onClick={() => {
-        token0 && token1 && onCurrencySelect(token0, token1, fee)
+        token0 && token1 && onPoolSelect(token0, token1, fee)
         setIsOpen(() => false)
         setSelectPair && setSelectPair(() => false)
       }}

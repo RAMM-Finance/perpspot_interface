@@ -15,7 +15,6 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import {
   RotatingArrow,
   Spinner,
-  StyledCard,
   StyledInfoIcon,
   StyledPolling,
   StyledPollingDot,
@@ -61,7 +60,11 @@ import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
 
 export interface DerivedReducePositionInfo {
+  /** if marginInPosToken then PnL in output token, otherwise in input token */
   PnL: BN
+  /** PnL including premium */
+  PnLWithPremium: BN | null
+  /** returned amount in margin token */
   returnedAmount: BN
   premium: BN
   profitFee: BN
@@ -75,15 +78,13 @@ export interface DerivedReducePositionInfo {
   totalDebtInput: BN
   totalDebtOutput: BN
   withdrawnPremium: TokenBN
+  closePosition: boolean
 }
 
 export interface DerivedLimitReducePositionInfo {
   margin: BN
   newTotalPosition: TokenBN
-  // totalDebtInput: BN
-  // totalDebtOutput: BN
 
-  // orderLifetime: number
   positionReduceAmount: BN
   startingDebtReduceAmount: BN
   minimumDebtReduceAmount: BN
@@ -99,21 +100,10 @@ const CloseText = styled(ThemedText.LabelSmall)<{ isActive: boolean }>`
   color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textPrimary)};
 `
 
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-`
-
 const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
   padding: 0;
   align-items: center;
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
-`
-
-const StyledBGCard = styled(StyledCard)`
-  background: ${({ theme }) => theme.surface1};
 `
 
 export enum DerivedInfoState {
@@ -164,24 +154,6 @@ const LabelText = styled.div<{ color: string }>`
   flex-direction: row;
 `
 
-const InRangeLimitReduceWarning = () => {
-  const theme = useTheme()
-  return (
-    <ShowInRangeNote justify="flex-start" gap="0px">
-      <RowBetween>
-        <RowFixed>
-          <LabelText color={theme.accentWarning}>
-            <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
-          </LabelText>
-          <ThemedText.DeprecatedMain fontSize={14} color={theme.textSecondary}>
-            <Trans>Position liquidity in range, must be reduced with a limit order</Trans>
-          </ThemedText.DeprecatedMain>
-        </RowFixed>
-      </RowBetween>
-    </ShowInRangeNote>
-  )
-}
-
 const BelowRangeLimitReduceNote = () => {
   const theme = useTheme()
   return (
@@ -223,7 +195,7 @@ export default function DecreasePositionContent({
   inputCurrency?: Currency
   outputCurrency?: Currency
 }) {
-  const { position: existingPosition, loading: positionLoading } = positionData
+  const { position: existingPosition } = positionData
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
   const [currentState, setCurrentState] = useState<{
@@ -267,11 +239,7 @@ export default function DecreasePositionContent({
   // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   // const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
 
-  const {
-    position: orderPosition,
-    loading: orderLoading,
-    syncing: orderSyncing,
-  } = useMarginOrderPositionFromPositionId(orderKey)
+  const { position: orderPosition, syncing: orderSyncing } = useMarginOrderPositionFromPositionId(orderKey)
 
   const existingOrderBool = useMemo(() => {
     if (!orderPosition || !existingPosition) return undefined
@@ -335,7 +303,6 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
-  // console.log('reduce:', txnInfo, inputError, contractError)
 
   const {
     inputError: lmtInputError,
@@ -356,8 +323,6 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
-
-  // const marginFacility = useMarginFacilityContract(true)
 
   const addTransaction = useTransactionAdder()
 
@@ -469,21 +434,21 @@ export default function DecreasePositionContent({
     [existingPosition, onDebouncedReduceAmount, closePosition]
   )
 
-  const onInputChange = useCallback(
-    (val: string) => {
-      const valBN = parseBN(val)
-      if (!valBN) {
-        onDebouncedReduceAmount('')
-        closePosition && setClosePosition(false)
-      } else if (existingPosition) {
-        if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
-        if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
-        if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
-        setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
-      }
-    },
-    [closePosition, onDebouncedReduceAmount, existingPosition]
-  )
+  // const onInputChange = useCallback(
+  //   (val: string) => {
+  //     const valBN = parseBN(val)
+  //     if (!valBN) {
+  //       onDebouncedReduceAmount('')
+  //       closePosition && setClosePosition(false)
+  //     } else if (existingPosition) {
+  //       if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
+  //       if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
+  //       if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
+  //       setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
+  //     }
+  //   },
+  //   [closePosition, onDebouncedReduceAmount, existingPosition]
+  // )
 
   const theme = useTheme()
 
@@ -699,8 +664,7 @@ export default function DecreasePositionContent({
                 }}
                 showMaxButton={false}
                 hideBalance={true}
-                // fiatValue={fiatValueReduceAmount}
-                // currency={outputCurrency}
+                currency={outputCurrency}
                 label="Limit price"
                 id="limit-reduce-position-input"
                 isPrice={
@@ -822,6 +786,7 @@ export default function DecreasePositionContent({
                       <DecreasePositionDetails
                         txnInfo={txnInfo}
                         inputCurrency={inputCurrency ?? undefined}
+                        outputCurrency={outputCurrency ?? undefined}
                         loading={loading}
                         existingPosition={existingPosition}
                         allowedSlippage={allowedSlippage}

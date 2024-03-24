@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
@@ -19,7 +20,6 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
-import{getPoolId} from "components/PositionTable/LeveragePositionTable/TokenRow"
 const StatsWrapper = styled.div`
   gap: 16px;
   ${textFadeIn}
@@ -67,7 +67,7 @@ export function PoolStatsSection({
   ])
 
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!pool  || !address0 || !address1 || !fee) return [null, false, null, null, null, null, null]
+    if (!pool || !address0 || !address1 || !fee) return [null, false, null, null, null, null, null]
     const id = getPoolId(address0, address1, fee)
     // const id = `${address0.toLowerCase()}-${address1.toLowerCase()}-${fee}`
     const OHLC = PoolsOHLC[id]
@@ -75,14 +75,17 @@ export function PoolStatsSection({
     let tvl
     let volume
 
-    if (poolData && Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)) {
+    if (
+      poolData &&
+      Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)
+    ) {
       {
         tvl = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
         volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
       }
-    }else{
+    } else {
       tvl = new BN(0)
-      volume = new BN(0) 
+      volume = new BN(0)
     }
     const priceData = {
       priceNow: new BN(OHLC?.priceNow),
@@ -98,7 +101,7 @@ export function PoolStatsSection({
     if (OHLC?.base) {
       invertPrice = OHLC?.base.toLowerCase() === pool.token1.address.toLowerCase()
     }
-    const price = priceData.priceNow//nvertPrice ? new BN(1).div(token0Price) : token0Price
+    const price = priceData.priceNow //nvertPrice ? new BN(1).div(token0Price) : token0Price
 
     const delta = price.minus(priceData.price24hAgo).div(price).times(100)
     const price24hHigh = price.gt(priceData.high24) ? price : priceData.high24

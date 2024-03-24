@@ -1,22 +1,21 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
+import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
 import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { TraderPositionKey } from 'types/lmtv2position'
-import {GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
-import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
-import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { BigNumber } from '@ethersproject/bignumber'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -59,7 +58,7 @@ export function useAddPositionCallback(
         marginInPosToken,
         margin,
         premiumInPosToken,
-        premiumSwapRoute
+        premiumSwapRoute,
       } = trade
 
       const positionKey: TraderPositionKey = {
@@ -96,7 +95,7 @@ export function useAddPositionCallback(
           chainId
         )
         if (!output) throw new Error('Quoter Error')
-        minPremiumOutput = String(Math.ceil(Number(output.toString())/2))
+        minPremiumOutput = String(Math.ceil(Number(output.toString()) / 2))
       }
 
       const outputDecimals = outputCurrency.decimals
@@ -108,26 +107,30 @@ export function useAddPositionCallback(
         : new BN(pool.token1Price.toFixed(18))
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-      console.log('addPosition:callback', {
-        positionKey,
-        margin: trade.margin.rawAmount(),
-        borrowAmount: trade.borrowAmount.rawAmount(),
-        minimumOutput:  marginInPosToken?'0':minimumOutput.shiftedBy(outputDecimals).toFixed(0),
-        deadline: deadline.toString(),
-        simulatedOutput: amountOut.toFixed(0),
-        executionOption: 1,
-        depositPremium: premium.rawAmount(),
-        slippedTickMin,
-        slippedTickMax,
-        marginInPosToken,
-        premiumInPosToken,
-        minPremiumOutput,
-      }, trade)
+      console.log(
+        'addPosition:callback',
+        {
+          positionKey,
+          margin: trade.margin.rawAmount(),
+          borrowAmount: trade.borrowAmount.rawAmount(),
+          minimumOutput: marginInPosToken ? '0' : minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+          deadline: deadline.toString(),
+          simulatedOutput: amountOut.toFixed(0),
+          executionOption: 1,
+          depositPremium: premium.rawAmount(),
+          slippedTickMin,
+          slippedTickMax,
+          marginInPosToken,
+          premiumInPosToken,
+          minPremiumOutput,
+        },
+        trade
+      )
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
         margin: trade.margin.rawAmount(),
         borrowAmount: trade.borrowAmount.rawAmount(),
-        minimumOutput:  marginInPosToken?'0':minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+        minimumOutput: marginInPosToken ? '0' : minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
@@ -150,7 +153,7 @@ export function useAddPositionCallback(
       // try {
       //   gasEstimate = await provider.estimateGas(tx)
       // } catch (gasError) {
-        // throw new GasEstimationError()
+      // throw new GasEstimationError()
       // }
       // const gasLimit = calculateGasMargin(gasEstimate)
       const response = await provider

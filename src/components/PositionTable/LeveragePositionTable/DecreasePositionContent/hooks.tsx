@@ -116,9 +116,26 @@ export function useDerivedReducePositionInfo(
         : new BN(result.amount0.toString()).times(-1).toFixed(0)
     )
 
+    const PnL = new BN(result.PnL.toString())
+      .shiftedBy(-18)
+      .times(position.margin.times(new BN(reducePercent).shiftedBy(-18)))
+
+    let PnLWithPremium = null
+    if (closePosition) {
+      if (position.marginInPosToken) {
+        const price = position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+        PnLWithPremium = PnL.plus(position.premiumLeft.times(price))
+      } else {
+        PnLWithPremium = PnL.plus(position.premiumLeft)
+      }
+    }
+
     const info: DerivedReducePositionInfo = {
-      PnL: new BN(result.PnL.toString()).shiftedBy(-inputCurrency.decimals),
-      returnedAmount: new BN(result.returnedAmount.toString()).shiftedBy(-outputCurrency.decimals),
+      PnL,
+      PnLWithPremium,
+      returnedAmount: new BN(result.returnedAmount.toString()).shiftedBy(
+        position.marginInPosToken ? outputCurrency.wrapped.decimals : inputCurrency.wrapped.decimals
+      ),
       premium,
       profitFee: new BN(result.profitFee.toString()).shiftedBy(-inputCurrency.decimals),
       minimumOutput: minOutput,
@@ -133,6 +150,7 @@ export function useDerivedReducePositionInfo(
       withdrawnPremium: closePosition
         ? new TokenBN(position.premiumLeft, inputCurrency.wrapped, false)
         : new TokenBN(0, inputCurrency.wrapped, false),
+      closePosition,
     }
 
     const _newPosition = {
@@ -166,6 +184,7 @@ export function useDerivedReducePositionInfo(
     }
 
     if (!!inputError || !blockNumber) {
+      onPositionChange({})
       return
     }
 

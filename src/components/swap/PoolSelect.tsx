@@ -446,9 +446,9 @@ export function SelectPool() {
       }
 
       if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
-        return `${pool.token0.symbol}/${pool.token1.symbol}`
+        return `${pool.token0.symbol} / ${pool.token1.symbol}`
       } else {
-        return `${pool.token1.symbol}/${pool.token0.symbol}`
+        return `${pool.token1.symbol} / ${pool.token0.symbol}`
       }
     }
     return null

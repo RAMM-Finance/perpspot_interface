@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
-import { validateUrlChainParam } from 'graphql/data/util'
 import useAllPoolKeys from 'hooks/useAllPoolKeys'
 import { usePoolsData } from 'hooks/useLMTPools'
 import useVaultBalance from 'hooks/useVaultBalance'
@@ -9,12 +9,10 @@ import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { useParams } from 'react-router-dom'
-import { useAppPoolOHLC  ,useRawPoolKeyList} from 'state/application/hooks'
+import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
-import { useWeb3React } from '@web3-react/core'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
@@ -206,8 +204,8 @@ function PHeaderRow() {
 }
 
 export default function TokenTable() {
-  const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
-  const {chainId} = useWeb3React()
+  // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
+  const { chainId } = useWeb3React()
   const sortAscending = useAtom(sortAscendingAtom)
   const sortMethod = useAtom(sortMethodAtom)
 
@@ -220,16 +218,9 @@ export default function TokenTable() {
   const { poolKeys: data, isLoading: keysLoading } = useAllPoolKeys()
   const poolList = useRawPoolKeyList()
 
-  // const vaultBal = undefined as any
-  // const balanceLoading = false
-  // const data = undefined as any
-  // const keysLoading = false
   const { result: poolData, loading: poolsLoading } = usePoolsData()
-  // const poolData = undefined as any
-  // const poolsLoading = false
 
   const loading = poolsLoading || balanceLoading || keysLoading
-  // useRenderCount()
 
   const poolsInfo = useMemo(() => {
     if (poolData && vaultBal) {
@@ -248,17 +239,15 @@ export default function TokenTable() {
     if (poolData && PoolsOHLCArr && poolList) {
       const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
 
-      if(chainId == 80085){
-        return poolList.map((pool:any)=>{
-          // const id = `${ethers.utils.getAddress(pool.token0)}-${ethers.utils.getAddress(pool.token1)}-${pool.fee}`
-          return{
-            ... pool, 
+      if (chainId == 80085) {
+        return poolList.map((pool: any) => {
+          return {
+            ...pool,
             TVL: 100000,
-            Volume: 500000, 
-            Price: 4000, 
-             [`24h Change`]: 1,
+            Volume: 500000,
+            Price: 4000,
+            [`24h Change`]: 1,
           }
-
         })
       }
       return PoolsOHLCArr.map((pool: any) => {
@@ -277,8 +266,8 @@ export default function TokenTable() {
     } else {
       return null
     }
-  }, [poolData, PoolsOHLCArr])
-    console.log('data', poolList, data, poolData, PoolsOHLCArr)
+  }, [poolData, PoolsOHLCArr, chainId, poolList])
+
   /* loading and error state */
   return (
     <>
