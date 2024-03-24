@@ -164,7 +164,23 @@ export default function LeaderboardTable() {
 
   }, [prevData, userData])
 
-  // console.log('userdata', prevData, userData)
+  // console.log('userdata', combinedData) 
+// const users: string[] = [];
+// const lpPoints: number[] = [];
+// const rPoints: number[] = [];
+// const tPoints: number[] = [];
+
+// combinedData?.forEach((data, index) => {
+//     users[index] = data.trader;
+//     lpPoints[index] = Math.round(data.lpPoints);
+//     // For rPoints and tPoints, assuming you want to round them to the nearest whole number
+//     rPoints[index] = Math.round(data.rPoints);
+//     tPoints[index] = Math.round(data.tPoints);
+// });
+
+// // Output the arrays (or do whatever is needed with them)
+// console.log('userdata', users, lpPoints, rPoints, tPoints);
+
   return (
     <>
       <LeaderboardHeader />
