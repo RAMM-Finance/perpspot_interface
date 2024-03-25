@@ -12,6 +12,7 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
+import { BigNumber as BN } from 'bignumber.js'
 
 const GridContainer = styled.div`
   display: flex;
@@ -145,8 +146,14 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
 function useSelectPositions(positions?: MarginPositionDetails[]) {
   // const sortedPositions = useSortedPositions(positions)
 
-  // const filteredPositions = useFilteredPositions(sortedPositions)
-  return { filteredPositions: positions }
+  const filteredPositions = useFilteredPositions(positions)
+
+  
+  // console.log("POSITIONS")
+  // console.log(positions)
+  console.log(filteredPositions)
+  return { filteredPositions: filteredPositions }
+  // return { filteredPositions: positions }
 }
 
 export default function LeveragePositionsTable({
@@ -167,38 +174,37 @@ export default function LeveragePositionsTable({
   }, [location, resetFilterString])
   /* loading and error state */
 
-  return (
-    <GridContainer>
-      <HeaderRow />
-    </GridContainer>
-  )
+  // return (
+  //   <GridContainer>
+  //     <HeaderRow />
+  //   </GridContainer>
+  // )
 
-  // if (loading) {
-  //   return <LoadingTokenTable rowCount={3} />
-  // } else if (!filteredPositions || filteredPositions?.length == 0) {
-  //   return <NoTokensState message={<Trans>No positions found</Trans>} />
-  // } else {
-  //   return (
-  //     <GridContainer>
-  //       <SearchBar />
-  //       <HeaderRow />
-  //       <TokenDataContainer>
-  //         {filteredPositions?.map((position) => (
-  //           <LoadedRow
-  //             key={
-  //               position.poolKey.token0 +
-  //               '-' +
-  //               position.poolKey.token1 +
-  //               '-' +
-  //               position.poolKey.fee.toString() +
-  //               '-' +
-  //               position.isToken0
-  //             }
-  //             position={position}
-  //           />
-  //         ))}
-  //       </TokenDataContainer>
-  //     </GridContainer>
-  //   )
-  // }
+  if (loading) {
+    return <LoadingTokenTable rowCount={3} />
+  } else if (!filteredPositions || filteredPositions?.length == 0) {
+    return <NoTokensState message={<Trans>No positions found</Trans>} />
+  } else {
+    return (
+      <GridContainer>
+        <HeaderRow />
+        <TokenDataContainer>
+          {filteredPositions?.map((position) => (
+            <LoadedRow
+              key={
+                position.poolKey.token0 +
+                '-' +
+                position.poolKey.token1 +
+                '-' +
+                position.poolKey.fee.toString() +
+                '-' +
+                position.isToken0
+              }
+              position={position}
+            />
+          ))}
+        </TokenDataContainer>
+      </GridContainer>
+    )
+  }
 }

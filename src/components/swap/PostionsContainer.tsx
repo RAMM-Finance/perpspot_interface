@@ -90,8 +90,7 @@ export function PostionsContainer({
             Activities
           </TabNavItem>
         </TabsWrapper>
-        <SearchBar />
-        {/* {activePositionTable === 1 && } */}
+        {activePositionTable === 1 && <SearchBar />}
       </TableHeader>
       <TabContent id={1} activeTab={activePositionTable}>
         <LeveragePositionsTable positions={positions} loading={loadingPositions} />

@@ -553,7 +553,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       isToken0: details.isToken0,
     }
   }, [details])
-  console.log('detailsdf', details)
+  // console.log('detailsdf', details)
   const { margin, totalDebtInput } = details
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
