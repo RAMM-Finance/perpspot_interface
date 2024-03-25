@@ -12,7 +12,7 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
-import Loader from 'components/Icons/LoadingSpinner'
+import { BigNumber as BN } from 'bignumber.js'
 
 const GridContainer = styled.div`
   display: flex;
@@ -146,8 +146,14 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
 function useSelectPositions(positions?: MarginPositionDetails[]) {
   // const sortedPositions = useSortedPositions(positions)
 
-  // const filteredPositions = useFilteredPositions(sortedPositions)
-  return { filteredPositions: positions }
+  const filteredPositions = useFilteredPositions(positions)
+
+  
+  // console.log("POSITIONS")
+  // console.log(positions)
+  console.log(filteredPositions)
+  return { filteredPositions: filteredPositions }
+  // return { filteredPositions: positions }
 }
 
 export default function LeveragePositionsTable({
@@ -166,6 +172,13 @@ export default function LeveragePositionsTable({
     resetFilterString()
   }, [location, resetFilterString])
   /* loading and error state */
+
+  // return (
+  //   <GridContainer>
+  //     <HeaderRow />
+  //   </GridContainer>
+  // )
+
   if (loading) {
     return <LoadingTokenTable rowCount={3} />
   } else if (!positions || !filteredPositions || filteredPositions?.length == 0) {

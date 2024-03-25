@@ -228,6 +228,7 @@ export function useStoredData(addresses:any){
 
     const call = async()=>{
       try{
+        const addresses = await brp.getUsers()
         const [tradePoints, lpPoints_, referralPoints] = await brp.getData(addresses)
 
         const data = addresses.map((address:any, index:any) => {

@@ -136,13 +136,13 @@ export default function Points() {
   }, [usersArr])
 
   const prevData = useStoredData(addresses)
+  const combinedData = prevData
+  // const combinedData = useMemo(()=>{
+  //   if(!prevData || !usersData) return 
 
-  const combinedData = useMemo(()=>{
-    if(!prevData || !usersData) return 
+  //   return combineAndSumData(prevData, usersData);
 
-    return combineAndSumData(prevData, usersData);
-
-  }, [prevData, usersData])
+  // }, [prevData, usersData])
 
 
   const userData = useMemo(() => {
@@ -150,7 +150,6 @@ export default function Points() {
     return combinedData.find((user: any) => user.trader === account)
   }, [combinedData])
 
-  console.log('randkfadfaddata', prevData, combinedData)
 
   return (
     <Wrapper>
@@ -158,7 +157,8 @@ export default function Points() {
         <img src={star} width={30} />
         <Value>
           <ThemedText.BodySecondary fontWeight={900}>
-            {userData ? usersData.findIndex((user: any) => user.trader === account) : '-'}
+            {/*userData ? usersData.findIndex((user: any) => user.trader === account) : '-'*/}
+            {userData?.rank ?? '-'}
           </ThemedText.BodySecondary>
           <ThemedText.BodySmall fontWeight={300}>My Rank</ThemedText.BodySmall>
         </Value>

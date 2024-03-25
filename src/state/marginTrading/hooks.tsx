@@ -399,10 +399,9 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
     }
 
-    if (existingPosition && existingPosition.marginInPosToken !== marginInPosToken) {
-      inputError = inputError ?? <Trans>Existing Position uses a different margin</Trans>
-    }
-
+    // if (existingPosition && existingPosition.marginInPosToken !== marginInPosToken) {
+    //   inputError = inputError ?? <Trans>Existing Position uses a different margin</Trans>
+    // }
     // compare input balance to max input based on version
     const balanceIn = currencyBalances[Field.INPUT]
     const balanceOut = currencyBalances[Field.OUTPUT]
