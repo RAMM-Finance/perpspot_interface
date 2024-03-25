@@ -150,7 +150,6 @@ export default function Points() {
     return combinedData.find((user: any) => user.trader === account)
   }, [combinedData])
 
-  console.log('randkfadfaddata', userData)
 
   return (
     <Wrapper>
