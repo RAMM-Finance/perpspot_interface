@@ -6,6 +6,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
+import Loader from 'components/Icons/LoadingSpinner'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -359,7 +360,11 @@ export default function Swap({ className }: { className?: string }) {
             ) : (
               <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
             )*/}
-            {chartSymbol && chainId && <PoolDataChart symbol={chartSymbol} chainId={chainId} />}
+            {!chartSymbol || !chainId ? (
+              <Loader size="10px" style={{ width: '13%', height: '13%', margin: 'auto' }} />
+            ) : (
+              <PoolDataChart symbol={chartSymbol} chainId={chainId} />
+            )}
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>
             <LiquidityDistributionTable

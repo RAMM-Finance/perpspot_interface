@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
+import Loader from 'components/Icons/LoadingSpinner'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -233,7 +234,8 @@ export function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <LoadingBubble height="18px" />
+          {/* <LoadingBubble height="18px" /> */}
+          <Loader size='18px'/>
         </StatPrice>
       </StatWrapper>
     )

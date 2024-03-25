@@ -6,6 +6,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
+import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
@@ -40,6 +41,7 @@ import {
   poolSortMethodAtom,
   useSetPoolSortMethod,
 } from './state'
+import { LoadingText } from 'components/Loader/styled'
 
 const PoolListHeaderRow = styled.div`
   display: grid;
@@ -469,27 +471,33 @@ export function SelectPool() {
 
   return (
     <MainWrapper>
-      <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-        <LabelWrapper>
-          <Row gap="10">
-            <DoubleCurrencyLogo
-              currency0={inputCurrency as Currency}
-              currency1={outputCurrency as Currency}
-              size={25}
-            />
-            <AutoColumn justify="flex-start">
-              <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
-                <ThemedText.HeadlineSmall fontSize={20}>
-                  {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
-                </ThemedText.HeadlineSmall>
-              </TextWithLoadingPlaceholder>
-
-              <ThemedText.BodySmall fontSize="14px">({poolKey?.fee ? poolKey.fee / 10000 : 0}%)</ThemedText.BodySmall>
-            </AutoColumn>
-          </Row>
-        </LabelWrapper>
-        <ChevronIcon $rotated={open} />
-      </SelectPoolWrapper>
+      {!baseQuoteSymbol ? 
+        <LoadingText size={'14px'}>
+          Pool Selector loading...
+        </LoadingText>
+        :
+       (
+        <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+          <LabelWrapper>
+            <Row gap="10">
+              <DoubleCurrencyLogo
+                currency0={inputCurrency as Currency}
+                currency1={outputCurrency as Currency}
+                size={25}
+              />
+              <AutoColumn justify="flex-start">
+                <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
+                  <ThemedText.HeadlineSmall fontSize={20}>
+                    {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
+                  </ThemedText.HeadlineSmall>
+                </TextWithLoadingPlaceholder>
+                <ThemedText.BodySmall fontSize="14px">({poolKey?.fee ? poolKey.fee / 10000 : 0}%)</ThemedText.BodySmall>
+              </AutoColumn>
+            </Row>
+          </LabelWrapper>
+          <ChevronIcon $rotated={open} />
+        </SelectPoolWrapper>
+      )}
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}

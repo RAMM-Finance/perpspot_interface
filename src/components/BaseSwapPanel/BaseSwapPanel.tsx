@@ -389,9 +389,8 @@ export function BaseSwapPanel({
                         '...' +
                         currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
                       : currency?.symbol) || <Trans>Select token</Trans>}{' '}
-                    /
                   </StyledTokenName>
-
+                  <div> / </div>
                   <CurrencyLogo currency={otherCurrency} size="15px" />
                   <StyledTokenName
                     className="token-symbol-container"

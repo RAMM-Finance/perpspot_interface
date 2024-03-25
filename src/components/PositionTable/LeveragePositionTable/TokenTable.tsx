@@ -12,6 +12,7 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
+import Loader from 'components/Icons/LoadingSpinner'
 
 const GridContainer = styled.div`
   display: flex;
@@ -159,16 +160,15 @@ export default function LeveragePositionsTable({
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
-
+  // console.log('----posiitons---------', positions, loading)
   const { filteredPositions } = useSelectPositions(positions)
-
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
   /* loading and error state */
   if (loading) {
     return <LoadingTokenTable rowCount={3} />
-  } else if (!filteredPositions || filteredPositions?.length == 0) {
+  } else if (!positions || !filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
