@@ -86,7 +86,6 @@ export const getDecimalAndUsdValueData = async (network: string, tokenId: string
     })
 
     const token = res?.data?.data?.token
-
     if (token?.lastPriceUSD === '0' || token?.lastPriceUSD === null || !token?.lastPriceUSD) {
       try {
         res = await axios.get(
