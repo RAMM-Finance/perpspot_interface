@@ -166,31 +166,39 @@ export default function LeveragePositionsTable({
     resetFilterString()
   }, [location, resetFilterString])
   /* loading and error state */
-  if (loading) {
-    return <LoadingTokenTable rowCount={3} />
-  } else if (!filteredPositions || filteredPositions?.length == 0) {
-    return <NoTokensState message={<Trans>No positions found</Trans>} />
-  } else {
-    return (
-      <GridContainer>
-        <HeaderRow />
-        <TokenDataContainer>
-          {filteredPositions?.map((position) => (
-            <LoadedRow
-              key={
-                position.poolKey.token0 +
-                '-' +
-                position.poolKey.token1 +
-                '-' +
-                position.poolKey.fee.toString() +
-                '-' +
-                position.isToken0
-              }
-              position={position}
-            />
-          ))}
-        </TokenDataContainer>
-      </GridContainer>
-    )
-  }
+
+  return (
+    <GridContainer>
+      <HeaderRow />
+    </GridContainer>
+  )
+
+  // if (loading) {
+  //   return <LoadingTokenTable rowCount={3} />
+  // } else if (!filteredPositions || filteredPositions?.length == 0) {
+  //   return <NoTokensState message={<Trans>No positions found</Trans>} />
+  // } else {
+  //   return (
+  //     <GridContainer>
+  //       <SearchBar />
+  //       <HeaderRow />
+  //       <TokenDataContainer>
+  //         {filteredPositions?.map((position) => (
+  //           <LoadedRow
+  //             key={
+  //               position.poolKey.token0 +
+  //               '-' +
+  //               position.poolKey.token1 +
+  //               '-' +
+  //               position.poolKey.fee.toString() +
+  //               '-' +
+  //               position.isToken0
+  //             }
+  //             position={position}
+  //           />
+  //         ))}
+  //       </TokenDataContainer>
+  //     </GridContainer>
+  //   )
+  // }
 }

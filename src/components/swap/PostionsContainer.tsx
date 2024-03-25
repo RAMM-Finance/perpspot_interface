@@ -6,6 +6,7 @@ import { LimitActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activi
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
+import SearchBar from 'components/PositionTable/LeveragePositionTable/SearchBar'
 
 const TableHeader = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -89,7 +90,8 @@ export function PostionsContainer({
             Activities
           </TabNavItem>
         </TabsWrapper>
-        {/* {activePositionTable === 1 && <LeverageSearchBar />} */}
+        <SearchBar />
+        {/* {activePositionTable === 1 && } */}
       </TableHeader>
       <TabContent id={1} activeTab={activePositionTable}>
         <LeveragePositionsTable positions={positions} loading={loadingPositions} />
