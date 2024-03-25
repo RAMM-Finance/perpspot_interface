@@ -101,6 +101,8 @@ export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string
     || address == "0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978"
     || address == "0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66"
     || address == "0x6694340fc020c5e6b96567843da2df01b2ce1eb6"
+    || address == "0xd4d42F0b6DEF4CE0383636770eF773390d85c61A"
+    || address == "0x6C2C06790b3E3E3c38e12Ee22F8183b37a13EE55"
     ) && token) 
     tokenFromNetwork= new Token(token?.chainId, token?.address, token?.decimals, token?.symbol, token?.name)
 

@@ -21,7 +21,7 @@ export default function CurrencyLogo(
   if (props.currency?.symbol === 'PENDLE') {
     return (
       <>
-        <PenLogo style={{ marginRight: '10px' }} width={19} fill="#fff" />
+        <PenLogo style={{ marginRight: '1px' }} width={10} fill="#fff" />
       </>
     )
   }

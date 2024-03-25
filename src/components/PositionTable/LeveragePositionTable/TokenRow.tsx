@@ -90,8 +90,8 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: 1400px) {
-    grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px;
-    /* grid-template-columns: 120px 110px 100px 100px 105px 120px 110px 80px; */
+    /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px; */
+    grid-template-columns: 120px 110px 130px 100px 120px 120px 110px 80px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -553,7 +553,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       isToken0: details.isToken0,
     }
   }, [details])
-
+  console.log('detailsdf', details)
   const { margin, totalDebtInput } = details
   const [token0Address, token1Address] = useMemo(() => {
     if (details) {
@@ -747,7 +747,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   if (loading) {
     return <LoadingRow />
   }
-
+  console.log('-------------position currency-----------',position.outputCurrency)
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
     <div ref={ref} data-testid="token-table-row">
