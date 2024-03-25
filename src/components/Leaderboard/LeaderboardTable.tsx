@@ -156,13 +156,13 @@ export default function LeaderboardTable() {
   }
 
   const prevData = useStoredData(addresses)
+  const combinedData= prevData
+  // const combinedData = useMemo(()=>{
+  //   if(!prevData || !userData) return 
 
-  const combinedData = useMemo(()=>{
-    if(!prevData || !userData) return 
+  //   return combineAndSumData(prevData, userData);
 
-    return combineAndSumData(prevData, userData);
-
-  }, [prevData, userData])
+  // }, [prevData, userData])
 
   // console.log('userdata', combinedData) 
 // const users: string[] = [];

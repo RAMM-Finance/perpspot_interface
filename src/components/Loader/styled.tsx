@@ -8,6 +8,24 @@ export const loadingAnimation = keyframes`
     background-position: 0% 50%;
   }
 `
+const loadingTextAnimation = keyframes`
+  0%, 20% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+`
+export const LoadingText = styled.div<{ size?: string }>`
+  font-size: ${({ size }) => size || '16px'};
+  color: ${({ theme }) => theme.textPrimary};
+  animation: ${loadingTextAnimation} 2s infinite ease-in-out;
+  margin: auto;
+  text-align: center;
+`;
 
 export const LoadingRows = styled.div`
   display: grid;

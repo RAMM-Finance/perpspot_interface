@@ -747,7 +747,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   if (loading) {
     return <LoadingRow />
   }
-  console.log('-------------position currency-----------',position.outputCurrency)
   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
   return (
     <div ref={ref} data-testid="token-table-row">

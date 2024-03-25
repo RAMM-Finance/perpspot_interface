@@ -166,9 +166,8 @@ export default function LeveragePositionsTable({
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
-
+  // console.log('----posiitons---------', positions, loading)
   const { filteredPositions } = useSelectPositions(positions)
-
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
@@ -182,7 +181,7 @@ export default function LeveragePositionsTable({
 
   if (loading) {
     return <LoadingTokenTable rowCount={3} />
-  } else if (!filteredPositions || filteredPositions?.length == 0) {
+  } else if (!positions || !filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
