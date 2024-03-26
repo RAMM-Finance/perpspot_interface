@@ -59,6 +59,7 @@ export interface ApplicationState {
       quote?: string
     }
   }
+  readonly blockNumber: number | undefined
 }
 
 const initialState: ApplicationState = {
@@ -68,6 +69,7 @@ const initialState: ApplicationState = {
   popupList: [],
   poolPriceData: {},
   poolList: [],
+  blockNumber: undefined,
 }
 
 const applicationSlice = createSlice({
@@ -80,6 +82,9 @@ const applicationSlice = createSlice({
     updateChainId(state, action) {
       const { chainId } = action.payload
       state.chainId = chainId
+    },
+    updateBlockNumber(state, action) {
+      state.blockNumber = action.payload.blockNumber
     },
     setOpenModal(state, action) {
       state.openModal = action.payload
@@ -118,5 +123,6 @@ export const {
   removePopup,
   updatePoolPriceData,
   updatePoolList,
+  updateBlockNumber,
 } = applicationSlice.actions
 export default applicationSlice.reducer

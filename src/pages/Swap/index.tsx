@@ -17,9 +17,9 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-import { computePoolAddress, usePool } from 'hooks/usePools'
+import { computePoolAddress, usePoolV2 } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
@@ -249,6 +249,7 @@ interface PoolItem {
   fee: number | undefined
 }
 
+// switches tokens to arbitrum
 function adjustTokensForChain(
   chainId: number | undefined,
   pool: PoolItem
@@ -286,9 +287,9 @@ export default function Swap({ className }: { className?: string }) {
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
 
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
-  const { adjustedChainId, adjustedPool } = adjustTokensForChain(chainId, {
+  const { adjustedPool } = adjustTokensForChain(chainId, {
     token0: pool?.token0.address,
     token1: pool?.token1.address,
     fee: pool?.fee,
@@ -302,7 +303,8 @@ export default function Swap({ className }: { className?: string }) {
 
   const location = useLocation()
   const poolsOHLC = useAppPoolOHLC()
-  // const poolKeyList = useRawPoolKeyList()
+  // const { chainId: activeChainId, provider } = useWeb3React()
+
   const chartSymbol = useMemo(() => {
     if (pool && poolsOHLC && chainId) {
       const id = getPoolId(adjustedPool.token0, adjustedPool.token1, adjustedPool.fee)
@@ -345,25 +347,19 @@ export default function Swap({ className }: { className?: string }) {
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
+  const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
         <MainWrapper>
-          {/* <PinWrapper>
-            <PinnedPools />
-          </PinWrapper> */}
           <SwapHeaderWrapper>
             <SelectPool />
-            {/*inputCurrency && outputCurrency ? (
-              <SelectPool />
-            ) : (
-              <ThemedText.BodyPrimary>Pair not found</ThemedText.BodyPrimary>
-            )*/}
             {!chartSymbol || !chainId ? (
               <Loader size="10px" style={{ width: '13%', height: '13%', margin: 'auto' }} />
             ) : (
-              <PoolDataChart symbol={chartSymbol} chainId={chainId} />
+              <PoolDataChart symbol={chartSymbol} chainId={chainId} chartContainerRef={chartContainerRef} />
             )}
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>

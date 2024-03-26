@@ -9,6 +9,7 @@ import useMachineTimeMs from 'hooks/useMachineTime'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
 import { useEffect, useMemo, useState } from 'react'
+// import { useBlockNumber } from 'state/application/hooks'
 import styled, { keyframes } from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
@@ -102,6 +103,7 @@ const NETWORK_HEALTH_CHECK_MS = ms`10s`
 
 export default function Polling() {
   const { chainId } = useWeb3React()
+  // const blockNumber = useBlockNumber()
   const blockNumber = useBlockNumber()
   const [isMounting, setIsMounting] = useState(false)
   const [isHover, setIsHover] = useState(false)

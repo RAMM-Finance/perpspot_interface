@@ -1,12 +1,14 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
-import useBlockNumber, { useFastForwardBlockNumber } from 'lib/hooks/useBlockNumber'
+// import useBlockNumber, { useFastForwardBlockNumber } from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
 import { useCallback, useEffect } from 'react'
 import { useRemoveTransaction } from 'state/transactions/hooks'
 import { TransactionDetails } from 'state/transactions/types'
 import { retry, RetryableError, RetryOptions } from 'utils/retry'
+
+import useBlockNumber, { useFastForwardBlockNumber } from '../useBlockNumber'
 
 interface Transaction {
   addedTime: number
@@ -62,7 +64,7 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
           provider.getTransactionReceipt(hash).then((receipt) => {
             if (receipt === null) {
               if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
-                removeTransaction(chainId, hash);
+                removeTransaction(chainId, hash)
                 return
               }
               console.debug(`Retrying tranasaction receipt for ${hash}`)
@@ -84,7 +86,8 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
           removeTransaction(chainId, tx.hash)
         }
       })
-    }, [chainId, provider, removeTransaction]
+    },
+    [chainId, provider, removeTransaction]
   )
 
   useEffect(() => {
@@ -110,10 +113,10 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
           })
         return cancel
       })
-    
-      Object.values(pendingTransactions).forEach((tx) => {
-        getTransaction(tx);
-      })
+
+    Object.values(pendingTransactions).forEach((tx) => {
+      getTransaction(tx)
+    })
 
     return () => {
       cancels.forEach((cancel) => cancel())

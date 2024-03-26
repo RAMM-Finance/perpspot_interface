@@ -72,7 +72,6 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
     return null
   }, [pool, poolOHLCData])
 
-  // const { onPoolSelection } = useSwapActionHandlers()
   const setCurrentPool = useSetCurrentPool()
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId

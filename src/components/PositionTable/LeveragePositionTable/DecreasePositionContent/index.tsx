@@ -710,7 +710,7 @@ export default function DecreasePositionContent({
             hideBalance={true}
             fiatValue={fiatValueReduceAmount}
             currency={outputCurrency}
-            label="Reduce Amount"
+            label="Reduce Total Position By"
             id="reduce-position-input"
           />
         </InputSection>

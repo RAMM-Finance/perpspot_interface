@@ -12,7 +12,6 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
-import { BigNumber as BN } from 'bignumber.js'
 
 const GridContainer = styled.div`
   display: flex;
@@ -99,11 +98,9 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
 //             a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber() < 0
 //               ? 0
 //               : a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber()
-
 //           return premiumB - premiumA
 //         })
 //     }
-
 //     return sortAscending ? returnedPositions : returnedPositions.reverse()
 //   }, [positions, sortMethod, sortAscending])
 // }
@@ -148,11 +145,9 @@ function useSelectPositions(positions?: MarginPositionDetails[]) {
 
   const filteredPositions = useFilteredPositions(positions)
 
-  
   // console.log("POSITIONS")
   // console.log(positions)
-  console.log(filteredPositions)
-  return { filteredPositions: filteredPositions }
+  return { filteredPositions }
   // return { filteredPositions: positions }
 }
 

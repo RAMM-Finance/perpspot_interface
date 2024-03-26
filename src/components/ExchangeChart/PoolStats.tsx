@@ -5,7 +5,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import Loader from 'components/Icons/LoadingSpinner'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { AutoRow } from 'components/Row'
-import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -54,7 +53,6 @@ export function PoolStatsSection({
 
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
 
-  // const { data: priceData } = useLatestPoolPriceData(poolAddress ?? undefined)
   const PoolsOHLC = useAppPoolOHLC()
 
   const contract0 = useTokenContract(address0)
@@ -63,6 +61,7 @@ export function PoolStatsSection({
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
     poolAddress ?? undefined,
   ])
+
   const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
     poolAddress ?? undefined,
   ])
@@ -225,7 +224,7 @@ export function Stat({
   delta?: boolean
 }) {
   let _value = formatBNToString(value ?? undefined, NumberType.FiatTokenPrice, true)
-  const arrow = getDeltaArrow(value?.toNumber(), 18)
+  const arrow = getDeltaArrow(value?.toNumber(), 14)
   if (value && baseQuoteSymbol) {
     _value = `${_value} ${baseQuoteSymbol}`
   }
@@ -235,7 +234,7 @@ export function Stat({
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
           {/* <LoadingBubble height="18px" /> */}
-          <Loader size='18px'/>
+          <Loader size="18px" />
         </StatPrice>
       </StatWrapper>
     )

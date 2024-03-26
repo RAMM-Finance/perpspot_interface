@@ -38,7 +38,7 @@ export function MulticallUpdater() {
   return (
     <multicall.Updater
       chainId={chainId}
-      latestBlockNumber={latestBlockNumber}
+      latestBlockNumber={latestBlockNumber ?? undefined}
       contract={contract}
       listenerOptions={listenerOptions}
     />

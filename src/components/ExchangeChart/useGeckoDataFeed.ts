@@ -12,7 +12,7 @@ import {
   SubscribeBarsCallback,
 } from '../../public/charting_library'
 
-const endpoint = 'https://api.geckoterminal.com/api/v2'
+const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
 const formatFetchBarEndpoint = (
   address: string,
@@ -36,6 +36,8 @@ const formatFetchLiveBarEndpoint = (
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&currency=${currency}&token=${token}&limit=1`
 }
 
+const apiKey = process.env.REACT_APP_GECKO_API_KEY
+
 const fetchBars = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
@@ -58,9 +60,9 @@ const fetchBars = async (
   try {
     // Check if the timeframe is '4h', then set the limit to 1000
     if (timeframe === 'hour' && aggregate === '4') {
-      limit = 1000;
+      limit = 1000
     }
-    // console.log('limit------- fetchbar', limit)
+
     const response = await axios.get(
       formatFetchBarEndpoint(
         address.toLocaleLowerCase(),
@@ -74,6 +76,7 @@ const fetchBars = async (
       {
         headers: {
           Accept: 'application/json',
+          'x-cg-pro-api-key': apiKey,
         },
       }
     )
@@ -177,6 +180,9 @@ const configurationData = {
 
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
+  token0: string
+  token1: string
+  fee: number
 }
 
 export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
@@ -297,7 +303,7 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
               const lowWickLength = Math.abs(bar.low - bar.close)
 
               // Define max and min wick length
-              const maxWickLength = 0.4// Maximum wick length as a percentage of the bar's open-close range
+              const maxWickLength = 0.4 // Maximum wick length as a percentage of the bar's open-close range
               const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
 
               let high = bar.high
@@ -305,14 +311,14 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
 
               // Adjust high and low prices if wick lengths exceed maximum or minimum values
               if (highWickLength > maxWickLength * (bar.close - bar.open)) {
-                  high = bar.close + maxWickLength * (bar.close - bar.open)
+                high = bar.close + maxWickLength * (bar.close - bar.open)
               } else if (highWickLength < minWickLength * (bar.close - bar.open)) {
-                  high = bar.close + minWickLength * (bar.close - bar.open)
+                high = bar.close + minWickLength * (bar.close - bar.open)
               }
               if (lowWickLength > maxWickLength * (bar.close - bar.open)) {
-                  low = bar.close - maxWickLength * (bar.close - bar.open)
+                low = bar.close - maxWickLength * (bar.close - bar.open)
               } else if (lowWickLength < minWickLength * (bar.close - bar.open)) {
-                  low = bar.close - minWickLength * (bar.close - bar.open)
+                low = bar.close - minWickLength * (bar.close - bar.open)
               }
 
               // if(high/close > 1.05){

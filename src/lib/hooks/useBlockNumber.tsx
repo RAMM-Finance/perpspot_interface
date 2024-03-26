@@ -52,7 +52,14 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
 
     if (provider && activeChainId && windowVisible) {
       // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
-      setChainBlock((chainBlock) => (chainBlock.chainId === activeChainId ? chainBlock : { chainId: activeChainId }))
+      // console.log('setChainBlock', chainId, activeChainId, block)
+      setChainBlock((chainBlock) => {
+        if (chainBlock.chainId !== activeChainId) {
+          return { chainId: activeChainId, block: chainBlock.block }
+        }
+        // If chainId hasn't changed, don't invalidate the reference, as it will trigger re-fetching of still-valid data.
+        return chainBlock
+      })
 
       provider
         .getBlockNumber()
@@ -84,5 +91,6 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
     }),
     [activeChainId, block, chainId]
   )
+
   return <BlockNumberContext.Provider value={value}>{children}</BlockNumberContext.Provider>
 }

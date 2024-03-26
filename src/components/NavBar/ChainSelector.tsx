@@ -28,7 +28,7 @@ const NETWORK_SELECTOR_CHAINS = [
   // SupportedChainId.CELO,
   // SupportedChainId.BNB,
   SupportedChainId.BERA_ARTIO,
-  SupportedChainId.LINEA
+  SupportedChainId.LINEA,
 ]
 
 interface ChainSelectorProps {
@@ -46,7 +46,7 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
-  const info = chainId ? getChainInfo(chainId) : undefined
+  const info = getChainInfo(chainId)
 
   const selectChain = useSelectChain()
   useSyncChainQuery()
@@ -98,31 +98,36 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   return (
     <Box position="relative" ref={ref}>
       <MouseoverTooltip text={t`Your wallet's current network is unsupported.`} disableHover={isSupported}>
-        {account && <Row
+        <Row
           as="button"
           gap="8"
           className={styles.ChainSelector}
           background={isOpen ? 'accentActiveSoft' : 'none'}
-          onClick={() =>
-            setIsOpen(!isOpen)
-            // onSelectChain(42161)
-          }
+          onClick={() => setIsOpen(!isOpen)}
         >
-          {chainId == 42161 || chainId == SupportedChainId.BERA_ARTIO || chainId == SupportedChainId.LINEA ? '' : 'Connect to Available Network'}
-
           {!isSupported ? (
             <AlertTriangle size={18} color={theme.textSecondary} />
           ) : (
             <img src={info.logoUrl} alt={info.label} className={styles.Image} data-testid="chain-selector-logo" />
           )}
-          {/*isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />*/}
-        </Row>}
+          {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
+        </Row>
       </MouseoverTooltip>
-      {
-        isOpen
-        // false
-         && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)
-      }
+      {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
     </Box>
   )
 }
+
+// <ChainSelectorWrapper ref={ref}>
+//   <MouseoverTooltip text={t`Your wallet's current network is unsupported.`} disabled={isSupported}>
+//     <ChainSelectorButton data-testid="chain-selector" onClick={() => setIsOpen(!isOpen)} isOpen={isOpen}>
+//       {!isSupported ? (
+//         <AlertTriangle size={20} color={theme.neutral2} />
+//       ) : (
+//         <ChainLogo chainId={chainId} size={20} testId="chain-selector-logo" />
+//       )}
+//       {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
+//     </ChainSelectorButton>
+//   </MouseoverTooltip>
+//   {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
+// </ChainSelectorWrapper>

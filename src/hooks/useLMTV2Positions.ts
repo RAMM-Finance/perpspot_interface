@@ -14,8 +14,8 @@ import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useDataProviderContract } from './useContract'
-import { useContractCall } from './useContractCall'
-import { computePoolAddress,POOL_INIT_CODE_HASH_2 } from './usePools'
+import { useContractCall, useContractCallV2 } from './useContractCall'
+import { computePoolAddress, POOL_INIT_CODE_HASH_2 } from './usePools'
 import { convertToBN } from './useV3Positions'
 
 export function useRateAndUtil(
@@ -25,7 +25,6 @@ export function useRateAndUtil(
   tickLower: number | undefined,
   tickUpper: number | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined; syncing: boolean } {
-  // console.log('contractcall1')
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower == tickUpper) return undefined
     const params = [
@@ -38,7 +37,7 @@ export function useRateAndUtil(
       tickUpper,
     ]
     let data
-    // console.log('rateutil', token0, token1, tickLower, tickUpper)
+
     try {
       data = DataProviderSDK.INTERFACE.encodeFunctionData('getUtilAndAPR', params)
     } catch (err) {
@@ -46,9 +45,9 @@ export function useRateAndUtil(
     }
     return data
   }, [token0, token1, fee, tickLower, tickUpper])
-  // useRenderCount()
+
   const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 3)
-  // console.log('rateutil', result, loading, syncing)
+
   return useMemo(() => {
     if (!result) {
       return {
@@ -119,13 +118,11 @@ export function useInstantaeneousRate(
 }
 
 // BinData[] |
-export function useBulkBinData(
-  pool: Pool | undefined
-  // token0: string | undefined,
-  // token1: string | undefined,
-  // fee: number | undefined,
-  // currentTick: number | undefined
-): { loading: boolean; error: DecodedError | undefined; result: BinData[] | undefined } {
+export function useBulkBinData(pool: Pool | undefined): {
+  loading: boolean
+  error: DecodedError | undefined
+  result: BinData[] | undefined
+} {
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
 
   const calldata = useMemo(() => {
@@ -145,9 +142,19 @@ export function useBulkBinData(
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
   }, [pool, tickDiscretization])
 
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const { result, loading, error, syncing } = useContractCallV2(
+    DATA_PROVIDER_ADDRESSES,
+    calldata,
+    ['queryBinData'],
+    false,
+    (result) => DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
+  )
+
+  const token0Decimals = pool?.token0.decimals
+  const token1Decimals = pool?.token1.decimals
+
   return useMemo(() => {
-    if (!result || !pool) {
+    if (!result || result.length == 0 || !token0Decimals || !token1Decimals) {
       return {
         result: undefined,
         loading,
@@ -155,16 +162,14 @@ export function useBulkBinData(
         syncing,
       }
     } else {
-      const parsed: BinData[] = DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
-      const token0Decimals = pool?.token0.decimals
-      const token1Decimals = pool?.token1.decimals
-      const processed = parsed.map((bin) => {
+      const parsed = result
+      const processed: BinData[] = parsed.map((bin: any) => {
         return {
-          price: new BN(bin.price.toString()).shiftedBy(-18),
-          token0Liquidity: new BN(bin.token0Liquidity.toString()).shiftedBy(-token0Decimals),
-          token1Liquidity: new BN(bin.token1Liquidity.toString()).shiftedBy(-token1Decimals),
-          token0Borrowed: new BN(bin.token0Borrowed.toString()).shiftedBy(-token0Decimals),
-          token1Borrowed: new BN(bin.token1Borrowed.toString()).shiftedBy(-token1Decimals),
+          price: new BN(bin[0].toString()).shiftedBy(-18),
+          token0Liquidity: new BN(bin[1].toString()).shiftedBy(-token0Decimals),
+          token1Liquidity: new BN(bin[2].toString()).shiftedBy(-token1Decimals),
+          token0Borrowed: new BN(bin[3].toString()).shiftedBy(-token0Decimals),
+          token1Borrowed: new BN(bin[4].toString()).shiftedBy(-token1Decimals),
         }
       })
       return {
@@ -174,7 +179,7 @@ export function useBulkBinData(
         syncing,
       }
     }
-  }, [result, loading, error, syncing, pool])
+  }, [result, loading, error, syncing, token0Decimals, token1Decimals])
 }
 
 // fetches all leveraged LMT positions for a given account UseLmtMarginPositionsResults
@@ -344,7 +349,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         tokenA: key.poolKey.token0,
         tokenB: key.poolKey.token1,
         fee: key.poolKey.fee,
-        initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO? POOL_INIT_CODE_HASH_2: undefined 
+        initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO ? POOL_INIT_CODE_HASH_2 : undefined,
       }),
       key.trader,
       key.isToken0,
@@ -428,8 +433,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
       tokenA: key.poolKey.token0,
       tokenB: key.poolKey.token1,
       fee: key.poolKey.fee,
-      initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO? POOL_INIT_CODE_HASH_2: undefined 
-
+      initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO ? POOL_INIT_CODE_HASH_2 : undefined,
     })
 
     return DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])

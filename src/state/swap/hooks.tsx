@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
 import { useBestTrade } from 'hooks/useBestTrade'
 // import { useLimitlessPositionFromKeys } from 'hooks/useV3Positions'
@@ -289,17 +288,25 @@ export function getInitialSwapState(): SwapState {
     leverage: false,
     activeTab: ActiveSwapTab.LONG,
     ltv: null,
-    poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
-    poolKey: {
-      token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-      token1: '0x912CE59144191C1204E64559FE8253a0e49E6548',
-      fee: 500,
-    },
+    poolId: null,
+    poolKey: null,
     [Field.INPUT]: {
-      currencyId: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      currencyId: null,
     },
     [Field.OUTPUT]: {
-      currencyId: '0x912CE59144191C1204E64559FE8253a0e49E6548',
+      currencyId: null,
     },
+    // poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
+    // poolKey: {
+    //   token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    //   token1: '0x912CE59144191C1204E64559FE8253a0e49E6548',
+    //   fee: 500,
+    // },
+    // [Field.INPUT]: {
+    //   currencyId: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    // },
+    // [Field.OUTPUT]: {
+    //   currencyId: '0x912CE59144191C1204E64559FE8253a0e49E6548',
+    // },
   }
 }

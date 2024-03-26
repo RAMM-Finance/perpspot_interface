@@ -5,6 +5,7 @@ import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
 import NewBadge from 'components/WalletModal/NewBadge'
 import Web3Status from 'components/Web3Status'
+import { SupportedChainId } from 'constants/chains'
 import { useMGTMMicrositeEnabled } from 'featureFlags/flags/mgtm'
 import { chainIdToBackendName } from 'graphql/data/util'
 import { useIsNftPage } from 'hooks/useIsNftPage'
@@ -23,7 +24,6 @@ import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.sv
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
 import * as styles from './style.css'
-import { SupportedChainId } from 'constants/chains'
 
 const Nav = styled.nav`
   /* padding: 10px 12px; */
@@ -101,9 +101,9 @@ export const PageTabs = () => {
           <Trans>Earn</Trans>
         </MenuItem>
         {connectedChainId == SupportedChainId.BERA_ARTIO ? (
-        <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
-          <Trans>Faucets</Trans>
-        </MenuItem>
+          <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
+            <Trans>Faucets</Trans>
+          </MenuItem>
         ) : null}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
           <Trans>LMT</Trans>

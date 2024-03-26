@@ -14,6 +14,7 @@ import {
   removePopup,
   setFiatOnrampAvailability,
   setOpenModal,
+  updateBlockNumber,
 } from './reducer'
 
 export function useModalIsOpen(modal: ApplicationModal): boolean {
@@ -27,16 +28,7 @@ export function usePoolKeyList(): {
   error: any
 } {
   const lmtQuoter = useLmtQuoterContract()
-  // const [poolKeys, setPoolKeys] = useState()
 
-  // const wtf = useMemo(()=>{
-  //   if(!lmtQuoter) return
-  //   const call = async()=>{
-  //     const data = await lmtQuoter.getPoolKeys()
-  //     setPoolKeys(data)
-  //   } 
-  //   call()
-  // }, [lmtQuoter])
   const { data, error, isLoading } = useQuery(
     ['poolKeyList', lmtQuoter?.address, lmtQuoter ? 'dataProvider' : ''],
     async () => {
@@ -53,7 +45,6 @@ export function usePoolKeyList(): {
       refetchIntervalInBackground: false,
     }
   )
-  // console.log('wtf quoter', poolKeys, lmtQuoter, data)
 
   return useMemo(() => {
     return {
@@ -63,6 +54,19 @@ export function usePoolKeyList(): {
     }
   }, [data, isLoading, error])
 }
+
+// export function useBlockNumber(): number | undefined {
+//   return useAppSelector((state: AppState) => state.application.blockNumber)
+// }
+
+// export function useFastForwardBlockNumber(): (update: number) => void {
+//   const dispatch = useAppDispatch()
+//   const block = useBlockNumber()
+//   return useCallback(
+//     (update: number) => block && update > block && dispatch(updateBlockNumber({ blockNumber: update })),
+//     [dispatch, block]
+//   )
+// }
 
 /** @ref https://dashboard.moonpay.com/api_reference/client_side_api#ip_addresses */
 interface MoonpayIPAddressesResponse {
@@ -139,6 +143,11 @@ export function useToggleModal(modal: ApplicationModal): () => void {
   const isOpen = useModalIsOpen(modal)
   const dispatch = useAppDispatch()
   return useCallback(() => dispatch(setOpenModal(isOpen ? null : modal)), [dispatch, modal, isOpen])
+}
+
+export function useUpdateBlockNumber(): (blockNumber: number) => void {
+  const dispatch = useAppDispatch()
+  return useCallback((blockNumber: number) => dispatch(updateBlockNumber({ blockNumber })), [dispatch])
 }
 
 export function useCloseModal(): () => void {

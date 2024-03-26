@@ -235,7 +235,6 @@ export default function App() {
               {isLoaded ? (
                 <Routes>
                   <Route path="/" element={<Swap />} />
-
                   <Route path="tokens" element={<Tokens />}>
                     <Route path=":chainName" />
                   </Route>

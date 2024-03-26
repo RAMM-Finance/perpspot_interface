@@ -42,10 +42,17 @@ const getLanguageFromURL = (): LanguageCode | null => {
   return results === null ? null : (decodeURIComponent(results[1].replace(/\+/g, ' ')) as LanguageCode)
 }
 
-export const PoolDataChart = ({ chainId, symbol }: { chainId: number; symbol: string }) => {
-  const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
+export const PoolDataChart = ({
+  chainId,
+  symbol,
+  chartContainerRef,
+}: {
+  chainId: number
+  symbol: string
+  chartContainerRef: React.MutableRefObject<HTMLInputElement>
+}) => {
   // const { datafeed } = useDatafeed({ chainId })
-  let newChainId = chainId == 80085? 42161: chainId 
+  const newChainId = chainId == 80085 ? 42161 : chainId
   const { datafeed } = useGeckoDatafeed({ chainId: newChainId })
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)

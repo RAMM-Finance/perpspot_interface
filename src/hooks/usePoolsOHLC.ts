@@ -5,9 +5,11 @@ import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
+import { switchChainAddress } from 'constants/fake-tokens'
 import { useCallback, useMemo } from 'react'
 import { useQuery } from 'react-query'
-import { RawPoolKey } from 'types/lmtv2position'
+import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 
 interface HydratedPool {
   pool: RawPoolKey
@@ -24,7 +26,9 @@ const formatEndpoint = (address: string, currency: string, token: 'base' | 'quot
   return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
 }
 
-const getPoolAddress = (token0: string, token1: string, fee: number, factoryAddress: string) => {
+const getPoolAddress = (tokenA: string, tokenB: string, fee: number, factoryAddress: string) => {
+  const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
+  const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
   return getCreate2Address(
     factoryAddress,
     keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
@@ -32,31 +36,17 @@ const getPoolAddress = (token0: string, token1: string, fee: number, factoryAddr
   )
 }
 
-interface PoolItem {
-  token0: string
-  token1: string
-  fee: number
-}
+function switchPoolChain(fromChainId: number, toChainId: number, pool: PoolKey): PoolKey {
+  const tokenA = switchChainAddress(fromChainId, toChainId, pool.token0)
+  const tokenB = switchChainAddress(fromChainId, toChainId, pool.token1)
 
-function adjustTokensForChain(chainId: number, pool: PoolItem): { adjustedChainId: number; adjustedPool: PoolItem } {
-  // Check for specific condition and adjust if necessary
-  if (
-    chainId === 80085 &&
-    pool.token0 === '0x174652b085C32361121D519D788AbF0D9ad1C355' &&
-    pool.token1 === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b' &&
-    pool.fee === 500
-  ) {
-    return {
-      adjustedChainId: 42161,
-      adjustedPool: {
-        token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-        token1: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-        fee: 500,
-      },
-    }
+  const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
+  const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
+  return {
+    token0,
+    token1,
+    fee: pool.fee,
   }
-
-  return { adjustedChainId: chainId, adjustedPool: pool }
 }
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
@@ -68,13 +58,21 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
   error: any
 } {
   const { chainId } = useWeb3React()
+
   const fetchData = useCallback(async () => {
     if (!list || !chainId || list.length === 0) throw new Error('No list or chainId')
 
     const results = []
+
     // fetch data
     for (let i = 0; i < list.length; i++) {
-      const { adjustedChainId, adjustedPool } = adjustTokensForChain(chainId, list[i] as PoolItem)
+      let adjustedPool = list[i]
+      let adjustedChainId = chainId
+      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
+        adjustedPool = switchPoolChain(chainId, SupportedChainId.ARBITRUM_ONE, list[i] as PoolKey)
+        adjustedChainId = SupportedChainId.ARBITRUM_ONE
+      }
+
       const poolAddress = getPoolAddress(
         adjustedPool.token0,
         adjustedPool.token1,
@@ -112,8 +110,6 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       if (responses[i].status !== 200) throw new Error('Failed to fetch pool price data')
     }
 
-    // data.meta.base.address
-
     // parse data
     const parsed: Record<string, HydratedPool> = {}
     responses.forEach((res, i) => {
@@ -123,13 +119,14 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       const price24hAgo = data[0][1]
       const priceNow = data[0][4]
       const delta24h = (priceNow - price24hAgo) / price24hAgo
+      const { token0, token1, fee } = list[i]
+      let base = res?.data?.meta?.base?.address
+      let quote = res?.data?.meta?.quote?.address
+      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
+        base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
+        quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
+      }
 
-      const { adjustedPool } = adjustTokensForChain(chainId, list[i] as PoolItem)
-
-      // const { token0, token1, fee } = list[i]
-      const { token0, token1, fee } = adjustedPool
-      const base = res?.data?.meta?.base?.address
-      const quote = res?.data?.meta?.quote?.address
       parsed[`${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`] = {
         high24,
         low24,

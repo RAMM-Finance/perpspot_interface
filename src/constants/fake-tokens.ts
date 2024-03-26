@@ -24,16 +24,14 @@ export const weth_a = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
 export const wbtc_a = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
 export const usdc_a = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
 
-export const lusdc = "0x174652b085C32361121D519D788AbF0D9ad1C355"
-export const lweth = "0x35B4c60a4677EcadaF2fe13fe3678efF724be16b"
+export const lusdc = '0x174652b085C32361121D519D788AbF0D9ad1C355'
+export const lweth = '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b'
 export const WETH_ARBITRUM = new Token(42161, weth_a, 18, 'wETH', 'Wrapped ETH')
 export const WBTC_ARBITRUM = new Token(42161, wbtc_a, 8, 'wBTC', 'Wrapped BTC')
-export const USDC_ARBITRUM = new Token(42161, usdc_a, 6, 'USDC', "USDC")
-
+export const USDC_ARBITRUM = new Token(42161, usdc_a, 6, 'USDC', 'USDC')
 
 export const USDC_BERA = new Token(80085, lusdc, 18, 'USDC', 'Limitless USDC')
 export const WETH_BERA = new Token(80085, lweth, 18, 'WETH', 'Limitless WETH')
-
 
 export const FETH_SEPOLIA = new Token(11155111, feth_s, 18, 'fETH', 'Fake ETH')
 export const FUSDC_SEPOLIA = new Token(11155111, fusdc_s, 18, 'fUSDC', 'Fake USDC')
@@ -66,7 +64,7 @@ export const FakeTokensMapMumbai: { [address: string]: Token } = {
 export const TokensArbitrum: { [address: string]: Token } = {
   [WETH_ARBITRUM.address]: WETH_ARBITRUM,
   [WBTC_ARBITRUM.address]: WBTC_ARBITRUM,
-  [USDC_ARBITRUM.address]: USDC_ARBITRUM
+  [USDC_ARBITRUM.address]: USDC_ARBITRUM,
 }
 
 export const TokensArtio: { [address: string]: Token } = {
@@ -74,12 +72,56 @@ export const TokensArtio: { [address: string]: Token } = {
   [WETH_BERA.address]: WETH_BERA,
 }
 
+const WETH_LINEA = new Token(59144, '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', 18, 'WETH', 'Wrapped Ether')
+const USDC_LINEA = new Token(59144, '0x176211869cA2b568f2A7D4EE941E073a821EE1ff', 6, 'USDC', 'USDC')
+const WBTC_LINEA = new Token(59144, '0x3aAB2285ddcDdaD8edf438C1bAB47e1a9D05a9b4', 8, 'WBTC', 'Wrapped BTC')
+
+export const TokensLinea: { [address: string]: Token } = {
+  [WETH_LINEA.address]: WETH_LINEA,
+  [USDC_LINEA.address]: USDC_LINEA,
+  [WBTC_LINEA.address]: WBTC_LINEA,
+}
+
+const LINEA_TO_ARBITRUM: { [address: string]: string } = {
+  [WETH_LINEA.address.toLowerCase()]: WETH_ARBITRUM.address,
+  [USDC_LINEA.address.toLowerCase()]: USDC_ARBITRUM.address,
+  [WBTC_LINEA.address.toLowerCase()]: WBTC_ARBITRUM.address,
+}
+
+const BERA_TO_ARBITRUM: { [address: string]: string } = {
+  [USDC_BERA.address.toLowerCase()]: USDC_ARBITRUM.address,
+  [WETH_BERA.address.toLowerCase()]: WETH_ARBITRUM.address,
+}
+
+const ARBITRUM_TO_LINEA: { [address: string]: string } = {
+  [WETH_ARBITRUM.address.toLowerCase()]: WETH_LINEA.address,
+  [USDC_ARBITRUM.address.toLowerCase()]: USDC_LINEA.address,
+  [WBTC_ARBITRUM.address.toLowerCase()]: WBTC_LINEA.address,
+}
+const ARBITRUM_TO_BERA: { [address: string]: string } = {
+  [USDC_ARBITRUM.address.toLowerCase()]: USDC_BERA.address,
+  [WETH_ARBITRUM.address.toLowerCase()]: WETH_BERA.address,
+}
+
+export const switchChainAddress = (fromChainId: number, toChainId: number, address: string) => {
+  if (fromChainId === SupportedChainId.LINEA && toChainId === SupportedChainId.ARBITRUM_ONE) {
+    return LINEA_TO_ARBITRUM[address.toLowerCase()]
+  } else if (fromChainId === SupportedChainId.BERA_ARTIO && toChainId === SupportedChainId.ARBITRUM_ONE) {
+    return BERA_TO_ARBITRUM[address.toLowerCase()]
+  } else if (fromChainId === SupportedChainId.ARBITRUM_ONE && toChainId === SupportedChainId.LINEA) {
+    return ARBITRUM_TO_LINEA[address.toLowerCase()]
+  } else if (fromChainId === SupportedChainId.ARBITRUM_ONE && toChainId === SupportedChainId.BERA_ARTIO) {
+    return ARBITRUM_TO_BERA[address.toLowerCase()]
+  }
+  return address
+}
+
 export const getFakeTokensMap = (chainId?: number): { [address: string]: Token } => {
   if (chainId === SupportedChainId.SEPOLIA) {
     return FakeTokensMapSepolia
   } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return TokensArbitrum
-  }else if(chainId === SupportedChainId.BERA_ARTIO){
+  } else if (chainId === SupportedChainId.BERA_ARTIO) {
     return TokensArtio
   } else {
     return FakeTokensMapMumbai
@@ -89,173 +131,9 @@ export const getFakeTokensMap = (chainId?: number): { [address: string]: Token }
 export const getDefaultTokensMap = (chainId: number): { [address: string]: Token } => {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return TokensArbitrum
+  } else if (chainId === SupportedChainId.LINEA) {
+    return TokensLinea
   } else {
     return TokensArbitrum
-  }
-}
-export const getFakeSymbol = (chainId: number, token0?: string, token1?: string): string | undefined => {
-  if (chainId === SupportedChainId.SEPOLIA) {
-    if (token0 === feth_s && token1 === fusdc_s) {
-      return JSON.stringify({
-        poolAddress: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640',
-        baseSymbol: 'fETH',
-        quoteSymbol: 'fUSDC',
-        invertPrice: false,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === feth_s && token1 === fwbtc_s) {
-      return JSON.stringify({
-        poolAddress: '0x4585fe77225b41b697c938b018e2ac67ac5a20c0',
-        baseSymbol: 'fETH',
-        quoteSymbol: 'fWBTC',
-        invertPrice: true,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === fusdc_s && token1 === fdai_s) {
-      return JSON.stringify({
-        poolAddress: '0x5777d92f208679db4b9778590fa3cab3ac9e2168',
-        baseSymbol: 'fUSDC',
-        quoteSymbol: 'fDAI',
-        invertPrice: false,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === fwbtc_s && token1 === fdai_s) {
-      return JSON.stringify({
-        poolAddress: '0x391e8501b626c623d39474afca6f9e46c2686649',
-        baseSymbol: 'fWBTC',
-        quoteSymbol: 'fDAI',
-        invertPrice: true,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === feth_s && token1 === fdai_s) {
-      return JSON.stringify({
-        poolAddress: '0x60594a405d53811d3bc4766596efd80fd545a270',
-        baseSymbol: 'fETH',
-        quoteSymbol: 'fDAI',
-        invertPrice: false,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === fusdc_s && token1 === fwbtc_s) {
-      return JSON.stringify({
-        poolAddress: '0x99ac8ca7087fa4a2a1fb6357269965a2014abc35',
-        baseSymbol: 'fWBTC',
-        quoteSymbol: 'fUSDC',
-        invertPrice: true,
-        useUniswapSubgraph: true,
-      })
-    }
-  } else if (chainId === SupportedChainId.POLYGON_MUMBAI) {
-    if (token0 === fusdc_m && token1 === feth_m) {
-      return JSON.stringify({
-        poolAddress: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640',
-        baseSymbol: 'fETH',
-        quoteSymbol: 'fUSDC',
-        invertPrice: false,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === feth_m && token1 === fwbtc_m) {
-      return JSON.stringify({
-        poolAddress: '0x4585fe77225b41b697c938b018e2ac67ac5a20c0',
-        baseSymbol: 'fETH',
-        quoteSymbol: 'fWBTC',
-        invertPrice: true,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === fusdc_m && token1 === fdai_m) {
-      return JSON.stringify({
-        poolAddress: '0x5777d92f208679db4b9778590fa3cab3ac9e2168',
-        baseSymbol: 'fUSDC',
-        quoteSymbol: 'fDAI',
-        invertPrice: false,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === fwbtc_m && token1 === fdai_m) {
-      return JSON.stringify({
-        poolAddress: '0x391e8501b626c623d39474afca6f9e46c2686649',
-        baseSymbol: 'fWBTC',
-        quoteSymbol: 'fDAI',
-        invertPrice: true,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === feth_m && token1 === fdai_m) {
-      return JSON.stringify({
-        poolAddress: '0x60594a405d53811d3bc4766596efd80fd545a270',
-        baseSymbol: 'fETH',
-        quoteSymbol: 'fDAI',
-        invertPrice: false,
-        useUniswapSubgraph: true,
-      })
-    } else if (token0 === fusdc_m && token1 === fwbtc_m) {
-      return JSON.stringify({
-        poolAddress: '0x99ac8ca7087fa4a2a1fb6357269965a2014abc35',
-        baseSymbol: 'fWBTC',
-        quoteSymbol: 'fUSDC',
-        invertPrice: true,
-        useUniswapSubgraph: true,
-      })
-    }
-  }
-  return undefined
-}
-
-export const getFakePool = (chainId: number, token0?: string, token1?: string): string | undefined => {
-  if (chainId === SupportedChainId.SEPOLIA) {
-    if (token0 === feth_s && token1 === fusdc_s) {
-      return '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640'
-    } else if (token0 === feth_s && token1 === fwbtc_s) {
-      return '0x4585fe77225b41b697c938b018e2ac67ac5a20c0'
-    } else if (token0 === fusdc_s && token1 === fdai_s) {
-      return '0x5777d92f208679db4b9778590fa3cab3ac9e2168'
-    } else if (token0 === fdai_s && token1 === fwbtc_s) {
-      return '0x391e8501b626c623d39474afca6f9e46c2686649'
-    } else if (token0 === feth_s && token1 === fdai_s) {
-      return '0x60594a405d53811d3bc4766596efd80fd545a270'
-    } else if (token0 === fusdc_s && token1 === fwbtc_s) {
-      return '0x99ac8ca7087fa4a2a1fb6357269965a2014abc35'
-    }
-  } else if (chainId === SupportedChainId.POLYGON_MUMBAI) {
-    if (token0 === fusdc_m && token1 === feth_m) {
-      return '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640'
-    } else if (token0 === feth_m && token1 === fwbtc_m) {
-      return '0x4585fe77225b41b697c938b018e2ac67ac5a20c0'
-    } else if (token0 === fusdc_m && token1 === fdai_m) {
-      return '0x5777d92f208679db4b9778590fa3cab3ac9e2168'
-    } else if (token0 === fwbtc_m && token1 === fdai_m) {
-      return '0x391e8501b626c623d39474afca6f9e46c2686649'
-    } else if (token0 === feth_m && token1 === fdai_m) {
-      return '0x60594a405d53811d3bc4766596efd80fd545a270'
-    } else if (token0 === fusdc_m && token1 === fwbtc_m) {
-      return '0x99ac8ca7087fa4a2a1fb6357269965a2014abc35'
-    }
-  } else {
-    if (token0 === wbtc_a && token1 === weth_a) {
-      return '0x4585fe77225b41b697c938b018e2ac67ac5a20c0'
-    }
-  }
-  return undefined
-}
-
-// checks if should use fake pool pair
-export const isFakePair = (chainId: number, token0?: string, token1?: string): boolean => {
-  if (chainId === SupportedChainId.SEPOLIA) {
-    return (
-      (token0 === feth_s && token1 === fusdc_s) ||
-      (token0 === feth_s && token1 === fwbtc_s) ||
-      (token0 === fusdc_s && token1 === fdai_s) ||
-      (token0 === fdai_s && token1 === fwbtc_s) ||
-      (token0 === feth_s && token1 === fdai_s) ||
-      (token0 === fusdc_s && token1 === fwbtc_s)
-    )
-  } else if (chainId === SupportedChainId.POLYGON_MUMBAI) {
-    return (
-      (token0 === fusdc_m && token1 === feth_m) ||
-      (token0 === feth_m && token1 === fwbtc_m) ||
-      (token0 === fusdc_m && token1 === fdai_m) ||
-      (token0 === fwbtc_m && token1 === fdai_m) ||
-      (token0 === feth_m && token1 === fdai_m) ||
-      (token0 === fusdc_m && token1 === fwbtc_m)
-    )
-  } else {
-    return false
   }
 }

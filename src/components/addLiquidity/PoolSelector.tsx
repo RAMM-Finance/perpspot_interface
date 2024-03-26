@@ -2,8 +2,10 @@ import { Currency } from '@uniswap/sdk-core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { getInputOutputCurrencies } from 'constants/pools'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
+import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { Box } from 'nft/components/Box'
@@ -14,15 +16,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dispatch, SetStateAction } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
-import { PoolKey } from 'types/lmtv2position'
-import { useCurrency } from 'hooks/Tokens'
-import { getInputOutputCurrencies } from 'constants/pools'
 
 const PoolListHeader = styled.h4`
   font-size: 12px;
@@ -48,7 +46,7 @@ export const PoolSelector = ({
   setSelectPair,
   fee,
   inputCurrencyId,
-  outputCurrencyId
+  outputCurrencyId,
 }: {
   largeWidth: boolean
   bg?: boolean
@@ -58,7 +56,6 @@ export const PoolSelector = ({
   inputCurrencyId?: string // current input id
   outputCurrencyId?: string // current output id
 }) => {
-
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -88,7 +85,7 @@ export const PoolSelector = ({
   const handlePoolSelect = useCallback(
     (currency0: Currency, currency1: Currency, fee: number) => {
       const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
-      if (currentId && poolId !== currentId || selectPair && !currentId) {
+      if ((currentId && poolId !== currentId) || (selectPair && !currentId)) {
         const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
         navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
       }
@@ -267,9 +264,7 @@ export const PoolSelector = ({
                 color="secondary"
               >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
             </Row>
-            <Row gap="8">
-              {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
-            </Row>
+            <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
           </>
         )}
       </Row>

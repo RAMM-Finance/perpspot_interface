@@ -90,9 +90,7 @@ export const FALLBACK_URLS = {
     'https://bsc-dataseed4.defibit.io',
     'https://rpc.ankr.com/bsc',
   ],
-  [SupportedChainId.LINEA]: [
-    `https://rpc.linea.build`
-  ]
+  [SupportedChainId.LINEA]: [`https://rpc.linea.build`],
 }
 
 /**
@@ -137,11 +135,9 @@ export const RPC_URLS = {
   [SupportedChainId.CELO]: FALLBACK_URLS[SupportedChainId.CELO],
   [SupportedChainId.CELO_ALFAJORES]: FALLBACK_URLS[SupportedChainId.CELO_ALFAJORES],
   [SupportedChainId.BNB]: [QUICKNODE_RPC_URL, ...FALLBACK_URLS[SupportedChainId.BNB]],
-  [SupportedChainId.BERA_ARTIO]: [
-    `https://artio.rpc.berachain.com/`
-  ],
+  [SupportedChainId.BERA_ARTIO]: [`https://artio.rpc.berachain.com/`],
   [SupportedChainId.LINEA]: [
     `https://linea-mainnet.infura.io/v3/${INFURA_KEY}`,
-    ...FALLBACK_URLS[SupportedChainId.LINEA]
+    ...FALLBACK_URLS[SupportedChainId.LINEA],
   ],
 }

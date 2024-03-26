@@ -41,8 +41,7 @@ export interface SwapState {
   readonly ltv: string | undefined | null
 }
 
-const initialState: SwapState = getInitialSwapState() // queryParametersToSwapState(parsedQueryString())
-// console.log('initialState', initialState)
+const initialState: SwapState = getInitialSwapState()
 
 export default createReducer<SwapState>(initialState, (builder) =>
   builder

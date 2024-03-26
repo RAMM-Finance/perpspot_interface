@@ -1,12 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { ethers } from 'ethers'
+import { useReferralContract } from 'hooks/useContract'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useState } from 'react'
 import { PositionDetails } from 'types/position'
-import {useReferralContract} from 'hooks/useContract'
-import { ethers } from 'ethers'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
-
 interface UseV3PositionsResults {
   loading: boolean
   positions: PositionDetails[] | undefined
@@ -95,32 +94,32 @@ const GenesisAddressses = [
   '0x4F02Bbe7Fc56c412B24E59fDd79e2DfA4C6B6048',
   '0xFD84b7AC1E646580db8c77f1f05F47977fAda692',
   '0x6ED0B92553d2be567d0b1245aE4e66cBd1ADe51f',
-  '0xBC02E19F1272216b3D2EDDf1b4Ef30eEA1B170eB', 
-  '0xb92505a3364B7C7E333c05B44cE1E55377fC43cA', 
+  '0xBC02E19F1272216b3D2EDDf1b4Ef30eEA1B170eB',
+  '0xb92505a3364B7C7E333c05B44cE1E55377fC43cA',
 
-  "0x47222A77742bDd3BC56196FfB444B2D6dd019a43",
-  "0x30086c39930C0708B83e2C31Ee080505D843aC8C",
-  "0x31613Fa26f749dD32B27e78566184b287E753D76",
-  "0x3Bfb3a55c7190ead733Cd7B5A7dc80B2D9e9BAba",
-  "0xD690B90480010DCd01e13a26835D67D1c71FDAE8",
-  "0xb9a7329e124edb947255e58df434d4b495def0e9",
-  "0xbd51C01c14FC9F0999ccfDeAD8Ea5b29FEaD68BB",
-  "0x3723f31F00ddA73d4151887d26385542bb897059",
-  "0xba4363BFaD340b41d52029d3A26D35dcF8d1D21f",
-  "0xa40bFaD79081c09E1703346561019cb09d1b27a7",
-  "0x477Ff99788728bCB75C1226270D54e857C6467FA",
-  "0xc578AB81B82E994606Dd323Baa19C1af5101dfbd",
-  "0xF43385Aa764Bd312466973F89444Bf6fBcCD8278",
-  "0xecd02810db92ff027ea1b0850d46bda963676d74",
-  "0xC32Bfe6c9141B25DDB628e73786b746c7a27b216",
-  "0xc56bc1a93909508b0f6e57a32a5c2cc8b4940c08",
-  "0x9F6c6910A8B1199251a9E213a50a8ba3DFA8d7BE",
-  "0x65f106ec944aF77914d6DF5EaC6488a147a5d054",
-  "0xa6F473548CB679d60Cebf7C00e9b37816f0b1E17", 
-  "0xF3Bdf46dD9036EaE38373BB4b98C144e3F3b67c2", 
-  "0x861a2b7d36F21B8873AdAE86AeB5A02C03f6C022", 
-  "0xC9742649495A090e7C901d0b12a4657393189654", 
-  "0xF7764A9B664a3905192d95Aa43201033258871C6"
+  '0x47222A77742bDd3BC56196FfB444B2D6dd019a43',
+  '0x30086c39930C0708B83e2C31Ee080505D843aC8C',
+  '0x31613Fa26f749dD32B27e78566184b287E753D76',
+  '0x3Bfb3a55c7190ead733Cd7B5A7dc80B2D9e9BAba',
+  '0xD690B90480010DCd01e13a26835D67D1c71FDAE8',
+  '0xb9a7329e124edb947255e58df434d4b495def0e9',
+  '0xbd51C01c14FC9F0999ccfDeAD8Ea5b29FEaD68BB',
+  '0x3723f31F00ddA73d4151887d26385542bb897059',
+  '0xba4363BFaD340b41d52029d3A26D35dcF8d1D21f',
+  '0xa40bFaD79081c09E1703346561019cb09d1b27a7',
+  '0x477Ff99788728bCB75C1226270D54e857C6467FA',
+  '0xc578AB81B82E994606Dd323Baa19C1af5101dfbd',
+  '0xF43385Aa764Bd312466973F89444Bf6fBcCD8278',
+  '0xecd02810db92ff027ea1b0850d46bda963676d74',
+  '0xC32Bfe6c9141B25DDB628e73786b746c7a27b216',
+  '0xc56bc1a93909508b0f6e57a32a5c2cc8b4940c08',
+  '0x9F6c6910A8B1199251a9E213a50a8ba3DFA8d7BE',
+  '0x65f106ec944aF77914d6DF5EaC6488a147a5d054',
+  '0xa6F473548CB679d60Cebf7C00e9b37816f0b1E17',
+  '0xF3Bdf46dD9036EaE38373BB4b98C144e3F3b67c2',
+  '0x861a2b7d36F21B8873AdAE86AeB5A02C03f6C022',
+  '0xC9742649495A090e7C901d0b12a4657393189654',
+  '0xF7764A9B664a3905192d95Aa43201033258871C6',
 ]
 
 export function useUsingCode() {
@@ -131,7 +130,7 @@ export function useUsingCode() {
   const [result, setResult] = useState(0)
   const blockNumber = useBlockNumber()
   useEffect(() => {
-    if (!account ||!provider ||!referralContract) return
+    if (!account || !provider || !referralContract) return
     const call = async () => {
       try {
         const result = await referralContract.userReferralCodes(account)
@@ -150,7 +149,7 @@ export function useUsingCode() {
     }
 
     call()
-  }, [account, referralContract,blockNumber ])
+  }, [account, referralContract, blockNumber])
 
   // useEffect(() => {
   //   const getBeacon = async () => {
@@ -178,7 +177,7 @@ export function useUsingCode() {
   //   }
   // }, [account, provider, chainId])
   // console.log('isBeacon', result)
-  return chainId == 80085?true: codeUsing 
+  return chainId == 80085 ? true : codeUsing
 }
 
 // export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {

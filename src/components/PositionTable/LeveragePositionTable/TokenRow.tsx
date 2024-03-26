@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -23,15 +24,12 @@ import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
-import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
-
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
-import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
@@ -535,12 +533,19 @@ export function getPoolId(tokenA: string, tokenB: string, fee: number) {
   return `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
 }
 
+// input token per 1 output token.
+function positionEntryPrice(position: MarginPositionDetails): BN {
+  const { marginInPosToken, totalDebtInput, totalPosition, margin } = position
+
+  if (marginInPosToken) {
+    return totalDebtInput.div(totalPosition.minus(margin))
+  }
+  return totalDebtInput.plus(margin).div(totalPosition)
+}
+
 /* Loaded State: row component with token information */
 export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
-
-  // const { tokenListIndex, tokenListLength, token, sortRank } = props
-  const filterString = useAtomValue(filterStringAtom)
   const { position: details } = props
   const { account } = useWeb3React()
   const theme = useTheme()
@@ -588,166 +593,84 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     [setCurrentPool, poolId, details]
   )
 
-  const [
-    entryPrice,
-    currentPrice,
-    baseToken,
-    quoteToken,
-    position,
-    existingDeposit,
-    invertedEntryPrice,
-    invertedCurrentPrice,
-  ] = useMemo(() => {
+  const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
+  const inputCurrency = useCurrency(details.isToken0 ? details.poolKey.token1 : details.poolKey.token0)
+
+  // prices are in input per output token
+  const [entryPrice, currentPrice, baseToken, quoteToken] = useMemo(() => {
     if (pool) {
-      const _position = new MarginPosition(pool, details)
+      const _entryPrice = positionEntryPrice(details)
+      const _currentPrice = details.isToken0
+        ? new BN(pool.token0Price.toFixed(18))
+        : new BN(pool.token1Price.toFixed(18))
 
-      const _entryPrice = _position.entryPrice()
-      const _currentPrice = new BN(pool.token0Price.toFixed(18))
-
-      if (details.marginInPosToken) {
-        if (_entryPrice.isLessThan(1) && _currentPrice.isLessThan(1)) {
-          return [
-            new BN(1).div(_entryPrice),
-            new BN(1).div(_currentPrice),
-            pool.token1,
-            pool.token0,
-            _position,
-            _position.premiumLeft.plus(_position.premiumOwed),
-            _entryPrice,
-            _currentPrice,
-          ]
-        } else if (_entryPrice.isLessThan(1) && _currentPrice.isGreaterThan(1)) {
-          return [
-            new BN(1).div(_entryPrice),
-            _currentPrice,
-            pool.token1,
-            pool.token0,
-            _position,
-            _position.premiumLeft.plus(_position.premiumOwed),
-            _entryPrice,
-            new BN(1).div(_currentPrice),
-          ]
-        } else if (_entryPrice.isGreaterThan(1) && _currentPrice.isLessThan(1)) {
-          return [
-            _entryPrice,
-            new BN(1).div(_currentPrice),
-            pool.token1,
-            pool.token0,
-            _position,
-            _position.premiumLeft.plus(_position.premiumOwed),
-            new BN(1).div(_entryPrice),
-            _currentPrice,
-          ]
-        } else {
-          return [
-            _entryPrice,
-            _currentPrice,
-            pool.token1,
-            pool.token0,
-            _position,
-            _position.premiumLeft.plus(_position.premiumOwed),
-            new BN(1).div(_entryPrice),
-            new BN(1).div(_currentPrice),
-          ]
-        }
-      } else if (_entryPrice.isLessThan(1)) {
-        return [
-          new BN(1).div(_entryPrice),
-          new BN(1).div(_currentPrice),
-          pool.token1,
-          pool.token0,
-          _position,
-          _position.premiumLeft.plus(_position.premiumOwed),
-          _entryPrice,
-          _currentPrice,
-        ]
-      } else {
-        return [
-          _entryPrice,
-          _currentPrice,
-          pool.token0,
-          pool.token1,
-          _position,
-          _position.premiumLeft.plus(_position.premiumOwed),
-          new BN(1).div(_entryPrice),
-          new BN(1).div(_currentPrice),
-        ]
-      }
+      return [
+        _entryPrice,
+        _currentPrice,
+        details.isToken0 ? pool.token1 : pool.token0,
+        details.isToken0 ? pool.token0 : pool.token1,
+      ]
     } else {
       return [undefined, undefined, undefined]
     }
   }, [pool, details])
 
   const { result: rate } = useInstantaeneousRate(
-    position?.pool?.token0?.address,
-    position?.pool?.token1?.address,
-    position?.pool?.fee,
+    pool?.token0?.address,
+    pool?.token1?.address,
+    pool?.fee,
     account,
-    position?.isToken0
+    details?.isToken0
   )
 
-  const _pnlCurrency: BN | undefined = useMemo(() => {
-    if (!position?.inputCurrency) return undefined
-    return new BN(1)
-  }, [position?.inputCurrency])
   // call once with 1 token
+  const inputCurrencyPrice = useUSDPriceBNV2(new BN(1), inputCurrency ?? undefined)
 
-  const usdPNLCurrency = useUSDPriceBNV2(
-    _pnlCurrency,
-    details.marginInPosToken ? position?.outputCurrency : position?.inputCurrency
-  )
-
-  // const arrow = getDeltaArrow(position?.PnL().toNumber(), 18)
-
-  const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken || !position || !existingDeposit
+  const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken
 
   const estimatedTimeToClose = useMemo(() => {
-    if (!position || !rate || !totalDebtInput) return undefined
+    if (!rate || !totalDebtInput) return undefined
 
     const ratePerHour = Number(rate) / 1e18 / (365 * 24)
     const premPerHour = Number(totalDebtInput) * ratePerHour
 
-    const hours = Number(position?.premiumLeft) / premPerHour
+    const hours = Number(details?.premiumLeft) / premPerHour
 
     return Math.round(hours * 100) / 100
-  }, [position, rate, totalDebtInput])
+  }, [details, rate, totalDebtInput])
 
-  // console.log('timeclose', estimatedTimeToClose,  Number(position?.premiumLeft), Number(totalDebtInput))
+  // PnL in input/collateral token
+  const PnL = useMemo(() => {
+    if (!currentPrice || !entryPrice) return undefined
+    return details.totalPosition.times(entryPrice.minus(currentPrice))
+  }, [details, entryPrice, currentPrice])
+
+  // PnL in input/collateral token including premium paid thus far
   const PnLWithPremiums = useMemo(() => {
-    if (!position || !existingDeposit || !currentPrice) return undefined
-    if (details.marginInPosToken) {
-      return currentPrice.times(position.PnL()).minus(existingDeposit.minus(position?.premiumLeft))
-    } else {
-      return position.PnL().minus(existingDeposit.minus(position?.premiumLeft))
-    }
-  }, [position, existingDeposit, details.marginInPosToken, currentPrice])
+    if (!PnL || !details.premiumLeft) return undefined
+    return PnL.minus(details.premiumOwed)
+  }, [details, PnL])
 
   const pnlInfo = useMemo(() => {
-    if (!usdPNLCurrency?.data || !PnLWithPremiums || !position || !existingDeposit || !currentPrice)
+    if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums) {
       return {
         pnlUSD: 0,
         pnlPremiumsUSD: 0,
-      }
-    if (details.marginInPosToken) {
-      return {
-        pnlUSD: currentPrice.times(position?.PnL()).toNumber() * usdPNLCurrency.data,
-        pnlPremiumsUSD: PnLWithPremiums?.toNumber() * usdPNLCurrency.data,
-        premiumsPaid:
-          (PnLWithPremiums.toNumber() - currentPrice.times(position?.PnL()).toNumber()) * usdPNLCurrency.data,
+        premiumsPaid: 0,
       }
     } else {
       return {
-        pnlUSD: position?.PnL().toNumber() * usdPNLCurrency.data,
-        pnlPremiumsUSD: PnLWithPremiums?.toNumber() * usdPNLCurrency.data,
-        premiumsPaid: (PnLWithPremiums.toNumber() - position?.PnL().toNumber()) * usdPNLCurrency.data,
+        pnlUSD: PnL.times(inputCurrencyPrice.data).toNumber(),
+        pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
+        premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
       }
     }
-  }, [usdPNLCurrency?.data, position, PnLWithPremiums, existingDeposit, details.marginInPosToken, currentPrice])
+  }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL])
 
   if (loading) {
     return <LoadingRow />
   }
-  // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
+
   return (
     <div ref={ref} data-testid="token-table-row">
       <StyledLoadedRow>
@@ -761,9 +684,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                   <GreenText>
                     {' '}
                     x
-                    {`${Math.round(leverageFactor * 1000) / 1000} ${position?.outputCurrency.symbol} / ${
-                      position.inputCurrency.symbol
-                    }`}
+                    {`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrency?.symbol} / ${inputCurrency?.symbol}`}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -773,9 +694,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
                 <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                  {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}{' '}
-                  {position?.outputCurrency?.symbol}
+                  <CurrencyLogo currency={outputCurrency} size="10px" />
+                  {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`} {outputCurrency?.symbol}
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -784,9 +704,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
                 <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                  {formatBNToString(position?.margin, NumberType.SwapTradeAmount)}
-                  {position?.outputCurrency?.symbol}
+                  <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
+                  {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
+                  {details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -818,15 +738,15 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     </RowBetween>
                     <RowBetween>
                       <div>Premiums paid:</div>
-                      <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid?.toFixed(2)}`}</DeltaText>
+                      <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
                     </RowBetween>
                     <RowBetween>
                       <div>PnL inc. prem:</div>
                       {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
                       ' ' +
                       details.marginInPosToken
-                        ? position.outputCurrency.symbol
-                        : position?.inputCurrency?.symbol}
+                        ? outputCurrency?.symbol
+                        : inputCurrency?.symbol}
                     </RowBetween>
                     <RowBetween>
                       <div>PnL inc. prem (USD):</div>
@@ -840,32 +760,31 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <FlexStartRow>
                 {details.marginInPosToken ? (
                   <AutoColumn style={{ lineHeight: 1.5 }}>
-                    <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                      {position &&
-                        `${formatBNToString(currentPrice.times(position?.PnL()), NumberType.SwapTradeAmount)} `}
+                    <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
+                      {PnL &&
+                        `${formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)} `}
                     </DeltaText>
                     <div>
-                      <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                        {position &&
+                      <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                        {PnL &&
                           `(${(
-                            (currentPrice.times(position?.PnL()).toNumber() / position?.margin.toNumber()) *
+                            (new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) *
                             100
                           ).toFixed(2)} %)`}
                       </DeltaText>
-                      {' ' + position?.outputCurrency?.symbol}
+                      {' ' + outputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 ) : (
                   <AutoColumn style={{ lineHeight: 1.5 }}>
-                    <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                      {position && `${formatBNToString(position?.PnL(), NumberType.SwapTradeAmount)} `}
+                    <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                      {PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
                     </DeltaText>
                     <div>
-                      <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
-                        {position &&
-                          `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                      <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                        {PnL && `(${((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)} %)`}
                       </DeltaText>
-                      {' ' + position?.inputCurrency?.symbol}
+                      {' ' + inputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 )}
@@ -878,10 +797,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 <RowBetween gap="5px">
                   {isInverted ? (
                     <>
-                      {/* <AutoColumn>Inverted Entry/Current Price:</AutoColumn> */}
                       <AutoColumn>
-                        <span>{formatBNToString(invertedEntryPrice, NumberType.SwapTradeAmount)}</span>
-                        <span>{formatBNToString(invertedCurrentPrice, NumberType.SwapTradeAmount)}</span>
+                        <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
+                        <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
                       </AutoColumn>
                     </>
                   ) : (
@@ -903,20 +821,20 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               disableHover={false}
             >
               <FlexStartRow>
-                {position?.premiumLeft.isGreaterThan(0) ? (
+                {details?.premiumLeft.isGreaterThan(0) ? (
                   <AutoColumn style={{ lineHeight: 1.5 }}>
                     <UnderlineText>
                       <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                        {formatBNToString(position?.premiumLeft, NumberType.SwapTradeAmount)}/
+                        {formatBNToString(details?.premiumLeft, NumberType.SwapTradeAmount)}/
                       </GreenText>
                     </UnderlineText>
                     <div style={{ display: 'flex', gap: '3px' }}>
                       <UnderlineText>
                         <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                          {formatBNToString(existingDeposit, NumberType.SwapTradeAmount)}
+                          {formatBNToString(details.premiumDeposit, NumberType.SwapTradeAmount)}
                         </GreenText>
                       </UnderlineText>
-                      {position?.inputCurrency?.symbol}
+                      {inputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 ) : (
@@ -929,7 +847,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <SmallButtonPrimary
               style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
               onClick={(e) =>
-                handlePoolSelect(e, position.inputCurrency, position.outputCurrency, positionKey.poolKey.fee)
+                inputCurrency &&
+                outputCurrency &&
+                handlePoolSelect(e, inputCurrency, outputCurrency, positionKey.poolKey.fee)
               }
             >
               <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>

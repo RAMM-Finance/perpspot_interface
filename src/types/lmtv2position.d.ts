@@ -28,8 +28,8 @@ export interface BaseFacilityPositionDetails {
   repayTime: number
   isBorrow: boolean
   premiumOwed: BN // how much premium is owed since last repayment
-  premiumDeposit: BN
-  premiumLeft: BN
+  premiumDeposit: BN // how much premium currently in deposit
+  premiumLeft: BN // premium deposit - premium owed
   trader: string
   token0Decimals: number
   token1Decimals: number
