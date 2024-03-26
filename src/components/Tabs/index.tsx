@@ -31,6 +31,7 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
 const SettingWrapper = styled.div`
   display: flex;
   margin-right: 20px;
+  width: 8px;
 `
 
 // the order of displayed base currencies from left to right is always in sort order
@@ -205,25 +206,39 @@ const TabElement = styled.button<{
   padding: 0.25rem;
   justify-content: center;
   height: 100%;
-  border: none;
-  border-radius: 10px;
+  border-style: solid;
+  border-width: 2px;
+  height: 2rem;
+  border-color: ${({ activeTab, theme, isActive }) => {
+      if (isActive) {
+        if (activeTab === 0) {
+          return theme.longBtnBorder
+        } else if (activeTab === 1) {
+          return theme.shortBtnBorder
+        } else {
+          return theme.swapBtnBorder
+        }
+      }
+      return theme.inactiveBtnBorder
+    }};
   background: ${({ activeTab, theme, isActive }) => {
     if (isActive) {
       if (activeTab === 0) {
-        return theme.accentSuccessSoft
+        return theme.longBtnBackground
       } else if (activeTab === 1) {
-        return theme.accentFailureSoft
+        return theme.shortBtnBackground
       } else {
-        return theme.accentActiveSoft
+        return theme.swapBtnBackground
       }
     }
-    return 'none'
+    return theme.inactiveBtnBackground
   }};
-  color: ${({ theme }) => {
-    return theme.textSecondary
+  color: ${({ isActive, theme }) => {
+    if (isActive)  return theme.textSecondary
+    return '#747f8b'
   }};
   font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
-  font-weight: 700;
+  font-weight: 900;
   white-space: nowrap;
   cursor: pointer;
 

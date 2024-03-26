@@ -60,7 +60,7 @@ const StyledTokenRow = styled.div<{
   font-size: 12px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
   line-height: 24px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -90,7 +90,7 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: 1400px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px; */
-    grid-template-columns: 120px 110px 130px 100px 120px 120px 110px 80px;
+    grid-template-columns: 100px 110px 110px 100px 125px 145px 110px 80px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -135,6 +135,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   height: 48px;
   line-height: 16px;
   width: 100%;
+  letter-spacing: -1px;
   &:hover {
     background-color: transparent;
   }
@@ -758,11 +759,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               <RowBetween>
                 <PositionInfo>
                   <GreenText>
-                    {' '}
                     x
-                    {`${Math.round(leverageFactor * 1000) / 1000} ${position?.outputCurrency.symbol} / ${
-                      position.inputCurrency.symbol
-                    }`}
+                    {`${Math.round(leverageFactor * 1000) / 1000}${position?.outputCurrency.symbol}`}
+                    <br/>{`/${position.inputCurrency.symbol}`}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -771,10 +770,14 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
-                  {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}{' '}
-                  {position?.outputCurrency?.symbol}
+                <RowFixed  style={{flexWrap:'wrap'}}>
+                  <div style={{ display:'flex', alignItems:'center'}}>
+                    <CurrencyLogo currency={position?.outputCurrency} size="10px" />
+                    {`${formatBNToString(position?.totalPosition, NumberType.SwapTradeAmount)}`}
+                  </div>
+                  <div>
+                    {position?.outputCurrency?.symbol}
+                  </div>
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -782,13 +785,17 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           collateral={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <RowFixed>
-                  <CurrencyLogo
-                    currency={details.marginInPosToken ? position?.outputCurrency : position.inputCurrency}
-                    size="10px"
-                  />
-                  {formatBNToString(position?.margin, NumberType.SwapTradeAmount)}
-                  {details.marginInPosToken ? position?.outputCurrency.symbol : position?.inputCurrency.symbol}
+                <RowFixed style={{flexWrap:'wrap'}}>
+                  <div style={{ display:'flex', alignItems:'center'}}>
+                    <CurrencyLogo
+                      currency={details.marginInPosToken ? position?.outputCurrency : position.inputCurrency}
+                      size="10px"
+                    />
+                    {formatBNToString(position?.margin, NumberType.SwapTradeAmount)}
+                  </div>
+                  <div>
+                    {details.marginInPosToken ? position?.outputCurrency.symbol : position?.inputCurrency.symbol}
+                  </div>
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -805,7 +812,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
               disableHover={false}
             >
               <FlexStartRow>
-                {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + ' %'}
+                {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + '%'}
               </FlexStartRow>
             </MouseoverTooltip>
           }
@@ -829,7 +836,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     </RowBetween>
                     <RowBetween>
                       <div>PnL inc. prem (USD):</div>
-                      <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{` $${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
+                      <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
                     </RowBetween>
                   </AutoColumn>
                 </Trans>
@@ -849,9 +856,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                           `(${(
                             (currentPrice.times(position?.PnL()).toNumber() / position?.margin.toNumber()) *
                             100
-                          ).toFixed(2)} %)`}
+                          ).toFixed(2)}%)`}
                       </DeltaText>
-                      {' ' + position?.outputCurrency?.symbol}
+                      {position?.outputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 ) : (
@@ -862,9 +869,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     <div>
                       <DeltaText style={{ lineHeight: '1' }} delta={Number(position?.PnL().toNumber())}>
                         {position &&
-                          `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)} %)`}
+                          `(${((position?.PnL().toNumber() / position?.margin.toNumber()) * 100).toFixed(2)}%)`}
                       </DeltaText>
-                      {' ' + position?.inputCurrency?.symbol}
+                      {position?.inputCurrency?.symbol}
                     </div>
                   </AutoColumn>
                 )}
