@@ -31,6 +31,7 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
 const SettingWrapper = styled.div`
   display: flex;
   margin-right: 20px;
+  width: 8px;
 `
 
 // the order of displayed base currencies from left to right is always in sort order
@@ -205,25 +206,23 @@ const TabElement = styled.button<{
   padding: 0.25rem;
   justify-content: center;
   height: 100%;
-  border: none;
-  border-radius: 10px;
-  background: ${({ activeTab, theme, isActive }) => {
-    if (isActive) {
-      if (activeTab === 0) {
-        return theme.accentSuccessSoft
-      } else if (activeTab === 1) {
-        return theme.accentFailureSoft
-      } else {
-        return theme.accentActiveSoft
-      }
-    }
-    return 'none'
-  }};
-  color: ${({ theme }) => {
-    return theme.textSecondary
-  }};
+  border-style: solid;
+  border-width: 2px;
+  height: 2rem;
+  border-color: ${({ activeTab, theme, isActive }) => isActive ? 
+  (activeTab === 0 ? theme.longBtnBorder : 
+    (activeTab === 1 ? theme.shortBtnBorder : theme.swapBtnBorder)) 
+  : theme.inactiveBtnBorder};
+
+  background: ${({ activeTab, theme, isActive }) => isActive ? 
+    (activeTab === 0 ? theme.longBtnBackground : 
+    (activeTab === 1 ? theme.shortBtnBackground : theme.swapBtnBackground)) 
+    : theme.inactiveBtnBackground};
+
+  color: ${({ isActive, theme }) => isActive ? theme.textSecondary : theme.inactiveColor}; 
+
   font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
-  font-weight: 700;
+  font-weight: 900;
   white-space: nowrap;
   cursor: pointer;
 

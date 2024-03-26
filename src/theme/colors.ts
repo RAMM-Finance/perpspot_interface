@@ -98,8 +98,9 @@ export const colors = {
 
   //limitless colors
   purple700: '#210f2e',
+  midGray: '#2a2f34',
+  steelblueGray: '#747f8b'
 }
-
 export const limitlessColors = {
   darkPurple: '#201426ff',
   black: '#040505ff',
@@ -133,7 +134,19 @@ const commonTheme = {
 
   brandedGradient: colors.networkBsc,
   promotionalGradient: colors.networkBsc,
+  
+  // trade Button
+  inactiveColor: colors.steelblueGray,
+  inactiveBtnBorder: colors.midGray,
+  longBtnBorder: colors.green200,
+  shortBtnBorder: colors.red300,
+  swapBtnBorder: colors.blue300,
 
+  inactiveBtnBackground: colors.gray900,
+  longBtnBackground: colors.green800,
+  shortBtnBackground: colors.red900,
+  swapBtnBackground: colors.blue900,
+  
   hoverState: opacify(24, colors.blue200),
   hoverDefault: opacify(8, colors.gray300),
 }

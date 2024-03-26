@@ -22,16 +22,16 @@ const DoubleLogoContainer = styled.div`
   top: 0;
   left: 0;
   ${LogoImage}:nth-child(n) {
-    width: 19px;
-    height: 40px;
+    width: 15px;
+    height: 30px;
     object-fit: cover;
   }
   ${LogoImage}:nth-child(1) {
-    border-radius: 20px 0 0 20px;
+    border-radius: 15px 0 0 15px;
     object-position: 0 0;
   }
   ${LogoImage}:nth-child(2) {
-    border-radius: 0 20px 20px 0;
+    border-radius: 0 15px 15px 0;
     object-position: 100% 0;
   }
 `
@@ -70,12 +70,12 @@ const SquareChainLogo = styled.img`
 const L2LogoContainer = styled.div<{ $backgroundColor?: string }>`
   background-color: ${({ $backgroundColor }) => $backgroundColor};
   border-radius: 2px;
-  height: 16px;
+  height: 12px;
   left: 60%;
   position: absolute;
   top: 60%;
   outline: 2px solid ${({ theme }) => theme.backgroundSurface};
-  width: 16px;
+  width: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,7 +89,7 @@ export function PortfolioLogo({
   accountAddress,
   currencies,
   images,
-  size = '40px',
+  size = '30px',
   style,
 }: MultiLogoProps) {
   const { squareLogoUrl, logoUrl } = getChainInfo(chainId)
@@ -107,7 +107,7 @@ export function PortfolioLogo({
     ) : avatar ? (
       <ENSAvatarImg src={avatar} alt="avatar" />
     ) : (
-      <Unicon size={40} address={accountAddress} />
+      <Unicon size={30} address={accountAddress} />
     )
   } else if (currencies && currencies.length) {
     const logo1 = <LogoImage size={size} src={src ?? blankTokenUrl} onError={nextSrc} />

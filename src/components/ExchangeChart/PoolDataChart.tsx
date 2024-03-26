@@ -89,7 +89,7 @@ export const PoolDataChart = ({
         overrides: {
           ...defaultChartProps.overrides,
         },
-        interval: '15', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
+        interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
         favorites: defaultChartProps.favorites,
         custom_formatters: defaultChartProps.custom_formatters,
       }
