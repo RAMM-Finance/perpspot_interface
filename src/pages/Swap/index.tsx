@@ -11,6 +11,7 @@ import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
+import { PinnedPools } from 'components/swap/PinnedPools'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -25,7 +26,7 @@ import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
-import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
@@ -152,14 +153,14 @@ const SwapHeaderWrapper = styled.div`
   grid-row: 2;
 `
 
-const MainWrapper = styled.article`
+const MainWrapper = styled.article<{ pins: boolean }>`
   width: 100%;
   height: 100%;
   display: grid;
   grid-template-columns: 1.6fr 0.6fr 365px;
 
   margin-top: 0.75rem;
-  grid-template-rows: 0 50vh 30vh;
+  grid-template-rows: ${({ pins }) => (pins ? '5vh 50vh 30vh' : '0 50vh 30vh')};
   grid-column-gap: 0.75rem;
 
   @media only screen and (max-width: 1265px) {
@@ -345,14 +346,16 @@ export default function Swap({ className }: { className?: string }) {
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
+  const pinnedPools = usePinnedPools()
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
-        <MainWrapper>
-          {/* <PinWrapper>
+        <MainWrapper pins={pinnedPools && pinnedPools.length > 0}>
+          <PinWrapper>
             <PinnedPools />
-          </PinWrapper> */}
+          </PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool />
             {/*inputCurrency && outputCurrency ? (

@@ -253,10 +253,10 @@ const TradeTabContent = () => {
   } = useMarginTradingActionHandlers()
 
   const handleSetMarginInPosToken = useCallback(() => {
-    if (premiumInPosToken) {
+    if (marginInPosToken) {
       onPremiumCurrencyToggle(false)
     }
-    if (!premiumInPosToken) {
+    if (!marginInPosToken) {
       onPremiumCurrencyToggle(true)
     }
     onSetMarginInPosToken(!marginInPosToken)

@@ -4,6 +4,8 @@ import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
 import { useAppPoolOHLC } from 'state/application/hooks'
+import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
+import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentPool, usePinnedPools, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components'
 import { ThemedText } from 'theme'
@@ -17,39 +19,46 @@ const Wrapper = styled.div`
   flex-direction: row;
   height: 100%;
   width: 100%;
-  border: solid 1px ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
   overflow-x: auto;
+  align-items: start;
 `
 
 const ItemWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
   padding: 0.5rem 1rem;
   width: fit-content;
   margin-right: 0.5rem;
+  height: 100%;
 `
 
 const PoolLabelWrapper = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
   justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
 `
 
 const StarWrapper = styled.div`
   display: flex;
+  cursor: pointer;
 `
 
 const DeltaText = styled.span<{ delta: number | undefined }>`
+  margin-top: 1px;
+  font-size: 12px;
   color: ${({ theme, delta }) =>
     delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
 `
 
 const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
+  const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
+  const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
@@ -78,13 +87,38 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const poolId = currentPool?.poolId
   const remove = useRemovePinnedPool()
 
-  const inputIsToken0 = poolOHLCData?.base?.toLowerCase() === poolKey.token0.toLowerCase()
+  const inputIsToken0 = useMemo(() => {
+    if (pool && poolOHLCData) {
+      const quote = poolOHLCData?.quote
+      if (quote) {
+        if (quote.toLowerCase() === pool.token0.address.toLowerCase()) {
+          return true
+        }
+      }
+    }
+    return false
+  }, [poolOHLCData, pool])
 
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id) {
+      onMarginChange('')
+      onActiveTabChange(0)
+      onPremiumCurrencyToggle(false)
+      onSetMarginInPosToken(false)
       setCurrentPool(id, inputIsToken0)
     }
-  }, [token0, token1, setCurrentPool, inputIsToken0, poolId, id])
+  }, [
+    token0,
+    token1,
+    setCurrentPool,
+    inputIsToken0,
+    poolId,
+    id,
+    onMarginChange,
+    onActiveTabChange,
+    onPremiumCurrencyToggle,
+    onSetMarginInPosToken,
+  ])
 
   const unpinPool = useCallback(
     (e: any) => {
@@ -101,8 +135,12 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
         <FilledStar />
       </StarWrapper>
       <PoolLabelWrapper style={{ marginRight: '8px' }}>
-        <ThemedText.DeprecatedLabel>{baseQuoteSymbol}</ThemedText.DeprecatedLabel>
-        <ThemedText.LabelSmall>{pool?.fee}%</ThemedText.LabelSmall>
+        <ThemedText.DeprecatedLabel fontSize="14px" color="textSecondary">
+          {baseQuoteSymbol}
+        </ThemedText.DeprecatedLabel>
+        <ThemedText.LabelSmall fontSize="12px" color="textPrimary">
+          {pool?.fee / 10000}%
+        </ThemedText.LabelSmall>
       </PoolLabelWrapper>
       <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
     </ItemWrapper>

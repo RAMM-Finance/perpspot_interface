@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -24,8 +25,6 @@ import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { MarginPosition } from 'utils/lmtSDK/MarginPosition'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
-
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -784,9 +783,12 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
                 <RowFixed>
-                  <CurrencyLogo currency={position?.outputCurrency} size="10px" />
+                  <CurrencyLogo
+                    currency={details.marginInPosToken ? position?.outputCurrency : position.inputCurrency}
+                    size="10px"
+                  />
                   {formatBNToString(position?.margin, NumberType.SwapTradeAmount)}
-                  {position?.outputCurrency?.symbol}
+                  {details.marginInPosToken ? position?.outputCurrency.symbol : position?.inputCurrency.symbol}
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -822,11 +824,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                     </RowBetween>
                     <RowBetween>
                       <div>PnL inc. prem:</div>
-                      {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
-                      ' ' +
-                      details.marginInPosToken
-                        ? position.outputCurrency.symbol
-                        : position?.inputCurrency?.symbol}
+                      {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` + ' '}
+                      {details.marginInPosToken ? position?.outputCurrency.symbol : position?.inputCurrency.symbol}
                     </RowBetween>
                     <RowBetween>
                       <div>PnL inc. prem (USD):</div>

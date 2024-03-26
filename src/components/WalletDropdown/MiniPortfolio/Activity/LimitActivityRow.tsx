@@ -1,6 +1,6 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
-import Column from 'components/Column'
+import Column, { AutoColumn } from 'components/Column'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { useCurrency } from 'hooks/Tokens'
 import useENSName from 'hooks/useENSName'
@@ -113,24 +113,30 @@ export function ActivityRow({
               </ThemedText.SubHeader>
               <StyledTimestamp>{timeSince}</StyledTimestamp>
             </ActivityTitle>
-            <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
-              {actionDescription}
-              { priceNumber && (
-                <>
+            <AutoColumn>
+              <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
+                {actionDescription}
+              </ThemedText.SubHeaderSmall>
+              <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
+                {priceNumber && (
+                  <>
+                    <ActivityPrice>
+                      {`Price: ${isInverted ? ((1 / priceNumber) as number).toFixed(5) : priceNumber.toFixed(5)}`}
+                    </ActivityPrice>
+                    {invertedTooltipLogo}
+                  </>
+                )}
+              </ThemedText.SubHeaderSmall>
+              <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
+                {pnlNumber && (
                   <ActivityPrice>
-                    {`Price: ${isInverted ? ((1 / priceNumber) as number).toFixed(5) : priceNumber.toFixed(5)}`}
+                    <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
+                    {marginToken}
                   </ActivityPrice>
-                  {invertedTooltipLogo}
-                </>
-              )}
-              {pnlNumber && (
-                <ActivityPrice>
-                  <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
-                  {marginToken}
-                </ActivityPrice>
-              )}
-              {ENSName ?? otherAccount}
-            </ThemedText.SubHeaderSmall>
+                )}
+                {ENSName ?? otherAccount}
+              </ThemedText.SubHeaderSmall>
+            </AutoColumn>
           </ActivityTableRow>
         }
         // descriptor= {

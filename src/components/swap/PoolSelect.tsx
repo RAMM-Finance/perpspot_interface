@@ -6,7 +6,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
-import Loader from 'components/Icons/LoadingSpinner'
+import { LoadingText } from 'components/Loader/styled'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
@@ -41,7 +41,6 @@ import {
   poolSortMethodAtom,
   useSetPoolSortMethod,
 } from './state'
-import { LoadingText } from 'components/Loader/styled'
 
 const PoolListHeaderRow = styled.div`
   display: grid;
@@ -68,6 +67,7 @@ const PoolListContainer = styled.div`
   padding: 0.5rem;
   border-radius: 10px;
   gap: 0.25rem;
+  width: 100%;
 `
 
 const ListWrapper = styled.div`
@@ -110,6 +110,8 @@ const ChevronIcon = styled(ChevronDown)<{ $rotated: boolean }>`
   color: ${({ theme }) => theme.textSecondary};
   transition: transform 0.3s ease;
   transform: ${({ $rotated }) => ($rotated ? 'rotate(180deg)' : 'none')};
+  margin-left: 5px;
+  max-width: 15px;
 `
 
 const MainWrapper = styled.div`
@@ -147,6 +149,7 @@ const RowWrapper = styled.div`
     background-color: ${({ theme }) => theme.backgroundInteractive};
   }
   cursor: pointer;
+  width: 100%;
 `
 
 const PoolLabelWrapper = styled.div`
@@ -188,9 +191,8 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  const { onPremiumCurrencyToggle } = useMarginTradingActionHandlers()
-  const { onSetMarginInPosToken } = useSwapActionHandlers()
-  const { onMarginChange } = useMarginTradingActionHandlers()
+  const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
+  const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
 
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = poolOHLCDatas[id]
@@ -265,6 +267,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id) {
       onMarginChange('')
+      onActiveTabChange(0)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
       setCurrentPool(id, inputIsToken0)
@@ -273,6 +276,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   }, [
     token0,
     token1,
+    onActiveTabChange,
     id,
     poolId,
     handleClose,
@@ -310,10 +314,12 @@ const StyledMenu = styled(Menu)`
   flex-direction: column;
   border-radius: 10px;
   animation: ${fadeIn} 0.5s;
+  width: 24rem;
   & .MuiMenu-paper {
     border-radius: 10px;
     border: solid 1px ${({ theme }) => theme.backgroundOutline};
     background-color: ${({ theme }) => theme.surface1};
+    width: 24rem;
   }
 `
 
@@ -471,27 +477,28 @@ export function SelectPool() {
 
   return (
     <MainWrapper>
-      {!baseQuoteSymbol ? 
-        <LoadingText size={'14px'}>
-          Pool Selector loading...
-        </LoadingText>
-        :
-       (
+      {!baseQuoteSymbol ? (
+        <LoadingText size="14px">Pool Selector loading...</LoadingText>
+      ) : (
         <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
           <LabelWrapper>
             <Row gap="10">
               <DoubleCurrencyLogo
                 currency0={inputCurrency as Currency}
                 currency1={outputCurrency as Currency}
-                size={25}
+                size={20}
               />
               <AutoColumn justify="flex-start">
                 <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
-                  <ThemedText.HeadlineSmall fontSize={20}>
-                    {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
-                  </ThemedText.HeadlineSmall>
+                  <Row gap="6">
+                    <ThemedText.HeadlineSmall fontSize={16}>
+                      {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
+                    </ThemedText.HeadlineSmall>
+                    <ThemedText.BodySmall fontSize="12px">
+                      ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
+                    </ThemedText.BodySmall>
+                  </Row>
                 </TextWithLoadingPlaceholder>
-                <ThemedText.BodySmall fontSize="14px">({poolKey?.fee ? poolKey.fee / 10000 : 0}%)</ThemedText.BodySmall>
               </AutoColumn>
             </Row>
           </LabelWrapper>
