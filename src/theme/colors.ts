@@ -99,6 +99,7 @@ export const colors = {
   //limitless colors
   purple700: '#210f2e',
   midGray: '#2a2f34',
+  steelblueGray: '#747f8b'
 }
 export const limitlessColors = {
   darkPurple: '#201426ff',
@@ -135,6 +136,7 @@ const commonTheme = {
   promotionalGradient: colors.networkBsc,
   
   // trade Button
+  inactiveColor: colors.steelblueGray,
   inactiveBtnBorder: colors.midGray,
   longBtnBorder: colors.green200,
   shortBtnBorder: colors.red300,

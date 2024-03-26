@@ -209,34 +209,18 @@ const TabElement = styled.button<{
   border-style: solid;
   border-width: 2px;
   height: 2rem;
-  border-color: ${({ activeTab, theme, isActive }) => {
-      if (isActive) {
-        if (activeTab === 0) {
-          return theme.longBtnBorder
-        } else if (activeTab === 1) {
-          return theme.shortBtnBorder
-        } else {
-          return theme.swapBtnBorder
-        }
-      }
-      return theme.inactiveBtnBorder
-    }};
-  background: ${({ activeTab, theme, isActive }) => {
-    if (isActive) {
-      if (activeTab === 0) {
-        return theme.longBtnBackground
-      } else if (activeTab === 1) {
-        return theme.shortBtnBackground
-      } else {
-        return theme.swapBtnBackground
-      }
-    }
-    return theme.inactiveBtnBackground
-  }};
-  color: ${({ isActive, theme }) => {
-    if (isActive)  return theme.textSecondary
-    return '#747f8b'
-  }};
+  border-color: ${({ activeTab, theme, isActive }) => isActive ? 
+  (activeTab === 0 ? theme.longBtnBorder : 
+    (activeTab === 1 ? theme.shortBtnBorder : theme.swapBtnBorder)) 
+  : theme.inactiveBtnBorder};
+
+  background: ${({ activeTab, theme, isActive }) => isActive ? 
+    (activeTab === 0 ? theme.longBtnBackground : 
+    (activeTab === 1 ? theme.shortBtnBackground : theme.swapBtnBackground)) 
+    : theme.inactiveBtnBackground};
+
+  color: ${({ isActive, theme }) => isActive ? theme.textSecondary : theme.inactiveColor}; 
+
   font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
   font-weight: 900;
   white-space: nowrap;
