@@ -14,7 +14,7 @@ import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useDataProviderContract } from './useContract'
-import { useContractCall } from './useContractCall'
+import { useContractCall, useContractCallV2 } from './useContractCall'
 import { computePoolAddress, POOL_INIT_CODE_HASH_2 } from './usePools'
 import { convertToBN } from './useV3Positions'
 
@@ -142,18 +142,18 @@ export function useBulkBinData(pool: Pool | undefined): {
     return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
   }, [pool, tickDiscretization])
 
-  const result = undefined as any
-  const loading = true
-  const error = undefined
-  const syncing = false
-  // const { result, loading, error, syncing } = useContractCallV2(
-  //   DATA_PROVIDER_ADDRESSES,
-  //   calldata,
-  //   ['queryBinData'],
-  //   false,
-  //   true,
-  //   (result) => DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
-  // )
+  // const result = undefined as any
+  // const loading = true
+  // const error = undefined
+  // const syncing = false
+  const { result, loading, error, syncing } = useContractCallV2(
+    DATA_PROVIDER_ADDRESSES,
+    calldata,
+    ['queryBinData'],
+    false,
+    true,
+    (result) => DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
+  )
 
   const token0Decimals = pool?.token0.decimals
   const token1Decimals = pool?.token1.decimals
