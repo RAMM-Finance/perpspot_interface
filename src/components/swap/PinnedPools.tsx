@@ -29,7 +29,7 @@ const ItemWrapper = styled.div`
   flex-direction: row;
   align-items: start;
   justify-content: space-between;
-  padding: 0.5rem 1rem;
+  padding: 0.2rem 1rem;
   width: fit-content;
   margin-right: 0.5rem;
   height: 100%;
@@ -149,11 +149,28 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
 export function PinnedPools() {
   const pinnedPools = usePinnedPools()
   return (
-    <Wrapper>
-      {pinnedPools?.map((poolKey) => {
-        const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-        return <PinnedPool key={id} poolKey={poolKey} />
-      })}
-    </Wrapper>
+    <PinnedWrapper>
+      <TitleWrapper>
+        <ThemedText.DeprecatedLabel fontSize="14px" color="textSecondary">
+          Pinned Pools
+        </ThemedText.DeprecatedLabel>
+      </TitleWrapper>
+      <Wrapper>
+        {pinnedPools?.map((poolKey) => {
+          const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+          return <PinnedPool key={id} poolKey={poolKey} />
+        })}
+      </Wrapper>
+    </PinnedWrapper>
   )
 }
+
+const PinnedWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`
+
+const TitleWrapper = styled.div`
+  min-width: 120px;
+  margin-left: 10px;
+`

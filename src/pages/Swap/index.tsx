@@ -160,7 +160,7 @@ const MainWrapper = styled.article<{ pins: boolean }>`
   grid-template-columns: 1.6fr 0.6fr 365px;
 
   margin-top: 0.75rem;
-  grid-template-rows: ${({ pins }) => (pins ? '5vh 50vh 30vh' : '0 50vh 30vh')};
+  grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
   grid-column-gap: 0.75rem;
 
   @media only screen and (max-width: 1265px) {
