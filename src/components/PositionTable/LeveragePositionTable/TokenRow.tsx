@@ -643,7 +643,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
   // PnL in input/collateral token
   const PnL = useMemo(() => {
     if (!currentPrice || !entryPrice) return undefined
-    return details.totalPosition.times(entryPrice.minus(currentPrice))
+    return details.totalPosition.times(currentPrice.minus(entryPrice))
   }, [details, entryPrice, currentPrice])
 
   // PnL in input/collateral token including premium paid thus far
