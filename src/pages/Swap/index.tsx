@@ -282,6 +282,7 @@ export default function Swap({ className }: { className?: string }) {
 
   const { account, chainId } = useWeb3React()
   const { activeTab } = useSwapState()
+  console.log('----activeTab-------', activeTab)
 
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()

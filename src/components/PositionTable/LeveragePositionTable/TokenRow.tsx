@@ -684,7 +684,8 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
                 <PositionInfo>
                   <GreenText>
                     x
-                    {`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrency?.symbol} / ${inputCurrency?.symbol}`}
+                    {`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrency?.symbol}`}
+                    <br/>{`/${inputCurrency?.symbol}`}
                   </GreenText>
                 </PositionInfo>
               </RowBetween>
@@ -693,9 +694,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           value={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <RowFixed>
+                <RowFixed  style={{flexWrap:'wrap'}}>                       
                   <CurrencyLogo currency={outputCurrency} size="10px" />
-                  {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`} {outputCurrency?.symbol}
+                  {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`} 
+                  <div>{` ${outputCurrency?.symbol}`}</div>
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
@@ -703,10 +705,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
           collateral={
             <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
               <AutoColumn gap="2px">
-                <RowFixed>
+                <RowFixed  style={{flexWrap:'wrap'}}>                  
                   <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
                   {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
-                  {details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+                  <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
                 </RowFixed>
               </AutoColumn>
             </FlexStartRow>
