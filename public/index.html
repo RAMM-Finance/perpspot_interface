@@ -41,14 +41,14 @@
 
   <style>
     * {
-      font-family: cpmono,Ubuntu,-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      font-family: Consolas,"Liberation Mono","Courier New",monospace, sans-serif;
       box-sizing: border-box;
     }
 
     /**
           Explicitly load Inter var from public/ so it does not block LCP's critical path.
         */
-    @font-face {
+    /* @font-face {
       font-family: 'Parkinson Amboy Black';
       src: url('fonts/Parkinson - Amboy-Black.otf') format('opentype');
     }
@@ -61,11 +61,11 @@
     @font-face {
       font-family: 'AGENCYB';
       src: url('fonts/AGENCYB.TTF') format('truetype');
-    }
+    } */
 
     @supports (font-variation-settings: normal) {
       * {
-        font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        font-family: Consolas,"Liberation Mono","Courier New",monospace, sans-serif;
       }
     }
 
