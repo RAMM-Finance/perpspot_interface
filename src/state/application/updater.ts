@@ -4,14 +4,14 @@ import { SupportedChainId } from 'constants/chains'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { useSetCurrentPool } from 'state/user/hooks'
 import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
 import { useCloseModal, usePoolKeyList } from './hooks'
-import { updateBlockNumber, updateChainId, updatePoolList, updatePoolPriceData } from './reducer'
+import { updateChainId, updatePoolList, updatePoolPriceData } from './reducer'
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
@@ -95,6 +95,8 @@ export default function Updater(): null {
     }
   }, [dispatch, chainId, provider, windowVisible, activeChainId, setCurrentPool])
 
+  console.log('currentPool', currentPool, poolList, poolsOHLC)
+
   const debouncedChainId = useDebounce(activeChainId, 100)
 
   useEffect(() => {
@@ -102,42 +104,42 @@ export default function Updater(): null {
     dispatch(updateChainId({ chainId }))
   }, [dispatch, debouncedChainId])
 
-  const block = useAppSelector((state) => state.application.blockNumber)
+  // const block = useAppSelector((state) => state.application.blockNumber)
 
-  const onBlock = useCallback(
-    (_block: number) => {
-      if (activeChainId === chainId) {
-        if (!block || block < _block) {
-          dispatch(updateBlockNumber({ blockNumber: _block }))
-        }
-      }
-    },
-    [activeChainId, dispatch, block, chainId]
-  )
+  // const onBlock = useCallback(
+  //   (_block: number) => {
+  //     if (activeChainId === chainId) {
+  //       if (!block || block < _block) {
+  //         dispatch(updateBlockNumber({ blockNumber: _block }))
+  //       }
+  //     }
+  //   },
+  //   [activeChainId, dispatch, block, chainId]
+  // )
 
-  useEffect(() => {
-    let stale = false
+  // useEffect(() => {
+  //   let stale = false
 
-    if (provider && activeChainId && windowVisible) {
-      // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
+  //   if (provider && activeChainId && windowVisible) {
+  //     // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
 
-      provider
-        .getBlockNumber()
-        .then((_block) => {
-          if (!stale) onBlock(_block)
-        })
-        .catch((error) => {
-          console.error(`Failed to get block number for chainId ${activeChainId}`, error)
-        })
+  //     provider
+  //       .getBlockNumber()
+  //       .then((_block) => {
+  //         if (!stale) onBlock(_block)
+  //       })
+  //       .catch((error) => {
+  //         console.error(`Failed to get block number for chainId ${activeChainId}`, error)
+  //       })
 
-      provider.on('block', onBlock)
-      return () => {
-        stale = true
-        provider.removeListener('block', onBlock)
-      }
-    }
+  //     provider.on('block', onBlock)
+  //     return () => {
+  //       stale = true
+  //       provider.removeListener('block', onBlock)
+  //     }
+  //   }
 
-    return void 0
-  }, [activeChainId, provider, onBlock, windowVisible])
+  //   return void 0
+  // }, [activeChainId, provider, onBlock, windowVisible])
   return null
 }

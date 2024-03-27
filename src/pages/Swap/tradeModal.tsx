@@ -49,7 +49,7 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
@@ -262,14 +262,7 @@ const TradeTabContent = () => {
     onSetMarginInPosToken(!marginInPosToken)
     onLeverageFactorChange('')
     onMarginChange('')
-  }, [
-    onSetMarginInPosToken,
-    marginInPosToken,
-    onLeverageFactorChange,
-    onMarginChange,
-    onPremiumCurrencyToggle,
-    premiumInPosToken,
-  ])
+  }, [onSetMarginInPosToken, marginInPosToken, onLeverageFactorChange, onMarginChange, onPremiumCurrencyToggle])
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   const poolNotFound = poolState !== PoolState.EXISTS
@@ -330,8 +323,6 @@ const TradeTabContent = () => {
   const noTradeInputError = useMemo(() => {
     return !inputError
   }, [inputError])
-
-  const { activeTab } = useSwapState()
 
   const toggleWalletDrawer = useToggleWalletDrawer()
   const maxInputAmount: CurrencyAmount<Currency> | undefined = useMemo(

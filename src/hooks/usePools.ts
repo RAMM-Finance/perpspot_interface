@@ -347,8 +347,6 @@ export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
     if (!result || loading || error) {
       return undefined
     } else {
-      // console.log('huh',result.MIN_PREMIUM_DEPOSIT)
-
       return {
         minimumPremiumDeposit: convertToBN(result.MIN_PREMIUM_DEPOSIT, 18),
       }
@@ -373,7 +371,7 @@ export function computePoolAddress({
     const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA]
     return getCreate2Address(
       factoryAddress,
-      keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [tokenA, tokenB, fee])]),
+      keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
       initCodeHashManualOverride ?? POOL_INIT_CODE_HASH
     )
   } else if (tokenA instanceof Token && tokenB instanceof Token) {

@@ -153,140 +153,6 @@ export function useContractCall(
   }, [loading, error, result, lastParams, address, chainId, calldata, syncing])
 }
 
-// export function useContractCallTest(
-//   address?: string | AddressMap,
-//   calldata?: string,
-//   useSigner = false,
-//   blocksPerFetch = 0
-// ): CallOutput {
-//   const [result, setResult] = useState<string>()
-//   const [error, setError] = useState<DecodedError>()
-//   const [lastParams, setLastParams] = useState<{
-//     to: string
-//     calldata: string
-//   }>()
-//   const [syncing, setSyncing] = useState(false)
-//   const [loading, setLoading] = useState(false)
-//   const [lastBlockNumber, setBlockNumber] = useState<number>()
-//   const blockNumber = useBlockNumber()
-//   const { provider, chainId } = useWeb3React()
-//   console.log('bulkBinData:contractCall', provider, chainId, blockNumber)
-//   const fetch = useCallback(async () => {
-//     if (!provider || !address || !calldata || !chainId) {
-//       // console.log('fetching5')
-//       return undefined
-//     }
-//     // console.log('fetching6')
-
-//     const isStr = typeof address === 'string'
-//     const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
-
-//     let data
-//     if (useSigner) {
-//       data = await provider.getSigner()?.call({
-//         to,
-//         data: calldata,
-//       })
-//     } else {
-//       data = await provider.call({
-//         to,
-//         data: calldata,
-//       })
-//     }
-
-//     return { data, to, calldata }
-//   }, [provider, address, calldata, useSigner, chainId])
-
-//   /**
-//    * things to check:
-//    * if it's loading then don't do call the function again, unless the calldata has changed
-//    * if the calldata hasn't changed then only call again if the blocknumber has changed by enough
-//    * if there's an error then don't call again unless the blocknumber has changed by enough or the params have changed
-//    */
-//   useEffect(() => {
-//     if (!blockNumber || !address || !calldata || !provider || !chainId) {
-//       return
-//     }
-
-//     const _to = typeof address === 'string' ? address : address[chainId] ?? ZERO_ADDRESS
-//     const paramsUnchanged = lastParams?.to === _to && lastParams?.calldata === calldata
-//     if (error && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
-//       return
-//     }
-
-//     if (loading || syncing) {
-//       return
-//     }
-
-//     if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
-//       return
-//     }
-
-//     if (lastParams && paramsUnchanged) {
-//       setSyncing(true)
-//     } else {
-//       setLoading(true)
-//     }
-
-//     fetch()
-//       .then((data) => {
-//         if (!data) {
-//           setError({
-//             type: ErrorType.EmptyError,
-//             error: 'missing params',
-//             data: undefined,
-//           })
-//           setLastParams(undefined)
-//           setResult(undefined)
-//           setLoading(false)
-//           setSyncing(false)
-//         } else {
-//           const { data: _result, to, calldata } = data
-//           // console.log('fetching9', _result, to, calldata)
-//           setResult(_result)
-//           setLastParams({ to, calldata })
-//           setError(undefined)
-//           setLoading(false)
-//           setSyncing(false)
-//         }
-//         setBlockNumber(blockNumber)
-//       })
-//       .catch((err) => {
-//         // console.log('fetching10')
-//         setError(parseContractError(err))
-//         setLastParams(undefined)
-//         setResult(undefined)
-//         setLoading(false)
-//         setSyncing(false)
-//         setBlockNumber(blockNumber)
-//       })
-//   }, [
-//     calldata,
-//     provider,
-//     chainId,
-//     blockNumber,
-//     lastBlockNumber,
-//     loading,
-//     error,
-//     fetch,
-//     blocksPerFetch,
-//     lastParams,
-//     address,
-//     syncing,
-//   ])
-
-//   return useMemo(() => {
-//     if (!address || !calldata || !chainId) {
-//       return { result: undefined, error, loading, syncing }
-//     }
-//     const _to = typeof address === 'string' ? address : address[chainId] ?? ZERO_ADDRESS
-//     if (result && lastParams && lastParams.calldata === calldata && lastParams.to === _to) {
-//       return { result, error, loading, syncing }
-//     }
-//     return { result: undefined, error, loading, syncing }
-//   }, [loading, error, result, lastParams, address, chainId, calldata, syncing])
-// }
-
 interface V2CallOutput {
   result: any
   error: DecodedError | undefined
@@ -299,6 +165,7 @@ export function useContractCallV2(
   calldata?: string,
   queryKey?: string[],
   useSigner = false,
+  enabled = true,
   parseFn?: (data: string) => any,
   options = {
     keepPreviousData: true,
@@ -319,9 +186,9 @@ export function useContractCallV2(
     return []
   }, [queryKey, calldata])
 
-  const enabled = useMemo(() => {
-    return !!provider && !!address && !!calldata && !!chainId && queryKey && queryKey.length > 0
-  }, [provider, address, calldata, chainId, queryKey])
+  const _enabled = useMemo(() => {
+    return !!provider && !!address && !!calldata && !!chainId && queryKey && queryKey.length > 0 && enabled
+  }, [provider, address, calldata, chainId, queryKey, enabled])
 
   const call = useCallback(
     async ({ queryKey }: { queryKey: any }) => {
@@ -336,6 +203,7 @@ export function useContractCallV2(
       const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
       let data
       try {
+        console.log('useContractCall:start', queryKey)
         if (useSigner) {
           data = await provider.getSigner()?.call({
             to,
@@ -347,7 +215,8 @@ export function useContractCallV2(
             data: calldata,
           })
         }
-        console.log('bulk:calling', queryKey, parseFn ? parseFn(data) : data)
+        console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
+
         return parseFn ? parseFn(data) : data
       } catch (err) {
         throw parseContractError(err)
@@ -359,16 +228,16 @@ export function useContractCallV2(
   const { data, error, isLoading, dataUpdatedAt } = useQuery({
     queryFn: call,
     queryKey: currentQueryKey,
-    enabled,
+    enabled: _enabled,
     ...options,
   })
 
   return useMemo(() => {
-    if (!enabled) {
+    if (!_enabled) {
       return { result: undefined, error: undefined, loading: false, syncing: false }
     }
     return { result: data, error: error as DecodedError, loading: isLoading, syncing: false }
-  }, [data, isLoading, enabled, error])
+  }, [data, isLoading, _enabled, error])
 }
 
 // export function useMultipleContractCall()
