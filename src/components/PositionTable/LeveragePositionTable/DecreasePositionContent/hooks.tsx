@@ -115,21 +115,24 @@ export function useDerivedReducePositionInfo(
         ? new BN(result.amount1.toString()).times(-1).toFixed(0)
         : new BN(result.amount0.toString()).times(-1).toFixed(0)
     )
+    const marginDecimals = position.isToken0
+      ? position.marginInPosToken? position.token0Decimals: position.token1Decimals
+      : position.marginInPosToken? position.token1Decimals: position.token0Decimals
 
     const PnL = new BN(result.PnL.toString())
-      .shiftedBy(-18)
-      .times(position.margin.times(new BN(reducePercent).shiftedBy(-18)))
-
+      .shiftedBy(-marginDecimals)
+      // .times(position.margin.times(new BN(reducePercent).shiftedBy(-18)))
+    // console.log('pnl hereeree',position,inputCurrency, outputCurrency, result.PnL.toString())
     let PnLWithPremium = null
     if (closePosition) {
       if (position.marginInPosToken) {
         const price = position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
-        PnLWithPremium = PnL.plus(position.premiumLeft.times(price))
+        PnLWithPremium = PnL.minus(position.premiumOwed.times(price))
       } else {
-        PnLWithPremium = PnL.plus(position.premiumLeft)
+        PnLWithPremium = PnL.minus(position.premiumOwed)
       }
     }
-
+    // console.log('positionhereere', position?.premiumOwed.toString())
     const info: DerivedReducePositionInfo = {
       PnL,
       PnLWithPremium,

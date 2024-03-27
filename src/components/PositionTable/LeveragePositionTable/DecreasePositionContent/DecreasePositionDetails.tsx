@@ -44,14 +44,19 @@ export function DecreasePositionDetails({
 
   const receiveAmount = useMemo(() => {
     if (!txnInfo || !existingPosition) return undefined
-
+    // const withdrawnPremium = removePremium?
+    //   existingPosition?.marginInPosToken 
+    //     ? txnInfo.withdrawnPremium.multipliedBy(txnInfo.executionPrice) : txnInfo.withdrawnPremium
+    //     : new BN(0)
     const re = removePremium
-      ? existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL).plus(txnInfo.withdrawnPremium)
+      ? existingPosition.marginInPosToken
+          ? existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
+          : existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL).plus(txnInfo.withdrawnPremium)
       : existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
 
     return re
   }, [txnInfo, existingPosition, removePremium])
-
+  // console.log('helllll',txnInfo)
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">
@@ -112,7 +117,7 @@ export function DecreasePositionDetails({
         ) : null}
         {removePremium ? (
           <ValueLabel
-            label="Returned Deposit"
+            label="Returned Premium Deposit"
             description="Position will automatically withdraw your remaining 
               premium deposit and refund you."
             value={
@@ -120,7 +125,7 @@ export function DecreasePositionDetails({
                 ? formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)
                 : formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)
             }
-            symbolAppend={existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+            symbolAppend={inputCurrency?.symbol }
             syncing={loading}
             height="14px"
           />
