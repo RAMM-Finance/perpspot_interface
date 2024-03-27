@@ -16,6 +16,8 @@ import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
+import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePoolV2 } from 'hooks/usePools'
@@ -290,11 +292,11 @@ export default function Swap({ className }: { className?: string }) {
 
   const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
-  const { adjustedPool } = adjustTokensForChain(chainId, {
-    token0: pool?.token0.address,
-    token1: pool?.token1.address,
-    fee: pool?.fee,
-  })
+  // const { adjustedPool } = adjustTokensForChain(chainId, {
+  //   token0: pool?.token0.address,
+  //   token1: pool?.token1.address,
+  //   fee: pool?.fee,
+  // })
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -308,23 +310,34 @@ export default function Swap({ className }: { className?: string }) {
 
   const chartSymbol = useMemo(() => {
     if (pool && poolsOHLC && chainId) {
-      const id = getPoolId(adjustedPool.token0, adjustedPool.token1, adjustedPool.fee)
+      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 
       // const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
       if (!poolsOHLC[id]) return null
 
       const base = poolsOHLC[id]?.base
+      let poolAddress = computePoolAddress({
+        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
+        tokenA: pool.token0,
+        tokenB: pool.token1,
+        fee: pool.fee,
+      })
+      if (UNSUPPORTED_GECKO_CHAINS.includes(chainId)) {
+        poolAddress = switchPoolAddress(
+          chainId,
+          SupportedChainId.ARBITRUM_ONE,
+          pool.token0.address,
+          pool.token1.address,
+          pool.fee
+        )
+      }
       if (!base) {
         const token0Price = new BN(pool.token0Price.toFixed(18))
         const d1 = token0Price.minus(poolsOHLC[id].price24hAgo).abs()
         const d2 = new BN(1).div(token0Price).minus(poolsOHLC[id].price24hAgo).abs()
+
         return JSON.stringify({
-          poolAddress: computePoolAddress({
-            factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
-            tokenA: adjustedPool.token0,
-            tokenB: adjustedPool.token1,
-            fee: adjustedPool.fee,
-          }),
+          poolAddress,
           baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
           quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
           token0IsBase: d1.lt(d2),
@@ -332,19 +345,14 @@ export default function Swap({ className }: { className?: string }) {
       }
       const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
       return JSON.stringify({
-        poolAddress: computePoolAddress({
-          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
-          tokenA: adjustedPool.token0,
-          tokenB: adjustedPool.token1,
-          fee: adjustedPool.fee,
-        }),
+        poolAddress,
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
         token0IsBase: !invert,
       })
     }
     return null
-  }, [poolsOHLC, pool, chainId, adjustedPool])
+  }, [poolsOHLC, pool, chainId])
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 

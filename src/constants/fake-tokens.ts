@@ -1,5 +1,7 @@
 import { Token } from '@uniswap/sdk-core'
+import { computePoolAddress } from 'hooks/usePools'
 
+import { V3_CORE_FACTORY_ADDRESSES } from './addresses'
 import { SupportedChainId } from './chains'
 
 export const feth_m = '0xa826985df0507632c7dab6de761d8d4efc353d1f'
@@ -103,6 +105,8 @@ const ARBITRUM_TO_BERA: { [address: string]: string } = {
   [WETH_ARBITRUM.address.toLowerCase()]: WETH_BERA.address,
 }
 
+export const UNSUPPORTED_GECKO_CHAINS = [SupportedChainId.LINEA, SupportedChainId.BERA_ARTIO]
+
 export const switchChainAddress = (fromChainId: number, toChainId: number, address: string) => {
   if (fromChainId === SupportedChainId.LINEA && toChainId === SupportedChainId.ARBITRUM_ONE) {
     return LINEA_TO_ARBITRUM[address.toLowerCase()]
@@ -114,6 +118,24 @@ export const switchChainAddress = (fromChainId: number, toChainId: number, addre
     return ARBITRUM_TO_BERA[address.toLowerCase()]
   }
   return address
+}
+
+export const switchPoolAddress = (
+  fromChainId: number,
+  toChainId: number,
+  tokenA: string,
+  tokenB: string,
+  fee: number
+) => {
+  const _tokenA = switchChainAddress(fromChainId, toChainId, tokenA)
+  const _tokenB = switchChainAddress(fromChainId, toChainId, tokenB)
+
+  return computePoolAddress({
+    factoryAddress: V3_CORE_FACTORY_ADDRESSES[toChainId],
+    tokenA: _tokenA,
+    tokenB: _tokenB,
+    fee,
+  })
 }
 
 export const getFakeTokensMap = (chainId?: number): { [address: string]: Token } => {

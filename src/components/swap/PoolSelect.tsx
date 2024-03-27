@@ -508,9 +508,9 @@ export function SelectPool() {
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}
-        address0={pool?.token0.address}
-        address1={pool?.token1.address}
-        fee={pool?.fee}
+        address0={poolKey?.token0}
+        address1={poolKey?.token1}
+        fee={poolKey?.fee}
       />
       <StyledMenu
         id="simple-menu"

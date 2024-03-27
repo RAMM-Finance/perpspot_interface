@@ -28,6 +28,7 @@ export function MulticallUpdater() {
   const { chainId } = useWeb3React()
   const latestBlockNumber = useBlockNumber()
   const contract = useInterfaceMulticall()
+
   const listenerOptions: ListenerOptions = useMemo(
     () => ({
       blocksPerFetch: getBlocksPerFetchForChainId(chainId),

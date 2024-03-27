@@ -52,8 +52,7 @@ export const PoolDataChart = ({
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
 }) => {
   // const { datafeed } = useDatafeed({ chainId })
-  const newChainId = chainId == 80085 ? 42161 : chainId
-  const { datafeed } = useGeckoDatafeed({ chainId: newChainId })
+  const { datafeed } = useGeckoDatafeed({ chainId })
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
