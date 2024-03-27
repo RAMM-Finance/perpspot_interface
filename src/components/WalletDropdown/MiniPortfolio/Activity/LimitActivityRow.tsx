@@ -1,10 +1,14 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
 import Column, { AutoColumn } from 'components/Column'
+import { RowBetween } from 'components/Row'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
+import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import useENSName from 'hooks/useENSName'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
+import { useMemo } from 'react'
+import { ArrowUpRight } from 'react-feather'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
@@ -22,12 +26,13 @@ const ActivityTitle = styled.div`
 
 const ActivityPrice = styled.div`
   border-bottom: 1px dashed rgba(245, 246, 252, 0.5);
-  margin-left: 0.5rem;
 `
 
 const ActivityTableRow = styled.div`
   /* display: flex; */
   /* align-items: center; */
+  display: flex;
+  gap: 10px;
 `
 
 const StyledTimestamp = styled.span`
@@ -86,6 +91,11 @@ export function ActivityRow({
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
   const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
 
+  const [action, pair] = useMemo(() => {
+    if (!actionDescription) return ['-', '-']
+    return actionDescription.split(',')
+  }, [actionDescription])
+
   return (
     <TraceEvent
       events={[BrowserEvent.onClick]}
@@ -107,17 +117,41 @@ export function ActivityRow({
         }
         title={
           <ActivityTableRow>
-            <ActivityTitle>
-              <ThemedText.SubHeader fontWeight={500}>
-                {!isOrder ? title : title + ' (filled order)'}
-              </ThemedText.SubHeader>
-              <StyledTimestamp>{timeSince}</StyledTimestamp>
-            </ActivityTitle>
-            <AutoColumn>
-              <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
-                {actionDescription}
-              </ThemedText.SubHeaderSmall>
-              <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
+            <AutoColumn gap="5px">
+              <ActivityTitle>
+                <ThemedText.SubHeader fontWeight={500}>
+                  {!isOrder ? title : title + ' (filled order)'}
+                </ThemedText.SubHeader>
+                <StyledTimestamp>{timeSince}</StyledTimestamp>
+              </ActivityTitle>
+              <RowBetween gap="20px">
+                <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
+                  {pair}
+                </ThemedText.SubHeaderSmall>
+                |
+                <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
+                  {action}
+                  <MouseoverTooltip text="View on block explorer">
+                    <ArrowUpRight size="16px" />
+                  </MouseoverTooltip>
+                </ThemedText.SubHeaderSmall>
+                <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
+                  {pnlNumber && (
+                    <ActivityPrice>
+                      <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
+                      {marginToken}
+                    </ActivityPrice>
+                  )}
+                  {ENSName ?? otherAccount}
+                </ThemedText.SubHeaderSmall>
+              </RowBetween>
+              <ThemedText.SubHeaderSmall
+                style={{ gap: '5px' }}
+                fontSize={12}
+                fontWeight={500}
+                display="flex"
+                alignItems="center"
+              >
                 {priceNumber && (
                   <>
                     <ActivityPrice>
@@ -126,15 +160,6 @@ export function ActivityRow({
                     {invertedTooltipLogo}
                   </>
                 )}
-              </ThemedText.SubHeaderSmall>
-              <ThemedText.SubHeaderSmall fontWeight={500} display="flex" alignItems="center">
-                {pnlNumber && (
-                  <ActivityPrice>
-                    <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
-                    {marginToken}
-                  </ActivityPrice>
-                )}
-                {ENSName ?? otherAccount}
               </ThemedText.SubHeaderSmall>
             </AutoColumn>
           </ActivityTableRow>
