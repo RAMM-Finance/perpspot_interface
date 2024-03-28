@@ -317,9 +317,10 @@ const TradeTabContent = () => {
   )
 
   const notApproved = marginInPosToken
-    ? inputApprovalState !== ApprovalState.APPROVED && outputApprovalState !== ApprovalState.APPROVED
+    ? inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED
     : inputApprovalState !== ApprovalState.APPROVED
-
+  // console.log('marginInPosToken', inputApprovalState, ApprovalState.APPROVED, 
+  //   outputApprovalState,ApprovalState.APPROVED, notApproved )
   const noTradeInputError = useMemo(() => {
     return !inputError
   }, [inputError])
