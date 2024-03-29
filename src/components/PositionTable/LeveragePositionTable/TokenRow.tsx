@@ -16,7 +16,7 @@ import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
+import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Box } from 'rebass'
@@ -545,7 +545,7 @@ function positionEntryPrice(position: MarginPositionDetails): BN {
 }
 
 /* Loaded State: row component with token information */
-export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+export const LoadedRow = memo(forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
   const { position: details } = props
   const { account } = useWeb3React()
@@ -861,6 +861,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       </StyledLoadedRow>
     </div>
   )
-})
+}))
 
 LoadedRow.displayName = 'LoadedRow'

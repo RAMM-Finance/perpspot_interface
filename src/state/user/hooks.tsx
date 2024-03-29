@@ -89,6 +89,7 @@ export function useExpertModeManager(): [boolean, () => void] {
 export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInToken0: boolean } | undefined {
   const poolId = useAppSelector((state) => state.user.currentPool)
   const inputInToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  // console.log(poolId, '---poolId-----------', inputInToken0);
   return useMemo(() => {
     if (!poolId || inputInToken0 === undefined) return undefined
     const [token0, token1, fee] = poolId.split('-')

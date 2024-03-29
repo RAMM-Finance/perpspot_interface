@@ -282,7 +282,6 @@ export default function Swap({ className }: { className?: string }) {
 
   const { account, chainId } = useWeb3React()
   const { activeTab } = useSwapState()
-  console.log('----activeTab-------', activeTab)
 
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
@@ -290,7 +289,7 @@ export default function Swap({ className }: { className?: string }) {
   const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
-
+  // console.log(poolKey, '----poolkey')
   const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
   // const { adjustedPool } = adjustTokensForChain(chainId, {

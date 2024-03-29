@@ -186,14 +186,13 @@ export const Selector = styled.div<{ active: boolean }>`
 `
 
 const TradeTabContent = () => {
-  const theme = useTheme()
+  // const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  const currentPool = useCurrentPool()
+  const currentPool= useCurrentPool();
   const poolKey = currentPool?.poolKey
   const { onUserInput, onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
-
   const { currencyBalances, currencies } = useDerivedSwapInfo()
-
+  // console.log('-------currencyBalances, currencies----------')
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
     txHash: string | undefined
@@ -1063,8 +1062,8 @@ const TradeTabContent = () => {
               </ThemedText.BodyPrimary>
             </ButtonError>
           ))}
-      </div>
-      {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />} */}
+      </div> 
+      {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} /> */}
     </Wrapper>
   )
 }

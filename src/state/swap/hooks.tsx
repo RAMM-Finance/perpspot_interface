@@ -15,7 +15,7 @@ import {
   useCurrentOutputCurrency,
   useUserSlippageToleranceWithDefault,
 } from 'state/user/hooks'
-import { RawPoolKey } from 'types/lmtv2position'
+import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 
 import useENS from '../../hooks/useENS'
 import { isAddress } from '../../utils'
@@ -186,11 +186,11 @@ export function useDerivedSwapInfo(): {
   const { account } = useWeb3React()
 
   const { independentField, typedValue, recipient } = useSwapState()
-
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
+  // console.log('---useDerivedSwapInfo----', currentPool, inputCurrency, outputCurrency)
 
-  // console.log('inputCurrency', inputCurrency)
+  // console.log('inputCurrency', inputCurrency, outputCurrency)
   const recipientLookup = useENS(recipient ?? undefined)
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
 

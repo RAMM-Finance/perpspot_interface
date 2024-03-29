@@ -10,7 +10,7 @@ import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useHistoryData } from 'hooks/useAccountHistory'
 import { tokenDecimal } from 'hooks/useContract'
 import { atom, useAtom } from 'jotai'
-import { useEffect, useMemo } from 'react'
+import { memo, useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
 
 import { PortfolioSkeleton } from '../PortfolioRow'
@@ -249,7 +249,7 @@ function getDescriptor(entry: any, tokens: any) {
     return ' '
   }
 }
-export function LimitActivityTab({ account }: { account: string }) {
+export const LimitActivityTab = memo(({ account }: { account: string }) => {
   const [drawerOpen, toggleWalletDrawer] = useWalletDrawer()
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
   const { chainId } = useWeb3React()
@@ -321,4 +321,4 @@ export function LimitActivityTab({ account }: { account: string }) {
       </GridContainer>
     )
   }
-}
+})
