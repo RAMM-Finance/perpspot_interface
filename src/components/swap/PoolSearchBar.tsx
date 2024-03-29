@@ -14,7 +14,8 @@ import { poolFilterStringAtom } from './state'
 const ICON_SIZE = '20px'
 const SearchBarContainer = styled.div`
   display: flex;
-  width: 100%;
+  width: 95%;
+  margin-left: 0.5rem;
   margin-bottom: 0.5rem;
   top: 0; // Stick to the top of the container
   z-index: 999;
@@ -27,7 +28,6 @@ const SearchInput = styled.input`
   background-size: 20px 20px;
   background-position: 12px center;
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.searchBackground};
   height: 100%;
   width: 100%;
   padding: 0.5rem 1rem;

@@ -103,6 +103,7 @@ const enabledFeatures = [
   'hide_resolution_in_legend',
   'items_favoriting',
   'hide_left_toolbar_by_default',
+  '',
 ]
 
 export const defaultChartProps = {

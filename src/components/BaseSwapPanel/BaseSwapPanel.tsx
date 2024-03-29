@@ -5,13 +5,15 @@ import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
+import { YellowCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import { MouseoverTooltip } from 'components/Tooltip'
 import { isSupportedChain } from 'constants/chains'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useState } from 'react'
-import { ChevronDown, ChevronUp, Lock } from 'react-feather'
+import { ChevronDown, ChevronUp, Info, Lock } from 'react-feather'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 
@@ -653,6 +655,14 @@ export function MarginSelectPanel({
                 )}
               </RowBetween>
             </FiatRow>
+          )}
+          {existingPosition && (
+            <YellowCard style={{ padding: '3px', lineHeight: '13px', display: 'flex', gap: '5px' }}>
+              <ThemedText.BodySmall fontSize="10px">Margin selection unavailable</ThemedText.BodySmall>
+              <MouseoverTooltip text="Unable to change margin as position with given margin is currently open. Open positions can be modified/closed in the `Leverage Positions` table.">
+                <Info size={11} />
+              </MouseoverTooltip>
+            </YellowCard>
           )}
         </Container>
       </InputPanel>
