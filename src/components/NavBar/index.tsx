@@ -87,15 +87,18 @@ export const PageTabs = () => {
     <>
       <Tabs>
         <LogoSection>
-          <NavLink to="/swap">
+          <NavLink to="/trade">
             <LogoText fill="#fff" width="150px" />
           </NavLink>
         </LogoSection>
-        <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
+        <MenuItem href="/trade" isActive={pathname.startsWith('/trade')}>
           <Trans>Trade</Trans>
         </MenuItem>
         <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
           <Trans>Pairs</Trans>
+        </MenuItem>
+        <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
+          <Trans>Swap</Trans>
         </MenuItem>
         <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
           <Trans>Earn</Trans>

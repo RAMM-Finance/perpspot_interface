@@ -49,9 +49,8 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
-import { InputHeader, ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
-import { CurrencyState } from '../../state/swap/SwapContext'
-
+import { InputHeader } from '.'
+import { ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
 
 const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
@@ -76,16 +75,11 @@ function largerPercentValue(a?: Percent, b?: Percent) {
   return undefined
 }
 
-interface SwapTabContentProps {
-  onCurrencyChange?: (selected: CurrencyState) => void
-}
-
-const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
+const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  const { chainId, prefilledState, currencyState } = useSwapAndLimitContext()
 
-  const { onCurrencySelection, onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const { onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -129,30 +123,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
       showLeverageConfirm: false,
     })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
-
-  const handleInputSelect = useCallback(
-    (inputCurrency: Currency) => {
-      onCurrencySelection(Field.INPUT, inputCurrency)
-      onCurrencyChange?.({
-        inputCurrency,
-        outputCurrency: currencyState.outputCurrency,
-      })
-      // maybeLogFirstSwapAction(trace)
-    },
-    [onCurrencyChange, onCurrencySelection, currencyState] //, trace]
-  )
-
-  const handleOutputSelect = useCallback(
-    (outputCurrency: Currency) => {
-      onCurrencySelection(Field.OUTPUT, outputCurrency)
-      onCurrencyChange?.({
-        inputCurrency: currencyState.inputCurrency,
-        outputCurrency,
-      })
-      // maybeLogFirstSwapAction(trace)
-    },
-    [onCurrencyChange, onCurrencySelection, currencyState] //, trace]
-  )
 
   const fiatValueTradeInput = useUSDPrice(trade?.inputAmount)
   const fiatValueTradeOutput = useUSDPrice(trade?.outputAmount)
@@ -385,6 +355,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
 
   return (
     <Wrapper>
+      <SwapHeader allowedSlippage={allowedSlippage} />
       <ConfirmSwapModal
         isOpen={showConfirm}
         trade={trade}
@@ -417,7 +388,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
-              onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
@@ -461,7 +431,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
                 fiatValue={fiatValueOutput}
                 priceImpact={stablecoinPriceImpact}
                 currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
+                //onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT] ?? null}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}

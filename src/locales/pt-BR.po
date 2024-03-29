@@ -1349,7 +1349,7 @@ msgid "Only UNI votes that were self delegated or delegated to another address b
 msgstr "Somente votos de UNI autodelegados ou delegados para outro endereço antes do bloqueio {0} serão aprovados para votação."
 
 #: src/pages/NotFound/index.tsx
-msgid "Oops, take me back to Swap"
+msgid "Oops, take me back to Trade"
 msgstr ""
 
 #: src/components/Web3Status/index.tsx

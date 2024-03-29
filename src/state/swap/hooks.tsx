@@ -36,12 +36,19 @@ import {
 } from './actions'
 import { SwapState } from './reducer'
 // import { useLeveragePosition } from 'hooks/useV3Positions'
+import {
+  CurrencyState,
+  SerializedCurrencyState,
+  useSwapAndLimitContext,
+  useSwapContext,
+} from './SwapContext'
 
 export function useSwapState(): AppState['swap'] {
   return useAppSelector((state) => state.swap)
 }
 
 export function useSwapActionHandlers(): {
+  onCurrencySelection: (field: Field, currency: Currency) => void
   onPoolSelection(currencyIn: Currency, currencyOut: Currency, poolKey: RawPoolKey): void
   onSwitchTokens: (leverage: boolean) => void
   onUserInput: (field: Field, typedValue: string) => void
@@ -53,6 +60,33 @@ export function useSwapActionHandlers(): {
   onSetMarginInPosToken: (marginInPosToken: boolean) => void
 } {
   const dispatch = useAppDispatch()
+
+  const { swapState, setSwapState } = useSwapContext()
+  const { currencyState, setCurrencyState } = useSwapAndLimitContext()
+
+  const onCurrencySelection = useCallback(
+    (field: Field, currency: Currency) => {
+      const [currentCurrencyKey, otherCurrencyKey]: (keyof CurrencyState)[] =
+        field === Field.INPUT ? ['inputCurrency', 'outputCurrency'] : ['outputCurrency', 'inputCurrency']
+      // the case where we have to swap the order
+      if (currency === currencyState[otherCurrencyKey]) {
+        setCurrencyState({
+          [currentCurrencyKey]: currency,
+          [otherCurrencyKey]: currencyState[currentCurrencyKey],
+        })
+        setSwapState((swapState) => ({
+          ...swapState,
+          independentField: swapState.independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT,
+        }))
+      } else {
+        setCurrencyState((state) => ({
+          ...state,
+          [currentCurrencyKey]: currency,
+        }))
+      }
+    },
+    [currencyState, setCurrencyState, setSwapState]
+  )
 
   const onPoolSelection = useCallback(
     (currencyIn: Currency, currencyOut: Currency, poolKey: RawPoolKey) => {
@@ -125,6 +159,7 @@ export function useSwapActionHandlers(): {
   )
 
   return {
+    onCurrencySelection,
     onSwitchTokens,
     onUserInput,
     onChangeRecipient,

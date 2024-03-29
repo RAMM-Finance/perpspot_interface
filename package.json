@@ -186,6 +186,7 @@
     "@web3-react/types": "8.1.2-beta.0",
     "@web3-react/url": "8.1.2-beta.0",
     "@web3-react/walletconnect": "8.1.2-beta.0",
+    "analytics": "^0.8.11",
     "array.prototype.flat": "^1.2.4",
     "array.prototype.flatmap": "^1.2.4",
     "axios": "^1.6.5",
