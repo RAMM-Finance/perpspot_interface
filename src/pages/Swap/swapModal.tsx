@@ -35,10 +35,11 @@ import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
+import { useAppSelector } from 'state/hooks'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useExpertModeManager } from 'state/user/hooks'
+import { useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { LinkStyledButton, ThemedText } from 'theme'
@@ -79,7 +80,9 @@ const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
 
-  const { onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const { onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  const switchTokens = useSelectInputCurrency()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -404,7 +407,7 @@ const SwapTabContent = () => {
           >
             <ArrowContainer
               onClick={() => {
-                onSwitchTokens(false)
+                switchTokens(!inputIsToken0)
               }}
               color={theme.textPrimary}
             >

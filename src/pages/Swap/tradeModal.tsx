@@ -319,7 +319,7 @@ const TradeTabContent = () => {
   const notApproved = marginInPosToken
     ? inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED
     : inputApprovalState !== ApprovalState.APPROVED
-  // console.log('marginInPosToken', inputApprovalState, ApprovalState.APPROVED, 
+  // console.log('marginInPosToken', inputApprovalState, ApprovalState.APPROVED,
   //   outputApprovalState,ApprovalState.APPROVED, notApproved )
   const noTradeInputError = useMemo(() => {
     return !inputError
@@ -649,11 +649,19 @@ const TradeTabContent = () => {
       </LimitInputWrapper>
       <div style={{ display: 'relative' }}>
         <InputSection>
-          <InputHeader>
-            <ThemedText.BodySecondary fontWeight={400}>
-              <Trans>Margin</Trans>
-            </ThemedText.BodySecondary>
-          </InputHeader>
+          {existingPosition && existingPositionOpen ? (
+            <InputHeader style={{ marginBottom: '5px' }}>
+              <ThemedText.BodySecondary fontWeight={400}>
+                <Trans>Margin</Trans>
+              </ThemedText.BodySecondary>
+            </InputHeader>
+          ) : (
+            <InputHeader>
+              <ThemedText.BodySecondary fontWeight={400}>
+                <Trans>Margin</Trans>
+              </ThemedText.BodySecondary>
+            </InputHeader>
+          )}
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <MarginSelectPanel
               value={formattedMargin}
