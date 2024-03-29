@@ -15,7 +15,7 @@ import {
   useCurrentOutputCurrency,
   useUserSlippageToleranceWithDefault,
 } from 'state/user/hooks'
-import { PoolKey, RawPoolKey } from 'types/lmtv2position'
+import { RawPoolKey } from 'types/lmtv2position'
 
 import useENS from '../../hooks/useENS'
 import { isAddress } from '../../utils'

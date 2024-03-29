@@ -10,7 +10,7 @@ import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency } from 'state/user/hooks'
@@ -336,15 +336,15 @@ export function AdvancedMarginTradeDetails({
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined
 
-    let rate 
-    if(trade.premiumInPosToken) {
-      if(Number(trade.executionPrice.toFixed(8))== 0) return undefined
+    let rate
+    if (trade.premiumInPosToken) {
+      if (Number(trade.executionPrice.toFixed(8)) == 0) return undefined
       rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).toNumber() * 100
-    }
-    else rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
+    } else rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
     return new BN(rate / trade?.borrowRate?.toNumber())
   }, [trade])
 
+  const handleInvert = useCallback(() => setInverted(!inverted), [inverted])
 
   return (
     <StyledCard>
@@ -356,10 +356,7 @@ export function AdvancedMarginTradeDetails({
             <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               <div>{inverted ? 'Inverted Price' : 'Execution Price'}</div>
               <MouseoverTooltip text="invert" placement="right">
-                <div
-                  onClick={() => setInverted(!inverted)}
-                  style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-                >
+                <div onClick={handleInvert} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                   <ReversedArrowsIcon />
                 </div>
               </MouseoverTooltip>

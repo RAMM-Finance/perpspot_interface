@@ -95,27 +95,12 @@ export default function Updater(): null {
     }
   }, [dispatch, chainId, provider, windowVisible, activeChainId, setCurrentPool])
 
-  console.log('currentPool', currentPool, poolList, poolsOHLC)
-
   const debouncedChainId = useDebounce(activeChainId, 100)
 
   useEffect(() => {
     const chainId = debouncedChainId ? supportedChainId(debouncedChainId) ?? null : null
     dispatch(updateChainId({ chainId }))
   }, [dispatch, debouncedChainId])
-
-  // const block = useAppSelector((state) => state.application.blockNumber)
-
-  // const onBlock = useCallback(
-  //   (_block: number) => {
-  //     if (activeChainId === chainId) {
-  //       if (!block || block < _block) {
-  //         dispatch(updateBlockNumber({ blockNumber: _block }))
-  //       }
-  //     }
-  //   },
-  //   [activeChainId, dispatch, block, chainId]
-  // )
 
   // useEffect(() => {
   //   let stale = false

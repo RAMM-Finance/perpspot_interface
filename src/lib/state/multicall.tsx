@@ -14,6 +14,7 @@ function getBlocksPerFetchForChainId(chainId: number | undefined): number {
     case SupportedChainId.ARBITRUM_ONE:
     case SupportedChainId.BERA_ARTIO:
     case SupportedChainId.OPTIMISM:
+    case SupportedChainId.LINEA:
       return 15
     case SupportedChainId.BNB:
     case SupportedChainId.CELO:
@@ -25,7 +26,7 @@ function getBlocksPerFetchForChainId(chainId: number | undefined): number {
 }
 
 export function MulticallUpdater() {
-  const { chainId } = useWeb3React()
+  const { chainId, provider } = useWeb3React()
   const latestBlockNumber = useBlockNumber()
   const contract = useInterfaceMulticall()
 
@@ -42,6 +43,7 @@ export function MulticallUpdater() {
       latestBlockNumber={latestBlockNumber ?? undefined}
       contract={contract}
       listenerOptions={listenerOptions}
+      isDebug={true}
     />
   )
 }
