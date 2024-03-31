@@ -9,7 +9,7 @@ import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -216,7 +216,7 @@ export default function TokenTable() {
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
   const { poolKeys: data, isLoading: keysLoading } = useAllPoolKeys()
-  const poolList = useRawPoolKeyList()
+  const poolList = usePoolKeyList()
 
   const { result: poolData, loading: poolsLoading } = usePoolsData()
 

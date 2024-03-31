@@ -4,6 +4,7 @@ import { SupportedChainId } from 'constants/chains'
 import { useInterfaceMulticall } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useMemo } from 'react'
+// import { createMulticall, ListenerOptions } from 'redux-multicall'
 
 const multicall = createMulticall()
 
@@ -14,20 +15,22 @@ function getBlocksPerFetchForChainId(chainId: number | undefined): number {
     case SupportedChainId.ARBITRUM_ONE:
     case SupportedChainId.BERA_ARTIO:
     case SupportedChainId.OPTIMISM:
-    case SupportedChainId.LINEA:
       return 15
     case SupportedChainId.BNB:
     case SupportedChainId.CELO:
     case SupportedChainId.CELO_ALFAJORES:
       return 5
+    case SupportedChainId.LINEA:
+      return 30
     default:
       return 1
   }
 }
 
 export function MulticallUpdater() {
-  const { chainId, provider } = useWeb3React()
+  const { chainId } = useWeb3React()
   const latestBlockNumber = useBlockNumber()
+
   const contract = useInterfaceMulticall()
 
   const listenerOptions: ListenerOptions = useMemo(

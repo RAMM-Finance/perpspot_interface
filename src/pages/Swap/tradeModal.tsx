@@ -257,6 +257,7 @@ const TradeTabContent = () => {
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
+
   const {
     onLeverageFactorChange,
     onMarginChange,

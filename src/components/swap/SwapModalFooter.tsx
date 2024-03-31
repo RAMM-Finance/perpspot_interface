@@ -354,8 +354,10 @@ function useDerivedBorrowReduceCollateralInfo(
     reducePositionResult: any
   }>()
   const { account } = useWeb3React()
+
   const currency0 = useCurrency(position?.token0Address)
   const currency1 = useCurrency(position?.token1Address)
+
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
     useMemo(() => [currency0 ?? undefined, currency1 ?? undefined], [currency0, currency1])

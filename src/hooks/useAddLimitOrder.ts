@@ -28,6 +28,7 @@ export function useAddLimitOrderCallback(
   const addTransaction = useTransactionAdder()
   const inputCurrency = useCurrency(trade?.inputCurrencyId)
   const outputCurrency = useCurrency(trade?.outputCurrencyId)
+
   // console.log("allowedSlippage", allowedSlippage)
   const addLimitOrder = useCallback(async (): Promise<TransactionResponse> => {
     try {
