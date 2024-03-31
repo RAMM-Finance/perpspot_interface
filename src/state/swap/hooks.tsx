@@ -24,6 +24,7 @@ import { AppState } from '../types'
 import {
   ActiveSwapTab,
   Field,
+  selectCurrency,
   selectPool,
   setActiveTab,
   setLeverage,
@@ -42,6 +43,9 @@ import {
   useSwapAndLimitContext,
   useSwapContext,
 } from './SwapContext'
+import { ParsedQs } from 'qs'
+import { useEffect } from 'react'
+import { TOKEN_SHORTHANDS } from 'constants/tokens'
 
 export function useSwapState(): AppState['swap'] {
   return useAppSelector((state) => state.swap)
@@ -64,6 +68,7 @@ export function useSwapActionHandlers(): {
   const { swapState, setSwapState } = useSwapContext()
   const { currencyState, setCurrencyState } = useSwapAndLimitContext()
 
+
   const onCurrencySelection = useCallback(
     (field: Field, currency: Currency) => {
       const [currentCurrencyKey, otherCurrencyKey]: (keyof CurrencyState)[] =
@@ -85,8 +90,22 @@ export function useSwapActionHandlers(): {
         }))
       }
     },
-    [currencyState, setCurrencyState, setSwapState]
+    [setCurrencyState, setSwapState]
   )
+
+  // const onCurrencySelection = useCallback(
+  //   (field: Field, currency: Currency) => {
+  //     console.log("ON CURRENCY SELECTION")
+  //     console.log(currency)
+  //     dispatch(
+  //       selectCurrency({
+  //         field,
+  //         currencyId: currency.isToken ? currency.address : currency.isNative ? 'ETH' : '',
+  //       })
+  //     )
+  //   },
+  //   [dispatch]
+  // )
 
   const onPoolSelection = useCallback(
     (currencyIn: Currency, currencyOut: Currency, poolKey: RawPoolKey) => {
@@ -102,11 +121,41 @@ export function useSwapActionHandlers(): {
   )
 
   const onSwitchTokens = useCallback(
-    (leverage: boolean) => {
-      dispatch(switchCurrencies({ leverage }))
+    ({
+      newOutputHasTax,
+      previouslyEstimatedOutput,
+    }: {
+      newOutputHasTax: boolean
+      previouslyEstimatedOutput: string
+    }) => {
+      // To prevent swaps with FOT tokens as exact-outputs, we leave it as an exact-in swap and use the previously estimated output amount as the new exact-in amount.
+      if (newOutputHasTax && swapState.independentField === Field.INPUT) {
+        setSwapState((swapState) => ({
+          ...swapState,
+          typedValue: previouslyEstimatedOutput,
+        }))
+      } else {
+        setSwapState((prev) => ({
+          ...prev,
+          independentField: prev.independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT,
+        }))
+      }
+
+      setCurrencyState((prev) => ({
+        inputCurrency: prev.outputCurrency,
+        outputCurrency: prev.inputCurrency,
+      }))
     },
-    [dispatch]
+    [setCurrencyState, setSwapState, swapState.independentField]
   )
+
+
+  // const onSwitchTokens = useCallback(
+  //   (leverage: boolean) => {
+  //     dispatch(switchCurrencies({ leverage }))
+  //   },
+  //   [dispatch]
+  // )
 
   const onUserInput = useCallback(
     (field: Field, typedValue: string) => {
@@ -206,8 +255,26 @@ export interface BorrowCreationDetails {
   existingCollateral: BN
 }
 
-// from the current swap inputs, compute the best trade and return it.
-export function useDerivedSwapInfo(): {
+export type SwapInfo = {
+  currencies: { [field in Field]?: Currency }
+  currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
+  inputTax: Percent
+  outputTax: Percent
+  outputFeeFiatValue?: number
+  parsedAmount?: CurrencyAmount<Currency>
+  inputError?: ReactNode
+  trade: {
+    trade?: InterfaceTrade<Currency, Currency, TradeType> | undefined
+    state: TradeState
+    uniswapXGasUseEstimateUSD?: number
+    error?: any
+    swapQuoteLatency?: number
+  }
+  allowedSlippage: Percent
+  autoSlippage: Percent
+}
+
+export type SwapInfo2 = {
   currencies: { [field in Field]?: Currency | null }
   currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
   parsedAmount: CurrencyAmount<Currency> | undefined
@@ -217,7 +284,109 @@ export function useDerivedSwapInfo(): {
     state: TradeState
   }
   allowedSlippage: Percent
-} {
+}
+
+export function useDerivedSwapInfo2(): SwapInfo2 {
+  const { account } = useWeb3React()
+
+  const {
+    currencyState: { inputCurrency, outputCurrency },
+  } = useSwapAndLimitContext()
+
+  const { independentField, typedValue, recipient } = useSwapState()
+
+
+  // console.log('inputCurrency', inputCurrency)
+  const recipientLookup = useENS(recipient ?? undefined)
+  const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
+
+  const relevantTokenBalances = useCurrencyBalances(
+    account ?? undefined,
+    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
+  )
+
+  const isExactIn: boolean = independentField === Field.INPUT
+  const parsedAmount = useMemo(
+    () => tryParseCurrencyAmount(typedValue, (isExactIn ? inputCurrency : outputCurrency) ?? undefined),
+    [inputCurrency, isExactIn, outputCurrency, typedValue]
+  )
+
+  const trade = useBestTrade(
+    isExactIn ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT,
+    parsedAmount,
+    (isExactIn ? outputCurrency : inputCurrency) ?? undefined
+  )
+
+  const currencyBalances = useMemo(
+    () => ({
+      [Field.INPUT]: relevantTokenBalances[0],
+      [Field.OUTPUT]: relevantTokenBalances[1],
+    }),
+    [relevantTokenBalances]
+  )
+
+  const currencies: { [field in Field]?: Currency | null } = useMemo(
+    () => ({
+      [Field.INPUT]: inputCurrency,
+      [Field.OUTPUT]: outputCurrency,
+    }),
+    [inputCurrency, outputCurrency]
+  )
+
+  // allowed slippage is either auto slippage, or custom user defined slippage if auto slippage disabled
+  const autoSlippageTolerance = useAutoSlippageTolerance(trade.trade)
+  const allowedSlippage = useUserSlippageToleranceWithDefault(autoSlippageTolerance)
+  // console.log("allowedSlippage:", allowedSlippage)
+
+  const inputError = useMemo(() => {
+    let inputError: ReactNode | undefined
+
+    if (!account) {
+      inputError = <Trans>Connect Wallet</Trans>
+    }
+
+    if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
+      inputError = inputError ?? <Trans>Select a token</Trans>
+    }
+
+    if (!parsedAmount) {
+      inputError = inputError ?? <Trans>Enter an amount</Trans>
+    }
+
+    const formattedTo = isAddress(to)
+    if (!to || !formattedTo) {
+      inputError = inputError ?? <Trans>Enter a recipient</Trans>
+    } else {
+      if (BAD_RECIPIENT_ADDRESSES[formattedTo]) {
+        inputError = inputError ?? <Trans>Invalid recipient</Trans>
+      }
+    }
+
+    // compare input balance to max input based on version
+    const [balanceIn, amountIn] = [currencyBalances[Field.INPUT], trade.trade?.maximumAmountIn(allowedSlippage)]
+
+    if (balanceIn && amountIn && balanceIn.lessThan(amountIn)) {
+      inputError = <Trans>Insufficient {amountIn.currency.symbol} balance</Trans>
+    }
+
+    return inputError
+  }, [account, allowedSlippage, currencies, currencyBalances, parsedAmount, to, trade.trade])
+
+  return useMemo(
+    () => ({
+      currencies,
+      currencyBalances,
+      parsedAmount,
+      inputError,
+      trade,
+      allowedSlippage,
+    }),
+    [allowedSlippage, currencies, currencyBalances, inputError, parsedAmount, trade]
+  )
+}
+
+// from the current swap inputs, compute the best trade and return it.
+export function useDerivedSwapInfo(): SwapInfo2 {
   const { account } = useWeb3React()
 
   const { independentField, typedValue, recipient } = useSwapState()
@@ -343,5 +512,67 @@ export function getInitialSwapState(): SwapState {
     // [Field.OUTPUT]: {
     //   currencyId: '0x912CE59144191C1204E64559FE8253a0e49E6548',
     // },
+  }
+}
+
+function parseCurrencyFromURLParameter(urlParam: ParsedQs[string]): string {
+  if (typeof urlParam === 'string') {
+    const valid = isAddress(urlParam)
+    if (valid) return valid
+    const upper = urlParam.toUpperCase()
+    if (upper === 'ETH') return 'ETH'
+    if (upper in TOKEN_SHORTHANDS) return upper
+  }
+  return ''
+}
+
+function parseTokenAmountURLParameter(urlParam: any): string {
+  return typeof urlParam === 'string' && !isNaN(parseFloat(urlParam)) ? urlParam : ''
+}
+
+function parseIndependentFieldURLParameter(urlParam: any): Field {
+  return typeof urlParam === 'string' && urlParam.toLowerCase() === 'output' ? Field.OUTPUT : Field.INPUT
+}
+
+export function queryParametersToCurrencyState(parsedQs: ParsedQs): SerializedCurrencyState {
+  let inputCurrency = parseCurrencyFromURLParameter(parsedQs.inputCurrency ?? parsedQs.inputcurrency)
+  let outputCurrency = parseCurrencyFromURLParameter(parsedQs.outputCurrency ?? parsedQs.outputcurrency)
+  const independentField = parseIndependentFieldURLParameter(parsedQs.exactField)
+
+  if (inputCurrency === '' && outputCurrency === '' && independentField === Field.INPUT) {
+    // Defaults to having the native currency selected
+    inputCurrency = 'ETH'
+  } else if (inputCurrency === outputCurrency) {
+    // clear output if identical
+    outputCurrency = ''
+  }
+
+  return {
+    inputCurrencyId: inputCurrency === '' ? undefined : inputCurrency ?? undefined,
+    outputCurrencyId: outputCurrency === '' ? undefined : outputCurrency ?? undefined,
+  }
+}
+
+
+export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
+  const typedValue = parseTokenAmountURLParameter(parsedQs.exactAmount)
+  const independentField = parseIndependentFieldURLParameter(parsedQs.exactField)
+
+  return {
+    typedValue,
+    independentField,
+    recipient: null,
+    leverageFactor: '1',
+    leverage: false,
+    activeTab: ActiveSwapTab.LONG,
+    ltv: null,
+    poolId: null,
+    poolKey: null,
+    [Field.INPUT]: {
+      currencyId: null,
+    },
+    [Field.OUTPUT]: {
+      currencyId: null,
+    },
   }
 }

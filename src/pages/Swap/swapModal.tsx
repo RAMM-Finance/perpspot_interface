@@ -37,8 +37,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useExpertModeManager } from 'state/user/hooks'
+import { useDerivedSwapInfo2, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { LinkStyledButton, ThemedText } from 'theme'
@@ -50,7 +50,8 @@ import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
 import { InputHeader, ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
-import { CurrencyState } from '../../state/swap/SwapContext'
+import { CurrencyState, useSwapAndLimitContext } from '../../state/swap/SwapContext'
+import { useCurrency } from 'hooks/Tokens'
 
 
 const TRADE_STRING = 'SwapRouter'
@@ -82,7 +83,7 @@ interface SwapTabContentProps {
 
 const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const theme = useTheme()
-  const { account, chainId } = useWeb3React()
+  const { account, chainId: connectedChainId } = useWeb3React()
   const { chainId, prefilledState, currencyState } = useSwapAndLimitContext()
 
   const { onCurrencySelection, onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
@@ -96,7 +97,9 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     parsedAmount,
     currencies,
     inputError: swapInputError,
-  } = useDerivedSwapInfo()
+  } = useDerivedSwapInfo2()
+
+  // const useCurrency = useCurrency()
 
   const { independentField, typedValue, recipient } = useSwapState()
 
@@ -130,8 +133,15 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
+  const [inputCurrency, setInputCurrency] = useState<Currency | null>(null)
+  const [outputCurrency, setOutputCurrency] = useState<Currency | null>(null)
+
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
+      console.log("HANDLE INPUT SELECT")
+      console.log("INPUT CURRENCY")
+      console.log(inputCurrency)
+      // setInputCurrency(inputCurrency)
       onCurrencySelection(Field.INPUT, inputCurrency)
       onCurrencyChange?.({
         inputCurrency,
@@ -144,6 +154,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
 
   const handleOutputSelect = useCallback(
     (outputCurrency: Currency) => {
+      // setOutputCurrency(outputCurrency)
       onCurrencySelection(Field.OUTPUT, outputCurrency)
       onCurrencyChange?.({
         inputCurrency: currencyState.inputCurrency,
@@ -169,6 +180,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     wrapType,
     execute: onWrap,
     inputError: wrapInputError,
+  // } = useWrapCallback(inputCurrency, outputCurrency, typedValue)
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
 
@@ -191,7 +203,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
       (parsedAmounts[Field.INPUT]?.currency.isToken
         ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
         : undefined),
-    isSupportedChain(chainId) ? ROUTER_ADDRESSES[chainId] : undefined
+    isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefined
   )
 
   const { callback: swapCallback } = useSwapCallback(
@@ -225,6 +237,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const fiatValueOutput = useUSDPrice(parsedAmounts[Field.OUTPUT])
 
   const userHasSpecifiedInputOutput = Boolean(
+    // inputCurrency && outputCurrency && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
   )
 
@@ -358,6 +371,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const isValid = !swapInputError
   // const lmtIsValid = !inputError
 
+  // const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
   const priceImpactTooHigh = priceImpactSeverity > 3 && !isExpertMode
@@ -372,7 +386,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     try {
       await allowance.approveAndPermit()
       sendAnalyticsEvent(InterfaceEventName.APPROVE_TOKEN_TXN_SUBMITTED, {
-        chain_id: chainId,
+        chain_id: connectedChainId,
         token_symbol: maximumAmountIn?.currency.symbol,
         token_address: maximumAmountIn?.currency.address,
       })
@@ -381,7 +395,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     } finally {
       setIsAllowancePending(false)
     }
-  }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
+  }, [allowance, connectedChainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
   return (
     <Wrapper>
@@ -414,11 +428,13 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={showMaxButton}
               currency={currencies[Field.INPUT] ?? null}
+              // currency={inputCurrency}
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
               onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
+              // otherCurrency={outputCurrency}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={independentField === Field.OUTPUT && routeIsSyncing}
@@ -426,7 +442,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
             />
           </Trace>
         </InputSection>
-        <ArrowWrapper clickable={isSupportedChain(chainId)}>
+        <ArrowWrapper clickable={isSupportedChain(connectedChainId)}>
           <TraceEvent
             events={[BrowserEvent.onClick]}
             name={SwapEventName.SWAP_TOKENS_REVERSED}
@@ -440,6 +456,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
             >
               <Maximize2
                 size="10"
+                // color={inputCurrency && outputCurrency ? theme.textPrimary : theme.textTertiary}
                 color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />
             </ArrowContainer>
@@ -460,9 +477,11 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
                 hideBalance={false}
                 fiatValue={fiatValueOutput}
                 priceImpact={stablecoinPriceImpact}
+                // currency={outputCurrency}
                 currency={currencies[Field.OUTPUT] ?? null}
                 onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT] ?? null}
+                // otherCurrency={inputCurrency}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                 loading={independentField === Field.INPUT && routeIsSyncing}
@@ -559,6 +578,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
                       <Info size={20} />
                     </MouseoverTooltip>
                   </div>
+                  {/* <Trans>Approve use of {inputCurrency?.symbol}</Trans> */}
                   <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
                 </>
               )}
