@@ -31,6 +31,15 @@ const DEFAULT_POOLS: {
     poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
     inputInToken0: true,
   },
+  [SupportedChainId.BERA_ARTIO]: {
+    poolKey: {
+      token0: '0x174652b085C32361121D519D788AbF0D9ad1C355',
+      token1: '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b',
+      fee: 500,
+    },
+    poolId: getPoolId('0x174652b085C32361121D519D788AbF0D9ad1C355', '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b', 500),
+    inputInToken0: true,
+  },
   [SupportedChainId.LINEA]: {
     poolKey: {
       token0: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
@@ -83,7 +92,8 @@ export default function Updater(): null {
     }
   }, [account, closeModal])
 
-  const currentPools = useAppSelector((state) => state.user.currentPools)
+  const currentPools = useAppSelector((state) => state.user.poolLists)
+  // const userState = useAppSelector((state) => state.user)
 
   // set default pool for current chain
   useEffect(() => {
