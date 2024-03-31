@@ -1,6 +1,4 @@
 import axios from 'axios'
-import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
-import { customArbitrumClient } from 'graphql/limitlessGraph/uniswapClients'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
 import { useMemo, useRef } from 'react'
 
@@ -334,15 +332,15 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
         ) => {
           const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
           console.log('subscribeBars', token0IsBase, poolAddress)
-          intervalRef.current && clearInterval(intervalRef.current)
-          intervalRef.current = setInterval(function () {
-            fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
-              // console.log('bar', bar)
-              if (bar) {
-                onRealtimeCallback(bar)
-              }
-            })
-          }, 10000)
+          // intervalRef.current && clearInterval(intervalRef.current)
+          // intervalRef.current = setInterval(function () {
+          //   fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
+          //     // console.log('bar', bar)
+          //     if (bar) {
+          //       onRealtimeCallback(bar)
+          //     }
+          //   })
+          // }, 10000)
         },
         unsubscribeBars: () => {
           intervalRef.current && clearInterval(intervalRef.current)
