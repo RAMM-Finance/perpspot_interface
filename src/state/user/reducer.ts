@@ -202,7 +202,7 @@ const userSlice = createSlice({
         }
       }
 
-      if (!state.pinnedPools) {
+      if (!state.pinnedPools || typeof state.pinnedPools === 'object') {
         state.pinnedPools = []
       }
 
