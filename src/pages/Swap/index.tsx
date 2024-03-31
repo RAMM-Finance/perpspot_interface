@@ -20,7 +20,7 @@ import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-import { computePoolAddress, usePoolV2 } from 'hooks/usePools'
+import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
@@ -289,8 +289,9 @@ export default function Swap({ className }: { className?: string }) {
   const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
+
   // console.log(poolKey, '----poolkey')
-  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
   // const { adjustedPool } = adjustTokensForChain(chainId, {
   //   token0: pool?.token0.address,

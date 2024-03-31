@@ -19,7 +19,6 @@ const store = configureStore({
       .concat(save({ states: PERSISTED_KEYS, debounce: 1000 })),
   preloadedState: load({ states: PERSISTED_KEYS, disableWarnings: isTestEnv() }),
 })
-
 store.dispatch(updateVersion())
 
 setupListeners(store.dispatch)

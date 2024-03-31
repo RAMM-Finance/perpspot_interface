@@ -5,7 +5,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 const MISSING_PROVIDER = Symbol()
 const BlockNumberContext = createContext<
   | {
-      value?: number
+      block?: number
       fastForward(block: number): void
     }
   | typeof MISSING_PROVIDER
@@ -21,7 +21,7 @@ function useBlockNumberContext() {
 
 /** Requires that BlockUpdater be installed in the DOM tree. */
 export default function useBlockNumber(): number | undefined {
-  return useBlockNumberContext().value
+  return useBlockNumberContext().block
 }
 
 export function useFastForwardBlockNumber(): (block: number) => void {
@@ -30,66 +30,54 @@ export function useFastForwardBlockNumber(): (block: number) => void {
 
 export function BlockNumberProvider({ children }: { children: ReactNode }) {
   const { chainId: activeChainId, provider } = useWeb3React()
-  const [{ chainId, block }, setChainBlock] = useState<{ chainId?: number; block?: number }>({ chainId: activeChainId })
+  const [{ chainId, block }, setChainBlock] = useState<{
+    chainId?: number
+    block?: number
+  }>({})
+  const activeBlock = chainId === activeChainId ? block : undefined
 
-  const onBlock = useCallback(
-    (block: number) => {
-      setChainBlock((chainBlock) => {
-        if (chainBlock.chainId === activeChainId) {
-          if (!chainBlock.block || chainBlock.block < block) {
-            return { chainId: activeChainId, block }
-          }
+  const onChainBlock = useCallback((chainId: number, block: number) => {
+    setChainBlock((chainBlock) => {
+      if (chainBlock.chainId === chainId) {
+        if (!chainBlock.block || chainBlock.block < block) {
+          return { chainId, block }
         }
-        return chainBlock
-      })
-    },
-    [activeChainId, setChainBlock]
-  )
+      }
+      return chainBlock
+    })
+  }, [])
 
+  // Poll for block number on the active provider.
   const windowVisible = useIsWindowVisible()
   useEffect(() => {
-    let stale = false
-
     if (provider && activeChainId && windowVisible) {
-      // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
-      // console.log('setChainBlock', chainId, activeChainId, block)
       setChainBlock((chainBlock) => {
         if (chainBlock.chainId !== activeChainId) {
-          return { chainId: activeChainId, block: chainBlock.block }
+          return { chainId: activeChainId }
         }
         // If chainId hasn't changed, don't invalidate the reference, as it will trigger re-fetching of still-valid data.
         return chainBlock
       })
 
-      provider
-        .getBlockNumber()
-        .then((block) => {
-          if (!stale) onBlock(block)
-        })
-        .catch((error) => {
-          console.error(`Failed to get block number for chainId ${activeChainId}`, error)
-        })
-
+      const onBlock = (block: number) => onChainBlock(activeChainId, block)
       provider.on('block', onBlock)
       return () => {
-        stale = true
         provider.removeListener('block', onBlock)
       }
     }
-
-    return void 0
-  }, [activeChainId, provider, onBlock, setChainBlock, windowVisible])
+    return
+  }, [activeChainId, provider, windowVisible, onChainBlock])
 
   const value = useMemo(
     () => ({
-      value: chainId === activeChainId ? block : undefined,
       fastForward: (update: number) => {
-        if (block && update > block) {
-          setChainBlock({ chainId: activeChainId, block: update })
+        if (activeChainId) {
+          onChainBlock(activeChainId, update)
         }
       },
+      block: activeBlock,
     }),
-    [activeChainId, block, chainId]
+    [activeBlock, activeChainId, onChainBlock]
   )
 
   return <BlockNumberContext.Provider value={value}>{children}</BlockNumberContext.Provider>

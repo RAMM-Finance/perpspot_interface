@@ -282,21 +282,6 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
               return onErrorCallback('Unable to load historical data!')
             }
 
-            // filter extreme values
-            // const avgHighDeviation =
-            //   bars
-            //     .map((bar) => {
-            //       return Math.abs(bar.high - bar.open)
-            //     })
-            //     .reduce((a, b) => a + b, 0) / bars.length
-            // const avgLowDeviation =
-            //   bars
-            //     .map((bar) => {
-            //       return Math.abs(bar.low - bar.open)
-            //     })
-            //     .reduce((a, b) => a + b, 0) / bars.length
-            // console.log('avgHighDeviation', avgHighDeviation, avgLowDeviation)
-
             const filteredBars = bars.map((bar, index, array) => {
               // Calculate wick lengths as a percentage of the bar's open-close range
               const highWickLength = Math.abs(bar.high - bar.close)

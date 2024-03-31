@@ -46,7 +46,9 @@ export interface ApplicationState {
   readonly fiatOnramp: { available: boolean; availabilityChecked: boolean }
   readonly openModal: ApplicationModal | null
   readonly popupList: PopupList
-  readonly poolList: PoolInfo[]
+  readonly poolLists: {
+    [chainId: number]: PoolInfo[]
+  }
   readonly poolPriceData: {
     [id: string]: {
       pool: PoolKey
@@ -68,7 +70,7 @@ const initialState: ApplicationState = {
   openModal: null,
   popupList: [],
   poolPriceData: {},
-  poolList: [],
+  poolLists: {},
   blockNumber: undefined,
 }
 
@@ -103,7 +105,7 @@ const applicationSlice = createSlice({
       state.poolPriceData = action.payload
     },
     updatePoolList(state, action) {
-      state.poolList = action.payload
+      state.poolLists[action.payload.chainId] = action.payload.poolList
     },
     removePopup(state, { payload: { key } }) {
       state.popupList.forEach((p) => {
