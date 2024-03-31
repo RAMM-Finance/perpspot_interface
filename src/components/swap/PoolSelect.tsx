@@ -17,7 +17,7 @@ import { Row } from 'nft/components/Flex'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
-import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
+import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
@@ -200,7 +200,6 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
-
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
   const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
   const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
@@ -366,13 +365,13 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
-  const poolList = usePoolKeyList() // useRawPoolKeyList()
+  const poolList = useRawPoolKeyList()
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const poolOHLCData = useAppPoolOHLC()
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0) {
+    if (poolList.length > 0) {
       const list = [...poolList]
       if (sortMethod === PoolSortMethod.PRICE) {
         if (sortAscending) {

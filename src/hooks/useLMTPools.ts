@@ -86,10 +86,7 @@ export function usePoolsData(): {
     }
   )
 
-  // useCheckAMISS(1, data?.uniquePools[0])
-
-  // const slot0s = useMultipleContractSingleData(data?.uniquePools ?? [], POOL_STATE_INTERFACE, 'slot0')
-  const slot0s = useMultipleContractSingleData([], POOL_STATE_INTERFACE, 'slot0')
+  const slot0s = useMultipleContractSingleData(data?.uniquePools ?? [], POOL_STATE_INTERFACE, 'slot0')
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined

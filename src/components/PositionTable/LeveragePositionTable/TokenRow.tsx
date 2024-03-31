@@ -545,324 +545,322 @@ function positionEntryPrice(position: MarginPositionDetails): BN {
 }
 
 /* Loaded State: row component with token information */
-export const LoadedRow = memo(
-  forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-    const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
-    const { position: details } = props
-    const { account } = useWeb3React()
-    const theme = useTheme()
+export const LoadedRow = memo(forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+  const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
+  const { position: details } = props
+  const { account } = useWeb3React()
+  const theme = useTheme()
 
-    const positionKey: TraderPositionKey = useMemo(() => {
-      return {
-        trader: details.trader,
-        poolKey: details.poolKey,
-        isBorrow: false,
-        isToken0: details.isToken0,
-      }
-    }, [details])
-    // console.log('detailsdf', details)
-    const { margin, totalDebtInput } = details
-    const [token0Address, token1Address] = useMemo(() => {
-      if (details) {
-        return [details.poolKey.token0, details.poolKey.token1]
-      }
-      return [undefined, undefined]
-    }, [details])
-
-    const token0 = useCurrency(token0Address)
-    const token1 = useCurrency(token1Address)
-
-    const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
-
-    const setCurrentPool = useSetCurrentPool()
-
-    const leverageFactor = useMemo(() => {
-      if (details.marginInPosToken) {
-        return Number(details.totalPosition) / Number(margin)
-      } else {
-        return (Number(margin) + Number(totalDebtInput)) / Number(margin)
-      }
-    }, [margin, totalDebtInput])
-
-    const currentPool = useCurrentPool()
-    const poolId = currentPool?.poolId
-    const handlePoolSelect = useCallback(
-      (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
-        const id = getPoolId(currencyIn.wrapped.address, currencyOut.wrapped.address, fee)
-        e.stopPropagation()
-        poolId !== id && id && setCurrentPool(id, !details.isToken0)
-      },
-      [setCurrentPool, poolId, details]
-    )
-
-    const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
-    const inputCurrency = useCurrency(details.isToken0 ? details.poolKey.token1 : details.poolKey.token0)
-
-    // prices are in input per output token
-    const [entryPrice, currentPrice, baseToken, quoteToken] = useMemo(() => {
-      if (pool) {
-        const _entryPrice = positionEntryPrice(details)
-        const _currentPrice = details.isToken0
-          ? new BN(pool.token0Price.toFixed(18))
-          : new BN(pool.token1Price.toFixed(18))
-
-        return [
-          _entryPrice,
-          _currentPrice,
-          details.isToken0 ? pool.token1 : pool.token0,
-          details.isToken0 ? pool.token0 : pool.token1,
-        ]
-      } else {
-        return [undefined, undefined, undefined]
-      }
-    }, [pool, details])
-
-    const { result: rate } = useInstantaeneousRate(
-      pool?.token0?.address,
-      pool?.token1?.address,
-      pool?.fee,
-      account,
-      details?.isToken0
-    )
-
-    // call once with 1 token
-    const inputCurrencyPrice = useUSDPriceBNV2(new BN(1), inputCurrency ?? undefined)
-
-    const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken
-
-    const estimatedTimeToClose = useMemo(() => {
-      if (!rate || !totalDebtInput) return undefined
-
-      const ratePerHour = Number(rate) / 1e18 / (365 * 24)
-      const premPerHour = Number(totalDebtInput) * ratePerHour
-
-      const hours = Number(details?.premiumLeft) / premPerHour
-
-      return Math.round(hours * 100) / 100
-    }, [details, rate, totalDebtInput])
-
-    // PnL in input/collateral token
-    const PnL = useMemo(() => {
-      if (!currentPrice || !entryPrice) return undefined
-      return details.totalPosition.times(currentPrice.minus(entryPrice))
-    }, [details, entryPrice, currentPrice])
-
-    // PnL in input/collateral token including premium paid thus far
-    const PnLWithPremiums = useMemo(() => {
-      if (!PnL || !details.premiumLeft) return undefined
-      return PnL.minus(details.premiumOwed)
-    }, [details, PnL])
-
-    const pnlInfo = useMemo(() => {
-      if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums) {
-        return {
-          pnlUSD: 0,
-          pnlPremiumsUSD: 0,
-          premiumsPaid: 0,
-        }
-      } else {
-        return {
-          pnlUSD: PnL.times(inputCurrencyPrice.data).toNumber(),
-          pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
-          premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
-        }
-      }
-    }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL])
-
-    if (loading) {
-      return <LoadingRow />
+  const positionKey: TraderPositionKey = useMemo(() => {
+    return {
+      trader: details.trader,
+      poolKey: details.poolKey,
+      isBorrow: false,
+      isToken0: details.isToken0,
     }
+  }, [details])
+  // console.log('detailsdf', details)
+  const { margin, totalDebtInput } = details
+  const [token0Address, token1Address] = useMemo(() => {
+    if (details) {
+      return [details.poolKey.token0, details.poolKey.token1]
+    }
+    return [undefined, undefined]
+  }, [details])
 
-    return (
-      <div ref={ref} data-testid="token-table-row">
-        <StyledLoadedRow>
-          <PositionRow
-            header={false}
-            positionKey={positionKey}
-            positionInfo={
-              <ClickableContent>
-                <RowBetween>
-                  <PositionInfo>
-                    <GreenText>
-                      x{`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrency?.symbol}`}
-                      <br />
-                      {`/${inputCurrency?.symbol}`}
-                    </GreenText>
-                  </PositionInfo>
-                </RowBetween>
-              </ClickableContent>
-            }
-            value={
-              <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                <AutoColumn gap="2px">
-                  <RowFixed style={{ flexWrap: 'wrap' }}>
-                    <CurrencyLogo currency={outputCurrency} size="10px" />
-                    {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
-                    <div>{` ${outputCurrency?.symbol}`}</div>
-                  </RowFixed>
-                </AutoColumn>
-              </FlexStartRow>
-            }
-            collateral={
-              <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                <AutoColumn gap="2px">
-                  <RowFixed style={{ flexWrap: 'wrap' }}>
-                    <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
-                    {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
-                    <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
-                  </RowFixed>
-                </AutoColumn>
-              </FlexStartRow>
-            }
-            repaymentTime={
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    {'Annualized Rate: ' +
-                      String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) +
-                      ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
-                  </Trans>
-                }
-                disableHover={false}
-              >
-                <FlexStartRow>
-                  {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + '%'}
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            PnL={
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    <AutoColumn style={{ width: '200px' }} gap="5px">
-                      <RowBetween>
-                        <div>PnL (USD):</div>
-                        <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
-                      </RowBetween>
-                      <RowBetween>
-                        <div>Premiums paid:</div>
-                        <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
-                      </RowBetween>
-                      <RowBetween>
-                        <div>PnL inc. prem:</div>
-                        {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
-                        ' ' +
-                        details.marginInPosToken
-                          ? outputCurrency?.symbol
-                          : inputCurrency?.symbol}
-                      </RowBetween>
-                      <RowBetween>
-                        <div>PnL inc. prem (USD):</div>
-                        <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
-                      </RowBetween>
-                    </AutoColumn>
-                  </Trans>
-                }
-                disableHover={false}
-              >
-                <FlexStartRow>
-                  {details.marginInPosToken ? (
-                    <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
-                        {PnL &&
-                          `${formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)} `}
-                      </DeltaText>
-                      <div>
-                        <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL &&
-                            `(${(
-                              (new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) *
-                              100
-                            ).toFixed(2)}%)`}
-                        </DeltaText>
-                        {' ' + outputCurrency?.symbol}
-                      </div>
-                    </AutoColumn>
-                  ) : (
-                    <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                        {PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
-                      </DeltaText>
-                      <div>
-                        <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL && `(${((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)} %)`}
-                        </DeltaText>
-                        {' ' + inputCurrency?.symbol}
-                      </div>
-                    </AutoColumn>
-                  )}
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            entryPrice={
+  const token0 = useCurrency(token0Address)
+  const token1 = useCurrency(token1Address)
+
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
+
+  const setCurrentPool = useSetCurrentPool()
+
+  const leverageFactor = useMemo(() => {
+    if (details.marginInPosToken) {
+      return Number(details.totalPosition) / Number(margin)
+    } else {
+      return (Number(margin) + Number(totalDebtInput)) / Number(margin)
+    }
+  }, [margin, totalDebtInput])
+
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
+  const handlePoolSelect = useCallback(
+    (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
+      const id = getPoolId(currencyIn.wrapped.address, currencyOut.wrapped.address, fee)
+      e.stopPropagation()
+      poolId !== id && id && setCurrentPool(id, !details.isToken0)
+    },
+    [setCurrentPool, poolId, details]
+  )
+
+  const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
+  const inputCurrency = useCurrency(details.isToken0 ? details.poolKey.token1 : details.poolKey.token0)
+
+  // prices are in input per output token
+  const [entryPrice, currentPrice, baseToken, quoteToken] = useMemo(() => {
+    if (pool) {
+      const _entryPrice = positionEntryPrice(details)
+      const _currentPrice = details.isToken0
+        ? new BN(pool.token0Price.toFixed(18))
+        : new BN(pool.token1Price.toFixed(18))
+
+      return [
+        _entryPrice,
+        _currentPrice,
+        details.isToken0 ? pool.token1 : pool.token0,
+        details.isToken0 ? pool.token0 : pool.token1,
+      ]
+    } else {
+      return [undefined, undefined, undefined]
+    }
+  }, [pool, details])
+
+  const { result: rate } = useInstantaeneousRate(
+    pool?.token0?.address,
+    pool?.token1?.address,
+    pool?.fee,
+    account,
+    details?.isToken0
+  )
+
+  // call once with 1 token
+  const inputCurrencyPrice = useUSDPriceBNV2(new BN(1), inputCurrency ?? undefined)
+
+  const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken
+
+  const estimatedTimeToClose = useMemo(() => {
+    if (!rate || !totalDebtInput) return undefined
+
+    const ratePerHour = Number(rate) / 1e18 / (365 * 24)
+    const premPerHour = Number(totalDebtInput) * ratePerHour
+
+    const hours = Number(details?.premiumLeft) / premPerHour
+
+    return Math.round(hours * 100) / 100
+  }, [details, rate, totalDebtInput])
+
+  // PnL in input/collateral token
+  const PnL = useMemo(() => {
+    if (!currentPrice || !entryPrice) return undefined
+    return details.totalPosition.times(currentPrice.minus(entryPrice))
+  }, [details, entryPrice, currentPrice])
+
+  // PnL in input/collateral token including premium paid thus far
+  const PnLWithPremiums = useMemo(() => {
+    if (!PnL || !details.premiumLeft) return undefined
+    return PnL.minus(details.premiumOwed)
+  }, [details, PnL])
+
+  const pnlInfo = useMemo(() => {
+    if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums) {
+      return {
+        pnlUSD: 0,
+        pnlPremiumsUSD: 0,
+        premiumsPaid: 0,
+      }
+    } else {
+      return {
+        pnlUSD: PnL.times(inputCurrencyPrice.data).toNumber(),
+        pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
+        premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
+      }
+    }
+  }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL])
+
+  if (loading) {
+    return <LoadingRow />
+  }
+
+  return (
+    <div ref={ref} data-testid="token-table-row">
+      <StyledLoadedRow>
+        <PositionRow
+          header={false}
+          positionKey={positionKey}
+          positionInfo={
+            <ClickableContent>
+              <RowBetween>
+                <PositionInfo>
+                  <GreenText>
+                    x
+                    {`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrency?.symbol}`}
+                    <br/>{`/${inputCurrency?.symbol}`}
+                  </GreenText>
+                </PositionInfo>
+              </RowBetween>
+            </ClickableContent>
+          }
+          value={
+            <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
+              <AutoColumn gap="2px">
+                <RowFixed  style={{flexWrap:'wrap'}}>                       
+                  <CurrencyLogo currency={outputCurrency} size="10px" />
+                  {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`} 
+                  <div>{` ${outputCurrency?.symbol}`}</div>
+                </RowFixed>
+              </AutoColumn>
+            </FlexStartRow>
+          }
+          collateral={
+            <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
+              <AutoColumn gap="2px">
+                <RowFixed  style={{flexWrap:'wrap'}}>                  
+                  <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
+                  {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
+                  <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
+                </RowFixed>
+              </AutoColumn>
+            </FlexStartRow>
+          }
+          repaymentTime={
+            <MouseoverTooltip
+              text={
+                <Trans>
+                  {'Annualized Rate: ' +
+                    String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) +
+                    ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
+                </Trans>
+              }
+              disableHover={false}
+            >
               <FlexStartRow>
-                <AutoColumn style={{ lineHeight: 1.5 }}>
-                  <RowBetween gap="5px">
-                    {isInverted ? (
-                      <>
-                        <AutoColumn>
-                          <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
-                          <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
-                        </AutoColumn>
-                      </>
-                    ) : (
-                      <>
-                        <AutoColumn>
-                          <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
-                          <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
-                        </AutoColumn>
-                      </>
-                    )}
-                    {invertedTooltipLogo}
-                  </RowBetween>
-                </AutoColumn>
+                {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + '%'}
               </FlexStartRow>
-            }
-            remainingPremium={
-              <MouseoverTooltip
-                text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
-                disableHover={false}
-              >
-                <FlexStartRow>
-                  {details?.premiumLeft.isGreaterThan(0) ? (
-                    <AutoColumn style={{ lineHeight: 1.5 }}>
+            </MouseoverTooltip>
+          }
+          PnL={
+            <MouseoverTooltip
+              text={
+                <Trans>
+                  <AutoColumn style={{ width: '200px' }} gap="5px">
+                    <RowBetween>
+                      <div>PnL (USD):</div>
+                      <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
+                    </RowBetween>
+                    <RowBetween>
+                      <div>Premiums paid:</div>
+                      <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
+                    </RowBetween>
+                    <RowBetween>
+                      <div>PnL inc. prem:</div>
+                      {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
+                      ' ' +
+                      details.marginInPosToken
+                        ? outputCurrency?.symbol
+                        : inputCurrency?.symbol}
+                    </RowBetween>
+                    <RowBetween>
+                      <div>PnL inc. prem (USD):</div>
+                      <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
+                    </RowBetween>
+                  </AutoColumn>
+                </Trans>
+              }
+              disableHover={false}
+            >
+              <FlexStartRow>
+                {details.marginInPosToken ? (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
+                    <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
+                      {PnL &&
+                        `${formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)} `}
+                    </DeltaText>
+                    <div>
+                      <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                        {PnL &&
+                          `(${(
+                            (new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) *
+                            100
+                          ).toFixed(2)}%)`}
+                      </DeltaText>
+                      {' ' + outputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                ) : (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
+                    <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                      {PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
+                    </DeltaText>
+                    <div>
+                      <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                        {PnL && `(${((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)} %)`}
+                      </DeltaText>
+                      {' ' + inputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                )}
+              </FlexStartRow>
+            </MouseoverTooltip>
+          }
+          entryPrice={
+            <FlexStartRow>
+              <AutoColumn style={{ lineHeight: 1.5 }}>
+                <RowBetween gap="5px">
+                  {isInverted ? (
+                    <>
+                      <AutoColumn>
+                        <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
+                        <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
+                      </AutoColumn>
+                    </>
+                  ) : (
+                    <>
+                      <AutoColumn>
+                        <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
+                        <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
+                      </AutoColumn>
+                    </>
+                  )}
+                  {invertedTooltipLogo}
+                </RowBetween>
+              </AutoColumn>
+            </FlexStartRow>
+          }
+          remainingPremium={
+            <MouseoverTooltip
+              text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
+              disableHover={false}
+            >
+              <FlexStartRow>
+                {details?.premiumLeft.isGreaterThan(0) ? (
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
+                    <UnderlineText>
+                      <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                        {formatBNToString(details?.premiumLeft, NumberType.SwapTradeAmount)}/
+                      </GreenText>
+                    </UnderlineText>
+                    <div style={{ display: 'flex', gap: '3px' }}>
                       <UnderlineText>
                         <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                          {formatBNToString(details?.premiumLeft, NumberType.SwapTradeAmount)}/
+                          {formatBNToString(details.premiumDeposit, NumberType.SwapTradeAmount)}
                         </GreenText>
                       </UnderlineText>
-                      <div style={{ display: 'flex', gap: '3px' }}>
-                        <UnderlineText>
-                          <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                            {formatBNToString(details.premiumDeposit, NumberType.SwapTradeAmount)}
-                          </GreenText>
-                        </UnderlineText>
-                        {inputCurrency?.symbol}
-                      </div>
-                    </AutoColumn>
-                  ) : (
-                    <RedText>0</RedText>
-                  )}
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            actions={
-              <SmallButtonPrimary
-                style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
-                onClick={(e) =>
-                  inputCurrency &&
-                  outputCurrency &&
-                  handlePoolSelect(e, inputCurrency, outputCurrency, positionKey.poolKey.fee)
-                }
-              >
-                <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
-              </SmallButtonPrimary>
-            }
-          />
-        </StyledLoadedRow>
-      </div>
-    )
-  })
-)
+                      {inputCurrency?.symbol}
+                    </div>
+                  </AutoColumn>
+                ) : (
+                  <RedText>0</RedText>
+                )}
+              </FlexStartRow>
+            </MouseoverTooltip>
+          }
+          actions={
+            <SmallButtonPrimary
+              style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+              onClick={(e) =>
+                inputCurrency &&
+                outputCurrency &&
+                handlePoolSelect(e, inputCurrency, outputCurrency, positionKey.poolKey.fee)
+              }
+            >
+              <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
+            </SmallButtonPrimary>
+          }
+        />
+      </StyledLoadedRow>
+    </div>
+  )
+}))
 
 LoadedRow.displayName = 'LoadedRow'

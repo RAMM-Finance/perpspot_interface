@@ -3,10 +3,11 @@ import { Percent } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import React, { useCallback, useEffect, useMemo } from 'react'
+import { useAppSelector } from 'state/hooks'
 import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useCurrentPool, useSelectInputCurrency } from 'state/user/hooks'
+import { useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 // import Styles from "./tabs.styles.less";
 
@@ -54,9 +55,7 @@ export default function SwapTabHeader({
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler('', onLeverageFactorChange)
   const { marginInPosToken } = useMarginTradingState()
 
-  // const inputIsToken0: boolean | undefined = useAppSelector((state) => state.user.currentInputInToken0)
-  const currentPool = useCurrentPool()
-  const inputIsToken0 = currentPool?.inputInToken0
+  const inputIsToken0: boolean | undefined = useAppSelector((state) => state.user.currentInputInToken0)
   const switchTokens = useSelectInputCurrency()
 
   useEffect(() => {

@@ -203,7 +203,7 @@ export function useContractCallV2(
       const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
       let data
       try {
-        // console.log('useContractCall:start', queryKey)
+        console.log('useContractCall:start', queryKey)
         if (useSigner) {
           data = await provider.getSigner()?.call({
             to,
@@ -215,7 +215,7 @@ export function useContractCallV2(
             data: calldata,
           })
         }
-        // console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
+        console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
 
         return parseFn ? parseFn(data) : data
       } catch (err) {
