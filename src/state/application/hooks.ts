@@ -2,11 +2,8 @@ import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { useLmtQuoterContract } from 'hooks/useContract'
-
 import { useSingleCallResult } from 'lib/hooks/multicall'
-
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 
 import { AppState } from '../types'
@@ -23,39 +20,6 @@ import {
 export function useModalIsOpen(modal: ApplicationModal): boolean {
   const openModal = useAppSelector((state: AppState) => state.application.openModal)
   return openModal === modal
-}
-
-export function usePoolKeyList(): {
-  keyList: { token0: string; token1: string; fee: number }[] | undefined
-  loading: boolean
-  error: any
-} {
-  const lmtQuoter = useLmtQuoterContract()
-
-  const { data, error, isLoading } = useQuery(
-    ['poolKeyList', lmtQuoter?.address, lmtQuoter ? 'dataProvider' : ''],
-    async () => {
-      if (!lmtQuoter) throw new Error('DataProvider contract not found')
-      const poolKeys = await lmtQuoter.getPoolKeys()
-      return poolKeys
-    },
-    {
-      enabled: !!lmtQuoter,
-      keepPreviousData: false,
-      refetchInterval: 1000 * 60 * 10,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchIntervalInBackground: false,
-    }
-  )
-
-  return useMemo(() => {
-    return {
-      keyList: data,
-      loading: isLoading,
-      error,
-    }
-  }, [data, isLoading, error])
 }
 
 // export function useBlockNumber(): number | undefined {
@@ -93,7 +57,6 @@ async function getMoonpayAvailability(): Promise<boolean> {
   return data.isBuyAllowed ?? false
 }
 
-
 export function usePoolKeyList() {
   const lmtQuoter = useLmtQuoterContract()
   const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
@@ -108,17 +71,6 @@ export function usePoolKeyList() {
     return { poolList, loading, error }
   }, [poolList, loading, error])
 }
-
-// export function usePoolKeyList() {
-//   const { chainId } = useWeb3React()
-//   return useAppSelector((state: AppState) => {
-//     if (chainId) {
-//       return state.application.poolLists[chainId]
-//     }
-//     return undefined
-//   })
-// }
-
 
 export function useAppPoolOHLC() {
   return useAppSelector((state: AppState) => state.application.poolPriceData)

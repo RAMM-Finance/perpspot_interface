@@ -117,7 +117,6 @@ export const {
   addPopup,
   removePopup,
   updatePoolPriceData,
-  // updatePoolList,
   updateBlockNumber,
 } = applicationSlice.actions
 export default applicationSlice.reducer

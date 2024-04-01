@@ -16,7 +16,7 @@ import { Row } from 'nft/components/Flex'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
-import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
@@ -195,7 +195,7 @@ const Pin = styled.button`
   padding: 0.25rem;
   margin-right: 0.5rem;
 `
-const PoolSelectLoading = styled(SelectLoadingBar)` 
+const PoolSelectLoading = styled(SelectLoadingBar)`
   height: 40px;
   margin: auto;
 `
@@ -377,7 +377,7 @@ function useFilteredKeys() {
   const poolOHLCData = useAppPoolOHLC()
 
   return useMemo(() => {
-    if (poolList.length > 0) {
+    if (poolList && poolList.length > 0) {
       const list = [...poolList]
       if (sortMethod === PoolSortMethod.PRICE) {
         if (sortAscending) {
