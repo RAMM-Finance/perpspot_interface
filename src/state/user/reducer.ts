@@ -77,9 +77,8 @@ export const initialState: UserState = {
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
-  pinnedPools: [],
-  currentPool: undefined,
-  currentInputInToken0: undefined,
+  favoritePools: {},
+  poolLists: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
   hideUniswapWalletBanner: false,
@@ -110,8 +109,12 @@ const userSlice = createSlice({
       state.timestamp = currentTimestamp()
     },
     updatePinnedPools(state, action) {
+      console.log('updatePinnedPools', action.payload)
       if (action.payload.add) {
-        state.pinnedPools.push(action.payload.poolKey)
+        if (!state.favoritePools[action.payload.chainId]) {
+          state.favoritePools[action.payload.chainId] = []
+        }
+        state.favoritePools[action.payload.chainId].push(action.payload.poolKey)
       } else {
         const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
           action.payload.poolKey.fee

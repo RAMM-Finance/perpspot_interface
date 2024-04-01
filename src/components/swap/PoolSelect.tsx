@@ -369,7 +369,9 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
-  const poolList = useRawPoolKeyList()
+
+  const { poolList } = usePoolKeyList() // useRawPoolKeyList()
+
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const poolOHLCData = useAppPoolOHLC()

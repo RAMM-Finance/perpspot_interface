@@ -227,21 +227,23 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
 
 export function useAddPinnedPool(): (poolKey: PoolKey) => void {
   const dispatch = useAppDispatch()
+  const { chainId } = useWeb3React()
   return useCallback(
     (poolKey: PoolKey) => {
-      dispatch(updatePinnedPools({ add: true, poolKey, index: 0 }))
+      chainId && dispatch(updatePinnedPools({ add: true, poolKey, index: 0, chainId }))
     },
-    [dispatch]
+    [dispatch, chainId]
   )
 }
 
 export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
   const dispatch = useAppDispatch()
+  const { chainId } = useWeb3React()
   return useCallback(
     (poolKey: PoolKey) => {
-      dispatch(updatePinnedPools({ add: false, poolKey }))
+      chainId && dispatch(updatePinnedPools({ add: false, poolKey, chainId }))
     },
-    [dispatch]
+    [dispatch, chainId]
   )
 }
 

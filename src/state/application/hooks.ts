@@ -2,6 +2,9 @@ import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { useLmtQuoterContract } from 'hooks/useContract'
+
+import { useSingleCallResult } from 'lib/hooks/multicall'
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
@@ -90,9 +93,32 @@ async function getMoonpayAvailability(): Promise<boolean> {
   return data.isBuyAllowed ?? false
 }
 
-export function useRawPoolKeyList() {
-  return useAppSelector((state: AppState) => state.application.poolList)
+
+export function usePoolKeyList() {
+  const lmtQuoter = useLmtQuoterContract()
+  const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
+  const poolList = useMemo(() => {
+    if (result) {
+      return result[0]
+    } else {
+      return undefined
+    }
+  }, [result])
+  return useMemo(() => {
+    return { poolList, loading, error }
+  }, [poolList, loading, error])
 }
+
+// export function usePoolKeyList() {
+//   const { chainId } = useWeb3React()
+//   return useAppSelector((state: AppState) => {
+//     if (chainId) {
+//       return state.application.poolLists[chainId]
+//     }
+//     return undefined
+//   })
+// }
+
 
 export function useAppPoolOHLC() {
   return useAppSelector((state: AppState) => state.application.poolPriceData)

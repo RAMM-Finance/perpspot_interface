@@ -1,7 +1,7 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit'
 import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
-import { PoolInfo, PoolKey } from 'types/lmtv2position'
+import { PoolKey } from 'types/lmtv2position'
 
 export type PopupContent =
   | {
@@ -46,7 +46,6 @@ export interface ApplicationState {
   readonly fiatOnramp: { available: boolean; availabilityChecked: boolean }
   readonly openModal: ApplicationModal | null
   readonly popupList: PopupList
-  readonly poolList: PoolInfo[]
   readonly poolPriceData: {
     [id: string]: {
       pool: PoolKey
@@ -68,7 +67,6 @@ const initialState: ApplicationState = {
   openModal: null,
   popupList: [],
   poolPriceData: {},
-  poolList: [],
   blockNumber: undefined,
 }
 
@@ -102,9 +100,6 @@ const applicationSlice = createSlice({
     updatePoolPriceData(state, action) {
       state.poolPriceData = action.payload
     },
-    updatePoolList(state, action) {
-      state.poolList = action.payload
-    },
     removePopup(state, { payload: { key } }) {
       state.popupList.forEach((p) => {
         if (p.key === key) {
@@ -122,7 +117,7 @@ export const {
   addPopup,
   removePopup,
   updatePoolPriceData,
-  updatePoolList,
+  // updatePoolList,
   updateBlockNumber,
 } = applicationSlice.actions
 export default applicationSlice.reducer

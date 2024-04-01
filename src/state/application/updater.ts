@@ -11,7 +11,9 @@ import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
 import { useCloseModal, usePoolKeyList } from './hooks'
-import { updateChainId, updatePoolList, updatePoolPriceData } from './reducer'
+
+import { updateChainId, updatePoolPriceData } from './reducer'
+
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
@@ -49,16 +51,14 @@ export default function Updater(): null {
 
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
-  const { keyList: poolList } = usePoolKeyList()
+
+
+  const { poolList } = usePoolKeyList()
+  // fetch pool list for current chain
+
   const { poolsOHLC } = usePoolsOHLC(poolList)
   const userState = useAppSelector((state) => state.user)
   console.log('userState', userState)
-  useEffect(() => {
-    if (poolList && poolList.length > 0) {
-      dispatch(updatePoolList(poolList))
-    }
-  }, [poolList, dispatch])
-
   useEffect(() => {
     if (poolsOHLC) {
       dispatch(updatePoolPriceData(poolsOHLC))
@@ -103,29 +103,5 @@ export default function Updater(): null {
     dispatch(updateChainId({ chainId }))
   }, [dispatch, debouncedChainId])
 
-  // useEffect(() => {
-  //   let stale = false
-
-  //   if (provider && activeChainId && windowVisible) {
-  //     // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
-
-  //     provider
-  //       .getBlockNumber()
-  //       .then((_block) => {
-  //         if (!stale) onBlock(_block)
-  //       })
-  //       .catch((error) => {
-  //         console.error(`Failed to get block number for chainId ${activeChainId}`, error)
-  //       })
-
-  //     provider.on('block', onBlock)
-  //     return () => {
-  //       stale = true
-  //       provider.removeListener('block', onBlock)
-  //     }
-  //   }
-
-  //   return void 0
-  // }, [activeChainId, provider, onBlock, windowVisible])
   return null
 }
