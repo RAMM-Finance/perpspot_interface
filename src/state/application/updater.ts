@@ -51,7 +51,8 @@ export default function Updater(): null {
   const previousAccountValue = useRef(account)
   const { keyList: poolList } = usePoolKeyList()
   const { poolsOHLC } = usePoolsOHLC(poolList)
-
+  const userState = useAppSelector((state) => state.user)
+  console.log('userState', userState)
   useEffect(() => {
     if (poolList && poolList.length > 0) {
       dispatch(updatePoolList(poolList))
