@@ -6,7 +6,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
-import { LoadingText } from 'components/Loader/styled'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
@@ -33,6 +32,7 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 
+import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
 import {
   poolFilterStringAtom,
@@ -194,6 +194,10 @@ const Pin = styled.button`
   justify-content: center;
   padding: 0.25rem;
   margin-right: 0.5rem;
+`
+const PoolSelectLoading = styled(SelectLoadingBar)` 
+  height: 40px;
+  margin: auto;
 `
 
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
@@ -487,38 +491,41 @@ export function SelectPool() {
     setAnchorEl(null)
   }
 
+  const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
   return (
     <MainWrapper>
-      {!baseQuoteSymbol ? (
-        <LoadingText size="14px">Pool Selector loading...</LoadingText>
-      ) : (
-        <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-          <LabelWrapper>
-            <Row gap="10">
-              <DoubleCurrencyLogo
-                currency0={inputCurrency as Currency}
-                currency1={outputCurrency as Currency}
-                size={20}
-              />
-              <AutoColumn justify="flex-start">
-                <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
-                  <Row gap="6">
-                    <ThemedText.HeadlineSmall fontSize={16}>
-                      {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
-                    </ThemedText.HeadlineSmall>
-                    <ThemedText.BodySmall fontSize="12px">
-                      ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
-                    </ThemedText.BodySmall>
-                  </Row>
-                </TextWithLoadingPlaceholder>
-              </AutoColumn>
-            </Row>
-          </LabelWrapper>
-          <ChevronIcon $rotated={open} />
-        </SelectPoolWrapper>
-      )}
+      <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+        {baseQuoteSymbol ? (
+          <>
+            <LabelWrapper>
+              <Row gap="10">
+                <DoubleCurrencyLogo
+                  currency0={inputCurrency as Currency}
+                  currency1={outputCurrency as Currency}
+                  size={20}
+                />
+                <AutoColumn justify="flex-start">
+                  <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
+                    <Row gap="6">
+                      <ThemedText.HeadlineSmall fontSize={16}>
+                        {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
+                      </ThemedText.HeadlineSmall>
+                      <ThemedText.BodySmall fontSize="12px">
+                        ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
+                      </ThemedText.BodySmall>
+                    </Row>
+                  </TextWithLoadingPlaceholder>
+                </AutoColumn>
+              </Row>
+            </LabelWrapper>
+            <ChevronIcon $rotated={open} />
+          </>
+        ) : (
+          <PoolSelectLoading />
+        )}
+      </SelectPoolWrapper>
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}
