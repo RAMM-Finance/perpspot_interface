@@ -80,7 +80,6 @@ const SwapTabContent = () => {
   const { account, chainId } = useWeb3React()
 
   const { onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
-  // const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
   const currentPool = useCurrentPool()
   const inputIsToken0 = currentPool?.inputInToken0
   const switchTokens = useSelectInputCurrency()

@@ -5,7 +5,6 @@ import { ethers } from 'ethers'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from 'react-query'
 
@@ -86,10 +85,9 @@ export function usePoolsData(): {
     }
   )
 
-  // useCheckAMISS(1, data?.uniquePools[0])
 
-  // const slot0s = useMultipleContractSingleData(data?.uniquePools ?? [], POOL_STATE_INTERFACE, 'slot0')
-  const slot0s = useMultipleContractSingleData([], POOL_STATE_INTERFACE, 'slot0')
+  const slot0s = [] as any
+
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined

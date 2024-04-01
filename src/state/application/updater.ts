@@ -13,7 +13,7 @@ import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
 import { useCloseModal } from './hooks'
-import { updateChainId, updatePoolList, updatePoolPriceData } from './reducer'
+import { updateChainId, updatePoolPriceData } from './reducer'
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
@@ -72,13 +72,6 @@ export default function Updater(): null {
     }
   }, [result])
   const { poolsOHLC } = usePoolsOHLC(poolList)
-  const userState = useAppSelector((state) => state.user)
-  console.log('userState', userState)
-  useEffect(() => {
-    if (chainId && poolList) {
-      dispatch(updatePoolList({ chainId, poolList }))
-    }
-  }, [chainId, poolList, dispatch])
 
   useEffect(() => {
     if (poolsOHLC) {

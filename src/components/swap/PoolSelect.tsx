@@ -195,7 +195,7 @@ const Pin = styled.button`
   padding: 0.25rem;
   margin-right: 0.5rem;
 `
-const PoolSelectLoading = styled(SelectLoadingBar)` 
+const PoolSelectLoading = styled(SelectLoadingBar)`
   height: 40px;
   margin: auto;
 `
@@ -370,7 +370,9 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
-  const poolList = usePoolKeyList() // useRawPoolKeyList()
+
+  const { poolList } = usePoolKeyList() // useRawPoolKeyList()
+
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const poolOHLCData = useAppPoolOHLC()

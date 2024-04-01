@@ -6,6 +6,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
+import { fadeInOut } from 'components/Loader/styled'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -27,7 +28,7 @@ import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
-import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 
 import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
@@ -39,7 +40,6 @@ import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
-import { fadeInOut } from 'components/Loader/styled'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -173,7 +173,7 @@ const MainWrapper = styled.article<{ pins: boolean }>`
 `
 
 export const ChartLoadingBar = styled(ChartLoader)`
-    animation: ${fadeInOut} 2s infinite;
+  animation: ${fadeInOut} 2s infinite;
 `
 
 export function getIsValidSwapQuote(
@@ -363,13 +363,18 @@ export default function Swap({ className }: { className?: string }) {
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
-  const pinnedPools = usePinnedPools()
+  // const pinnedPools = usePinnedPools()
+  // console.log('pinnedPools', pinnedPools)
+  // const isPin = useMemo(() => pinnedPools && pinnedPools.length > 0, [pinnedPools])
+  // console.log(pinnedPools2, '----pinnedPools2')
+  // const pinnedPools = [] as any
+  const isPin = false
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
-        <MainWrapper pins={pinnedPools && pinnedPools.length > 0}>
+        <MainWrapper pins={isPin}>
           <PinWrapper>
             <PinnedPools />
           </PinWrapper>
