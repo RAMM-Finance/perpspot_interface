@@ -286,6 +286,8 @@ export type SwapInfo2 = {
   allowedSlippage: Percent
 }
 
+// This hook is used for swap page
+ 
 export function useDerivedSwapInfo2(): SwapInfo2 {
   const { account } = useWeb3React()
 
