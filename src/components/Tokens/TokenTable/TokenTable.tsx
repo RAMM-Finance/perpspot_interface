@@ -2,14 +2,13 @@ import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
-import useAllPoolKeys from 'hooks/useAllPoolKeys'
 import { usePoolsData } from 'hooks/useLMTPools'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -215,12 +214,12 @@ export default function TokenTable() {
   })
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
-  const { poolKeys: data, isLoading: keysLoading } = useAllPoolKeys()
-  const poolList = useRawPoolKeyList()
+
+  const { poolList } = usePoolKeyList()
 
   const { result: poolData, loading: poolsLoading } = usePoolsData()
 
-  const loading = poolsLoading || balanceLoading || keysLoading
+  const loading = poolsLoading || balanceLoading
 
   const poolsInfo = useMemo(() => {
     if (poolData && vaultBal) {

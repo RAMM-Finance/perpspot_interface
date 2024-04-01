@@ -62,6 +62,7 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
+
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
 
   const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee)

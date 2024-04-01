@@ -87,10 +87,18 @@ export function useExpertModeManager(): [boolean, () => void] {
 }
 
 export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInToken0: boolean } | undefined {
-  const poolId = useAppSelector((state) => state.user.currentPool)
-  const inputInToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  const { chainId } = useWeb3React()
+  const currentPool = useAppSelector((state) => {
+    if (chainId && state.user.poolLists[chainId]) {
+      return state.user.poolLists[chainId]
+    } else {
+      return undefined
+    }
+  })
+
   return useMemo(() => {
-    if (!poolId || inputInToken0 === undefined) return undefined
+    if (!currentPool) return undefined
+    const { poolId, inputInToken0 } = currentPool
     const [token0, token1, fee] = poolId.split('-')
     return {
       poolKey: {
@@ -101,7 +109,7 @@ export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInTok
       poolId,
       inputInToken0,
     }
-  }, [poolId, inputInToken0])
+  }, [currentPool])
 }
 
 export function useCurrentInputCurrency(): Currency | undefined | null {
@@ -118,21 +126,23 @@ export function useCurrentOutputCurrency(): Currency | undefined | null {
 
 export function useSelectInputCurrency(): (inputInToken0: boolean) => void {
   const dispatch = useAppDispatch()
+  const { chainId } = useWeb3React()
   return useCallback(
     (inputInToken0: boolean) => {
-      dispatch(setInputCurrency({ inputInToken0 }))
+      chainId && dispatch(setInputCurrency({ inputInToken0, chainId }))
     },
-    [dispatch]
+    [dispatch, chainId]
   )
 }
 
 export function useSetCurrentPool(): (poolId: string, inputInToken0: boolean) => void {
   const dispatch = useAppDispatch()
+  const { chainId } = useWeb3React()
   return useCallback(
     (poolId: string, inputInToken0: boolean) => {
-      dispatch(setCurrentPool({ poolId, inputInToken0 }))
+      chainId && dispatch(setCurrentPool({ poolId, inputInToken0, chainId }))
     },
-    [dispatch]
+    [dispatch, chainId]
   )
 }
 
@@ -245,8 +255,13 @@ export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
 }
 
 export function usePinnedPools(): PoolKey[] {
+  const { chainId } = useWeb3React()
   return useAppSelector((state) => {
-    return state.user.pinnedPools
+    if (chainId && state.user.favoritePools[chainId]) {
+      return state.user.favoritePools[chainId]
+    } else {
+      return []
+    }
   })
 }
 

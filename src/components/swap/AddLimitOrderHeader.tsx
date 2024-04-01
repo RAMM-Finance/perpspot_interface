@@ -2,8 +2,10 @@ import { Trans } from '@lingui/macro'
 import { SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Price, TradeType } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { UnderlineText } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { SupportedChainId } from 'constants/chains'
 // import { UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
@@ -65,6 +67,16 @@ const formatAnalyticsEventProperties = (
   price_update_basis_points: priceUpdate,
 })
 
+export function useCheckAMISS(i: number, address0: string | undefined | null) {
+  const { chainId } = useWeb3React()
+  if (
+    chainId === SupportedChainId.LINEA &&
+    address0?.toLowerCase() === '0x0E4831319A50228B9e450861297aB92dee15B44F'.toLowerCase()
+  ) {
+    console.log('SOMETHING AMISS', i)
+  }
+}
+
 export function AddLimitModalHeader({
   trade,
 
@@ -80,7 +92,6 @@ export function AddLimitModalHeader({
   const theme = useTheme()
   const inputCurrency = useCurrency(trade.inputCurrencyId)
   const outputCurrency = useCurrency(trade.outputCurrencyId)
-
   const fiatValueMargin = useUSDPriceBN(trade.margin)
   const fiatValueTotalInput = useUSDPriceBN(trade.inputAmount)
   const fiatValueStartOutput = useUSDPriceBN(trade.startOutput)

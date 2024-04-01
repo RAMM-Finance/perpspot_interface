@@ -1,23 +1,25 @@
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SupportedChainId } from 'constants/chains'
+import { useLmtQuoterContract } from 'hooks/useContract'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
-import { useEffect, useRef, useState } from 'react'
+import { useSingleCallResult } from 'lib/hooks/multicall'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
-import { useSetCurrentPool } from 'state/user/hooks'
+import { setCurrentPool } from 'state/user/reducer'
 import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
-import { useCloseModal, usePoolKeyList } from './hooks'
-import { updateChainId, updatePoolList, updatePoolPriceData } from './reducer'
+import { useCloseModal } from './hooks'
+import { updateChainId, updatePoolPriceData } from './reducer'
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
     poolKey: PoolKey
     poolId: string
-    inputIsToken0: boolean
+    inputInToken0: boolean
   }
 } = {
   [SupportedChainId.ARBITRUM_ONE]: {
@@ -27,7 +29,16 @@ const DEFAULT_POOLS: {
       fee: 500,
     },
     poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
-    inputIsToken0: true,
+    inputInToken0: true,
+  },
+  [SupportedChainId.BERA_ARTIO]: {
+    poolKey: {
+      token0: '0x174652b085C32361121D519D788AbF0D9ad1C355',
+      token1: '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b',
+      fee: 500,
+    },
+    poolId: getPoolId('0x174652b085C32361121D519D788AbF0D9ad1C355', '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b', 500),
+    inputInToken0: true,
   },
   [SupportedChainId.LINEA]: {
     poolKey: {
@@ -36,7 +47,7 @@ const DEFAULT_POOLS: {
       fee: 500,
     },
     poolId: getPoolId('0x176211869cA2b568f2A7D4EE941E073a821EE1ff', '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', 500),
-    inputIsToken0: false,
+    inputInToken0: false,
   },
 }
 
@@ -49,14 +60,18 @@ export default function Updater(): null {
 
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
-  const { keyList: poolList } = usePoolKeyList()
-  const { poolsOHLC } = usePoolsOHLC(poolList)
 
-  useEffect(() => {
-    if (poolList && poolList.length > 0) {
-      dispatch(updatePoolList(poolList))
+  // fetch pool list for current chain
+  const lmtQuoter = useLmtQuoterContract()
+  const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
+  const poolList = useMemo(() => {
+    if (result) {
+      return result[0]
+    } else {
+      return undefined
     }
-  }, [poolList, dispatch])
+  }, [result])
+  const { poolsOHLC } = usePoolsOHLC(poolList)
 
   useEffect(() => {
     if (poolsOHLC) {
@@ -71,31 +86,26 @@ export default function Updater(): null {
     }
   }, [account, closeModal])
 
-  const currentPool = useAppSelector((state) => {
-    return state.user.currentPool
-  })
+  const currentPools = useAppSelector((state) => state.user.poolLists)
+  // const userState = useAppSelector((state) => state.user)
 
-  const setCurrentPool = useSetCurrentPool()
-
-  // set default pool
+  // set default pool for current chain
   useEffect(() => {
-    if (!currentPool && chainId) {
-      const { poolId, inputIsToken0 } = DEFAULT_POOLS[chainId]
-      setCurrentPool(poolId, inputIsToken0)
+    if (chainId && !currentPools[chainId]) {
+      const { poolId, inputInToken0 } = DEFAULT_POOLS[chainId]
+      dispatch(setCurrentPool({ chainId, poolId, inputInToken0 }))
     }
-  }, [currentPool, chainId, setCurrentPool])
+  }, [dispatch, chainId, currentPools])
 
   useEffect(() => {
     if (provider && chainId && windowVisible) {
       if (activeChainId !== chainId) {
         setActiveChainId(chainId)
-        const { poolId, inputIsToken0 } = DEFAULT_POOLS[chainId]
-        setCurrentPool(poolId, inputIsToken0)
+        const { poolId, inputInToken0 } = DEFAULT_POOLS[chainId]
+        setCurrentPool({ chainId, poolId, inputInToken0 })
       }
     }
-  }, [dispatch, chainId, provider, windowVisible, activeChainId, setCurrentPool])
-
-  console.log('currentPool', currentPool, poolList, poolsOHLC)
+  }, [dispatch, chainId, provider, windowVisible, activeChainId])
 
   const debouncedChainId = useDebounce(activeChainId, 100)
 
@@ -103,19 +113,6 @@ export default function Updater(): null {
     const chainId = debouncedChainId ? supportedChainId(debouncedChainId) ?? null : null
     dispatch(updateChainId({ chainId }))
   }, [dispatch, debouncedChainId])
-
-  // const block = useAppSelector((state) => state.application.blockNumber)
-
-  // const onBlock = useCallback(
-  //   (_block: number) => {
-  //     if (activeChainId === chainId) {
-  //       if (!block || block < _block) {
-  //         dispatch(updateBlockNumber({ blockNumber: _block }))
-  //       }
-  //     }
-  //   },
-  //   [activeChainId, dispatch, block, chainId]
-  // )
 
   // useEffect(() => {
   //   let stale = false

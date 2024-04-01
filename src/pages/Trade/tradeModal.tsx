@@ -35,6 +35,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
@@ -49,10 +50,9 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo, useSwapActionHandlers } from 'state/swap/hooks'
-import { useCurrentPool } from 'state/user/hooks'
+import { useSwapActionHandlers } from 'state/swap/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
-import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
@@ -186,14 +186,28 @@ export const Selector = styled.div<{ active: boolean }>`
 `
 
 const TradeTabContent = () => {
-  const theme = useTheme()
+  // const theme = useTheme()
   const { account, chainId } = useWeb3React()
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
-  const { onUserInput, onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
+  const { onUserInput, onSetMarginInPosToken } = useSwapActionHandlers()
+  // const { currencyBalances, currencies } = useDerivedSwapInfo()
+  const inputCurrency = useCurrentInputCurrency()
+  const outputCurrency = useCurrentOutputCurrency()
+  const relevantTokenBalances = useCurrencyBalances(
+    account ?? undefined,
+    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
+  )
 
-  const { currencyBalances, currencies } = useDerivedSwapInfo()
+  const currencyBalances = useMemo(
+    () => ({
+      [Field.INPUT]: relevantTokenBalances[0],
+      [Field.OUTPUT]: relevantTokenBalances[1],
+    }),
+    [relevantTokenBalances]
+  )
 
+  // console.log('-------currencyBalances, currencies----------')
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
     txHash: string | undefined
@@ -243,6 +257,7 @@ const TradeTabContent = () => {
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
+
   const {
     onLeverageFactorChange,
     onMarginChange,
@@ -281,8 +296,8 @@ const TradeTabContent = () => {
     margin ?? undefined,
     leverageFactor ?? undefined,
     pool ?? undefined,
-    currencies[Field.INPUT]?.wrapped.address,
-    currencies[Field.OUTPUT]?.wrapped.address
+    inputCurrency?.wrapped.address,
+    outputCurrency?.wrapped.address
   )
 
   const {
@@ -298,8 +313,8 @@ const TradeTabContent = () => {
     startingPrice,
     baseCurrencyIsInputToken,
     pool ?? undefined,
-    currencies[Field.INPUT] ?? undefined,
-    currencies[Field.OUTPUT] ?? undefined,
+    inputCurrency ?? undefined, // currencies[Field.INPUT] ?? undefined,
+    outputCurrency ?? undefined,
     allowedSlippage
   )
 
@@ -316,9 +331,10 @@ const TradeTabContent = () => {
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
   )
 
-  const notApproved = marginInPosToken
-    ? inputApprovalState !== ApprovalState.APPROVED && outputApprovalState !== ApprovalState.APPROVED
-    : inputApprovalState !== ApprovalState.APPROVED
+  const notApproved =
+    marginInPosToken || premiumInPosToken
+      ? inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED
+      : inputApprovalState !== ApprovalState.APPROVED
 
   const noTradeInputError = useMemo(() => {
     return !inputError
@@ -330,14 +346,14 @@ const TradeTabContent = () => {
     [currencyBalances, marginInPosToken]
   )
 
-  const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
+  const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
-    (marginInPosToken ? currencies[Field.OUTPUT] : currencies[Field.INPUT]) ?? undefined
+    (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
   )
 
-  const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, currencies[Field.OUTPUT] ?? undefined)
+  const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
@@ -431,16 +447,16 @@ const TradeTabContent = () => {
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
     if (baseCurrencyIsInputToken) {
-      return [currencies[Field.INPUT], currencies[Field.OUTPUT]]
+      return [inputCurrency, outputCurrency]
     } else {
-      return [currencies[Field.OUTPUT], currencies[Field.INPUT]]
+      return [outputCurrency, inputCurrency]
     }
-  }, [currencies, baseCurrencyIsInputToken])
+  }, [inputCurrency, outputCurrency, baseCurrencyIsInputToken])
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
-    currencies[Field.INPUT] ?? undefined,
-    currencies[Field.OUTPUT] ?? undefined,
+    inputCurrency ?? undefined,
+    outputCurrency ?? undefined,
     allowedSlippage
   )
 
@@ -501,10 +517,8 @@ const TradeTabContent = () => {
   }, [approveOutputCurrency])
 
   const currentPrice = useMemo(() => {
-    const inputCurrency = currencies[Field.INPUT]?.wrapped
-    const outputCurrency = currencies[Field.OUTPUT]?.wrapped
     if (pool && inputCurrency && outputCurrency) {
-      const inputIsToken0 = inputCurrency.sortsBefore(outputCurrency)
+      const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
       const baseIsToken0 = (baseCurrencyIsInputToken && inputIsToken0) || (!baseCurrencyIsInputToken && !inputIsToken0)
       if (baseIsToken0) {
         return formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
@@ -513,7 +527,7 @@ const TradeTabContent = () => {
       }
     }
     return undefined
-  }, [baseCurrencyIsInputToken, pool, currencies])
+  }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
@@ -535,8 +549,8 @@ const TradeTabContent = () => {
         txHash={txHash}
         allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
         tradeErrorMessage={tradeErrorMessage ? <Trans>{tradeErrorMessage}</Trans> : undefined}
-        outputCurrency={currencies[Field.OUTPUT] ?? undefined}
-        inputCurrency={currencies[Field.INPUT] ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
+        inputCurrency={inputCurrency ?? undefined}
       />
       <ConfirmAddLimitOrderModal
         isOpen={lmtShowConfirm}
@@ -571,8 +585,8 @@ const TradeTabContent = () => {
           </Selector>
         </Filter>
         <PremiumCurrencySelector
-          inputCurrency={currencies[Field.INPUT]}
-          outputCurrency={currencies[Field.OUTPUT]}
+          inputCurrency={inputCurrency}
+          outputCurrency={outputCurrency}
           premiumInPosToken={premiumInPosToken}
           onPremiumCurrencyToggle={() => onPremiumCurrencyToggle(!premiumInPosToken)}
         />
@@ -648,20 +662,28 @@ const TradeTabContent = () => {
       </LimitInputWrapper>
       <div style={{ display: 'relative' }}>
         <InputSection>
-          <InputHeader>
-            <ThemedText.BodySecondary fontWeight={400}>
-              <Trans>Margin</Trans>
-            </ThemedText.BodySecondary>
-          </InputHeader>
+          {existingPosition && existingPositionOpen ? (
+            <InputHeader style={{ marginBottom: '5px' }}>
+              <ThemedText.BodySecondary fontWeight={400}>
+                <Trans>Margin</Trans>
+              </ThemedText.BodySecondary>
+            </InputHeader>
+          ) : (
+            <InputHeader>
+              <ThemedText.BodySecondary fontWeight={400}>
+                <Trans>Margin</Trans>
+              </ThemedText.BodySecondary>
+            </InputHeader>
+          )}
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <MarginSelectPanel
               value={formattedMargin}
               showMaxButton={showMaxButton}
-              inputCurrency={currencies[Field.INPUT] ?? null}
+              inputCurrency={inputCurrency ?? null}
               onUserInput={handleMarginInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueTradeMargin}
-              outputCurrency={currencies[Field.OUTPUT] ?? null}
+              outputCurrency={outputCurrency ?? null}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={false}
               premium={tradeApprovalInfo?.additionalPremium}
@@ -693,8 +715,8 @@ const TradeTabContent = () => {
               showMaxButton={false}
               hideBalance={false}
               fiatValue={fiatValueTradeOutput}
-              currency={currencies[Field.OUTPUT] ?? null}
-              otherCurrency={currencies[Field.INPUT] ?? null}
+              currency={outputCurrency ?? null}
+              otherCurrency={inputCurrency ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
               loading={tradeIsLoading}
@@ -847,14 +869,14 @@ const TradeTabContent = () => {
                                       Number(tradeApprovalInfo.additionalPremium.toExact()),
                                       NumberType.SwapTradeAmount
                                     )
-                              } ${currencies[Field.INPUT]?.symbol} required.`
+                              } ${inputCurrency?.symbol} required.`
                             : null}
                         </Trans>
                       }
                     >
                       <RowBetween>
                         <Info size={20} />
-                        <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                        <Trans>Approve use of {inputCurrency?.symbol}</Trans>
                       </RowBetween>
                     </MouseoverTooltip>
                   </>
@@ -883,14 +905,14 @@ const TradeTabContent = () => {
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
-                                )} ${currencies[Field.OUTPUT]?.symbol} required.`
+                                )} ${inputCurrency?.symbol} required.`
                               : null}
                           </Trans>
                         }
                       >
                         <RowBetween>
                           <Info size={20} />
-                          <Trans>Approve use of {currencies[Field.OUTPUT]?.symbol}</Trans>
+                          <Trans>Approve use of {outputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
                     </>
@@ -984,14 +1006,14 @@ const TradeTabContent = () => {
                                       Number(tradeApprovalInfo.additionalPremium.toExact()),
                                       NumberType.SwapTradeAmount
                                     )
-                              } ${currencies[Field.INPUT]?.symbol} required.`
+                              } ${inputCurrency?.symbol} required.`
                             : null}
                         </Trans>
                       }
                     >
                       <RowBetween>
                         <Info size={20} />
-                        <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                        <Trans>Approve use of {inputCurrency?.symbol}</Trans>
                       </RowBetween>
                     </MouseoverTooltip>
                   </>
@@ -1020,14 +1042,14 @@ const TradeTabContent = () => {
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
-                                )} ${currencies[Field.OUTPUT]?.symbol} required.`
+                                )} ${outputCurrency?.symbol} required.`
                               : null}
                           </Trans>
                         }
                       >
                         <RowBetween>
                           <Info size={20} />
-                          <Trans>Approve use of {currencies[Field.OUTPUT]?.symbol}</Trans>
+                          <Trans>Approve use of {outputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
                     </>
@@ -1064,7 +1086,7 @@ const TradeTabContent = () => {
             </ButtonError>
           ))}
       </div>
-      {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />} */}
+      {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} /> */}
     </Wrapper>
   )
 }

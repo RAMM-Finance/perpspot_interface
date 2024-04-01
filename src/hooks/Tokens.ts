@@ -2,7 +2,7 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
-import { getDefaultTokensMap, getFakeTokensMap } from 'constants/fake-tokens'
+import { getDefaultTokensMap } from 'constants/fake-tokens'
 import { DEFAULT_INACTIVE_LIST_URLS, DEFAULT_LIST_OF_LISTS } from 'constants/lists'
 import { useCurrencyFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
@@ -38,7 +38,7 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   const tokensFromMap = useTokensFromMap(defaultListTokens)
 
   const { chainId } = useWeb3React()
-  const fakeTokens = getFakeTokensMap(chainId)
+
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
   const userAddedTokens = useUserAddedTokens()
 
@@ -53,10 +53,10 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
           },
           // must make a copy because reduce modifies the map, and we do not
           // want to make a copy in every iteration
-          { ...tokensFromMap, ...fakeTokens, ...additionalTokens }
+          { ...tokensFromMap, ...additionalTokens }
         )
     )
-  }, [tokensFromMap, userAddedTokens, fakeTokens, additionalTokens])
+  }, [tokensFromMap, userAddedTokens, additionalTokens])
 }
 
 type BridgeInfo = Record<
@@ -174,10 +174,12 @@ export function useIsUserAddedTokenOnChain(
 // otherwise returns the token
 export function useToken(tokenAddress?: string | null): Token | null | undefined {
   const tokens = useDefaultActiveTokens()
+
   return useTokenFromMapOrNetwork(tokens, tokenAddress)
 }
 
 export function useCurrency(currencyId?: string | null): Currency | null | undefined {
   const tokens = useDefaultActiveTokens()
+  const { chainId } = useWeb3React()
   return useCurrencyFromMap(tokens, currencyId)
 }

@@ -6,6 +6,8 @@ import useBlockNumber from './useBlockNumber'
 
 export type { CallStateResult } from '@uniswap/redux-multicall' // re-export for convenience
 export { NEVER_RELOAD } from '@uniswap/redux-multicall' // re-export for convenience
+// export type { CallStateResult } from 'redux-multicall'
+// export { NEVER_RELOAD } from 'redux-multicall' // re-export for convenience
 
 // Create wrappers for hooks so consumers don't need to get latest block themselves
 

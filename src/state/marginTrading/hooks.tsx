@@ -151,9 +151,13 @@ export interface AddMarginTrade {
 }
 
 export interface MarginTradeApprovalInfo {
+  // current premium deposit
   premiumDeposit: CurrencyAmount<Currency>
+  // additional premium for the trade
   additionalPremium: CurrencyAmount<Currency>
+  // input token amount to approve
   inputApprovalAmount: CurrencyAmount<Currency>
+  // output token amount to approve
   outputApprovalAmount: CurrencyAmount<Currency>
 }
 
@@ -183,7 +187,10 @@ export function useDerivedAddPositionInfo(
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
   const usingCode = useUsingCode()
+
+  // if existing position then use marginInPosToken from existing position
   const { marginInPosToken: newMarginInPosToken, premiumInPosToken } = useMarginTradingState()
+
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -221,6 +228,7 @@ export function useDerivedAddPositionInfo(
       return [undefined, undefined]
     }
   }, [account, inputCurrency, outputCurrency, pool])
+
   const { position: existingPosition } = useMarginLMTPositionFromPositionId(positionKey)
 
   const marginInPosToken =
@@ -228,9 +236,8 @@ export function useDerivedAddPositionInfo(
 
   const parsedBorrowAmount = useMemo(() => {
     if (parsedLeverageFactor && parsedMargin && parsedLeverageFactor.gt(1)) {
-      if (marginInPosToken && pool && outputCurrency) {
-        const isToken0 = outputCurrency.wrapped.address.toLowerCase() === pool.token0.address.toLowerCase()
-        const price = isToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
+      if (marginInPosToken && pool && outputCurrency && positionKey) {
+        const price = positionKey.isToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
         return parsedLeverageFactor.minus(new BN(1)).times(parsedMargin).times(price)
       } else {
         return parsedMargin.times(parsedLeverageFactor).minus(parsedMargin)
@@ -238,7 +245,7 @@ export function useDerivedAddPositionInfo(
     } else {
       return undefined
     }
-  }, [parsedLeverageFactor, parsedMargin, pool, marginInPosToken, outputCurrency])
+  }, [parsedLeverageFactor, parsedMargin, pool, marginInPosToken, outputCurrency, positionKey])
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
   const [userPremiumPercent] = useUserPremiumDepositPercent()
@@ -309,6 +316,7 @@ export function useDerivedAddPositionInfo(
     // premium to approve
     const _additionalPremiumInputToken = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
     const price = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
+
     const _additionalPremium = premiumInPosToken
       ? _additionalPremiumInputToken.times(price)
       : _additionalPremiumInputToken
@@ -399,9 +407,6 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
     }
 
-    // if (existingPosition && existingPosition.marginInPosToken !== marginInPosToken) {
-    //   inputError = inputError ?? <Trans>Existing Position uses a different margin</Trans>
-    // }
     // compare input balance to max input based on version
     const balanceIn = currencyBalances[Field.INPUT]
     const balanceOut = currencyBalances[Field.OUTPUT]
@@ -427,8 +432,6 @@ export function useDerivedAddPositionInfo(
     currencyBalances,
     parsedLeverageFactor,
     tradeApprovalInfo,
-    existingPosition,
-    marginInPosToken,
   ])
 
   const noAccountInputError = useMemo(() => {
@@ -446,40 +449,9 @@ export function useDerivedAddPositionInfo(
         return false
       }
     } else {
-      if (
-        !parsedMargin ||
-        !parsedLeverageFactor ||
-        !maxLeverage ||
-        parsedMargin.isZero() ||
-        (parsedLeverageFactor &&
-          maxLeverage &&
-          parsedLeverageFactor.gt(maxLeverage) &&
-          parsedLeverageFactor.isLessThanOrEqualTo(1))
-      ) {
-        return true
-      }
-      if (
-        marginInPosToken &&
-        inputApprovalState !== ApprovalState.APPROVED &&
-        outputApprovalState !== ApprovalState.APPROVED
-      ) {
-        return true
-      }
-
-      if (!marginInPosToken && inputApprovalState !== ApprovalState.APPROVED) {
-        return true
-      }
       return false
     }
-  }, [
-    parsedMargin,
-    parsedLeverageFactor,
-    maxLeverage,
-    account,
-    inputApprovalState,
-    outputApprovalState,
-    marginInPosToken,
-  ])
+  }, [parsedMargin, parsedLeverageFactor, maxLeverage, account])
 
   const {
     state,

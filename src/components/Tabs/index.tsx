@@ -2,12 +2,11 @@ import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
 import SettingsTab from 'components/Settings'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
-import React, { useCallback } from 'react'
-import { useAppSelector } from 'state/hooks'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
 import { ActiveSwapTab } from 'state/swap/actions'
 import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useSelectInputCurrency } from 'state/user/hooks'
+import { useCurrentPool, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 // import Styles from "./tabs.styles.less";
 
@@ -53,10 +52,29 @@ export default function SwapTabHeader({
   const { onMarginChange, onLeverageFactorChange, onPremiumCurrencyToggle } = useMarginTradingActionHandlers()
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler('', onLeverageFactorChange)
-  const { marginInPosToken, premiumInPosToken } = useMarginTradingState()
+  const { marginInPosToken } = useMarginTradingState()
 
-  const inputIsToken0 = useAppSelector((state) => state.user.currentInputInToken0)
+  // const inputIsToken0: boolean | undefined = useAppSelector((state) => state.user.currentInputInToken0)
+  const currentPool = useCurrentPool()
+  const inputIsToken0 = currentPool?.inputInToken0
   const switchTokens = useSelectInputCurrency()
+
+  useEffect(() => {
+    if (activeTab === 0 && inputIsToken0 !== undefined && localStorage.getItem('defaultInputToken') === null) {
+      localStorage.setItem('defaultInputToken', JSON.stringify(inputIsToken0))
+    }
+    return
+  }, [activeTab, inputIsToken0])
+
+  const keyExists = localStorage.getItem('defaultInputToken') === null
+
+  const initial = useMemo(() => {
+    if (keyExists) {
+      return undefined
+    } else {
+      return JSON.parse(localStorage.getItem('defaultInputToken') || '{}')
+    }
+  }, [keyExists])
 
   const handleTabChange = useCallback(
     (active: ActiveSwapTab) => {
@@ -66,8 +84,19 @@ export default function SwapTabHeader({
       if (marginInPosToken) {
         onSetMarginInPosToken(!marginInPosToken)
       }
+      if (active === 0 && initial === true) {
+        switchTokens(true)
+      }
+      if (active === 0 && initial === false) {
+        switchTokens(false)
+      }
+      if (active === 1 && initial === true) {
+        switchTokens(false)
+      }
+      if (active === 1 && initial === false) {
+        switchTokens(true)
+      }
       onPremiumCurrencyToggle(false)
-      switchTokens(!inputIsToken0)
       onMarginChange('')
       onDebouncedLeverageFactor('')
       onActiveTabChange(active)
@@ -77,11 +106,11 @@ export default function SwapTabHeader({
       onMarginChange,
       onDebouncedLeverageFactor,
       switchTokens,
-      inputIsToken0,
       onSetMarginInPosToken,
       marginInPosToken,
       activeTab,
       onPremiumCurrencyToggle,
+      initial,
     ]
   )
   return (
@@ -209,17 +238,25 @@ const TabElement = styled.button<{
   border-style: solid;
   border-width: 2px;
   height: 2rem;
-  border-color: ${({ activeTab, theme, isActive }) => isActive ? 
-  (activeTab === 0 ? theme.longBtnBorder : 
-    (activeTab === 1 ? theme.shortBtnBorder : theme.swapBtnBorder)) 
-  : theme.inactiveBtnBorder};
+  border-color: ${({ activeTab, theme, isActive }) =>
+    isActive
+      ? activeTab === 0
+        ? theme.longBtnBorder
+        : activeTab === 1
+        ? theme.shortBtnBorder
+        : theme.swapBtnBorder
+      : theme.inactiveBtnBorder};
 
-  background: ${({ activeTab, theme, isActive }) => isActive ? 
-    (activeTab === 0 ? theme.longBtnBackground : 
-    (activeTab === 1 ? theme.shortBtnBackground : theme.swapBtnBackground)) 
-    : theme.inactiveBtnBackground};
+  background: ${({ activeTab, theme, isActive }) =>
+    isActive
+      ? activeTab === 0
+        ? theme.longBtnBackground
+        : activeTab === 1
+        ? theme.shortBtnBackground
+        : theme.swapBtnBackground
+      : theme.inactiveBtnBackground};
 
-  color: ${({ isActive, theme }) => isActive ? theme.textSecondary : theme.inactiveColor}; 
+  color: ${({ isActive, theme }) => (isActive ? theme.textSecondary : theme.inactiveColor)};
 
   font-size: ${({ fontSize }) => fontSize ?? '.9rem'};
   font-weight: 900;

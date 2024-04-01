@@ -6,7 +6,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
-import { LoadingText } from 'components/Loader/styled'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
@@ -17,7 +16,7 @@ import { Row } from 'nft/components/Flex'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
-import { useAppPoolOHLC, useRawPoolKeyList } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
@@ -33,6 +32,7 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 
+import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
 import {
   poolFilterStringAtom,
@@ -44,7 +44,7 @@ import {
 
 const PoolListHeaderRow = styled.div`
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: 2fr 1.2fr 1fr;
   width: 100%;
   justify-items: flex-start;
   align-items: center;
@@ -63,7 +63,7 @@ const PoolListContainer = styled.div`
   display: absolute;
   // width: 30rem;
   // border: solid 2px ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.surface1};
+  background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 0.5rem;
   border-radius: 10px;
   gap: 0.25rem;
@@ -77,7 +77,7 @@ const ListWrapper = styled.div`
   overscroll-behavior: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
 `
 
 const LabelWrapper = styled.div`
@@ -131,21 +131,25 @@ const MainWrapper = styled.div`
 `
 
 const PoolListHeader = styled.div`
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
   color: ${({ theme }) => theme.textTertiary};
   &:hover {
     cursor: pointer;
   }
+  display: flex;
+  align-items: center;
+  gap: 3px;
 `
 
 const RowWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: 2fr 1.2fr 1fr;
   justify-items: flex-start;
   align-items: center;
   padding: 0.5rem;
   :hover {
+    border-radius: 10px;
     background-color: ${({ theme }) => theme.backgroundInteractive};
   }
   cursor: pointer;
@@ -154,9 +158,15 @@ const RowWrapper = styled.div`
 
 const PoolLabelWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: center;
+  justify-content: start;
+  gap: 5px;
+`
+
+const FeeWrapper = styled.div`
+  border: solid 2px ${({ theme }) => theme.backgroundOutline};
+  border-radius: 8px;
+  padding: 3px;
 `
 
 export const HollowStar = () => {
@@ -170,7 +180,7 @@ export const FilledStar = () => {
 }
 
 const DeltaText = styled.span<{ delta: number | undefined }>`
-  font-size: 14px;
+  font-size: 12px;
   color: ${({ theme, delta }) =>
     delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
 `
@@ -185,11 +195,16 @@ const Pin = styled.button`
   padding: 0.25rem;
   margin-right: 0.5rem;
 `
+const PoolSelectLoading = styled(SelectLoadingBar)`
+  height: 40px;
+  margin: auto;
+`
 
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
+
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
   const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
   const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
@@ -266,6 +281,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
 
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id) {
+      localStorage.removeItem('defaultInputToken')
       onMarginChange('')
       onActiveTabChange(0)
       onPremiumCurrencyToggle(false)
@@ -292,11 +308,13 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
       <Row>
         <Pin onClick={handleClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
-          <ThemedText.LabelSmall>{baseQuoteSymbol}</ThemedText.LabelSmall>
-          <ThemedText.BodyPrimary fontSize={12}>{pool?.fee ? `${pool?.fee / 10000}%` : ''}</ThemedText.BodyPrimary>
+          <ThemedText.LabelSmall fontSize={12}>{baseQuoteSymbol}</ThemedText.LabelSmall>
+          <FeeWrapper>
+            <ThemedText.BodyPrimary fontSize={10}>{pool?.fee ? `${pool?.fee / 10000}%` : ''}</ThemedText.BodyPrimary>
+          </FeeWrapper>
         </PoolLabelWrapper>
       </Row>
-      <ThemedText.BodyPrimary fontSize={14}>
+      <ThemedText.BodyPrimary fontSize={12}>
         {poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
@@ -314,12 +332,13 @@ const StyledMenu = styled(Menu)`
   flex-direction: column;
   border-radius: 10px;
   animation: ${fadeIn} 0.5s;
-  width: 24rem;
+  width: 28rem;
   & .MuiMenu-paper {
     border-radius: 10px;
     border: solid 1px ${({ theme }) => theme.backgroundOutline};
-    background-color: ${({ theme }) => theme.surface1};
-    width: 24rem;
+    background-color: ${({ theme }) => theme.backgroundSurface};
+    width: 28rem;
+    margin-top: 1rem;
   }
 `
 
@@ -334,13 +353,13 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
         setPoolMethod()
       }}
     >
-      {title}
+      <div>{title}</div>
       {sortMethod === currentSortMethod && (
         <>
           {sortAscending ? (
-            <ArrowUp size={20} strokeWidth={1.8} color={theme.accentActive} />
+            <ArrowUp size={16} strokeWidth={1.8} color={theme.accentActive} />
           ) : (
-            <ArrowDown size={20} strokeWidth={1.8} color={theme.accentActive} />
+            <ArrowDown size={16} strokeWidth={1.8} color={theme.accentActive} />
           )}
         </>
       )}
@@ -351,13 +370,15 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
-  const poolList = useRawPoolKeyList()
+
+  const { poolList } = usePoolKeyList() // useRawPoolKeyList()
+
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const poolOHLCData = useAppPoolOHLC()
 
   return useMemo(() => {
-    if (poolList.length > 0) {
+    if (poolList && poolList.length > 0) {
       const list = [...poolList]
       if (sortMethod === PoolSortMethod.PRICE) {
         if (sortAscending) {
@@ -454,9 +475,9 @@ export function SelectPool() {
       }
 
       if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
-        return `${pool.token0.symbol} / ${pool.token1.symbol}`
+        return `${pool.token0.symbol}/${pool.token1.symbol}`
       } else {
-        return `${pool.token1.symbol} / ${pool.token0.symbol}`
+        return `${pool.token1.symbol}/${pool.token0.symbol}`
       }
     }
     return null
@@ -473,38 +494,41 @@ export function SelectPool() {
     setAnchorEl(null)
   }
 
+  const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
   return (
     <MainWrapper>
-      {!baseQuoteSymbol ? (
-        <LoadingText size="14px">Pool Selector loading...</LoadingText>
-      ) : (
-        <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-          <LabelWrapper>
-            <Row gap="10">
-              <DoubleCurrencyLogo
-                currency0={inputCurrency as Currency}
-                currency1={outputCurrency as Currency}
-                size={20}
-              />
-              <AutoColumn justify="flex-start">
-                <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
-                  <Row gap="6">
-                    <ThemedText.HeadlineSmall fontSize={16}>
-                      {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
-                    </ThemedText.HeadlineSmall>
-                    <ThemedText.BodySmall fontSize="12px">
-                      ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
-                    </ThemedText.BodySmall>
-                  </Row>
-                </TextWithLoadingPlaceholder>
-              </AutoColumn>
-            </Row>
-          </LabelWrapper>
-          <ChevronIcon $rotated={open} />
-        </SelectPoolWrapper>
-      )}
+      <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+        {baseQuoteSymbol ? (
+          <>
+            <LabelWrapper>
+              <Row gap="10">
+                <DoubleCurrencyLogo
+                  currency0={inputCurrency as Currency}
+                  currency1={outputCurrency as Currency}
+                  size={20}
+                />
+                <AutoColumn justify="flex-start">
+                  <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
+                    <Row gap="6">
+                      <ThemedText.HeadlineSmall fontSize={16}>
+                        {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
+                      </ThemedText.HeadlineSmall>
+                      <ThemedText.BodySmall fontSize="12px">
+                        ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
+                      </ThemedText.BodySmall>
+                    </Row>
+                  </TextWithLoadingPlaceholder>
+                </AutoColumn>
+              </Row>
+            </LabelWrapper>
+            <ChevronIcon $rotated={open} />
+          </>
+        ) : (
+          <PoolSelectLoading />
+        )}
+      </SelectPoolWrapper>
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}
@@ -519,11 +543,12 @@ export function SelectPool() {
         open={open}
         onClose={handleClose}
         style={{ position: 'absolute' }}
+        marginThreshold={0}
       >
         <PoolSearchBar />
         <PoolListContainer>
           <PoolListHeaderRow>
-            <PoolListHeader style={{ marginLeft: '10px' }}>Pairs</PoolListHeader>
+            <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
             <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
             <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
           </PoolListHeaderRow>

@@ -391,11 +391,11 @@ export function useDerivedSwapInfo(): SwapInfo2 {
   const { account } = useWeb3React()
 
   const { independentField, typedValue, recipient } = useSwapState()
-
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
+  // console.log('---useDerivedSwapInfo----', currentPool, inputCurrency, outputCurrency)
 
-  // console.log('inputCurrency', inputCurrency)
+  // console.log('inputCurrency', inputCurrency, outputCurrency)
   const recipientLookup = useENS(recipient ?? undefined)
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
 

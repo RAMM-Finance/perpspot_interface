@@ -31,6 +31,7 @@ const LiquidityDistributionTable = ({
 
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
+
   const [, pool] = usePool(token1 ?? undefined, token0 ?? undefined, fee)
 
   const poolAddress = useMemo(() => {
