@@ -72,7 +72,8 @@ export default function Updater(): null {
     }
   }, [result])
   const { poolsOHLC } = usePoolsOHLC(poolList)
-
+  const userState = useAppSelector((state) => state.user)
+  console.log('userState', userState)
   useEffect(() => {
     if (chainId && poolList) {
       dispatch(updatePoolList({ chainId, poolList }))

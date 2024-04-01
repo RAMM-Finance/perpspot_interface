@@ -218,6 +218,10 @@ const userSlice = createSlice({
         }
       }
 
+      if (!state.pinnedPools || typeof state.pinnedPools === 'object') {
+        state.pinnedPools = []
+      }
+
       if (!state.userLimitDeadline) {
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
