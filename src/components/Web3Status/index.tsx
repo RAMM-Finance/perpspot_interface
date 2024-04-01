@@ -9,7 +9,7 @@ import PrefetchBalancesWrapper from 'components/WalletDropdown/PrefetchBalancesW
 import { useGetConnection } from 'connection'
 import { Portal } from 'nft/components/common/Portal'
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
-import { getIsValidSwapQuote } from 'pages/Swap'
+import { getIsValidSwapQuote } from 'pages/Trade'
 import { darken } from 'polished'
 import { useCallback, useMemo } from 'react'
 import { AlertTriangle } from 'react-feather'

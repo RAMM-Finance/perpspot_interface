@@ -1349,7 +1349,7 @@ msgid "Only UNI votes that were self delegated or delegated to another address b
 msgstr "Nur UNI-Stimmen, die vor Block {0} an die eigene oder eine fremde Adresse delegiert wurden, sind zur Abstimmung berechtigt."
 
 #: src/pages/NotFound/index.tsx
-msgid "Oops, take me back to Swap"
+msgid "Oops, take me back to Trade"
 msgstr ""
 
 #: src/components/Web3Status/index.tsx

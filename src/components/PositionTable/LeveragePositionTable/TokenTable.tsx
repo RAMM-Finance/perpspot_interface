@@ -144,9 +144,6 @@ function useSelectPositions(positions?: MarginPositionDetails[]) {
   // const sortedPositions = useSortedPositions(positions)
 
   const filteredPositions = useFilteredPositions(positions)
-
-  // console.log("POSITIONS")
-  // console.log(positions)
   return { filteredPositions }
   // return { filteredPositions: positions }
 }

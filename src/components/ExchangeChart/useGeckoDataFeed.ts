@@ -1,6 +1,4 @@
 import axios from 'axios'
-import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
-import { customArbitrumClient } from 'graphql/limitlessGraph/uniswapClients'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
 import { useMemo, useRef } from 'react'
 
@@ -282,21 +280,6 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
               return onErrorCallback('Unable to load historical data!')
             }
 
-            // filter extreme values
-            // const avgHighDeviation =
-            //   bars
-            //     .map((bar) => {
-            //       return Math.abs(bar.high - bar.open)
-            //     })
-            //     .reduce((a, b) => a + b, 0) / bars.length
-            // const avgLowDeviation =
-            //   bars
-            //     .map((bar) => {
-            //       return Math.abs(bar.low - bar.open)
-            //     })
-            //     .reduce((a, b) => a + b, 0) / bars.length
-            // console.log('avgHighDeviation', avgHighDeviation, avgLowDeviation)
-
             const filteredBars = bars.map((bar, index, array) => {
               // Calculate wick lengths as a percentage of the bar's open-close range
               const highWickLength = Math.abs(bar.high - bar.close)
@@ -349,15 +332,15 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
         ) => {
           const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
           console.log('subscribeBars', token0IsBase, poolAddress)
-          intervalRef.current && clearInterval(intervalRef.current)
-          intervalRef.current = setInterval(function () {
-            fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
-              // console.log('bar', bar)
-              if (bar) {
-                onRealtimeCallback(bar)
-              }
-            })
-          }, 10000)
+          // intervalRef.current && clearInterval(intervalRef.current)
+          // intervalRef.current = setInterval(function () {
+          //   fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
+          //     // console.log('bar', bar)
+          //     if (bar) {
+          //       onRealtimeCallback(bar)
+          //     }
+          //   })
+          // }, 10000)
         },
         unsubscribeBars: () => {
           intervalRef.current && clearInterval(intervalRef.current)

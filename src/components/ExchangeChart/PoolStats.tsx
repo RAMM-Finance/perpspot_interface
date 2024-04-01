@@ -8,10 +8,11 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
-import { usePoolV2 } from 'hooks/usePools'
+import { usePool } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
@@ -43,6 +44,13 @@ export function PoolStatsSection({
   fee?: number
   poolData: any
 }) {
+  if (
+    chainId === SupportedChainId.LINEA &&
+    (address0?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase() ||
+      address1?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase())
+  ) {
+    console.log('SOMETHING AMISS1')
+  }
   const currency0 = useCurrency(address0)
   const currency1 = useCurrency(address1)
 
@@ -51,7 +59,7 @@ export function PoolStatsSection({
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
 
-  const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, fee)
+  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
 
   const PoolsOHLC = useAppPoolOHLC()
 
@@ -67,15 +75,6 @@ export function PoolStatsSection({
   const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
     poolAddress ?? undefined,
   ])
-
-  // const { result: reserve1, loading: loading1 } = useContractCallV2(
-  //   address1 ?? undefined,
-  //   ERC20_INTERFACE.encodeFunctionData('balanceOf', [poolAddress ?? ZERO_ADDRESS]),
-  //   ['poolStats-reserve1', poolAddress ?? ''],
-  //   false,
-  //   !!poolAddress,
-  //   (data) => ERC20_INTERFACE.decodeFunctionResult('balanceOf', data)[0]
-  // )
 
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
     if (!pool || !address0 || !address1 || !fee) return [null, false, null, null, null, null, null]

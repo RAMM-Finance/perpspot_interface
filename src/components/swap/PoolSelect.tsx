@@ -204,6 +204,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
+
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
   const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
   const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()

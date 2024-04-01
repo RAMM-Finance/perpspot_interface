@@ -1,5 +1,6 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
+import { useWeb3React } from '@web3-react/core'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { useLmtQuoterContract } from 'hooks/useContract'
 import { useSingleCallResult } from 'lib/hooks/multicall'

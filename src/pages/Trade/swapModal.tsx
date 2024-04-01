@@ -37,8 +37,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfoForSwapPage, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
+import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useCurrentPool, useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { LinkStyledButton, ThemedText } from 'theme'
@@ -49,10 +49,8 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
-import { InputHeader, ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
-import { CurrencyState, useSwapAndLimitContext } from '../../state/swap/SwapContext'
-import { useCurrency } from 'hooks/Tokens'
-
+import { InputHeader } from '.'
+import { ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
 
 const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
@@ -77,16 +75,14 @@ function largerPercentValue(a?: Percent, b?: Percent) {
   return undefined
 }
 
-interface SwapTabContentProps {
-  onCurrencyChange?: (selected: CurrencyState) => void
-}
-
-const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
+const SwapTabContent = () => {
   const theme = useTheme()
-  const { account, chainId: connectedChainId } = useWeb3React()
-  const { chainId, prefilledState, currencyState } = useSwapAndLimitContext()
+  const { account, chainId } = useWeb3React()
 
-  const { onCurrencySelection, onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const { onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const currentPool = useCurrentPool()
+  const inputIsToken0 = currentPool?.inputInToken0
+  const switchTokens = useSelectInputCurrency()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -97,9 +93,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     parsedAmount,
     currencies,
     inputError: swapInputError,
-  } = useDerivedSwapInfoForSwapPage()
-
-  // const useCurrency = useCurrency()
+  } = useDerivedSwapInfo()
 
   const { independentField, typedValue, recipient } = useSwapState()
 
@@ -133,33 +127,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
-
-  const handleInputSelect = useCallback(
-    (inputCurrency: Currency) => {
-      // setInputCurrency(inputCurrency)
-      onCurrencySelection(Field.INPUT, inputCurrency)
-      onCurrencyChange?.({
-        inputCurrency,
-        outputCurrency: currencyState.outputCurrency,
-      })
-      // maybeLogFirstSwapAction(trace)
-    },
-    [onCurrencyChange, onCurrencySelection, currencyState] //, trace]
-  )
-
-  const handleOutputSelect = useCallback(
-    (outputCurrency: Currency) => {
-      // setOutputCurrency(outputCurrency)
-      onCurrencySelection(Field.OUTPUT, outputCurrency)
-      onCurrencyChange?.({
-        inputCurrency: currencyState.inputCurrency,
-        outputCurrency,
-      })
-      // maybeLogFirstSwapAction(trace)
-    },
-    [onCurrencyChange, onCurrencySelection, currencyState] //, trace]
-  )
-
   const fiatValueTradeInput = useUSDPrice(trade?.inputAmount)
   const fiatValueTradeOutput = useUSDPrice(trade?.outputAmount)
   const swapFiatValues = useMemo(() => {
@@ -175,7 +142,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     wrapType,
     execute: onWrap,
     inputError: wrapInputError,
-  // } = useWrapCallback(inputCurrency, outputCurrency, typedValue)
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
 
@@ -198,7 +164,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
       (parsedAmounts[Field.INPUT]?.currency.isToken
         ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
         : undefined),
-    isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefined
+    isSupportedChain(chainId) ? ROUTER_ADDRESSES[chainId] : undefined
   )
 
   const { callback: swapCallback } = useSwapCallback(
@@ -232,7 +198,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const fiatValueOutput = useUSDPrice(parsedAmounts[Field.OUTPUT])
 
   const userHasSpecifiedInputOutput = Boolean(
-    // inputCurrency && outputCurrency && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
     currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
   )
 
@@ -366,7 +331,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const isValid = !swapInputError
   // const lmtIsValid = !inputError
 
-  // const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
   const swapIsUnsupported = useIsSwapUnsupported(currencies[Field.INPUT], currencies[Field.OUTPUT])
 
   const priceImpactTooHigh = priceImpactSeverity > 3 && !isExpertMode
@@ -381,7 +345,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     try {
       await allowance.approveAndPermit()
       sendAnalyticsEvent(InterfaceEventName.APPROVE_TOKEN_TXN_SUBMITTED, {
-        chain_id: connectedChainId,
+        chain_id: chainId,
         token_symbol: maximumAmountIn?.currency.symbol,
         token_address: maximumAmountIn?.currency.address,
       })
@@ -390,10 +354,11 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     } finally {
       setIsAllowancePending(false)
     }
-  }, [allowance, connectedChainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
+  }, [allowance, chainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
   return (
     <Wrapper>
+      <SwapHeader allowedSlippage={allowedSlippage} />
       <ConfirmSwapModal
         isOpen={showConfirm}
         trade={trade}
@@ -426,7 +391,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
-              onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
@@ -435,23 +399,20 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
             />
           </Trace>
         </InputSection>
-        <ArrowWrapper clickable={isSupportedChain(connectedChainId)}>
+        <ArrowWrapper clickable={isSupportedChain(chainId)}>
           <TraceEvent
             events={[BrowserEvent.onClick]}
             name={SwapEventName.SWAP_TOKENS_REVERSED}
             element={InterfaceElementName.SWAP_TOKENS_REVERSE_ARROW_BUTTON}
           >
             <ArrowContainer
-              onClick={() => {
-                onSwitchTokens({
-                  previouslyEstimatedOutput: formattedAmounts[dependentField]
-                })
-              }}
+              // onClick={() => {
+              //   onSwitchTokens(false)
+              // }}
               color={theme.textPrimary}
             >
               <Maximize2
                 size="10"
-                // color={inputCurrency && outputCurrency ? theme.textPrimary : theme.textTertiary}
                 color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.textPrimary : theme.textTertiary}
               />
             </ArrowContainer>
@@ -472,11 +433,9 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
                 hideBalance={false}
                 fiatValue={fiatValueOutput}
                 priceImpact={stablecoinPriceImpact}
-                // currency={outputCurrency}
                 currency={currencies[Field.OUTPUT] ?? null}
-                onCurrencySelect={handleOutputSelect}
+                //onCurrencySelect={handleOutputSelect}
                 otherCurrency={currencies[Field.INPUT] ?? null}
-                // otherCurrency={inputCurrency}
                 showCommonBases={true}
                 id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
                 loading={independentField === Field.INPUT && routeIsSyncing}
@@ -573,7 +532,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
                       <Info size={20} />
                     </MouseoverTooltip>
                   </div>
-                  {/* <Trans>Approve use of {inputCurrency?.symbol}</Trans> */}
                   <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
                 </>
               )}

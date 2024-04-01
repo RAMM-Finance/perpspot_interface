@@ -43,8 +43,9 @@ import PoolV2 from './Pool/v2'
 import PoolFinder from './PoolFinder'
 import ReferralPage from './Referral'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
+import Trade from './Trade'
 import Swap from './Swap'
-import { RedirectPathToSwapOnly } from './Swap/redirects'
+import { RedirectPathToSwapOnly } from './Trade/redirects'
 import Tokens from './Tokens'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
@@ -234,7 +235,7 @@ export default function App() {
             <Suspense fallback={<Loader />}>
               {isLoaded ? (
                 <Routes>
-                  <Route path="/" element={<Swap />} />
+                  <Route path="/" element={<Trade />} />
                   <Route path="tokens" element={<Tokens />}>
                     <Route path=":chainName" />
                   </Route>
@@ -250,6 +251,7 @@ export default function App() {
                   <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
                   {micrositeEnabled && <Route path="wallet" element={<Wallet />} />}
                   <Route path="send" element={<RedirectPathToSwapOnly />} />
+                  <Route path="trade" element={<Trade />} />
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
@@ -259,7 +261,7 @@ export default function App() {
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="join" element={<Navigate to="/swap" />} />
-                  <Route path="join/:id" element={<Swap />} />
+                  <Route path="join/:id" element={<Trade />} />
                   <Route path="pools/v2/find" element={<PoolFinder />} />
                   <Route path="pools/v2" element={<PoolV2 />} />
                   <Route path="pools" element={<Pool />} />

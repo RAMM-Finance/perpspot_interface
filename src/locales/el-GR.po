@@ -1349,7 +1349,7 @@ msgid "Only UNI votes that were self delegated or delegated to another address b
 msgstr "Μόνο οι ψήφοι UNI που ανατέθηκαν αυτοπροσώπως ή ανατέθηκαν σε άλλη διεύθυνση πριν από το κλείσιμο {0} έχουν δικαίωμα ψήφου."
 
 #: src/pages/NotFound/index.tsx
-msgid "Oops, take me back to Swap"
+msgid "Oops, take me back to Trade"
 msgstr ""
 
 #: src/components/Web3Status/index.tsx
