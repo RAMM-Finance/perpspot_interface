@@ -133,8 +133,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
-  const [inputCurrency, setInputCurrency] = useState<Currency | null>(null)
-  const [outputCurrency, setOutputCurrency] = useState<Currency | null>(null)
 
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
@@ -425,13 +423,11 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
               value={formattedAmounts[Field.INPUT]}
               showMaxButton={showMaxButton}
               currency={currencies[Field.INPUT] ?? null}
-              // currency={inputCurrency}
               onUserInput={handleTypeInput}
               onMax={handleMaxInput}
               fiatValue={fiatValueInput}
               onCurrencySelect={handleInputSelect}
               otherCurrency={currencies[Field.OUTPUT] ?? null}
-              // otherCurrency={outputCurrency}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_INPUT_PANEL}
               loading={independentField === Field.OUTPUT && routeIsSyncing}
@@ -447,7 +443,9 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
           >
             <ArrowContainer
               onClick={() => {
-                onSwitchTokens(false)
+                onSwitchTokens({
+                  previouslyEstimatedOutput: formattedAmounts[dependentField]
+                })
               }}
               color={theme.textPrimary}
             >

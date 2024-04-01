@@ -54,7 +54,8 @@ export function useSwapState(): AppState['swap'] {
 export function useSwapActionHandlers(): {
   onCurrencySelection: (field: Field, currency: Currency) => void
   onPoolSelection(currencyIn: Currency, currencyOut: Currency, poolKey: RawPoolKey): void
-  onSwitchTokens: (leverage: boolean) => void
+  // onSwitchTokens: (newOutputHasTax: boolean, previouslyEstimatedOutput: string) => void
+  onSwitchTokens: (options: { previouslyEstimatedOutput: string }) => void
   onUserInput: (field: Field, typedValue: string) => void
   onChangeRecipient: (recipient: string | null) => void
   onLeverageFactorChange: (leverage: string) => void
@@ -122,14 +123,15 @@ export function useSwapActionHandlers(): {
 
   const onSwitchTokens = useCallback(
     ({
-      newOutputHasTax,
+      // newOutputHasTax,
       previouslyEstimatedOutput,
     }: {
-      newOutputHasTax: boolean
+      // newOutputHasTax: boolean
       previouslyEstimatedOutput: string
     }) => {
       // To prevent swaps with FOT tokens as exact-outputs, we leave it as an exact-in swap and use the previously estimated output amount as the new exact-in amount.
-      if (newOutputHasTax && swapState.independentField === Field.INPUT) {
+      // if (newOutputHasTax && swapState.independentField === Field.INPUT) {
+      if (swapState.independentField === Field.INPUT) {
         setSwapState((swapState) => ({
           ...swapState,
           typedValue: previouslyEstimatedOutput,
@@ -287,7 +289,7 @@ export type SwapInfo2 = {
 }
 
 // This hook is used for swap page
- 
+
 export function useDerivedSwapInfo2(): SwapInfo2 {
   const { account } = useWeb3React()
 
@@ -297,8 +299,6 @@ export function useDerivedSwapInfo2(): SwapInfo2 {
 
   const { independentField, typedValue, recipient } = useSwapState()
 
-
-  // console.log('inputCurrency', inputCurrency)
   const recipientLookup = useENS(recipient ?? undefined)
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
 
@@ -338,7 +338,6 @@ export function useDerivedSwapInfo2(): SwapInfo2 {
   // allowed slippage is either auto slippage, or custom user defined slippage if auto slippage disabled
   const autoSlippageTolerance = useAutoSlippageTolerance(trade.trade)
   const allowedSlippage = useUserSlippageToleranceWithDefault(autoSlippageTolerance)
-  // console.log("allowedSlippage:", allowedSlippage)
 
   const inputError = useMemo(() => {
     let inputError: ReactNode | undefined
