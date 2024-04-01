@@ -120,11 +120,9 @@ export function SwapAndLimitContextProvider({
   initialInputCurrency?: Currency
   initialOutputCurrency?: Currency
 }>) {
-  console.log("SWAP AND LIMIT CONTEXT PROVIDER")
   const { chainId: connectedChainId } = useWeb3React()
   const [currentTab, setCurrentTab] = useState<SwapTab>(SwapTab.Swap)
-  console.log(initialInputCurrency)
-  console.log(initialOutputCurrency)
+
   const [currencyState, setCurrencyState] = useState<CurrencyState>({
     inputCurrency: initialInputCurrency,
     outputCurrency: initialOutputCurrency,

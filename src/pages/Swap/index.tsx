@@ -105,20 +105,11 @@ export default function SwapPage() {
 
   const { chainId } = useWeb3React()
   
-  // const chainId = isSupportedChain(connectedChainId) ? connectedChainId : 
-  // const chainId = supportedChainId || ChainId.MAINNET
-
   const parsedQs = useParsedQueryString()
-  console.log("PARSED QS")
-  console.log(parsedQs)
+
   const parsedCurrencyState = useMemo(() => {
     return queryParametersToCurrencyState(parsedQs)
   }, [parsedQs])
-
-
-
-  // const initialInputCurrency = useCurrency(parsedCurrencyState.inputCurrencyId) || undefined;
-  // const initialOutputCurrency = useCurrency(parsedCurrencyState.outputCurrencyId) || undefined;
 
   return (
       <PageWrapper>
@@ -132,44 +123,16 @@ export default function SwapPage() {
 
 interface SwapProps {
   chainId: number | undefined;
-  // onCurrencyChange: (tokens: CurrencyState) => void;
-  // initialInputCurrency?: Currency | undefined;
-  // initialOutputCurrency?: Currency | undefined;
 }
 
 export function Swap({ 
   chainId,
-  // onCurrencyChange,
-  // initialInputCurrency,
-  // initialOutputCurrency,
  }: SwapProps) {
 
-  // const [initialInputCurrency, setInitialInputCurrency] = useState<Currency>()
-  // const [initialOutputCurrency, setInitialOutputCurrency] = useState<Currency>()
-
-  // const handleCurrencyChange = useCallback(
-  //   (Tokens: CurrencyState) => {
-  //     console.log("HANDLE CURRENCY CHANGE")
-  //     console.log(Tokens.inputCurrency)
-  //     if (Tokens.inputCurrency) {
-  //       // const input = useCurrency(Tokens.inputCurrency)
-  //       // setInitialInputCurrency(input)
-  //     }
-  //     if (Tokens.outputCurrency) {
-  //       // const output = useCurrency(Tokens.outputCurrency)
-  //       // setInitialOutputCurrency(output)
-  //     }
-      
-      
-  //   },
-  //   []
-  // )
 
   return (
     <SwapAndLimitContextProvider
     chainId={chainId}
-    // initialInputCurrency={initialInputCurrency}
-    // initialOutputCurrency={initialOutputCurrency}
     >
       <SwapContextProvider>
         <PageWrapper>

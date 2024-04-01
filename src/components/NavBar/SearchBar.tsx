@@ -133,8 +133,6 @@ export const SearchBar = () => {
     }
   }, [handleKeyPress, inputRef])
 
-  // console.log("searchBar", tokens, tokensAreLoading, collections)
-
   return (
     <Trace section={InterfaceSectionName.NAVBAR_SEARCH}>
       <Box

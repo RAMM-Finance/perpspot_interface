@@ -138,8 +138,6 @@ export default createReducer<SwapState>(initialState, (builder) =>
       }
     )
     .addCase(selectCurrency, (state, { payload: { field, currencyId } }) => {
-      console.log("SELECT CURRENCY")
-      console.log(currencyId)
       return {
         ...state,
         // [field]:

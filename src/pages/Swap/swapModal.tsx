@@ -138,9 +138,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
 
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
-      console.log("HANDLE INPUT SELECT")
-      console.log("INPUT CURRENCY")
-      console.log(inputCurrency)
       // setInputCurrency(inputCurrency)
       onCurrencySelection(Field.INPUT, inputCurrency)
       onCurrencyChange?.({
