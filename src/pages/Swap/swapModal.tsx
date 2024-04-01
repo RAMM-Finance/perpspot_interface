@@ -37,7 +37,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo2, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useDerivedSwapInfoForSwapPage, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
@@ -97,7 +97,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     parsedAmount,
     currencies,
     inputError: swapInputError,
-  } = useDerivedSwapInfo2()
+  } = useDerivedSwapInfoForSwapPage()
 
   // const useCurrency = useCurrency()
 
