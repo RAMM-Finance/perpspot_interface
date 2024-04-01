@@ -38,6 +38,7 @@ import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useCurrentPool, useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
 import { useExpertModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
@@ -79,7 +80,10 @@ const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
 
-  const { onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const { onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const currentPool = useCurrentPool()
+  const inputIsToken0 = currentPool?.inputInToken0
+  const switchTokens = useSelectInputCurrency()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
