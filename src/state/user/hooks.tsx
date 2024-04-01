@@ -89,8 +89,8 @@ export function useExpertModeManager(): [boolean, () => void] {
 export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInToken0: boolean } | undefined {
   const { chainId } = useWeb3React()
   const currentPool = useAppSelector((state) => {
-    if (chainId && state.user.poolLists[chainId]) {
-      return state.user.poolLists[chainId]
+    if (chainId && state.user.currentPoolKeys[chainId]) {
+      return state.user.currentPoolKeys[chainId]
     } else {
       return undefined
     }
@@ -257,8 +257,8 @@ export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
 export function usePinnedPools(): PoolKey[] {
   const { chainId } = useWeb3React()
   return useAppSelector((state) => {
-    if (chainId && state.user.favoritePools[chainId]) {
-      return state.user.favoritePools[chainId]
+    if (chainId && state.user.pinnedKeys[chainId]) {
+      return state.user.pinnedKeys[chainId]
     } else {
       return []
     }

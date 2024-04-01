@@ -63,7 +63,7 @@ export default function Updater(): null {
 
   // fetch pool list for current chain
   const lmtQuoter = useLmtQuoterContract()
-  const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
+  const { result } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
   const poolList = useMemo(() => {
     if (result) {
       return result[0]
@@ -86,8 +86,7 @@ export default function Updater(): null {
     }
   }, [account, closeModal])
 
-  const currentPools = useAppSelector((state) => state.user.poolLists)
-  // const userState = useAppSelector((state) => state.user)
+  const currentPools = useAppSelector((state) => state.user.currentPoolKeys)
 
   // set default pool for current chain
   useEffect(() => {

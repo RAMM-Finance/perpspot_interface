@@ -50,19 +50,10 @@ export interface UserState {
       [key: string]: SerializedPair
     }
   }
-  favoritePools: {
+  pinnedKeys: {
     [chainId: number]: PoolKey[]
   }
-  // pinnedPools: {
-  //   [chainId: number]: PoolKey[]
-  // }
-  // currentPools: {
-  //   [chainId: number]: {
-  //     poolId: string
-  //     inputInToken0: boolean
-  //   }
-  // }
-  poolLists: {
+  currentPoolKeys: {
     [chainId: number]: {
       poolId: string
       inputInToken0: boolean
@@ -92,9 +83,8 @@ export const initialState: UserState = {
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
-  // pinnedPools: {},
-  favoritePools: {},
-  poolLists: {},
+  pinnedKeys: {},
+  currentPoolKeys: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
   hideUniswapWalletBanner: false,
@@ -126,31 +116,31 @@ const userSlice = createSlice({
     },
     updatePinnedPools(state, action) {
       if (action.payload.add) {
-        state.favoritePools[action.payload.chainId].push(action.payload.poolKey)
+        state.pinnedKeys[action.payload.chainId].push(action.payload.poolKey)
       } else {
         const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
           action.payload.poolKey.fee
         }`
-        const index = state.favoritePools[action.payload.chainId].findIndex((i) => {
+        const index = state.pinnedKeys[action.payload.chainId].findIndex((i) => {
           const { token0, token1, fee } = i
           const id = `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
           return id === id2
         })
         if (index >= 0) {
-          state.favoritePools[action.payload.chainId].splice(index, 1)
+          state.pinnedKeys[action.payload.chainId].splice(index, 1)
         }
       }
     },
     setPinnedPools(state, action) {
-      state.favoritePools[action.payload.chainId] = action.payload.pinnedPools
+      state.pinnedKeys[action.payload.chainId] = action.payload.pinnedPools
     },
     setInputCurrency(state, action) {
-      if (state.poolLists[action.payload.chainId]) {
-        state.poolLists[action.payload.chainId].inputInToken0 = action.payload.inputInToken0
+      if (state.currentPoolKeys[action.payload.chainId]) {
+        state.currentPoolKeys[action.payload.chainId].inputInToken0 = action.payload.inputInToken0
       }
     },
     setCurrentPool(state, action) {
-      state.poolLists[action.payload.chainId] = {
+      state.currentPoolKeys[action.payload.chainId] = {
         poolId: action.payload.poolId,
         inputInToken0: action.payload.inputInToken0,
       }
@@ -222,12 +212,12 @@ const userSlice = createSlice({
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
 
-      if (!state.poolLists) {
-        state.poolLists = {}
+      if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object') {
+        state.currentPoolKeys = {}
       }
 
-      if (!state.favoritePools) {
-        state.favoritePools = {}
+      if (!state.pinnedKeys || typeof state.pinnedKeys !== 'object') {
+        state.pinnedKeys = {}
       }
 
       if (!state.userSlippedTickTolerance) {
