@@ -62,6 +62,7 @@ function PoolSelectRow({ onCurrencySelect, currencyId, fee, chainId, closeModal 
   const currentPool = useCurrentPool()
   const inputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token0 : currentPool?.poolKey.token1
   const outputCurrencyId = currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0
+
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])
 

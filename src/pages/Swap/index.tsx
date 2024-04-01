@@ -6,7 +6,6 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
-import Loader from 'components/Icons/LoadingSpinner'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -20,7 +19,7 @@ import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-import { computePoolAddress, usePool } from 'hooks/usePools'
+import { computePoolAddress, usePoolV2 } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
@@ -31,6 +30,7 @@ import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 
+import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
@@ -39,6 +39,7 @@ import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
+import { fadeInOut } from 'components/Loader/styled'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -171,6 +172,10 @@ const MainWrapper = styled.article<{ pins: boolean }>`
   }
 `
 
+export const ChartLoadingBar = styled(ChartLoader)`
+    animation: ${fadeInOut} 2s infinite;
+`
+
 export function getIsValidSwapQuote(
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined,
   tradeState: TradeState,
@@ -289,9 +294,8 @@ export default function Swap({ className }: { className?: string }) {
   const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
-
   // console.log(poolKey, '----poolkey')
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
   // const { adjustedPool } = adjustTokensForChain(chainId, {
   //   token0: pool?.token0.address,
@@ -376,7 +380,10 @@ export default function Swap({ className }: { className?: string }) {
           <SwapHeaderWrapper>
             <SelectPool />
             {!chartSymbol || !chainId ? (
-              <Loader size="10px" style={{ width: '13%', height: '13%', margin: 'auto' }} />
+              <>
+                <ChartLoadingBar />
+                {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
+              </>
             ) : (
               <PoolDataChart symbol={chartSymbol} chainId={chainId} chartContainerRef={chartContainerRef} />
             )}

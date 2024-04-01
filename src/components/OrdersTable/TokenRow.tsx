@@ -510,11 +510,10 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
     return [undefined, undefined]
   }, [details])
-  const { account } = useWeb3React()
 
   const inputCurrency = useCurrency(inputIs1 ? token1Address : token0Address)
   const outputCurrency = useCurrency(inputIs1 ? token0Address : token1Address)
-
+  const { account, chainId, provider } = useWeb3React()
   const orderKey: OrderPositionKey | undefined = useMemo(() => {
     if (!details || !account) return undefined
     return {

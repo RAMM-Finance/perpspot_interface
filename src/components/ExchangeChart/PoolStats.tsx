@@ -2,16 +2,16 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
-import Loader from 'components/Icons/LoadingSpinner'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { AutoRow } from 'components/Row'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
-import { usePool } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
@@ -51,7 +51,7 @@ export function PoolStatsSection({
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
 
-  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
+  const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, fee)
 
   const PoolsOHLC = useAppPoolOHLC()
 
@@ -67,6 +67,15 @@ export function PoolStatsSection({
   const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
     poolAddress ?? undefined,
   ])
+
+  // const { result: reserve1, loading: loading1 } = useContractCallV2(
+  //   address1 ?? undefined,
+  //   ERC20_INTERFACE.encodeFunctionData('balanceOf', [poolAddress ?? ZERO_ADDRESS]),
+  //   ['poolStats-reserve1', poolAddress ?? ''],
+  //   false,
+  //   !!poolAddress,
+  //   (data) => ERC20_INTERFACE.decodeFunctionResult('balanceOf', data)[0]
+  // )
 
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
     if (!pool || !address0 || !address1 || !fee) return [null, false, null, null, null, null, null]
@@ -235,8 +244,7 @@ export function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          {/* <LoadingBubble height="18px" /> */}
-          <Loader size="18px" />
+          <LoadingBubble height="18px" />
         </StatPrice>
       </StatWrapper>
     )

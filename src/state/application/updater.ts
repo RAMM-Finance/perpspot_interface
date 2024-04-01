@@ -6,18 +6,20 @@ import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
 import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
-import { setCurrentPool } from 'state/user/reducer'
+import { useSetCurrentPool } from 'state/user/hooks'
 import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
 import { useCloseModal, usePoolKeyList } from './hooks'
+
 import { updateChainId, updatePoolPriceData } from './reducer'
+
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
     poolKey: PoolKey
     poolId: string
-    inputInToken0: boolean
+    inputIsToken0: boolean
   }
 } = {
   [SupportedChainId.ARBITRUM_ONE]: {
@@ -27,16 +29,7 @@ const DEFAULT_POOLS: {
       fee: 500,
     },
     poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
-    inputInToken0: true,
-  },
-  [SupportedChainId.BERA_ARTIO]: {
-    poolKey: {
-      token0: '0x174652b085C32361121D519D788AbF0D9ad1C355',
-      token1: '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b',
-      fee: 500,
-    },
-    poolId: getPoolId('0x174652b085C32361121D519D788AbF0D9ad1C355', '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b', 500),
-    inputInToken0: true,
+    inputIsToken0: true,
   },
   [SupportedChainId.LINEA]: {
     poolKey: {
@@ -45,7 +38,7 @@ const DEFAULT_POOLS: {
       fee: 500,
     },
     poolId: getPoolId('0x176211869cA2b568f2A7D4EE941E073a821EE1ff', '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', 500),
-    inputInToken0: false,
+    inputIsToken0: false,
   },
 }
 
@@ -59,10 +52,13 @@ export default function Updater(): null {
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
 
+
   const { poolList } = usePoolKeyList()
   // fetch pool list for current chain
-  const { poolsOHLC } = usePoolsOHLC(poolList)
 
+  const { poolsOHLC } = usePoolsOHLC(poolList)
+  const userState = useAppSelector((state) => state.user)
+  console.log('userState', userState)
   useEffect(() => {
     if (poolsOHLC) {
       dispatch(updatePoolPriceData(poolsOHLC))
@@ -76,26 +72,29 @@ export default function Updater(): null {
     }
   }, [account, closeModal])
 
-  const currentPools = useAppSelector((state) => state.user.poolLists)
-  // const userState = useAppSelector((state) => state.user)
+  const currentPool = useAppSelector((state) => {
+    return state.user.currentPool
+  })
 
-  // set default pool for current chain
+  const setCurrentPool = useSetCurrentPool()
+
+  // set default pool
   useEffect(() => {
-    if (chainId && !currentPools[chainId]) {
-      const { poolId, inputInToken0 } = DEFAULT_POOLS[chainId]
-      dispatch(setCurrentPool({ chainId, poolId, inputInToken0 }))
+    if (!currentPool && chainId) {
+      const { poolId, inputIsToken0 } = DEFAULT_POOLS[chainId]
+      setCurrentPool(poolId, inputIsToken0)
     }
-  }, [dispatch, chainId, currentPools])
+  }, [currentPool, chainId, setCurrentPool])
 
   useEffect(() => {
     if (provider && chainId && windowVisible) {
       if (activeChainId !== chainId) {
         setActiveChainId(chainId)
-        const { poolId, inputInToken0 } = DEFAULT_POOLS[chainId]
-        setCurrentPool({ chainId, poolId, inputInToken0 })
+        const { poolId, inputIsToken0 } = DEFAULT_POOLS[chainId]
+        setCurrentPool(poolId, inputIsToken0)
       }
     }
-  }, [dispatch, chainId, provider, windowVisible, activeChainId])
+  }, [dispatch, chainId, provider, windowVisible, activeChainId, setCurrentPool])
 
   const debouncedChainId = useDebounce(activeChainId, 100)
 

@@ -50,24 +50,9 @@ export interface UserState {
       [key: string]: SerializedPair
     }
   }
-  favoritePools: {
-    [chainId: number]: PoolKey[]
-  }
-  // pinnedPools: {
-  //   [chainId: number]: PoolKey[]
-  // }
-  // currentPools: {
-  //   [chainId: number]: {
-  //     poolId: string
-  //     inputInToken0: boolean
-  //   }
-  // }
-  poolLists: {
-    [chainId: number]: {
-      poolId: string
-      inputInToken0: boolean
-    }
-  }
+  pinnedPools: PoolKey[]
+  currentPool: string | undefined // poolId
+  currentInputInToken0: boolean | undefined
   timestamp: number
   URLWarningVisible: boolean
   hideUniswapWalletBanner: boolean
@@ -134,29 +119,29 @@ const userSlice = createSlice({
         const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
           action.payload.poolKey.fee
         }`
-        const index = state.favoritePools[action.payload.chainId].findIndex((i) => {
+
+        const index = state.pinnedPools.findIndex((i) => {
           const { token0, token1, fee } = i
           const id = `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
           return id === id2
         })
+
         if (index >= 0) {
-          state.favoritePools[action.payload.chainId].splice(index, 1)
+          state.pinnedPools.splice(index, 1)
         }
       }
     },
     setPinnedPools(state, action) {
-      state.favoritePools[action.payload.chainId] = action.payload.pinnedPools
+      state.pinnedPools = action.payload.pinnedPools
     },
     setInputCurrency(state, action) {
-      if (state.poolLists[action.payload.chainId]) {
-        state.poolLists[action.payload.chainId].inputInToken0 = action.payload.inputInToken0
+      if (state.currentPool) {
+        state.currentInputInToken0 = action.payload.inputInToken0
       }
     },
     setCurrentPool(state, action) {
-      state.poolLists[action.payload.chainId] = {
-        poolId: action.payload.poolId,
-        inputInToken0: action.payload.inputInToken0,
-      }
+      state.currentPool = action.payload.poolId
+      state.currentInputInToken0 = action.payload.inputInToken0
     },
     updateUserPremiumDepositPercent(state, action) {
       state.userPremiumDepositPercent = action.payload.userPremiumDepositPercent
@@ -203,7 +188,6 @@ const userSlice = createSlice({
     builder.addCase(updateVersion, (state) => {
       // slippage isnt being tracked in local storage, reset to default
       // noinspection SuspiciousTypeOfGuard
-
       if (
         typeof state.userSlippageTolerance !== 'number' ||
         !Number.isInteger(state.userSlippageTolerance) ||
@@ -221,16 +205,12 @@ const userSlice = createSlice({
         }
       }
 
+      if (!state.pinnedPools || typeof state.pinnedPools === 'object') {
+        state.pinnedPools = []
+      }
+
       if (!state.userLimitDeadline) {
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
-      }
-
-      if (!state.poolLists) {
-        state.poolLists = {}
-      }
-
-      if (!state.favoritePools) {
-        state.favoritePools = {}
       }
 
       if (!state.userSlippedTickTolerance) {
