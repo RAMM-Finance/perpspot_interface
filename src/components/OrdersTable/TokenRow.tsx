@@ -10,7 +10,6 @@ import { EditCell } from 'components/PositionTable/LeveragePositionTable/TokenRo
 import ConfirmModifyPositionModal from 'components/PositionTable/LeveragePositionTable/TransactionModal'
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { SupportedChainId } from 'constants/chains'
 import { useCurrency } from 'hooks/Tokens'
 import { useAtomValue } from 'jotai/utils'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
@@ -511,15 +510,7 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
     return [undefined, undefined]
   }, [details])
-  const { account, chainId, provider } = useWeb3React()
-
-  if (
-    chainId === SupportedChainId.LINEA &&
-    (token1Address?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase() ||
-      token0Address?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase())
-  ) {
-    console.log('SOMETHING AMISS2')
-  }
+  const { account } = useWeb3React()
 
   const inputCurrency = useCurrency(inputIs1 ? token1Address : token0Address)
   const outputCurrency = useCurrency(inputIs1 ? token0Address : token1Address)

@@ -8,7 +8,6 @@ import { AutoRow } from 'components/Row'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
@@ -44,13 +43,6 @@ export function PoolStatsSection({
   fee?: number
   poolData: any
 }) {
-  if (
-    chainId === SupportedChainId.LINEA &&
-    (address0?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase() ||
-      address1?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase())
-  ) {
-    console.log('SOMETHING AMISS1')
-  }
   const currency0 = useCurrency(address0)
   const currency1 = useCurrency(address1)
 

@@ -92,7 +92,6 @@ export const initialState: UserState = {
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
-  // pinnedPools: {},
   favoritePools: {},
   poolLists: {},
   timestamp: currentTimestamp(),
@@ -125,7 +124,11 @@ const userSlice = createSlice({
       state.timestamp = currentTimestamp()
     },
     updatePinnedPools(state, action) {
+      console.log('updatePinnedPools', action.payload)
       if (action.payload.add) {
+        if (!state.favoritePools[action.payload.chainId]) {
+          state.favoritePools[action.payload.chainId] = []
+        }
         state.favoritePools[action.payload.chainId].push(action.payload.poolKey)
       } else {
         const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${

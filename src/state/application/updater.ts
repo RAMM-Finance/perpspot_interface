@@ -1,19 +1,17 @@
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SupportedChainId } from 'constants/chains'
-import { useLmtQuoterContract } from 'hooks/useContract'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { setCurrentPool } from 'state/user/reducer'
 import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
-import { useCloseModal } from './hooks'
-import { updateChainId, updatePoolList, updatePoolPriceData } from './reducer'
+import { useCloseModal, usePoolKeyList } from './hooks'
+import { updateChainId, updatePoolPriceData } from './reducer'
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
@@ -61,23 +59,9 @@ export default function Updater(): null {
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
 
+  const { poolList } = usePoolKeyList()
   // fetch pool list for current chain
-  const lmtQuoter = useLmtQuoterContract()
-  const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
-  const poolList = useMemo(() => {
-    if (result) {
-      return result[0]
-    } else {
-      return undefined
-    }
-  }, [result])
   const { poolsOHLC } = usePoolsOHLC(poolList)
-
-  useEffect(() => {
-    if (chainId && poolList) {
-      dispatch(updatePoolList({ chainId, poolList }))
-    }
-  }, [chainId, poolList, dispatch])
 
   useEffect(() => {
     if (poolsOHLC) {
@@ -120,29 +104,5 @@ export default function Updater(): null {
     dispatch(updateChainId({ chainId }))
   }, [dispatch, debouncedChainId])
 
-  // useEffect(() => {
-  //   let stale = false
-
-  //   if (provider && activeChainId && windowVisible) {
-  //     // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
-
-  //     provider
-  //       .getBlockNumber()
-  //       .then((_block) => {
-  //         if (!stale) onBlock(_block)
-  //       })
-  //       .catch((error) => {
-  //         console.error(`Failed to get block number for chainId ${activeChainId}`, error)
-  //       })
-
-  //     provider.on('block', onBlock)
-  //     return () => {
-  //       stale = true
-  //       provider.removeListener('block', onBlock)
-  //     }
-  //   }
-
-  //   return void 0
-  // }, [activeChainId, provider, onBlock, windowVisible])
   return null
 }

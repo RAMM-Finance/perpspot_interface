@@ -359,12 +359,17 @@ export default function Swap({ className }: { className?: string }) {
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
   const pinnedPools = usePinnedPools()
+  console.log('pinnedPools', pinnedPools)
+  // const isPin = useMemo(() => pinnedPools && pinnedPools.length > 0, [pinnedPools])
+  // console.log(pinnedPools2, '----pinnedPools2')
+  // const pinnedPools = [] as any
+  const isPin = false
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
-        <MainWrapper pins={pinnedPools && pinnedPools.length > 0}>
+        <MainWrapper pins={isPin}>
           <PinWrapper>
             <PinnedPools />
           </PinWrapper>

@@ -4,7 +4,7 @@ import { Currency, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { isSupportedChain } from 'constants/chains'
 import { useBytes32TokenContract, useTokenContract } from 'hooks/useContract'
-import { useSingleCallResult } from 'lib/hooks/multicall'
+import { NEVER_RELOAD, useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useMemo } from 'react'
 
@@ -42,11 +42,11 @@ export function useTokenFromActiveNetwork(tokenAddress: string | undefined): Tok
 
   // TODO (WEB-3009): reduce this to one RPC call instead of 5
   // TODO: Fix redux-multicall so that these values do not reload.
-  const tokenName = useSingleCallResult(tokenContract, 'name')
-  const tokenNameBytes32 = useSingleCallResult(tokenContractBytes32, 'name')
-  const symbol = useSingleCallResult(tokenContract, 'symbol')
-  const symbolBytes32 = useSingleCallResult(tokenContractBytes32, 'symbol')
-  const decimals = useSingleCallResult(tokenContract, 'decimals')
+  const tokenName = useSingleCallResult(tokenContract, 'name', undefined, NEVER_RELOAD)
+  const tokenNameBytes32 = useSingleCallResult(tokenContractBytes32, 'name', undefined, NEVER_RELOAD)
+  const symbol = useSingleCallResult(tokenContract, 'symbol', undefined, NEVER_RELOAD)
+  const symbolBytes32 = useSingleCallResult(tokenContractBytes32, 'symbol', undefined, NEVER_RELOAD)
+  const decimals = useSingleCallResult(tokenContract, 'decimals', undefined, NEVER_RELOAD)
 
   const isLoading = useMemo(
     () => decimals.loading || symbol.loading || tokenName.loading,
