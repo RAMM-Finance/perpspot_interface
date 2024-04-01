@@ -20,6 +20,7 @@ interface HydratedPool {
   low24: number
   base?: string
   quote?: string
+  token0IsBase?: boolean
 }
 
 const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote') => {
@@ -122,6 +123,7 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       const { token0, token1, fee } = list[i]
       let base = res?.data?.meta?.base?.address
       let quote = res?.data?.meta?.quote?.address
+      const token0IsBase = base ? base?.toLowerCase() === token0.toLowerCase() : true
       if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
         base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
         quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
@@ -140,6 +142,7 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
         },
         base,
         quote,
+        token0IsBase,
       }
     })
     return parsed

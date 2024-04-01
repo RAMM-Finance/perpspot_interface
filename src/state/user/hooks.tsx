@@ -86,7 +86,16 @@ export function useExpertModeManager(): [boolean, () => void] {
   return [expertMode, toggleSetExpertMode]
 }
 
-export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInToken0: boolean } | undefined {
+export function useCurrentPool():
+  | {
+      poolKey: PoolKey
+      poolId: string
+      inputInToken0: boolean
+      token0Symbol: string
+      token1Symbol: string
+      token0IsBase: boolean
+    }
+  | undefined {
   const { chainId } = useWeb3React()
   const currentPool = useAppSelector((state) => {
     if (chainId && state.user.currentPoolKeys[chainId]) {
@@ -98,7 +107,7 @@ export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInTok
 
   return useMemo(() => {
     if (!currentPool) return undefined
-    const { poolId, inputInToken0 } = currentPool
+    const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = currentPool
     const [token0, token1, fee] = poolId.split('-')
     return {
       poolKey: {
@@ -108,6 +117,9 @@ export function useCurrentPool(): { poolKey: PoolKey; poolId: string; inputInTok
       },
       poolId,
       inputInToken0,
+      token0IsBase,
+      token0Symbol,
+      token1Symbol,
     }
   }, [currentPool])
 }
@@ -135,12 +147,18 @@ export function useSelectInputCurrency(): (inputInToken0: boolean) => void {
   )
 }
 
-export function useSetCurrentPool(): (poolId: string, inputInToken0: boolean) => void {
+export function useSetCurrentPool(): (
+  poolId: string,
+  inputInToken0: boolean,
+  token0IsBase: boolean,
+  token0Symbol: string,
+  token1Symbol: string
+) => void {
   const dispatch = useAppDispatch()
   const { chainId } = useWeb3React()
   return useCallback(
-    (poolId: string, inputInToken0: boolean) => {
-      chainId && dispatch(setCurrentPool({ poolId, inputInToken0, chainId }))
+    (poolId: string, inputInToken0: boolean, token0IsBase: boolean, token0Symbol: string, token1Symbol: string) => {
+      chainId && dispatch(setCurrentPool({ poolId, inputInToken0, chainId, token0IsBase, token0Symbol, token1Symbol }))
     },
     [dispatch, chainId]
   )

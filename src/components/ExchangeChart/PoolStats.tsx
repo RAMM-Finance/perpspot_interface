@@ -159,7 +159,6 @@ export function PoolStatsSection({
       <Stat
         dataCy="24h-high"
         value={high24h}
-        // baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
             <Trans>24h high</Trans>

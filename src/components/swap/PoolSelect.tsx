@@ -215,31 +215,31 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
 
   // const { onPoolSelection } = useSwapActionHandlers()
 
-  const baseQuoteSymbol = useMemo(() => {
+  const [baseQuoteSymbol, token0IsBase] = useMemo(() => {
     if (pool && poolOHLCDatas) {
       const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
       if (poolOHLCDatas[id]) {
         const base = poolOHLCDatas[id]?.base
-        // console.log('baseQuoteSymbol', poolOHLCDatas[id])
         if (!base) {
           const priceData = poolOHLCDatas[id]
           const token0Price = new BN(pool.token0Price.toFixed(18))
           const d1 = token0Price.minus(priceData.price24hAgo).abs()
           const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
           if (d1.lt(d2)) {
-            return `${pool.token0.symbol}/${pool.token1.symbol}`
+            return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
           } else {
-            return `${pool.token1.symbol}/${pool.token0.symbol}`
+            return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
           }
-        }
-        if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
-          return `${pool.token0.symbol}/${pool.token1.symbol}`
         } else {
-          return `${pool.token1.symbol}/${pool.token0.symbol}`
+          if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
+            return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
+          } else {
+            return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
+          }
         }
       }
     }
-    return null
+    return [null, null]
   }, [poolOHLCDatas, pool])
 
   const addPinnedPool = useAddPinnedPool()
@@ -280,13 +280,13 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   }, [poolOHLCData, pool])
 
   const handleRowClick = useCallback(() => {
-    if (token0 && token1 && poolId !== id) {
+    if (token0 && token1 && poolId !== id && token0IsBase !== null && token0.symbol && token1.symbol) {
       localStorage.removeItem('defaultInputToken')
       onMarginChange('')
       onActiveTabChange(0)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
-      setCurrentPool(id, inputIsToken0)
+      setCurrentPool(id, inputIsToken0, token0IsBase, token0.symbol, token1.symbol)
       handleClose()
     }
   }, [
@@ -301,6 +301,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     onMarginChange,
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
+    token0IsBase,
   ])
 
   return (
@@ -451,40 +452,19 @@ export function SelectPool() {
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
 
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, poolKey?.fee ?? undefined)
-
   const { result: poolData } = usePoolsData()
-  const PoolsOHLC = useAppPoolOHLC()
-
-  const baseQuoteSymbol = useMemo(() => {
-    if (pool && PoolsOHLC) {
-      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
-      const base = PoolsOHLC[id]?.base
-
-      if (!base) {
-        const token0Price = new BN(pool.token0Price.toFixed(18))
-        const priceData = PoolsOHLC[id]
-        if (!priceData) return `${pool.token0.symbol}/${pool.token1.symbol}`
-        const d1 = token0Price.minus(priceData.price24hAgo).abs()
-        const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
-        if (d1.lt(d2)) {
-          return `${pool.token0.symbol}/${pool.token1.symbol}`
-        } else {
-          return `${pool.token1.symbol}/${pool.token0.symbol}`
-        }
-      }
-
-      if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
-        return `${pool.token0.symbol}/${pool.token1.symbol}`
-      } else {
-        return `${pool.token1.symbol}/${pool.token0.symbol}`
-      }
-    }
-    return null
-  }, [PoolsOHLC, pool])
 
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
+
+  const baseQuoteSymbol = useMemo(() => {
+    if (currentPool) {
+      const base = currentPool.token0IsBase ? currentPool.token0Symbol : currentPool.token1Symbol
+      const quote = currentPool.token0IsBase ? currentPool.token1Symbol : currentPool.token0Symbol
+      return `${base}/${quote}`
+    }
+    return null
+  }, [currentPool])
 
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget)
@@ -494,7 +474,7 @@ export function SelectPool() {
     setAnchorEl(null)
   }
 
-  const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
+  // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
   return (

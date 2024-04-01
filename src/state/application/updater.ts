@@ -20,6 +20,9 @@ const DEFAULT_POOLS: {
     poolKey: PoolKey
     poolId: string
     inputInToken0: boolean
+    token0IsBase: boolean
+    token0Symbol: string
+    token1Symbol: string
   }
 } = {
   [SupportedChainId.ARBITRUM_ONE]: {
@@ -30,6 +33,9 @@ const DEFAULT_POOLS: {
     },
     poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
     inputInToken0: true,
+    token0IsBase: true,
+    token0Symbol: 'WETH',
+    token1Symbol: 'ARB',
   },
   [SupportedChainId.BERA_ARTIO]: {
     poolKey: {
@@ -37,6 +43,9 @@ const DEFAULT_POOLS: {
       token1: '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b',
       fee: 500,
     },
+    token0IsBase: false,
+    token0Symbol: 'USDC',
+    token1Symbol: 'WETH',
     poolId: getPoolId('0x174652b085C32361121D519D788AbF0D9ad1C355', '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b', 500),
     inputInToken0: true,
   },
@@ -48,6 +57,9 @@ const DEFAULT_POOLS: {
     },
     poolId: getPoolId('0x176211869cA2b568f2A7D4EE941E073a821EE1ff', '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', 500),
     inputInToken0: false,
+    token0IsBase: false,
+    token0Symbol: 'USDC',
+    token1Symbol: 'WETH',
   },
 }
 
@@ -90,9 +102,15 @@ export default function Updater(): null {
 
   // set default pool for current chain
   useEffect(() => {
-    if (chainId && !currentPools[chainId]) {
-      const { poolId, inputInToken0 } = DEFAULT_POOLS[chainId]
-      dispatch(setCurrentPool({ chainId, poolId, inputInToken0 }))
+    if (
+      chainId &&
+      (!currentPools[chainId] ||
+        !currentPools[chainId]?.poolId ||
+        !currentPools[chainId]?.token0Symbol ||
+        !currentPools[chainId]?.token1Symbol)
+    ) {
+      const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = DEFAULT_POOLS[chainId]
+      dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
     }
   }, [dispatch, chainId, currentPools])
 
@@ -100,8 +118,8 @@ export default function Updater(): null {
     if (provider && chainId && windowVisible) {
       if (activeChainId !== chainId) {
         setActiveChainId(chainId)
-        const { poolId, inputInToken0 } = DEFAULT_POOLS[chainId]
-        setCurrentPool({ chainId, poolId, inputInToken0 })
+        const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol } = DEFAULT_POOLS[chainId]
+        setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol })
       }
     }
   }, [dispatch, chainId, provider, windowVisible, activeChainId])
@@ -113,29 +131,5 @@ export default function Updater(): null {
     dispatch(updateChainId({ chainId }))
   }, [dispatch, debouncedChainId])
 
-  // useEffect(() => {
-  //   let stale = false
-
-  //   if (provider && activeChainId && windowVisible) {
-  //     // If chainId hasn't changed, don't clear the block. This prevents re-fetching still valid data.
-
-  //     provider
-  //       .getBlockNumber()
-  //       .then((_block) => {
-  //         if (!stale) onBlock(_block)
-  //       })
-  //       .catch((error) => {
-  //         console.error(`Failed to get block number for chainId ${activeChainId}`, error)
-  //       })
-
-  //     provider.on('block', onBlock)
-  //     return () => {
-  //       stale = true
-  //       provider.removeListener('block', onBlock)
-  //     }
-  //   }
-
-  //   return void 0
-  // }, [activeChainId, provider, onBlock, windowVisible])
   return null
 }

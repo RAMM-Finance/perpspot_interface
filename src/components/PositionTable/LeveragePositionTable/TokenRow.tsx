@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
@@ -20,6 +19,7 @@ import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from '
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Box } from 'rebass'
+import { useAppPoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
@@ -560,7 +560,7 @@ export const LoadedRow = memo(
         isToken0: details.isToken0,
       }
     }, [details])
-    // console.log('detailsdf', details)
+
     const { margin, totalDebtInput } = details
     const [token0Address, token1Address] = useMemo(() => {
       if (details) {
@@ -575,6 +575,7 @@ export const LoadedRow = memo(
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
     const setCurrentPool = useSetCurrentPool()
+    const poolOHLCDatas = useAppPoolOHLC()
 
     const leverageFactor = useMemo(() => {
       if (details.marginInPosToken) {
@@ -582,17 +583,30 @@ export const LoadedRow = memo(
       } else {
         return (Number(margin) + Number(totalDebtInput)) / Number(margin)
       }
-    }, [margin, totalDebtInput])
+    }, [margin, totalDebtInput, details])
 
     const currentPool = useCurrentPool()
     const poolId = currentPool?.poolId
     const handlePoolSelect = useCallback(
-      (e: any, currencyIn: Currency, currencyOut: Currency, fee: number) => {
-        const id = getPoolId(currencyIn.wrapped.address, currencyOut.wrapped.address, fee)
-        e.stopPropagation()
-        poolId !== id && id && setCurrentPool(id, !details.isToken0)
+      (e: any) => {
+        if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool) {
+          const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
+          if (poolOHLCDatas[id] && poolId !== id && id) {
+            e.stopPropagation()
+            let { token0IsBase, priceNow } = poolOHLCDatas[id]
+
+            if (token0IsBase === undefined) {
+              const token0Price = new BN(pool.token0Price.toFixed(18))
+              const geckoPrice = new BN(priceNow)
+              const d1 = token0Price.minus(geckoPrice).abs()
+              const d2 = new BN(1).div(token0Price).minus(geckoPrice).abs()
+              token0IsBase = d1.lt(d2)
+            }
+            setCurrentPool(id, !details.isToken0, token0IsBase, token0.symbol, token1.symbol)
+          }
+        }
       },
-      [setCurrentPool, poolId, details]
+      [setCurrentPool, poolId, details, poolOHLCDatas, positionKey.poolKey.fee, token0, token1]
     )
 
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
@@ -849,11 +863,7 @@ export const LoadedRow = memo(
             actions={
               <SmallButtonPrimary
                 style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
-                onClick={(e) =>
-                  inputCurrency &&
-                  outputCurrency &&
-                  handlePoolSelect(e, inputCurrency, outputCurrency, positionKey.poolKey.fee)
-                }
+                onClick={handlePoolSelect}
               >
                 <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
               </SmallButtonPrimary>

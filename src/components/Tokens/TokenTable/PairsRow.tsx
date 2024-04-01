@@ -1,10 +1,9 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SparklineMap } from 'graphql/data/TopTokens'
-import { CHAIN_NAME_TO_CHAIN_ID, validateUrlChainParam } from 'graphql/data/util'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -14,8 +13,8 @@ import {
   useCallback,
   //useEffect, useMemo, useState
 } from 'react'
-import { Link, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { useAppPoolOHLC } from 'state/application/hooks'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
@@ -23,7 +22,7 @@ import { ClickableStyle } from 'theme'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { roundToBin } from 'utils/roundToBin'
 
-import { useCurrency, useToken } from '../../../hooks/Tokens'
+import { useCurrency } from '../../../hooks/Tokens'
 import { ButtonPrimary } from '../../Button'
 import {
   LARGE_MEDIA_BREAKPOINT,
@@ -226,21 +225,7 @@ export const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
     ${ClickableStyle}
   }
 `
-const SparkLineCell = styled(Cell)`
-  padding: 0px 24px;
-  min-width: 120px;
 
-  @media only screen and (max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const SparkLine = styled(Cell)`
-  width: 124px;
-  height: 42px;
-`
-const StyledLink = styled(Link)`
-  text-decoration: none;
-`
 const TokenInfoCell = styled(Cell)`
   gap: 10px;
   line-height: 24px;
@@ -293,19 +278,10 @@ const ButtonCell = styled(DataCell)`
   }
 `
 
-const SmallLoadingBubble = styled(LoadingBubble)`
-  width: 25%;
-`
-const MediumLoadingBubble = styled(LoadingBubble)`
-  width: 65%;
-`
 const LongLoadingBubble = styled(LoadingBubble)`
   width: 90%;
 `
-const IconLoadingBubble = styled(LoadingBubble)`
-  border-radius: 50%;
-  width: 24px;
-`
+
 export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
   height: 4px;
 `
@@ -355,18 +331,63 @@ export function TokenRow({
   fee?: number
 }) {
   const navigate = useNavigate()
-  // const { onCurrencySelection } = useSwapActionHandlers()
-  // const { onPoolSelection } = useSwapActionHandlers()
   const setCurrentPool = useSetCurrentPool()
   const token0 = useCurrency(currency0)
   const token1 = useCurrency(currency1)
   const currentPool = useCurrentPool()
-  const poolId = currentPool?.poolId
+  const currentPoolId = currentPool?.poolId
+  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
+  const poolId = useMemo(() => {
+    if (token0 && token1 && fee) {
+      return getPoolId(token0.wrapped.address, token1.wrapped.address, fee)
+    } else {
+      return undefined
+    }
+  }, [token0, token1, fee])
+
+  const poolOHLCDatas = useAppPoolOHLC()
+
+  const token0IsBase = useMemo(() => {
+    if (pool && poolOHLCDatas && poolId) {
+      const priceData = poolOHLCDatas[poolId]
+      const token0Price = new BN(pool.token0Price.toFixed(18))
+      const d1 = token0Price.minus(priceData.price24hAgo).abs()
+      const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
+      if (d1.lt(d2)) {
+        return true
+      }
+      return false
+    }
+    return null
+  }, [pool, poolOHLCDatas, poolId])
+
+  const handleClick = useCallback(
+    (e: any) => {
+      e.stopPropagation()
+      if (
+        currency0 &&
+        currency1 &&
+        token0 &&
+        token1 &&
+        fee &&
+        token0IsBase !== null &&
+        token0.symbol &&
+        token1.symbol
+      ) {
+        const id = getPoolId(currency0, currency1, fee)
+        if (id && currentPoolId !== id) {
+          setCurrentPool(id, true, token0IsBase, token0.symbol, token1.symbol)
+          navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
+            state: { currency0, currency1 },
+          })
+        }
+      }
+    },
+    [token0, token1, fee, currency0, currency1, token0IsBase, currentPoolId, setCurrentPool, navigate]
+  )
 
   const rowCells = (
     <>
-      {/* <ListNumberCell header={header}>{listNumber}</ListNumberCell> */}
-
       <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
 
       <PriceCell data-testid="price-cell" sortable={header}>
@@ -375,9 +396,6 @@ export function TokenRow({
       <PriceCell data-testid="price-change-cell" sortable={header}>
         {priceChange}
       </PriceCell>
-      {/*<PercentChangeCell data-testid="percent-change-cell" sortable={header}>
-        {percentChange}
-      </PercentChangeCell> */}
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {APR}
       </VolumeCell>
@@ -401,35 +419,12 @@ export function TokenRow({
               height: '30px',
               lineHeight: '1',
             }}
-            onClick={(e) => {
-              e.stopPropagation()
-              if (currency1 && currency0 && token0 && token1 && fee) {
-                const id = getPoolId(currency0, currency1, fee)
-                if (id && poolId !== id) {
-                  setCurrentPool(id, true)
-                  navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
-                    state: { currency0, currency1 },
-                  })
-                }
-              }
-            }}
+            onClick={handleClick}
           >
             <Trans>Provide</Trans>
           </ButtonPrimary>
         </ButtonCell>
       )}
-      {/*
-        !header && 
-      <ButtonPrimary
-        style={{ marginLeft: '20px', padding: '.3rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '12px' }}
-        onClick={() =>{if(currency1&&currency0){
-            navigate('/swap', {state: {currency0:currency0, currency1: currency1 }})}}
-        } >
-        <Trans>Go to pair</Trans>
-      </ButtonPrimary>
-      */}
-
-      {/*<SparkLineCell>{sparkLine}</SparkLineCell> */}
     </>
   )
   if (header) return <StyledHeaderRow data-testid="header-row">{rowCells}</StyledHeaderRow>
@@ -455,30 +450,20 @@ interface LoadedRowProps {
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
   const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume, fee, price, delta } = props
 
-  const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
-  const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
+  // const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
+  // const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
 
-  const currencyIda = useToken(tokenA)
-  const currencyIdb = useToken(tokenB)
+  const currencyIda = useCurrency(tokenA)
+  const currencyIdb = useCurrency(tokenB)
 
   const setCurrentPool = useSetCurrentPool()
 
   const navigate = useNavigate()
   const currentPool = useCurrentPool()
-  const poolId = currentPool?.poolId
-  const handleCurrencySelect = useCallback(
-    (currencyIn: Currency, currencyOut: Currency, fee: number) => {
-      const id = getPoolId(currencyIn?.wrapped.address, currencyOut?.wrapped.address, fee)
-      if (currencyIn && currencyOut && id && poolId !== id) {
-        const inputIsToken0 = currencyIn.wrapped.sortsBefore(currencyOut.wrapped)
-        setCurrentPool(id, inputIsToken0)
-      }
-    },
-    [setCurrentPool, poolId]
-  )
 
-  const baseCurrency = useCurrency(currencyIda?.address)
-  const quoteCurrency = useCurrency(currencyIdb?.address)
+  const currentPoolId = currentPool?.poolId
+  const baseCurrency = useCurrency(tokenA)
+  const quoteCurrency = useCurrency(tokenB)
 
   const [token0, token1] =
     baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
@@ -486,6 +471,28 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
+  const poolOHLCDatas = useAppPoolOHLC()
+  const poolId = getPoolId(tokenA, tokenB, fee)
+
+  const token0IsBase = useMemo(() => {
+    if (pool && poolOHLCDatas && poolId) {
+      const priceData = poolOHLCDatas[poolId]
+      const token0Price = new BN(pool.token0Price.toFixed(18))
+      const d1 = token0Price.minus(priceData.price24hAgo).abs()
+      const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
+      if (d1.lt(d2)) {
+        return true
+      }
+      return false
+    }
+    return null
+  }, [pool, poolOHLCDatas, poolId])
+
+  const handleCurrencySelect = useCallback(() => {
+    if (currentPoolId !== poolId && token0IsBase !== null && token0?.symbol && token1?.symbol) {
+      setCurrentPool(poolId, true, token0IsBase, token0.symbol, token1.symbol)
+    }
+  }, [setCurrentPool, currentPoolId, poolId, token0IsBase, token0, token1])
 
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const [tickLower, tickUpper] = useMemo(() => {
@@ -510,12 +517,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     <RowWrapper
       ref={ref}
       onClick={() => {
-        if (token0 && token1 && pool) {
-          navigate({
-            pathname: '/swap',
-          })
-          handleCurrencySelect(token0, token1, pool.fee)
-        }
+        handleCurrencySelect()
+        navigate({
+          pathname: '/swap',
+        })
       }}
       data-testid={`token-table-row-${currencyIda?.symbol}`}
     >
@@ -553,12 +558,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             </PriceInfoCell>
           </ClickableContent>
         }
-        // percentChange={
-        //   <ClickableContent>
-        //     <ArrowCell>{arrow}</ArrowCell>
-        //     <DeltaText delta={delta}>{formattedDelta}</DeltaText>
-        //   </ClickableContent>
-        // }
         tvl={<ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>}
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
@@ -574,23 +573,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             rateUtilData?.util.times(1)
           )} %`}</ClickableRate>
         }
-        // sparkLine={
-        //   <SparkLine>
-        //     <ParentSize>
-        //       {({ width, height }) =>
-        //         props.sparklineMap && (
-        //           <SparklineChart
-        //             width={width}
-        //             height={height}
-        //             tokenData={token}
-        //             pricePercentChange={token.market?.pricePercentChange?.value}
-        //             sparklineMap={props.sparklineMap}
-        //           />
-        //         )
-        //       }
-        //     </ParentSize>
-        //   </SparkLine>
-        // }
         first={tokenListIndex === 0}
         last={tokenListIndex === tokenListLength - 1}
         // @ts-ignore

@@ -7,7 +7,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import { fadeInOut } from 'components/Loader/styled'
-import Loader from 'components/Icons/LoadingSpinner'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -29,7 +28,7 @@ import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
-import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 
 import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
@@ -252,43 +251,12 @@ const PinWrapper = styled.div`
   grid-row: 1;
   height: 100%;
 `
-interface PoolItem {
-  token0: string | undefined
-  token1: string | undefined
-  fee: number | undefined
-}
-
-// switches tokens to arbitrum
-function adjustTokensForChain(
-  chainId: number | undefined,
-  pool: PoolItem
-): { adjustedChainId: number | undefined; adjustedPool: any } {
-  // Check for specific condition and adjust if necessary
-  if (
-    chainId === 80085 &&
-    pool.token0 === '0x174652b085C32361121D519D788AbF0D9ad1C355' &&
-    pool.token1 === '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b' &&
-    pool.fee === 500
-  ) {
-    return {
-      adjustedChainId: 42161,
-      adjustedPool: {
-        token0: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-        token1: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-        fee: 500,
-      },
-    }
-  }
-
-  return { adjustedChainId: chainId, adjustedPool: pool }
-}
 
 export default function Trade({ className }: { className?: string }) {
   const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
   const { account, chainId } = useWeb3React()
   const { activeTab } = useSwapState()
-  console.log('----activeTab-------', activeTab)
 
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
@@ -298,11 +266,6 @@ export default function Trade({ className }: { className?: string }) {
   const token1 = useCurrency(poolKey?.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
-  // const { adjustedPool } = adjustTokensForChain(chainId, {
-  //   token0: pool?.token0.address,
-  //   token1: pool?.token1.address,
-  //   fee: pool?.fee,
-  // })
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -312,13 +275,11 @@ export default function Trade({ className }: { className?: string }) {
 
   const location = useLocation()
   const poolsOHLC = useAppPoolOHLC()
-  // const { chainId: activeChainId, provider } = useWeb3React()
 
   const chartSymbol = useMemo(() => {
     if (pool && poolsOHLC && chainId) {
       const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 
-      // const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
       if (!poolsOHLC[id]) return null
 
       const base = poolsOHLC[id]?.base
@@ -381,10 +342,10 @@ export default function Trade({ className }: { className?: string }) {
           <SwapHeaderWrapper>
             <SelectPool />
             {!chartSymbol || !chainId ? (
-            <>
-              <ChartLoadingBar />
-              {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
-            </>
+              <>
+                <ChartLoadingBar />
+                {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
+              </>
             ) : (
               <PoolDataChart symbol={chartSymbol} chainId={chainId} chartContainerRef={chartContainerRef} />
             )}

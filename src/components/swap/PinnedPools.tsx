@@ -68,18 +68,18 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee)
   const poolOHLCData = poolOHLCDatas[id]
   const delta = poolOHLCData?.delta24h
-  const baseQuoteSymbol = useMemo(() => {
+  const [baseQuoteSymbol, token0IsBase] = useMemo(() => {
     if (pool && poolOHLCData) {
       const token0Price = new BN(pool.token0Price.toFixed(18))
       const geckoPrice = new BN(poolOHLCData.priceNow)
       const d1 = token0Price.minus(geckoPrice).abs()
       const d2 = new BN(1).div(token0Price).minus(geckoPrice).abs()
       if (d1.lt(d2)) {
-        return `${pool.token0?.symbol}/${pool.token1?.symbol}`
+        return [`${pool.token0?.symbol}/${pool.token1?.symbol}`, true]
       }
-      return `${pool.token1?.symbol}/${pool.token0?.symbol}`
+      return [`${pool.token1?.symbol}/${pool.token0?.symbol}`, false]
     }
-    return null
+    return [null, null]
   }, [pool, poolOHLCData])
 
   const setCurrentPool = useSetCurrentPool()
@@ -100,12 +100,12 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   }, [poolOHLCData, pool])
 
   const handleRowClick = useCallback(() => {
-    if (token0 && token1 && poolId !== id) {
+    if (token0 && token1 && poolId !== id && token0.symbol && token1.symbol && token0IsBase !== null) {
       onMarginChange('')
       onActiveTabChange(0)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
-      setCurrentPool(id, inputIsToken0)
+      setCurrentPool(id, inputIsToken0, token0IsBase, token0.symbol, token1.symbol)
     }
   }, [
     token0,
@@ -118,6 +118,7 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
     onActiveTabChange,
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
+    token0IsBase,
   ])
 
   const unpinPool = useCallback(

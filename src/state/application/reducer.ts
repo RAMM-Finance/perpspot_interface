@@ -56,6 +56,7 @@ export interface ApplicationState {
       low24: number
       base?: string
       quote?: string
+      token0IsBase?: boolean
     }
   }
   readonly blockNumber: number | undefined

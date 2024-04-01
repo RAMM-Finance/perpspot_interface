@@ -304,12 +304,6 @@ export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
                 low = bar.close - minWickLength * (bar.close - bar.open)
               }
 
-              // if(high/close > 1.05){
-              //   high = close
-              // }
-              // if(close/low < 0.95){
-              //   low=close
-              // }
               return {
                 open: bar.open,
                 close: bar.close,

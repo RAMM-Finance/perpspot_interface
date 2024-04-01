@@ -57,6 +57,9 @@ export interface UserState {
     [chainId: number]: {
       poolId: string
       inputInToken0: boolean
+      token0IsBase: boolean
+      token0Symbol: string
+      token1Symbol: string
     }
   }
   timestamp: number
@@ -114,6 +117,11 @@ const userSlice = createSlice({
       state.userSlippedTickTolerance = action.payload.userSlippedTickTolerance
       state.timestamp = currentTimestamp()
     },
+    updateCurrentBaseCurrency(state, action) {
+      if (state.currentPoolKeys[action.payload.chainId]) {
+        state.currentPoolKeys[action.payload.chainId].token0IsBase = action.payload.token0IsBase
+      }
+    },
     updatePinnedPools(state, action) {
       if (action.payload.add) {
         state.pinnedKeys[action.payload.chainId].push(action.payload.poolKey)
@@ -143,6 +151,9 @@ const userSlice = createSlice({
       state.currentPoolKeys[action.payload.chainId] = {
         poolId: action.payload.poolId,
         inputInToken0: action.payload.inputInToken0,
+        token0IsBase: action.payload.token0IsBase,
+        token0Symbol: action.payload.token0Symbol,
+        token1Symbol: action.payload.token1Symbol,
       }
     },
     updateUserPremiumDepositPercent(state, action) {
