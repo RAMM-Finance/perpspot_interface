@@ -4,7 +4,7 @@ import PositionListItem from 'components/PositionListItem'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { MEDIA_WIDTHS, ThemedText } from 'theme'
+import { MEDIA_WIDTHS } from 'theme'
 import { PositionDetails } from 'types/position'
 
 const DesktopHeader = styled.div`
@@ -76,13 +76,12 @@ export default function PositionList({
     <>
       <DesktopHeader>
         <div>
-          <Trans>Your positions</Trans>
+          <Trans >Your positions</Trans>
           {positions && ' (' + positions.length + ')'}
         </div>
         <ButtonPrimary
           style={{
             marginLeft: '20px',
-
             padding: '.5rem',
             width: 'fit-content',
             fontSize: '0.8rem',
@@ -97,7 +96,7 @@ export default function PositionList({
         >
           <Trans>Add New Position</Trans>
         </ButtonPrimary>
-        <ToggleLabel
+        {/* <ToggleLabel
           id="desktop-hide-closed-positions"
           onClick={() => {
             setUserHideClosedPositions(!userHideClosedPositions)
@@ -112,11 +111,11 @@ export default function PositionList({
               <Trans>Hide closed positions</Trans>
             </ThemedText.BodyPrimary>
           )}
-        </ToggleLabel>
+        </ToggleLabel> */}
       </DesktopHeader>
       <MobileHeader>
         <Trans>Your positions</Trans>
-        <ToggleWrap>
+        {/* <ToggleWrap>
           <ToggleLabel
             onClick={() => {
               setUserHideClosedPositions(!userHideClosedPositions)
@@ -132,7 +131,24 @@ export default function PositionList({
               </ThemedText.BodyPrimary>
             )}
           </ToggleLabel>
-        </ToggleWrap>
+        </ToggleWrap> */}
+         <ButtonPrimary
+          style={{
+            marginLeft: '20px',
+            padding: '.5rem',
+            width: 'fit-content',
+            fontSize: '0.8rem',
+            borderRadius: '10px',
+            height: '30px',
+            lineHeight: '1',
+          }}
+          data-cy="join-pool-button"
+          id="join-pool-button"
+          as={Link}
+          to="/add/"
+        >
+          <Trans>Add New Position</Trans>
+        </ButtonPrimary>
       </MobileHeader>
       {positions.map((p) => (
         <PositionListItem key={p.tokenId.toString()} {...p} />

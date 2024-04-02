@@ -501,6 +501,13 @@ export const MediumOnly = styled.span`
   }
 `
 
+export const LargeShow = styled.span`
+  display: none;
+  @media (min-width: ${({ theme }) => theme.breakpoint.navSearchInputVisible}px) {
+    display: block;
+  }
+`
+
 export const Separator = styled.div`
   width: 100%;
   height: 1px;

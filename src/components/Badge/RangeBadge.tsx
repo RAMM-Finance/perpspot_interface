@@ -15,6 +15,7 @@ const BadgeText = styled.div`
   font-size: 12px;
   line-height: 14px;
   margin-right: 8px;
+  white-space: nowrap;
 `
 
 const ActiveDot = styled.span`

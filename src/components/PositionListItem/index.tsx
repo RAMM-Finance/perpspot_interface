@@ -16,8 +16,8 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
-import styled from 'styled-components/macro'
-import { HideSmall, MEDIA_WIDTHS, SmallOnly, ThemedText } from 'theme'
+import styled, { useTheme } from 'styled-components/macro'
+import { HideSmall, MEDIA_WIDTHS, LargeShow, SmallOnly, ThemedText } from 'theme'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
@@ -29,8 +29,7 @@ const LinkRow = styled(Link)`
   display: flex;
   cursor: pointer;
   user-select: none;
-  display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   justify-content: space-between;
   color: ${({ theme }) => theme.textPrimary};
   padding: 16px;
@@ -38,7 +37,6 @@ const LinkRow = styled(Link)`
   font-weight: 500;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-top: solid 1px ${({ theme }) => theme.backgroundOutline};
-
   & > div:not(:first-child) {
     text-align: center;
   }
@@ -46,9 +44,9 @@ const LinkRow = styled(Link)`
     background-color: ${({ theme }) => theme.hoverDefault};
   }
 
-  @media screen and (min-width: ${MEDIA_WIDTHS.deprecated_upToSmall}px) {
-    /* flex-direction: row; */
-  }
+  /* @media screen and (min-width: ${MEDIA_WIDTHS.deprecated_upToSmall}px) {
+      flex-direction: row; 
+  } */
 
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
     flex-direction: column;
@@ -66,33 +64,42 @@ const RangeLineItem = styled(DataLineItem)`
   align-items: center;
   margin-top: 4px;
   width: 100%;
+  flex-wrap: wrap;
+  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
+    justify-content: space-around;
+    margin: auto;
+  `};
 `
 
 const DoubleArrow = styled.span`
-  font-size: 12px;
-  margin: 0 2px;
-  color: ${({ theme }) => theme.textTertiary};
+  font-size: 22px;
+  margin: 0 6px;
+  color: ${({ theme }) => theme.textSecondary};
 `
 
-const RangeText = styled(ThemedText.Caption)`
-  font-size: 12px !important;
+const RangeText = styled(ThemedText.Caption)<{ color?: string }>`
+  font-size: 14px !important;
   word-break: break-word;
   padding: 0.25rem 0.25rem;
   border-radius: 8px;
+  color: ${({ color, theme }) => color ? color : theme.accentTextLightSecondary};
+  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
+      padding: 0.25rem 0;
+  `};
 `
 
 const FeeTierText = styled(ThemedText.UtilityBadge)`
   font-size: 10px !important;
   margin-left: 14px !important;
 `
-const ExtentsText = styled(ThemedText.Caption)`
+const ExtentsText = styled(ThemedText.CellName)`
   color: ${({ theme }) => theme.textTertiary};
   display: inline-block;
   line-height: 16px;
   margin-right: 4px !important;
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    display: none;
-  `};
+    margin-left: 0 !important;
+ `};
 `
 
 const PrimaryPositionIdData = styled.div`
@@ -102,6 +109,7 @@ const PrimaryPositionIdData = styled.div`
   > * {
     margin-right: 8px;
   }
+  margin-right: 6px;
 `
 
 interface PositionListItemProps {
@@ -177,6 +185,8 @@ export default function PositionListItem({
   tickLower,
   tickUpper,
 }: PositionListItemProps) {
+  const theme = useTheme();
+
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
 
@@ -224,23 +234,22 @@ export default function PositionListItem({
 
   return (
     <LinkRow to={positionSummaryLink}>
-      <RowBetween>
+      {/* <RowBetween> */}
         <PrimaryPositionIdData>
           <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
-          <ThemedText.SubHeaderSmall>
-            &nbsp;{currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
-          </ThemedText.SubHeaderSmall>
-
-          {/*<FeeTierText>
+          <ThemedText.SubHeader color="textSecondary">
+            {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+          </ThemedText.SubHeader>
+          {/* <FeeTierText>
             <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>
           </FeeTierText> */}
         </PrimaryPositionIdData>
         {priceLower && priceUpper ? (
           <RangeLineItem>
             <RangeText>
-              {/*<ExtentsText>
-              <Trans>Min: </Trans>
-            </ExtentsText> */}
+              <ExtentsText>
+                <Trans>Min: </Trans>
+              </ExtentsText>
               <Trans>
                 <span>
                   {formatTickPrice({
@@ -253,16 +262,16 @@ export default function PositionListItem({
                 <HoverInlineText text={currencyQuote?.symbol ?? ''} />
               </Trans>
             </RangeText>{' '}
-            <HideSmall>
+            <LargeShow>
               <DoubleArrow>↔</DoubleArrow>{' '}
-            </HideSmall>
+            </LargeShow>
             <SmallOnly>
               <DoubleArrow>↔</DoubleArrow>{' '}
             </SmallOnly>
             <RangeText>
-              {/*<ExtentsText>
-              <Trans>Max:</Trans>
-            </ExtentsText> */}
+              <ExtentsText>
+                <Trans>Max: </Trans>
+              </ExtentsText>
               <Trans>
                 <span>
                   {formatTickPrice({
@@ -279,8 +288,6 @@ export default function PositionListItem({
         ) : (
           <Loader />
         )}
-        <RangeBadge removed={removed} inRange={!outOfRange} />
-      </RowBetween>
       {priceLower && priceUpper ? (
         <>
           {/*<RangeLineItem>
@@ -301,9 +308,9 @@ export default function PositionListItem({
           </RangeLineItem>*/}
           <RangeLineItem>
             <HideSmall>Estimated APR:</HideSmall>
-            <SmallOnly>
+            {/* <SmallOnly>
               <DoubleArrow>↔</DoubleArrow>{' '}
-            </SmallOnly>
+            </SmallOnly> */}
             <RangeText>
               {/*<ExtentsText>
                    <Trans>Max:</Trans>
@@ -322,6 +329,8 @@ export default function PositionListItem({
       ) : (
         <Loader />
       )}
+      {/* </RowBetween> */}
+      <RangeBadge removed={removed} inRange={!outOfRange} />
     </LinkRow>
   )
 }

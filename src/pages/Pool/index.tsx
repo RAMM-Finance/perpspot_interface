@@ -60,7 +60,7 @@ const PageWrapper = styled.div`
   width: 100%;
   height: 100%;
   margin-bottom: 20px;
-  min-width: 720px;
+  /* min-width: ${({ theme }) => `${theme.breakpoint.sm}px`}; */
   margin: auto;
   /* ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
     max-width: 500px;
@@ -167,7 +167,7 @@ const ResponsiveButtonPrimary = styled(ButtonPrimary)`
 const MainContentWrapper = styled.main`
   position: relative;
   width: 100%;
-  min-height: 300px;
+  /* min-height: 300px; */
   min-width: 500px;
   margin: auto;
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -379,14 +379,14 @@ export default function Pool() {
                           <Trans>Your liquidity positions will appear here.</Trans>
                         </div>
                       </ThemedText.DeprecatedBody>
-                      {!showConnectAWallet && closedPositions.length > 0 && (
+                      {/* {!showConnectAWallet && closedPositions.length > 0 && (
                         <ButtonText
                           style={{ marginTop: '.5rem' }}
                           onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
                         >
                           <Trans>Show closed positions</Trans>
                         </ButtonText>
-                      )}
+                      )} */}
                       {showConnectAWallet && (
                         <TraceEvent
                           events={[BrowserEvent.onClick]}
