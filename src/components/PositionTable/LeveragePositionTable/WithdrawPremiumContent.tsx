@@ -57,17 +57,6 @@ const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
-const StyledBGCard = styled(StyledCard)`
-  background: ${({ theme }) => theme.surface1};
-`
-
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-`
-
 const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
   padding: 0;
   align-items: center;

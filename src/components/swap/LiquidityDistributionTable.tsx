@@ -262,7 +262,7 @@ const LiquidityDistributionTable = ({
     setScrollPosition(position)
   }
 
-  const baseQuoteSymbol = inverse ? `${token1?.symbol} / ${token0?.symbol}` : `${token0?.symbol} / ${token1?.symbol}`
+  const baseQuoteSymbol = inverse ? `${token1?.symbol}/${token0?.symbol}` : `${token0?.symbol}/${token1?.symbol}`
 
   const aboveAmountSymbol = !inverse ? token0?.symbol : token1?.symbol
   const belowAmountSymbol = inverse ? token0?.symbol : token1?.symbol

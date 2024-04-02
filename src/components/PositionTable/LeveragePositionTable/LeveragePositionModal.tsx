@@ -25,7 +25,7 @@ import { ArrowRightIcon } from 'nft/components/icons'
 import { ReactNode, useMemo, useState } from 'react'
 import { Bound } from 'state/mint/v3/actions'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
-import styled, { useTheme } from 'styled-components/macro'
+import styled from 'styled-components/macro'
 import { CloseIcon, HideExtraSmall, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
@@ -320,7 +320,7 @@ function MarginPositionInfo({
     <PositionInfoWrapper>
       <RowBetween justify="center">
         <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
-        <CloseIcon style={{ width: '12px', marginRight: '10px' }} onClick={onClose} />
+        <CloseIcon style={{ width: '30px', marginRight: '10px' }} size="24px" onClick={onClose} />
       </RowBetween>
 
       <PositionValueWrapper>
@@ -381,24 +381,24 @@ function MarginPositionInfo({
   )
 }
 
-const LoadingMarginPositionInfo = () => {
-  return (
-    <PositionInfoWrapper>
-      <RowBetween justify="center">
-        <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
-        <CloseIcon style={{ width: '12px', marginRight: '10px' }} onClick={() => {}} />
-      </RowBetween>
-      <PositionValueWrapper>
-        <LoadingPositionValueLabel title={<Trans>Total Position</Trans>} />
-        <LoadingPositionValueLabel title={<Trans>Collateral</Trans>} />
-        <LoadingPositionValueLabel title={<Trans>Total Debt</Trans>} />
-        <LoadingPositionValueLabel title={<Trans>Premium Deposit</Trans>} />
-        <LoadingPositionValueLabel title={<Trans>Position Health</Trans>} />
-      </PositionValueWrapper>
-      <LoadingBorrowLiquidity />
-    </PositionInfoWrapper>
-  )
-}
+// const LoadingMarginPositionInfo = () => {
+//   return (
+//     <PositionInfoWrapper>
+//       <RowBetween justify="center">
+//         <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
+//         <CloseIcon style={{ width: '12px', marginRight: '10px' }} onClick={() => {}} />
+//       </RowBetween>
+//       <PositionValueWrapper>
+//         <LoadingPositionValueLabel title={<Trans>Total Position</Trans>} />
+//         <LoadingPositionValueLabel title={<Trans>Collateral</Trans>} />
+//         <LoadingPositionValueLabel title={<Trans>Total Debt</Trans>} />
+//         <LoadingPositionValueLabel title={<Trans>Premium Deposit</Trans>} />
+//         <LoadingPositionValueLabel title={<Trans>Position Health</Trans>} />
+//       </PositionValueWrapper>
+//       <LoadingBorrowLiquidity />
+//     </PositionInfoWrapper>
+//   )
+// }
 
 const SmallLoadingBubble = styled(LoadingBubble)`
   width: 10px;
@@ -532,7 +532,6 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
 
   const currency0 = token0 ? unwrappedToken(token0) : undefined
   const currency1 = token1 ? unwrappedToken(token1) : undefined
-  const theme = useTheme()
 
   const borrowLiquidityRange = useBorrowedLiquidityRange(position, pool)
   const { tickDiscretization } = useTickDiscretization(
@@ -572,9 +571,6 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
     }
   }, [baseCurrency, quoteCurrency, tickLower, tickUpper, borrowLiquidityRange])
   const removed = position?.totalPosition.isZero() ?? false
-  const inverted = token1 ? baseCurrency?.equals(token1) : undefined
-  const currencyQuote = inverted ? currency0 : currency1
-  const currencyBase = inverted ? currency1 : currency0
   return (
     <BorrowLiquidityWrapper>
       <AutoColumn gap="md">
@@ -591,10 +587,10 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
             </HideExtraSmall>
           </RowBetween>
           <RowFixed>
-            {currencyBase && currencyQuote && (
+            {baseCurrency && quoteCurrency && (
               <DarkRateToggle
-                currencyA={currencyBase}
-                currencyB={currencyQuote}
+                currencyA={baseCurrency}
+                currencyB={quoteCurrency}
                 handleRateToggle={() => setManuallyInverted(!manuallyInverted)}
               />
             )}
@@ -617,15 +613,9 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
               <ExtentsText>
                 {' '}
                 <Trans>
-                  {currencyQuote?.symbol} per {currencyBase?.symbol}
+                  {baseCurrency?.symbol} per {quoteCurrency?.symbol}
                 </Trans>
               </ExtentsText>
-
-              {/* {inRange && (
-                <ThemedText.DeprecatedSmall color={theme.textSecondary}>
-                  <Trans>Your position will be 100% {currencyBase?.symbol} at this price.</Trans>
-                </ThemedText.DeprecatedSmall>
-              )} */}
             </AutoColumn>
           </SecondLabel>
           <DoubleArrow>⟷</DoubleArrow>
@@ -645,19 +635,18 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
               <ExtentsText>
                 {' '}
                 <Trans>
-                  {currencyQuote?.symbol} per {currencyBase?.symbol}
+                  {baseCurrency?.symbol} per {quoteCurrency?.symbol}
                 </Trans>
               </ExtentsText>
-
-              {/* {inRange && (
-                <ThemedText.DeprecatedSmall color={theme.textPrimary}>
-                  <Trans>Your position will be 100% {currencyQuote?.symbol} at this price.</Trans>
-                </ThemedText.DeprecatedSmall>
-              )} */}
             </AutoColumn>
           </SecondLabel>
         </RowBetween>
-        <CurrentPriceCard inverted={inverted} pool={pool} currencyQuote={currencyQuote} currencyBase={currencyBase} />
+        <CurrentPriceCard
+          inverted={manuallyInverted}
+          pool={pool}
+          currencyQuote={quoteCurrency}
+          currencyBase={baseCurrency}
+        />
       </AutoColumn>
     </BorrowLiquidityWrapper>
   )
@@ -683,19 +672,6 @@ const ValueWrapper = styled(TextWrapper)`
   color: ${({ theme }) => theme.textSecondary};
   align-items: left;
 `
-
-function LoadingPositionValueLabel({ title, description }: { title: ReactNode; description?: ReactNode }) {
-  return (
-    <PositionValueLabelWrapper>
-      <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
-      <TextWithLoadingPlaceholder syncing={true} width={80}>
-        <ValueWrapper margin={false}>
-          <Row padding="5px" height="28px" width="65px"></Row>
-        </ValueWrapper>
-      </TextWithLoadingPlaceholder>
-    </PositionValueLabelWrapper>
-  )
-}
 
 function PositionValueLabel({
   value,
