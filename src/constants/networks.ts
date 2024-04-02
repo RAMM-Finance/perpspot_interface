@@ -91,6 +91,7 @@ export const FALLBACK_URLS = {
     'https://rpc.ankr.com/bsc',
   ],
   [SupportedChainId.LINEA]: [`https://rpc.linea.build`],
+  [SupportedChainId.BASE]: [`https://base-rpc.publicnode.com`]
 }
 
 /**
@@ -140,4 +141,8 @@ export const RPC_URLS = {
     `https://linea-mainnet.infura.io/v3/${INFURA_KEY}`,
     ...FALLBACK_URLS[SupportedChainId.LINEA],
   ],
+  [SupportedChainId.BASE]: [
+    // `https://base-mainnet.infura.io/v3/${INFURA_KEY}`,
+    ...FALLBACK_URLS[SupportedChainId.BASE],
+  ]
 }

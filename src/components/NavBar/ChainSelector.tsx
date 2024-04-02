@@ -29,6 +29,7 @@ const NETWORK_SELECTOR_CHAINS = [
   // SupportedChainId.BNB,
   SupportedChainId.BERA_ARTIO,
   SupportedChainId.LINEA,
+  SupportedChainId.BASE
 ]
 
 interface ChainSelectorProps {

@@ -218,6 +218,20 @@ const LoadingRow = () => (
   </LoadingRows>
 )
 
+export class CurrencyListRow {
+  constructor(
+    public readonly currency: Currency | undefined,
+    public readonly disabled: boolean,
+    public readonly tooltip?: string
+  ) {}
+}
+
+export class CurrencyListSectionTitle extends CurrencyListRow {
+  constructor(public readonly label: string) {
+    super(undefined, false)
+  }
+}
+
 export default function CurrencyList({
   height,
   currencies,

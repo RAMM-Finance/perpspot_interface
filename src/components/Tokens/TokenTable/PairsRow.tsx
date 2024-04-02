@@ -519,7 +519,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       onClick={() => {
         handleCurrencySelect()
         navigate({
-          pathname: '/swap',
+          pathname: '/trade',
         })
       }}
       data-testid={`token-table-row-${currencyIda?.symbol}`}

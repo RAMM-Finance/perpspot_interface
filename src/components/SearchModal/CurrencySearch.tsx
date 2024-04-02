@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-restricted-imports
-import { Trans } from '@lingui/macro'
+import { t, Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceEventName, InterfaceModalName } from '@uniswap/analytics-events'
 import { Currency, Token } from '@uniswap/sdk-core'
@@ -11,19 +11,20 @@ import useToggle from 'hooks/useToggle'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { tokenComparator, useSortTokensByQuery } from 'lib/hooks/useTokenList/sorting'
-import { ChangeEvent, KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChangeEvent, KeyboardEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { UserAddedToken } from 'types/tokens'
-
+import { ChainSelector } from 'components/NavBar/ChainSelector'
 import { useDefaultActiveTokens, useIsUserAddedToken, useSearchInactiveTokenLists, useToken } from '../../hooks/Tokens'
 import { CloseIcon, ThemedText } from '../../theme'
 import { isAddress } from '../../utils'
 import Column from '../Column'
-import { RowBetween } from '../Row'
+import { Row, RowBetween } from '../Row'
+import { SearchInput } from './styleds'
 import CommonBases from './CommonBases'
 import { CurrencyRow, formatAnalyticsEventProperties } from './CurrencyList'
 import CurrencyList from './CurrencyList'
@@ -37,6 +38,17 @@ const ContentWrapper = styled(Column)`
   position: relative;
   border-radius: 20px;
 `
+
+const ChainSelectorWrapper = styled.div`
+  background-color: ${({ theme }) => theme.surface1};
+  border-radius: 12px;
+`
+
+export interface CurrencySearchFilters {
+  showCommonBases?: boolean
+  disableNonToken?: boolean
+  onlyShowCurrenciesWithBalance?: boolean
+}
 
 interface CurrencySearchProps {
   isOpen: boolean
@@ -74,6 +86,7 @@ export function CurrencySearch({
   const [searchQuery, setSearchQuery] = useState<string>('')
   const debouncedQuery = useDebounce(searchQuery, 200)
   const isAddressSearch = isAddress(debouncedQuery)
+
   const searchToken = useToken(debouncedQuery)
   const searchTokenIsAdded = useIsUserAddedToken(searchToken)
 
@@ -240,7 +253,7 @@ export function CurrencySearch({
             </Text>
             <CloseIcon onClick={onDismiss} />
           </RowBetween>
-          {/* <Row>
+          <Row gap="4px">
             <SearchInput
               type="text"
               id="token-search-input"
@@ -251,7 +264,10 @@ export function CurrencySearch({
               onChange={handleInput}
               onKeyDown={handleEnter}
             />
-          </Row> */}
+            <ChainSelectorWrapper>
+              <ChainSelector />
+            </ChainSelectorWrapper>
+          </Row>
           {showCommonBases && (
             <CommonBases
               chainId={chainId}
@@ -282,6 +298,7 @@ export function CurrencySearch({
           </Column>
         ) : searchCurrencies?.length > 0 || filteredInactiveTokens?.length > 0 || isLoading ? (
           <div style={{ flex: '1' }}>
+            {/* dddddddddddddddddddddd */}
             <AutoSizer disableWidth>
               {({ height }) => (
                 <CurrencyList

@@ -4,6 +4,7 @@ import ethereumLogoUrl from 'assets/images/ethereum-logo.png'
 import polygonCircleLogoUrl from 'assets/images/polygonCircle.png'
 import bearlogo from 'assets/images/artio.png'
 import lineaLogo from 'assets/images/linea.png'
+import baseLogo from 'assets/images/base.png'
 import { default as arbitrumCircleLogoUrl, default as arbitrumLogoUrl } from 'assets/svg/arbitrum_logo.svg'
 import bnbSquareLogoUrl from 'assets/svg/bnb_square_logo.svg'
 import bnbLogo from 'assets/svg/bnb-logo.svg'
@@ -18,7 +19,7 @@ import ms from 'ms.macro'
 import { darkTheme } from 'theme/colors'
 
 import { SupportedL1ChainId, SupportedL2ChainId } from './chains'
-import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, PLASMA_BNB_LIST, LINEA_LIST } from './lists'
+import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, PLASMA_BNB_LIST, LINEA_LIST, BASE_LIST } from './lists'
 
 export const AVERAGE_L1_BLOCK_TIME = ms`12s`
 
@@ -256,7 +257,21 @@ const CHAIN_INFO: ChainInfoMap = {
     nativeCurrency: { name: 'Linea Ether', symbol: 'lineaETH', decimals: 18 },
     color: darkTheme.chain_42,  // we need to change this to chain_59144 when determined
     backgroundColor: darkTheme.chain_42161_background, // we need to change this to chain_59144_background when determined
-  }  
+  },
+  [SupportedChainId.BASE]: {
+    networkType: NetworkType.L2,
+    blockWaitMsBeforeWarning: ms`10m`,
+    bridge: 'https://bridge.base.org/',
+    docs: 'https://docs.base.org/',
+    explorer: 'https://basescan.org/',
+    infoLink: 'https://limitless.gitbook.io/limitless',
+    label: 'Base',
+    logoUrl: baseLogo,
+    defaultListUrl: BASE_LIST,
+    nativeCurrency: { name: 'Base Ether', symbol: 'baseETH', decimals: 18 },
+    color: darkTheme.chain_42,  // we need to change this to chain_59144 when determined
+    backgroundColor: darkTheme.chain_42161_background, // we need to change this to chain_59144_background when determined
+  }    
 }
 
 export function getChainInfo(chainId: SupportedL1ChainId): L1ChainInfo

@@ -71,6 +71,7 @@ export const RPC_PROVIDERS: { [key in SupportedChainId]: StaticJsonRpcProvider }
   [SupportedChainId.BNB]: new AppJsonRpcProvider(SupportedChainId.BNB),
   [SupportedChainId.SEPOLIA]: new AppJsonRpcProvider(SupportedChainId.SEPOLIA),
   [SupportedChainId.BERA_ARTIO]: new AppJsonRpcProvider(SupportedChainId.BERA_ARTIO),
-  [SupportedChainId.LINEA]: new AppJsonRpcProvider(SupportedChainId.LINEA)
+  [SupportedChainId.LINEA]: new AppJsonRpcProvider(SupportedChainId.LINEA),
+  [SupportedChainId.BASE]: new AppJsonRpcProvider(SupportedChainId.BASE)
 
 }

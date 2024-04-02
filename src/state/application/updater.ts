@@ -61,6 +61,18 @@ const DEFAULT_POOLS: {
     token0Symbol: 'USDC',
     token1Symbol: 'WETH',
   },
+  [SupportedChainId.BASE]: {
+    poolKey: {
+      token0: '',
+      token1: '',
+      fee: 500,
+    },
+    poolId: getPoolId('', '', 500),
+    inputInToken0: false,
+    token0IsBase: false,
+    token0Symbol: 'USDC',
+    token1Symbol: 'WETH',
+  },
 }
 
 export default function Updater(): null {
