@@ -60,6 +60,7 @@ export interface ApplicationState {
     }
   }
   readonly blockNumber: number | undefined
+  readonly bLScrollPosition: number | undefined
 }
 
 const initialState: ApplicationState = {
@@ -69,6 +70,7 @@ const initialState: ApplicationState = {
   popupList: [],
   poolPriceData: {},
   blockNumber: undefined,
+  bLScrollPosition: undefined,
 }
 
 const applicationSlice = createSlice({
@@ -101,6 +103,9 @@ const applicationSlice = createSlice({
     updatePoolPriceData(state, action) {
       state.poolPriceData = action.payload
     },
+    setBLScrollPosition(state, action) {
+      state.bLScrollPosition = action.payload
+    },
     removePopup(state, { payload: { key } }) {
       state.popupList.forEach((p) => {
         if (p.key === key) {
@@ -119,5 +124,6 @@ export const {
   removePopup,
   updatePoolPriceData,
   updateBlockNumber,
+  setBLScrollPosition,
 } = applicationSlice.actions
 export default applicationSlice.reducer
