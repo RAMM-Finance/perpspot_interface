@@ -13,6 +13,7 @@ import {
   ApplicationModal,
   PopupContent,
   removePopup,
+  setBLScrollPosition,
   setFiatOnrampAvailability,
   setOpenModal,
   updateBlockNumber,
@@ -75,6 +76,11 @@ export function usePoolKeyList() {
 
 export function useAppPoolOHLC() {
   return useAppSelector((state: AppState) => state.application.poolPriceData)
+}
+
+export function useSetBLSScrollPosition(position: number | undefined): () => void {
+  const dispatch = useAppDispatch()
+  return useCallback(() => dispatch(setBLScrollPosition(position)), [dispatch, position])
 }
 
 export function useFiatOnrampAvailability(shouldCheck: boolean, callback?: () => void) {

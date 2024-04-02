@@ -11,6 +11,8 @@ import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { setBLScrollPosition } from 'state/application/reducer'
+import { useAppDispatch, useAppSelector } from 'state/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -216,50 +218,48 @@ const LiquidityDistributionTable = ({
   const upperRef = useRef<HTMLInputElement>(null)
   const lowerRef = useRef<HTMLInputElement>(null)
 
+  const dispatch = useAppDispatch()
+
+  const bLScrollPosition: number | undefined = useAppSelector((state) => state.application.bLScrollPosition)
+
   const startHeight = useMemo(() => {
     if (!upperRef.current?.offsetHeight || !ref.current?.offsetHeight || !lowerRef.current?.offsetHeight || !bin) {
-      localStorage.removeItem('scroll')
+      dispatch(setBLScrollPosition(undefined))
       return 0
     }
     if (
-      upperRef.current.offsetHeight > ref.current.offsetHeight &&
-      lowerRef.current.offsetHeight > ref.current.offsetHeight
+      upperRef.current.offsetHeight > ref.current.offsetHeight / 2 &&
+      lowerRef.current.offsetHeight > ref.current.offsetHeight / 2
     )
       return upperRef.current.offsetHeight - ref.current.offsetHeight / 2
 
-    if (
-      upperRef.current.offsetHeight > ref.current.offsetHeight &&
-      lowerRef.current.offsetHeight > ref.current.offsetHeight
-    )
-      return upperRef.current.offsetHeight * 0.5
-
     if (upperRef.current.offsetHeight > ref.current.offsetHeight) return upperRef.current.offsetHeight
-    localStorage.removeItem('scroll')
+    dispatch(setBLScrollPosition(undefined))
     return 0
-  }, [bin])
-
-  const localData = localStorage.getItem('scroll') === null
+  }, [bin, dispatch])
 
   const [scrollPosition, setScrollPosition] = useState(() => {
-    return localData ? startHeight : parseInt(JSON.parse(localStorage.getItem('scroll') || '{}'), 10)
+    return bLScrollPosition ? bLScrollPosition : startHeight
   })
 
   useEffect(() => {
-    if (startHeight) {
-      setScrollPosition(() => {
-        return localData ? startHeight : parseInt(JSON.parse(localStorage.getItem('scroll') || '{}'), 10)
-      })
-      if (bin) {
+    if (startHeight && bin && !bLScrollPosition) {
+      if (bLScrollPosition === undefined) {
         ref.current?.scrollTo({ top: scrollPosition })
       }
+      setScrollPosition(() => {
+        return bLScrollPosition ? bLScrollPosition : startHeight
+      })
     }
-  }, [bin, startHeight, scrollPosition, localData])
+  }, [bin, startHeight, scrollPosition, bLScrollPosition])
 
   const handleScroll = (e: any) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target
     const position = scrollTop
-    localStorage.setItem('scroll', JSON.stringify(position))
-    setScrollPosition(position)
+    setScrollPosition(() => {
+      dispatch(setBLScrollPosition(position))
+      return position
+    })
   }
 
   const baseQuoteSymbol = inverse ? `${token1?.symbol}/${token0?.symbol}` : `${token0?.symbol}/${token1?.symbol}`

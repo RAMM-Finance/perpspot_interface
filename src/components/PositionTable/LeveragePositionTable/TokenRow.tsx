@@ -641,6 +641,7 @@ export const LoadedRow = memo(
 
     // call once with 1 token
     const inputCurrencyPrice = useUSDPriceBNV2(new BN(1), inputCurrency ?? undefined)
+    const outputCurrencyPrice = useUSDPriceBNV2(new BN(1), outputCurrency ?? undefined)
 
     const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken
 
@@ -707,26 +708,63 @@ export const LoadedRow = memo(
               </ClickableContent>
             }
             value={
-              <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                <AutoColumn gap="2px">
-                  <RowFixed style={{ flexWrap: 'wrap' }}>
-                    <CurrencyLogo currency={outputCurrency} size="10px" />
-                    {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
-                    <div>{` ${outputCurrency?.symbol}`}</div>
-                  </RowFixed>
-                </AutoColumn>
-              </FlexStartRow>
+              <MouseoverTooltip
+                text={
+                  <Trans>
+                    <AutoColumn style={{ width: '185px' }} gap="5px">
+                      <RowBetween>
+                        <div>Net Value (USD):</div>
+                        <div>
+                          $
+                          {details.totalPosition &&
+                            outputCurrencyPrice.data &&
+                            (details.totalPosition.toNumber() * outputCurrencyPrice?.data).toFixed(2)}
+                        </div>
+                      </RowBetween>
+                    </AutoColumn>
+                  </Trans>
+                }
+              >
+                <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
+                  <AutoColumn gap="2px">
+                    <RowFixed style={{ flexWrap: 'wrap' }}>
+                      <CurrencyLogo currency={outputCurrency} size="10px" />
+                      {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
+                      <div>{` ${outputCurrency?.symbol}`}</div>
+                    </RowFixed>
+                  </AutoColumn>
+                </FlexStartRow>
+              </MouseoverTooltip>
             }
             collateral={
-              <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                <AutoColumn gap="2px">
-                  <RowFixed style={{ flexWrap: 'wrap' }}>
-                    <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
-                    {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
-                    <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
-                  </RowFixed>
-                </AutoColumn>
-              </FlexStartRow>
+              <MouseoverTooltip
+                text={
+                  <Trans>
+                    <AutoColumn style={{ width: '160px' }} gap="5px">
+                      <RowBetween>
+                        <div>Margin (USD):</div>
+                        <div>
+                          $
+                          {details.margin && outputCurrencyPrice.data && details.marginInPosToken
+                            ? (details.margin.toNumber() * outputCurrencyPrice?.data).toFixed(2)
+                            : inputCurrencyPrice.data &&
+                              (details.margin.toNumber() * inputCurrencyPrice?.data).toFixed(2)}
+                        </div>
+                      </RowBetween>
+                    </AutoColumn>
+                  </Trans>
+                }
+              >
+                <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
+                  <AutoColumn gap="2px">
+                    <RowFixed style={{ flexWrap: 'wrap' }}>
+                      <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
+                      {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
+                      <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
+                    </RowFixed>
+                  </AutoColumn>
+                </FlexStartRow>
+              </MouseoverTooltip>
             }
             repaymentTime={
               <MouseoverTooltip

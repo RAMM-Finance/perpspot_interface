@@ -17,6 +17,8 @@ import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
 import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
+import { setBLScrollPosition } from 'state/application/reducer'
+import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
@@ -266,6 +268,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
   const setCurrentPool = useSetCurrentPool()
+  const dispatch = useAppDispatch()
 
   const inputIsToken0 = useMemo(() => {
     if (pool && poolOHLCData) {
@@ -288,6 +291,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
       onSetMarginInPosToken(false)
       setCurrentPool(id, inputIsToken0, token0IsBase, token0.symbol, token1.symbol)
       handleClose()
+      dispatch(setBLScrollPosition(undefined))
     }
   }, [
     token0,
@@ -302,6 +306,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
     token0IsBase,
+    dispatch,
   ])
 
   return (
