@@ -262,10 +262,15 @@ const LiquidityDistributionTable = ({
     })
   }
 
-  const baseQuoteSymbol = inverse ? `${token1?.symbol}/${token0?.symbol}` : `${token0?.symbol}/${token1?.symbol}`
+  const baseQuoteSymbol =
+    token1?.symbol && token0?.symbol
+      ? inverse
+        ? `${token1?.symbol}/${token0?.symbol}`
+        : `${token0?.symbol}/${token1?.symbol}`
+      : null
 
-  const aboveAmountSymbol = !inverse ? token0?.symbol : token1?.symbol
-  const belowAmountSymbol = inverse ? token0?.symbol : token1?.symbol
+  const aboveAmountSymbol = token1?.symbol && token0?.symbol ? (!inverse ? token0?.symbol : token1?.symbol) : null
+  const belowAmountSymbol = token1?.symbol && token0?.symbol ? (inverse ? token0?.symbol : token1?.symbol) : null
 
   const loading = !bin || !currentPrice || !token0 || !token1 || !token0Price
   return (
