@@ -118,17 +118,3 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
     </Box>
   )
 }
-
-// <ChainSelectorWrapper ref={ref}>
-//   <MouseoverTooltip text={t`Your wallet's current network is unsupported.`} disabled={isSupported}>
-//     <ChainSelectorButton data-testid="chain-selector" onClick={() => setIsOpen(!isOpen)} isOpen={isOpen}>
-//       {!isSupported ? (
-//         <AlertTriangle size={20} color={theme.neutral2} />
-//       ) : (
-//         <ChainLogo chainId={chainId} size={20} testId="chain-selector-logo" />
-//       )}
-//       {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
-//     </ChainSelectorButton>
-//   </MouseoverTooltip>
-//   {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
-// </ChainSelectorWrapper>

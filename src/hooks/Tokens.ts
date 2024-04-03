@@ -9,7 +9,7 @@ import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
 import { isL2ChainId } from 'utils/chains'
 
-import { useAllLists, useCombinedActiveList, useCombinedTokenMapFromUrls } from '../state/lists/hooks'
+import { useAllLists, useCombinedTokenMapFromUrls } from '../state/lists/hooks'
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens, useUserAddedTokensOnChain } from '../state/user/hooks'
 import { TokenAddressMap, useUnsupportedTokenList } from './../state/lists/hooks'
@@ -34,8 +34,8 @@ export function useAllTokensMultichain(): TokenAddressMap {
 
 // Returns all tokens from the default list + user added tokens
 export function useDefaultActiveTokens(): { [address: string]: Token } {
-  const defaultListTokens = useCombinedActiveList()
-  const tokensFromMap = useTokensFromMap(defaultListTokens)
+  // const defaultListTokens = useCombinedActiveList()
+  // const tokensFromMap = useTokensFromMap(defaultListTokens)
 
   const { chainId } = useWeb3React()
 
@@ -53,10 +53,10 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
           },
           // must make a copy because reduce modifies the map, and we do not
           // want to make a copy in every iteration
-          { ...tokensFromMap, ...additionalTokens }
+          { ...additionalTokens }
         )
     )
-  }, [tokensFromMap, userAddedTokens, additionalTokens])
+  }, [userAddedTokens, additionalTokens])
 }
 
 type BridgeInfo = Record<

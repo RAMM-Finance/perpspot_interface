@@ -12,6 +12,7 @@ const SELECTABLE_WALLETS = [
 
 export default function useOrderedConnections() {
   const selectedWallet = useAppSelector((state) => state.user.selectedWallet)
+
   const getConnection = useGetConnection()
   return useMemo(() => {
     const orderedConnectionTypes: ConnectionType[] = []
