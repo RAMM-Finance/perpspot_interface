@@ -99,7 +99,8 @@ export const colors = {
   //limitless colors
   purple700: '#210f2e',
   midGray: '#2a2f34',
-  steelblueGray: '#747f8b'
+  steelblueGray: '#747f8b',
+  softSkyBlue: '#869EFF29', //border 
 }
 export const limitlessColors = {
   darkPurple: '#201426ff',
@@ -135,6 +136,7 @@ const commonTheme = {
   brandedGradient: colors.networkBsc,
   promotionalGradient: colors.networkBsc,
   
+  tableBorder: colors.softSkyBlue,
   // trade Button
   inactiveColor: colors.steelblueGray,
   inactiveBtnBorder: colors.midGray,
@@ -230,7 +232,7 @@ export const lightTheme = {
   accentSuccessSoft: opacify(24, colors.green400),
   accentWarningSoft: opacify(24, colors.gold200),
   accentFailureSoft: opacify(12, colors.red300),
-
+  
   accentTextDarkPrimary: opacify(80, colors.gray900),
   accentTextDarkSecondary: opacify(60, colors.gray900),
   accentTextDarkTertiary: opacify(24, colors.gray900),

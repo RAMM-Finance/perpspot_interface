@@ -8,7 +8,7 @@ interface HistoryTableProps {
 
 type Gap = keyof DefaultTheme['grids']
 
-const Column = styled.div<{
+export const Column = styled.div<{
   gap?: Gap
 }>`
   display: flex;
@@ -17,9 +17,8 @@ const Column = styled.div<{
   gap: ${({ gap, theme }) => gap && theme.grids[gap]};
 `
 
-const ActivityGroupWrapper = styled(Column)`
+export const ActivityGroupWrapper = styled(Column)`
   margin-top: 16px;
-  gap: 8px;
   border-bottom: 1px solid;
   display: flex;
   flex-direction: column;
@@ -30,7 +29,7 @@ const ActivityGroupWrapper = styled(Column)`
     border: none;
   }
 `
-const HistoryContainer = styled.div`
+export const HistoryContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;

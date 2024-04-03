@@ -27,14 +27,15 @@ const ActivityWrapper = styled.section`
 `
 const MissingHistoryWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100px;
-  color: ${({ theme }) => theme.textPrimary};
+  width: 100%;
+  height: 60px;
+  color: ${({ theme }) => theme.textSecondary};
   font-size: 16px;
   font-weight: 500;
-  border-radius: 0;
+  align-items: center;
+  padding: 0px 28px;
+  gap: 8px;
 `
 const ActivityInnerWarpper = styled.div`
   padding: 20px 30px;
@@ -117,7 +118,7 @@ export function PostionsContainer({
       <TabContent id={4} activeTab={activePositionTable}>
         {!account ? (
           <ActivityWrapper>
-            <MissingHistoryWrapper>None</MissingHistoryWrapper>
+            <MissingHistoryWrapper>No History Found</MissingHistoryWrapper>
           </ActivityWrapper>
         ) : (
           <ActivityWrapper>
