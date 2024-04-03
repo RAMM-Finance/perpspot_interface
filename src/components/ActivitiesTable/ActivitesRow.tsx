@@ -31,7 +31,7 @@ const StyledHeaderRow = styled.div<{
   line-height: 16px;
   width: 100%;
   border-bottom: 1px solid;
-  border-color: #869eff29;
+  border-color: ${({ theme }) => theme.tableBorder};
   border-radius: 8px 8px 0px 0px;
   color: #f5f6fc;
   justify-content: center;

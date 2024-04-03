@@ -28,7 +28,7 @@ const ActivityPrice = styled.div`
   border-bottom: 1px dashed rgba(245, 246, 252, 0.5);
 `
 
-const ActivityTableRow = styled.div`
+export const ActivityTableRow = styled.div`
   /* display: flex; */
   /* align-items: center; */
   display: flex;

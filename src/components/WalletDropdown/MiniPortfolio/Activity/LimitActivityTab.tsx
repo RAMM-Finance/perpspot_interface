@@ -1,6 +1,8 @@
 import { t } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
-import HistoryTable from 'components/ActivitiesTable/HistoryTable'
+import HistoryTable, { Column, HistoryContainer } from 'components/ActivitiesTable/HistoryTable'
+import { AutoColumn } from 'components/Column'
+import Row from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { useWalletDrawer } from 'components/WalletDropdown'
 import { getYear, isSameDay, isSameMonth, isSameWeek, isSameYear } from 'date-fns'
@@ -13,9 +15,30 @@ import { atom, useAtom } from 'jotai'
 import { memo, useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
 
-import { PortfolioSkeleton } from '../PortfolioRow'
+import { ActivityTableRow } from './LimitActivityRow'
 import { parseRemoteActivities } from './parseRemote'
 import { Activity, ActivityDescriptionType, ActivityMap } from './types'
+import PortfolioRow from '../PortfolioRow'
+
+const LoadingContainer = styled(HistoryContainer)`
+  margin-top: 12px;
+  border-bottom: 1px solid;
+  border-color: ${({ theme }) => theme.tableBorder};
+`
+
+const ActivityGroupWrapper = styled(Column)`
+  margin-top: 16px;
+  gap: 8px;
+  border-bottom: 1px solid;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  border-color: ${({ theme }) => theme.backgroundOutline};
+  :last-child {
+    border: none;
+  }
+`
 
 const GridContainer = styled.div`
   display: flex;
@@ -249,6 +272,44 @@ function getDescriptor(entry: any, tokens: any) {
     return ' '
   }
 }
+
+function LoadingRow() {
+  return (
+    <PortfolioRow
+      isGrow={false}
+      left={<LoadingBubble round={true} width="32px" height="30px" />}
+      title={
+        <ActivityTableRow>
+          <AutoColumn gap="10px">
+            <Row gap="5px">
+              <LoadingBubble width="120px" />
+              <LoadingBubble width="100px" />
+            </Row>
+            <Row gap="10px">
+              <LoadingBubble width="120px" />
+              |
+              <LoadingBubble width="150px" />
+            </Row>
+            <LoadingBubble width="80px" />
+          </AutoColumn>
+        </ActivityTableRow>
+      }
+    />
+  )
+}
+function LoadingTokenTable() {
+  return (
+    <GridContainer>
+      <LoadingContainer>
+        <LoadingRow />
+      </LoadingContainer> 
+      <LoadingContainer>
+        <LoadingRow />
+      </LoadingContainer> 
+    </GridContainer>
+  )
+}
+
 export const LimitActivityTab = memo(({ account }: { account: string }) => {
   const [drawerOpen, toggleWalletDrawer] = useWalletDrawer()
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
@@ -306,13 +367,7 @@ export const LimitActivityTab = memo(({ account }: { account: string }) => {
     return createGroups(allActivities)
   }, [data?.portfolios, localMap])
 
-  if (!data && loading)
-    return (
-      <>
-        <LoadingBubble height="16px" width="80px" margin="16px 16px 8px" />
-        <PortfolioSkeleton shrinkRight />
-      </>
-    )
+  if (!data && loading) return <LoadingTokenTable />
   else {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (
