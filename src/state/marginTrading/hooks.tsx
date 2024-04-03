@@ -1380,6 +1380,7 @@ const useSimulateMarginTrade = (
     ) {
       throw new Error('missing params')
     }
+
     const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
 
     const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
@@ -1611,7 +1612,6 @@ const useSimulateMarginTrade = (
     marginFacility,
     inputError,
   ])
-
   const {
     data: data,
     isLoading: loading,
@@ -1621,6 +1621,7 @@ const useSimulateMarginTrade = (
     queryKey,
     enabled: queryKey.length > 0,
     queryFn: async () => {
+      console.log('addPosition:queryFn')
       if (!blockNumber) throw new Error('missing block number')
       try {
         const result = await computeData()

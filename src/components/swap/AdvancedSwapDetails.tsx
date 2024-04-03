@@ -85,7 +85,7 @@ export function AdvancedSwapDetails({
   const { chainId } = useWeb3React()
   const nativeCurrency = useNativeCurrency()
 
-  const { expectedOutputAmount, priceImpact } = useMemo(() => {
+  const { priceImpact } = useMemo(() => {
     return {
       expectedOutputAmount: trade?.outputAmount,
       priceImpact: trade ? computeRealizedPriceImpact(trade) : undefined,
@@ -136,39 +136,6 @@ export function AdvancedSwapDetails({
               : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`
           }
         />
-        {/* <RowBetween>
-          <RowFixed style={{ marginRight: '20px' }}>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The minimum amount you are guaranteed to receive. If the price slips any further, your transaction
-                  will revert.
-                </Trans>
-              }
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-                {trade.tradeType === TradeType.EXACT_INPUT ? (
-                  <Trans>Minimum received</Trans>
-                ) : (
-                  <Trans>Maximum sent</Trans>
-                )}{' '}
-                <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={70}>
-
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-              <TruncatedText>
-                {trade.tradeType === TradeType.EXACT_INPUT
-                  ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
-                  : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`}
-              </TruncatedText>
-            </ThemedText.DeprecatedBlack>
-
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
         {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
           <RowBetween>
             <MouseoverTooltip
@@ -346,22 +313,24 @@ export function AdvancedMarginTradeDetails({
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])
 
+  const details = (
+    <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+      <div>{inverted ? 'Inverted Price' : 'Execution Price'}</div>
+      <MouseoverTooltip text="invert" placement="right">
+        <div onClick={handleInvert} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+          <ReversedArrowsIcon />
+        </div>
+      </MouseoverTooltip>
+    </div>
+  )
+
   return (
     <StyledCard>
       <AutoColumn gap="sm">
         <ValueLabel
           description=""
           hideInfoTooltips={true}
-          label={
-            <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-              <div>{inverted ? 'Inverted Price' : 'Execution Price'}</div>
-              <MouseoverTooltip text="invert" placement="right">
-                <div onClick={handleInvert} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                  <ReversedArrowsIcon />
-                </div>
-              </MouseoverTooltip>
-            </div>
-          }
+          label={details}
           value={inverted ? lmtFormatInvPrice(trade?.executionPrice) : lmtFormatPrice(trade?.executionPrice)}
           syncing={syncing}
         />

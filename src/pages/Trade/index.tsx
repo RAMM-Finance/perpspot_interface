@@ -320,7 +320,7 @@ export default function Trade({ className }: { className?: string }) {
     }
     return null
   }, [poolsOHLC, pool, chainId])
-
+  console.log('bulk:pool', pool)
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>

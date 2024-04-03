@@ -46,28 +46,6 @@ const LiquidityDistributionTable = ({
     })
   }, [chainId, pool])
 
-  // const token0Decimals = token0?.wrapped.decimals
-  // const token1Decimals = token1?.wrapped.decimals
-  // const { provider } = useWeb3React()
-  // const { data: token0Price } = useQuery(
-  //   ['currentPrice', poolAddress, token0Decimals, token1Decimals],
-  //   async () => {
-  //     if (!poolAddress) throw new Error('No pool address')
-  //     if (!token1Decimals) throw new Error('No token1 decimals')
-  //     if (!token0Decimals) throw new Error('No token0 decimals')
-  //     if (!provider) throw new Error('No provider')
-  //     try {
-  //       return await getToken0Price(poolAddress, token0Decimals, token1Decimals, provider)
-  //     } catch (err) {
-  //       throw new Error('failed to fetch token0 price')
-  //     }
-  //   },
-  //   {
-  //     keepPreviousData: true,
-  //     refetchInterval: 1000 * 20,
-  //   }
-  // )
-
   // console.log('tooes', token0, token1)
   const [currentPrice, inverse] = useMemo(() => {
     if (!pool || !token0 || !token1 || !chainId) return [undefined, false]
@@ -80,36 +58,6 @@ const LiquidityDistributionTable = ({
       return [token0Price, false]
     }
   }, [pool, token1, token0, chainId])
-
-  //spread logic
-  // const negMax = useMemo(() => {
-  //   if (bin && currentPrice && token0 && token1) {
-  //     return Math.max(
-  //       ...bin
-  //         .filter(
-  //           (y) =>
-  //             Number(y.price) / 1e18 >
-  //               currentPrice.toNumber() * Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) &&
-  //             Number(y.token0Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
-  //         )
-  //         .filter(
-  //           (z) =>
-  //             !(
-  //               Number(z.token0Liquidity) / Number(`1e${token1?.wrapped.decimals - token0?.wrapped.decimals}`) > 0 &&
-  //               Number(z.token1Liquidity) / Number(`1e${token1?.wrapped.decimals}`) > 0
-  //             )
-  //         )
-  //         .filter(
-  //           (a) =>
-  //             formatDollar({
-  //               num: (Number(a.token0Liquidity) - Number(a.token0Borrowed)) / Number(`1e${token0?.wrapped.decimals}`),
-  //               dollarSign: false,
-  //             }) !== '0.00'
-  //         )
-  //         .map((x) => (Number(x.token0Liquidity) - Number(x.token0Borrowed)) / Number(`1e${token0?.wrapped.decimals}`))
-  //     )
-  //   } else return 0
-  // }, [bin, currentPrice, token0, token1])
 
   const token0Price = useMemo(() => {
     if (pool?.token0.wrapped.symbol === 'wBTC' && pool?.token1?.wrapped.symbol === 'WETH')

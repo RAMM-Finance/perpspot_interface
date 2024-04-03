@@ -45,13 +45,13 @@ export function DecreasePositionDetails({
   const receiveAmount = useMemo(() => {
     if (!txnInfo || !existingPosition) return undefined
     // const withdrawnPremium = removePremium?
-    //   existingPosition?.marginInPosToken 
+    //   existingPosition?.marginInPosToken
     //     ? txnInfo.withdrawnPremium.multipliedBy(txnInfo.executionPrice) : txnInfo.withdrawnPremium
     //     : new BN(0)
     const re = removePremium
       ? existingPosition.marginInPosToken
-          ? existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
-          : existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL).plus(txnInfo.withdrawnPremium)
+        ? existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
+        : existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL).plus(txnInfo.withdrawnPremium)
       : existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
 
     return re
@@ -125,7 +125,7 @@ export function DecreasePositionDetails({
                 ? formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)
                 : formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)
             }
-            symbolAppend={inputCurrency?.symbol }
+            symbolAppend={inputCurrency?.symbol}
             syncing={loading}
             height="14px"
           />
@@ -157,6 +157,7 @@ export function DecreasePositionDetails({
                   setShowInverted={setInverted}
                   price={txnInfo.executionPrice}
                   showInverted={invertedPrice}
+                  valueFontSize="12px"
                 />
               </Underlined>
             ) : (

@@ -128,7 +128,7 @@ export function PercentSlider({ initialValue, onSlideChange, onInputChange }: Di
   const theme = useTheme()
 
   return (
-    <Box sx={{ width: 370 }}>
+    <Box sx={{ width: 365 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid item></Grid>
         <Grid item xs>

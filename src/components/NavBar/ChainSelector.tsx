@@ -29,7 +29,7 @@ const NETWORK_SELECTOR_CHAINS = [
   // SupportedChainId.BNB,
   SupportedChainId.BERA_ARTIO,
   SupportedChainId.LINEA,
-  SupportedChainId.BASE
+  SupportedChainId.BASE,
 ]
 
 interface ChainSelectorProps {
@@ -37,7 +37,7 @@ interface ChainSelectorProps {
 }
 
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
-  const { account, chainId, connector } = useWeb3React()
+  const { chainId, connector } = useWeb3React()
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
 
