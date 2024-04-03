@@ -284,7 +284,6 @@ const LiquidityDistributionTable = ({
           Earn
         </SmallButtonPrimary>
       </Title>
-      {/* <NegativeWrapper> */}
       <LDHeaderRow>
         <LDHeaderCellIn>Price ({baseQuoteSymbol})</LDHeaderCellIn>
         <LDHeaderCellOut>Amount ({aboveAmountSymbol})</LDHeaderCellOut>

@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
+import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import Loader from 'components/Icons/LoadingSpinner'
 import { IconWrapper } from 'components/Identicon/StatusIcon'
@@ -9,12 +9,10 @@ import PrefetchBalancesWrapper from 'components/WalletDropdown/PrefetchBalancesW
 import { useGetConnection } from 'connection'
 import { Portal } from 'nft/components/common/Portal'
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
-import { getIsValidSwapQuote } from 'pages/Trade'
 import { darken } from 'polished'
 import { useCallback, useMemo } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { useAppSelector } from 'state/hooks'
-import { useDerivedSwapInfo } from 'state/swap/hooks'
 import styled from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
@@ -150,11 +148,6 @@ function Web3StatusInner() {
   const { account, connector, chainId, ENSName } = useWeb3React()
   const getConnection = useGetConnection()
   const connection = getConnection(connector)
-  const {
-    trade: { state: tradeState, trade },
-    inputError: swapInputError,
-  } = useDerivedSwapInfo()
-  const validSwapQuote = getIsValidSwapQuote(trade, tradeState, swapInputError)
   const [, toggleWalletDrawer] = useWalletDrawer()
   const handleWalletDropdownClick = useCallback(() => {
     sendAnalyticsEvent(InterfaceEventName.ACCOUNT_DROPDOWN_BUTTON_CLICKED)
@@ -216,23 +209,16 @@ function Web3StatusInner() {
     )
   } else {
     return (
-      <TraceEvent
-        events={[BrowserEvent.onClick]}
-        name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-        properties={{ received_swap_quote: validSwapQuote }}
-        element={InterfaceElementName.CONNECT_WALLET_BUTTON}
+      <Web3StatusConnectWrapper
+        tabIndex={0}
+        faded={!account}
+        onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
+        onClick={handleWalletDropdownClick}
       >
-        <Web3StatusConnectWrapper
-          tabIndex={0}
-          faded={!account}
-          onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
-          onClick={handleWalletDropdownClick}
-        >
-          <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
-            <Trans>Connect Wallet</Trans>
-          </StyledConnectButton>
-        </Web3StatusConnectWrapper>
-      </TraceEvent>
+        <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
+          <Trans>Connect Wallet</Trans>
+        </StyledConnectButton>
+      </Web3StatusConnectWrapper>
     )
   }
 }
