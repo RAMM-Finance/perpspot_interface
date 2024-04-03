@@ -122,9 +122,6 @@ const StyledInfoIcon = styled(Info)`
   width: 12px;
   flex: 1 1 auto;
 `
-const StyledLoadingButtonSpinner = styled(LoadingButtonSpinner)`
-  fill: ${({ theme }) => theme.accentAction};
-`
 
 const HeaderWrapper = styled.div`
   margin-bottom: 20px;

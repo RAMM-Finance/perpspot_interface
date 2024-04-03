@@ -180,6 +180,6 @@ export function useToken(tokenAddress?: string | null): Token | null | undefined
 
 export function useCurrency(currencyId?: string | null): Currency | null | undefined {
   const tokens = useDefaultActiveTokens()
-  const { chainId } = useWeb3React()
+  // const { chainId } = useWeb3React()
   return useCurrencyFromMap(tokens, currencyId)
 }
