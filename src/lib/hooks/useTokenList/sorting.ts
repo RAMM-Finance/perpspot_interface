@@ -2,11 +2,6 @@ import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { TokenInfo } from '@uniswap/token-lists'
 import { useMemo } from 'react'
 
-// import { nativeOnChain } from 'constants/tokens'
-// import { PortfolioTokenBalancePartsFragment } from 'uniswap/src/data/graphql/uniswap-data-api/__generated__/types-and-hooks'
-// import { SplitOptions, splitHiddenTokens } from 'utils/splitHiddenTokens'
-// import { fromGraphQLChain } from 'graphql/data/util'
-// import { SupportedChainId } from 'constants/chains'
 
 /** Sorts currency amounts (descending). */
 function balanceComparator(a?: CurrencyAmount<Currency>, b?: CurrencyAmount<Currency>) {
@@ -35,43 +30,6 @@ export function tokenComparator(balances: TokenBalances, a: Token, b: Token) {
 
   return -1
 }
-
-/** Given the results of the PortfolioTokenBalances query, returns a filtered list of tokens sorted by USD value. */
-// export function getSortedPortfolioTokens(
-//   portfolioTokenBalances: (PortfolioTokenBalancePartsFragment | undefined)[] | undefined,
-//   balances: TokenBalances,
-//   chainId: SupportedChainId | undefined,
-//   splitOptions?: SplitOptions
-// ): Token[] {
-//   const validVisiblePortfolioTokens = splitHiddenTokens(portfolioTokenBalances ?? [], splitOptions)
-//     .visibleTokens.map((tokenBalance) => {
-//       const address = tokenBalance.token?.standard === 'ERC20' ? tokenBalance.token?.address?.toLowerCase() : 'ETH'
-//       if (!tokenBalance?.token?.chain || !tokenBalance.token?.decimals || !address) {
-//         return undefined
-//       }
-
-//       const tokenChainId = fromGraphQLChain(tokenBalance.token?.chain) ?? SupportedChainId.MAINNET
-//       if (tokenChainId !== chainId) {
-//         return undefined
-//       }
-
-//       if (address === 'ETH') {
-//         return nativeOnChain(tokenChainId)
-//       }
-
-//       const portfolioToken = new Token(
-//         tokenChainId,
-//         address,
-//         tokenBalance.token?.decimals,
-//         tokenBalance.token?.symbol,
-//         tokenBalance.token?.name
-//       )
-
-//       return portfolioToken
-//     })
-//     .filter((token) => !!token) as Token[]
-//   return validVisiblePortfolioTokens.sort(tokenComparator.bind(null, balances))
-// }
 
 /** Sorts tokens by query, giving precedence to exact matches and partial matches. */
 export function useSortTokensByQuery<T extends Token | TokenInfo>(query: string, tokens?: T[]): T[] {
@@ -109,31 +67,3 @@ export function useSortTokensByQuery<T extends Token | TokenInfo>(query: string,
     return [...exactMatches, ...symbolSubtrings, ...rest]
   }, [tokens, query])
 }
-
-// export function tokenQuerySortComparator<T extends Currency | TokenInfo>(query: string): (a: T, b: T) => number {
-//   const trimmedQuery = query.toLowerCase().trim()
-
-//   return (a: T, b: T) => {
-//     const aSymbol = a.symbol?.toLowerCase()
-//     const bSymbol = b.symbol?.toLowerCase()
-
-//     // Check for exact matches
-//     if (aSymbol === trimmedQuery && bSymbol !== trimmedQuery) {
-//       return -1 // a comes first
-//     }
-//     if (bSymbol === trimmedQuery && aSymbol !== trimmedQuery) {
-//       return 1 // b comes first
-//     }
-
-//     // Check for substring matches
-//     const aStartsWith = aSymbol?.startsWith(trimmedQuery) ? 1 : 0
-//     const bStartsWith = bSymbol?.startsWith(trimmedQuery) ? 1 : 0
-
-//     if (aStartsWith !== bStartsWith) {
-//       return bStartsWith - aStartsWith // The one with substring match comes first
-//     }
-
-//     // If none of the above conditions are met, maintain original order
-//     return 0
-//   }
-// }

@@ -144,10 +144,12 @@ export function usePools(
 
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
+  const filteredAddresses = poolAddresses.filter(item => item !== '')
   const poolParams = useSingleContractMultipleData(
     poolManager,
     'PoolParams',
-    poolAddresses.map((address) => [address])
+    filteredAddresses.map((address) => [address])
+    // poolAddresses.map((address) => [address])
   )
 
   return useMemo(() => {

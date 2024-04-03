@@ -314,7 +314,7 @@ export default function Landing() {
     if (queryParams.intro || !selectedWallet) {
       setShowContent(true)
     } else {
-      navigate('/swap')
+      navigate('/trade')
     }
   }, [navigate, selectedWallet, queryParams.intro])
 

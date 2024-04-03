@@ -54,6 +54,8 @@ export function useBestTrade(
     clientSideRouter ? RouterPreference.CLIENT : RouterPreference.API
   )
   const isLoading = routingAPITrade.state === TradeState.LOADING
+
+  
   const useFallback = (!autoRouterSupported || routingAPITrade.state === TradeState.NO_ROUTE_FOUND) && shouldGetTrade
 
   // only use client side router if routing api trade failed or is not supported

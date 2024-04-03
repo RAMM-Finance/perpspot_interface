@@ -101,12 +101,12 @@ export function CurrencySearch({
   }, [isAddressSearch])
 
   const defaultTokens = useDefaultActiveTokens()
-
-  // console.log('defaultTokens', defaultTokens)
+  
   const filteredTokens: Token[] = useMemo(() => {
     return Object.values(defaultTokens).filter(getTokenFilter(debouncedQuery))
   }, [defaultTokens, debouncedQuery])
   // console.log('filteredTokens', filteredTokens)
+  
 
   const [balances, balancesAreLoading] = useAllTokenBalances()
   const sortedTokens: Token[] = useMemo(
@@ -156,7 +156,7 @@ export function CurrencySearch({
 
   const searchCurrencies: Currency[] = useMemo(() => {
     const s = debouncedQuery.toLowerCase().trim()
-
+    
     const tokens = filteredSortedTokens.filter((t) => !(t.equals(wrapped) || (disableNonToken && t.isNative)))
 
     const shouldShowWrapped =
@@ -229,8 +229,6 @@ export function CurrencySearch({
       : undefined
   )
 
-  // console.log('filteredInactiveTokens', filteredInactiveTokens, searchCurrencies)
-
   // Timeout token loader after 3 seconds to avoid hanging in a loading state.
   useEffect(() => {
     const tokenLoaderTimer = setTimeout(() => {
@@ -298,7 +296,6 @@ export function CurrencySearch({
           </Column>
         ) : searchCurrencies?.length > 0 || filteredInactiveTokens?.length > 0 || isLoading ? (
           <div style={{ flex: '1' }}>
-            {/* dddddddddddddddddddddd */}
             <AutoSizer disableWidth>
               {({ height }) => (
                 <CurrencyList

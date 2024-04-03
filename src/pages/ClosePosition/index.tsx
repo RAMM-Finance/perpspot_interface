@@ -48,7 +48,7 @@ export default function CloseLeveragePosition() {
   const location = useLocation()
 
   if (!leverageManager || !tokenId || !trader) {
-    return <Navigate to={{ ...location, pathname: '/swap' }} replace />
+    return <Navigate to={{ ...location, pathname: '/trade' }} replace />
   }
 // need to make sure trader is account.
   return <Close leverageManager={leverageManager} tokenId={tokenId}/>

@@ -76,6 +76,15 @@ export function chainIdToBackendName(chainId: number | undefined) {
     : CHAIN_ID_TO_BACKEND_NAME[SupportedChainId.MAINNET]
 }
 
+export const GQL_MAINNET_CHAINS_MUTABLE = [
+  SupportedChainId.MAINNET,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.POLYGON,
+  SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.CELO,
+]
+
+
 const GQL_CHAINS: number[] = [
   SupportedChainId.MAINNET,
   SupportedChainId.OPTIMISM,

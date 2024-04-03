@@ -37,6 +37,7 @@ export function useClientSideV3Trade<TTradeType extends TradeType>(
     tradeType === TradeType.EXACT_INPUT
       ? [amountSpecified?.currency, otherCurrency]
       : [otherCurrency, amountSpecified?.currency]
+  
   const { routes, loading: routesLoading } = useAllV3Routes(currencyIn, currencyOut)
 
   const { chainId } = useWeb3React()

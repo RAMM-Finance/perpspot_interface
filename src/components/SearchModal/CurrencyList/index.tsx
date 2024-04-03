@@ -350,8 +350,10 @@ export default function CurrencyList({
           height={height}
           ref={fixedListRef as any}
           width="100%"
-          itemData={itemData}
-          itemCount={itemData.length}
+          // itemData={itemData}
+          // itemCount={itemData.length}
+          itemData={currencies}
+          itemCount={currencies.length}
           itemSize={56}
           itemKey={itemKey}
         >

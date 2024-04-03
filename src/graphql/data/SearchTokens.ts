@@ -58,25 +58,6 @@ function isMoreRevelantToken(current: SearchToken, existing: SearchToken | undef
   return current.chain === searchChain || (existing.chain !== searchChain && current.chain === Chain.Ethereum)
 }
 
-function dedupeCrosschainTokens(current: SearchToken, existing: SearchToken | undefined, searchChain: Chain) {
-  if (!existing) return current
-  invariant(current.project?.id === existing.project?.id, 'Cannot dedupe tokens within different tokenProjects')
-
-  // Special case: always prefer Arbitrum ARB over Mainnet ARB
-  if (current.address?.toLowerCase() === ARB_ADDRESS) return current
-  if (existing.address?.toLowerCase() === ARB_ADDRESS) return existing
-
-  // Always prioritize natives, and if both tokens are native, prefer native on current chain (i.e. Matic on Polygon over Matic on Mainnet )
-  if (current.standard === NATIVE_CHAIN_ID && (existing.standard !== NATIVE_CHAIN_ID || current.chain === searchChain))
-    return current
-
-  // Prefer tokens on the searched chain, otherwise prefer mainnet tokens
-  if (current.chain === searchChain || (existing.chain !== searchChain && current.chain === Chain.Ethereum))
-    return current
-
-  return existing
-}
-
 
 // Places natives first, wrapped native on current chain next, then sorts by volume
 function searchTokenSortFunction(
@@ -97,39 +78,6 @@ function searchTokenSortFunction(
   else return (b.market?.volume24H?.value ?? 0) - (a.market?.volume24H?.value ?? 0)
 }
 
-export function useSearchTokensForSwapPage(searchQuery: string | undefined, chainId: number) {
-  const { data, loading, error } = useSearchTokensQuery({
-    variables: {
-      searchQuery: searchQuery ?? '',
-    },
-    skip: !searchQuery,
-  })
-
-  const sortedTokens = useMemo(() => {
-    const searchChain = chainIdToBackendName(chainId)
-    // Stores results, allowing overwriting cross-chain tokens w/ more 'relevant token'
-    const selectionMap: { [projectId: string]: SearchToken } = {}
-    const filteredTokens = data?.searchTokens?.filter(
-      (token): token is Token =>
-        token !== undefined && (BACKEND_CHAIN_NAMES as ReadonlyArray<Chain>).includes(token.chain)
-    )
-    filteredTokens?.forEach((token) => {
-      if (token.project?.id) {
-        const existing = selectionMap[token.project.id]
-        selectionMap[token.project.id] = dedupeCrosschainTokens(token, existing, searchChain)
-      }
-    })
-    return Object.values(selectionMap).sort(
-      searchTokenSortFunction.bind(null, searchChain, WRAPPED_NATIVE_CURRENCY[chainId]?.address)
-    )
-  }, [data, chainId])
-
-  return {
-    data: sortedTokens,
-    loading,
-    error,
-  }
-}
 
 
 export function useSearchTokens(searchQuery: string, chainId: number) {

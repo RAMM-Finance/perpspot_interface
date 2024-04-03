@@ -78,7 +78,7 @@ const EMPTY_WALLET_CONTENT: { [key in EmptyWalletContentType]: EmptyWalletConten
     subtitle: <Trans>Open a new position or create a pool to get started.</Trans>,
     actionText: <Trans>+ New position</Trans>,
     //urlPath: '/pool',
-    urlPath: '/swap', 
+    urlPath: '/trade', 
     icon: <EmptyTokensIcon />,
   },
 }

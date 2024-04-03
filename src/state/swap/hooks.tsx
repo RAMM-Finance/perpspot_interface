@@ -161,10 +161,26 @@ export function useSwapActionHandlers(): {
 
   const onUserInput = useCallback(
     (field: Field, typedValue: string) => {
+      console.log(field)
+      console.log(typedValue)
       dispatch(typeInput({ field, typedValue }))
     },
     [dispatch]
   )
+
+  
+  // const onUserInput = useCallback(
+  //   (field: Field, typedValue: string) => {
+  //     setSwapState((state) => {
+  //       return {
+  //         ...state,
+  //         independentField: field,
+  //         typedValue,
+  //       }
+  //     })
+  //   },
+  //   [setSwapState]
+  // )
 
   const onChangeRecipient = useCallback(
     (recipient: string | null) => {
@@ -538,6 +554,7 @@ function parseIndependentFieldURLParameter(urlParam: any): Field {
 export function queryParametersToCurrencyState(parsedQs: ParsedQs): SerializedCurrencyState {
   let inputCurrency = parseCurrencyFromURLParameter(parsedQs.inputCurrency ?? parsedQs.inputcurrency)
   let outputCurrency = parseCurrencyFromURLParameter(parsedQs.outputCurrency ?? parsedQs.outputcurrency)
+
   const independentField = parseIndependentFieldURLParameter(parsedQs.exactField)
 
   if (inputCurrency === '' && outputCurrency === '' && independentField === Field.INPUT) {
