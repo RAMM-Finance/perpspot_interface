@@ -29,7 +29,7 @@ const NETWORK_SELECTOR_CHAINS = [
   // SupportedChainId.BNB,
   SupportedChainId.BERA_ARTIO,
   SupportedChainId.LINEA,
-  SupportedChainId.BASE
+  SupportedChainId.BASE,
 ]
 
 interface ChainSelectorProps {
@@ -37,7 +37,7 @@ interface ChainSelectorProps {
 }
 
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
-  const { account, chainId, connector } = useWeb3React()
+  const { chainId, connector } = useWeb3React()
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
 
@@ -118,17 +118,3 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
     </Box>
   )
 }
-
-// <ChainSelectorWrapper ref={ref}>
-//   <MouseoverTooltip text={t`Your wallet's current network is unsupported.`} disabled={isSupported}>
-//     <ChainSelectorButton data-testid="chain-selector" onClick={() => setIsOpen(!isOpen)} isOpen={isOpen}>
-//       {!isSupported ? (
-//         <AlertTriangle size={20} color={theme.neutral2} />
-//       ) : (
-//         <ChainLogo chainId={chainId} size={20} testId="chain-selector-logo" />
-//       )}
-//       {isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}
-//     </ChainSelectorButton>
-//   </MouseoverTooltip>
-//   {isOpen && (isMobile ? <Portal>{dropdown}</Portal> : <>{dropdown}</>)}
-// </ChainSelectorWrapper>

@@ -138,23 +138,13 @@ export const switchPoolAddress = (
   })
 }
 
-export const getFakeTokensMap = (chainId?: number): { [address: string]: Token } => {
-  if (chainId === SupportedChainId.SEPOLIA) {
-    return FakeTokensMapSepolia
-  } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
-    return TokensArbitrum
-  } else if (chainId === SupportedChainId.BERA_ARTIO) {
-    return TokensArtio
-  } else {
-    return FakeTokensMapMumbai
-  }
-}
-
 export const getDefaultTokensMap = (chainId: number): { [address: string]: Token } => {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return TokensArbitrum
   } else if (chainId === SupportedChainId.LINEA) {
     return TokensLinea
+  } else if (chainId === SupportedChainId.BERA_ARTIO) {
+    return TokensArtio
   } else {
     return TokensArbitrum
   }

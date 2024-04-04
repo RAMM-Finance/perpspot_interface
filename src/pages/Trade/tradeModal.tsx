@@ -191,7 +191,6 @@ const TradeTabContent = () => {
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
   const { onUserInput, onSetMarginInPosToken } = useSwapActionHandlers()
-  // const { currencyBalances, currencies } = useDerivedSwapInfo()
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
   const relevantTokenBalances = useCurrencyBalances(

@@ -310,7 +310,7 @@ function LoadingTokenTable() {
   )
 }
 
-export const LimitActivityTab = memo(({ account }: { account: string }) => {
+export const LimitActivityTab = ({ account }: { account: string }) => {
   const [drawerOpen, toggleWalletDrawer] = useWalletDrawer()
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
   const { chainId } = useWeb3React()
@@ -327,7 +327,7 @@ export const LimitActivityTab = memo(({ account }: { account: string }) => {
   //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
 
   const history = useHistoryData(account)
-  console.log('history', history)
+  console.log('------history-------', history)
   const historyToShow = useMemo(() => {
     if (!history) return
     const processedHistory: any[] = []
@@ -361,11 +361,11 @@ export const LimitActivityTab = memo(({ account }: { account: string }) => {
     }
   }, [drawerOpen, lastFetched, refetch, setLastFetched])
 
-  const activityGroups = useMemo(() => {
-    const remoteMap = parseRemoteActivities(data?.portfolios?.[0].assetActivities)
-    const allActivities = combineActivities(localMap, remoteMap)
-    return createGroups(allActivities)
-  }, [data?.portfolios, localMap])
+  // const activityGroups = useMemo(() => {
+  //   const remoteMap = parseRemoteActivities(data?.portfolios?.[0].assetActivities)
+  //   const allActivities = combineActivities(localMap, remoteMap)
+  //   return createGroups(allActivities)
+  // }, [data?.portfolios, localMap])
 
   if (!data && loading) return <LoadingTokenTable />
   else {
@@ -376,4 +376,4 @@ export const LimitActivityTab = memo(({ account }: { account: string }) => {
       </GridContainer>
     )
   }
-})
+}

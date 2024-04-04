@@ -1,5 +1,4 @@
 import { ActivityRow } from 'components/WalletDropdown/MiniPortfolio/Activity/LimitActivityRow'
-import { memo } from 'react'
 import styled, { DefaultTheme } from 'styled-components/macro'
 
 interface HistoryTableProps {
@@ -39,7 +38,7 @@ export const HistoryContainer = styled.div`
   margin-left: 8px;
 `
 
-const HistoryTable = memo(({ historyToShow }: HistoryTableProps) => {
+const HistoryTable = ({ historyToShow }: HistoryTableProps) => {
   return (
     <HistoryContainer>
       {historyToShow?.map((history: any) => (
@@ -51,7 +50,6 @@ const HistoryTable = memo(({ historyToShow }: HistoryTableProps) => {
       ))}
     </HistoryContainer>
   )
-})
-HistoryTable.displayName = 'HistoryTable'
+}
 
 export default HistoryTable

@@ -256,6 +256,7 @@ export default function Trade({ className }: { className?: string }) {
   const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
   const { account, chainId } = useWeb3React()
+
   const { activeTab } = useSwapState()
 
   const inputCurrency = useCurrentInputCurrency()
