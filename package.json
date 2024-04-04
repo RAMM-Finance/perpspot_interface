@@ -197,6 +197,7 @@
     "d3": "^7.6.1",
     "date-fns": "^2.30.0",
     "ethers": "^5.7.2",
+    "firebase": "^10.10.0",
     "focus-visible": "^5.2.0",
     "get-graphql-schema": "^2.1.2",
     "graphql": "^16.8.1",

@@ -4,7 +4,7 @@ import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import { NATIVE_CHAIN_ID } from 'constants/tokens'
 import useParsedQueryString from 'hooks/useParsedQueryString'
 import { ReactNode } from 'react'
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
@@ -14,6 +14,7 @@ import styled from 'styled-components/macro'
 
 import { SwapWrapper } from '../../components/swap/styleds'
 import SwapTabContent from './swapModal'
+
 
 export const PageWrapper = styled.div`
   padding: 68px 8px 0px;
@@ -99,6 +100,7 @@ export default function SwapPage() {
   const parsedCurrencyState = useMemo(() => {
     return queryParametersToCurrencyState(parsedQs)
   }, [parsedQs])
+
 
   return (
     <PageWrapper>

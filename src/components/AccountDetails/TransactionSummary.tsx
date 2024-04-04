@@ -27,6 +27,12 @@ import {
   VoteTransactionInfo,
   WrapTransactionInfo,
 } from '../../state/transactions/types'
+import { useState, useEffect } from 'react'
+
+import { firestore } from '../../firebaseConfig'
+import { collection, getDocs, addDoc, doc, updateDoc, where, query } from 'firebase/firestore'
+import { getDecimalAndUsdValueData } from 'hooks/useContract'
+import { useWeb3React } from '@web3-react/core'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
   return new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)
@@ -298,6 +304,53 @@ function AddLiquidityV2PoolSummary({
 }
 
 function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutputSwapTransactionInfo }) {
+  const { account } = useWeb3React()
+  const [SwapComplete, setSwapComplete] = useState(false)
+  useEffect(() => {
+    setSwapComplete(true)
+  }, [])
+
+  useEffect(() => {    
+    const fetchUsers = async () => {
+      let tokenInfoFromUniswap
+      let tokenAmount
+      if (info.tradeType === TradeType.EXACT_INPUT) {
+        tokenInfoFromUniswap = await getDecimalAndUsdValueData('arbitrum-one', info.inputCurrencyId)
+        tokenAmount = info.inputCurrencyAmountRaw
+      } else {
+        tokenInfoFromUniswap = await getDecimalAndUsdValueData('arbitrum-one', info.outputCurrencyId)
+        tokenAmount = info.outputCurrencyAmountRaw
+      }
+
+      const tPoint = (tokenInfoFromUniswap?.lastPriceUSD * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
+
+      const q = query(collection(firestore, 'swap-points'), where('account', '==', account))
+
+      const querySnapshot = await getDocs(q)
+      const data = querySnapshot.docs.map(doc => doc.data())
+      
+      if (!data || data.length === 0) {
+        await addDoc(collection(firestore, 'swap-points'), {
+          account: account,
+          amount: tPoint
+        })
+      } else {
+        const docRef = doc(firestore, 'swap-points', querySnapshot.docs[0].id);
+        await updateDoc(docRef, {
+          amount: data[0].amount + tPoint
+        })
+      }
+      
+    };
+
+    if (SwapComplete) {
+      (async () => {
+        await fetchUsers();
+        setSwapComplete(false)
+      })()
+    }
+  }, [SwapComplete])
+
   if (info.tradeType === TradeType.EXACT_INPUT) {
     return (
       <Trans>

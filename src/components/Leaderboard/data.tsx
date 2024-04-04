@@ -15,6 +15,8 @@ import {
 import { tokenDecimal, usdValue, useBRP, useDataProviderContract, useReferralContract } from 'hooks/useContract'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
+import { firestore } from '../../firebaseConfig'
+import { collection, getDocs, addDoc, doc, updateDoc, where, query } from 'firebase/firestore'
 
 interface AddPositionData {
   trader: string
@@ -186,6 +188,7 @@ function getPrevTradePoints(tradeProcessedByTrader: any) {
 
 export function useStoredData(addresses: any) {
   const brp = useBRP()
+  const { account } = useWeb3React()
 
   const [pointsData, setPointsData] = useState<any>()
 
@@ -197,15 +200,27 @@ export function useStoredData(addresses: any) {
         const addresses = await brp.getUsers()
         const [tradePoints, lpPoints_, referralPoints] = await brp.getData(addresses)
 
-        const data = addresses.map((address: any, index: any) => {
+        const dataPromises = addresses.map(async (address: any, index: any) => {
           // Convert BigNumber to number. Adjust precision as needed.
-          const tPoints = tradePoints[index].toNumber()
+          let tPoints = tradePoints[index].toNumber()
+
+          const q = query(collection(firestore, 'swap-points'), where('account', '==', address))
+
+          const querySnapshot = await getDocs(q)
+          const data = querySnapshot.docs.map(doc => doc.data())
+          
+          if (data[0] && data[0].amount) {
+            tPoints += data[0].amount
+          }
+
           const lpPoints = lpPoints_[index].toNumber()
           const rPoints = referralPoints[index].toNumber()
           const totalPoints = tPoints + lpPoints + rPoints
 
           return { lpPoints, rPoints, tPoints, totalPoints, trader: address }
         })
+
+        const data = await Promise.all(dataPromises)
 
         // Rank the data based on totalPoints
         const rankedData = data.map((item: any, index: any, arr: any) => {
