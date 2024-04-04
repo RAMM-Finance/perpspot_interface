@@ -406,9 +406,9 @@ const SwapTabContent = () => {
             element={InterfaceElementName.SWAP_TOKENS_REVERSE_ARROW_BUTTON}
           >
             <ArrowContainer
-              // onClick={() => {
-              //   onSwitchTokens(false)
-              // }}
+              onClick={() => {
+                switchTokens(!inputIsToken0)
+              }}
               color={theme.textPrimary}
             >
               <Maximize2

@@ -124,7 +124,11 @@ const userSlice = createSlice({
     },
     updatePinnedPools(state, action) {
       if (action.payload.add) {
-        state.pinnedKeys[action.payload.chainId].push(action.payload.poolKey)
+        if (!state.pinnedKeys[action.payload.chainId]) {
+          state.pinnedKeys[action.payload.chainId] = [action.payload.poolKey]
+        } else {
+          state.pinnedKeys[action.payload.chainId].push(action.payload.poolKey)
+        }
       } else {
         const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
           action.payload.poolKey.fee
