@@ -32,6 +32,8 @@ import {
 } from '../constants'
 import { LoadingBubble } from '../loading'
 import { DeltaText } from '../TokenDetails/PriceChart'
+import { useAtomValue } from 'jotai/utils'
+import { filterStringAtom } from '../state'
 
 const Cell = styled.div`
   display: flex;
@@ -513,7 +515,23 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
+  
+  const filterString = useAtomValue(filterStringAtom)
+
+  const filtered = useMemo(() => {
+    if (token0 && token1 && filterString) {
+      const includesToken0 = (token0?.symbol?.toLowerCase() ?? '').includes(filterString.toLowerCase())
+      const includesToken1 = (token1?.symbol?.toLowerCase() ?? '').includes(filterString.toLowerCase())
+
+    return includesToken0 || includesToken1
+    } else {
+      return true
+    }
+    
+  }, [filterString, token0, token1])
+
   return (
+    filtered ? 
     <RowWrapper
       ref={ref}
       onClick={() => {
@@ -583,6 +601,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
       {/*</ClickableContent> */}
     </RowWrapper>
+    : null
   )
 })
 

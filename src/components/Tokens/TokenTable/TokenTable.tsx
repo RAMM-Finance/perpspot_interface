@@ -18,6 +18,7 @@ import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 // import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 import { HeaderRow, LoadingRow } from './TokenRow'
+import SearchBar from './SearchBar'
 
 const GridContainer = styled.div`
   display: flex;
@@ -274,6 +275,7 @@ export default function TokenTable() {
         <TVLInfoContainer poolsInfo={poolsInfo} />
         <HowToDetails />
       </PairInfoContainer>
+      <SearchBar />
       {loading ? (
         <LoadingTokenTable rowCount={PAGE_SIZE} />
       ) : (
