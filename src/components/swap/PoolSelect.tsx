@@ -144,12 +144,14 @@ const PoolListHeader = styled.div`
   gap: 3px;
 `
 
-const RowWrapper = styled.div`
+const RowWrapper = styled.div<{ active: boolean }>`
   display: grid;
   grid-template-columns: 2fr 1.2fr 1fr;
   justify-items: flex-start;
   align-items: center;
   padding: 0.5rem;
+  border-radius: 10px;
+  background-color: ${({ theme, active }) => (active ? theme.backgroundInteractive : 'none')};
   :hover {
     border-radius: 10px;
     background-color: ${({ theme }) => theme.backgroundInteractive};
@@ -282,6 +284,14 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     return false
   }, [poolOHLCData, pool])
 
+  const active = useMemo(() => {
+    if (currentPool?.poolId === id) {
+      return true
+    } else {
+      return false
+    }
+  }, [currentPool, id])
+
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id && token0IsBase !== null && token0.symbol && token1.symbol) {
       localStorage.removeItem('defaultInputToken')
@@ -310,7 +320,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   ])
 
   return (
-    <RowWrapper onClick={handleRowClick}>
+    <RowWrapper active={active} onClick={handleRowClick}>
       <Row>
         <Pin onClick={handleClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>

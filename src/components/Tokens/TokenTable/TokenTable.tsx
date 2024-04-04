@@ -17,6 +17,8 @@ import { formatDollar } from 'utils/formatNumbers'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 import { LoadingBubble } from '../loading'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
+// import { HeaderRow, LoadingRow } from './TokenRow'
+import SearchBar from './SearchBar'
 
 const GridContainer = styled.div`
   display: flex;
@@ -304,6 +306,7 @@ export default function TokenTable() {
         <TVLInfoContainer poolsInfo={poolsInfo} />
         <HowToDetails />
       </PairInfoContainer>
+      <SearchBar />
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
