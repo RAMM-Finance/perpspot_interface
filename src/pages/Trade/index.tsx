@@ -278,6 +278,10 @@ export default function Trade({ className }: { className?: string }) {
   const poolsOHLC = useAppPoolOHLC()
 
   const chartSymbol = useMemo(() => {
+    console.log("BEFORE CHART SYMBOL")
+    console.log(pool)
+    console.log(poolsOHLC)
+    console.log(chainId)
     if (pool && poolsOHLC && chainId) {
       const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 

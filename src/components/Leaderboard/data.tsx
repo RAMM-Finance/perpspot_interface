@@ -188,7 +188,6 @@ function getPrevTradePoints(tradeProcessedByTrader: any) {
 
 export function useStoredData(addresses: any) {
   const brp = useBRP()
-  const { account } = useWeb3React()
 
   const [pointsData, setPointsData] = useState<any>()
 
