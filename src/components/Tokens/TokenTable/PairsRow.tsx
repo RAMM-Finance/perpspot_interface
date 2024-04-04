@@ -153,14 +153,14 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   }
 `
 
-const ListNumberCell = styled(Cell)<{ header: boolean }>`
+/* const ListNumberCell = styled(Cell)<{ header: boolean }>`
   color: ${({ theme }) => theme.textPrimary};
   min-width: 32px;
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: none;
   }
-`
+` */
 const DataCell = styled(Cell)<{ sortable: boolean }>`
   justify-content: flex-start;
   min-width: 80px;
@@ -184,13 +184,7 @@ const NameCell = styled(Cell)`
 const PriceCell = styled(DataCell)`
   /* padding-right: 8px; */
 `
-const PercentChangeCell = styled(DataCell)`
-  /* padding-right: 8px; */
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: none;
-  }
-`
-const PercentChangeInfoCell = styled(Cell)`
+/* const PercentChangeInfoCell = styled(Cell)`
   display: none;
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -199,7 +193,7 @@ const PercentChangeInfoCell = styled(Cell)`
     color: ${({ theme }) => theme.textPrimary};
     line-height: 16px;
   }
-`
+` */
 const PriceInfoCell = styled(Cell)`
   justify-content: flex-start;
   display: flex;
@@ -299,6 +293,7 @@ export function TokenRow({
   listNumber,
   tokenInfo,
   price,
+  loading,
   // percentChange,
   tvl,
   volume,
@@ -389,7 +384,6 @@ export function TokenRow({
   const rowCells = (
     <>
       <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
-
       <PriceCell data-testid="price-cell" sortable={header}>
         {price}
       </PriceCell>
@@ -408,22 +402,28 @@ export function TokenRow({
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {UtilRate}
       </VolumeCell>
-      {!header && (
+      {!header && loading ? (
         <ButtonCell data-testid="volume-cell" sortable={header}>
-          <ButtonPrimary
-            style={{
-              padding: '.5rem',
-              width: 'fit-content',
-              fontSize: '0.7rem',
-              borderRadius: '10px',
-              height: '30px',
-              lineHeight: '1',
-            }}
-            onClick={handleClick}
-          >
-            <Trans>Provide</Trans>
-          </ButtonPrimary>
+          <LoadingBubble />
         </ButtonCell>
+      ) : (
+        !header && (
+          <ButtonCell data-testid="volume-cell" sortable={header}>
+            <ButtonPrimary
+              style={{
+                padding: '.5rem',
+                width: 'fit-content',
+                fontSize: '0.7rem',
+                borderRadius: '10px',
+                height: '30px',
+                lineHeight: '1',
+              }}
+              onClick={handleClick}
+            >
+              <Trans>Provide</Trans>
+            </ButtonPrimary>
+          </ButtonCell>
+        )
       )}
     </>
   )
@@ -592,9 +592,6 @@ const Price = styled.span`
   font-weight: 700;
 `
 
-const Symbol = styled.span`
-  color: ;
-`
 const RowWrapper = styled.div`
   border-top: 1px solid;
   border-color: ${({ theme }) => theme.backgroundOutline};

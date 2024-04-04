@@ -15,9 +15,8 @@ import { formatDollar } from 'utils/formatNumbers'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
-// import { PHeaderRow, PLoadedRow, PLoadingRow } from './PairsRow'
+import { LoadingBubble } from '../loading'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
-import { HeaderRow, LoadingRow } from './TokenRow'
 
 const GridContainer = styled.div`
   display: flex;
@@ -34,6 +33,19 @@ const GridContainer = styled.div`
   justify-content: center;
   align-items: center;
 `
+const SmallLoadingBubble = styled(LoadingBubble)`
+  width: 30%;
+`
+const MediumLoadingBubble = styled(LoadingBubble)`
+  width: 65%;
+`
+const LongLoadingBubble = styled(LoadingBubble)`
+  width: 90%;
+`
+const IconLoadingBubble = styled(LoadingBubble)`
+  border-radius: 50%;
+  width: 24px;
+`
 
 const TokenDataContainer = styled.div`
   display: flex;
@@ -42,25 +54,47 @@ const TokenDataContainer = styled.div`
   width: 100%;
 `
 
-const NoTokenDisplay = styled.div`
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  height: 60px;
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 16px;
-  font-weight: 500;
-  align-items: center;
-  padding: 0px 28px;
-  gap: 8px;
-`
+// const NoTokenDisplay = styled.div`
+//   display: flex;
+//   justify-content: center;
+//   width: 100%;
+//   height: 60px;
+//   color: ${({ theme }) => theme.textSecondary};
+//   font-size: 16px;
+//   font-weight: 500;
+//   align-items: center;
+//   padding: 0px 28px;
+//   gap: 8px;
+// `
 
-function NoTokensState({ message }: { message: ReactNode }) {
+// function NoTokensState({ message }: { message: ReactNode }) {
+//   return (
+//     <GridContainer>
+//       <HeaderRow />
+//       <NoTokenDisplay>{message}</NoTokenDisplay>
+//     </GridContainer>
+//   )
+// }
+
+function LoadingRow(props: { first?: boolean; last?: boolean }) {
   return (
-    <GridContainer>
-      <HeaderRow />
-      <NoTokenDisplay>{message}</NoTokenDisplay>
-    </GridContainer>
+    <TokenRow
+      header={false}
+      loading={true}
+      tokenInfo={
+        <>
+          <IconLoadingBubble />
+          <SmallLoadingBubble />
+        </>
+      }
+      price={<MediumLoadingBubble />}
+      APR={<MediumLoadingBubble />}
+      priceChange={<SmallLoadingBubble />}
+      tvl={<SmallLoadingBubble />}
+      volume={<SmallLoadingBubble />}
+      UtilRate={<LongLoadingBubble />}
+      {...props}
+    />
   )
 }
 
@@ -74,16 +108,13 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
   </>
 )
 
-function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
-  return (
-    <GridContainer>
-      {/* <PHeaderRow /> */}
-      <TokenDataContainer>
-        <LoadingRows rowCount={rowCount} />
-      </TokenDataContainer>
-    </GridContainer>
-  )
-}
+// function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
+//   return (
+//     <TokenDataContainer>
+//       <LoadingRows rowCount={rowCount} />
+//     </TokenDataContainer>
+//   )
+// }
 enum TokenSortMethod {
   PRICE = 'Price',
   // PERCENT_CHANGE = 'Change',
@@ -196,7 +227,6 @@ function PHeaderRow() {
       APR={<HeaderCell category={TokenSortMethod.APR} />}
       UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
       // volume={<HeaderCell category={""} />}
-
       sparkLine={null}
     />
   )
@@ -274,30 +304,29 @@ export default function TokenTable() {
         <TVLInfoContainer poolsInfo={poolsInfo} />
         <HowToDetails />
       </PairInfoContainer>
-      {loading ? (
-        <LoadingTokenTable rowCount={PAGE_SIZE} />
-      ) : (
-        <GridContainer>
-          <PHeaderRow />
-          <TokenDataContainer>
-            {dataInfo &&
-              getSortedData(dataInfo, sortAscending[0], sortMethod[0]).map((dat: any, i: number) => (
-                <PLoadedRow
-                  key={`${dat.token0}-${dat.token1}-${dat.fee}`}
-                  tokenListIndex={i++}
-                  tokenListLength={i++}
-                  tokenA={dat.pool?.token0 ?? dat.token0}
-                  tokenB={dat.pool?.token1 ?? dat.token1}
-                  fee={dat.pool?.fee ?? dat.fee}
-                  tvl={dat.TVL}
-                  volume={dat.Volume}
-                  price={dat.priceNow}
-                  delta={dat.delta24h}
-                />
-              ))}
-          </TokenDataContainer>
-        </GridContainer>
-      )}
+      <GridContainer>
+        <PHeaderRow />
+        <TokenDataContainer>
+          {dataInfo && !loading ? (
+            getSortedData(dataInfo, sortAscending[0], sortMethod[0]).map((dat: any, i: number) => (
+              <PLoadedRow
+                key={`${dat.token0}-${dat.token1}-${dat.fee}`}
+                tokenListIndex={i++}
+                tokenListLength={i++}
+                tokenA={dat.pool?.token0 ?? dat.token0}
+                tokenB={dat.pool?.token1 ?? dat.token1}
+                fee={dat.pool?.fee ?? dat.fee}
+                tvl={dat.TVL}
+                volume={dat.Volume}
+                price={dat.priceNow}
+                delta={dat.delta24h}
+              />
+            ))
+          ) : (
+            <LoadingRows rowCount={PAGE_SIZE} />
+          )}
+        </TokenDataContainer>
+      </GridContainer>
     </>
   )
 }

@@ -32,6 +32,7 @@ import {
   useSetSortMethod,
 } from '../state'
 import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
+import { TokenRow } from './PairsRow'
 
 export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
@@ -43,129 +44,77 @@ export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined>
     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
   ),
 }
-
-/* Get singular header cell for header row */
-function HeaderCell({
-  category,
-}: {
-  category: TokenSortMethod // TODO: change this to make it work for trans
-}) {
-  const theme = useTheme()
-  const sortAscending = useAtomValue(sortAscendingAtom)
-  const handleSortCategory = useSetSortMethod(category)
-  const sortMethod = useAtomValue(sortMethodAtom)
-
-  const description = HEADER_DESCRIPTIONS[category]
-
-  return (
-    <HeaderCellWrapper onClick={handleSortCategory}>
-      {sortMethod === category && (
-        <>
-          {sortAscending ? (
-            <ArrowUp size={20} strokeWidth={1.8} color={theme.accentActive} />
-          ) : (
-            <ArrowDown size={20} strokeWidth={1.8} color={theme.accentActive} />
-          )}
-        </>
-      )}
-      {category}
-      {description && (
-        <MouseoverTooltip text={description} placement="right">
-          <InfoIconContainer>
-            <Info size={14} />
-          </InfoIconContainer>
-        </MouseoverTooltip>
-      )}
-    </HeaderCellWrapper>
-  )
-}
-
 /* Token Row: skeleton row component */
-function TokenRow({
-  header,
-  listNumber,
-  tokenInfo,
-  price,
-  percentChange,
-  tvl,
-  volume,
-  sparkLine,
-  ...rest
-}: {
-  first?: boolean
-  header: boolean
-  listNumber: ReactNode
-  loading?: boolean
-  tvl: ReactNode
-  price: ReactNode
-  percentChange: ReactNode
-  sparkLine?: ReactNode
-  tokenInfo: ReactNode
-  volume: ReactNode
-  last?: boolean
-  style?: CSSProperties
-}) {
-  const rowCells = (
-    <>
-      <ListNumberCell header={header}>{listNumber}</ListNumberCell>
-      <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
-      <PriceCell data-testid="price-cell" sortable={header}>
-        {price}
-      </PriceCell>
-      <PercentChangeCell data-testid="percent-change-cell" sortable={header}>
-        {percentChange}
-      </PercentChangeCell>
-      <TvlCell data-testid="tvl-cell" sortable={header}>
-        {tvl}
-      </TvlCell>
-      <VolumeCell data-testid="volume-cell" sortable={header}>
-        {volume}
-      </VolumeCell>
-      <SparkLineCell>{sparkLine}</SparkLineCell>
-    </>
-  )
-  if (header) return <StyledHeaderRow data-testid="header-row">{rowCells}</StyledHeaderRow>
-  return <StyledTokenRow {...rest}>{rowCells}</StyledTokenRow>
-}
-
-/* Header Row: top header row component for table */
-export function HeaderRow() {
-  return (
-    <TokenRow
-      header={true}
-      listNumber="#"
-      tokenInfo={<Trans>Token name</Trans>}
-      price={<HeaderCell category={TokenSortMethod.PRICE} />}
-      percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
-      tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
-      volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
-      sparkLine={null}
-    />
-  )
-}
+// function TokenRow({
+//   header,
+//   listNumber,
+//   tokenInfo,
+//   price,
+//   percentChange,
+//   tvl,
+//   volume,
+//   sparkLine,
+//   ...rest
+// }: {
+//   first?: boolean
+//   header: boolean
+//   listNumber: ReactNode
+//   loading?: boolean
+//   tvl: ReactNode
+//   price: ReactNode
+//   percentChange: ReactNode
+//   sparkLine?: ReactNode
+//   tokenInfo: ReactNode
+//   volume: ReactNode
+//   last?: boolean
+//   style?: CSSProperties
+// }) {
+//   const rowCells = (
+//     <>
+//       <ListNumberCell header={header}>{listNumber}</ListNumberCell>
+//       <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
+//       <PriceCell data-testid="price-cell" sortable={header}>
+//         {price}
+//       </PriceCell>
+//       <PercentChangeCell data-testid="percent-change-cell" sortable={header}>
+//         {percentChange}
+//       </PercentChangeCell>
+//       <TvlCell data-testid="tvl-cell" sortable={header}>
+//         {tvl}
+//       </TvlCell>
+//       <VolumeCell data-testid="volume-cell" sortable={header}>
+//         {volume}
+//       </VolumeCell>
+//       <SparkLineCell>{sparkLine}</SparkLineCell>
+//     </>
+//   )
+//   if (header) return <StyledHeaderRow data-testid="header-row">{rowCells}</StyledHeaderRow>
+//   return <StyledTokenRow {...rest}>{rowCells}</StyledTokenRow>
+// }
 
 /* Loading State: row component with loading bubbles */
-export function LoadingRow(props: { first?: boolean; last?: boolean }) {
-  return (
-    <TokenRow
-      header={false}
-      listNumber={<SmallLoadingBubble />}
-      loading
-      tokenInfo={
-        <>
-          <IconLoadingBubble />
-          <MediumLoadingBubble />
-        </>
-      }
-      price={<MediumLoadingBubble />}
-      percentChange={<LoadingBubble />}
-      tvl={<LoadingBubble />}
-      volume={<LoadingBubble />}
-      sparkLine={<SparkLineLoadingBubble />}
-      {...props}
-    />
-  )
-}
+// export function LoadingRow(props: { first?: boolean; last?: boolean }) {
+//   return (
+//     <TokenRow
+//       header={false}
+//       listNumber={<IconLoadingBubble />}
+//       loading
+//       tokenInfo={
+//         <div>
+//           <SmallLoadingBubble />
+//           <SmallLoadingBubble />
+//         </div>
+//       }
+//       price={<MediumLoadingBubble />}
+//       priceChange={<SmallLoadingBubble />}
+//       tvl={<SmallLoadingBubble />}
+//       volume={<SmallLoadingBubble />}
+//       sparkLine={<SmallLoadingBubble />}
+//       APR={<></>}
+//       {...props}
+//     />
+//   )
+// }
 
 interface LoadedRowProps {
   tokenListIndex: number
@@ -176,101 +125,101 @@ interface LoadedRowProps {
 }
 
 /* Loaded State: row component with token information */
-export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, token, sortRank } = props
-  const filterString = useAtomValue(filterStringAtom)
+// export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+//   const { tokenListIndex, tokenListLength, token, sortRank } = props
+//   const filterString = useAtomValue(filterStringAtom)
 
-  const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
-  const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
-  const timePeriod = useAtomValue(filterTimeAtom)
-  const delta = token.market?.pricePercentChange?.value
-  const arrow = getDeltaArrow(delta)
-  const smallArrow = getDeltaArrow(delta, 14)
-  const formattedDelta = formatDelta(delta)
+//   const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
+//   const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
+//   const timePeriod = useAtomValue(filterTimeAtom)
+//   const delta = token.market?.pricePercentChange?.value
+//   const arrow = getDeltaArrow(delta)
+//   const smallArrow = getDeltaArrow(delta, 14)
+//   const formattedDelta = formatDelta(delta)
 
-  const exploreTokenSelectedEventProperties = {
-    chain_id: chainId,
-    token_address: token.address,
-    token_symbol: token.symbol,
-    token_list_index: tokenListIndex,
-    token_list_rank: sortRank,
-    token_list_length: tokenListLength,
-    time_frame: timePeriod,
-    search_token_address_input: filterString,
-  }
+//   const exploreTokenSelectedEventProperties = {
+//     chain_id: chainId,
+//     token_address: token.address,
+//     token_symbol: token.symbol,
+//     token_list_index: tokenListIndex,
+//     token_list_rank: sortRank,
+//     token_list_length: tokenListLength,
+//     time_frame: timePeriod,
+//     search_token_address_input: filterString,
+//   }
 
-  // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
-  return (
-    <div ref={ref} data-testid={`token-table-row-${token.symbol}`}>
-      <StyledLink
-        to={getTokenDetailsURL(token)}
-        onClick={() =>
-          sendAnalyticsEvent(InterfaceEventName.EXPLORE_TOKEN_ROW_CLICKED, exploreTokenSelectedEventProperties)
-        }
-      >
-        <TokenRow
-          header={false}
-          listNumber={sortRank}
-          tokenInfo={
-            <ClickableName>
-              <QueryTokenLogo token={token} />
-              <TokenInfoCell>
-                <TokenName data-cy="token-name">{token.name}</TokenName>
-                <TokenSymbol>{token.symbol}</TokenSymbol>
-              </TokenInfoCell>
-            </ClickableName>
-          }
-          price={
-            <ClickableContent>
-              <PriceInfoCell>
-                {formatUSDPrice(token.market?.price?.value)}
-                <PercentChangeInfoCell>
-                  <ArrowCell>{smallArrow}</ArrowCell>
-                  <DeltaText delta={delta}>{formattedDelta}</DeltaText>
-                </PercentChangeInfoCell>
-              </PriceInfoCell>
-            </ClickableContent>
-          }
-          percentChange={
-            <ClickableContent>
-              <ArrowCell>{arrow}</ArrowCell>
-              <DeltaText delta={delta}>{formattedDelta}</DeltaText>
-            </ClickableContent>
-          }
-          tvl={
-            <ClickableContent>
-              {formatNumber(token.market?.totalValueLocked?.value, NumberType.FiatTokenStats)}
-            </ClickableContent>
-          }
-          volume={
-            <ClickableContent>{formatNumber(token.market?.volume?.value, NumberType.FiatTokenStats)}</ClickableContent>
-          }
-          sparkLine={
-            <SparkLine>
-              <ParentSize>
-                {({ width, height }) =>
-                  props.sparklineMap && (
-                    <SparklineChart
-                      width={width}
-                      height={height}
-                      tokenData={token}
-                      pricePercentChange={token.market?.pricePercentChange?.value}
-                      sparklineMap={props.sparklineMap}
-                    />
-                  )
-                }
-              </ParentSize>
-            </SparkLine>
-          }
-          first={tokenListIndex === 0}
-          last={tokenListIndex === tokenListLength - 1}
-        />
-      </StyledLink>
-    </div>
-  )
-})
+//   // TODO: currency logo sizing mobile (32px) vs. desktop (24px)
+//   return (
+//     <div ref={ref} data-testid={`token-table-row-${token.symbol}`}>
+//       <StyledLink
+//         to={getTokenDetailsURL(token)}
+//         onClick={() =>
+//           sendAnalyticsEvent(InterfaceEventName.EXPLORE_TOKEN_ROW_CLICKED, exploreTokenSelectedEventProperties)
+//         }
+//       >
+//         <TokenRow
+//           header={false}
+//           listNumber={sortRank}
+//           tokenInfo={
+//             <ClickableName>
+//               <QueryTokenLogo token={token} />
+//               <TokenInfoCell>
+//                 <TokenName data-cy="token-name">{token.name}</TokenName>
+//                 <TokenSymbol>{token.symbol}</TokenSymbol>
+//               </TokenInfoCell>
+//             </ClickableName>
+//           }
+//           price={
+//             <ClickableContent>
+//               <PriceInfoCell>
+//                 {formatUSDPrice(token.market?.price?.value)}
+//                 <PercentChangeInfoCell>
+//                   <ArrowCell>{smallArrow}</ArrowCell>
+//                   <DeltaText delta={delta}>{formattedDelta}</DeltaText>
+//                 </PercentChangeInfoCell>
+//               </PriceInfoCell>
+//             </ClickableContent>
+//           }
+//           percentChange={
+//             <ClickableContent>
+//               <ArrowCell>{arrow}</ArrowCell>
+//               <DeltaText delta={delta}>{formattedDelta}</DeltaText>
+//             </ClickableContent>
+//           }
+//           tvl={
+//             <ClickableContent>
+//               {formatNumber(token.market?.totalValueLocked?.value, NumberType.FiatTokenStats)}
+//             </ClickableContent>
+//           }
+//           volume={
+//             <ClickableContent>{formatNumber(token.market?.volume?.value, NumberType.FiatTokenStats)}</ClickableContent>
+//           }
+//           sparkLine={
+//             <SparkLine>
+//               <ParentSize>
+//                 {({ width, height }) =>
+//                   props.sparklineMap && (
+//                     <SparklineChart
+//                       width={width}
+//                       height={height}
+//                       tokenData={token}
+//                       pricePercentChange={token.market?.pricePercentChange?.value}
+//                       sparklineMap={props.sparklineMap}
+//                     />
+//                   )
+//                 }
+//               </ParentSize>
+//             </SparkLine>
+//           }
+//           first={tokenListIndex === 0}
+//           last={tokenListIndex === tokenListLength - 1}
+//         />
+//       </StyledLink>
+//     </div>
+//   )
+// })
 
-LoadedRow.displayName = 'LoadedRow'
+// LoadedRow.displayName = 'LoadedRow'
 
 const Cell = styled.div`
   display: flex;
