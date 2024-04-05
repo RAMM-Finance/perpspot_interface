@@ -466,6 +466,7 @@ export function SelectPool() {
   const outputCurrency = useCurrentOutputCurrency()
   const inputCurrency = useCurrentInputCurrency()
   const currentPool = useCurrentPool()
+  console.log('selectPool:outputCurrency', outputCurrency)
   const poolKey = currentPool?.poolKey
   const { result: poolData } = usePoolsData()
 
@@ -499,11 +500,13 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
-                <DoubleCurrencyLogo
-                  currency0={inputCurrency as Currency}
-                  currency1={outputCurrency as Currency}
-                  size={20}
-                />
+                {inputCurrency && outputCurrency && (
+                  <DoubleCurrencyLogo
+                    currency0={inputCurrency as Currency}
+                    currency1={outputCurrency as Currency}
+                    size={20}
+                  />
+                )}
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={false}>
                     <Row gap="6">

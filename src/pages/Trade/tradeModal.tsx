@@ -13,6 +13,7 @@ import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PremiumCurrencySelector } from 'components/PremiumCurrencySelector'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
@@ -206,7 +207,6 @@ const TradeTabContent = () => {
     [relevantTokenBalances]
   )
 
-  // console.log('-------currencyBalances, currencies----------')
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
     txHash: string | undefined
@@ -530,17 +530,10 @@ const TradeTabContent = () => {
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
-  if (
-    chainId && 
-    (
-      chainId !== SupportedChainId.ARBITRUM_ONE &&
-      chainId !== SupportedChainId.BERA_ARTIO &&
-      chainId !== SupportedChainId.LINEA &&
-      chainId !== SupportedChainId.BASE
-    )){
+  if (chainId && unsupportedChain(chainId)) {
     return (
       <Wrapper>
-        <ThemedText.DeprecatedError error={true}>Sorry, this does not support the connected chain.</ThemedText.DeprecatedError>
+        <ThemedText.DeprecatedError error={true}>Unsupported chain.</ThemedText.DeprecatedError>
       </Wrapper>
     )
   }
@@ -659,9 +652,9 @@ const TradeTabContent = () => {
                     >
                       <ThemedText.BodySmall>
                         <div style={{ display: 'flex', gap: '4px' }}>
-                          {baseCurrency && (
+                          {baseCurrency && quoteCurrency && (
                             <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                              {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                              {quoteCurrency.symbol} per {baseCurrency.symbol}
                             </ThemedText.DeprecatedBody>
                           )}
                         </div>

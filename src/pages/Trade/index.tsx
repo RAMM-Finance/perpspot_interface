@@ -10,7 +10,6 @@ import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
-import { PinnedPools } from 'components/swap/PinnedPools'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -252,7 +251,7 @@ export default function Trade({ className }: { className?: string }) {
   const { account, chainId } = useWeb3React()
 
   const { activeTab } = useSwapState()
-  
+
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
   const currentPool = useCurrentPool()
@@ -262,7 +261,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
-  
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -330,9 +328,7 @@ export default function Trade({ className }: { className?: string }) {
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
         <MainWrapper pins={isPin}>
-          <PinWrapper>
-            <PinnedPools />
-          </PinWrapper>
+          <PinWrapper>{/* <PinnedPools /> */}</PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool />
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} />
