@@ -187,6 +187,7 @@ function getPrevTradePoints(tradeProcessedByTrader: any) {
 }
 
 export function useStoredData(addresses: any) {
+  const { chainId } = useWeb3React()
   const brp = useBRP()
 
   const [pointsData, setPointsData] = useState<any>()
@@ -203,7 +204,11 @@ export function useStoredData(addresses: any) {
           // Convert BigNumber to number. Adjust precision as needed.
           let tPoints = tradePoints[index].toNumber()
 
-          const q = query(collection(firestore, 'swap-points'), where('account', '==', address))
+          const q = query(
+            collection(firestore, 'swap-points'), 
+            where('account', '==', address),
+            where('chainId', '==', chainId)
+          )
 
           const querySnapshot = await getDocs(q)
           const data = querySnapshot.docs.map(doc => doc.data())

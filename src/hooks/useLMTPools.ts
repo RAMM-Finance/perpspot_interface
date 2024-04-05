@@ -33,6 +33,7 @@ export function usePoolsData(): {
   result: PoolTVLData | undefined
   error: boolean
 } {
+
   const dataProvider = useDataProviderContract()
 
   const { data, isLoading, isError } = useQuery(

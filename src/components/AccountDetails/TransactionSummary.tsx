@@ -304,7 +304,7 @@ function AddLiquidityV2PoolSummary({
 }
 
 function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutputSwapTransactionInfo }) {
-  const { account } = useWeb3React()
+  const { account, chainId } = useWeb3React()
   const [SwapComplete, setSwapComplete] = useState(false)
   useEffect(() => {
     setSwapComplete(true)
@@ -324,13 +324,18 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
 
       const tPoint = (tokenInfoFromUniswap?.lastPriceUSD * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
 
-      const q = query(collection(firestore, 'swap-points'), where('account', '==', account))
+      const q = query(
+        collection(firestore, 'swap-points'), 
+        where('account', '==', account),
+        where('chainId', '==', chainId)
+      )
 
       const querySnapshot = await getDocs(q)
       const data = querySnapshot.docs.map(doc => doc.data())
       
       if (!data || data.length === 0) {
         await addDoc(collection(firestore, 'swap-points'), {
+          chainId: chainId,
           account: account,
           amount: tPoint
         })
