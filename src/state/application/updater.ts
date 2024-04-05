@@ -43,11 +43,11 @@ const DEFAULT_POOLS: {
       token1: '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b',
       fee: 500,
     },
+    poolId: getPoolId('0x174652b085C32361121D519D788AbF0D9ad1C355', '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b', 500),
+    inputInToken0: true,
     token0IsBase: false,
     token0Symbol: 'USDC',
     token1Symbol: 'WETH',
-    poolId: getPoolId('0x174652b085C32361121D519D788AbF0D9ad1C355', '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b', 500),
-    inputInToken0: true,
   },
   [SupportedChainId.LINEA]: {
     poolKey: {
@@ -96,7 +96,6 @@ export default function Updater(): null {
     }
   }, [result])
   const { poolsOHLC } = usePoolsOHLC(poolList)
-
   useEffect(() => {
     if (poolsOHLC) {
       dispatch(updatePoolPriceData(poolsOHLC))
@@ -131,7 +130,8 @@ export default function Updater(): null {
       if (activeChainId !== chainId) {
         setActiveChainId(chainId)
         const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol } = DEFAULT_POOLS[chainId]
-        setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol })
+        
+        dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
       }
     }
   }, [dispatch, chainId, provider, windowVisible, activeChainId])

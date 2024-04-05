@@ -194,6 +194,7 @@ export default function PositionListItem({
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
+
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const position = useMemo(() => {

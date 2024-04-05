@@ -315,6 +315,7 @@ function MarginPositionInfo({
 }) {
   const currency0 = useCurrency(position?.poolKey.token0)
   const currency1 = useCurrency(position?.poolKey.token1)
+
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
   return (
     <PositionInfoWrapper>

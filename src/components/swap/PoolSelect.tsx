@@ -466,7 +466,6 @@ export function SelectPool() {
   const inputCurrency = useCurrentInputCurrency()
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
-
   const { result: poolData } = usePoolsData()
 
   const [anchorEl, setAnchorEl] = useState(null)

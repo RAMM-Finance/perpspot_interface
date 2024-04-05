@@ -258,7 +258,7 @@ export default function Trade({ className }: { className?: string }) {
   const { account, chainId } = useWeb3React()
 
   const { activeTab } = useSwapState()
-
+  
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
   const currentPool = useCurrentPool()
@@ -267,6 +267,8 @@ export default function Trade({ className }: { className?: string }) {
   const token1 = useCurrency(poolKey?.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -278,10 +280,6 @@ export default function Trade({ className }: { className?: string }) {
   const poolsOHLC = useAppPoolOHLC()
 
   const chartSymbol = useMemo(() => {
-    console.log("BEFORE CHART SYMBOL")
-    console.log(pool)
-    console.log(poolsOHLC)
-    console.log(chainId)
     if (pool && poolsOHLC && chainId) {
       const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 

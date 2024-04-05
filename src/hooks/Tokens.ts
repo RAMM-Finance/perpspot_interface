@@ -38,7 +38,6 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   // const tokensFromMap = useTokensFromMap(defaultListTokens)
 
   const { chainId } = useWeb3React()
-
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
   const userAddedTokens = useUserAddedTokens()
 
