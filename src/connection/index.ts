@@ -125,7 +125,7 @@ const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = initializeConnector<Coinba
     new CoinbaseWallet({
       actions,
       options: {
-        url: RPC_URLS[SupportedChainId.MAINNET][0],
+        url: RPC_URLS[SupportedChainId.ARBITRUM_ONE][0],
         appName: 'Uniswap',
         appLogoUrl: UNISWAP_LOGO_URL,
         reloadOnDisconnect: false,

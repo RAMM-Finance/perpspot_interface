@@ -1,5 +1,3 @@
-// import { WidgetSkeleton } from 'components/Widget'
-import { StatsWrapper } from 'components/swap/StatsSection'
 import { DEFAULT_WIDGET_WIDTH } from 'components/Widget'
 import { ArrowLeft } from 'react-feather'
 import { useParams } from 'react-router-dom'
@@ -10,7 +8,7 @@ import { LoadingBubble } from '../loading'
 import { AboutContainer, AboutHeader } from './About'
 import { BreadcrumbNavLink } from './BreadcrumbNavLink'
 import { TokenPrice } from './PriceChart'
-import { StatPair, StatWrapper } from './StatsSection'
+import { StatPair } from './StatsSection'
 export const Hr = styled.hr`
   background-color: ${({ theme }) => theme.backgroundOutline};
   border: none;
@@ -48,6 +46,18 @@ export const RightPanel = styled.div`
   @media screen and (min-width: ${({ theme }) => theme.breakpoint.lg}px) {
     display: flex;
   }
+`
+
+const StatsWrapper = styled.div`
+  gap: 16px;
+  ${textFadeIn}
+`
+const StatWrapper = styled.div`
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 14px;
+  min-width: 168px;
+  flex: 1;
+  padding: 24px 0px;
 `
 export const ChartContainer = styled.div`
   display: flex;

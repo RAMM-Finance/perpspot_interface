@@ -5,7 +5,6 @@ import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
-import { FakeTokensMapSepolia } from 'constants/fake-tokens'
 import { TransactionPartsFragment, TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
 import { formatSymbol } from 'lib/utils/formatSymbol'
 import { useMemo } from 'react'
@@ -41,7 +40,7 @@ export function getCurrency(
   chainId: SupportedChainId,
   tokens?: TokenAddressMap
 ): Currency | undefined {
-  if (SupportedChainId.SEPOLIA === chainId) return FakeTokensMapSepolia[currencyId]
+  // if (SupportedChainId.SEPOLIA === chainId) return FakeTokensMapSepolia[currencyId]
   if (tokens) {
     return currencyId === 'ETH' ? nativeOnChain(chainId) : tokens[chainId]?.[currencyId]?.token
   }
@@ -368,7 +367,7 @@ export function parseLocalActivity(
     additionalFields = parseReduceLimitOrder(info, chainId, tokens)
   } else if (info.type === TransactionType.CANCEL_LIMIT_ORDER) {
     additionalFields = parseCancelLimitOrder(info, chainId, tokens)
-  } 
+  }
 
   return { ...defaultFields, ...additionalFields }
 }

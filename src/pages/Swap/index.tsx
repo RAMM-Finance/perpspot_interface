@@ -1,20 +1,14 @@
 import { Currency, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
-import { NATIVE_CHAIN_ID } from 'constants/tokens'
-import useParsedQueryString from 'hooks/useParsedQueryString'
 import { ReactNode } from 'react'
-import { useMemo, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
-import { queryParametersToCurrencyState } from 'state/swap/hooks'
 import { SwapAndLimitContextProvider, SwapContextProvider } from 'state/swap/SwapContext'
 import styled from 'styled-components/macro'
 
 import { SwapWrapper } from '../../components/swap/styleds'
 import SwapTabContent from './swapModal'
-
 
 export const PageWrapper = styled.div`
   padding: 68px 8px 0px;
@@ -81,27 +75,8 @@ export function getIsValidSwapQuote(
   return !!swapInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
-function getCurrencyURLAddress(currency?: Currency): string {
-  if (!currency) return ''
-
-  if (currency.isToken) {
-    return currency.address
-  }
-  return NATIVE_CHAIN_ID
-}
-
 export default function SwapPage() {
-  const location = useLocation()
-
   const { chainId } = useWeb3React()
-
-  const parsedQs = useParsedQueryString()
-
-  const parsedCurrencyState = useMemo(() => {
-    return queryParametersToCurrencyState(parsedQs)
-  }, [parsedQs])
-
-
   return (
     <PageWrapper>
       <Swap chainId={chainId} />

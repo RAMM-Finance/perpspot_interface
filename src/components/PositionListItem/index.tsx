@@ -7,7 +7,6 @@ import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
-import { RowBetween } from 'components/Row'
 import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
@@ -17,12 +16,10 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
 import styled, { useTheme } from 'styled-components/macro'
-import { HideSmall, MEDIA_WIDTHS, LargeShow, SmallOnly, ThemedText } from 'theme'
+import { HideSmall, LargeShow, MEDIA_WIDTHS, SmallOnly, ThemedText } from 'theme'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
-
-import { DAI, USDC_MAINNET, USDT, WBTC, WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 
 const LinkRow = styled(Link)`
   align-items: center;
@@ -82,7 +79,7 @@ const RangeText = styled(ThemedText.Caption)<{ color?: string }>`
   word-break: break-word;
   padding: 0.25rem 0.25rem;
   border-radius: 8px;
-  color: ${({ color, theme }) => color ? color : theme.accentTextLightSecondary};
+  color: ${({ color, theme }) => (color ? color : theme.accentTextLightSecondary)};
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
       padding: 0.25rem 0;
   `};
@@ -136,26 +133,26 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
   const token1 = position.amount1.currency
 
   // if token0 is a dollar-stable asset, set it as the quote token
-  const stables = [DAI, USDC_MAINNET, USDT]
-  if (stables.some((stable) => stable.equals(token0))) {
-    return {
-      priceLower: position.token0PriceUpper.invert(),
-      priceUpper: position.token0PriceLower.invert(),
-      quote: token0,
-      base: token1,
-    }
-  }
+  // const stables = [DAI, USDC_MAINNET, USDT]
+  // if (stables.some((stable) => stable.equals(token0))) {
+  //   return {
+  //     priceLower: position.token0PriceUpper.invert(),
+  //     priceUpper: position.token0PriceLower.invert(),
+  //     quote: token0,
+  //     base: token1,
+  //   }
+  // }
 
   // if token1 is an ETH-/BTC-stable asset, set it as the base token
-  const bases = [...Object.values(WRAPPED_NATIVE_CURRENCY), WBTC]
-  if (bases.some((base) => base && base.equals(token1))) {
-    return {
-      priceLower: position.token0PriceUpper.invert(),
-      priceUpper: position.token0PriceLower.invert(),
-      quote: token0,
-      base: token1,
-    }
-  }
+  // const bases = [...Object.values(WRAPPED_NATIVE_CURRENCY), WBTC]
+  // if (bases.some((base) => base && base.equals(token1))) {
+  //   return {
+  //     priceLower: position.token0PriceUpper.invert(),
+  //     priceUpper: position.token0PriceLower.invert(),
+  //     quote: token0,
+  //     base: token1,
+  //   }
+  // }
 
   // if both prices are below 1, invert
   if (position.token0PriceUpper.lessThan(1)) {
@@ -185,7 +182,7 @@ export default function PositionListItem({
   tickLower,
   tickUpper,
 }: PositionListItemProps) {
-  const theme = useTheme();
+  const theme = useTheme()
 
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
@@ -235,59 +232,58 @@ export default function PositionListItem({
   return (
     <LinkRow to={positionSummaryLink}>
       {/* <RowBetween> */}
-        <PrimaryPositionIdData>
-          <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
-          <ThemedText.SubHeader color="textSecondary">
-            {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
-          </ThemedText.SubHeader>
-          {/* <FeeTierText>
+      <PrimaryPositionIdData>
+        <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
+        <ThemedText.SubHeader color="textSecondary">
+          {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+        </ThemedText.SubHeader>
+        {/* <FeeTierText>
             <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>
           </FeeTierText> */}
-        </PrimaryPositionIdData>
-        {priceLower && priceUpper ? (
-          <RangeLineItem>
-            <RangeText>
-              <ExtentsText>
-                <Trans>Min: </Trans>
-              </ExtentsText>
-              <Trans>
-                <span>
-                  {formatTickPrice({
-                    price: priceLower,
-                    atLimit: tickAtLimit,
-                    direction: Bound.LOWER,
-                  })}{' '}
-                </span>
-                <HoverInlineText text={currencyBase?.symbol} /> per{' '}
-                <HoverInlineText text={currencyQuote?.symbol ?? ''} />
-              </Trans>
-            </RangeText>{' '}
-            <LargeShow>
-              <DoubleArrow>↔</DoubleArrow>{' '}
-            </LargeShow>
-            <SmallOnly>
-              <DoubleArrow>↔</DoubleArrow>{' '}
-            </SmallOnly>
-            <RangeText>
-              <ExtentsText>
-                <Trans>Max: </Trans>
-              </ExtentsText>
-              <Trans>
-                <span>
-                  {formatTickPrice({
-                    price: priceUpper,
-                    atLimit: tickAtLimit,
-                    direction: Bound.UPPER,
-                  })}{' '}
-                </span>
-                <HoverInlineText text={currencyBase?.symbol} /> per{' '}
-                <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} />
-              </Trans>
-            </RangeText>
-          </RangeLineItem>
-        ) : (
-          <Loader />
-        )}
+      </PrimaryPositionIdData>
+      {priceLower && priceUpper ? (
+        <RangeLineItem>
+          <RangeText>
+            <ExtentsText>
+              <Trans>Min: </Trans>
+            </ExtentsText>
+            <Trans>
+              <span>
+                {formatTickPrice({
+                  price: priceLower,
+                  atLimit: tickAtLimit,
+                  direction: Bound.LOWER,
+                })}{' '}
+              </span>
+              <HoverInlineText text={currencyBase?.symbol} /> per <HoverInlineText text={currencyQuote?.symbol ?? ''} />
+            </Trans>
+          </RangeText>{' '}
+          <LargeShow>
+            <DoubleArrow>↔</DoubleArrow>{' '}
+          </LargeShow>
+          <SmallOnly>
+            <DoubleArrow>↔</DoubleArrow>{' '}
+          </SmallOnly>
+          <RangeText>
+            <ExtentsText>
+              <Trans>Max: </Trans>
+            </ExtentsText>
+            <Trans>
+              <span>
+                {formatTickPrice({
+                  price: priceUpper,
+                  atLimit: tickAtLimit,
+                  direction: Bound.UPPER,
+                })}{' '}
+              </span>
+              <HoverInlineText text={currencyBase?.symbol} /> per{' '}
+              <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} />
+            </Trans>
+          </RangeText>
+        </RangeLineItem>
+      ) : (
+        <Loader />
+      )}
       {priceLower && priceUpper ? (
         <>
           {/*<RangeLineItem>

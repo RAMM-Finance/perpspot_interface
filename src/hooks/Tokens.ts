@@ -94,17 +94,17 @@ export function useUnsupportedTokens(): { [address: string]: Token } {
     const unsupportedSet = new Set(Object.keys(unsupportedTokens))
 
     return list.tokens.reduce((acc, tokenInfo) => {
-      const bridgeInfo = tokenInfo.extensions?.bridgeInfo as unknown as BridgeInfo
-      if (
-        bridgeInfo &&
-        bridgeInfo[SupportedChainId.MAINNET] &&
-        bridgeInfo[SupportedChainId.MAINNET].tokenAddress &&
-        unsupportedSet.has(bridgeInfo[SupportedChainId.MAINNET].tokenAddress)
-      ) {
-        const address = bridgeInfo[SupportedChainId.MAINNET].tokenAddress
-        // don't rely on decimals--it's possible that a token could be bridged w/ different decimals on the L2
-        return { ...acc, [address]: new Token(SupportedChainId.MAINNET, address, tokenInfo.decimals) }
-      }
+      // const bridgeInfo = tokenInfo.extensions?.bridgeInfo as unknown as BridgeInfo
+      // if (
+      //   bridgeInfo &&
+      //   bridgeInfo[SupportedChainId.MAINNET] &&
+      //   bridgeInfo[SupportedChainId.MAINNET].tokenAddress &&
+      //   unsupportedSet.has(bridgeInfo[SupportedChainId.MAINNET].tokenAddress)
+      // ) {
+      //   const address = bridgeInfo[SupportedChainId.MAINNET].tokenAddress
+      //   // don't rely on decimals--it's possible that a token could be bridged w/ different decimals on the L2
+      //   return { ...acc, [address]: new Token(SupportedChainId.MAINNET, address, tokenInfo.decimals) }
+      // }
       return acc
     }, {})
   }, [chainId, listsByUrl, unsupportedTokens])

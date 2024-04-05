@@ -322,12 +322,12 @@ const TradeTabContent = () => {
   // allowance / approval
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
     tradeApprovalInfo?.inputApprovalAmount,
-    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
   const [outputApprovalState, approveOutputCurrency] = useApproveCallback(
     tradeApprovalInfo?.outputApprovalAmount,
-    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
   const notApproved =

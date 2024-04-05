@@ -1,6 +1,6 @@
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { SupportedChainId } from 'constants/chains'
+import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import { useLmtQuoterContract } from 'hooks/useContract'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
@@ -119,8 +119,10 @@ export default function Updater(): null {
       (!currentPools[chainId] ||
         !currentPools[chainId]?.poolId ||
         !currentPools[chainId]?.token0Symbol ||
-        !currentPools[chainId]?.token1Symbol)
+        !currentPools[chainId]?.token1Symbol) &&
+      ALL_SUPPORTED_CHAIN_IDS.includes(chainId)
     ) {
+      console.log('setting default pool', chainId)
       const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = DEFAULT_POOLS[chainId]
       dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
     }
@@ -128,7 +130,7 @@ export default function Updater(): null {
 
   useEffect(() => {
     if (provider && chainId && windowVisible) {
-      if (activeChainId !== chainId) {
+      if (activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
         setActiveChainId(chainId)
         const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol } = DEFAULT_POOLS[chainId]
         setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol })

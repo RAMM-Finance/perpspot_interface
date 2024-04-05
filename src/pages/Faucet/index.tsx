@@ -2,10 +2,10 @@ import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { SupportedChainId } from 'constants/chains'
-import { FakeTokens_MUMBAI, FakeTokens_SEPOLIA, USDC_BERA, WETH_BERA } from 'constants/fake-tokens'
+import { USDC_BERA, WETH_BERA } from 'constants/fake-tokens'
 import { useFaucetCallback } from 'hooks/useApproveCallback'
 import { MaxButton } from 'pages/Pool/styleds'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -144,13 +144,13 @@ export default function FaucetsPage() {
           })}
         {!account || !provider ? (
           <ThemedText.DeprecatedLargeHeader>Connect Account</ThemedText.DeprecatedLargeHeader>
-        // ) : chainId !== SupportedChainId.SEPOLIA ? (
+        ) : // ) : chainId !== SupportedChainId.SEPOLIA ? (
         //   <ThemedText.DeprecatedLargeHeader>Connect to Sepolia</ThemedText.DeprecatedLargeHeader>
-        ) : chainId !== SupportedChainId.BERA_ARTIO ? (
+        chainId !== SupportedChainId.BERA_ARTIO ? (
           <ThemedText.DeprecatedLargeHeader>Connect to Bera Artio</ThemedText.DeprecatedLargeHeader>
-        // ) : isHolder === false ? (
+        ) : // ) : isHolder === false ? (
         //   <ThemedText.DeprecatedLargeHeader>Must be Beacon Owner...</ThemedText.DeprecatedLargeHeader>
-        ) : null}
+        null}
       </FaucetsContainer>
     </PageWrapper>
   )

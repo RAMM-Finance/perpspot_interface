@@ -1,5 +1,4 @@
 import { useWeb3React } from '@web3-react/core'
-import { SupportedChainId } from 'constants/chains'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
 
@@ -62,11 +61,10 @@ export default function Popups() {
 
   // need extra padding if network is not L1 Ethereum
   const { chainId } = useWeb3React()
-  const isNotOnMainnet = Boolean(chainId && chainId !== SupportedChainId.MAINNET)
 
   return (
     <>
-      <FixedPopupColumn gap="20px" extraPadding={urlWarningActive} xlPadding={isNotOnMainnet}>
+      <FixedPopupColumn gap="20px" extraPadding={urlWarningActive} xlPadding={true}>
         <ClaimPopup />
         {activePopups.map((item) => (
           <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />

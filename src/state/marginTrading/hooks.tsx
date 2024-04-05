@@ -367,12 +367,12 @@ export function useDerivedAddPositionInfo(
 
   const [inputApprovalState] = useApproveCallback(
     tradeApprovalInfo?.inputApprovalAmount,
-    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
   const [outputApprovalState] = useApproveCallback(
     tradeApprovalInfo?.outputApprovalAmount,
-    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
+    LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
   // get fee params

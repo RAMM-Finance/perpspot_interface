@@ -3,9 +3,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
-import { useCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { PoolKey } from 'types/lmtv2position'
 import { formatDollar } from 'utils/formatNumbers'
 
 const LOGO_SIZE = 20
@@ -59,11 +57,7 @@ interface PoolSelectorRowProps {
   currencyId: string[]
   tvl: number
   volume: number
-  onPoolSelect: (
-    currencyIn: Currency,
-    currencyOut: Currency,
-    fee: number
-  ) => void
+  onPoolSelect: (currencyIn: Currency, currencyOut: Currency, fee: number) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
   fee: number
   setSelectPair?: Dispatch<SetStateAction<boolean>>
@@ -78,9 +72,8 @@ export default function PoolSelectorRow({
   setSelectPair,
   tvl,
   volume,
-  active
+  active,
 }: PoolSelectorRowProps) {
-  
   const baseCurrency = useCurrency(currencyId[0])
   const quoteCurrency = useCurrency(currencyId[1])
   const [token0, token1] =
