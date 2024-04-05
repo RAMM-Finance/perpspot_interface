@@ -1,15 +1,18 @@
-import { LoadingBubble } from 'components/Tokens/loading'
+import { useWeb3React } from '@web3-react/core'
+// const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
+import { fadeInOut } from 'components/Loader/styled'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import moment from 'moment'
-import { IChartingLibraryWidget, LanguageCode, widget } from 'public/charting_library'
+import { IChartingLibraryWidget, widget } from 'public/charting_library'
 import { useEffect, useRef } from 'react'
 import { useState } from 'react'
-import styled from 'styled-components/macro'
+import { AlertTriangle } from 'react-feather'
+import styled, { useTheme } from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
+import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
 import { defaultChartProps } from './constants'
 import useGeckoDatafeed from './useGeckoDataFeed'
-
-// const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
-
 const ChartContainer = styled.div`
   width: 100%;
   height: 100%;
@@ -19,100 +22,96 @@ const ChartContainer = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
-// interface ChartContainerProps {
-//  symbol: ChartingLibraryWidgetOptions['symbol'];
-//  interval: ChartingLibraryWidgetOptions['interval'];
+const ChartLoadingBar = styled(ChartLoader)`
+  animation: ${fadeInOut} 2s infinite;
+`
 
-//  // BEWARE: no trailing slash is expected in feed URL
-//  datafeedUrl: string;
-//  libraryPath: ChartingLibraryWidgetOptions['library_path'];
-//  chartsStorageUrl: ChartingLibraryWidgetOptions['charts_storage_url'];
-//  chartsStorageApiVersion: ChartingLibraryWidgetOptions['charts_storage_api_version'];
-//  clientId: ChartingLibraryWidgetOptions['client_id'];
-//  userId: ChartingLibraryWidgetOptions['user_id'];
-//  fullscreen: ChartingLibraryWidgetOptions['fullscreen'];
-//  autosize: ChartingLibraryWidgetOptions['autosize'];
-//  studiesOverrides: ChartingLibraryWidgetOptions['studies_overrides'];
-//  container: ChartingLibraryWidgetOptions['container'];
-// }
-
-const getLanguageFromURL = (): LanguageCode | null => {
-  const regex = new RegExp('[\\?&]lang=([^&#]*)')
-  const results = regex.exec(location.search)
-  return results === null ? null : (decodeURIComponent(results[1].replace(/\+/g, ' ')) as LanguageCode)
-}
+const UnsupportedChartContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border: solid ${({ theme }) => theme.backgroundOutline};
+  border-width: 1px;
+  border-radius: 10px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+`
 
 export const PoolDataChart = ({
-  chainId,
   symbol,
   chartContainerRef,
 }: {
-  chainId: number
-  symbol: string
+  symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
 }) => {
-  // const { datafeed } = useDatafeed({ chainId })
-  const { datafeed } = useGeckoDatafeed({ chainId })
+  const { chainId } = useWeb3React()
+
+  const { datafeed } = useGeckoDatafeed()
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(moment.now())
-  const symbolRef = useRef<string>(symbol) // Initialize symbolRef with symbol
+  const symbolRef = useRef<string>() // Initialize symbolRef with symbol
 
   useEffect(() => {
-    symbolRef.current = symbol
-    localStorage.setItem('chartData', symbol)
-    // You may need to reinitialize or update your chart here if necessary
+    // Check if initialValue is not null and not undefined
+    if (symbol !== null && symbol !== undefined) {
+      symbolRef.current = symbol
+      localStorage.setItem('chartData', symbol)
+    }
   }, [symbol])
 
   useEffect(() => {
     // Function to initialize the TradingView widget
-    const initTradingView = () => {
-      const widgetOptions = {
-        debug: false,
-        symbol: symbolRef.current,
-        datafeed,
-        theme: defaultChartProps.theme,
-        container: chartContainerRef.current,
-        library_path: defaultChartProps.library_path,
-        locale: defaultChartProps.locale,
-        loading_screen: defaultChartProps.loading_screen,
-        enabled_features: defaultChartProps.enabled_features,
-        disabled_features: defaultChartProps.disabled_features,
-        client_id: defaultChartProps.clientId,
-        user_id: defaultChartProps.userId,
-        description: 'https://www.geckoterminal.com/',
-        custom_css_url: defaultChartProps.custom_css_url,
-        autosize: true,
-        fullscreen: false,
-        overrides: {
-          ...defaultChartProps.overrides,
-        },
-        interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
-        favorites: defaultChartProps.favorites,
-        custom_formatters: defaultChartProps.custom_formatters,
+    if (symbolRef.current) {
+      const initTradingView = () => {
+        const widgetOptions = {
+          debug: false,
+          symbol: symbolRef.current,
+          datafeed,
+          theme: defaultChartProps.theme,
+          container: chartContainerRef.current,
+          library_path: defaultChartProps.library_path,
+          locale: defaultChartProps.locale,
+          loading_screen: defaultChartProps.loading_screen,
+          enabled_features: defaultChartProps.enabled_features,
+          disabled_features: defaultChartProps.disabled_features,
+          client_id: defaultChartProps.clientId,
+          user_id: defaultChartProps.userId,
+          description: 'https://www.geckoterminal.com/',
+          custom_css_url: defaultChartProps.custom_css_url,
+          autosize: true,
+          fullscreen: false,
+          overrides: {
+            ...defaultChartProps.overrides,
+          },
+          interval: '60', //getObjectKeyFromValue(period, SUPPORTED_RESOLUTIONS),
+          favorites: defaultChartProps.favorites,
+          custom_formatters: defaultChartProps.custom_formatters,
+        }
+
+        tvWidgetRef.current = new widget(widgetOptions as any)
+
+        tvWidgetRef.current?.onChartReady(function () {
+          setChartReady(true)
+          tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
+          tvWidgetRef.current?.activeChart().dataReady(() => {
+            setChartDataLoading(false)
+          })
+        })
       }
 
-      tvWidgetRef.current = new widget(widgetOptions as any)
+      if (tvWidgetRef.current) {
+        tvWidgetRef.current.remove()
+        tvWidgetRef.current = null
+      }
 
-      tvWidgetRef.current?.onChartReady(function () {
-        setChartReady(true)
-        tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
-        tvWidgetRef.current?.activeChart().dataReady(() => {
-          setChartDataLoading(false)
-        })
-      })
+      if (chartContainerRef.current) {
+        initTradingView()
+      }
     }
-
-    if (tvWidgetRef.current) {
-      tvWidgetRef.current.remove()
-      tvWidgetRef.current = null
-    }
-
-    if (chartContainerRef.current) {
-      initTradingView()
-    }
-
     return () => {
       if (tvWidgetRef.current) {
         tvWidgetRef.current.remove()
@@ -120,6 +119,30 @@ export const PoolDataChart = ({
       }
     }
   }, [chainId, datafeed, symbol])
+
+  const theme = useTheme()
+
+  if (!chainId) {
+    return null
+  }
+
+  if (unsupportedChain(chainId)) {
+    return (
+      <UnsupportedChartContainer>
+        <ThemedText.DeprecatedLabel>Unsupported Chain</ThemedText.DeprecatedLabel>
+        <AlertTriangle size={18} color={theme.textSecondary} />
+      </UnsupportedChartContainer>
+    )
+  }
+
+  if (!symbol) {
+    return (
+      <>
+        <ChartLoadingBar />
+        {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
+      </>
+    )
+  }
 
   return (
     <ChartContainer>
@@ -137,16 +160,3 @@ export const PoolDataChart = ({
     </ChartContainer>
   )
 }
-
-export function PoolDataChartLoading() {
-  return (
-    <ChartContainer>
-      <Bubble></Bubble>
-    </ChartContainer>
-  )
-}
-
-const Bubble = styled(LoadingBubble)`
-  height: 550px;
-  width: 100%;
-`

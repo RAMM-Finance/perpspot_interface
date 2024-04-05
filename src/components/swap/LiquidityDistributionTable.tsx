@@ -3,6 +3,7 @@ import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
@@ -221,6 +222,24 @@ const LiquidityDistributionTable = ({
   const belowAmountSymbol = token1?.symbol && token0?.symbol ? (inverse ? token0?.symbol : token1?.symbol) : null
 
   const loading = !bin || !currentPrice || !token0 || !token1 || !token0Price
+  if (!chainId) return null
+
+  if (unsupportedChain(chainId)) {
+    return (
+      <>
+        <Title>
+          <ThemedText.BodySecondary>Borrowable Liquidity</ThemedText.BodySecondary>
+          <SmallButtonPrimary onClick={() => {}} style={{ height: '25px', borderRadius: '8px' }}>
+            Earn
+          </SmallButtonPrimary>
+        </Title>
+        <LDHeaderRow>
+          <LDHeaderCellIn>Price</LDHeaderCellIn>
+          <LDHeaderCellOut>Amount</LDHeaderCellOut>
+        </LDHeaderRow>
+      </>
+    )
+  }
   return (
     <>
       <Title>

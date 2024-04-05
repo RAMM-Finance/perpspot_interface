@@ -31,6 +31,11 @@ interface ChainSelectorProps {
   leftAlign?: boolean
 }
 
+export function unsupportedChain(chainId: SupportedChainId) {
+  const info = getChainInfo(chainId)
+  return !info
+}
+
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   const { chainId, connector } = useWeb3React()
   const [isOpen, setIsOpen] = useState<boolean>(false)

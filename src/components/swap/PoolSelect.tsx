@@ -5,8 +5,9 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { PoolStatsSection } from 'components/ExchangeChart/PoolStats'
+import { PoolStatsSection, StatsSkeleton } from 'components/ExchangeChart/PoolStats'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
@@ -490,6 +491,36 @@ export function SelectPool() {
 
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
+
+  if (!chainId || unsupportedChain(chainId)) {
+    return (
+      <MainWrapper>
+        <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={() => {}}>
+          <>
+            <LabelWrapper>
+              <Row gap="10">
+                <DoubleCurrencyLogo
+                  currency0={inputCurrency as Currency}
+                  currency1={outputCurrency as Currency}
+                  size={20}
+                />
+                <AutoColumn justify="flex-start">
+                  <TextWithLoadingPlaceholder width={50} syncing={false}>
+                    <Row gap="6">
+                      <ThemedText.HeadlineSmall fontSize={16}>Select Pair</ThemedText.HeadlineSmall>
+                    </Row>
+                  </TextWithLoadingPlaceholder>
+                </AutoColumn>
+              </Row>
+            </LabelWrapper>
+            <ChevronIcon $rotated={false} />
+          </>
+        </SelectPoolWrapper>
+
+        <StatsSkeleton />
+      </MainWrapper>
+    )
+  }
 
   return (
     <MainWrapper>

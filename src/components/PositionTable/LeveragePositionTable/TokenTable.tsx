@@ -1,5 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useAtomValue, useResetAtom } from 'jotai/utils'
@@ -155,6 +157,7 @@ export default function LeveragePositionsTable({
   positions?: MarginPositionDetails[]
   loading?: boolean
 }) {
+  const { chainId } = useWeb3React()
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
@@ -170,6 +173,14 @@ export default function LeveragePositionsTable({
   //     <HeaderRow />
   //   </GridContainer>
   // )
+
+  if (!chainId) {
+    return null
+  }
+
+  if (unsupportedChain(chainId)) {
+    return <NoTokensState message={<Trans>No positions found</Trans>} />
+  }
 
   if (loading) {
     return <LoadingTokenTable rowCount={3} />

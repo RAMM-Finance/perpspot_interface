@@ -183,7 +183,7 @@ type SymbolInfo = LibrarySymbolInfo & {
   fee: number
 }
 
-export default function useGeckoDatafeed({ chainId }: { chainId: number }) {
+export default function useGeckoDatafeed() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
   return useMemo(() => {

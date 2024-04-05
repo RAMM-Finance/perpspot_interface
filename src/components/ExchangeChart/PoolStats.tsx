@@ -66,11 +66,9 @@ export function PoolStatsSection({
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)
 
-  const {
-    result: reserve0,
-    loading: loading0,
-    error,
-  } = useSingleCallResult(contract0, 'balanceOf', [poolAddress ?? undefined])
+  const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
+    poolAddress ?? undefined,
+  ])
 
   const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
     poolAddress ?? undefined,
@@ -126,7 +124,6 @@ export function PoolStatsSection({
       <Stat
         dataCy="current-price"
         value={currentPrice}
-        // baseQuoteSymbol={baseQuoteSymbol}
         title={
           <ThemedText.BodySmall>
             <Trans>Price</Trans>
@@ -187,6 +184,66 @@ export function PoolStatsSection({
           </ThemedText.BodySmall>
         }
         loading={loading}
+      />
+    </StatsWrapper>
+  )
+}
+
+const StatSkeleton = ({ title }: { title: ReactNode }) => {
+  return (
+    <StatWrapper>
+      <div>{title}</div>
+      <StatPrice>
+        <ThemedText.BodySmall color="textSecondary">-</ThemedText.BodySmall>
+      </StatPrice>
+    </StatWrapper>
+  )
+}
+
+export const StatsSkeleton = () => {
+  return (
+    <StatsWrapper>
+      <StatSkeleton
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Price</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
+      <StatSkeleton
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h Change</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
+      <StatSkeleton
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h low</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
+      <StatSkeleton
+        title={
+          <ThemedText.BodySmall>
+            <Trans>24h high</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
+      <StatSkeleton
+        title={
+          <ThemedText.BodySmall>
+            <Trans>TVL</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
+      <StatSkeleton
+        title={
+          <ThemedText.BodySmall>
+            <Trans>Total Volume</Trans>
+          </ThemedText.BodySmall>
+        }
       />
     </StatsWrapper>
   )

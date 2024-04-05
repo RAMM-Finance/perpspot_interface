@@ -103,6 +103,7 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
   }, [navigate, token, toggleWalletDrawer])
 
   const currency = gqlToCurrency(token)
+
   return (
     <TraceEvent
       events={[BrowserEvent.onClick]}

@@ -109,8 +109,16 @@ export function gqlToCurrency(token: {
   symbol?: string
 }): Currency {
   const chainId = fromGraphQLChain(token.chain)
+
   if (token.standard === TokenStandard.Native || !token.address) return nativeOnChain(chainId)
-  else return new Token(chainId, token.address, token.decimals ?? 18, token.name, token.symbol)
+  else
+    return new Token(
+      chainId ?? SupportedChainId.ARBITRUM_ONE,
+      token.address,
+      token.decimals ?? 18,
+      token.name,
+      token.symbol
+    )
 }
 
 const URL_CHAIN_PARAM_TO_BACKEND: { [key: string]: Chain } = {

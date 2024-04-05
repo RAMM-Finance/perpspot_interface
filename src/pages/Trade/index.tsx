@@ -6,7 +6,6 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
-import { fadeInOut } from 'components/Loader/styled'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -31,7 +30,6 @@ import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 
-import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
@@ -170,10 +168,6 @@ const MainWrapper = styled.article<{ pins: boolean }>`
     grid-template-columns: 1fr 0 360px;
     grid-column-gap: 0.5rem;
   }
-`
-
-export const ChartLoadingBar = styled(ChartLoader)`
-  animation: ${fadeInOut} 2s infinite;
 `
 
 export function getIsValidSwapQuote(
@@ -330,9 +324,6 @@ export default function Trade({ className }: { className?: string }) {
   const pinnedPools = usePinnedPools()
   // console.log('pinnedPools', pinnedPools)
   const isPin = useMemo(() => pinnedPools && pinnedPools.length > 0, [pinnedPools])
-  // console.log(pinnedPools2, '----pinnedPools2')
-  // const pinnedPools = [] as any
-  // const isPin = false
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -344,14 +335,7 @@ export default function Trade({ className }: { className?: string }) {
           </PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool />
-            {!chartSymbol || !chainId ? (
-              <>
-                <ChartLoadingBar />
-                {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
-              </>
-            ) : (
-              <PoolDataChart symbol={chartSymbol} chainId={chainId} chartContainerRef={chartContainerRef} />
-            )}
+            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} />
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>
             <LiquidityDistributionTable
