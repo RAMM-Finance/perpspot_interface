@@ -26,7 +26,6 @@ const SearchInput = styled.input`
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 0 1px;
   height: 100%;
-  width: min(200px, 100%);
   font-size: 14px;
   padding-left: 40px;
   color: ${({ theme }) => theme.textSecondary};

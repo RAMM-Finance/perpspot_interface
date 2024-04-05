@@ -106,7 +106,6 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
     toggleWalletDrawer()
   }, [navigate, token, toggleWalletDrawer])
 
-  console.log('gqlToCurrency', token)
   const currency = gqlToCurrency(token)
 
   return (

@@ -26,7 +26,7 @@ import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
-import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
@@ -319,10 +319,10 @@ export default function Trade({ className }: { className?: string }) {
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
-  const pinnedPools = usePinnedPools()
+  // const pinnedPools = usePinnedPools()
   // console.log('pinnedPools', pinnedPools)
-  const isPin = useMemo(() => pinnedPools && pinnedPools.length > 0, [pinnedPools])
-
+  // const isPin = useMemo(() => pinnedPools && pinnedPools.length > 0, [pinnedPools])
+  const isPin = false
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
