@@ -2,7 +2,7 @@ import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import Row from 'components/Row'
-import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
+import { DeltaText, formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import { PortfolioBalancesQuery, usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { getTokenDetailsURL, gqlToCurrency } from 'graphql/data/util'
 import { useAtomValue } from 'jotai/utils'
@@ -112,7 +112,7 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
     >
       <PortfolioRow
         left={<PortfolioLogo chainId={currency.chainId} currencies={[currency]} size="40px" />}
-        title={<ThemedText.SubHeader fontWeight={500}>{token?.name}</ThemedText.SubHeader>}
+        title={<ThemedText.SubHeaderSmall width="75px">{token?.name}</ThemedText.SubHeaderSmall>}
         descriptor={
           <TokenBalanceText>
             {formatNumber(quantity, NumberType.TokenNonTx)} {token?.symbol}
@@ -121,15 +121,15 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
         onClick={navigateToTokenDetails}
         right={
           denominatedValue && (
-            <>
-              <ThemedText.SubHeader fontWeight={500}>
+            <Row flex="1" align="center" justify="center" flexDirection="column" marginTop="8px" marginLeft="8px">
+              <ThemedText.SubHeaderSmall>
                 {formatNumber(denominatedValue?.value, NumberType.PortfolioBalance)}
-              </ThemedText.SubHeader>
+              </ThemedText.SubHeaderSmall>
               <Row justify="flex-end">
                 <PortfolioArrow change={percentChange} size={20} strokeWidth={1.75} />
-                <ThemedText.BodySecondary>{formatDelta(percentChange)}</ThemedText.BodySecondary>
+                <DeltaText delta={percentChange}>{formatDelta(percentChange)}</DeltaText>
               </Row>
-            </>
+            </Row>
           )
         }
       />

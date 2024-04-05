@@ -1,11 +1,15 @@
 import { Trans } from '@lingui/macro'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { getDecimalAndUsdValueData } from 'hooks/useContract'
 import JSBI from 'jsbi'
+import { useEffect, useState } from 'react'
 
 import { nativeOnChain } from '../../constants/tokens'
+import { firestore } from '../../firebaseConfig'
 import { useCurrency, useToken } from '../../hooks/Tokens'
 import useENSName from '../../hooks/useENSName'
-import { VoteOption } from '../../state/governance/types'
 import {
   AddLiquidityV2PoolTransactionInfo,
   AddLiquidityV3PoolTransactionInfo,
@@ -24,15 +28,8 @@ import {
   RemoveLmtLiquidityTransactionInfo,
   TransactionInfo,
   TransactionType,
-  VoteTransactionInfo,
   WrapTransactionInfo,
 } from '../../state/transactions/types'
-import { useState, useEffect } from 'react'
-
-import { firestore } from '../../firebaseConfig'
-import { collection, getDocs, addDoc, doc, updateDoc, where, query } from 'firebase/firestore'
-import { getDecimalAndUsdValueData } from 'hooks/useContract'
-import { useWeb3React } from '@web3-react/core'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
   return new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)
@@ -96,41 +93,6 @@ function ApprovalSummary({ info }: { info: ApproveTransactionInfo }) {
   const token = useToken(info.tokenAddress)
 
   return <Trans>Approve {token?.symbol}</Trans>
-}
-
-function VoteSummary({ info }: { info: VoteTransactionInfo }) {
-  const proposalKey = `${info.governorAddress}/${info.proposalId}`
-  if (info.reason && info.reason.trim().length > 0) {
-    switch (info.decision) {
-      case VoteOption.For:
-        return <Trans>Vote for proposal {proposalKey}</Trans>
-      case VoteOption.Abstain:
-        return <Trans>Vote to abstain on proposal {proposalKey}</Trans>
-      case VoteOption.Against:
-        return <Trans>Vote against proposal {proposalKey}</Trans>
-    }
-  } else {
-    switch (info.decision) {
-      case VoteOption.For:
-        return (
-          <Trans>
-            Vote for proposal {proposalKey} with reason &quot;{info.reason}&quot;
-          </Trans>
-        )
-      case VoteOption.Abstain:
-        return (
-          <Trans>
-            Vote to abstain on proposal {proposalKey} with reason &quot;{info.reason}&quot;
-          </Trans>
-        )
-      case VoteOption.Against:
-        return (
-          <Trans>
-            Vote against proposal {proposalKey} with reason &quot;{info.reason}&quot;
-          </Trans>
-        )
-    }
-  }
 }
 
 function QueueSummary({ info }: { info: QueueTransactionInfo }) {
@@ -310,7 +272,7 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
     setSwapComplete(true)
   }, [])
 
-  useEffect(() => {    
+  useEffect(() => {
     const fetchUsers = async () => {
       let tokenInfoFromUniswap
       let tokenAmount
@@ -331,8 +293,8 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
       )
 
       const querySnapshot = await getDocs(q)
-      const data = querySnapshot.docs.map(doc => doc.data())
-      
+      const data = querySnapshot.docs.map((doc) => doc.data())
+
       if (!data || data.length === 0) {
         await addDoc(collection(firestore, 'swap-points'), {
           chainId: chainId,
@@ -340,17 +302,16 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
           amount: tPoint
         })
       } else {
-        const docRef = doc(firestore, 'swap-points', querySnapshot.docs[0].id);
+        const docRef = doc(firestore, 'swap-points', querySnapshot.docs[0].id)
         await updateDoc(docRef, {
-          amount: data[0].amount + tPoint
+          amount: data[0].amount + tPoint,
         })
       }
-      
-    };
+    }
 
     if (SwapComplete) {
-      (async () => {
-        await fetchUsers();
+      ;(async () => {
+        await fetchUsers()
         setSwapComplete(false)
       })()
     }
@@ -415,9 +376,6 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.APPROVAL:
       return <ApprovalSummary info={info} />
-
-    case TransactionType.VOTE:
-      return <VoteSummary info={info} />
 
     case TransactionType.DELEGATE:
       return <DelegateSummary info={info} />

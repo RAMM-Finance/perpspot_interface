@@ -20,8 +20,8 @@ import { PoolState, usePool } from './usePools'
 const PRICE_FIXED_DIGITS = 8
 const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [
   SupportedChainId.ARBITRUM_ONE,
-  SupportedChainId.ARBITRUM_GOERLI,
-  SupportedChainId.SEPOLIA,
+  // SupportedChainId.ARBITRUM_GOERLI,
+  // SupportedChainId.SEPOLIA,
 ]
 
 // Tick with fields parsed to JSBIs, and active liquidity computed.

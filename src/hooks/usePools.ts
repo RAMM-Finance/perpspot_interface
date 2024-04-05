@@ -11,7 +11,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
 import { utils } from 'ethers'
 import JSBI from 'jsbi'
-import { useMultipleContractSingleData, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 
 import {
@@ -23,7 +23,6 @@ import {
 } from '../constants/addresses'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useLmtPoolManagerContract } from './useContract'
-import { convertToBN } from './useV3Positions'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
@@ -143,7 +142,7 @@ export function usePools(
 
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
-  const filteredAddresses = poolAddresses.filter(item => item !== '')
+  const filteredAddresses = poolAddresses.filter((item) => item !== '')
   const poolParams = useSingleContractMultipleData(
     poolManager,
     'PoolParams',
@@ -214,42 +213,6 @@ export function usePool(
 
 export interface PoolParams {
   minimumPremiumDeposit: BN
-}
-
-// struct PoolParam {
-//   URateParam uParam;
-//   uint256 maxURate;
-//   uint256 maxSearchRight;
-//   uint256 maxSearchLeft;
-//   uint16 poolId; // pool id, represent index in the list of added pools (_poolList)
-//   // AuctionParam auctionParams;
-//   uint256 MIN_PREMIUM_DEPOSIT; // how much premiums should be deposited when trades are opened
-// }
-export function usePoolParams(pool: Pool | undefined): PoolParams | undefined {
-  // getParams
-  const poolManager = useLmtPoolManagerContract()
-  const { chainId } = useWeb3React()
-
-  const poolAddress = useMemo(() => {
-    if (!pool) return undefined
-    return PoolCache.getPoolAddress(
-      V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
-      pool.token0,
-      pool.token1,
-      pool.fee
-    )
-  }, [chainId, pool])
-  const { loading, error, result } = useSingleCallResult(poolManager, 'PoolParams', [poolAddress])
-
-  return useMemo(() => {
-    if (!result || loading || error) {
-      return undefined
-    } else {
-      return {
-        minimumPremiumDeposit: convertToBN(result.MIN_PREMIUM_DEPOSIT, 18),
-      }
-    }
-  }, [result, loading, error])
 }
 
 export function computePoolAddress({

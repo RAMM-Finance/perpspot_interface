@@ -4,63 +4,49 @@ import { useMemo } from 'react'
 import { isAddress } from 'utils'
 
 import EthereumLogo from '../../assets/images/ethereum-logo.png'
-import BnbLogo from '../../assets/svg/bnb-logo.svg'
-import CeloLogo from '../../assets/svg/celo_logo.svg'
-import MaticLogo from '../../assets/svg/matic-token-icon.svg'
-import { isCelo, NATIVE_CHAIN_ID, nativeOnChain } from '../../constants/tokens'
+import { NATIVE_CHAIN_ID } from '../../constants/tokens'
 
 type Network = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon' | 'smartchain'
 
 export function chainIdToNetworkName(networkId: SupportedChainId): Network {
   switch (networkId) {
-    case SupportedChainId.MAINNET:
-      return 'ethereum'
+    // case SupportedChainId.MAINNET:
+    //   return 'ethereum'
     case SupportedChainId.ARBITRUM_ONE:
       return 'arbitrum'
-    case SupportedChainId.OPTIMISM:
-      return 'optimism'
-    case SupportedChainId.POLYGON:
-      return 'polygon'
-    case SupportedChainId.BNB:
-      return 'smartchain'
+    // case SupportedChainId.OPTIMISM:
+    //   return 'optimism'
+    // case SupportedChainId.POLYGON:
+    //   return 'polygon'
+    // case SupportedChainId.BNB:
+    //   return 'smartchain'
     default:
       return 'ethereum'
   }
 }
 
-export function getNativeLogoURI(chainId: SupportedChainId = SupportedChainId.MAINNET): string {
-  switch (chainId) {
-    case SupportedChainId.POLYGON:
-    case SupportedChainId.POLYGON_MUMBAI:
-      return MaticLogo
-    case SupportedChainId.BNB:
-      return BnbLogo
-    case SupportedChainId.CELO:
-    case SupportedChainId.CELO_ALFAJORES:
-      return CeloLogo
-    default:
-      return EthereumLogo
-  }
+export function getNativeLogoURI(chainId: SupportedChainId = SupportedChainId.ARBITRUM_ONE): string {
+  return EthereumLogo
 }
 
-function getTokenLogoURI(address: string, chainId: SupportedChainId = SupportedChainId.MAINNET): string | void {
+function getTokenLogoURI(address: string, chainId: SupportedChainId = SupportedChainId.ARBITRUM_ONE): string | void {
   const networkName = chainIdToNetworkName(chainId)
   const networksWithUrls = [
     SupportedChainId.ARBITRUM_ONE,
-    SupportedChainId.MAINNET,
-    SupportedChainId.OPTIMISM,
-    SupportedChainId.BNB,
+    // SupportedChainId.MAINNET,
+    // SupportedChainId.OPTIMISM,
+    // SupportedChainId.BNB,
   ]
   if (networksWithUrls.includes(chainId)) {
     return `https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/${networkName}/assets/${address}/logo.png`
   }
 
   // Celo logo logo is hosted elsewhere.
-  if (isCelo(chainId)) {
-    if (address === nativeOnChain(chainId).wrapped.address) {
-      return 'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_CELO.png'
-    }
-  }
+  // if (isCelo(chainId)) {
+  //   if (address === nativeOnChain(chainId).wrapped.address) {
+  //     return 'https://raw.githubusercontent.com/ubeswap/default-token-list/master/assets/asset_CELO.png'
+  //   }
+  // }
 }
 
 export default function useCurrencyLogoURIs(

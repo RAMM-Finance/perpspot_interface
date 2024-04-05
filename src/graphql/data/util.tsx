@@ -57,40 +57,39 @@ export function isPricePoint(p: PricePoint | null): p is PricePoint {
 }
 
 export const CHAIN_ID_TO_BACKEND_NAME: { [key: number]: Chain } = {
-  [SupportedChainId.MAINNET]: Chain.Ethereum,
+  // [SupportedChainId.MAINNET]: Chain.Ethereum,
   [SupportedChainId.GOERLI]: Chain.EthereumGoerli,
-  [SupportedChainId.POLYGON]: Chain.Polygon,
-  [SupportedChainId.POLYGON_MUMBAI]: Chain.Polygon,
-  [SupportedChainId.CELO]: Chain.Celo,
-  [SupportedChainId.CELO_ALFAJORES]: Chain.Celo,
+  // [SupportedChainId.POLYGON]: Chain.Polygon,
+  // [SupportedChainId.POLYGON_MUMBAI]: Chain.Polygon,
+  // [SupportedChainId.CELO]: Chain.Celo,
+  // [SupportedChainId.CELO_ALFAJORES]: Chain.Celo,
   [SupportedChainId.ARBITRUM_ONE]: Chain.Arbitrum,
-  [SupportedChainId.ARBITRUM_GOERLI]: Chain.Arbitrum,
-  [SupportedChainId.OPTIMISM]: Chain.Optimism,
-  [SupportedChainId.OPTIMISM_GOERLI]: Chain.Optimism,
-  [SupportedChainId.BNB]: Chain.Bnb,
+  // [SupportedChainId.ARBITRUM_GOERLI]: Chain.Arbitrum,
+  // [SupportedChainId.OPTIMISM]: Chain.Optimism,
+  // [SupportedChainId.OPTIMISM_GOERLI]: Chain.Optimism,
+  // [SupportedChainId.BNB]: Chain.Bnb,
 }
 
 export function chainIdToBackendName(chainId: number | undefined) {
   return chainId && CHAIN_ID_TO_BACKEND_NAME[chainId]
     ? CHAIN_ID_TO_BACKEND_NAME[chainId]
-    : CHAIN_ID_TO_BACKEND_NAME[SupportedChainId.MAINNET]
+    : CHAIN_ID_TO_BACKEND_NAME[SupportedChainId.ARBITRUM_ONE]
 }
 
-export const GQL_MAINNET_CHAINS_MUTABLE = [
-  SupportedChainId.MAINNET,
-  SupportedChainId.OPTIMISM,
-  SupportedChainId.POLYGON,
-  SupportedChainId.ARBITRUM_ONE,
-  SupportedChainId.CELO,
-]
-
+// export const GQL_MAINNET_CHAINS_MUTABLE = [
+//   SupportedChainId.MAINNET,
+//   SupportedChainId.OPTIMISM,
+//   SupportedChainId.POLYGON,
+//   SupportedChainId.ARBITRUM_ONE,
+//   SupportedChainId.CELO,
+// ]
 
 const GQL_CHAINS: number[] = [
-  SupportedChainId.MAINNET,
-  SupportedChainId.OPTIMISM,
-  SupportedChainId.POLYGON,
+  // SupportedChainId.MAINNET,
+  // SupportedChainId.OPTIMISM,
+  // SupportedChainId.POLYGON,
   SupportedChainId.ARBITRUM_ONE,
-  SupportedChainId.CELO,
+  // SupportedChainId.CELO,
 ]
 
 export function isGqlSupportedChain(chainId: number | undefined): chainId is SupportedChainId {
@@ -130,14 +129,14 @@ export function validateUrlChainParam(chainName: string | undefined) {
 // TODO(cartcrom): refactor into safer lookup & replace usage
 // @ts-ignore
 export const CHAIN_NAME_TO_CHAIN_ID: { [key in Chain]: SupportedChainId } = {
-  [Chain.Ethereum]: SupportedChainId.MAINNET,
+  // [Chain.Ethereum]: SupportedChainId.MAINNET,
   [Chain.EthereumGoerli]: SupportedChainId.GOERLI,
-  [Chain.Polygon]: SupportedChainId.POLYGON,
-  [Chain.Celo]: SupportedChainId.CELO,
-  [Chain.Optimism]: SupportedChainId.OPTIMISM,
+  // [Chain.Polygon]: SupportedChainId.POLYGON,
+  // [Chain.Celo]: SupportedChainId.CELO,
+  // [Chain.Optimism]: SupportedChainId.OPTIMISM,
   [Chain.Arbitrum]: SupportedChainId.ARBITRUM_ONE,
-  [Chain.UnknownChain]: SupportedChainId.MAINNET,
-  [Chain.Bnb]: SupportedChainId.BNB,
+  // [Chain.UnknownChain]: SupportedChainId.MAINNET,
+  // [Chain.Bnb]: SupportedChainId.BNB,
 }
 
 export function fromGraphQLChain(chain: Chain): SupportedChainId {

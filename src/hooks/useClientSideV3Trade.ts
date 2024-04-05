@@ -12,12 +12,12 @@ import { useQuoter } from './useContract'
 
 export const QUOTE_GAS_OVERRIDES: { [chainId: number]: number } = {
   [SupportedChainId.ARBITRUM_ONE]: 25_000_000,
-  [SupportedChainId.ARBITRUM_GOERLI]: 25_000_000,
-  [SupportedChainId.CELO]: 50_000_000,
-  [SupportedChainId.CELO_ALFAJORES]: 50_000_000,
-  [SupportedChainId.POLYGON]: 40_000_000,
-  [SupportedChainId.POLYGON_MUMBAI]: 40_000_000,
-  [SupportedChainId.BNB]: 50_000_000,
+  // [SupportedChainId.ARBITRUM_GOERLI]: 25_000_000,
+  // [SupportedChainId.CELO]: 50_000_000,
+  // [SupportedChainId.CELO_ALFAJORES]: 50_000_000,
+  // [SupportedChainId.POLYGON]: 40_000_000,
+  // [SupportedChainId.POLYGON_MUMBAI]: 40_000_000,
+  // [SupportedChainId.BNB]: 50_000_000,
 }
 
 export const DEFAULT_GAS_QUOTE = 2_000_000
@@ -37,7 +37,7 @@ export function useClientSideV3Trade<TTradeType extends TradeType>(
     tradeType === TradeType.EXACT_INPUT
       ? [amountSpecified?.currency, otherCurrency]
       : [otherCurrency, amountSpecified?.currency]
-  
+
   const { routes, loading: routesLoading } = useAllV3Routes(currencyIn, currencyOut)
 
   const { chainId } = useWeb3React()

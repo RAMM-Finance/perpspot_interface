@@ -64,7 +64,8 @@ export function formatDelta(delta: number | null | undefined) {
   return formattedDelta
 }
 
-export const DeltaText = styled.span<{ delta: number | undefined }>`
+export const DeltaText = styled.span<{ delta: number | undefined; fontSize?: string }>`
+  font-size: ${({ fontSize }) => (fontSize ? fontSize : '12px')};
   color: ${({ theme, delta }) =>
     delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
 `
@@ -130,7 +131,14 @@ interface PriceChartProps {
   priceFormat?: (price: string) => string
 }
 
-export function PriceChart({ width, height, prices: originalPrices, timePeriod, priceFormat, priceFormatBool }: PriceChartProps) {
+export function PriceChart({
+  width,
+  height,
+  prices: originalPrices,
+  timePeriod,
+  priceFormat,
+  priceFormatBool,
+}: PriceChartProps) {
   const locale = useActiveLocale()
   const theme = useTheme()
 
@@ -280,7 +288,11 @@ export function PriceChart({ width, height, prices: originalPrices, timePeriod, 
       <ChartHeader data-cy="chart-header">
         {displayPrice.value ? (
           <>
-            <TokenPrice>{priceFormatBool && priceFormat ? priceFormat(formatDollar({ num: displayPrice.value, isPrice: true })) : formatDollar({ num: displayPrice.value, isPrice: true })}</TokenPrice>
+            <TokenPrice>
+              {priceFormatBool && priceFormat
+                ? priceFormat(formatDollar({ num: displayPrice.value, isPrice: true }))
+                : formatDollar({ num: displayPrice.value, isPrice: true })}
+            </TokenPrice>
             <DeltaContainer>
               {formattedDelta}
               <ArrowCell>{arrow}</ArrowCell>

@@ -1,12 +1,12 @@
 import { PremiumTable } from 'components/OrdersTable/PremiumTable'
 import { OrdersTable } from 'components/OrdersTable/TokenTable'
+import SearchBar from 'components/PositionTable/LeveragePositionTable/SearchBar'
 import LeveragePositionsTable from 'components/PositionTable/LeveragePositionTable/TokenTable'
 import { TabContent, TabNavItem } from 'components/Tabs'
 import { LimitActivityTab } from 'components/WalletDropdown/MiniPortfolio/Activity/LimitActivityTab'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
-import SearchBar from 'components/PositionTable/LeveragePositionTable/SearchBar'
 
 const TableHeader = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};

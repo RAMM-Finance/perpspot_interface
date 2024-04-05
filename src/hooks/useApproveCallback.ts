@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount , Token} from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { ApprovalState, useApproval, useFaucet, useMaxApproval } from 'lib/hooks/useApproval'
 import { useCallback } from 'react'
 
@@ -35,10 +35,7 @@ export function useMaxApproveCallback(
   return [approval, useGetAndTrackApproval(getApproval)]
 }
 
-export function useFaucetCallback(
-  token?: Token,
-  spender?: string
-  ):()=>Promise<void>{
+export function useFaucetCallback(token?: Token, spender?: string): () => Promise<void> {
   // console.log('tokenhere', token,spender)
   const useFaucet_ = useFaucet(token, spender)
   const addTransaction = useTransactionAdder()
@@ -52,8 +49,5 @@ export function useFaucetCallback(
     })
   }, [addTransaction, useFaucet_])
 
-
-  // return useFaucet_; 
-
-  
+  // return useFaucet_;
 }

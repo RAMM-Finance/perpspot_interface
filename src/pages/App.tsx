@@ -39,14 +39,12 @@ import MigrateV2 from './MigrateV2'
 import NotFound from './NotFound'
 import Pool from './Pool'
 import { PositionPage } from './Pool/PositionPage'
-import PoolV2 from './Pool/v2'
-import PoolFinder from './PoolFinder'
 import ReferralPage from './Referral'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
-import Trade from './Trade'
 import Swap from './Swap'
-import { RedirectPathToSwapOnly } from './Trade/redirects'
 import Tokens from './Tokens'
+import Trade from './Trade'
+import { RedirectPathToSwapOnly } from './Trade/redirects'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
 // const Vote = lazy(() => import('./Vote'))
@@ -226,7 +224,7 @@ export default function App() {
           }}
         >
           <HeaderWrapper transparent={isHeaderTransparent}>
-            <NavBar blur={isHeaderTransparent} />
+            <NavBar />
           </HeaderWrapper>
           <BodyWrapper>
             <Popups />
@@ -240,14 +238,6 @@ export default function App() {
                     <Route path=":chainName" />
                   </Route>
                   <Route path="tokens/:chainName/:tokenAddress" element={<TokenDetails />} />
-                  {/* <Route
-                    path="vote/*"
-                    element={
-                      <Suspense fallback={<LazyLoadSpinner />}>
-                        <Vote />
-                      </Suspense>
-                    }
-                  /> */}
                   <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
                   {micrositeEnabled && <Route path="wallet" element={<Wallet />} />}
                   <Route path="send" element={<RedirectPathToSwapOnly />} />
@@ -255,15 +245,15 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
-                  <Route path="pool/v2/find" element={<PoolFinder />} />
-                  <Route path="pool/v2" element={<PoolV2 />} />
+                  {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
+                  {/* <Route path="pool/v2" element={<PoolV2 />} /> */}
                   <Route path="pool" element={<Pool />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="join" element={<Navigate to="/swap" />} />
                   <Route path="join/:id" element={<Trade />} />
-                  <Route path="pools/v2/find" element={<PoolFinder />} />
-                  <Route path="pools/v2" element={<PoolV2 />} />
+                  {/* <Route path="pools/v2/find" element={<PoolFinder />} />
+                  <Route path="pools/v2" element={<PoolV2 />} /> */}
                   <Route path="pools" element={<Pool />} />
                   <Route path="pools/:tokenId" element={<PositionPage />} />
                   <Route path="referral" element={<ReferralPage />} />
@@ -284,14 +274,10 @@ export default function App() {
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
                   </Route>
-
-                  {/* <Route path="remove/v2/:currencyIdA/:currencyIdB" element={<RemoveLiquidity />} /> */}
                   <Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />
                   <Route path="close/:leverageManager/:trader/:tokenId" element={<ClosePosition />} />
 
                   <Route path="migrate/v2" element={<MigrateV2 />} />
-                  {/* <Route path="migrate/v2/:address" element={<MigrateV2Pair />} /> */}
-
                   <Route path="*" element={<Navigate to="/not-found" replace />} />
                   <Route path="/not-found" element={<NotFound />} />
                 </Routes>

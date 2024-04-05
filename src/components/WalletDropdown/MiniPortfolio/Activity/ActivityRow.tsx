@@ -1,8 +1,8 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
-import Column from 'components/Column'
 import AlertTriangleFilled from 'components/Icons/AlertTriangleFilled'
 import { LoaderV2 } from 'components/Icons/LoadingSpinner'
+import Row from 'components/Row'
 import { TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
 import useENSName from 'hooks/useENSName'
 import styled from 'styled-components/macro'
@@ -43,14 +43,15 @@ export function ActivityRow({
       properties={{ hash, chain_id: chainId, explorer_url: explorerUrl }}
     >
       <PortfolioRow
+        display="block"
         left={
-          <Column>
+          <Row style={{ position: 'absolute' }}>
             <PortfolioLogo chainId={chainId} currencies={currencies} images={logos} accountAddress={otherAccount} />
-          </Column>
+          </Row>
         }
-        title={<ThemedText.SubHeader fontWeight={500}>{title}</ThemedText.SubHeader>}
+        title={<ThemedText.TableText color="accentTextLightPrimary">{title}</ThemedText.TableText>}
         descriptor={
-          <ActivityRowDescriptor color="textSecondary">
+          <ActivityRowDescriptor marginTop="20px" marginBottom="10px">
             {descriptor}
             {ENSName ?? otherAccount}
           </ActivityRowDescriptor>

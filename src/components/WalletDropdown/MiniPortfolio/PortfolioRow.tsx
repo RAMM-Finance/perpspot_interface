@@ -3,12 +3,17 @@ import Row from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import styled, { css, keyframes } from 'styled-components/macro'
 
-export const PortfolioRowWrapper = styled(Row)<{ onClick?: any }>`
-  gap: 12px;
+export const PortfolioRowWrapper = styled(Row)<{ onClick?: any; display?: string }>`
+  padding: 8px;
+  margin: 1px 0;
+  gap: 8px;
   height: 100%;
-
+  min-height: 65px;
+  display: ${({ display }) => display && display};
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} background-color`};
-
+  position: relative;
+  border-bottom: 2px solid;
+  border-color: ${({ theme }) => theme.tableBorder};
   ${({ onClick }) => onClick && 'cursor: pointer'};
 
   &:hover {
@@ -28,6 +33,7 @@ export default function PortfolioRow({
   right,
   onClick,
   isPopUp,
+  display,
   isGrow = true,
 }: {
   left: React.ReactNode
@@ -39,9 +45,10 @@ export default function PortfolioRow({
   onClick?: () => void
   isPopUp?: boolean
   isGrow?: boolean
+  display?: string
 }) {
   return (
-    <PortfolioRowWrapper onClick={onClick}>
+    <PortfolioRowWrapper onClick={onClick} display={display}>
       {left}
       {isPopUp ? (
         <AutoColumn justify="center" grow={isGrow}>
