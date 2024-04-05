@@ -529,6 +529,7 @@ const TradeTabContent = () => {
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
+
   if (
     chainId && 
     (
@@ -539,7 +540,7 @@ const TradeTabContent = () => {
     )){
     return (
       <Wrapper>
-        <ThemedText.DeprecatedError>Sorry, this dapp does not support the connected chain.</ThemedText.DeprecatedError>
+        <ThemedText.DeprecatedError error={true}>Sorry, this does not support the connected chain.</ThemedText.DeprecatedError>
       </Wrapper>
     )
   }
