@@ -71,11 +71,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Burned`,
     [TransactionStatus.Failed]: t`Burn failed`,
   },
-  [TransactionType.VOTE]: {
-    [TransactionStatus.Pending]: t`Voting`,
-    [TransactionStatus.Confirmed]: t`Voted`,
-    [TransactionStatus.Failed]: t`Vote failed`,
-  },
+  // [TransactionType.VOTE]: {
+  //   [TransactionStatus.Pending]: t`Voting`,
+  //   [TransactionStatus.Confirmed]: t`Voted`,
+  //   [TransactionStatus.Failed]: t`Vote failed`,
+  // },
   [TransactionType.QUEUE]: {
     [TransactionStatus.Pending]: t`Queuing`,
     [TransactionStatus.Confirmed]: t`Queued`,

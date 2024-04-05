@@ -350,7 +350,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
     if (!key || !chainId) return undefined
     return DataProviderSDK.INTERFACE.encodeFunctionData('getMarginPosition', [
       computePoolAddress({
-        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
+        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.ARBITRUM_ONE],
         tokenA: key.poolKey.token0,
         tokenB: key.poolKey.token1,
         fee: key.poolKey.fee,

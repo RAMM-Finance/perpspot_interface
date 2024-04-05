@@ -1,11 +1,10 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
-import { getChainInfoOrDefault, L2ChainInfo } from 'constants/chainInfo'
-import { SupportedChainId } from 'constants/chains'
+import { getChainInfoOrDefault } from 'constants/chainInfo'
 import { AlertTriangle } from 'react-feather'
 import styled from 'styled-components/macro'
-import { Z_INDEX } from 'theme/zIndex'
 import { ExternalLink, MEDIA_WIDTHS } from 'theme'
+import { Z_INDEX } from 'theme/zIndex'
 
 const BodyRow = styled.div`
   color: ${({ theme }) => theme.textPrimary};
@@ -64,19 +63,15 @@ export function ChainConnectivityWarning() {
         </TitleText>
       </TitleRow>
       <BodyRow>
-        {chainId === SupportedChainId.MAINNET ? (
-          <Trans>You may have lost your network connection.</Trans>
-        ) : (
-          <Trans>{label} might be down right now, or you may have lost your network connection.</Trans>
-        )}{' '}
-        {(info as L2ChainInfo).statusPage !== undefined && (
+        <Trans>{label} might be down right now, or you may have lost your network connection.</Trans>{' '}
+        {/* {(info as L2ChainInfo).statusPage !== undefined && (
           <span>
             <Trans>Check network status</Trans>{' '}
             <Link href={(info as L2ChainInfo).statusPage || ''}>
               <Trans>here.</Trans>
             </Link>
           </span>
-        )}
+        )} */}
       </BodyRow>
     </Wrapper>
   )

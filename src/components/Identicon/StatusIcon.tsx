@@ -6,7 +6,6 @@ import styled from 'styled-components/macro'
 import { flexColumnNoWrap } from 'theme/styles'
 
 import sockImg from '../../assets/svg/socks.svg'
-import { useHasSocks } from '../../hooks/useSocksBalance'
 import Identicon from '../Identicon'
 
 export const IconWrapper = styled.div<{ size?: number }>`
@@ -87,13 +86,13 @@ export default function StatusIcon({
   size?: number
   showMiniIcons?: boolean
 }) {
-  const hasSocks = useHasSocks()
+  // const hasSocks = useHasSocks()
 
   return (
     <IconWrapper size={size} data-testid="StatusIconRoot">
       <MainWalletIcon connection={connection} size={size} />
       {showMiniIcons && <MiniWalletIcon connection={connection} side="right" />}
-      {hasSocks && showMiniIcons && <Socks />}
+      {/* {hasSocks && showMiniIcons && <Socks />} */}
     </IconWrapper>
   )
 }

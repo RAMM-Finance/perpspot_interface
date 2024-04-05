@@ -6626,6 +6626,13 @@
     "@webassemblyjs/wast-parser" "1.9.0"
     "@xtuc/long" "4.2.2"
 
+"@welldone-software/why-did-you-render@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@welldone-software/why-did-you-render/-/why-did-you-render-8.0.1.tgz#e69303ca98424642843f8dd9aa8d4e4f638234b2"
+  integrity sha512-PtLBjiHNX04gDPheMeAQP16S24JV3SOW6wGDUrm4bFPZmofmmflgvd4Kacf/jhB8zlX6equ8m3t6CS+OxA3Q4g==
+  dependencies:
+    lodash "^4"
+
 "@whatwg-node/fetch@0.5.3", "@whatwg-node/fetch@^0.5.0":
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/@whatwg-node/fetch/-/fetch-0.5.3.tgz#afbd38a2e5392d91318845b967529076ca654b9e"
@@ -14501,7 +14508,7 @@ lodash.uniq@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
-"lodash@>=3.5 <5", lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.5, lodash@^4.7.0, lodash@~4.17.0:
+"lodash@>=3.5 <5", lodash@^4, lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.5, lodash@^4.7.0, lodash@~4.17.0:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==

@@ -74,24 +74,9 @@ export function AdvancedAddLimitDetails({
   const inputCurrency = useCurrency(trade?.inputCurrencyId)
   const outputCurrency = useCurrency(trade?.outputCurrencyId)
 
-  // const { expectedOutputAmount, priceImpact } = useMemo(() => {
-  //   return {
-  //     expectedOutputAmount: trade?.outputAmount,
-  //     priceImpact: trade ? computeRealizedPriceImpact(trade) : undefined,
-  //   }
-  // }, [trade])
-  // console.log('limit order',trade)
-
   return (
     <StyledCard>
       <AutoColumn gap="sm">
-        {/* <ValueLabel
-          description="Amount of margin you are submitting"
-          value={formatBNToString(trade?.margin, NumberType.SwapTradeAmount)}
-          label="Margin"
-          symbolAppend={inputCurrency ? inputCurrency.symbol : '-'}
-          syncing={syncing}
-        /> */}
         <ValueLabel
           description="Borrow Amount when order is filled"
           value={formatBNToString(trade?.inputAmount.minus(trade?.margin), NumberType.SwapTradeAmount)}
@@ -112,16 +97,7 @@ export function AdvancedAddLimitDetails({
           symbolAppend={inputCurrency?.symbol}
           syncing={syncing}
         />
-        {/*<MouseoverValueLabel
-          description="Order Price"
-          value={formatBNToString(trade?.limitPrice, NumberType.SwapTradeAmount)}
-          label={
-            <Trans>
-              <ThemedText.BodySmall>Order Price</ThemedText.BodySmall>
-            </Trans>
-          }
-          appendSymbol={inputCurrency ? inputCurrency.symbol : '-'}
-        />*/}
+
         <Separator />
         <ValueLabel
           description="The amount added to your position when your order is filled"
@@ -131,58 +107,6 @@ export function AdvancedAddLimitDetails({
             trade ? `${formatBNToString(trade.minOutput, NumberType.SwapTradeAmount)} ${outputCurrency?.symbol}` : '-'
           }
         />
-        {/* <RowBetween>
-          <RowFixed style={{ marginRight: '20px' }}>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The minimum amount you are guaranteed to receive. If the price slips any further, your transaction
-                  will revert.
-                </Trans>
-              }
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-                {trade.tradeType === TradeType.EXACT_INPUT ? (
-                  <Trans>Minimum received</Trans>
-                ) : (
-                  <Trans>Maximum sent</Trans>
-                )}{' '}
-                <Trans>after slippage</Trans> ({allowedSlippage.toFixed(2)}%)
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-          </RowFixed>
-          <TextWithLoadingPlaceholder syncing={syncing} width={70}>
-            <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-              <TruncatedText>
-                {trade.tradeType === TradeType.EXACT_INPUT
-                  ? `${trade.minimumAmountOut(allowedSlippage).toSignificant(6)} ${trade.outputAmount.currency.symbol}`
-                  : `${trade.maximumAmountIn(allowedSlippage).toSignificant(6)} ${trade.inputAmount.currency.symbol}`}
-              </TruncatedText>
-            </ThemedText.DeprecatedBlack>
-          </TextWithLoadingPlaceholder>
-        </RowBetween> */}
-        {/* {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
-          <RowBetween>
-            <MouseoverTooltip
-              text={
-                <Trans>
-                  The fee paid to miners who process your transaction. This must be paid in {nativeCurrency.symbol}.
-                </Trans>
-              }
-              disableHover={hideInfoTooltips}
-            >
-              <ThemedText.DeprecatedSubHeader color={theme.textTertiary}>
-                <Trans>Network Fee</Trans>
-              </ThemedText.DeprecatedSubHeader>
-            </MouseoverTooltip>
-            <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-              <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-                ~${trade.gasUseEstimateUSD.toFixed(2)}
-              </ThemedText.DeprecatedBlack>
-            </TextWithLoadingPlaceholder>
-          </RowBetween>
-        )} */}
       </AutoColumn>
     </StyledCard>
   )

@@ -18,7 +18,7 @@ export async function getOutputQuote(
     useQuoterV2: true,
   })
   const quoteCallReturnData = await provider.call({
-    to: QUOTER_ADDRESSES[chainId ?? SupportedChainId.SEPOLIA],
+    to: QUOTER_ADDRESSES[chainId ?? SupportedChainId.ARBITRUM_ONE],
     data: calldata,
   })
 

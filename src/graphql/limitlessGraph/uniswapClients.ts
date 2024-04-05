@@ -269,18 +269,18 @@ export function useUniswapSubgraph(): ApolloClient<NormalizedCacheObject> {
   // const [activeNetwork] = useActiveNetworkVersion()
   const { chainId } = useWeb3React()
   switch (chainId) {
-    case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:
-      return uniswapClient
+    // case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:
+    //   return uniswapClient
     case SupportedChainId.ARBITRUM_ONE: //SupportedNetwork.ARBITRUM:
       return arbitrumClient
-    case SupportedChainId.OPTIMISM: //SupportedNetwork.OPTIMISM:
-      return optimismClient
-    case SupportedChainId.POLYGON: // SupportedNetwork.POLYGON:
-      return polygonClient
-    case SupportedChainId.CELO: // SupportedNetwork.CELO:
-      return celoClient
-    case SupportedChainId.BNB: //SupportedNetwork.BNB:
-      return bscClient
+    // case SupportedChainId.OPTIMISM: //SupportedNetwork.OPTIMISM:
+    //   return optimismClient
+    // case SupportedChainId.POLYGON: // SupportedNetwork.POLYGON:
+    //   return polygonClient
+    // case SupportedChainId.CELO: // SupportedNetwork.CELO:
+    //   return celoClient
+    // case SupportedChainId.BNB: //SupportedNetwork.BNB:
+    //   return bscClient
     default:
       return uniswapClient
   }
@@ -288,18 +288,8 @@ export function useUniswapSubgraph(): ApolloClient<NormalizedCacheObject> {
 
 export function getUniswapSubgraph(chainId: number): ApolloClient<NormalizedCacheObject> {
   switch (chainId) {
-    case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:
-      return uniswapClient
     case SupportedChainId.ARBITRUM_ONE: //SupportedNetwork.ARBITRUM:
       return arbitrumClient
-    case SupportedChainId.OPTIMISM: //SupportedNetwork.OPTIMISM:
-      return optimismClient
-    case SupportedChainId.POLYGON: // SupportedNetwork.POLYGON:
-      return polygonClient
-    case SupportedChainId.CELO: // SupportedNetwork.CELO:
-      return celoClient
-    case SupportedChainId.BNB: //SupportedNetwork.BNB:
-      return bscClient
     default:
       return uniswapClient
   }
@@ -352,19 +342,19 @@ export const customArbitrumClient = new ApolloClient({
 
 export function getUniswapUri(chainId?: number): string {
   switch (chainId) {
-    case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:
-      return 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
+    // case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:
+    //   return 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
     case SupportedChainId.ARBITRUM_ONE: //SupportedNetwork.ARBITRUM:
       return 'https://api.thegraph.com/subgraphs/name/ianlapham/arbitrum-minimal'
     // return `https://gateway-arbitrum.network.thegraph.com/api/${arbitrumApiKey}/subgraphs/id/FbCGRftH4a3yZugY7TnbYgPJVEv2LvMT6oF1fxPe9aJM`
-    case SupportedChainId.OPTIMISM: //SupportedNetwork.OPTIMISM:
-      return 'https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis'
-    case SupportedChainId.POLYGON: // SupportedNetwork.POLYGON:
-      return 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon'
-    case SupportedChainId.CELO: // SupportedNetwork.CELO:
-      return 'https://api.thegraph.com/subgraphs/name/jesse-sawa/uniswap-celo'
-    case SupportedChainId.BNB: //SupportedNetwork.BNB:
-      return 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-bsc'
+    // case SupportedChainId.OPTIMISM: //SupportedNetwork.OPTIMISM:
+    //   return 'https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis'
+    // case SupportedChainId.POLYGON: // SupportedNetwork.POLYGON:
+    //   return 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon'
+    // case SupportedChainId.CELO: // SupportedNetwork.CELO:
+    //   return 'https://api.thegraph.com/subgraphs/name/jesse-sawa/uniswap-celo'
+    // case SupportedChainId.BNB: //SupportedNetwork.BNB:
+    //   return 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-bsc'
     default:
       return 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
   }

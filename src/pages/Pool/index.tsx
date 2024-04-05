@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Trace, TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName, InterfacePageName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
-import { ButtonGray, ButtonPrimary, ButtonText } from 'components/Button'
+import { ButtonGray, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import Footer from 'components/Footer'
 import { Menu } from 'components/Menu'
@@ -23,7 +23,6 @@ import { HideSmall, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
 
 import { LoadingRows } from './styleds'
-import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 
 const Filter = styled.div`
   display: flex;
