@@ -47,6 +47,7 @@ type MultiLogoProps = {
 
 const StyledLogoParentContainer = styled.div`
   position: relative;
+  /* position: absolute; */
   top: 0;
   left: 0;
 `

@@ -129,12 +129,12 @@ function PositionListItem({ positionInfo }: { positionInfo: PositionInfo }) {
         left={<PortfolioLogo chainId={chainId} currencies={[pool.token0, pool.token1]} />}
         title={
           <Row>
-            <ThemedText.SubHeader fontWeight={500}>
-              {pool.token0.symbol} / {pool.token1?.symbol}
-            </ThemedText.SubHeader>
+            <ThemedText.SubHeaderSmall>
+              {pool.token0.symbol}/{pool.token1?.symbol}
+            </ThemedText.SubHeaderSmall>
           </Row>
         }
-        descriptor={<ThemedText.Caption>{`${pool.fee / 10000}%`}</ThemedText.Caption>}
+        descriptor={<ThemedText.SubHeaderSmall minWidth="75px">{`${pool.fee / 10000}%`}</ThemedText.SubHeaderSmall>}
         right={
           <>
             <MouseoverTooltip
@@ -148,15 +148,13 @@ function PositionListItem({ positionInfo }: { positionInfo: PositionInfo }) {
                 </div>
               }
             >
-              <ThemedText.SubHeader fontWeight={500}>
+              <ThemedText.SubHeaderSmall>
                 {formatNumber((liquidityValue ?? 0) + (feeValue ?? 0), NumberType.PortfolioBalance)}
-              </ThemedText.SubHeader>
+              </ThemedText.SubHeaderSmall>
             </MouseoverTooltip>
 
-            <Row justify="flex-end">
-              <ThemedText.Caption color="textSecondary">
-                {closed ? t`Closed` : inRange ? t`In range` : t`Out of range`}
-              </ThemedText.Caption>
+            <Row>
+              <ThemedText.Caption>{closed ? t`Closed` : inRange ? t`In range` : t`Out of range`}</ThemedText.Caption>
               <ActiveDot closed={closed} outOfRange={!inRange} />
             </Row>
           </>
