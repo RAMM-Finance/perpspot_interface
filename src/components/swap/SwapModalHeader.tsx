@@ -314,7 +314,7 @@ export function LeverageModalHeader({
             </RowBetween>
           )}
           <ThemedText.DeprecatedBody fontSize={14} color={theme.textTertiary}>
-            <FiatValue fiatValue={fiatValuePayment} height="14px" />
+            <FiatValue fiatValue={fiatValuePayment} height="12px" />
           </ThemedText.DeprecatedBody>
         </Column>
       </LightCard>

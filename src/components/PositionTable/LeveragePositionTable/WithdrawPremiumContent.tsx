@@ -30,7 +30,6 @@ import { usePool } from 'hooks/usePools'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { MarginFacility } from 'LmtTypes'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Text } from 'rebass'
@@ -110,16 +109,16 @@ const CloseText = styled(ThemedText.LabelSmall)<{ isActive: boolean }>`
   color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textPrimary)};
 `
 
-interface WithdrawPremiumParams {
-  account?: string
-  marginFacility?: MarginFacility
-  positionKey: TraderPositionKey
-  inputCurrency?: Currency
-  outputCurrency?: Currency
-  parsedAmount?: BN
-  position?: MarginPositionDetails
-  withdrawAll?: boolean
-}
+// interface WithdrawPremiumParams {
+//   account?: string
+//   marginFacility?: MarginFacility
+//   positionKey: TraderPositionKey
+//   inputCurrency?: Currency
+//   outputCurrency?: Currency
+//   parsedAmount?: BN
+//   position?: MarginPositionDetails
+//   withdrawAll?: boolean
+// }
 
 function useDerivedWithdrawPremiumInfo(
   amount: string,
@@ -161,34 +160,34 @@ function useDerivedWithdrawPremiumInfo(
     return ['withdrawPremium', blockNumber, parsedAmount.toString(), withdrawAll]
   }, [blockNumber, marginFacility, parsedAmount, lastBlockNumber, inputCurrency, outputCurrency, withdrawAll])
 
-  const simulateTxn = useCallback(async (params: WithdrawPremiumParams) => {
+  const simulateTxn = useCallback(async () => {
     if (
-      !params.marginFacility ||
-      !params.positionKey ||
-      !params.inputCurrency ||
-      !params.outputCurrency ||
-      !params.positionKey ||
-      !params.parsedAmount ||
-      !params.position ||
-      params.parsedAmount.isLessThanOrEqualTo(0) ||
-      !params.account
+      !marginFacility ||
+      !positionKey ||
+      !inputCurrency ||
+      !outputCurrency ||
+      !positionKey ||
+      !parsedAmount ||
+      !position ||
+      parsedAmount.isLessThanOrEqualTo(0) ||
+      !account
     ) {
       throw new Error('invalid params')
     }
     // simulate the txn
-    await params.marginFacility.callStatic.withdrawPremium(
+    await marginFacility.callStatic.withdrawPremium(
       {
-        token0: params.positionKey.poolKey.token0,
-        token1: params.positionKey.poolKey.token1,
-        fee: params.positionKey.poolKey.fee,
+        token0: positionKey.poolKey.token0,
+        token1: positionKey.poolKey.token1,
+        fee: positionKey.poolKey.fee,
       },
-      params.positionKey.isToken0,
-      params.withdrawAll
-        ? params.position.premiumLeft.shiftedBy(params.inputCurrency.decimals).toFixed(0)
-        : params.parsedAmount.shiftedBy(params.inputCurrency.decimals).toFixed(0),
-      params.withdrawAll ?? false
+      positionKey.isToken0,
+      withdrawAll
+        ? position.premiumLeft.shiftedBy(inputCurrency.decimals).toFixed(0)
+        : parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+      withdrawAll ?? false
     )
-  }, [])
+  }, [marginFacility, positionKey, inputCurrency, outputCurrency, parsedAmount, position, withdrawAll, account])
 
   const { isLoading, isError, data, error } = useQuery({
     staleTime: 30 * 1000, // 30s
@@ -201,18 +200,11 @@ function useDerivedWithdrawPremiumInfo(
     queryFn: async () => {
       if (!blockNumber) throw new Error('missing block number')
       try {
-        await simulateTxn({
-          account,
-          marginFacility: marginFacility ?? undefined,
-          positionKey,
-          inputCurrency: inputCurrency ?? undefined,
-          outputCurrency: outputCurrency ?? undefined,
-          parsedAmount,
-        })
+        await simulateTxn()
         setLastBlockNumber(blockNumber)
         return true
       } catch (err) {
-        console.log('deposit premium error', err)
+        console.log('withdraw premium error', err)
         throw err
       }
     },
@@ -311,6 +303,7 @@ export function WithdrawPremiumContent({
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
+  console.log('withdraw:premium', position)
   const { txnInfo, inputError, tradeState } = useDerivedWithdrawPremiumInfo(
     amount,
     positionKey,
