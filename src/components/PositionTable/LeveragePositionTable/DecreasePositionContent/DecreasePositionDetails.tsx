@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent } from '@uniswap/sdk-core'
 import { AutoColumn } from 'components/Column'
-import { StyledCard, TextWithLoadingPlaceholder, TruncatedText } from 'components/modalFooters/common'
+import { StyledCard, TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { RowBetween, RowFixed } from 'components/Row'
 import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import { LmtTradePrice } from 'components/swap/TradePrice'
@@ -44,10 +44,6 @@ export function DecreasePositionDetails({
 
   const receiveAmount = useMemo(() => {
     if (!txnInfo || !existingPosition) return undefined
-    // const withdrawnPremium = removePremium?
-    //   existingPosition?.marginInPosToken
-    //     ? txnInfo.withdrawnPremium.multipliedBy(txnInfo.executionPrice) : txnInfo.withdrawnPremium
-    //     : new BN(0)
     const re = removePremium
       ? existingPosition.marginInPosToken
         ? existingPosition.margin.minus(txnInfo.margin).plus(txnInfo.PnL)
@@ -56,7 +52,7 @@ export function DecreasePositionDetails({
 
     return re
   }, [txnInfo, existingPosition, removePremium])
-  // console.log('helllll',txnInfo)
+
   return (
     <StyledBGCard style={{ width: '100%' }}>
       <AutoColumn gap="md">
@@ -70,16 +66,14 @@ export function DecreasePositionDetails({
           </RowFixed>
           <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
             <ThemedText.BodySmall textAlign="right" color="textSecondary">
-              <TruncatedText>
-                <DeltaText delta={Number(txnInfo?.PnL)}>
-                  {txnInfo && inputCurrency && outputCurrency && existingPosition
-                    ? `(${txnInfo.PnL.div(existingPosition.margin).times(100).toFixed(2)}%) ${formatBNToString(
-                        txnInfo?.PnL,
-                        NumberType.SwapTradeAmount
-                      )}  ${existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`
-                    : '-'}
-                </DeltaText>
-              </TruncatedText>
+              <DeltaText delta={Number(txnInfo?.PnL)}>
+                {txnInfo && inputCurrency && outputCurrency && existingPosition
+                  ? `(${txnInfo.PnL.div(existingPosition.margin).times(100).toFixed(2)}%) ${formatBNToString(
+                      txnInfo?.PnL,
+                      NumberType.SwapTradeAmount
+                    )}  ${existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`
+                  : '-'}
+              </DeltaText>
             </ThemedText.BodySmall>
           </TextWithLoadingPlaceholder>
         </RowBetween>
@@ -94,30 +88,28 @@ export function DecreasePositionDetails({
                 }
               >
                 <ThemedText.BodySmall color="textPrimary">
-                  <Trans>PnL Including Premium Deposit</Trans>
+                  <Trans>PnL w/ deposit</Trans>
                 </ThemedText.BodySmall>
               </MouseoverTooltip>
             </RowFixed>
             <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
               <ThemedText.BodySmall textAlign="right" color="textSecondary">
-                <TruncatedText>
-                  <DeltaText delta={Number(txnInfo?.PnL)}>
-                    {txnInfo && inputCurrency && outputCurrency && existingPosition
-                      ? `(${txnInfo.PnLWithPremium.div(existingPosition.margin)
-                          .times(100)
-                          .toFixed(2)}%) ${formatBNToString(txnInfo.PnLWithPremium, NumberType.SwapTradeAmount)}  ${
-                          existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol
-                        }`
-                      : '-'}
-                  </DeltaText>
-                </TruncatedText>
+                <DeltaText delta={Number(txnInfo?.PnL)}>
+                  {txnInfo && inputCurrency && outputCurrency && existingPosition
+                    ? `(${txnInfo.PnLWithPremium.div(existingPosition.margin)
+                        .times(100)
+                        .toFixed(2)}%) ${formatBNToString(txnInfo.PnLWithPremium, NumberType.SwapTradeAmount)}  ${
+                        existingPosition?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol
+                      }`
+                    : '-'}
+                </DeltaText>
               </ThemedText.BodySmall>
             </TextWithLoadingPlaceholder>
           </RowBetween>
         ) : null}
         {removePremium ? (
           <ValueLabel
-            label="Returned Premium Deposit"
+            label="Returned Premium"
             description="Position will automatically withdraw your remaining 
               premium deposit and refund you."
             value={
@@ -158,10 +150,11 @@ export function DecreasePositionDetails({
                   price={txnInfo.executionPrice}
                   showInverted={invertedPrice}
                   valueFontSize="12px"
+                  labelFontSize="12px"
                 />
               </Underlined>
             ) : (
-              <ThemedText.BodySmall fontSize="14px" textAlign="right" color="textSecondary">
+              <ThemedText.BodySmall fontSize="12px" textAlign="right" color="textSecondary">
                 -
               </ThemedText.BodySmall>
             )}

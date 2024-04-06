@@ -6,13 +6,11 @@ import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenR
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
+import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import {
-  useCallback,
-  //useEffect, useMemo, useState
-} from 'react'
+import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
@@ -31,9 +29,8 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from '../constants'
 import { LoadingBubble } from '../loading'
-import { DeltaText } from '../TokenDetails/PriceChart'
-import { useAtomValue } from 'jotai/utils'
 import { filterStringAtom } from '../state'
+import { DeltaText } from '../TokenDetails/PriceChart'
 
 const Cell = styled.div`
   display: flex;
@@ -515,7 +512,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
-  
   const filterString = useAtomValue(filterStringAtom)
 
   const filtered = useMemo(() => {
@@ -523,15 +519,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       const includesToken0 = (token0?.symbol?.toLowerCase() ?? '').includes(filterString.toLowerCase())
       const includesToken1 = (token1?.symbol?.toLowerCase() ?? '').includes(filterString.toLowerCase())
 
-    return includesToken0 || includesToken1
+      return includesToken0 || includesToken1
     } else {
       return true
     }
-    
   }, [filterString, token0, token1])
 
-  return (
-    filtered ? 
+  return filtered ? (
     <RowWrapper
       ref={ref}
       onClick={() => {
@@ -601,8 +595,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
       {/*</ClickableContent> */}
     </RowWrapper>
-    : null
-  )
+  ) : null
 })
 
 PLoadedRow.displayName = 'LoadedRow'

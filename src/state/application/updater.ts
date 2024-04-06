@@ -95,6 +95,7 @@ export default function Updater(): null {
       return undefined
     }
   }, [result])
+
   const { poolsOHLC } = usePoolsOHLC(poolList)
   useEffect(() => {
     if (poolsOHLC) {
@@ -121,7 +122,6 @@ export default function Updater(): null {
         !currentPools[chainId]?.token1Symbol) &&
       ALL_SUPPORTED_CHAIN_IDS.includes(chainId)
     ) {
-      console.log('setting default pool', chainId)
       const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = DEFAULT_POOLS[chainId]
       dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
     }
@@ -129,10 +129,10 @@ export default function Updater(): null {
 
   useEffect(() => {
     if (provider && chainId && windowVisible) {
-      if (activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
+      if (activeChainId && activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
         setActiveChainId(chainId)
         const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol } = DEFAULT_POOLS[chainId]
-        
+
         dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
       }
     }

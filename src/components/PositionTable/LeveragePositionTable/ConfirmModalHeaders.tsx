@@ -332,6 +332,7 @@ export function ConfirmReducePositionHeader({
       <DecreasePositionDetails
         txnInfo={txnInfo}
         inputCurrency={inputCurrency}
+        outputCurrency={outputCurrency}
         loading={false}
         existingPosition={existingPosition}
         allowedSlippage={allowedSlippage}
@@ -368,16 +369,6 @@ export function ConfirmReducePositionHeader({
           </Trans>
         </ThemedText.DeprecatedItalic>
       </AutoColumn>
-      {/* {recipient !== null ? (
-        <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
-          <ThemedText.DeprecatedMain>
-            <Trans>
-              Output will be sent to{' '}
-              <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
-            </Trans>
-          </ThemedText.DeprecatedMain>
-        </AutoColumn>
-      ) : null} */}
     </AutoColumn>
   )
 }

@@ -332,8 +332,8 @@ const TradeTabContent = () => {
 
   const notApproved =
     marginInPosToken || premiumInPosToken
-      ? inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED
-      : inputApprovalState !== ApprovalState.APPROVED
+      ? inputApprovalState === ApprovalState.NOT_APPROVED || outputApprovalState === ApprovalState.NOT_APPROVED
+      : inputApprovalState === ApprovalState.NOT_APPROVED
 
   const noTradeInputError = useMemo(() => {
     return !inputError
@@ -834,17 +834,17 @@ const TradeTabContent = () => {
               <Trans>Connect Wallet</Trans>
             </ButtonLight>
           ) : poolNotFound ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
+            <ButtonError disabled={true}>
+              <ThemedText.BodyPrimary mb="4px">
                 <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
+              </ThemedText.BodyPrimary>
+            </ButtonError>
           ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
+            <ButtonError disabled={true}>
+              <ThemedText.BodyPrimary mb="4px">
                 <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
+              </ThemedText.BodyPrimary>
+            </ButtonError>
           ) : noTradeInputError && notApproved ? (
             <>
               <ButtonPrimary
