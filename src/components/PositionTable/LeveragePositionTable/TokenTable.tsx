@@ -166,25 +166,16 @@ export default function LeveragePositionsTable({
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
-  /* loading and error state */
-
-  // return (
-  //   <GridContainer>
-  //     <HeaderRow />
-  //   </GridContainer>
-  // )
 
   if (!chainId) {
     return null
   }
 
-  if (unsupportedChain(chainId)) {
+  if (unsupportedChain(chainId) || loading) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   }
 
-  if (loading) {
-    return <LoadingTokenTable rowCount={3} />
-  } else if (!positions || !filteredPositions || filteredPositions?.length == 0) {
+  if (!positions || !filteredPositions || filteredPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
