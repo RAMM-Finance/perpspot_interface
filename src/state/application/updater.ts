@@ -12,7 +12,7 @@ import { setCurrentPool } from 'state/user/reducer'
 import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
-import { useAppPoolOHLC, useCloseModal } from './hooks'
+import { useCloseModal } from './hooks'
 import { updateChainId, updatePoolPriceData } from './reducer'
 
 const DEFAULT_POOLS: {
@@ -70,8 +70,8 @@ const DEFAULT_POOLS: {
     poolId: getPoolId('0x4200000000000000000000000000000000000006', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 500),
     inputInToken0: false,
     token0IsBase: true,
-    token0Symbol: 'USDC',
-    token1Symbol: 'WETH',
+    token0Symbol: 'WETH',
+    token1Symbol: 'USDC',
   },
 }
 
@@ -97,8 +97,9 @@ export default function Updater(): null {
   }, [result])
 
   const { poolsOHLC } = usePoolsOHLC(poolList)
-  const poolOHLC = useAppPoolOHLC()
-  // console.log('poolOHLC', poolOHLC)
+
+  // const poolOHLC = useAppPoolOHLC()
+
   useEffect(() => {
     if (poolsOHLC && chainId) {
       dispatch(updatePoolPriceData({ poolsOHLC, chainId }))

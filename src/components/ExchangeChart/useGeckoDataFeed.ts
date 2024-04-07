@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { CHAIN_TO_NETWORK_ID } from 'hooks/usePoolsOHLC'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
 import { useMemo, useRef } from 'react'
 
@@ -19,9 +20,12 @@ const formatFetchBarEndpoint = (
   before_timestamp: number,
   limit: number,
   currency: string,
-  token: 'base' | 'quote'
+  token: 'base' | 'quote',
+  chainId: number
 ) => {
-  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
+  const network = CHAIN_TO_NETWORK_ID[chainId] ?? 'arbitrum'
+
+  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
 }
 
 const formatFetchLiveBarEndpoint = (
@@ -44,7 +48,8 @@ const fetchBars = async (
   limit: number,
   currency: string,
   token: 'base' | 'quote',
-  after_timestamp: number
+  after_timestamp: number,
+  chainId: number
 ): Promise<{
   bars: {
     open: number
@@ -61,6 +66,7 @@ const fetchBars = async (
       limit = 1000
     }
 
+    // adjusted chainId
     const response = await axios.get(
       formatFetchBarEndpoint(
         address.toLocaleLowerCase(),
@@ -69,7 +75,8 @@ const fetchBars = async (
         before_timestamp,
         limit,
         currency,
-        token
+        token,
+        chainId
       ),
       {
         headers: {
@@ -178,9 +185,7 @@ const configurationData = {
 
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
-  token0: string
-  token1: string
-  fee: number
+  chainId: number
 }
 
 export default function useGeckoDatafeed() {
@@ -200,7 +205,7 @@ export default function useGeckoDatafeed() {
           if (!chartData || symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const { baseSymbol, quoteSymbol, poolAddress } = JSON.parse(chartData)
+          const { baseSymbol, quoteSymbol, poolAddress, chainId } = JSON.parse(chartData)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -216,6 +221,7 @@ export default function useGeckoDatafeed() {
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
             poolAddress,
+            chainId,
             format: 'pricescale',
           }
           setTimeout(() => onSymbolResolvedCallback(symbolInfo))
@@ -231,7 +237,7 @@ export default function useGeckoDatafeed() {
           onErrorCallback: (error: string) => void
         ) => {
           console.log('[getBars]: Method call', resolution)
-          const { poolAddress } = symbolInfo
+          const { poolAddress, chainId } = symbolInfo
           const { from, to, countBack } = periodParams
           // console.log(countBack, '-----countback----------');
           let timeframe: 'hour' | 'day' | 'minute' = 'hour'
@@ -273,7 +279,8 @@ export default function useGeckoDatafeed() {
               countBack,
               'token',
               denomination as 'base' | 'quote',
-              from
+              from,
+              chainId
             )
             const noData = bars.length === 0
             if (error) {

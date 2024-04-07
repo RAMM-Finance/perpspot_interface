@@ -8,7 +8,6 @@ import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
@@ -273,8 +272,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const chartSymbol = useMemo(() => {
     if (pool && poolOHLC && chainId) {
-      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
-
       if (!poolOHLC) return null
 
       const base = poolOHLC?.base
@@ -303,6 +300,7 @@ export default function Trade({ className }: { className?: string }) {
           baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
           quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
           token0IsBase: d1.lt(d2),
+          chainId,
         })
       }
       const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
@@ -311,6 +309,7 @@ export default function Trade({ className }: { className?: string }) {
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
         token0IsBase: !invert,
+        chainId,
       })
     }
     return null
