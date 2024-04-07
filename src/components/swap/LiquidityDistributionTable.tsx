@@ -1,11 +1,10 @@
 import { NumberType } from '@uniswap/conedison/format'
-import { computePoolAddress } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { LoadingBubble } from 'components/Tokens/loading'
-import { getInvertPrice, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { getInvertPrice } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { BinData } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
@@ -37,15 +36,15 @@ const LiquidityDistributionTable = ({
 
   const [, pool] = usePool(token1 ?? undefined, token0 ?? undefined, fee)
 
-  const poolAddress = useMemo(() => {
-    if (!pool || !chainId) return null
-    return computePoolAddress({
-      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-      tokenA: pool.token0,
-      tokenB: pool.token1,
-      fee: pool.fee,
-    })
-  }, [chainId, pool])
+  // const poolAddress = useMemo(() => {
+  //   if (!pool || !chainId) return null
+  //   return computePoolAddress({
+  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+  //     tokenA: pool.token0,
+  //     tokenB: pool.token1,
+  //     fee: pool.fee,
+  //   })
+  // }, [chainId, pool])
 
   // console.log('tooes', token0, token1)
   const [currentPrice, inverse] = useMemo(() => {

@@ -23,7 +23,7 @@ import JoinModal from 'pages/Join'
 import React, { useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
@@ -269,15 +269,15 @@ export default function Trade({ className }: { className?: string }) {
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const location = useLocation()
-  const poolsOHLC = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
 
   const chartSymbol = useMemo(() => {
-    if (pool && poolsOHLC && chainId) {
+    if (pool && poolOHLC && chainId) {
       const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 
-      if (!poolsOHLC[id]) return null
+      if (!poolOHLC) return null
 
-      const base = poolsOHLC[id]?.base
+      const base = poolOHLC?.base
       let poolAddress = computePoolAddress({
         factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
         tokenA: pool.token0,
@@ -295,8 +295,8 @@ export default function Trade({ className }: { className?: string }) {
       }
       if (!base) {
         const token0Price = new BN(pool.token0Price.toFixed(18))
-        const d1 = token0Price.minus(poolsOHLC[id].price24hAgo).abs()
-        const d2 = new BN(1).div(token0Price).minus(poolsOHLC[id].price24hAgo).abs()
+        const d1 = token0Price.minus(poolOHLC.price24hAgo).abs()
+        const d2 = new BN(1).div(token0Price).minus(poolOHLC.price24hAgo).abs()
 
         return JSON.stringify({
           poolAddress,
@@ -314,7 +314,7 @@ export default function Trade({ className }: { className?: string }) {
       })
     }
     return null
-  }, [poolsOHLC, pool, chainId])
+  }, [poolOHLC, pool, chainId])
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 

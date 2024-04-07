@@ -8,7 +8,6 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useCurrency } from 'hooks/Tokens'
 import { useTokenContract } from 'hooks/useContract'
@@ -16,7 +15,7 @@ import { usePool } from 'hooks/usePools'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
@@ -44,13 +43,6 @@ export function PoolStatsSection({
   fee?: number
   poolData: any
 }) {
-  if (
-    chainId === SupportedChainId.LINEA &&
-    (address0?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase() ||
-      address1?.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase())
-  ) {
-    console.log('SOMETHING AMISS1')
-  }
   const currency0 = useCurrency(address0)
   const currency1 = useCurrency(address1)
 
@@ -61,7 +53,7 @@ export function PoolStatsSection({
 
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee)
 
-  const PoolsOHLC = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(address0, address1, fee)
 
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)
@@ -75,10 +67,10 @@ export function PoolStatsSection({
   ])
 
   const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-    if (!pool || !address0 || !address1 || !fee) return [null, false, null, null, null, null, null]
+    if (!pool || !address0 || !address1 || !fee || !poolOHLC) return [null, false, null, null, null, null, null]
     const id = getPoolId(address0, address1, fee)
     // const id = `${address0.toLowerCase()}-${address1.toLowerCase()}-${fee}`
-    const OHLC = PoolsOHLC[id]
+    const OHLC = poolOHLC
     if (!OHLC) return [null, false, null, null, null, null, null]
     let tvl
     let volume
@@ -115,7 +107,7 @@ export function PoolStatsSection({
     const price24hHigh = price.gt(priceData.high24) ? price : priceData.high24
     const price24hLow = price.lt(priceData.low24) ? price : priceData.low24
     return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
-  }, [pool, poolData, PoolsOHLC, address0, address1, fee])
+  }, [pool, poolData, poolOHLC, address0, address1, fee])
 
   const loading = loading0 || loading1 || !reserve0 || !reserve1 || !pool
 

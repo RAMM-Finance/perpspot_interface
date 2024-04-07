@@ -1,7 +1,6 @@
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import Footer from 'components/Footer'
-import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { filterStringAtom } from 'components/Tokens/state'
 import TokenTable from 'components/Tokens/TokenTable/TokenTable'
 import { useResetAtom } from 'jotai/utils'
@@ -23,16 +22,6 @@ const ExploreContainer = styled.div`
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     padding-top: 20px;
-  }
-`
-
-const FiltersContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  height: 40px;
-
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    order: 2;
   }
 `
 

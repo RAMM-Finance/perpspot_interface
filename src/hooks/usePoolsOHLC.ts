@@ -4,6 +4,7 @@ import { keccak256 } from '@ethersproject/solidity'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
@@ -69,11 +70,7 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
     for (let i = 0; i < list.length; i++) {
       let adjustedPool = list[i]
       let adjustedChainId = chainId
-      if (
-        chainId === SupportedChainId.BERA_ARTIO || 
-        chainId === SupportedChainId.LINEA ||
-        chainId === SupportedChainId.BASE
-        ) {
+      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
         adjustedPool = switchPoolChain(chainId, SupportedChainId.ARBITRUM_ONE, list[i] as PoolKey)
         adjustedChainId = SupportedChainId.ARBITRUM_ONE
       }
@@ -128,16 +125,13 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       let base = res?.data?.meta?.base?.address
       let quote = res?.data?.meta?.quote?.address
       const token0IsBase = base ? base?.toLowerCase() === token0.toLowerCase() : true
-      if (
-        chainId === SupportedChainId.BERA_ARTIO || 
-        chainId === SupportedChainId.LINEA ||
-        chainId === SupportedChainId.BASE
-        ) {
+
+      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
         base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
         quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
       }
 
-      parsed[`${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`] = {
+      parsed[getPoolId(token0, token1, fee)] = {
         high24,
         low24,
         price24hAgo,

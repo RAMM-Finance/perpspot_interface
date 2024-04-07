@@ -17,7 +17,7 @@ import { Row } from 'nft/components/Flex'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
-import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC } from 'state/application/hooks'
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
@@ -206,7 +206,6 @@ const PoolSelectLoading = styled(SelectLoadingBar)`
 `
 
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
-  const poolOHLCDatas = useAppPoolOHLC()
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
 
@@ -215,37 +214,34 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
 
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
-  const poolOHLCData = poolOHLCDatas[id]
+  const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
   const delta = poolOHLCData?.delta24h
 
   // const { onPoolSelection } = useSwapActionHandlers()
 
   const [baseQuoteSymbol, token0IsBase] = useMemo(() => {
-    if (pool && poolOHLCDatas) {
-      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
-      if (poolOHLCDatas[id]) {
-        const base = poolOHLCDatas[id]?.base
-        if (!base) {
-          const priceData = poolOHLCDatas[id]
-          const token0Price = new BN(pool.token0Price.toFixed(18))
-          const d1 = token0Price.minus(priceData.price24hAgo).abs()
-          const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
-          if (d1.lt(d2)) {
-            return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
-          } else {
-            return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
-          }
+    if (pool && poolOHLCData) {
+      const base = poolOHLCData?.base
+      if (!base) {
+        const priceData = poolOHLCData
+        const token0Price = new BN(pool.token0Price.toFixed(18))
+        const d1 = token0Price.minus(priceData.price24hAgo).abs()
+        const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
+        if (d1.lt(d2)) {
+          return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
         } else {
-          if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
-            return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
-          } else {
-            return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
-          }
+          return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
+        }
+      } else {
+        if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
+          return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
+        } else {
+          return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
         }
       }
     }
     return [null, null]
-  }, [poolOHLCDatas, pool])
+  }, [poolOHLCData, pool])
 
   const addPinnedPool = useAddPinnedPool()
   const removePinnedPool = useRemovePinnedPool()
@@ -393,25 +389,30 @@ function useFilteredKeys() {
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const poolOHLCData = useAppPoolOHLC()
+  const { chainId } = useWeb3React()
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0) {
-      const list = [...poolList]
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId]) {
+      let list = [...poolList]
       if (sortMethod === PoolSortMethod.PRICE) {
+        list = list.filter((pool) => {
+          const id = getPoolId(pool.token0, pool.token1, pool.fee)
+          return !!poolOHLCData[chainId][id]
+        })
         if (sortAscending) {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
-            const aPrice = poolOHLCData[aId]?.priceNow
-            const bPrice = poolOHLCData[bId]?.priceNow
+            const aPrice = poolOHLCData[chainId][aId]?.priceNow
+            const bPrice = poolOHLCData[chainId][bId]?.priceNow
             return bPrice - aPrice
           })
         } else {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
-            const aPrice = poolOHLCData[aId]?.priceNow
-            const bPrice = poolOHLCData[bId]?.priceNow
+            const aPrice = poolOHLCData[chainId][aId]?.priceNow
+            const bPrice = poolOHLCData[chainId][bId]?.priceNow
             return aPrice - bPrice
           })
         }
@@ -420,16 +421,16 @@ function useFilteredKeys() {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
-            const aDelta = poolOHLCData[aId]?.delta24h
-            const bDelta = poolOHLCData[bId]?.delta24h
+            const aDelta = poolOHLCData[chainId][aId]?.delta24h
+            const bDelta = poolOHLCData[chainId][bId]?.delta24h
             return bDelta - aDelta
           })
         } else {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
-            const aDelta = poolOHLCData[aId]?.delta24h
-            const bDelta = poolOHLCData[bId]?.delta24h
+            const aDelta = poolOHLCData[chainId][aId]?.delta24h
+            const bDelta = poolOHLCData[chainId][bId]?.delta24h
             return aDelta - bDelta
           })
         }
@@ -457,7 +458,7 @@ function useFilteredKeys() {
     }
 
     return []
-  }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData])
+  }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
 }
 
 export function SelectPool() {

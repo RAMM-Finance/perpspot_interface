@@ -241,9 +241,12 @@ export default function TokenTable() {
   const sortMethod = useAtom(sortMethodAtom)
 
   const PoolsOHLC = useAppPoolOHLC()
-  const PoolsOHLCArr = Object.keys(PoolsOHLC).map((key) => {
-    return { id: key, ...PoolsOHLC[key] }
-  })
+  const PoolsOHLCArr = useMemo(() => {
+    if (!PoolsOHLC || !chainId) return null
+    return Object.keys(PoolsOHLC[chainId]).map((key) => {
+      return { id: key, ...PoolsOHLC[chainId][key] }
+    })
+  }, [PoolsOHLC, chainId])
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 

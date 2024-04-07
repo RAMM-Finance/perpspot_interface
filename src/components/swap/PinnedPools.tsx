@@ -3,7 +3,7 @@ import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenR
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentPool, usePinnedPools, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
@@ -59,14 +59,13 @@ const DeltaText = styled.span<{ delta: number | undefined }>`
 const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
   const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
-  const poolOHLCDatas = useAppPoolOHLC()
+  const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
 
   const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee)
-  const poolOHLCData = poolOHLCDatas[id]
   const delta = poolOHLCData?.delta24h
   const [baseQuoteSymbol, token0IsBase] = useMemo(() => {
     if (pool && poolOHLCData) {

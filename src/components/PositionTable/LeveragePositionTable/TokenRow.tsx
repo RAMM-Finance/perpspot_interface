@@ -19,7 +19,7 @@ import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from '
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
 import { Box } from 'rebass'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
@@ -557,7 +557,7 @@ export const LoadedRow = memo(
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
     const setCurrentPool = useSetCurrentPool()
-    const poolOHLCDatas = useAppPoolOHLC()
+    const poolOHLCData = usePoolOHLC(token0Address, token1Address, details?.poolKey.fee)
 
     const leverageFactor = useMemo(() => {
       if (details.marginInPosToken) {
@@ -573,9 +573,9 @@ export const LoadedRow = memo(
       (e: any) => {
         if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool) {
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
-          if (poolOHLCDatas[id] && poolId !== id && id) {
+          if (poolOHLCData && poolId !== id && id) {
             e.stopPropagation()
-            let { token0IsBase, priceNow } = poolOHLCDatas[id]
+            let { token0IsBase, priceNow } = poolOHLCData
 
             if (token0IsBase === undefined) {
               const token0Price = new BN(pool.token0Price.toFixed(18))
@@ -588,7 +588,7 @@ export const LoadedRow = memo(
           }
         }
       },
-      [setCurrentPool, poolId, details, poolOHLCDatas, positionKey.poolKey.fee, token0, token1]
+      [setCurrentPool, poolId, details, poolOHLCData, positionKey.poolKey.fee, token0, token1]
     )
 
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
