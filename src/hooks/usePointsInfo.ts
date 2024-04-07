@@ -129,6 +129,7 @@ export function useUsingCode() {
   const [codeUsing, setCodeUsing] = useState(false)
   const [result, setResult] = useState(0)
   const blockNumber = useBlockNumber()
+
   useEffect(() => {
     if (!account || !provider || !referralContract) return
     const call = async () => {
@@ -177,7 +178,8 @@ export function useUsingCode() {
   //   }
   // }, [account, provider, chainId])
   // console.log('isBeacon', result)
-  return chainId == 80085 ? true : codeUsing
+  // return chainId == 80085 ? true : codeUsing
+  return chainId == 42161? codeUsing: true
 }
 
 // export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {
