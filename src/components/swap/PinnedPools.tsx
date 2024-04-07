@@ -6,7 +6,7 @@ import { useCallback, useMemo } from 'react'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
-import { useCurrentPool, usePinnedPools, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
+import { useCurrentPool, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components'
 import { ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
@@ -148,8 +148,7 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   )
 }
 
-export function PinnedPools() {
-  const pinnedPools = usePinnedPools()
+export function PinnedPools({ pinnedPools }: { pinnedPools: PoolKey[] }) {
   return (
     <PinnedWrapper>
       <TitleWrapper>

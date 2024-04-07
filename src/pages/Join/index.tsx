@@ -1,4 +1,3 @@
-import { defaultAbiCoder } from '@ethersproject/abi'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
@@ -6,16 +5,16 @@ import { ButtonPrimary } from 'components/Button'
 import Card from 'components/Card'
 import { ReferralModal } from 'components/Modal'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { SupportedChainId } from 'constants/chains'
+import { ethers } from 'ethers'
 import { useReferralContract } from 'hooks/useContract'
+import useSelectChain from 'hooks/useSelectChain'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import useSelectChain from 'hooks/useSelectChain'
-import { SupportedChainId } from 'constants/chains'
-import { ethers } from 'ethers'
 
 const ModalWrapper = styled.div`
   display: flex;
@@ -77,8 +76,8 @@ export default function JoinModal() {
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
-    navigate('/swap')
-  }, [])
+    navigate('/trade')
+  }, [navigate])
 
   const referralContract = useReferralContract()
   const [activeCodes, setActiveCodes] = useState<string>()
@@ -87,11 +86,9 @@ export default function JoinModal() {
   const addTransaction = useTransactionAdder()
   const [txHash, setTxHash] = useState<string>()
 
-  console.log(activeCodes)
-
   useEffect(() => {
     // const code = path ? defaultAbiCoder.encode(['uint256'], [path]).toString() : undefined
-    const code = path? ethers.utils.formatBytes32String(path.toString()) : undefined
+    const code = path ? ethers.utils.formatBytes32String(path.toString()) : undefined
     if (!code || !referralContract) return
 
     const call = async () => {
@@ -128,20 +125,19 @@ export default function JoinModal() {
     call()
   }, [account])
 
-  useEffect(()=>{
+  useEffect(() => {
     if (!account || !referralContract) return
 
     const call = async () => {
       try {
         const code = ethers.utils.formatBytes32String(path.toString())
-        const result = await referralContract.callStatic.registerCode( code)
+        const result = await referralContract.callStatic.registerCode(code)
       } catch (error) {
         console.log('code activate err', error)
       }
     }
 
     call()
-
   }, [account])
 
   const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
@@ -186,15 +182,12 @@ export default function JoinModal() {
   const isArbitrum = chainId == 42161
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const targetChainId = 42161
-  const onSelectChain = useCallback(
-    async () => {
-      setPendingChainId(targetChainId)
-      await selectChain(targetChainId)
-      setPendingChainId(undefined)
-      setIsOpen(false)
-    },
-    [selectChain, setIsOpen]
-  )
+  const onSelectChain = useCallback(async () => {
+    setPendingChainId(targetChainId)
+    await selectChain(targetChainId)
+    setPendingChainId(undefined)
+    setIsOpen(false)
+  }, [selectChain, setIsOpen])
 
   return (
     <ReferralModal isOpen={showModal} maxHeight={750} maxWidth={800} $scrollOverlay={true} onDismiss={handleCloseModal}>

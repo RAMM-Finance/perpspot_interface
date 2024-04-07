@@ -42,9 +42,11 @@ const UnsupportedChartContainer = styled.div`
 export const PoolDataChart = ({
   symbol,
   chartContainerRef,
+  entryPrices,
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
+  entryPrices: number[] | undefined
 }) => {
   const { chainId } = useWeb3React()
 
@@ -100,6 +102,55 @@ export const PoolDataChart = ({
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
+          if (entryPrices?.length === 1) {
+            return tvWidgetRef.current
+              ?.activeChart()
+              .createPositionLine()
+              .setPrice(entryPrices[0])
+              .setText('Open Long')
+              .setLineColor('#3a3e5e')
+              .setLineWidth(0.5)
+              .setQuantityBackgroundColor('#3A404F23')
+              .setQuantityBorderColor('#3A404F23')
+              .setQuantityTextColor('#3A404F23')
+              .setBodyFont('courier, courier new, serif')
+              .setBodyBackgroundColor('#3a3e5e')
+              .setBodyBorderColor('#3a3e5e')
+              .setBodyTextColor('white')
+          } else if (entryPrices?.length === 2) {
+            return (
+              tvWidgetRef.current
+                ?.activeChart()
+                .createPositionLine()
+                .setPrice(entryPrices[0])
+                .setText('Open Long')
+                .setLineColor('#3a3e5e')
+                .setLineWidth(0.5)
+                .setQuantityBackgroundColor('#3A404F23')
+                .setQuantityBorderColor('#3A404F23')
+                .setQuantityTextColor('#3A404F23')
+                .setBodyFont('courier, courier new, serif')
+                .setBodyBackgroundColor('#3a3e5e')
+                .setBodyBorderColor('#3a3e5e')
+                .setBodyTextColor('white') &&
+              tvWidgetRef.current
+                ?.activeChart()
+                .createPositionLine()
+                .setPrice(entryPrices[1])
+                .setText('Open Long')
+                .setLineColor('#3a3e5e')
+                .setLineWidth(0.5)
+                .setQuantityBackgroundColor('#3A404F23')
+                .setQuantityBorderColor('#3A404F23')
+                .setQuantityTextColor('#3A404F23')
+                .setBodyFont('courier, courier new, serif')
+                .setBodyBackgroundColor('#3a3e5e')
+                .setBodyBorderColor('#3a3e5e')
+                .setBodyTextColor('white')
+            )
+          } else {
+            return
+          }
         })
       }
 
