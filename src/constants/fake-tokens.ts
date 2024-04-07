@@ -33,6 +33,8 @@ export const TokensArtio: { [address: string]: Token } = {
 const WETH_LINEA = new Token(59144, '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', 18, 'WETH', 'Wrapped Ether')
 const USDC_LINEA = new Token(59144, '0x176211869cA2b568f2A7D4EE941E073a821EE1ff', 6, 'USDC', 'USDC')
 const WBTC_LINEA = new Token(59144, '0x3aAB2285ddcDdaD8edf438C1bAB47e1a9D05a9b4', 8, 'WBTC', 'Wrapped BTC')
+const WETH_BASE = new Token(8453, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether')
+const USDC_BASE = new Token(8453, '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', 6, 'USDC', 'USD Coin')
 
 export const TokensLinea: { [address: string]: Token } = {
   [WETH_LINEA.address]: WETH_LINEA,
@@ -44,6 +46,11 @@ const LINEA_TO_ARBITRUM: { [address: string]: string } = {
   [WETH_LINEA.address.toLowerCase()]: WETH_ARBITRUM.address,
   [USDC_LINEA.address.toLowerCase()]: USDC_ARBITRUM.address,
   [WBTC_LINEA.address.toLowerCase()]: WBTC_ARBITRUM.address,
+}
+
+const TokensBase: { [address: string]: Token } = {
+  [WETH_BASE.address]: WETH_BASE,
+  [USDC_BASE.address]: USDC_BASE,
 }
 
 const BERA_TO_ARBITRUM: { [address: string]: string } = {
@@ -101,7 +108,9 @@ export const getDefaultTokensMap = (chainId: number): { [address: string]: Token
     return TokensLinea
   } else if (chainId === SupportedChainId.BERA_ARTIO) {
     return TokensArtio
+  } else if (chainId === SupportedChainId.BASE) {
+    return TokensBase
   } else {
-    return TokensArbitrum
+    return {}
   }
 }

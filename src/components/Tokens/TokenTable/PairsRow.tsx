@@ -12,7 +12,7 @@ import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
@@ -339,11 +339,11 @@ export function TokenRow({
     }
   }, [token0, token1, fee])
 
-  const poolOHLCDatas = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(token0?.wrapped.address, token1?.wrapped.address, fee)
 
   const token0IsBase = useMemo(() => {
-    if (pool && poolOHLCDatas && poolId) {
-      const priceData = poolOHLCDatas[poolId]
+    if (pool && poolOHLC && poolId) {
+      const priceData = poolOHLC
       const token0Price = new BN(pool.token0Price.toFixed(18))
       const d1 = token0Price.minus(priceData.price24hAgo).abs()
       const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
@@ -353,7 +353,7 @@ export function TokenRow({
       return false
     }
     return null
-  }, [pool, poolOHLCDatas, poolId])
+  }, [pool, poolOHLC, poolId])
 
   const handleClick = useCallback(
     (e: any) => {
@@ -470,12 +470,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
-  const poolOHLCDatas = useAppPoolOHLC()
+  // const poolOHLCDatas = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
   const poolId = getPoolId(tokenA, tokenB, fee)
 
   const token0IsBase = useMemo(() => {
-    if (pool && poolOHLCDatas && poolId) {
-      const priceData = poolOHLCDatas[poolId]
+    if (pool && poolOHLC && poolId) {
+      const priceData = poolOHLC
       const token0Price = new BN(pool.token0Price.toFixed(18))
       const d1 = token0Price.minus(priceData.price24hAgo).abs()
       const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
@@ -485,7 +486,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       return false
     }
     return null
-  }, [pool, poolOHLCDatas, poolId])
+  }, [pool, poolOHLC, poolId])
 
   const handleCurrencySelect = useCallback(() => {
     if (currentPoolId !== poolId && token0IsBase !== null && token0?.symbol && token1?.symbol) {

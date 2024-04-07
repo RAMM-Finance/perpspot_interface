@@ -1,11 +1,13 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { useLmtQuoterContract } from 'hooks/useContract'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
+import { PoolKey } from 'types/lmtv2position'
 
 import { AppState } from '../types'
 import {
@@ -76,6 +78,35 @@ export function usePoolKeyList() {
 
 export function useAppPoolOHLC() {
   return useAppSelector((state: AppState) => state.application.poolPriceData)
+}
+
+export function usePoolOHLC(
+  tokenA: string | undefined | null,
+  tokenB: string | undefined | null,
+  fee: number | undefined
+):
+  | {
+      pool: PoolKey
+      priceNow: number
+      price24hAgo: number
+      delta24h: number
+      high24: number
+      low24: number
+      base?: string
+      quote?: string
+      token0IsBase?: boolean
+    }
+  | undefined {
+  const { chainId } = useWeb3React()
+  const poolOHLCs = useAppSelector((state: AppState) => state.application.poolPriceData)
+  return useMemo(() => {
+    if (!tokenA || !tokenB || !fee || !chainId) return undefined
+    const poolId = getPoolId(tokenA, tokenB, fee)
+    if (chainId && poolOHLCs[chainId] && poolOHLCs[chainId][poolId]) {
+      return poolOHLCs[chainId][poolId]
+    }
+    return undefined
+  }, [chainId, tokenA, tokenB, fee, poolOHLCs])
 }
 
 export function useSetBLSScrollPosition(position: number | undefined): () => void {

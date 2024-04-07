@@ -47,16 +47,18 @@ export interface ApplicationState {
   readonly openModal: ApplicationModal | null
   readonly popupList: PopupList
   readonly poolPriceData: {
-    [id: string]: {
-      pool: PoolKey
-      priceNow: number
-      price24hAgo: number
-      delta24h: number
-      high24: number
-      low24: number
-      base?: string
-      quote?: string
-      token0IsBase?: boolean
+    [chainId: number]: {
+      [id: string]: {
+        pool: PoolKey
+        priceNow: number
+        price24hAgo: number
+        delta24h: number
+        high24: number
+        low24: number
+        base?: string
+        quote?: string
+        token0IsBase?: boolean
+      }
     }
   }
   readonly blockNumber: number | undefined
@@ -101,7 +103,7 @@ const applicationSlice = createSlice({
       ])
     },
     updatePoolPriceData(state, action) {
-      state.poolPriceData = action.payload
+      state.poolPriceData[action.payload.chainId] = action.payload.poolsOHLC
     },
     setBLScrollPosition(state, action) {
       state.bLScrollPosition = action.payload
