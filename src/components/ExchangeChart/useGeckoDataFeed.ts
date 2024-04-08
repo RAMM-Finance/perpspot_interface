@@ -271,6 +271,7 @@ export default function useGeckoDatafeed() {
             } else {
               denomination = 'base'
             }
+
             const { bars, error } = await fetchBars(
               poolAddress.toLowerCase(),
               timeframe,
