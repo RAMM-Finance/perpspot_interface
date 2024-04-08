@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Trans } from '@lingui/macro'
 import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
@@ -23,7 +24,7 @@ import { useCurrencyBalance } from '../../state/connection/hooks'
 import { ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
-import { RowBetween, RowFixed } from '../Row'
+import Row, { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
 
@@ -431,15 +432,19 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                           ? currency.symbol.slice(0, 4) +
                             '...' +
                             currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
-                          : currency?.symbol) || <Trans>Select token</Trans>}
+                          : currency?.symbol) || 
+                          <Row marginLeft="2.5rem">
+                            <Trans>Select token</Trans>
+                          </Row>
+                          }
                       </StyledTokenName>
                     )}
                   </RowFixed>
                   {onCurrencySelect && <StyledDropDown selected={!!currency} />}
                 </Aligner>
               </Tooltip>
+              <div>{isPrice ? <RowFixed>{isPrice}</RowFixed> : null}</div>
             </div>
-            <div>{isPrice ? <RowFixed>{isPrice}</RowFixed> : null}</div>
           </InputRow>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>

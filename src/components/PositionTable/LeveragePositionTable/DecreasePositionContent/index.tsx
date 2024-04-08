@@ -657,13 +657,13 @@ export default function DecreasePositionContent({
                 }}
                 showMaxButton={false}
                 hideBalance={true}
-                currency={outputCurrency}
+                // currency={outputCurrency}
                 label="Limit price"
                 id="limit-reduce-position-input"
                 isPrice={
                   <Button
                     sx={{ textTransform: 'none' }}
-                    style={{ display: 'flex', gap: '5px' }}
+                    style={{ display: 'flex', gap: '5px', padding: 0, marginTop: '3px'}}
                     onClick={() => {
                       setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
                       const val = parseBN(limitPrice)
@@ -672,10 +672,11 @@ export default function DecreasePositionContent({
                       }
                     }}
                   >
-                    {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="15px" />}
-                    <ThemedText.DeprecatedBody fontSize={14}>{quoteCurrency?.symbol} per </ThemedText.DeprecatedBody>
-                    {baseCurrency && <CurrencyLogo currency={baseCurrency} size="15px" />}
-                    <ThemedText.DeprecatedBody fontSize={14}>{baseCurrency?.symbol}</ThemedText.DeprecatedBody>
+                    {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="18px" />}
+                    <ThemedText.BodySecondary  fontSize={12}>{quoteCurrency?.symbol}</ThemedText.BodySecondary>
+                    <ThemedText.BodySecondary  fontSize={11}>per</ThemedText.BodySecondary>
+                    {baseCurrency && <CurrencyLogo currency={baseCurrency} size="18px" />}
+                    <ThemedText.BodySecondary fontSize={12}>{baseCurrency?.symbol}</ThemedText.BodySecondary>
                   </Button>
                 }
               />
