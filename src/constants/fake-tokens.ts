@@ -25,6 +25,27 @@ export const TokensArbitrum: { [address: string]: Token } = {
   [ARB_ARBITRUM.address]: ARB_ARBITRUM,
 }
 
+const ARBITRUM_STABLES: string[] = [USDC_ARBITRUM.address]
+const BASE_STABLES: string[] = [USDC_ARBITRUM.address]
+
+export function getStables(chainId: number): string[] {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return ARBITRUM_STABLES
+  } else if (chainId === SupportedChainId.BASE) {
+    return BASE_STABLES
+  }
+  return []
+}
+
+export function getNativeAddress(chainId: number): string {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return WETH_ARBITRUM.address
+  } else if (chainId === SupportedChainId.BASE) {
+    return WETH_BASE.address
+  }
+  return ''
+}
+
 export const TokensArtio: { [address: string]: Token } = {
   [USDC_BERA.address]: USDC_BERA,
   [WETH_BERA.address]: WETH_BERA,

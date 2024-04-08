@@ -69,7 +69,7 @@ const DEFAULT_POOLS: {
     },
     poolId: getPoolId('0x4200000000000000000000000000000000000006', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 500),
     inputInToken0: false,
-    token0IsBase: true,
+    token0IsBase: false,
     token0Symbol: 'WETH',
     token1Symbol: 'USDC',
   },

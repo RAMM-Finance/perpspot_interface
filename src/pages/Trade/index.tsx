@@ -282,6 +282,7 @@ export default function Trade({ className }: { className?: string }) {
         tokenB: pool.token1,
         fee: pool.fee,
       })
+
       if (UNSUPPORTED_GECKO_CHAINS.includes(chainId)) {
         poolAddress = switchPoolAddress(
           chainId,
@@ -291,6 +292,7 @@ export default function Trade({ className }: { className?: string }) {
           pool.fee
         )
       }
+
       if (!base) {
         const token0Price = new BN(pool.token0Price.toFixed(18))
         const d1 = token0Price.minus(poolOHLC.price24hAgo).abs()
