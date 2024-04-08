@@ -4,6 +4,7 @@ import { keccak256 } from '@ethersproject/solidity'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
@@ -23,8 +24,14 @@ interface HydratedPool {
   token0IsBase?: boolean
 }
 
-const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote') => {
-  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
+export const CHAIN_TO_NETWORK_ID: { [chainId: number]: string } = {
+  [SupportedChainId.ARBITRUM_ONE]: 'arbitrum',
+  [SupportedChainId.BASE]: 'base',
+}
+
+const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote', chainId: number) => {
+  const network = CHAIN_TO_NETWORK_ID[chainId]
+  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
 }
 
 const getPoolAddress = (tokenA: string, tokenB: string, fee: number, factoryAddress: string) => {
@@ -69,14 +76,11 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
     for (let i = 0; i < list.length; i++) {
       let adjustedPool = list[i]
       let adjustedChainId = chainId
-      if (
-        chainId === SupportedChainId.BERA_ARTIO || 
-        chainId === SupportedChainId.LINEA ||
-        chainId === SupportedChainId.BASE
-        ) {
+      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
         adjustedPool = switchPoolChain(chainId, SupportedChainId.ARBITRUM_ONE, list[i] as PoolKey)
         adjustedChainId = SupportedChainId.ARBITRUM_ONE
       }
+      console.log('fetching pool data', list, chainId, adjustedPool, adjustedChainId)
 
       const poolAddress = getPoolAddress(
         adjustedPool.token0,
@@ -96,7 +100,12 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
         denomination = 'base'
       }
 
-      const endpoint = formatEndpoint(poolAddress.toLocaleLowerCase(), 'token', denomination as 'base' | 'quote')
+      const endpoint = formatEndpoint(
+        poolAddress.toLocaleLowerCase(),
+        'token',
+        denomination as 'base' | 'quote',
+        adjustedChainId
+      )
 
       results.push(
         axios.get(endpoint, {
@@ -128,16 +137,13 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
       let base = res?.data?.meta?.base?.address
       let quote = res?.data?.meta?.quote?.address
       const token0IsBase = base ? base?.toLowerCase() === token0.toLowerCase() : true
-      if (
-        chainId === SupportedChainId.BERA_ARTIO || 
-        chainId === SupportedChainId.LINEA ||
-        chainId === SupportedChainId.BASE
-        ) {
+
+      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
         base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
         quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
       }
 
-      parsed[`${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`] = {
+      parsed[getPoolId(token0, token1, fee)] = {
         high24,
         low24,
         price24hAgo,
@@ -157,11 +163,11 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
   }, [list, chainId])
 
   const queryKey = useMemo(() => {
-    return ['poolsOHLC', list?.length]
-  }, [list])
+    return ['poolsOHLC', list?.length, chainId]
+  }, [list, chainId])
 
   const { data, error, isLoading } = useQuery(queryKey, fetchData, {
-    enabled: list ? list.length > 0 : false,
+    enabled: list && chainId ? list.length > 0 : false,
     refetchInterval: 1000 * 10,
     keepPreviousData: true,
   })

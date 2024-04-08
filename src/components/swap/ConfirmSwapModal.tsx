@@ -175,7 +175,6 @@ export function AddMarginPositionConfirmModal({
 }) {
   // shouldLogModalCloseEvent lets the child SwapModalHeader component know when modal has been closed
   // and an event triggered by modal closing should be logged.
-  const [shouldLogModalCloseEvent, setShouldLogModalCloseEvent] = useState(false)
   const showAcceptChanges = useMemo(
     () => Boolean(trade && originalTrade && marginTradeMeaningfullyDiffers(trade, originalTrade)),
     [originalTrade, trade]
@@ -188,9 +187,8 @@ export function AddMarginPositionConfirmModal({
   }, [tradeErrorMessage, onCancel])
 
   const onModalDismiss = useCallback(() => {
-    if (isOpen) setShouldLogModalCloseEvent(true)
     onDismiss()
-  }, [isOpen, onDismiss])
+  }, [onDismiss])
 
   const modalHeader = useCallback(() => {
     return trade && tradeApprovalInfo && existingPosition ? (

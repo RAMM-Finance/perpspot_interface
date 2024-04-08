@@ -6,15 +6,13 @@ import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenR
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
+import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import {
-  useCallback,
-  //useEffect, useMemo, useState
-} from 'react'
+import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
@@ -31,9 +29,8 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from '../constants'
 import { LoadingBubble } from '../loading'
-import { DeltaText } from '../TokenDetails/PriceChart'
-import { useAtomValue } from 'jotai/utils'
 import { filterStringAtom } from '../state'
+import { DeltaText } from '../TokenDetails/PriceChart'
 
 const Cell = styled.div`
   display: flex;
@@ -342,11 +339,11 @@ export function TokenRow({
     }
   }, [token0, token1, fee])
 
-  const poolOHLCDatas = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(token0?.wrapped.address, token1?.wrapped.address, fee)
 
   const token0IsBase = useMemo(() => {
-    if (pool && poolOHLCDatas && poolId) {
-      const priceData = poolOHLCDatas[poolId]
+    if (pool && poolOHLC && poolId) {
+      const priceData = poolOHLC
       const token0Price = new BN(pool.token0Price.toFixed(18))
       const d1 = token0Price.minus(priceData.price24hAgo).abs()
       const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
@@ -356,7 +353,7 @@ export function TokenRow({
       return false
     }
     return null
-  }, [pool, poolOHLCDatas, poolId])
+  }, [pool, poolOHLC, poolId])
 
   const handleClick = useCallback(
     (e: any) => {
@@ -473,12 +470,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       : [quoteCurrency, baseCurrency]
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
-  const poolOHLCDatas = useAppPoolOHLC()
+  // const poolOHLCDatas = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
   const poolId = getPoolId(tokenA, tokenB, fee)
 
   const token0IsBase = useMemo(() => {
-    if (pool && poolOHLCDatas && poolId) {
-      const priceData = poolOHLCDatas[poolId]
+    if (pool && poolOHLC && poolId) {
+      const priceData = poolOHLC
       const token0Price = new BN(pool.token0Price.toFixed(18))
       const d1 = token0Price.minus(priceData.price24hAgo).abs()
       const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
@@ -488,7 +486,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       return false
     }
     return null
-  }, [pool, poolOHLCDatas, poolId])
+  }, [pool, poolOHLC, poolId])
 
   const handleCurrencySelect = useCallback(() => {
     if (currentPoolId !== poolId && token0IsBase !== null && token0?.symbol && token1?.symbol) {
@@ -515,7 +513,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickUpper
   )
 
-  
   const filterString = useAtomValue(filterStringAtom)
 
   const filtered = useMemo(() => {
@@ -523,15 +520,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       const includesToken0 = (token0?.symbol?.toLowerCase() ?? '').includes(filterString.toLowerCase())
       const includesToken1 = (token1?.symbol?.toLowerCase() ?? '').includes(filterString.toLowerCase())
 
-    return includesToken0 || includesToken1
+      return includesToken0 || includesToken1
     } else {
       return true
     }
-    
   }, [filterString, token0, token1])
 
-  return (
-    filtered ? 
+  return filtered ? (
     <RowWrapper
       ref={ref}
       onClick={() => {
@@ -601,8 +596,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
       {/*</ClickableContent> */}
     </RowWrapper>
-    : null
-  )
+  ) : null
 })
 
 PLoadedRow.displayName = 'LoadedRow'

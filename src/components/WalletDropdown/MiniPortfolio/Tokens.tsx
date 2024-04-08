@@ -4,7 +4,7 @@ import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import Row from 'components/Row'
 import { DeltaText, formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import { PortfolioBalancesQuery, usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
-import { getTokenDetailsURL, gqlToCurrency } from 'graphql/data/util'
+import { CHAIN_NAME_TO_CHAIN_ID, getTokenDetailsURL, gqlToCurrency } from 'graphql/data/util'
 import { useAtomValue } from 'jotai/utils'
 import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
 import { useCallback, useMemo, useState } from 'react'
@@ -68,6 +68,7 @@ export default function Tokens({ account }: { account: string }) {
       {visibleTokens.map(
         (tokenBalance) =>
           tokenBalance.token &&
+          CHAIN_NAME_TO_CHAIN_ID[tokenBalance.token.chain] &&
           meetsThreshold(tokenBalance, hideSmallBalances) && (
             <TokenRow key={tokenBalance.id} {...tokenBalance} token={tokenBalance.token} />
           )
@@ -75,7 +76,10 @@ export default function Tokens({ account }: { account: string }) {
       <ExpandoRow isExpanded={showHiddenTokens} toggle={toggleHiddenTokens} numItems={hiddenTokens.length}>
         {hiddenTokens.map(
           (tokenBalance) =>
-            tokenBalance.token && <TokenRow key={tokenBalance.id} {...tokenBalance} token={tokenBalance.token} />
+            tokenBalance.token &&
+            CHAIN_NAME_TO_CHAIN_ID[tokenBalance.token.chain] && (
+              <TokenRow key={tokenBalance.id} {...tokenBalance} token={tokenBalance.token} />
+            )
         )}
       </ExpandoRow>
     </PortfolioTabWrapper>
@@ -103,6 +107,7 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
   }, [navigate, token, toggleWalletDrawer])
 
   const currency = gqlToCurrency(token)
+
   return (
     <TraceEvent
       events={[BrowserEvent.onClick]}

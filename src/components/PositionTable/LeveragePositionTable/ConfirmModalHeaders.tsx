@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
+import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { FiatValue } from 'components/BaseSwapPanel/FiatValue'
 import { ButtonPrimary } from 'components/Button'
 import Card from 'components/Card'
@@ -16,7 +15,6 @@ import { useMemo } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
-import { InterfaceTrade } from 'state/routing/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginLimitOrder, MarginPositionDetails } from 'types/lmtv2position'
@@ -47,21 +45,6 @@ const ArrowWrapper = styled.div`
   z-index: 2;
 `
 
-const formatAnalyticsEventProperties = (
-  trade: InterfaceTrade<Currency, Currency, TradeType>,
-  priceUpdate: number | undefined,
-  response: SwapPriceUpdateUserResponse
-) => ({
-  chain_id:
-    trade.inputAmount.currency.chainId === trade.outputAmount.currency.chainId
-      ? trade.inputAmount.currency.chainId
-      : undefined,
-  response,
-  token_in_symbol: trade.inputAmount.currency.symbol,
-  token_out_symbol: trade.outputAmount.currency.symbol,
-  price_update_basis_points: priceUpdate,
-})
-
 export function ConfirmCancelOrderHeader({
   order,
   inputCurrency,
@@ -71,7 +54,7 @@ export function ConfirmCancelOrderHeader({
   inputCurrency: Currency | undefined
   outputCurrency: Currency | undefined
 }) {
-  const theme = useTheme()
+  // const theme = useTheme()
 
   const trade = useMemo(() => {
     if (inputCurrency && outputCurrency) {
@@ -332,12 +315,12 @@ export function ConfirmReducePositionHeader({
       <DecreasePositionDetails
         txnInfo={txnInfo}
         inputCurrency={inputCurrency}
+        outputCurrency={outputCurrency}
         loading={false}
         existingPosition={existingPosition}
         allowedSlippage={allowedSlippage}
         removePremium={removePremium}
       />
-
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
           <RowBetween>
@@ -368,16 +351,6 @@ export function ConfirmReducePositionHeader({
           </Trans>
         </ThemedText.DeprecatedItalic>
       </AutoColumn>
-      {/* {recipient !== null ? (
-        <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
-          <ThemedText.DeprecatedMain>
-            <Trans>
-              Output will be sent to{' '}
-              <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
-            </Trans>
-          </ThemedText.DeprecatedMain>
-        </AutoColumn>
-      ) : null} */}
     </AutoColumn>
   )
 }

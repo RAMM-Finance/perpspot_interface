@@ -129,13 +129,6 @@ const InputSection = styled.div`
   justify-content: center;
 `
 
-const Hr = styled.hr`
-  background-color: ${({ theme }) => theme.backgroundOutline};
-  border: none;
-  height: 0.5px;
-  width: 90%;
-`
-
 const ShowInRangeNote = styled(AutoColumn)`
   background-color: ${({ theme }) => theme.surface1};
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -521,7 +514,7 @@ export default function DecreasePositionContent({
   }
 
   return (
-    <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
+    <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '0.75rem', paddingLeft: '0.75rem' }}>
       {currentState.showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}

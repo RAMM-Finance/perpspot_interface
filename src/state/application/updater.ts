@@ -63,15 +63,15 @@ const DEFAULT_POOLS: {
   },
   [SupportedChainId.BASE]: {
     poolKey: {
-      token0: '',
-      token1: '',
+      token0: '0x4200000000000000000000000000000000000006',
+      token1: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       fee: 500,
     },
-    poolId: getPoolId('', '', 500),
+    poolId: getPoolId('0x4200000000000000000000000000000000000006', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 500),
     inputInToken0: false,
-    token0IsBase: false,
-    token0Symbol: 'USDC',
-    token1Symbol: 'WETH',
+    token0IsBase: true,
+    token0Symbol: 'WETH',
+    token1Symbol: 'USDC',
   },
 }
 
@@ -95,12 +95,16 @@ export default function Updater(): null {
       return undefined
     }
   }, [result])
+
   const { poolsOHLC } = usePoolsOHLC(poolList)
+
+  // const poolOHLC = useAppPoolOHLC()
+
   useEffect(() => {
-    if (poolsOHLC) {
-      dispatch(updatePoolPriceData(poolsOHLC))
+    if (poolsOHLC && chainId) {
+      dispatch(updatePoolPriceData({ poolsOHLC, chainId }))
     }
-  }, [poolsOHLC, dispatch])
+  }, [poolsOHLC, dispatch, chainId])
 
   useEffect(() => {
     if (account && account !== previousAccountValue.current) {
@@ -121,7 +125,6 @@ export default function Updater(): null {
         !currentPools[chainId]?.token1Symbol) &&
       ALL_SUPPORTED_CHAIN_IDS.includes(chainId)
     ) {
-      console.log('setting default pool', chainId)
       const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = DEFAULT_POOLS[chainId]
       dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
     }
@@ -129,10 +132,10 @@ export default function Updater(): null {
 
   useEffect(() => {
     if (provider && chainId && windowVisible) {
-      if (activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
+      if (activeChainId && activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
         setActiveChainId(chainId)
         const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol } = DEFAULT_POOLS[chainId]
-        
+
         dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
       }
     }

@@ -39,23 +39,26 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
 
   const { chainId } = useWeb3React()
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
-  const userAddedTokens = useUserAddedTokens()
+  // const userAddedTokens = useUserAddedTokens()
 
+  // return useMemo(() => {
+  //   return (
+  //     userAddedTokens
+  //       // reduce into all ALL_TOKENS filtered by the current chain
+  //       .reduce<{ [address: string]: Token }>(
+  //         (tokenMap, token) => {
+  //           tokenMap[token.address] = token
+  //           return tokenMap
+  //         },
+  //         // must make a copy because reduce modifies the map, and we do not
+  //         // want to make a copy in every iteration
+  //         { ...additionalTokens }
+  //       )
+  //   )
+  // }, [additionalTokens])
   return useMemo(() => {
-    return (
-      userAddedTokens
-        // reduce into all ALL_TOKENS filtered by the current chain
-        .reduce<{ [address: string]: Token }>(
-          (tokenMap, token) => {
-            tokenMap[token.address] = token
-            return tokenMap
-          },
-          // must make a copy because reduce modifies the map, and we do not
-          // want to make a copy in every iteration
-          { ...additionalTokens }
-        )
-    )
-  }, [userAddedTokens, additionalTokens])
+    return additionalTokens
+  }, [additionalTokens])
 }
 
 type BridgeInfo = Record<

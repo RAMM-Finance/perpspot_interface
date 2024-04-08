@@ -226,7 +226,7 @@ const userSlice = createSlice({
       if (!state.userLimitDeadline) {
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
-
+      state.currentPoolKeys = {}
       if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object') {
         state.currentPoolKeys = {}
       }

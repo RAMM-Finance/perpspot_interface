@@ -91,7 +91,12 @@ export const FALLBACK_URLS = {
   //   'https://rpc.ankr.com/bsc',
   // ],
   [SupportedChainId.LINEA]: [`https://rpc.linea.build`],
-  [SupportedChainId.BASE]: [`https://base-rpc.publicnode.com`],
+  [SupportedChainId.BASE]: [
+    `https://base-rpc.publicnode.com`,
+    `https://base.blockpi.network/v1/rpc/public`,
+    `https://base.blockpi.network/v1/rpc/public`,
+    `https://base.llamarpc.com`,
+  ],
 }
 
 /**

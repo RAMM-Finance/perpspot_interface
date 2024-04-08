@@ -12,6 +12,7 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
+import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
@@ -40,7 +41,6 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { Field } from '../../state/mint/v3/actions'
-import { LARGE_MEDIA_BREAKPOINT, MAX_WIDTH_MEDIA_BREAKPOINT, MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 
 const AddLiquidityRow = styled(RowBetween)`
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
@@ -1366,7 +1366,6 @@ const DetailsCard = styled.div`
     width: 100%;
     height: 99%;
   }
-  
 `
 
 const LoadedCell = styled.div`
@@ -1387,9 +1386,9 @@ const LoadedCellWrapper = styled.div`
   justify-content: center;
 `
 
-const HeaderCell = styled.div<{isWrap? : boolean}>`
- @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    max-width: ${({ isWrap }) => (isWrap && '80px')};
+const HeaderCell = styled.div<{ isWrap?: boolean }>`
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    max-width: ${({ isWrap }) => isWrap && '80px'};
     white-space: ${({ isWrap }) => (isWrap ? 'wrap' : 'nowrap')};
     /* text-align: ${({ isWrap }) => (isWrap ? 'center' : 'left')}; */
   }
@@ -1448,7 +1447,7 @@ const CurrencyWrapper = styled.div`
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     width: 90vw;
     min-width: 500px;
-   }
+  }
 `
 
 const Filter = styled.div`

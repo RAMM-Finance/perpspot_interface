@@ -13,6 +13,7 @@ import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PremiumCurrencySelector } from 'components/PremiumCurrencySelector'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
@@ -206,7 +207,6 @@ const TradeTabContent = () => {
     [relevantTokenBalances]
   )
 
-  // console.log('-------currencyBalances, currencies----------')
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
     txHash: string | undefined
@@ -332,8 +332,8 @@ const TradeTabContent = () => {
 
   const notApproved =
     marginInPosToken || premiumInPosToken
-      ? inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED
-      : inputApprovalState !== ApprovalState.APPROVED
+      ? inputApprovalState === ApprovalState.NOT_APPROVED || outputApprovalState === ApprovalState.NOT_APPROVED
+      : inputApprovalState === ApprovalState.NOT_APPROVED
 
   const noTradeInputError = useMemo(() => {
     return !inputError
@@ -530,6 +530,14 @@ const TradeTabContent = () => {
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
+  if (chainId && unsupportedChain(chainId)) {
+    return (
+      <Wrapper>
+        <ThemedText.DeprecatedError error={true}>Unsupported chain.</ThemedText.DeprecatedError>
+      </Wrapper>
+    )
+  }
+
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal
@@ -644,9 +652,9 @@ const TradeTabContent = () => {
                     >
                       <ThemedText.BodySmall>
                         <div style={{ display: 'flex', gap: '4px' }}>
-                          {baseCurrency && (
+                          {baseCurrency && quoteCurrency && (
                             <ThemedText.DeprecatedBody color="text2" fontSize={12}>
-                              {quoteCurrency?.symbol} per {baseCurrency.symbol}
+                              {quoteCurrency.symbol} per {baseCurrency.symbol}
                             </ThemedText.DeprecatedBody>
                           )}
                         </div>
@@ -826,17 +834,17 @@ const TradeTabContent = () => {
               <Trans>Connect Wallet</Trans>
             </ButtonLight>
           ) : poolNotFound ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
+            <ButtonError disabled={true}>
+              <ThemedText.BodyPrimary mb="4px">
                 <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
+              </ThemedText.BodyPrimary>
+            </ButtonError>
           ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
-            <GrayCard style={{ textAlign: 'center' }}>
-              <ThemedText.DeprecatedMain mb="4px">
+            <ButtonError disabled={true}>
+              <ThemedText.BodyPrimary mb="4px">
                 <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.DeprecatedMain>
-            </GrayCard>
+              </ThemedText.BodyPrimary>
+            </ButtonError>
           ) : noTradeInputError && notApproved ? (
             <>
               <ButtonPrimary

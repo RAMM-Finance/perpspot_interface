@@ -44,6 +44,7 @@ export function ActivityRow({
     >
       <PortfolioRow
         display="block"
+        isBorder={true}
         left={
           <Row style={{ position: 'absolute' }}>
             <PortfolioLogo chainId={chainId} currencies={currencies} images={logos} accountAddress={otherAccount} />

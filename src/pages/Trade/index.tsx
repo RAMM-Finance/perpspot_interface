@@ -6,12 +6,9 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
-import { fadeInOut } from 'components/Loader/styled'
 import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import LiquidityDistributionTable from 'components/swap/LiquidityDistributionTable'
-import { PinnedPools } from 'components/swap/PinnedPools'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -25,13 +22,13 @@ import JoinModal from 'pages/Join'
 import React, { useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAppPoolOHLC } from 'state/application/hooks'
+import { usePoolOHLC } from 'state/application/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
-import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool, usePinnedPools } from 'state/user/hooks'
+import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
+import { MarginPositionDetails } from 'types/lmtv2position'
 
-import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
@@ -172,10 +169,6 @@ const MainWrapper = styled.article<{ pins: boolean }>`
   }
 `
 
-export const ChartLoadingBar = styled(ChartLoader)`
-  animation: ${fadeInOut} 2s infinite;
-`
-
 export function getIsValidSwapQuote(
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined,
   tradeState: TradeState,
@@ -258,7 +251,7 @@ export default function Trade({ className }: { className?: string }) {
   const { account, chainId } = useWeb3React()
 
   const { activeTab } = useSwapState()
-  
+
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
   const currentPool = useCurrentPool()
@@ -268,7 +261,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
-  
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -277,15 +269,13 @@ export default function Trade({ className }: { className?: string }) {
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const location = useLocation()
-  const poolsOHLC = useAppPoolOHLC()
+  const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
 
   const chartSymbol = useMemo(() => {
-    if (pool && poolsOHLC && chainId) {
-      const id = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
+    if (pool && poolOHLC && chainId) {
+      if (!poolOHLC) return null
 
-      if (!poolsOHLC[id]) return null
-
-      const base = poolsOHLC[id]?.base
+      const base = poolOHLC?.base
       let poolAddress = computePoolAddress({
         factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
         tokenA: pool.token0,
@@ -303,14 +293,15 @@ export default function Trade({ className }: { className?: string }) {
       }
       if (!base) {
         const token0Price = new BN(pool.token0Price.toFixed(18))
-        const d1 = token0Price.minus(poolsOHLC[id].price24hAgo).abs()
-        const d2 = new BN(1).div(token0Price).minus(poolsOHLC[id].price24hAgo).abs()
+        const d1 = token0Price.minus(poolOHLC.price24hAgo).abs()
+        const d2 = new BN(1).div(token0Price).minus(poolOHLC.price24hAgo).abs()
 
         return JSON.stringify({
           poolAddress,
           baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
           quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
           token0IsBase: d1.lt(d2),
+          chainId,
         })
       }
       const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
@@ -319,39 +310,68 @@ export default function Trade({ className }: { className?: string }) {
         baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
         quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
         token0IsBase: !invert,
+        chainId,
       })
     }
     return null
-  }, [poolsOHLC, pool, chainId])
+  }, [poolOHLC, pool, chainId])
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
-  const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
-  const pinnedPools = usePinnedPools()
-  // console.log('pinnedPools', pinnedPools)
-  const isPin = useMemo(() => pinnedPools && pinnedPools.length > 0, [pinnedPools])
-  // console.log(pinnedPools2, '----pinnedPools2')
-  // const pinnedPools = [] as any
-  // const isPin = false
+  function positionEntryPrice(marginInPosToken: boolean, totalDebtInput: BN, totalPosition: BN, margin: BN): BN {
+    if (marginInPosToken) {
+      return totalDebtInput.div(totalPosition.minus(margin))
+    }
+    return totalDebtInput.plus(margin).div(totalPosition)
+  }
 
+  const match = useMemo(() => {
+    if (!leveragePositions || !poolKey) {
+      return undefined
+    } else {
+      return leveragePositions.filter(
+        (position: MarginPositionDetails) =>
+          position.poolKey.token0.toLowerCase() === poolKey.token0.toLowerCase() &&
+          position.poolKey.token1.toLowerCase() === poolKey.token1.toLowerCase() &&
+          position.poolKey.fee === poolKey.fee
+      )
+    }
+  }, [leveragePositions, poolKey])
+
+  const entryPrices = useMemo(() => {
+    if (!match) return undefined
+    else if (match.length < 0) return undefined
+    else {
+      return match.map((matchedPosition: MarginPositionDetails) => {
+        return positionEntryPrice(
+          matchedPosition.marginInPosToken,
+          matchedPosition.totalDebtInput,
+          matchedPosition.totalPosition,
+          matchedPosition.margin
+        ).toNumber()
+      })
+    }
+  }, [match])
+
+  console.log('entry', entryPrices)
+
+  const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
+
+  // const pinnedPools = usePinnedPools()
+  // const isPin = useMemo(() => {
+  //   console.log('pinnedpools', pinnedPools)
+  //   return pinnedPools && pinnedPools.length > 0
+  // }, [pinnedPools])
+  const isPin = false
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
         {warning ? null : <Disclaimer setWarning={setWarning} />}
         <MainWrapper pins={isPin}>
-          <PinWrapper>
-            <PinnedPools />
-          </PinWrapper>
+          <PinWrapper>{/* <PinnedPools pinnedPools={pinnedPools} /> */}</PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool />
-            {!chartSymbol || !chainId ? (
-              <>
-                <ChartLoadingBar />
-                {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
-              </>
-            ) : (
-              <PoolDataChart symbol={chartSymbol} chainId={chainId} chartContainerRef={chartContainerRef} />
-            )}
+            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={entryPrices} />
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>
             <LiquidityDistributionTable

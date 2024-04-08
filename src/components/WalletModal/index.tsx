@@ -12,6 +12,7 @@ import { useGetConnection } from 'connection'
 import { ErrorCode } from 'connection/utils'
 import { isSupportedChain } from 'constants/chains'
 import { useMgtmEnabled } from 'featureFlags/flags/mgtm'
+import useSelectChain from 'hooks/useSelectChain'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Settings } from 'react-feather'
 import { useAppDispatch } from 'state/hooks'
@@ -24,9 +25,6 @@ import { flexColumnNoWrap } from 'theme/styles'
 import ConnectionErrorView from './ConnectionErrorView'
 import Option from './Option'
 import PrivacyPolicyNotice from './PrivacyPolicyNotice'
-
-
-import useSelectChain from 'hooks/useSelectChain'
 
 const Wrapper = styled.div`
   ${flexColumnNoWrap};
@@ -199,7 +197,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
           <OptionGrid data-testid="option-grid">
             {connections.map((connection) =>
               // Hides Uniswap Wallet if mgtm is disabled
-              connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET ) ? (
+              connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET) ? (
                 <Option
                   key={connection.getName()}
                   connection={connection}
