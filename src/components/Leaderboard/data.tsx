@@ -416,7 +416,6 @@ export function usePointsData() {
         } catch (err) {
           console.log('codeusererr', err)
         }
-
         setCodeUsers(codeUsers)
         const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
         setUniqueTokenIds(bigNumberTokenIds)
@@ -503,7 +502,8 @@ export function usePointsData() {
       amount1Collected = amount1Collected > 0 ? amount1Collected : 0
 
       let lpAddress = ethers.utils.getAddress(entry.operator)
-      if (sameTokenIdCollects.length > 0 || lpAddress == '0x0000000000000000000000000000000000000000')
+      
+      if (sameTokenIdCollects.length > 0 && lpAddress == '0x0000000000000000000000000000000000000000')
         lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
       if (!lpPositionsByUniqueLps[lpAddress]) {
         lpPositionsByUniqueLps[lpAddress] = []
