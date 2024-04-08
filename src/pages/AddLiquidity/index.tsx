@@ -394,16 +394,17 @@ export default function AddLiquidity() {
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const handleSetRecommendedRange = useCallback(() => {
+  const handleSetRecommendedRange = useCallback((leftRange: any, rightRange: any) => {
+  
     const minPrice = pricesAtLimit[Bound.LOWER]
     if (minPrice)
       onLeftRangeInput(
-        (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * 0.9).toString()
+        (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange).toString()
       )
     const maxPrice = pricesAtLimit[Bound.UPPER]
     if (maxPrice)
       onRightRangeInput(
-        (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * 1.1).toString()
+        (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * rightRange).toString()
       )
     setSearchParams(searchParams)
 
@@ -761,7 +762,14 @@ export default function AddLiquidity() {
                                 ) : null}
                               </PriceAndToggleWrapper>
                               <RowBetween>
-                                {!noLiquidity && <PresetsButtons onSetRecommendedRange={handleSetRecommendedRange} />}
+                                {!noLiquidity && 
+                                <>
+                                <PresetsButtons btnName={"-10% ~ +10% narrow"} onSetRecommendedRange={() => handleSetRecommendedRange(0.9, 1.1)} />
+                                <PresetsButtons btnName={"-20% ~ +10% middle"} onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 1.1)} />
+                                <PresetsButtons btnName={"-30% ~ +30% wide"} onSetRecommendedRange={() => handleSetRecommendedRange(0.7, 1.3)} />
+                                <PresetsButtons btnName={"-20% ~ +10% token1 only"} onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 1.1)} />
+                                <PresetsButtons btnName={"+10% ~ +20% token0 only"} onSetRecommendedRange={() => handleSetRecommendedRange(1.1, 1.2)} />
+                                </>}
                               </RowBetween>
                               <LiquidityChartRangeInput
                                 currencyA={baseCurrency ?? undefined}

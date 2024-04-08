@@ -316,6 +316,7 @@ export default function TokenTable() {
     }
   }, [poolData, PoolsOHLCArr, chainId, poolList])
 
+  console.log("dataInfo", dataInfo)
   
   /* loading and error state */
   return (

@@ -14,15 +14,16 @@ const Button = styled(ButtonOutlined).attrs(() => ({
 `
 
 interface PresetsButtonsProps {
+  btnName: string,
   onSetRecommendedRange: () => void
 }
 
-export function PresetsButtons({ onSetRecommendedRange }: PresetsButtonsProps) {
+export function PresetsButtons({ btnName, onSetRecommendedRange }: PresetsButtonsProps) {
   return (
     <AutoRow style={{ zIndex: '1' }} gap="4px" width="fit-content">
       <Button onClick={onSetRecommendedRange}>
         <ThemedText.DeprecatedBody fontSize={12}>
-          <Trans>Recommended Range</Trans>
+          <Trans>{btnName}</Trans>
         </ThemedText.DeprecatedBody>
       </Button>
     </AutoRow>
