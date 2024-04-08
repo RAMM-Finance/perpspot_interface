@@ -170,6 +170,8 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
 }
 
 function getSortedData(dataToSort: any, sortOrder: boolean, category: string) {
+  if (!Array.isArray(dataToSort))
+    return;
   if (sortOrder) {
     return dataToSort.sort((a: any, b: any) => (a[category] > b[category] ? 1 : -1))
   } else {
@@ -241,8 +243,9 @@ export default function TokenTable() {
   const sortMethod = useAtom(sortMethodAtom)
 
   const PoolsOHLC = useAppPoolOHLC()
+
   const PoolsOHLCArr = useMemo(() => {
-    if (!PoolsOHLC || !chainId) return null
+    if (!PoolsOHLC || Object.keys(PoolsOHLC).length === 0 || !chainId || !PoolsOHLC[chainId]) return null
     return Object.keys(PoolsOHLC[chainId]).map((key) => {
       return { id: key, ...PoolsOHLC[chainId][key] }
     })
@@ -297,11 +300,23 @@ export default function TokenTable() {
           return pool
         }
       })
-    } else {
+    } else if (!poolData && PoolsOHLCArr && poolList) {
+      return poolList.map((pool: any) => {
+        return {
+          ...pool,
+          TVL: 100000,
+          Volume: 500000,
+          Price: 4000,
+          [`24h Change`]: 1,
+        }
+      })
+    } 
+    else {
       return null
     }
   }, [poolData, PoolsOHLCArr, chainId, poolList])
 
+  
   /* loading and error state */
   return (
     <>
@@ -313,8 +328,9 @@ export default function TokenTable() {
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
+          {/* {!loading ? ( */}
           {dataInfo && !loading ? (
-            getSortedData(dataInfo, sortAscending[0], sortMethod[0]).map((dat: any, i: number) => (
+            (getSortedData(dataInfo, sortAscending[0], sortMethod[0]) || []).map((dat: any, i: number) => (
               <PLoadedRow
                 key={`${dat.token0}-${dat.token1}-${dat.fee}`}
                 tokenListIndex={i++}
