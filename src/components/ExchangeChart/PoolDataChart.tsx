@@ -192,10 +192,23 @@ export const PoolDataChart = ({
 
   if (!symbol) {
     return (
-      <>
-        <ChartLoadingBar />
-        {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
-      </>
+      <ChartContainer>
+        <div
+          style={{
+            padding: '5px',
+            height: '100%',
+            width: '100%',
+            border: 'solid #98A1C03d',
+            borderWidth: '0 0 0 0',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ChartLoadingBar />
+          {/* <span>Icon by Solar Icons from SVG Repo (https://www.svgrepo.com)</span> */}
+        </div>
+      </ChartContainer>
     )
   }
 

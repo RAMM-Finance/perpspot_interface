@@ -28,6 +28,7 @@ const StatsWrapper = styled.div`
   flex-direction: row;
   width: 100%;
   white-space: nowrap;
+  height: 35px;
 `
 
 export function PoolStatsSection({
@@ -301,7 +302,7 @@ const StatPrice = styled.div`
   color: ${({ theme }) => theme.textPrimary};
 `
 
-export function Stat({
+function Stat({
   dataCy,
   value,
   title,
@@ -330,7 +331,7 @@ export function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <LoadingBubble height="18px" />
+          <LoadingBubble height="16px" />
         </StatPrice>
       </StatWrapper>
     )
@@ -369,7 +370,7 @@ export function Stat({
   }
 }
 
-export function getAddress(address0: string, address1: string, fee: number, chainId: number): string {
+function getAddress(address0: string, address1: string, fee: number, chainId: number): string {
   return getCreate2Address(
     V3_CORE_FACTORY_ADDRESSES[chainId],
     solidityKeccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [address0, address1, fee])]),

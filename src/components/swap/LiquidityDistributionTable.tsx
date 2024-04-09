@@ -31,8 +31,6 @@ const LiquidityDistributionTable = ({
 }) => {
   const navigate = useNavigate()
 
-  console.log('chain', chainId)
-
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
 
