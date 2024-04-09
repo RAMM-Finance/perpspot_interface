@@ -38,6 +38,10 @@ const UnsupportedChartContainer = styled.div`
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
+export interface MatchedEntry {
+  entryPrice: number
+  long: boolean
+}
 
 export const PoolDataChart = ({
   symbol,
@@ -46,7 +50,7 @@ export const PoolDataChart = ({
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
-  entryPrices: number[] | undefined
+  entryPrices: MatchedEntry[] | undefined
 }) => {
   const { chainId } = useWeb3React()
 
@@ -106,8 +110,8 @@ export const PoolDataChart = ({
             return tvWidgetRef.current
               ?.activeChart()
               .createPositionLine()
-              .setPrice(entryPrices[0])
-              .setText('Open Long')
+              .setPrice(entryPrices[0].entryPrice)
+              .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
               .setLineColor('#3a3e5e')
               .setLineWidth(0.5)
               .setQuantityBackgroundColor('#3A404F23')
@@ -122,8 +126,8 @@ export const PoolDataChart = ({
               tvWidgetRef.current
                 ?.activeChart()
                 .createPositionLine()
-                .setPrice(entryPrices[0])
-                .setText('Open Long')
+                .setPrice(entryPrices[0].entryPrice)
+                .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
                 .setLineColor('#3a3e5e')
                 .setLineWidth(0.5)
                 .setQuantityBackgroundColor('#3A404F23')
@@ -136,8 +140,8 @@ export const PoolDataChart = ({
               tvWidgetRef.current
                 ?.activeChart()
                 .createPositionLine()
-                .setPrice(entryPrices[1])
-                .setText('Open Long')
+                .setPrice(entryPrices[1].entryPrice)
+                .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
                 .setLineColor('#3a3e5e')
                 .setLineWidth(0.5)
                 .setQuantityBackgroundColor('#3A404F23')
@@ -169,7 +173,7 @@ export const PoolDataChart = ({
         tvWidgetRef.current = null
       }
     }
-  }, [chainId, datafeed, symbol])
+  }, [chainId, datafeed, symbol, entryPrices?.length])
 
   const theme = useTheme()
 
