@@ -30,8 +30,8 @@ const PoolListHeader = styled.h4`
 `
 const PoolListContainer = styled.div`
   display: grid;
-  grid-template-columns: 3fr 1fr 1fr 0.5fr;
-  width: 375px;
+  grid-template-columns: 3.5fr 2fr 0.5fr 0.5fr;
+  width: 425px;
   padding-left: 1vw;
 `
 
@@ -192,8 +192,8 @@ export const PoolSelector = ({
         <Row flexDirection="column">
           <PoolListContainer>
             <PoolListHeader>Pool (fee)</PoolListHeader>
-            <PoolListHeader>TVL</PoolListHeader>
-            <PoolListHeader>Vol</PoolListHeader>
+            <PoolListHeader>Price</PoolListHeader>
+            <PoolListHeader>24h</PoolListHeader>
             <PoolListHeader></PoolListHeader>
           </PoolListContainer>
         </Row>

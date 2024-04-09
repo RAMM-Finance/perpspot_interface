@@ -764,11 +764,11 @@ export default function AddLiquidity() {
                               <RowBetween>
                                 {!noLiquidity && 
                                 <>
-                                <PresetsButtons btnName={"-10% ~ +10% narrow"} onSetRecommendedRange={() => handleSetRecommendedRange(0.9, 1.1)} />
-                                <PresetsButtons btnName={"-20% ~ +10% middle"} onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 1.1)} />
-                                <PresetsButtons btnName={"-30% ~ +30% wide"} onSetRecommendedRange={() => handleSetRecommendedRange(0.7, 1.3)} />
-                                <PresetsButtons btnName={"-20% ~ +10% token1 only"} onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 1.1)} />
-                                <PresetsButtons btnName={"+10% ~ +20% token0 only"} onSetRecommendedRange={() => handleSetRecommendedRange(1.1, 1.2)} />
+                                <PresetsButtons btnName={`-10% ~ +10% narrow`} onSetRecommendedRange={() => handleSetRecommendedRange(0.9, 1.1)} />
+                                <PresetsButtons btnName={`-20% ~ +20% middle`} onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 1.2)} />
+                                <PresetsButtons btnName={`-30% ~ +30% wide`} onSetRecommendedRange={() => handleSetRecommendedRange(0.7, 1.3)} />
+                                <PresetsButtons btnName={`-20% ~ -10% ${quoteCurrency?.symbol} only`} onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 0.9)} />
+                                <PresetsButtons btnName={`+10% ~ +20% ${baseCurrency?.symbol} only`} onSetRecommendedRange={() => handleSetRecommendedRange(1.1, 1.2)} />
                                 </>}
                               </RowBetween>
                               <LiquidityChartRangeInput

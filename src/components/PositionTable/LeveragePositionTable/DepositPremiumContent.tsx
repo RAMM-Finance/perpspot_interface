@@ -67,8 +67,9 @@ const Wrapper = styled.div`
 const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  /* justify-content: space-between; */
+  gap: 2rem;
+  /* height: 100%; */
   width: 100%;
 `
 
@@ -87,9 +88,9 @@ enum DerivedInfoState {
 
 const InputSection = styled.div`
   background-color: ${({ theme }) => theme.surface1};
-  margin-bottom: 10px;
+  /* margin-bottom: 2rem; */
+  margin-top: 1.5rem;
   padding: 10px;
-  margin-top: 5px;
   &:focus-within {
     border: 1px solid ${({ theme }) => theme.accentActive};
   }
@@ -629,13 +630,9 @@ function DepositPremiumHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                You Deposit
-              </Text>
+              <ThemedText.BodySmall marginRight="10px">You Deposit</ThemedText.BodySmall>
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {txnInfo?.amount.tokenSymbol}
-              </Text>
+              <ThemedText.BodySecondary>{txnInfo?.amount.tokenSymbol}</ThemedText.BodySecondary>
             </RowFixed>
           </RowBetween>
           <RowBetween align="center">
@@ -645,13 +642,11 @@ function DepositPremiumHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
+              <ThemedText.BodySmall fontSize="11px" marginRight="10px" textAlign="end">
                 Resulting Premium Deposit
-              </Text>
+              </ThemedText.BodySmall>
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {txnInfo?.newDepositAmount.tokenSymbol}
-              </Text>
+              <ThemedText.BodySecondary>{txnInfo?.newDepositAmount.tokenSymbol}</ThemedText.BodySecondary>
             </RowFixed>
           </RowBetween>
           {/* <RowBetween>

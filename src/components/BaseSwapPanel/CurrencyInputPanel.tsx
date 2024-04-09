@@ -307,7 +307,7 @@ interface SwapCurrencyInputPanelProps {
   pair?: Pair | null
   hideInput?: boolean
   otherCurrency?: Currency | null
-  fiatValue?: { data?: number; isLoading: boolean }
+  fiatValue?: { data?: number; isLoading: boolean } 
   priceImpact?: Percent
   id: string
   showCommonBases?: boolean
@@ -357,7 +357,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
     const theme = useTheme()
     // const { formatCurrencyAmount } = useFormatter()
-
+    console.log('-usd-', fiatValue, loading)
     const handleDismissSearch = useCallback(() => {
       setModalOpen(false)
     }, [setModalOpen])
@@ -450,7 +450,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
             <FiatRow>
               <RowBetween>
                 <LoadingOpacityContainer $loading={loading}>
-                  {fiatValue && <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />}
+                  <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
                 </LoadingOpacityContainer>
                 {account ? (
                   <RowFixed style={{ height: '16px' }}>

@@ -58,6 +58,8 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
+import { useUsdPrice } from 'nft/utils'
+import { FiatValue } from 'components/BaseSwapPanel/FiatValue'
 
 export interface DerivedReducePositionInfo {
   /** if marginInPosToken then PnL in output token, otherwise in input token */
@@ -496,7 +498,7 @@ export default function DecreasePositionContent({
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
   const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(reduceAmount, outputCurrency ?? undefined))
-
+  // console.log('------usd--------', fiatValueReduceAmount,  outputCurrency, tryParseCurrencyAmount(reduceAmount, outputCurrency))
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -660,6 +662,7 @@ export default function DecreasePositionContent({
                 // currency={outputCurrency}
                 label="Limit price"
                 id="limit-reduce-position-input"
+                fiatValue={fiatValueReduceAmount}
                 isPrice={
                   <Button
                     sx={{ textTransform: 'none' }}
