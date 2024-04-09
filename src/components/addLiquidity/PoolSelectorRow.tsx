@@ -86,15 +86,8 @@ export default function PoolSelectorRow({
   const labelOut = token1?.symbol as string
   const theme = useTheme()
 
-  // console.log("PoolSelectorRow baseCurrency", baseCurrency)
-  // console.log("PoolSelectorRow quoteCurrency", quoteCurrency)
-  // console.log("PoolSelectorRow token0", token0)
-  // console.log("PoolSelectorRow token1", token1)
-  console.log("PoolSelectorRow token0 address", token0?.wrapped?.address)
-  console.log("PoolSelectorRow token1 address", token1?.wrapped?.address)
-  console.log("PoolSelectorRow fee", fee)
+
   const poolOHLCData = usePoolOHLC(token0?.wrapped?.address, token1?.wrapped?.address, fee)
-  console.log("PoolSelectorRow poolOHLCData", poolOHLCData)
   
   return (
     <Container
