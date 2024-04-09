@@ -48,7 +48,6 @@ const fetchBars = async (
   limit: number,
   currency: string,
   token: 'base' | 'quote',
-  after_timestamp: number,
   chainId: number
 ): Promise<{
   bars: {
@@ -86,7 +85,6 @@ const fetchBars = async (
       }
     )
 
-    // console.log('gecko response: ', response)
     if (response.status === 200) {
       const candles = response.data.data.attributes.ohlcv_list
       const bars = candles
@@ -186,6 +184,7 @@ const configurationData = {
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
   chainId: number
+  invertGecko: boolean
 }
 
 export default function useGeckoDatafeed() {
@@ -205,7 +204,7 @@ export default function useGeckoDatafeed() {
           if (!chartData || symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const { baseSymbol, quoteSymbol, poolAddress, chainId } = JSON.parse(chartData)
+          const { baseSymbol, quoteSymbol, poolAddress, chainId, invertGecko } = JSON.parse(chartData)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -218,6 +217,7 @@ export default function useGeckoDatafeed() {
             has_intraday: true,
             has_daily: true,
             currency_code: quoteSymbol,
+            invertGecko,
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
             poolAddress,
@@ -237,7 +237,7 @@ export default function useGeckoDatafeed() {
           onErrorCallback: (error: string) => void
         ) => {
           console.log('[getBars]: Method call', resolution)
-          const { poolAddress, chainId } = symbolInfo
+          const { poolAddress, chainId, invertGecko } = symbolInfo
           const { from, to, countBack } = periodParams
           // console.log(countBack, '-----countback----------');
           let timeframe: 'hour' | 'day' | 'minute' = 'hour'
@@ -280,7 +280,6 @@ export default function useGeckoDatafeed() {
               countBack,
               'token',
               denomination as 'base' | 'quote',
-              from,
               chainId
             )
             const noData = bars.length === 0
@@ -313,11 +312,11 @@ export default function useGeckoDatafeed() {
               }
 
               return {
-                open: bar.open,
-                close: bar.close,
+                open: invertGecko ? 1 / bar.open : bar.open,
+                close: invertGecko ? 1 / bar.close : bar.close,
                 time: bar.time,
-                high,
-                low,
+                high: invertGecko ? 1 / low : high,
+                low: invertGecko ? 1 / high : low,
               }
             })
 

@@ -575,20 +575,11 @@ export const LoadedRow = memo(
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
             e.stopPropagation()
-            let { token0IsBase, priceNow } = poolOHLCData
-
-            if (token0IsBase === undefined) {
-              const token0Price = new BN(pool.token0Price.toFixed(18))
-              const geckoPrice = new BN(priceNow)
-              const d1 = token0Price.minus(geckoPrice).abs()
-              const d2 = new BN(1).div(token0Price).minus(geckoPrice).abs()
-              token0IsBase = d1.lt(d2)
-            }
-            setCurrentPool(id, !details.isToken0, token0IsBase, token0.symbol, token1.symbol)
+            setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
           }
         }
       },
-      [setCurrentPool, poolId, details, poolOHLCData, positionKey.poolKey.fee, token0, token1]
+      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey.poolKey.fee, token0, token1]
     )
 
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)

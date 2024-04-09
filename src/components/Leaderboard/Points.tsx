@@ -5,8 +5,8 @@ import { ThemedText } from 'theme'
 
 import affiliate from './affiliate-marketing.png'
 import coin from './coin.png'
-import { usePointsData , CollectMultipler,referralDivisor, useStoredData} from './data'
-import {combineAndSumData, addresses} from "./LeaderboardTable"
+import { CollectMultipler, referralDivisor, usePointsData, useStoredData } from './data'
+import { addresses } from './LeaderboardTable'
 import star from './star_616489.png'
 
 const Wrapper = styled.div`
@@ -22,11 +22,12 @@ const Wrapper = styled.div`
     row-gap: 1.5rem;
     column-gap: 2.5rem;
     & > * {
-      flex-basis: auto; 
+      flex-basis: auto;
       min-width: 200px;
       max-width: 250px;
     }
-  }`
+  }
+`
 const Point = styled.div`
   display: flex;
   justify-content: start;
@@ -63,15 +64,15 @@ export default function Points() {
 
   function createUserDataObj(usersArr: any, obj: any) {
     const usersArrLP = usersArr.map((user: string) => {
-      if (Object.keys(obj.lpPositionsByUniqueLps).find((lpUser) => lpUser === user)
-       
-         ) {
+      if (Object.keys(obj.lpPositionsByUniqueLps).find((lpUser) => lpUser === user)) {
         return {
           trader: user,
-          lpPoints: obj.lpPositionsByUniqueLps[user].reduce(
-            (accum: number, tok: any) => accum + (tok.amount0Collected * CollectMultipler+ tok.amount1Collected* CollectMultipler),
-            0
-          )+ (obj.timeWeightedDeposits[user] ? obj.timeWeightedDeposits[user].timeWeighted : 0),
+          lpPoints:
+            obj.lpPositionsByUniqueLps[user].reduce(
+              (accum: number, tok: any) =>
+                accum + (tok.amount0Collected * CollectMultipler + tok.amount1Collected * CollectMultipler),
+              0
+            ) + (obj.timeWeightedDeposits[user] ? obj.timeWeightedDeposits[user].timeWeighted : 0),
         }
       } else {
         return {
@@ -85,7 +86,9 @@ export default function Points() {
       if (obj.refereeActivity && Object.keys(obj.refereeActivity).find((rUser) => rUser === rpUser.trader)) {
         return {
           ...rpUser,
-          rPoints: obj.refereeActivity[rpUser.trader].lpAmount/referralDivisor + obj.refereeActivity[rpUser.trader].tradeVolume/referralDivisor,
+          rPoints:
+            obj.refereeActivity[rpUser.trader].lpAmount / referralDivisor +
+            obj.refereeActivity[rpUser.trader].tradeVolume / referralDivisor,
         }
       } else {
         return {
@@ -138,18 +141,16 @@ export default function Points() {
   const prevData = useStoredData(addresses)
   const combinedData = prevData
   // const combinedData = useMemo(()=>{
-  //   if(!prevData || !usersData) return 
+  //   if(!prevData || !usersData) return
 
   //   return combineAndSumData(prevData, usersData);
 
   // }, [prevData, usersData])
 
-
   const userData = useMemo(() => {
-    if(!combinedData ) return 
+    if (!combinedData) return
     return combinedData.find((user: any) => user.trader === account)
   }, [combinedData])
-
 
   return (
     <Wrapper>

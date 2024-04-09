@@ -272,17 +272,14 @@ export default function Trade({ className }: { className?: string }) {
   const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
 
   const chartSymbol = useMemo(() => {
-    if (pool && poolOHLC && chainId) {
+    if (pool && poolOHLC && chainId && currentPool) {
       if (!poolOHLC) return null
-
-      const base = poolOHLC?.base
       let poolAddress = computePoolAddress({
-        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId == 80085 ? 42161 : chainId],
+        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
         tokenA: pool.token0,
         tokenB: pool.token1,
         fee: pool.fee,
       })
-
       if (UNSUPPORTED_GECKO_CHAINS.includes(chainId)) {
         poolAddress = switchPoolAddress(
           chainId,
@@ -293,30 +290,19 @@ export default function Trade({ className }: { className?: string }) {
         )
       }
 
-      if (!base) {
-        const token0Price = new BN(pool.token0Price.toFixed(18))
-        const d1 = token0Price.minus(poolOHLC.price24hAgo).abs()
-        const d2 = new BN(1).div(token0Price).minus(poolOHLC.price24hAgo).abs()
-
-        return JSON.stringify({
-          poolAddress,
-          baseSymbol: d2.lt(d1) ? pool.token1.symbol : pool.token0.symbol,
-          quoteSymbol: d2.lt(d1) ? pool.token0.symbol : pool.token1.symbol,
-          token0IsBase: d1.lt(d2),
-          chainId,
-        })
-      }
-      const invert = base.toLowerCase() === pool.token1.address.toLowerCase()
+      const baseSymbol = currentPool.token0IsBase ? pool.token0.symbol : pool.token1.symbol
+      const quoteSymbol = currentPool.token0IsBase ? pool.token1.symbol : pool.token0.symbol
       return JSON.stringify({
         poolAddress,
-        baseSymbol: invert ? pool.token1.symbol : pool.token0.symbol,
-        quoteSymbol: invert ? pool.token0.symbol : pool.token1.symbol,
-        token0IsBase: !invert,
+        baseSymbol,
+        quoteSymbol,
+        token0IsBase: currentPool.token0IsBase,
+        invertGecko: currentPool.invertGecko,
         chainId,
       })
     }
     return null
-  }, [poolOHLC, pool, chainId])
+  }, [poolOHLC, pool, chainId, currentPool])
 
   const { result: binData } = useBulkBinData(pool ?? undefined)
 
@@ -354,8 +340,6 @@ export default function Trade({ className }: { className?: string }) {
       })
     }
   }, [match])
-
-  console.log('entry', entryPrices)
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 

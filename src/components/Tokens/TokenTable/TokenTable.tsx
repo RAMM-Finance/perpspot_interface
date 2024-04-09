@@ -170,8 +170,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
 }
 
 function getSortedData(dataToSort: any, sortOrder: boolean, category: string) {
-  if (!Array.isArray(dataToSort))
-    return;
+  if (!Array.isArray(dataToSort)) return
   if (sortOrder) {
     return dataToSort.sort((a: any, b: any) => (a[category] > b[category] ? 1 : -1))
   } else {
@@ -310,14 +309,11 @@ export default function TokenTable() {
           [`24h Change`]: 1,
         }
       })
-    } 
-    else {
+    } else {
       return null
     }
   }, [poolData, PoolsOHLCArr, chainId, poolList])
 
-  console.log("dataInfo", dataInfo)
-  
   /* loading and error state */
   return (
     <>

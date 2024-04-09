@@ -6,4 +6,5 @@ export { Oracle__factory } from "./Oracle__factory";
 export { Position__factory } from "./Position__factory";
 export { Tick__factory } from "./Tick__factory";
 export { TickMath__factory } from "./TickMath__factory";
+export { UniswapInterfaceMulticall__factory } from "./UniswapInterfaceMulticall__factory";
 export { UniswapV3Factory__factory } from "./UniswapV3Factory__factory";

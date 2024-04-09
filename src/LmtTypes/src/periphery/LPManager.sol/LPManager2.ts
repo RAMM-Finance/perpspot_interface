@@ -76,6 +76,7 @@ export interface LPManager2Interface extends utils.Interface {
   functions: {
     "getPosition(uint256)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
+    "lastRebalanceCenterTicks(bytes32)": FunctionFragment;
     "provideLiquidity((address,address,uint24),int24,int24,uint256,address)": FunctionFragment;
     "setStrategist(address)": FunctionFragment;
     "withdrawLiquidity(uint256,uint128)": FunctionFragment;
@@ -85,6 +86,7 @@ export interface LPManager2Interface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "getPosition"
       | "initialize"
+      | "lastRebalanceCenterTicks"
       | "provideLiquidity"
       | "setStrategist"
       | "withdrawLiquidity"
@@ -97,6 +99,10 @@ export interface LPManager2Interface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "initialize",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastRebalanceCenterTicks",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "provideLiquidity",
@@ -122,6 +128,10 @@ export interface LPManager2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "lastRebalanceCenterTicks",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "provideLiquidity",
     data: BytesLike
@@ -203,6 +213,11 @@ export interface LPManager2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    lastRebalanceCenterTicks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
     provideLiquidity(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -235,6 +250,11 @@ export interface LPManager2 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  lastRebalanceCenterTicks(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
   provideLiquidity(
     key: PoolKeyStruct,
     tickLower: PromiseOrValue<BigNumberish>,
@@ -266,6 +286,11 @@ export interface LPManager2 extends BaseContract {
       _poolManager: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    lastRebalanceCenterTicks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     provideLiquidity(
       key: PoolKeyStruct,
@@ -328,6 +353,11 @@ export interface LPManager2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    lastRebalanceCenterTicks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     provideLiquidity(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -359,6 +389,11 @@ export interface LPManager2 extends BaseContract {
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    lastRebalanceCenterTicks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     provideLiquidity(

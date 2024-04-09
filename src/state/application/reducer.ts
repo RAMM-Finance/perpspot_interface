@@ -55,9 +55,7 @@ export interface ApplicationState {
         delta24h: number
         high24: number
         low24: number
-        base?: string
-        quote?: string
-        token0IsBase?: boolean
+        token0IsBase: boolean
       }
     }
   }

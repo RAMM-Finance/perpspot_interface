@@ -60,6 +60,7 @@ export interface UserState {
       token0IsBase: boolean
       token0Symbol: string
       token1Symbol: string
+      invertGecko: boolean // whether to invert the gecko data
     }
   }
   timestamp: number
@@ -158,6 +159,7 @@ const userSlice = createSlice({
         token0IsBase: action.payload.token0IsBase,
         token0Symbol: action.payload.token0Symbol,
         token1Symbol: action.payload.token1Symbol,
+        invertGecko: action.payload.invertGecko,
       }
     },
     updateUserPremiumDepositPercent(state, action) {
@@ -226,8 +228,10 @@ const userSlice = createSlice({
       if (!state.userLimitDeadline) {
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
+
+      // remove on launch
       state.currentPoolKeys = {}
-      if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object') {
+      if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object' || Object.keys(state.currentPoolKeys)) {
         state.currentPoolKeys = {}
       }
 

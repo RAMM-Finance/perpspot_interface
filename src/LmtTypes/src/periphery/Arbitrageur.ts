@@ -236,9 +236,11 @@ export declare namespace Arbitrageur {
     fillerPayAmount: PromiseOrValue<BigNumberish>;
     boughtFromPositionSold: PromiseOrValue<BigNumberish>;
     boughtFromPosition: PromiseOrValue<BigNumberish>;
+    amountReturned: PromiseOrValue<BigNumberish>;
   };
 
   export type ForceCloseReturnStructOutput = [
+    BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -248,6 +250,7 @@ export declare namespace Arbitrageur {
     fillerPayAmount: BigNumber;
     boughtFromPositionSold: BigNumber;
     boughtFromPosition: BigNumber;
+    amountReturned: BigNumber;
   };
 }
 
@@ -446,13 +449,13 @@ export interface ArbitrageurInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "ForceClosed(address,bool,address,address,int256,int256,uint256,address)": EventFragment;
+    "ForceClosedArbitraguer(address,bool,address,address,int256,int256,uint256,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "ForceClosed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ForceClosedArbitraguer"): EventFragment;
 }
 
-export interface ForceClosedEventObject {
+export interface ForceClosedArbitraguerEventObject {
   trader: string;
   positionIsToken0: boolean;
   token0: string;
@@ -462,12 +465,13 @@ export interface ForceClosedEventObject {
   returnedAmount: BigNumber;
   returnedToken: string;
 }
-export type ForceClosedEvent = TypedEvent<
+export type ForceClosedArbitraguerEvent = TypedEvent<
   [string, boolean, string, string, BigNumber, BigNumber, BigNumber, string],
-  ForceClosedEventObject
+  ForceClosedArbitraguerEventObject
 >;
 
-export type ForceClosedEventFilter = TypedEventFilter<ForceClosedEvent>;
+export type ForceClosedArbitraguerEventFilter =
+  TypedEventFilter<ForceClosedArbitraguerEvent>;
 
 export interface Arbitrageur extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -824,7 +828,7 @@ export interface Arbitrageur extends BaseContract {
   };
 
   filters: {
-    "ForceClosed(address,bool,address,address,int256,int256,uint256,address)"(
+    "ForceClosedArbitraguer(address,bool,address,address,int256,int256,uint256,address)"(
       trader?: null,
       positionIsToken0?: null,
       token0?: null,
@@ -833,8 +837,8 @@ export interface Arbitrageur extends BaseContract {
       amount1?: null,
       returnedAmount?: null,
       returnedToken?: null
-    ): ForceClosedEventFilter;
-    ForceClosed(
+    ): ForceClosedArbitraguerEventFilter;
+    ForceClosedArbitraguer(
       trader?: null,
       positionIsToken0?: null,
       token0?: null,
@@ -843,7 +847,7 @@ export interface Arbitrageur extends BaseContract {
       amount1?: null,
       returnedAmount?: null,
       returnedToken?: null
-    ): ForceClosedEventFilter;
+    ): ForceClosedArbitraguerEventFilter;
   };
 
   estimateGas: {

@@ -219,29 +219,12 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
 
   // const { onPoolSelection } = useSwapActionHandlers()
 
-  const [baseQuoteSymbol, token0IsBase] = useMemo(() => {
-    if (pool && poolOHLCData) {
-      const base = poolOHLCData?.base
-      if (!base) {
-        const priceData = poolOHLCData
-        const token0Price = new BN(pool.token0Price.toFixed(18))
-        const d1 = token0Price.minus(priceData.price24hAgo).abs()
-        const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
-        if (d1.lt(d2)) {
-          return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
-        } else {
-          return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
-        }
-      } else {
-        if (base.toLowerCase() === pool.token0.address.toLowerCase()) {
-          return [`${pool.token0.symbol}/${pool.token1.symbol}`, true]
-        } else {
-          return [`${pool.token1.symbol}/${pool.token0.symbol}`, false]
-        }
-      }
-    }
-    return [null, null]
-  }, [poolOHLCData, pool])
+  const baseQuoteSymbol = useMemo(() => {
+    if (!poolOHLCData || !token0?.symbol || !token1?.symbol) return null
+    const base = poolOHLCData.token0IsBase ? token0.symbol : token1.symbol
+    const quote = poolOHLCData.token0IsBase ? token1.symbol : token0.symbol
+    return `${base}/${quote}`
+  }, [poolOHLCData, token0, token1])
 
   const addPinnedPool = useAddPinnedPool()
   const removePinnedPool = useRemovePinnedPool()
@@ -269,18 +252,6 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const setCurrentPool = useSetCurrentPool()
   const dispatch = useAppDispatch()
 
-  const inputIsToken0 = useMemo(() => {
-    if (pool && poolOHLCData) {
-      const quote = poolOHLCData?.quote
-      if (quote) {
-        if (quote.toLowerCase() === pool.token0.address.toLowerCase()) {
-          return true
-        }
-      }
-    }
-    return false
-  }, [poolOHLCData, pool])
-
   const active = useMemo(() => {
     if (currentPool?.poolId === id) {
       return true
@@ -290,13 +261,13 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   }, [currentPool, id])
 
   const handleRowClick = useCallback(() => {
-    if (token0 && token1 && poolId !== id && token0IsBase !== null && token0.symbol && token1.symbol) {
+    if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol) {
       localStorage.removeItem('defaultInputToken')
       onMarginChange('')
       onActiveTabChange(0)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
-      setCurrentPool(id, inputIsToken0, token0IsBase, token0.symbol, token1.symbol)
+      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
       handleClose()
       dispatch(setBLScrollPosition(undefined))
     }
@@ -307,12 +278,11 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     id,
     poolId,
     handleClose,
-    inputIsToken0,
     setCurrentPool,
     onMarginChange,
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
-    token0IsBase,
+    poolOHLCData,
     dispatch,
   ])
 
@@ -566,6 +536,7 @@ export function SelectPool() {
         address0={poolKey?.token0}
         address1={poolKey?.token1}
         fee={poolKey?.fee}
+        invertGecko={currentPool?.invertGecko}
       />
       <StyledMenu
         id="simple-menu"

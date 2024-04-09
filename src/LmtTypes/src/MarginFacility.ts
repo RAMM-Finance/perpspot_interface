@@ -570,7 +570,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     "ForceClosed(address,bool,bool,uint256,address,uint256,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "MarginPositionIncreased(address,bool,bool,address,address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "MarginPositionReduced(address,bool,bool,address,address,uint256,uint256,uint256,int256)": EventFragment;
+    "MarginPositionReduced(address,bool,bool,address,address,uint256,uint256,uint256,int256,int256,int256)": EventFragment;
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "OrderCanceled(address,bool,address,bool)": EventFragment;
     "PremiumDeposited(address,address,bool,uint256)": EventFragment;
@@ -661,6 +661,8 @@ export interface MarginPositionReducedEventObject {
   premiumPaid: BigNumber;
   feePaid: BigNumber;
   PnL: BigNumber;
+  amount0: BigNumber;
+  amount1: BigNumber;
 }
 export type MarginPositionReducedEvent = TypedEvent<
   [
@@ -669,6 +671,8 @@ export type MarginPositionReducedEvent = TypedEvent<
     boolean,
     string,
     string,
+    BigNumber,
+    BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -1476,7 +1480,7 @@ export interface MarginFacility extends BaseContract {
       feePaid?: null
     ): MarginPositionIncreasedEventFilter;
 
-    "MarginPositionReduced(address,bool,bool,address,address,uint256,uint256,uint256,int256)"(
+    "MarginPositionReduced(address,bool,bool,address,address,uint256,uint256,uint256,int256,int256,int256)"(
       pool?: PromiseOrValue<string> | null,
       positionIsToken0?: PromiseOrValue<boolean> | null,
       marginInPosToken?: null,
@@ -1485,7 +1489,9 @@ export interface MarginFacility extends BaseContract {
       reduceAmount?: null,
       premiumPaid?: null,
       feePaid?: null,
-      PnL?: null
+      PnL?: null,
+      amount0?: null,
+      amount1?: null
     ): MarginPositionReducedEventFilter;
     MarginPositionReduced(
       pool?: PromiseOrValue<string> | null,
@@ -1496,7 +1502,9 @@ export interface MarginFacility extends BaseContract {
       reduceAmount?: null,
       premiumPaid?: null,
       feePaid?: null,
-      PnL?: null
+      PnL?: null,
+      amount0?: null,
+      amount1?: null
     ): MarginPositionReducedEventFilter;
 
     "OrderAdded(address,bool,address,bool,uint256,uint256,uint256,uint256,uint256,uint256)"(

@@ -29,12 +29,14 @@ import type {
 
 export interface ReferralSystemInterface extends utils.Interface {
   functions: {
+    "checkTokenCondition(bytes32)": FunctionFragment;
     "codeOwners(bytes32)": FunctionFragment;
     "codeUsedAmount(bytes32)": FunctionFragment;
     "codeUsers(bytes32,uint256)": FunctionFragment;
     "codesByOwners(address,uint256)": FunctionFragment;
     "getMaxValues()": FunctionFragment;
     "getReferees(address)": FunctionFragment;
+    "hasTokenConditions(bytes32)": FunctionFragment;
     "initialize()": FunctionFragment;
     "isAuth(address)": FunctionFragment;
     "numCodes(address)": FunctionFragment;
@@ -42,7 +44,9 @@ export interface ReferralSystemInterface extends utils.Interface {
     "referrerTiers(address)": FunctionFragment;
     "registerCode(bytes32)": FunctionFragment;
     "registerCodeAdmin(bytes32,address)": FunctionFragment;
+    "registerCodeWithTokenCondition(bytes32,address,uint256)": FunctionFragment;
     "registerCodes(bytes32[])": FunctionFragment;
+    "setCondition(bytes32,address,uint256)": FunctionFragment;
     "setHandler(address,bool)": FunctionFragment;
     "setMaxCode(uint256)": FunctionFragment;
     "setMaxValues(uint256,uint256)": FunctionFragment;
@@ -50,17 +54,20 @@ export interface ReferralSystemInterface extends utils.Interface {
     "setReferralCodeByUser(bytes32)": FunctionFragment;
     "setReferralMultiplier(address,uint256)": FunctionFragment;
     "setTier(address,uint256)": FunctionFragment;
+    "tokenConditions(bytes32)": FunctionFragment;
     "userReferralCodes(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "checkTokenCondition"
       | "codeOwners"
       | "codeUsedAmount"
       | "codeUsers"
       | "codesByOwners"
       | "getMaxValues"
       | "getReferees"
+      | "hasTokenConditions"
       | "initialize"
       | "isAuth"
       | "numCodes"
@@ -68,7 +75,9 @@ export interface ReferralSystemInterface extends utils.Interface {
       | "referrerTiers"
       | "registerCode"
       | "registerCodeAdmin"
+      | "registerCodeWithTokenCondition"
       | "registerCodes"
+      | "setCondition"
       | "setHandler"
       | "setMaxCode"
       | "setMaxValues"
@@ -76,9 +85,14 @@ export interface ReferralSystemInterface extends utils.Interface {
       | "setReferralCodeByUser"
       | "setReferralMultiplier"
       | "setTier"
+      | "tokenConditions"
       | "userReferralCodes"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "checkTokenCondition",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
   encodeFunctionData(
     functionFragment: "codeOwners",
     values: [PromiseOrValue<BytesLike>]
@@ -102,6 +116,10 @@ export interface ReferralSystemInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getReferees",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hasTokenConditions",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
@@ -132,8 +150,24 @@ export interface ReferralSystemInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "registerCodeWithTokenCondition",
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "registerCodes",
     values: [PromiseOrValue<BytesLike>[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCondition",
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "setHandler",
@@ -164,10 +198,18 @@ export interface ReferralSystemInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "tokenConditions",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "userReferralCodes",
     values: [PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "checkTokenCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "codeOwners", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "codeUsedAmount",
@@ -184,6 +226,10 @@ export interface ReferralSystemInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getReferees",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "hasTokenConditions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
@@ -206,7 +252,15 @@ export interface ReferralSystemInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "registerCodeWithTokenCondition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "registerCodes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCondition",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setHandler", data: BytesLike): Result;
@@ -228,6 +282,10 @@ export interface ReferralSystemInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setTier", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenConditions",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "userReferralCodes",
     data: BytesLike
@@ -313,6 +371,11 @@ export interface ReferralSystem extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    checkTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     codeOwners(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -341,6 +404,11 @@ export interface ReferralSystem extends BaseContract {
       codeOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
+
+    hasTokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -377,8 +445,22 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    registerCodeWithTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     registerCodes(
       _codes: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -422,11 +504,23 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    tokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, BigNumber] & { tokenAddress: string; tokenAmount: BigNumber }
+    >;
+
     userReferralCodes(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[string]>;
   };
+
+  checkTokenCondition(
+    _code: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   codeOwners(
     arg0: PromiseOrValue<BytesLike>,
@@ -456,6 +550,11 @@ export interface ReferralSystem extends BaseContract {
     codeOwner: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<string[]>;
+
+  hasTokenConditions(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   initialize(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -492,8 +591,22 @@ export interface ReferralSystem extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  registerCodeWithTokenCondition(
+    _code: PromiseOrValue<BytesLike>,
+    token: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   registerCodes(
     _codes: PromiseOrValue<BytesLike>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setCondition(
+    _code: PromiseOrValue<BytesLike>,
+    token: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -537,12 +650,24 @@ export interface ReferralSystem extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  tokenConditions(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, BigNumber] & { tokenAddress: string; tokenAmount: BigNumber }
+  >;
+
   userReferralCodes(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<string>;
 
   callStatic: {
+    checkTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     codeOwners(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -571,6 +696,11 @@ export interface ReferralSystem extends BaseContract {
       codeOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<string[]>;
+
+    hasTokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     initialize(overrides?: CallOverrides): Promise<void>;
 
@@ -605,8 +735,22 @@ export interface ReferralSystem extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    registerCodeWithTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     registerCodes(
       _codes: PromiseOrValue<BytesLike>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -649,6 +793,13 @@ export interface ReferralSystem extends BaseContract {
       _tierId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    tokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, BigNumber] & { tokenAddress: string; tokenAmount: BigNumber }
+    >;
 
     userReferralCodes(
       arg0: PromiseOrValue<string>,
@@ -680,6 +831,11 @@ export interface ReferralSystem extends BaseContract {
   };
 
   estimateGas: {
+    checkTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     codeOwners(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -709,6 +865,11 @@ export interface ReferralSystem extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    hasTokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -744,8 +905,22 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    registerCodeWithTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     registerCodes(
       _codes: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -789,6 +964,11 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    tokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     userReferralCodes(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -796,6 +976,11 @@ export interface ReferralSystem extends BaseContract {
   };
 
   populateTransaction: {
+    checkTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     codeOwners(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -825,6 +1010,11 @@ export interface ReferralSystem extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    hasTokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -860,8 +1050,22 @@ export interface ReferralSystem extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    registerCodeWithTokenCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     registerCodes(
       _codes: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setCondition(
+      _code: PromiseOrValue<BytesLike>,
+      token: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -903,6 +1107,11 @@ export interface ReferralSystem extends BaseContract {
       _referrer: PromiseOrValue<string>,
       _tierId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    tokenConditions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     userReferralCodes(

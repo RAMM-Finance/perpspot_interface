@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SparklineMap } from 'graphql/data/TopTokens'
@@ -330,54 +329,22 @@ export function TokenRow({
   const token1 = useCurrency(currency1)
   const currentPool = useCurrentPool()
   const currentPoolId = currentPool?.poolId
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee)
-  const poolId = useMemo(() => {
-    if (token0 && token1 && fee) {
-      return getPoolId(token0.wrapped.address, token1.wrapped.address, fee)
-    } else {
-      return undefined
-    }
-  }, [token0, token1, fee])
-
   const poolOHLC = usePoolOHLC(token0?.wrapped.address, token1?.wrapped.address, fee)
-
-  const token0IsBase = useMemo(() => {
-    if (pool && poolOHLC && poolId) {
-      const priceData = poolOHLC
-      const token0Price = new BN(pool.token0Price.toFixed(18))
-      const d1 = token0Price.minus(priceData.price24hAgo).abs()
-      const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
-      if (d1.lt(d2)) {
-        return true
-      }
-      return false
-    }
-    return null
-  }, [pool, poolOHLC, poolId])
 
   const handleClick = useCallback(
     (e: any) => {
       e.stopPropagation()
-      if (
-        currency0 &&
-        currency1 &&
-        token0 &&
-        token1 &&
-        fee &&
-        token0IsBase !== null &&
-        token0.symbol &&
-        token1.symbol
-      ) {
+      if (currency0 && currency1 && token0 && token1 && fee && token0.symbol && token1.symbol) {
         const id = getPoolId(currency0, currency1, fee)
-        if (id && currentPoolId !== id) {
-          setCurrentPool(id, true, token0IsBase, token0.symbol, token1.symbol)
+        if (id && currentPoolId !== id && poolOHLC) {
+          setCurrentPool(id, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, token0.symbol, token1.symbol, false)
           navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
             state: { currency0, currency1 },
           })
         }
       }
     },
-    [token0, token1, fee, currency0, currency1, token0IsBase, currentPoolId, setCurrentPool, navigate]
+    [token0, token1, fee, currency0, currency1, currentPoolId, setCurrentPool, navigate, poolOHLC]
   )
 
   const rowCells = (
@@ -474,25 +441,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
   const poolId = getPoolId(tokenA, tokenB, fee)
 
-  const token0IsBase = useMemo(() => {
-    if (pool && poolOHLC && poolId) {
-      const priceData = poolOHLC
-      const token0Price = new BN(pool.token0Price.toFixed(18))
-      const d1 = token0Price.minus(priceData.price24hAgo).abs()
-      const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
-      if (d1.lt(d2)) {
-        return true
-      }
-      return false
-    }
-    return null
-  }, [pool, poolOHLC, poolId])
-
   const handleCurrencySelect = useCallback(() => {
-    if (currentPoolId !== poolId && token0IsBase !== null && token0?.symbol && token1?.symbol) {
-      setCurrentPool(poolId, true, token0IsBase, token0.symbol, token1.symbol)
+    if (currentPoolId !== poolId && token0?.symbol && token1?.symbol && poolOHLC) {
+      setCurrentPool(poolId, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, token0.symbol, token1.symbol, false)
     }
-  }, [setCurrentPool, currentPoolId, poolId, token0IsBase, token0, token1])
+  }, [setCurrentPool, currentPoolId, poolId, poolOHLC, token0, token1])
 
   const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
   const [tickLower, tickUpper] = useMemo(() => {

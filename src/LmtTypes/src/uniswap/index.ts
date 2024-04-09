@@ -7,4 +7,5 @@ export type { Oracle } from "./Oracle";
 export type { Position } from "./Position";
 export type { Tick } from "./Tick";
 export type { TickMath } from "./TickMath";
+export type { UniswapInterfaceMulticall } from "./UniswapInterfaceMulticall";
 export type { UniswapV3Factory } from "./UniswapV3Factory";

@@ -92,9 +92,7 @@ export function usePoolOHLC(
       delta24h: number
       high24: number
       low24: number
-      base?: string
-      quote?: string
-      token0IsBase?: boolean
+      token0IsBase: boolean
     }
   | undefined {
   const { chainId } = useWeb3React()
@@ -102,9 +100,11 @@ export function usePoolOHLC(
   return useMemo(() => {
     if (!tokenA || !tokenB || !fee || !chainId) return undefined
     const poolId = getPoolId(tokenA, tokenB, fee)
+
     if (chainId && poolOHLCs[chainId] && poolOHLCs[chainId][poolId]) {
       return poolOHLCs[chainId][poolId]
     }
+
     return undefined
   }, [chainId, tokenA, tokenB, fee, poolOHLCs])
 }

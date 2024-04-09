@@ -92,7 +92,7 @@ export const PoolSelector = ({
         navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
       }
     },
-    [inputCurrency, navigate, currentId]
+    [navigate, currentId, selectPair]
   )
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
@@ -161,8 +161,8 @@ export const PoolSelector = ({
 
       return availablePools?.map((pool: any) => {
         if (
-          Object.keys(lowerCasePool).find(
-            (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`
+          Object.keys(lowerCasePool).find((pair: any) =>
+            `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`.toLowerCase()
           )
         ) {
           return {

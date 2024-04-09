@@ -94,6 +94,7 @@ export function useCurrentPool():
       token0Symbol: string
       token1Symbol: string
       token0IsBase: boolean
+      invertGecko: boolean
     }
   | undefined {
   const { chainId } = useWeb3React()
@@ -107,7 +108,7 @@ export function useCurrentPool():
 
   return useMemo(() => {
     if (!currentPool) return undefined
-    const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = currentPool
+    const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko } = currentPool
     const [token0, token1, fee] = poolId.split('-')
     return {
       poolKey: {
@@ -120,6 +121,7 @@ export function useCurrentPool():
       token0IsBase,
       token0Symbol,
       token1Symbol,
+      invertGecko,
     }
   }, [currentPool])
 }
@@ -152,13 +154,24 @@ export function useSetCurrentPool(): (
   inputInToken0: boolean,
   token0IsBase: boolean,
   token0Symbol: string,
-  token1Symbol: string
+  token1Symbol: string,
+  invertGecko: boolean
 ) => void {
   const dispatch = useAppDispatch()
   const { chainId } = useWeb3React()
   return useCallback(
-    (poolId: string, inputInToken0: boolean, token0IsBase: boolean, token0Symbol: string, token1Symbol: string) => {
-      chainId && dispatch(setCurrentPool({ poolId, inputInToken0, chainId, token0IsBase, token0Symbol, token1Symbol }))
+    (
+      poolId: string,
+      inputInToken0: boolean,
+      token0IsBase: boolean,
+      token0Symbol: string,
+      token1Symbol: string,
+      invertGecko: boolean
+    ) => {
+      chainId &&
+        dispatch(
+          setCurrentPool({ poolId, inputInToken0, chainId, token0IsBase, token0Symbol, token1Symbol, invertGecko })
+        )
     },
     [dispatch, chainId]
   )

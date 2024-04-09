@@ -1,4 +1,3 @@
-import { BigNumber as BN } from 'bignumber.js'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
@@ -67,57 +66,41 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
 
   const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee)
   const delta = poolOHLCData?.delta24h
-  const [baseQuoteSymbol, token0IsBase] = useMemo(() => {
-    if (pool && poolOHLCData) {
-      const token0Price = new BN(pool.token0Price.toFixed(18))
-      const geckoPrice = new BN(poolOHLCData.priceNow)
-      const d1 = token0Price.minus(geckoPrice).abs()
-      const d2 = new BN(1).div(token0Price).minus(geckoPrice).abs()
-      if (d1.lt(d2)) {
-        return [`${pool.token0?.symbol}/${pool.token1?.symbol}`, true]
-      }
-      return [`${pool.token1?.symbol}/${pool.token0?.symbol}`, false]
+
+  const baseQuoteSymbol = useMemo(() => {
+    if (!poolOHLCData || !token0?.symbol || !token1?.symbol) {
+      return null
     }
-    return [null, null]
-  }, [pool, poolOHLCData])
+
+    const base = poolOHLCData.token0IsBase ? token0?.symbol : token1?.symbol
+    const quote = poolOHLCData.token0IsBase ? token1?.symbol : token0?.symbol
+    return `${base}/${quote}`
+  }, [poolOHLCData, token0?.symbol, token1?.symbol])
 
   const setCurrentPool = useSetCurrentPool()
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
   const remove = useRemovePinnedPool()
 
-  const inputIsToken0 = useMemo(() => {
-    if (pool && poolOHLCData) {
-      const quote = poolOHLCData?.quote
-      if (quote) {
-        if (quote.toLowerCase() === pool.token0.address.toLowerCase()) {
-          return true
-        }
-      }
-    }
-    return false
-  }, [poolOHLCData, pool])
-
   const handleRowClick = useCallback(() => {
-    if (token0 && token1 && poolId !== id && token0.symbol && token1.symbol && token0IsBase !== null) {
+    if (token0 && token1 && poolId !== id && token0.symbol && token1.symbol && poolOHLCData) {
       onMarginChange('')
       onActiveTabChange(0)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
-      setCurrentPool(id, inputIsToken0, token0IsBase, token0.symbol, token1.symbol)
+      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
     }
   }, [
     token0,
     token1,
     setCurrentPool,
-    inputIsToken0,
     poolId,
     id,
     onMarginChange,
     onActiveTabChange,
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
-    token0IsBase,
+    poolOHLCData,
   ])
 
   const unpinPool = useCallback(

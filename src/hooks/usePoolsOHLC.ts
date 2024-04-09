@@ -1,21 +1,20 @@
-import { Interface, defaultAbiCoder } from '@ethersproject/abi'
+import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
+import { BigNumber as BN } from 'bignumber.js'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
-import { useMultipleContractSingleData } from 'lib/hooks/multicall'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 
-import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
+import { useLmtQuoterContract } from './useContract'
 
 interface HydratedPool {
   pool: RawPoolKey
@@ -24,9 +23,7 @@ interface HydratedPool {
   delta24h: number
   high24: number
   low24: number
-  base?: string
-  quote?: string
-  token0IsBase?: boolean
+  token0IsBase: boolean
 }
 
 export const CHAIN_TO_NETWORK_ID: { [chainId: number]: string } = {
@@ -65,20 +62,25 @@ function switchPoolChain(fromChainId: number, toChainId: number, pool: PoolKey):
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
-export function usePoolsOHLC(list: { token0: string; token1: string; fee: number }[] | undefined): {
+const sqrtPriceToBN = (sqrtPriceX96: string, decimals0: number, decimals1: number): BN => {
+  const price = new BN(sqrtPriceX96.toString()).div(2 ** 96).exponentiatedBy(2)
+  return price.multipliedBy(10 ** decimals1).div(10 ** decimals0)
+}
+
+export function usePoolsOHLC(): {
   poolsOHLC: Record<string, HydratedPool> | undefined
   loading: boolean
   error: any
 } {
-  const { chainId } = useWeb3React()
-  const poolAddresses = useMemo(() => {
-    if (!list || !chainId || list.length === 0) return []
-    return list.map((pool) => {
-      return getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
-    })
-  }, [list, chainId])
+  const quoter = useLmtQuoterContract()
+  const poolKeys = useSingleCallResult(quoter, 'getPoolKeys')
 
-  const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
+  const list = useMemo(() => {
+    if (poolKeys.error || !poolKeys.result) return []
+    return poolKeys.result[0]
+  }, [poolKeys])
+
+  const { chainId } = useWeb3React()
 
   const fetchData = useCallback(async () => {
     if (!list || !chainId || list.length === 0) throw new Error('No list or chainId')
@@ -132,33 +134,21 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
 
     const responses = await Promise.all(results)
 
-    // if any status is not 200, throw error
-    for (let i = 0; i < responses.length; i++) {
-      if (responses[i].status !== 200) throw new Error('Failed to fetch pool price data')
-    }
-
-    // parse data
     const parsed: Record<string, HydratedPool> = {}
-    responses.forEach((res, i) => {
-      const slot0 = slot0s[i]
-      if (slot0.loading || !slot0.result || slot0.error) throw new Error('Failed to fetch pool price data')
-
-      const data = res.data.data.attributes.ohlcv_list
+    for (let i = 0; i < responses.length; i++) {
+      if (responses[i].status !== 200) continue
+      const data = responses[i].data.data.attributes.ohlcv_list
       const high24 = data[0][2]
       const low24 = data[0][3]
       const price24hAgo = data[0][1]
       const priceNow = data[0][4]
       const delta24h = (priceNow - price24hAgo) / price24hAgo
-      const { token0, token1, fee } = list[i]
+      const { token0, token1, fee, sqrtPriceX96, decimals0, decimals1 } = list[i]
 
-      let base = res?.data?.meta?.base?.address
-      let quote = res?.data?.meta?.quote?.address
-      const token0IsBase = base ? base?.toLowerCase() === token0.toLowerCase() : true
+      const token0Price = sqrtPriceToBN(sqrtPriceX96, decimals0, decimals1)
+      const token1Price = new BN(1).div(token0Price)
 
-      if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
-        base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
-        quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
-      }
+      const token0IsBase = new BN(priceNow).minus(token0Price).abs().lt(new BN(priceNow).minus(token1Price).abs())
 
       parsed[getPoolId(token0, token1, fee)] = {
         high24,
@@ -171,13 +161,49 @@ export function usePoolsOHLC(list: { token0: string; token1: string; fee: number
           token1,
           fee,
         },
-        base,
-        quote,
         token0IsBase,
       }
-    })
+    }
+
     return parsed
-  }, [list, chainId, slot0s])
+    // parse data
+
+    // responses.forEach((res, i) => {
+    //   const data = res.data.data.attributes.ohlcv_list
+    //   const high24 = data[0][2]
+    //   const low24 = data[0][3]
+    //   const price24hAgo = data[0][1]
+    //   const priceNow = data[0][4]
+    //   const delta24h = (priceNow - price24hAgo) / price24hAgo
+    //   const { token0, token1, fee } = list[i]
+
+    //   let base = res?.data?.meta?.base?.address
+    //   let quote = res?.data?.meta?.quote?.address
+    //   const token0IsBase = base ? base?.toLowerCase() === token0.toLowerCase() : true
+
+    //   if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
+    //     base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
+    //     quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
+    //   }
+
+    //   parsed[getPoolId(token0, token1, fee)] = {
+    //     high24,
+    //     low24,
+    //     price24hAgo,
+    //     priceNow,
+    //     delta24h,
+    //     pool: {
+    //       token0,
+    //       token1,
+    //       fee,
+    //     },
+    //     base,
+    //     quote,
+    //     token0IsBase,
+    //   }
+    // })
+    // return parsed
+  }, [list, chainId])
 
   const queryKey = useMemo(() => {
     return ['poolsOHLC', list?.length, chainId]

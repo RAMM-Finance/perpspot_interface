@@ -1,12 +1,10 @@
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
-import { useLmtQuoterContract } from 'hooks/useContract'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { setCurrentPool } from 'state/user/reducer'
 import { PoolKey } from 'types/lmtv2position'
@@ -23,6 +21,7 @@ const DEFAULT_POOLS: {
     token0IsBase: boolean
     token0Symbol: string
     token1Symbol: string
+    invertGecko: boolean
   }
 } = {
   [SupportedChainId.ARBITRUM_ONE]: {
@@ -36,6 +35,7 @@ const DEFAULT_POOLS: {
     token0IsBase: true,
     token0Symbol: 'WETH',
     token1Symbol: 'ARB',
+    invertGecko: true,
   },
   [SupportedChainId.BERA_ARTIO]: {
     poolKey: {
@@ -48,6 +48,7 @@ const DEFAULT_POOLS: {
     token0IsBase: false,
     token0Symbol: 'USDC',
     token1Symbol: 'WETH',
+    invertGecko: false,
   },
   [SupportedChainId.LINEA]: {
     poolKey: {
@@ -60,6 +61,7 @@ const DEFAULT_POOLS: {
     token0IsBase: false,
     token0Symbol: 'USDC',
     token1Symbol: 'WETH',
+    invertGecko: false,
   },
   [SupportedChainId.BASE]: {
     poolKey: {
@@ -72,6 +74,7 @@ const DEFAULT_POOLS: {
     token0IsBase: false,
     token0Symbol: 'WETH',
     token1Symbol: 'USDC',
+    invertGecko: false,
   },
 }
 
@@ -85,20 +88,7 @@ export default function Updater(): null {
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
 
-  // fetch pool list for current chain
-  const lmtQuoter = useLmtQuoterContract()
-  const { result } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
-  const poolList = useMemo(() => {
-    if (result) {
-      return result[0]
-    } else {
-      return undefined
-    }
-  }, [result])
-
-  const { poolsOHLC } = usePoolsOHLC(poolList)
-
-  // const poolOHLC = useAppPoolOHLC()
+  const { poolsOHLC } = usePoolsOHLC()
 
   useEffect(() => {
     if (poolsOHLC && chainId) {
@@ -125,8 +115,10 @@ export default function Updater(): null {
         !currentPools[chainId]?.token1Symbol) &&
       ALL_SUPPORTED_CHAIN_IDS.includes(chainId)
     ) {
-      const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol } = DEFAULT_POOLS[chainId]
-      dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
+      const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko } = DEFAULT_POOLS[chainId]
+      dispatch(
+        setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko })
+      )
     }
   }, [dispatch, chainId, currentPools])
 
@@ -134,9 +126,11 @@ export default function Updater(): null {
     if (provider && chainId && windowVisible) {
       if (activeChainId && activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
         setActiveChainId(chainId)
-        const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol } = DEFAULT_POOLS[chainId]
+        const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol, invertGecko } = DEFAULT_POOLS[chainId]
 
-        dispatch(setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol }))
+        dispatch(
+          setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko })
+        )
       }
     }
   }, [dispatch, chainId, provider, windowVisible, activeChainId])
