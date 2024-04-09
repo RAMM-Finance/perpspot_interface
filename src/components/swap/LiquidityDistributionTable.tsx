@@ -31,6 +31,8 @@ const LiquidityDistributionTable = ({
 }) => {
   const navigate = useNavigate()
 
+  console.log('chain', chainId)
+
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
 
@@ -52,10 +54,18 @@ const LiquidityDistributionTable = ({
 
     const invertPrice = getInvertPrice(token0.wrapped.address, token1.wrapped.address, chainId)
     const token0Price = new BN(pool.token0Price.toFixed(18))
-    if (invertPrice) {
-      return [new BN(1).div(token0Price), true]
+    if (chainId === 8453) {
+      if (invertPrice) {
+        return [token0Price, false]
+      } else {
+        return [new BN(1).div(token0Price), true]
+      }
     } else {
-      return [token0Price, false]
+      if (invertPrice) {
+        return [new BN(1).div(token0Price), true]
+      } else {
+        return [token0Price, false]
+      }
     }
   }, [pool, token1, token0, chainId])
 
@@ -69,13 +79,16 @@ const LiquidityDistributionTable = ({
     if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'WETH') {
       return -10
     } else if (token0?.wrapped.symbol === 'WETH' && token1?.wrapped.symbol === 'USDC') {
+      if (chainId === 8453) {
+        return 12
+      }
       return -12
     } else if (token0?.wrapped.symbol === 'wBTC' && token1?.wrapped.symbol === 'USDC') {
       return -2
     } else {
       return 0
     }
-  }, [token0?.wrapped.symbol, token1?.wrapped.symbol])
+  }, [token0?.wrapped.symbol, token1?.wrapped.symbol, chainId])
 
   const negMax = useMemo(() => {
     if (!bin || !token0Price) return 0
@@ -93,6 +106,9 @@ const LiquidityDistributionTable = ({
       .filter((item) => !(item.token0Liquidity.gt(0) && item.token1Liquidity.gt(0)))
     return Math.max(...processed.map((x) => x.token1Liquidity.toNumber() - x.token1Borrowed.toNumber()))
   }, [bin, token0Price])
+
+  console.log('tok0', token0?.symbol)
+  console.log('tok1', token1?.symbol)
 
   const binsAbove = useMemo(() => {
     if (!bin || !currentPrice) return []
@@ -252,7 +268,9 @@ const LiquidityDistributionTable = ({
       </Title>
       <LDHeaderRow>
         <LDHeaderCellIn>Price ({baseQuoteSymbol})</LDHeaderCellIn>
-        <LDHeaderCellOut>Amount ({aboveAmountSymbol})</LDHeaderCellOut>
+        <LDHeaderCellOut>
+          Amount ({chainId === 8453 && token1?.symbol === 'USDC' ? belowAmountSymbol : aboveAmountSymbol})
+        </LDHeaderCellOut>
       </LDHeaderRow>
       <Wrapper onScroll={handleScroll} ref={ref}>
         {loading ? (
@@ -266,6 +284,24 @@ const LiquidityDistributionTable = ({
             <LoadingRow />
             <LoadingRow />
           </AutoColumn>
+        ) : token0?.symbol === 'WETH' && token1?.symbol === 'TOSHI' ? (
+          <NegativeData ref={upperRef}>
+            {binsAbove.map((bin) => {
+              return (
+                <LDDataRowNeg
+                  spread={((Number(bin.token0Liquidity) - Number(bin.token0Borrowed)) / negMax) * 100}
+                  key={Number(bin.price)}
+                >
+                  <LDDataCellIn>
+                    {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
+                  </LDDataCellIn>
+                  <LDDataCellOut>
+                    {formatBNToString(bin.token0Liquidity.minus(bin.token0Borrowed), NumberType.TokenTx)}
+                  </LDDataCellOut>
+                </LDDataRowNeg>
+              )
+            })}
+          </NegativeData>
         ) : token1.symbol === 'ARB' ? (
           <NegativeData ref={upperRef}>
             {binsAbove.map((bin) => {
@@ -328,7 +364,10 @@ const LiquidityDistributionTable = ({
         </PriceWrapper>
         <LDHeaderRow>
           <LDHeaderCellIn>Price ({baseQuoteSymbol})</LDHeaderCellIn>
-          <LDHeaderCellOut>Amount ({belowAmountSymbol})</LDHeaderCellOut>
+          <LDHeaderCellOut>
+            {' '}
+            Amount ({chainId === 8453 && token1?.symbol === 'USDC' ? aboveAmountSymbol : belowAmountSymbol})
+          </LDHeaderCellOut>
         </LDHeaderRow>
         {!bin ? (
           <AutoColumn gap="3px">
@@ -341,6 +380,24 @@ const LiquidityDistributionTable = ({
             <LoadingRow />
             <LoadingRow />
           </AutoColumn>
+        ) : token0?.symbol === 'WETH' && token1?.symbol === 'TOSHI' ? (
+          <PositiveData ref={lowerRef}>
+            {binsBelow.map((bin) => {
+              return (
+                <LDDataRow
+                  spread={((Number(bin.token0Liquidity) - Number(bin.token0Borrowed)) / negMax) * 100}
+                  key={Number(bin.price)}
+                >
+                  <LDDataCellIn>
+                    {formatBNToString(new BN(1).div(bin.price), NumberType.FiatTokenPrice, true, liqNum)}
+                  </LDDataCellIn>
+                  <LDDataCellOut>
+                    {formatBNToString(bin.token1Liquidity.minus(bin.token1Borrowed), NumberType.TokenTx)}
+                  </LDDataCellOut>
+                </LDDataRow>
+              )
+            })}
+          </PositiveData>
         ) : token1?.symbol === 'ARB' ? (
           <PositiveData ref={lowerRef}>
             {binsBelow.map((bin) => {

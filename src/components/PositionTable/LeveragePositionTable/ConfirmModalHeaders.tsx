@@ -278,13 +278,13 @@ export function ConfirmReducePositionHeader({
                 <FiatValue fiatValue={fiatValueReduceAmount} />
               </AutoColumn>
               <RowFixed gap="0px">
-                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                <ThemedText.BodySmall marginRight="10px">
                   Position Reduce Amount
-                </Text>
+                </ThemedText.BodySmall>
                 <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-                <Text fontSize={16} fontWeight={500}>
+                <ThemedText.BodySecondary>
                   {outputCurrency?.symbol}
-                </Text>
+                </ThemedText.BodySecondary>
               </RowFixed>
             </RowBetween>
           </AutoColumn>
@@ -297,13 +297,13 @@ export function ConfirmReducePositionHeader({
                 <FiatValue fiatValue={fiatValueTotalPosition} />
               </AutoColumn>
               <RowFixed gap="0px">
-                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                <ThemedText.BodySmall marginRight="10px">
                   New Total Position
-                </Text>
+                </ThemedText.BodySmall>
                 <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-                <Text fontSize={16} fontWeight={500}>
+                <ThemedText.BodySecondary>
                   {outputCurrency?.symbol}
-                </Text>
+                </ThemedText.BodySecondary>
               </RowFixed>
             </RowBetween>
           </AutoColumn>
@@ -399,13 +399,13 @@ export function ConfirmLimitReducePositionHeader({
                 <FiatValue fiatValue={fiatValueReduceAmount} height="12px" />
               </AutoColumn>
               <RowFixed gap="0px">
-                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                <ThemedText.BodySmall marginRight="10px">
                   Position Reduce Amount
-                </Text>
+                </ThemedText.BodySmall>
                 <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-                <Text fontSize={16} fontWeight={500}>
+                <ThemedText.BodySecondary>
                   {outputCurrency?.symbol}
-                </Text>
+                </ThemedText.BodySecondary>
               </RowFixed>
             </RowBetween>
           </AutoColumn>
@@ -418,13 +418,13 @@ export function ConfirmLimitReducePositionHeader({
                 <FiatValue fiatValue={fiatValueTotalPosition} height="12px" />
               </AutoColumn>
               <RowFixed gap="0px">
-                <Text fontSize={16} fontWeight={300} marginRight="6px">
+                <ThemedText.BodySmall marginRight="10px">
                   New Total Position
-                </Text>
+                </ThemedText.BodySmall>
                 <CurrencyLogo currency={outputCurrency} size="15px" style={{ marginRight: '4px' }} />
-                <Text fontSize={16} fontWeight={500}>
+                <ThemedText.BodySecondary>
                   {outputCurrency?.symbol}
-                </Text>
+                </ThemedText.BodySecondary>
               </RowFixed>
             </RowBetween>
           </AutoColumn>
@@ -455,7 +455,7 @@ export function ConfirmLimitReducePositionHeader({
         </SwapShowAcceptChanges>
       ) : null}
 
-      <AutoColumn justify="flex-start" gap="sm" wrap="wrap" style={{ padding: '.75rem 1rem' }}>
+      <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
           <Trans>
             New position is estimated. Your position will be reduced by at least{' '}

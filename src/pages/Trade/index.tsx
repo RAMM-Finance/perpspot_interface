@@ -331,31 +331,38 @@ export default function Trade({ className }: { className?: string }) {
     if (!leveragePositions || !poolKey) {
       return undefined
     } else {
-      return leveragePositions.filter(
-        (position: MarginPositionDetails) =>
-          position.poolKey.token0.toLowerCase() === poolKey.token0.toLowerCase() &&
-          position.poolKey.token1.toLowerCase() === poolKey.token1.toLowerCase() &&
-          position.poolKey.fee === poolKey.fee
-      )
+      return leveragePositions
+        .filter(
+          (position: MarginPositionDetails) =>
+            position.poolKey.token0.toLowerCase() === poolKey.token0.toLowerCase() &&
+            position.poolKey.token1.toLowerCase() === poolKey.token1.toLowerCase() &&
+            position.poolKey.fee === poolKey.fee
+        )
+        .map((matchedPosition: MarginPositionDetails) => {
+          if (matchedPosition.borrowInfo.length === 2) {
+            return {
+              entryPrice: positionEntryPrice(
+                matchedPosition.marginInPosToken,
+                matchedPosition.totalDebtInput,
+                matchedPosition.totalPosition,
+                matchedPosition.margin
+              ).toNumber(),
+              long: false,
+            }
+          } else {
+            return {
+              entryPrice: positionEntryPrice(
+                matchedPosition.marginInPosToken,
+                matchedPosition.totalDebtInput,
+                matchedPosition.totalPosition,
+                matchedPosition.margin
+              ).toNumber(),
+              long: true,
+            }
+          }
+        })
     }
   }, [leveragePositions, poolKey])
-
-  const entryPrices = useMemo(() => {
-    if (!match) return undefined
-    else if (match.length < 0) return undefined
-    else {
-      return match.map((matchedPosition: MarginPositionDetails) => {
-        return positionEntryPrice(
-          matchedPosition.marginInPosToken,
-          matchedPosition.totalDebtInput,
-          matchedPosition.totalPosition,
-          matchedPosition.margin
-        ).toNumber()
-      })
-    }
-  }, [match])
-
-  console.log('entry', entryPrices)
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
@@ -373,7 +380,7 @@ export default function Trade({ className }: { className?: string }) {
           <PinWrapper>{/* <PinnedPools pinnedPools={pinnedPools} /> */}</PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool />
-            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={entryPrices} />
+            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
           <LiquidityDistibutionWrapper>
             <LiquidityDistributionTable
