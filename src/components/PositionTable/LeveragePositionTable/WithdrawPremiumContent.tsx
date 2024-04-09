@@ -32,7 +32,6 @@ import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
-import { Text } from 'rebass'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
@@ -528,7 +527,7 @@ export function WithdrawPremiumContent({
           </Wrapper>
         </TransactionDetails>
       </InputWrapper>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
         <ButtonError
           style={{ fontSize: '14px', borderRadius: '10px', width: 'fit-content', height: '15px' }}
           padding=".25rem"
@@ -577,13 +576,9 @@ function WithdrawPremiumHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                You Recieve
-              </Text>
+              <ThemedText.BodySmall marginRight="10px">You Recieve</ThemedText.BodySmall>
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {txnInfo?.amount.tokenSymbol}
-              </Text>
+              <ThemedText.BodySecondary>{txnInfo?.amount.tokenSymbol}</ThemedText.BodySecondary>
             </RowFixed>
           </RowBetween>
           <RowBetween align="center">
@@ -593,13 +588,9 @@ function WithdrawPremiumHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <Text fontSize={16} fontWeight={300} marginRight="6px">
-                Resulting Premium Deposit
-              </Text>
+              <ThemedText.BodySmall marginRight="10px">Resulting Premium Deposit</ThemedText.BodySmall>
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
-              <Text fontSize={16} fontWeight={500}>
-                {txnInfo?.newDepositAmount.tokenSymbol}
-              </Text>
+              <ThemedText.BodySecondary>{txnInfo?.newDepositAmount.tokenSymbol}</ThemedText.BodySecondary>
             </RowFixed>
           </RowBetween>
           {/* <RowBetween>
