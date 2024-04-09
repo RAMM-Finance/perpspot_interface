@@ -5,6 +5,8 @@ import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
 import styled, { useTheme } from 'styled-components/macro'
 import { formatDollar } from 'utils/formatNumbers'
+import { usePoolOHLC } from 'state/application/hooks'
+import { BigNumber as BN } from 'bignumber.js'
 
 const LOGO_SIZE = 20
 
@@ -16,7 +18,7 @@ const Container = styled.button<{ disabled: boolean }>`
   color: ${({ theme }) => theme.textPrimary};
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
   display: grid;
-  grid-template-columns: 3fr 1fr 1fr 0.5fr;
+  grid-template-columns: 3.5fr 2fr 0.5fr 0.5fr;
   line-height: 24px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
   text-align: left;
@@ -84,6 +86,16 @@ export default function PoolSelectorRow({
   const labelOut = token1?.symbol as string
   const theme = useTheme()
 
+  // console.log("PoolSelectorRow baseCurrency", baseCurrency)
+  // console.log("PoolSelectorRow quoteCurrency", quoteCurrency)
+  // console.log("PoolSelectorRow token0", token0)
+  // console.log("PoolSelectorRow token1", token1)
+  console.log("PoolSelectorRow token0 address", token0?.wrapped?.address)
+  console.log("PoolSelectorRow token1 address", token1?.wrapped?.address)
+  console.log("PoolSelectorRow fee", fee)
+  const poolOHLCData = usePoolOHLC(token0?.wrapped?.address, token1?.wrapped?.address, fee)
+  console.log("PoolSelectorRow poolOHLCData", poolOHLCData)
+  
   return (
     <Container
       disabled={false}
@@ -97,9 +109,20 @@ export default function PoolSelectorRow({
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
         <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
       </div>
-      <p>{formatDollar({ num: tvl, digits: 1 })}</p>
-      <p>{formatDollar({ num: volume, digits: 1 })}</p>
+      <p>{poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}</p>
+      <p>{poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h * 100).toFixed(2)}%` : 'N/A'}</p>
+      {/* <p>{formatDollar({ num: tvl, digits: 1 })}</p>
+      <p>{formatDollar({ num: volume, digits: 1 })}</p> */}
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )
+}
+const formatBN = (n: BN) => {
+  if (n.lt(0.0001)) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 7, minimumFractionDigits: 5 }).format(n.toNumber())
+  } else if (n.lt(1)) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6, minimumFractionDigits: 3 }).format(n.toNumber())
+  } else {
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(n.toNumber())
+  }
 }
