@@ -224,19 +224,16 @@ function PHeaderRow() {
       tokenInfo={<Trans>Pair</Trans>}
       price={<HeaderCell category={TokenSortMethod.PRICE} />}
       priceChange={<HeaderCell category={TokenSortMethod.PRICE_CHANGE} />}
-      // percentChange={<HeaderCell category={TokenSortMethod.PERCENT_CHANGE} />}
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
       APR={<HeaderCell category={TokenSortMethod.APR} />}
       UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
-      // volume={<HeaderCell category={""} />}
       sparkLine={null}
     />
   )
 }
 
 export default function TokenTable() {
-  // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const { chainId } = useWeb3React()
   const sortAscending = useAtom(sortAscendingAtom)
   const sortMethod = useAtom(sortMethodAtom)
@@ -325,7 +322,6 @@ export default function TokenTable() {
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
-          {/* {!loading ? ( */}
           {dataInfo && !loading ? (
             (getSortedData(dataInfo, sortAscending[0], sortMethod[0]) || []).map((dat: any, i: number) => (
               <PLoadedRow

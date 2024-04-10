@@ -99,6 +99,7 @@ export default function LiquidityChartRangeInput({
     currencyB,
     feeAmount,
   })
+  // console.log('useDensityChartData', isLoading, error, formattedData)
 
   const onBrushDomainChangeEnded = useCallback(
     (domain: [number, number], mode: string | undefined) => {

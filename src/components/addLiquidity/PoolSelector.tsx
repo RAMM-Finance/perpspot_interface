@@ -1,5 +1,4 @@
 import { Currency } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -57,7 +56,6 @@ export const PoolSelector = ({
   inputCurrencyId?: string // current input id
   outputCurrencyId?: string // current output id
 }) => {
-  const { chainId } = useWeb3React()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -161,8 +159,8 @@ export const PoolSelector = ({
 
       return availablePools?.map((pool: any) => {
         if (
-          Object.keys(lowerCasePool).find((pair: any) =>
-            `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`.toLowerCase()
+          Object.keys(lowerCasePool).find(
+            (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`
           )
         ) {
           return {
@@ -179,6 +177,7 @@ export const PoolSelector = ({
     }
   }, [poolData, data, availablePools])
 
+  console.log('dataInfo', poolData)
   const dropdown = (
     <NavDropdown
       ref={modalRef}

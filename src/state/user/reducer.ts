@@ -57,10 +57,11 @@ export interface UserState {
     [chainId: number]: {
       poolId: string
       inputInToken0: boolean
-      token0IsBase: boolean
+      token0IsBase: boolean // indicates default base token
       token0Symbol: string
       token1Symbol: string
-      invertGecko: boolean // whether to invert the gecko data
+      // invert the price data for displays
+      invertPrice: boolean
     }
   }
   timestamp: number
@@ -144,6 +145,11 @@ const userSlice = createSlice({
         }
       }
     },
+    invertCurrentPoolPrice(state, action) {
+      if (state.currentPoolKeys[action.payload.chainId]) {
+        state.currentPoolKeys[action.payload.chainId].invertPrice = action.payload.invertPrice
+      }
+    },
     setPinnedPools(state, action) {
       state.pinnedKeys[action.payload.chainId] = action.payload.pinnedPools
     },
@@ -159,7 +165,7 @@ const userSlice = createSlice({
         token0IsBase: action.payload.token0IsBase,
         token0Symbol: action.payload.token0Symbol,
         token1Symbol: action.payload.token1Symbol,
-        invertGecko: action.payload.invertGecko,
+        invertPrice: action.payload.invertPrice,
       }
     },
     updateUserPremiumDepositPercent(state, action) {
@@ -282,5 +288,6 @@ export const {
   setPinnedPools,
   setCurrentPool,
   setInputCurrency,
+  invertCurrentPoolPrice,
 } = userSlice.actions
 export default userSlice.reducer

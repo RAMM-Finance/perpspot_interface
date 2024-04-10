@@ -184,7 +184,7 @@ const configurationData = {
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
   chainId: number
-  invertGecko: boolean
+  invertPrice: boolean
 }
 
 export default function useGeckoDatafeed() {
@@ -204,7 +204,7 @@ export default function useGeckoDatafeed() {
           if (!chartData || symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const { baseSymbol, quoteSymbol, poolAddress, chainId, invertGecko } = JSON.parse(chartData)
+          const { baseSymbol, quoteSymbol, poolAddress, chainId, invertPrice } = JSON.parse(chartData)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -217,7 +217,7 @@ export default function useGeckoDatafeed() {
             has_intraday: true,
             has_daily: true,
             currency_code: quoteSymbol,
-            invertGecko,
+            invertPrice,
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
             poolAddress,
@@ -237,7 +237,7 @@ export default function useGeckoDatafeed() {
           onErrorCallback: (error: string) => void
         ) => {
           console.log('[getBars]: Method call', resolution)
-          const { poolAddress, chainId, invertGecko } = symbolInfo
+          const { poolAddress, chainId, invertPrice } = symbolInfo
           const { from, to, countBack } = periodParams
           // console.log(countBack, '-----countback----------');
           let timeframe: 'hour' | 'day' | 'minute' = 'hour'
@@ -312,11 +312,11 @@ export default function useGeckoDatafeed() {
               }
 
               return {
-                open: invertGecko ? 1 / bar.open : bar.open,
-                close: invertGecko ? 1 / bar.close : bar.close,
+                open: invertPrice ? 1 / bar.open : bar.open,
+                close: invertPrice ? 1 / bar.close : bar.close,
                 time: bar.time,
-                high: invertGecko ? 1 / low : high,
-                low: invertGecko ? 1 / high : low,
+                high: invertPrice ? 1 / low : high,
+                low: invertPrice ? 1 / high : low,
               }
             })
 

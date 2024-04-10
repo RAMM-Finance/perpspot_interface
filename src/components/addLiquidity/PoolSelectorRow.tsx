@@ -1,12 +1,11 @@
 import { Currency } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
-import styled, { useTheme } from 'styled-components/macro'
-import { formatDollar } from 'utils/formatNumbers'
 import { usePoolOHLC } from 'state/application/hooks'
-import { BigNumber as BN } from 'bignumber.js'
+import styled, { useTheme } from 'styled-components/macro'
 
 const LOGO_SIZE = 20
 
@@ -86,9 +85,8 @@ export default function PoolSelectorRow({
   const labelOut = token1?.symbol as string
   const theme = useTheme()
 
-
   const poolOHLCData = usePoolOHLC(token0?.wrapped?.address, token1?.wrapped?.address, fee)
-  
+
   return (
     <Container
       disabled={false}

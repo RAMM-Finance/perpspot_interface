@@ -17,6 +17,7 @@ import { AppState } from '../types'
 import {
   addSerializedPair,
   addSerializedToken,
+  invertCurrentPoolPrice,
   setCurrentPool,
   setInputCurrency,
   updateHideClosedPositions,
@@ -94,7 +95,7 @@ export function useCurrentPool():
       token0Symbol: string
       token1Symbol: string
       token0IsBase: boolean
-      invertGecko: boolean
+      invertPrice: boolean
     }
   | undefined {
   const { chainId } = useWeb3React()
@@ -108,7 +109,7 @@ export function useCurrentPool():
 
   return useMemo(() => {
     if (!currentPool) return undefined
-    const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko } = currentPool
+    const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertPrice } = currentPool
     const [token0, token1, fee] = poolId.split('-')
     return {
       poolKey: {
@@ -121,7 +122,7 @@ export function useCurrentPool():
       token0IsBase,
       token0Symbol,
       token1Symbol,
-      invertGecko,
+      invertPrice,
     }
   }, [currentPool])
 }
@@ -149,13 +150,24 @@ export function useSelectInputCurrency(): (inputInToken0: boolean) => void {
   )
 }
 
+export function useInvertCurrentBaseQuote(): (invertPrice: boolean) => void {
+  const dispatch = useAppDispatch()
+  const { chainId } = useWeb3React()
+  return useCallback(
+    (invertPrice: boolean) => {
+      chainId && dispatch(invertCurrentPoolPrice({ chainId, invertPrice }))
+    },
+    [dispatch, chainId]
+  )
+}
+
 export function useSetCurrentPool(): (
   poolId: string,
   inputInToken0: boolean,
-  token0IsBase: boolean,
+  token0IsBase: boolean, // indicates default base token
   token0Symbol: string,
   token1Symbol: string,
-  invertGecko: boolean
+  invertPrice: boolean // invert price data for displays
 ) => void {
   const dispatch = useAppDispatch()
   const { chainId } = useWeb3React()
@@ -166,11 +178,11 @@ export function useSetCurrentPool(): (
       token0IsBase: boolean,
       token0Symbol: string,
       token1Symbol: string,
-      invertGecko: boolean
+      invertPrice: boolean
     ) => {
       chainId &&
         dispatch(
-          setCurrentPool({ poolId, inputInToken0, chainId, token0IsBase, token0Symbol, token1Symbol, invertGecko })
+          setCurrentPool({ poolId, inputInToken0, chainId, token0IsBase, token0Symbol, token1Symbol, invertPrice })
         )
     },
     [dispatch, chainId]

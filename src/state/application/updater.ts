@@ -21,7 +21,7 @@ const DEFAULT_POOLS: {
     token0IsBase: boolean
     token0Symbol: string
     token1Symbol: string
-    invertGecko: boolean
+    invertPrice: boolean
   }
 } = {
   [SupportedChainId.ARBITRUM_ONE]: {
@@ -31,11 +31,11 @@ const DEFAULT_POOLS: {
       fee: 500,
     },
     poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
-    inputInToken0: true,
+    inputInToken0: false,
     token0IsBase: true,
     token0Symbol: 'WETH',
     token1Symbol: 'ARB',
-    invertGecko: true,
+    invertPrice: false,
   },
   [SupportedChainId.BERA_ARTIO]: {
     poolKey: {
@@ -48,7 +48,7 @@ const DEFAULT_POOLS: {
     token0IsBase: false,
     token0Symbol: 'USDC',
     token1Symbol: 'WETH',
-    invertGecko: false,
+    invertPrice: false,
   },
   [SupportedChainId.LINEA]: {
     poolKey: {
@@ -61,7 +61,7 @@ const DEFAULT_POOLS: {
     token0IsBase: false,
     token0Symbol: 'USDC',
     token1Symbol: 'WETH',
-    invertGecko: false,
+    invertPrice: false,
   },
   [SupportedChainId.BASE]: {
     poolKey: {
@@ -71,10 +71,10 @@ const DEFAULT_POOLS: {
     },
     poolId: getPoolId('0x4200000000000000000000000000000000000006', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 500),
     inputInToken0: false,
-    token0IsBase: false,
+    token0IsBase: true,
     token0Symbol: 'WETH',
     token1Symbol: 'USDC',
-    invertGecko: false,
+    invertPrice: false,
   },
 }
 
@@ -115,9 +115,9 @@ export default function Updater(): null {
         !currentPools[chainId]?.token1Symbol) &&
       ALL_SUPPORTED_CHAIN_IDS.includes(chainId)
     ) {
-      const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko } = DEFAULT_POOLS[chainId]
+      const { poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertPrice } = DEFAULT_POOLS[chainId]
       dispatch(
-        setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko })
+        setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertPrice })
       )
     }
   }, [dispatch, chainId, currentPools])
@@ -126,10 +126,10 @@ export default function Updater(): null {
     if (provider && chainId && windowVisible) {
       if (activeChainId && activeChainId !== chainId && ALL_SUPPORTED_CHAIN_IDS.includes(chainId)) {
         setActiveChainId(chainId)
-        const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol, invertGecko } = DEFAULT_POOLS[chainId]
+        const { poolId, inputInToken0, token0IsBase, token1Symbol, token0Symbol, invertPrice } = DEFAULT_POOLS[chainId]
 
         dispatch(
-          setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertGecko })
+          setCurrentPool({ chainId, poolId, inputInToken0, token0IsBase, token0Symbol, token1Symbol, invertPrice })
         )
       }
     }

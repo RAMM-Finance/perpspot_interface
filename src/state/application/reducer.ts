@@ -56,6 +56,8 @@ export interface ApplicationState {
         high24: number
         low24: number
         token0IsBase: boolean
+        // the data is inverted when retrieved from the gecko API
+        invertedGecko: boolean
       }
     }
   }

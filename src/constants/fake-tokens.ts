@@ -10,10 +10,10 @@ const usdc_a = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
 
 export const lusdc = '0x174652b085C32361121D519D788AbF0D9ad1C355'
 export const lweth = '0x35B4c60a4677EcadaF2fe13fe3678efF724be16b'
-const WETH_ARBITRUM = new Token(42161, weth_a, 18, 'wETH', 'Wrapped ETH')
-const WBTC_ARBITRUM = new Token(42161, wbtc_a, 8, 'wBTC', 'Wrapped BTC')
-const USDC_ARBITRUM = new Token(42161, usdc_a, 6, 'USDC', 'USDC')
-const ARB_ARBITRUM = new Token(42161, '0x912CE59144191C1204E64559FE8253a0e49E6548', 18, 'ARB', 'Arbitrum')
+export const WETH_ARBITRUM = new Token(42161, weth_a, 18, 'wETH', 'Wrapped ETH')
+export const WBTC_ARBITRUM = new Token(42161, wbtc_a, 8, 'wBTC', 'Wrapped BTC')
+export const USDC_ARBITRUM = new Token(42161, usdc_a, 6, 'USDC', 'USDC')
+export const ARB_ARBITRUM = new Token(42161, '0x912CE59144191C1204E64559FE8253a0e49E6548', 18, 'ARB', 'Arbitrum')
 
 export const USDC_BERA = new Token(80085, lusdc, 18, 'USDC', 'Limitless USDC')
 export const WETH_BERA = new Token(80085, lweth, 18, 'WETH', 'Limitless WETH')

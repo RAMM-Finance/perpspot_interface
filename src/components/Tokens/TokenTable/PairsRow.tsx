@@ -420,7 +420,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
 
   const currencyIda = useCurrency(tokenA)
-  const currencyIdb = useCurrency(tokenB)
 
   const setCurrentPool = useSetCurrentPool()
 

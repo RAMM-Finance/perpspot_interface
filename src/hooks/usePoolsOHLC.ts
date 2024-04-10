@@ -13,6 +13,7 @@ import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { PoolKey, RawPoolKey } from 'types/lmtv2position'
+import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 
 import { useLmtQuoterContract } from './useContract'
 
@@ -24,6 +25,8 @@ interface HydratedPool {
   high24: number
   low24: number
   token0IsBase: boolean
+  // the price data is inverted on retrieving the data from the gecko API
+  invertedGecko: boolean
 }
 
 export const CHAIN_TO_NETWORK_ID: { [chainId: number]: string } = {
@@ -149,19 +152,24 @@ export function usePoolsOHLC(): {
       const token1Price = new BN(1).div(token0Price)
 
       const token0IsBase = new BN(priceNow).minus(token0Price).abs().lt(new BN(priceNow).minus(token1Price).abs())
+      const [base, quote, inputInToken0] = getDefaultBaseQuote(token0, token1, chainId)
+      const defaultBaseIsToken0 = base.toLowerCase() === token0.toLowerCase()
+
+      const invert = token0IsBase !== defaultBaseIsToken0
 
       parsed[getPoolId(token0, token1, fee)] = {
-        high24,
-        low24,
-        price24hAgo,
-        priceNow,
+        high24: invert ? 1 / low24 : high24,
+        low24: invert ? 1 / high24 : low24,
+        price24hAgo: invert ? 1 / price24hAgo : price24hAgo,
+        priceNow: invert ? 1 / priceNow : priceNow,
         delta24h,
         pool: {
           token0,
           token1,
           fee,
         },
-        token0IsBase,
+        token0IsBase: defaultBaseIsToken0,
+        invertedGecko: invert,
       }
     }
 

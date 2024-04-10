@@ -33,7 +33,6 @@ export function usePoolsData(): {
   result: PoolTVLData | undefined
   error: boolean
 } {
-
   const dataProvider = useDataProviderContract()
 
   const { data, isLoading, isError } = useQuery(
@@ -86,9 +85,7 @@ export function usePoolsData(): {
     }
   )
 
-
   const slot0s = [] as any
-
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
@@ -145,9 +142,6 @@ export function usePoolsData(): {
       }
 
       const tokens = uniqueTokens.get(pool)
-
-      // const usdValueOfToken0 = usdValue[tokens[0]]
-      // const usdValueOfToken1 = usdValue[tokens[1]]
 
       const token0InfoFromUniswap = tokens[3]
       const token1InfoFromUniswap = tokens[4]

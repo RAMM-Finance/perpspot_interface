@@ -14,6 +14,7 @@ import { usePoolsData } from 'hooks/useLMTPools'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { Row } from 'nft/components/Flex'
+import { ReversedArrowsIcon } from 'nft/components/icons'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
@@ -27,6 +28,7 @@ import {
   useCurrentInputCurrency,
   useCurrentOutputCurrency,
   useCurrentPool,
+  useInvertCurrentBaseQuote,
   usePinnedPools,
   useRemovePinnedPool,
   useSetCurrentPool,
@@ -217,14 +219,15 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
   const delta = poolOHLCData?.delta24h
 
-  // const { onPoolSelection } = useSwapActionHandlers()
+  const { chainId } = useWeb3React()
 
   const baseQuoteSymbol = useMemo(() => {
-    if (!poolOHLCData || !token0?.symbol || !token1?.symbol) return null
+    if (!poolOHLCData || !token0?.symbol || !token1?.symbol || !chainId) return null
+
     const base = poolOHLCData.token0IsBase ? token0.symbol : token1.symbol
     const quote = poolOHLCData.token0IsBase ? token1.symbol : token0.symbol
     return `${base}/${quote}`
-  }, [poolOHLCData, token0, token1])
+  }, [poolOHLCData, token0, token1, chainId])
 
   const addPinnedPool = useAddPinnedPool()
   const removePinnedPool = useRemovePinnedPool()
@@ -261,7 +264,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   }, [currentPool, id])
 
   const handleRowClick = useCallback(() => {
-    if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol) {
+    if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol && chainId) {
       localStorage.removeItem('defaultInputToken')
       onMarginChange('')
       onActiveTabChange(0)
@@ -284,6 +287,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     onSetMarginInPosToken,
     poolOHLCData,
     dispatch,
+    chainId,
   ])
 
   return (
@@ -431,6 +435,11 @@ function useFilteredKeys() {
   }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
 }
 
+const ReverseIconContainer = styled.div`
+  display: flex;
+  margin-right: 5px;
+`
+
 export function SelectPool() {
   const { chainId } = useWeb3React()
 
@@ -448,7 +457,7 @@ export function SelectPool() {
     if (currentPool) {
       const base = currentPool.token0IsBase ? currentPool.token0Symbol : currentPool.token1Symbol
       const quote = currentPool.token0IsBase ? currentPool.token1Symbol : currentPool.token0Symbol
-      return `${base}/${quote}`
+      return currentPool.invertPrice ? `${quote}/${base}` : `${base}/${quote}`
     }
     return null
   }, [currentPool])
@@ -457,12 +466,22 @@ export function SelectPool() {
     setAnchorEl(event.currentTarget)
   }
 
+  const handleInvert = useInvertCurrentBaseQuote()
+
   const handleClose = () => {
     setAnchorEl(null)
   }
 
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
+
+  const handleInvertClick = useCallback(
+    (e: any) => {
+      e.stopPropagation()
+      currentPool && handleInvert(!currentPool.invertPrice)
+    },
+    [currentPool, handleInvert]
+  )
 
   if (!chainId || unsupportedChain(chainId)) {
     return (
@@ -471,6 +490,9 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
+                <ReverseIconContainer>
+                  <ReversedArrowsIcon />
+                </ReverseIconContainer>
                 {inputCurrency && outputCurrency && (
                   <DoubleCurrencyLogo
                     currency0={inputCurrency as Currency}
@@ -503,6 +525,9 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
+                <ReverseIconContainer onClick={handleInvertClick}>
+                  <ReversedArrowsIcon width="20px" height="20px" />
+                </ReverseIconContainer>
                 {inputCurrency && outputCurrency && (
                   <DoubleCurrencyLogo
                     currency0={inputCurrency as Currency}
@@ -536,7 +561,7 @@ export function SelectPool() {
         address0={poolKey?.token0}
         address1={poolKey?.token1}
         fee={poolKey?.fee}
-        invertGecko={currentPool?.invertGecko}
+        invertPrice={currentPool?.invertPrice}
       />
       <StyledMenu
         id="simple-menu"

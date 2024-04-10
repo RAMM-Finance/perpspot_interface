@@ -292,12 +292,16 @@ export default function Trade({ className }: { className?: string }) {
 
       const baseSymbol = currentPool.token0IsBase ? pool.token0.symbol : pool.token1.symbol
       const quoteSymbol = currentPool.token0IsBase ? pool.token1.symbol : pool.token0.symbol
+
+      const invertPrice =
+        (currentPool.invertPrice && !poolOHLC.invertedGecko) || (!currentPool.invertPrice && poolOHLC.invertedGecko)
+
       return JSON.stringify({
         poolAddress,
-        baseSymbol,
-        quoteSymbol,
+        baseSymbol: currentPool.invertPrice ? quoteSymbol : baseSymbol,
+        quoteSymbol: currentPool.invertPrice ? baseSymbol : quoteSymbol,
         token0IsBase: currentPool.token0IsBase,
-        invertGecko: currentPool.invertGecko,
+        invertPrice,
         chainId,
       })
     }

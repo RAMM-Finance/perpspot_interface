@@ -36,16 +36,6 @@ const LiquidityDistributionTable = ({
 
   const [, pool] = usePool(token1 ?? undefined, token0 ?? undefined, fee)
 
-  // const poolAddress = useMemo(() => {
-  //   if (!pool || !chainId) return null
-  //   return computePoolAddress({
-  //     factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-  //     tokenA: pool.token0,
-  //     tokenB: pool.token1,
-  //     fee: pool.fee,
-  //   })
-  // }, [chainId, pool])
-
   // console.log('tooes', token0, token1)
   const [currentPrice, inverse] = useMemo(() => {
     if (!pool || !token0 || !token1 || !chainId) return [undefined, false]

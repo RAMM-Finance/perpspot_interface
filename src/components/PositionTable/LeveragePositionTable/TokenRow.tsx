@@ -533,6 +533,7 @@ export const LoadedRow = memo(
     const { position: details } = props
     const { account } = useWeb3React()
     const theme = useTheme()
+    const { chainId } = useWeb3React()
 
     const positionKey: TraderPositionKey = useMemo(() => {
       return {
@@ -571,7 +572,7 @@ export const LoadedRow = memo(
     const poolId = currentPool?.poolId
     const handlePoolSelect = useCallback(
       (e: any) => {
-        if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool) {
+        if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
             e.stopPropagation()
@@ -579,7 +580,7 @@ export const LoadedRow = memo(
           }
         }
       },
-      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey.poolKey.fee, token0, token1]
+      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey.poolKey.fee, token0, token1, chainId]
     )
 
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)

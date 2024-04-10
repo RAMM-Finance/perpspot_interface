@@ -12,13 +12,12 @@ import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useHistoryData } from 'hooks/useAccountHistory'
 import { tokenDecimal } from 'hooks/useContract'
 import { atom, useAtom } from 'jotai'
-import { memo, useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
 
-import { ActivityTableRow } from './LimitActivityRow'
-import { parseRemoteActivities } from './parseRemote'
-import { Activity, ActivityDescriptionType, ActivityMap } from './types'
 import PortfolioRow from '../PortfolioRow'
+import { ActivityTableRow } from './LimitActivityRow'
+import { Activity, ActivityDescriptionType, ActivityMap } from './types'
 
 const LoadingContainer = styled(HistoryContainer)`
   margin-top: 12px;
@@ -302,10 +301,10 @@ function LoadingTokenTable() {
     <GridContainer>
       <LoadingContainer>
         <LoadingRow />
-      </LoadingContainer> 
+      </LoadingContainer>
       <LoadingContainer>
         <LoadingRow />
-      </LoadingContainer> 
+      </LoadingContainer>
     </GridContainer>
   )
 }

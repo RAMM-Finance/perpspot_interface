@@ -36,14 +36,14 @@ export function PoolStatsSection({
   address0,
   address1,
   fee,
-  invertGecko,
+  invertPrice,
 }: {
   poolData: any
   address0?: string
   address1?: string
   fee?: number
   chainId?: number
-  invertGecko?: boolean
+  invertPrice?: boolean
 }) {
   const { chainId } = useWeb3React()
   const poolAddress = useMemo(() => {
@@ -65,8 +65,8 @@ export function PoolStatsSection({
   ])
 
   const [currentPrice, low24h, high24h, delta24h] = useMemo(() => {
-    if (!poolOHLC || invertGecko === undefined) return [null, null, null, null]
-    if (invertGecko) {
+    if (!poolOHLC || invertPrice === undefined) return [null, null, null, null]
+    if (invertPrice) {
       return [
         new BN(1).div(new BN(poolOHLC.priceNow)),
         new BN(1).div(new BN(poolOHLC.high24)),
@@ -85,7 +85,7 @@ export function PoolStatsSection({
         new BN(poolOHLC.priceNow).minus(new BN(poolOHLC.price24hAgo)).div(new BN(poolOHLC.priceNow)).times(100),
       ]
     }
-  }, [poolOHLC, invertGecko])
+  }, [poolOHLC, invertPrice])
 
   const [volume, tvl] = useMemo(() => {
     if (
@@ -105,49 +105,6 @@ export function PoolStatsSection({
       return [new BN(0), new BN(0)]
     }
   }, [poolData, address0, address1, fee])
-
-  // const [currentPrice, invertPrice, low24h, high24h, delta24h, volume, tvl] = useMemo(() => {
-  //   if (!pool || !address0 || !address1 || !fee || !poolOHLC) return [null, false, null, null, null, null, null]
-  //   const id = getPoolId(address0, address1, fee)
-  //   // const id = `${address0.toLowerCase()}-${address1.toLowerCase()}-${fee}`
-  //   const OHLC = poolOHLC
-  //   if (!OHLC) return [null, false, null, null, null, null, null]
-  //   let tvl
-  //   let volume
-
-  //   if (
-  //     poolData &&
-  //     Object.keys(poolData).find((pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`)
-  //   ) {
-  //     {
-  //       tvl = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.totalValueLocked)
-  //       volume = new BN(poolData[`${pool?.token0?.address}-${pool.token1?.address}-${pool?.fee}`]?.volume)
-  //     }
-  //   } else {
-  //     tvl = new BN(0)
-  //     volume = new BN(0)
-  //   }
-  //   const priceData = {
-  //     priceNow: new BN(OHLC?.priceNow),
-  //     price24hAgo: new BN(OHLC?.price24hAgo),
-  //     high24: new BN(OHLC?.high24),
-  //     low24: new BN(OHLC?.low24),
-  //   }
-
-  //   const token0Price = new BN(pool.token0Price.toFixed(18))
-  //   const d1 = token0Price.minus(priceData.price24hAgo).abs()
-  //   const d2 = new BN(1).div(token0Price).minus(priceData.price24hAgo).abs()
-  //   let invertPrice = d2.lt(d1)
-  //   if (OHLC?.base) {
-  //     invertPrice = OHLC?.base.toLowerCase() === pool.token1.address.toLowerCase()
-  //   }
-  //   const price = priceData.priceNow //nvertPrice ? new BN(1).div(token0Price) : token0Price
-
-  //   const delta = price.minus(priceData.price24hAgo).div(price).times(100)
-  //   const price24hHigh = price.gt(priceData.high24) ? price : priceData.high24
-  //   const price24hLow = price.lt(priceData.low24) ? price : priceData.low24
-  //   return [price, invertPrice, price24hLow, price24hHigh, delta, volume, tvl, pool, token0Price]
-  // }, [pool, poolData, poolOHLC, address0, address1, fee])
 
   const loading = loading0 || loading1 || !reserve0 || !reserve1
 
