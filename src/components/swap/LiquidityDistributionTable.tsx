@@ -105,9 +105,6 @@ const LiquidityDistributionTable = ({
     return Math.max(...processed.map((x) => x.token1Liquidity.toNumber() - x.token1Borrowed.toNumber()))
   }, [bin, token0Price])
 
-  console.log('tok0', token0?.symbol)
-  console.log('tok1', token1?.symbol)
-
   const binsAbove = useMemo(() => {
     if (!bin || !currentPrice) return []
     if (

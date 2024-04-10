@@ -78,6 +78,7 @@ const InputWrapper = styled.div`
   justify-content: space-between;
   height: 100%;
   width: 100%;
+  margin-top: 20px;
 `
 
 const InputSection = styled.div`
@@ -472,7 +473,7 @@ export function WithdrawPremiumContent({
             currency={inputCurrency}
           />
         </InputSection>
-        <Row gap="5px">
+        <Row gap="10px">
           <Toggle
             id="toggle-local-routing-button"
             isActive={withdrawAll}

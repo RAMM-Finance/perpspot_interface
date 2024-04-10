@@ -17,7 +17,7 @@ import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PremiumCurrencySelector } from 'components/PremiumCurrencySelector'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
-import { RowBetween, RowFixed } from 'components/Row'
+import { RowBetween, RowEnd, RowFixed } from 'components/Row'
 import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { ConfirmAddLimitOrderModal } from 'components/swap/ConfirmAddLimitModal'
 import { AddMarginPositionConfirmModal } from 'components/swap/ConfirmSwapModal'
@@ -38,6 +38,7 @@ import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { ReversedArrowsIcon } from 'nft/components/icons'
 import { useCallback, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
@@ -616,16 +617,21 @@ const TradeTabContent = () => {
                   />
                 </PriceToggleSection>
               )}
-              <PriceSection onClick={() => onPriceToggle(!baseCurrencyIsInputToken)}>
-                <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                  Current Price
-                </ThemedText.DeprecatedMain>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                  <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
-                    {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
-                  </ThemedText.DeprecatedBody>
-                </div>
-              </PriceSection>
+              <RowEnd onClick={() => onPriceToggle(!baseCurrencyIsInputToken)} gap="3px">
+                <PriceSection>
+                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                    Current Price
+                  </ThemedText.DeprecatedMain>
+                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
+                      {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
+                    </ThemedText.DeprecatedBody>
+                  </div>
+                </PriceSection>
+                <MouseoverTooltip style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }} text="invert">
+                  <ReversedArrowsIcon width="14" height="14" />
+                </MouseoverTooltip>
+              </RowEnd>
             </RowBetween>
             <LimitInputPrice>
               <Trans>

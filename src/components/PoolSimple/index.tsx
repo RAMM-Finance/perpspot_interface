@@ -73,19 +73,38 @@ export default function SimplePool() {
   const toggleWalletDrawer = useToggleWalletDrawer()
 
   const LLP = useCurrency('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
-  const limWETH = useCurrency('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')
+  const limWETH = useCurrency(
+    chainId === 8453 ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce' : '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C'
+  )
 
-  const [input, setInput] = useState('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-  const [output, setOutput] = useState('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
+  const [input, setInput] = useState(
+    chainId === 8453 ? '0x4200000000000000000000000000000000000006' : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  )
+
+  useEffect(() => {
+    chainId === 8453
+      ? setInput('0x4200000000000000000000000000000000000006')
+      : setInput('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+  }, [chainId])
+
+  const output = useMemo(() => {
+    return chainId === 8453
+      ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
+      : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
+  }, [chainId])
   const inputCurrency = useCurrency(input)
   const outputCurrency = useCurrency(output)
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
-    if (outputCurrency?.symbol === 'limWETH') setInput('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+    if (outputCurrency?.symbol === 'limWETH') setInput('0x4200000000000000000000000000000000000006')
     return buy ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [buy, inputCurrency, outputCurrency])
 
   const feeAmount = 500
+  // BASE
+  // USDC - 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+  // WETH - 0x4200000000000000000000000000000000000006
+  // WBTC - 0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad
 
   const existingPosition = undefined
 
@@ -122,7 +141,7 @@ export default function SimplePool() {
 
   const formattedAmounts = {
     [independentField]: typedValue,
-    [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? '',
+    [dependentField]: parsedAmounts[dependentField]?.toSignificant(8) ?? '',
   }
 
   const { onFieldAInput, onFieldBInput } = useV3MintActionHandlers(noLiquidity)
@@ -203,6 +222,9 @@ export default function SimplePool() {
         if (isETHOrWETHNew && isETHOrWETHOther) {
           return [currencyIdNew, undefined]
         } else if (
+          (chainId === 8453 && currencyIdNew === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1') ||
+          (chainId === 8453 && currencyIdNew === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f') ||
+          (chainId === 8453 && currencyIdNew === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831') ||
           currencyIdNew === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' ||
           currencyIdNew === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f' ||
           currencyIdNew === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
@@ -527,18 +549,7 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [
-    limWethMintCallback,
-    account,
-    limweth,
-    chainId,
-    provider,
-    parsedAmounts,
-    txHash,
-    attemptingTxn,
-    error,
-    addTransaction,
-  ])
+  }, [limWethMintCallback, account, limweth, chainId, provider, parsedAmounts, addTransaction])
 
   //limweth redeem
 
@@ -766,10 +777,58 @@ export default function SimplePool() {
     call()
   }, [provider, vaultContract])
 
+  // BASE
+  // USDC - 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+  // WETH - 0x4200000000000000000000000000000000000006
+  // WBTC - 0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad
+
   // Pool currently unavailable for price values
-  const WETH = useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-  const WBTC = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
-  const USDC = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
+
+  const WETH = useCurrency(
+    chainId === 8453 ? '0x4200000000000000000000000000000000000006' : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  )
+  const WBTC = useCurrency(
+    chainId === 8453 ? '0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad' : '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
+  )
+  const USDC = useCurrency(
+    chainId === 8453 ? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' : '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  )
+
+  // const WETH_ARB = useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+  // const WBTC_ARB = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
+  // const USDC_ARB = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
+  // const WETH_BASE = useCurrency('0x4200000000000000000000000000000000000006')
+  // const WBTC_BASE = useCurrency('0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad')
+  // const USDC_BASE = useCurrency('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913')
+
+  // const WETH = useMemo(() => {
+  //   if(chainId === 8453){
+  //     return WETH_BASE
+  //   }
+  //   else{
+  //     return WETH_ARB
+  //   }
+  // }, [WETH_ARB, WETH_BASE, chainId])
+
+  // const WBTC = useMemo(() => {
+  //   if(chainId === 8453){
+  //     return WBTC_BASE
+  //   }
+  //   else{
+  //     return WBTC_ARB
+  //   }
+
+  // }, [WBTC_ARB, WBTC_BASE, chainId])
+
+  // const USDC = useMemo(() => {
+  //   if(chainId === 8453){
+  //     return USDC_BASE
+  //   }
+  //   else{
+  //     return USDC_ARB
+  //   }
+
+  // }, [USDC_ARB, USDC_BASE, chainId])
 
   const WETHCurrencyAmount: BN | undefined = useMemo(() => {
     if (!WETH) return undefined
@@ -826,10 +885,12 @@ export default function SimplePool() {
     }
   }, [data, mW, USDCPrice, WETHPrice, WBTCPrice, WETH, WBTC, USDC])
 
+  console.log('here', WBTCPrice.data)
+
   const activePrice = useMemo(() => {
     if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
       return WETHPrice?.data
-    } else if (inputCurrency?.symbol === 'WBTC' && WBTCPrice.data) {
+    } else if (inputCurrency?.symbol === 'wBTC' && WBTCPrice.data) {
       return WBTCPrice?.data
     } else {
       return 1
@@ -885,15 +946,27 @@ export default function SimplePool() {
     >
       <DropWrapper>
         <div style={{ display: 'flex', gap: '7px', flexDirection: 'column' }}>
-          <TokenWrapper disabled={false} onClick={() => setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')}>
-            <CurrencyLogo currency={LLP} size="18" />
-            <ThemedText.BodySmall>LLP</ThemedText.BodySmall>
+          <TokenWrapper
+            disabled={false}
+            // onClick={
+            //   () =>
+            //   setOutput(
+            //     chainId === 8453
+            //       ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
+            //       : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
+            //   )
+            // }
+          >
+            <CurrencyLogo currency={chainId === 8453 ? limWETH : LLP} size="18" />
+            <ThemedText.BodySmall>{chainId === 8453 ? 'limWETH' : 'LLP'}</ThemedText.BodySmall>
           </TokenWrapper>
           {/* <TokenWrapper disabled={true} onClick={() => setOutput('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')}> */}
-          <TokenWrapper disabled={true}>
-            <CurrencyLogo currency={LLP} size="18" />
-            <ThemedText.BodySmall>limWETH (Coming Soon)</ThemedText.BodySmall>
-          </TokenWrapper>
+          {chainId !== 8453 && (
+            <TokenWrapper disabled={true}>
+              <CurrencyLogo currency={LLP} size="18" />
+              <ThemedText.BodySmall>limWETH (Coming Soon)</ThemedText.BodySmall>
+            </TokenWrapper>
+          )}
         </div>
       </DropWrapper>
     </NavDropdown>
@@ -1039,7 +1112,7 @@ export default function SimplePool() {
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>{limwethUtilized / 1e18}</ThemedText.BodySecondary>
                 </RowBetween>
 
                 <RowBetween>
@@ -1185,92 +1258,24 @@ export default function SimplePool() {
             )}
           </CurrencyWrapper>
         </AddLiquidityRow>
-        <AutoColumn style={{ marginTop: '30px' }}>
-          {outputCurrency?.symbol === 'limWETH' && (
-            <>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <ThemedText.BodySecondary fontWeight={600}>WETH-limWETH LP: </ThemedText.BodySecondary>
-                <ThemedText.BodyPrimary>Historical Performance </ThemedText.BodyPrimary>
-              </div>
-              <LineChartSimple />
-            </>
-          )}
+        {chainId === 8453 ? null : (
+          <AutoColumn style={{ marginTop: '30px' }}>
+            {outputCurrency?.symbol === 'limWETH' && (
+              <>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  <ThemedText.BodySecondary fontWeight={600}>WETH-limWETH LP: </ThemedText.BodySecondary>
+                  <ThemedText.BodyPrimary>Historical Performance </ThemedText.BodyPrimary>
+                </div>
+                <LineChartSimple />
+              </>
+            )}
 
-          <ThemedText.BodySecondary>LLP Index Composition</ThemedText.BodySecondary>
-          <IndexWrapper>
-            <IndexHeader />
+            <ThemedText.BodySecondary>LLP Index Composition</ThemedText.BodySecondary>
+            <IndexWrapper>
+              <IndexHeader />
 
-            {indexData && WBTCPrice && WETHPrice && outputCurrency?.symbol === 'LLP'
-              ? indexData.map((tok: any) => {
-                  return (
-                    <LoadedCellWrapper key={tok.token.symbol}>
-                      <LoadedCell style={{ paddingLeft: '20px' }}>
-                        <CurrencyLogo currency={tok.token} size="20px" />
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {tok.token.symbol}
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {formatDollarAmount({ num: tok?.price, long: true })}
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {formatDollarAmount({ num: tok.poolBal / Number(`1e${tok.token.decimals}`), long: true }) +
-                            ' ' +
-                            tok.token.symbol}
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {formatDollarAmount({
-                            num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
-                            long: true,
-                          })}
-                          %
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {formatDollarAmount({
-                            num: Number(tok.targetWeight),
-                            long: true,
-                          })}
-                          %
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-
-                      <LoadedCell>
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {formatDollarAmount({
-                            num: (Number(tok.util) / Number(`1e${18}`)) * 100,
-                            long: true,
-                          })}
-                          %
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                          {formatDollarAmount({
-                            num:
-                              (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
-                              (1 - Number(tok.util) / Number(`1e${18}`)),
-                            long: true,
-                          }) +
-                            ' ' +
-                            tok.token.symbol}
-                        </ThemedText.BodySmall>
-                      </LoadedCell>
-                    </LoadedCellWrapper>
-                  )
-                })
-              : indexData &&
-                WBTCPrice &&
-                WETHPrice &&
-                indexData
-                  .filter((token: any) => token.token.symbol === 'WETH')
-                  .map((tok: any) => {
+              {indexData && WBTCPrice && WETHPrice && outputCurrency?.symbol === 'LLP'
+                ? indexData.map((tok: any) => {
                     return (
                       <LoadedCellWrapper key={tok.token.symbol}>
                         <LoadedCell style={{ paddingLeft: '20px' }}>
@@ -1293,9 +1298,23 @@ export default function SimplePool() {
                         </LoadedCell>
                         <LoadedCell>
                           <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            {llpBalance}
+                            {formatDollarAmount({
+                              num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
+                              long: true,
+                            })}
+                            %
                           </ThemedText.BodySmall>
                         </LoadedCell>
+                        <LoadedCell>
+                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            {formatDollarAmount({
+                              num: Number(tok.targetWeight),
+                              long: true,
+                            })}
+                            %
+                          </ThemedText.BodySmall>
+                        </LoadedCell>
+
                         <LoadedCell>
                           <ThemedText.BodySmall fontWeight={700} color="textSecondary">
                             {formatDollarAmount({
@@ -1319,9 +1338,68 @@ export default function SimplePool() {
                         </LoadedCell>
                       </LoadedCellWrapper>
                     )
-                  })}
-          </IndexWrapper>
-        </AutoColumn>
+                  })
+                : indexData &&
+                  WBTCPrice &&
+                  WETHPrice &&
+                  indexData
+                    .filter((token: any) => token.token.symbol === 'WETH')
+                    .map((tok: any) => {
+                      return (
+                        <LoadedCellWrapper key={tok.token.symbol}>
+                          <LoadedCell style={{ paddingLeft: '20px' }}>
+                            <CurrencyLogo currency={tok.token} size="20px" />
+                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                              {tok.token.symbol}
+                            </ThemedText.BodySmall>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                              {formatDollarAmount({ num: tok?.price, long: true })}
+                            </ThemedText.BodySmall>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                              {formatDollarAmount({
+                                num: tok.poolBal / Number(`1e${tok.token.decimals}`),
+                                long: true,
+                              }) +
+                                ' ' +
+                                tok.token.symbol}
+                            </ThemedText.BodySmall>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                              {llpBalance}
+                            </ThemedText.BodySmall>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                              {formatDollarAmount({
+                                num: (Number(tok.util) / Number(`1e${18}`)) * 100,
+                                long: true,
+                              })}
+                              %
+                            </ThemedText.BodySmall>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                              {formatDollarAmount({
+                                num:
+                                  (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
+                                  (1 - Number(tok.util) / Number(`1e${18}`)),
+                                long: true,
+                              }) +
+                                ' ' +
+                                tok.token.symbol}
+                            </ThemedText.BodySmall>
+                          </LoadedCell>
+                        </LoadedCellWrapper>
+                      )
+                    })}
+            </IndexWrapper>
+          </AutoColumn>
+        )}
         <RowBetween>
           <FaqWrapper>
             <FaqElement>

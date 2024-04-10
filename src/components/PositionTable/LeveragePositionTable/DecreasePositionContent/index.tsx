@@ -58,8 +58,6 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
-import { useUsdPrice } from 'nft/utils'
-import { FiatValue } from 'components/BaseSwapPanel/FiatValue'
 
 export interface DerivedReducePositionInfo {
   /** if marginInPosToken then PnL in output token, otherwise in input token */
@@ -666,7 +664,7 @@ export default function DecreasePositionContent({
                 isPrice={
                   <Button
                     sx={{ textTransform: 'none' }}
-                    style={{ display: 'flex', gap: '5px', padding: 0, marginTop: '3px'}}
+                    style={{ display: 'flex', gap: '5px', padding: 0, marginTop: '3px' }}
                     onClick={() => {
                       setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
                       const val = parseBN(limitPrice)
@@ -676,8 +674,8 @@ export default function DecreasePositionContent({
                     }}
                   >
                     {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="18px" />}
-                    <ThemedText.BodySecondary  fontSize={12}>{quoteCurrency?.symbol}</ThemedText.BodySecondary>
-                    <ThemedText.BodySecondary  fontSize={11}>per</ThemedText.BodySecondary>
+                    <ThemedText.BodySecondary fontSize={12}>{quoteCurrency?.symbol}</ThemedText.BodySecondary>
+                    <ThemedText.BodySecondary fontSize={11}>per</ThemedText.BodySecondary>
                     {baseCurrency && <CurrencyLogo currency={baseCurrency} size="18px" />}
                     <ThemedText.BodySecondary fontSize={12}>{baseCurrency?.symbol}</ThemedText.BodySecondary>
                   </Button>
@@ -720,7 +718,7 @@ export default function DecreasePositionContent({
           onSlideChange={onSlideChange}
           onInputChange={() => {}}
         />
-        <Row gap="5px">
+        <Row gap="10px">
           <Toggle
             id="toggle-local-routing-button"
             isActive={closePosition}
