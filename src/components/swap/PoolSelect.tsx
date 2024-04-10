@@ -25,8 +25,6 @@ import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
   useAddPinnedPool,
-  useCurrentInputCurrency,
-  useCurrentOutputCurrency,
   useCurrentPool,
   useInvertCurrentBaseQuote,
   usePinnedPools,
@@ -443,8 +441,6 @@ const ReverseIconContainer = styled.div`
 export function SelectPool() {
   const { chainId } = useWeb3React()
 
-  const outputCurrency = useCurrentOutputCurrency()
-  const inputCurrency = useCurrentInputCurrency()
   const currentPool = useCurrentPool()
 
   const poolKey = currentPool?.poolKey
@@ -461,6 +457,21 @@ export function SelectPool() {
     }
     return null
   }, [currentPool])
+
+  const [baseAddress, quoteAddress] = useMemo(() => {
+    if (currentPool) {
+      let base = currentPool.token0IsBase ? currentPool.poolKey.token0 : currentPool.poolKey.token1
+      let quote = currentPool.token0IsBase ? currentPool.poolKey.token1 : currentPool.poolKey.token0
+      if (currentPool.invertPrice) {
+        ;[base, quote] = [quote, base]
+      }
+      return [base, quote]
+    }
+    return [null, null]
+  }, [currentPool])
+
+  const baseCurrency = useCurrency(baseAddress)
+  const quoteCurrency = useCurrency(quoteAddress)
 
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget)
@@ -493,10 +504,10 @@ export function SelectPool() {
                 <ReverseIconContainer>
                   <ReversedArrowsIcon />
                 </ReverseIconContainer>
-                {inputCurrency && outputCurrency && (
+                {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
-                    currency0={inputCurrency as Currency}
-                    currency1={outputCurrency as Currency}
+                    currency0={baseCurrency as Currency}
+                    currency1={quoteCurrency as Currency}
                     size={20}
                   />
                 )}
@@ -528,10 +539,10 @@ export function SelectPool() {
                 <ReverseIconContainer onClick={handleInvertClick}>
                   <ReversedArrowsIcon width="20px" height="20px" />
                 </ReverseIconContainer>
-                {inputCurrency && outputCurrency && (
+                {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
-                    currency0={inputCurrency as Currency}
-                    currency1={outputCurrency as Currency}
+                    currency0={baseCurrency as Currency}
+                    currency1={quoteCurrency as Currency}
                     size={20}
                   />
                 )}
