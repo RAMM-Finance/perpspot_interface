@@ -75,10 +75,8 @@ const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>
 const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  gap: 1rem;
   width: 100%;
-  margin-top: 20px;
 `
 
 const InputSection = styled.div`
@@ -109,16 +107,17 @@ const CloseText = styled(ThemedText.LabelSmall)<{ isActive: boolean }>`
   color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textPrimary)};
 `
 
-// interface WithdrawPremiumParams {
-//   account?: string
-//   marginFacility?: MarginFacility
-//   positionKey: TraderPositionKey
-//   inputCurrency?: Currency
-//   outputCurrency?: Currency
-//   parsedAmount?: BN
-//   position?: MarginPositionDetails
-//   withdrawAll?: boolean
-// }
+const CardWrapper = styled(DarkCard)`
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+`
 
 function useDerivedWithdrawPremiumInfo(
   amount: string,
@@ -303,7 +302,6 @@ export function WithdrawPremiumContent({
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
-  console.log('withdraw:premium', position)
   const { txnInfo, inputError, tradeState } = useDerivedWithdrawPremiumInfo(
     amount,
     positionKey,
@@ -421,7 +419,7 @@ export function WithdrawPremiumContent({
   }, [txHash])
 
   return (
-    <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
+    <CardWrapper>
       {showModal && (
         <ConfirmModifyPositionModal
           title="Confirm Withdraw Premium"
@@ -547,7 +545,7 @@ export function WithdrawPremiumContent({
           </ThemedText.BodySmall>
         </ButtonError>
       </div>
-    </DarkCard>
+    </CardWrapper>
   )
 }
 

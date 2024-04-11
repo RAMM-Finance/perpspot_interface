@@ -262,13 +262,6 @@ export function LeverageModalHeader({
   }, [fiatValueMargin, fiatValuePremium])
 
   const fiatValueTotalOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency)
-  console.log(
-    'fiatValueTotalOutput',
-    trade?.expectedAddedOutput,
-    trade?.expectedAddedOutput.toString(),
-    outputCurrency,
-    fiatValueTotalOutput
-  )
   return (
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
@@ -387,10 +380,8 @@ export function LeverageModalHeader({
         >
           <Trans>
             Output is estimated. You will receive at least{'\u00A0'}
-            <b>
-              {formatBNToString(trade.minimumOutput, NumberType.SwapTradeAmount)} {outputCurrency?.symbol}
-            </b>{' '}
-            or the transaction will revert.
+            <b>{formatBNToString(trade.minimumOutput, NumberType.SwapTradeAmount)}</b>
+            {` ${outputCurrency?.symbol} or the transaction will revert.`}
           </Trans>
         </ThemedText.DeprecatedItalic>
       </AutoColumn>

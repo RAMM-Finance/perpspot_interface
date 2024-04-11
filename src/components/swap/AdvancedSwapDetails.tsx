@@ -315,7 +315,7 @@ export function AdvancedMarginTradeDetails({
 
   const details = (
     <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-      <div>{inverted ? 'Inverted Price' : 'Execution Price'}</div>
+      <div>Execution Price</div>
       <MouseoverTooltip text="invert" placement="right">
         <div onClick={handleInvert} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
           <ReversedArrowsIcon />
@@ -389,7 +389,7 @@ export function AdvancedMarginTradeDetails({
           responsive={true}
           description="The minimum amount you are guaranteed to receive. If the price slips any further, your transaction will revert."
           label={`Minimum output after slippage ${
-            allowedSlippage ? `(${allowedSlippage.toFixed(2)})  ${'\u00A0'}` : ''
+            allowedSlippage ? `(${allowedSlippage.toFixed(2)}%)  ${'\u00A0'}` : ''
           } `}
           value={formatBNToString(trade?.minimumOutput, NumberType.SwapTradeAmount)}
           syncing={syncing}
