@@ -24,7 +24,6 @@ const formatFetchBarEndpoint = (
   chainId: number
 ) => {
   const network = CHAIN_TO_NETWORK_ID[chainId] ?? 'arbitrum'
-
   return `${endpoint}/networks/${network}/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
 }
 
@@ -33,9 +32,11 @@ const formatFetchLiveBarEndpoint = (
   timeframe: 'day' | 'hour' | 'minute',
   aggregate: string,
   currency: string,
-  token: 'base' | 'quote'
+  token: 'base' | 'quote',
+  chainId: number
 ) => {
-  return `${endpoint}/networks/arbitrum/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&currency=${currency}&token=${token}&limit=1`
+  const network = CHAIN_TO_NETWORK_ID[chainId] ?? 'arbitrum'
+  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&currency=${currency}&token=${token}&limit=1`
 }
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
@@ -108,7 +109,7 @@ const fetchBars = async (
       bars: [],
     }
   } catch (err) {
-    console.log('gecko error: ', err)
+    console.log('gecko error on fetchBars: ', err)
     return {
       error: err,
       bars: [],
@@ -120,7 +121,8 @@ const fetchLiveGeckoBar = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
   aggregate: string,
-  token: 'base' | 'quote'
+  token: 'base' | 'quote',
+  chainId: number
 ): Promise<{
   bar:
     | {
@@ -134,17 +136,20 @@ const fetchLiveGeckoBar = async (
   error: any
 }> => {
   try {
+    console.log("gecko request")
     const response = await axios.get(
-      formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, 'token', token),
+      formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, 'token', token, chainId),
       {
         headers: {
           Accept: 'application/json',
+          'x-cg-pro-api-key': apiKey,
         },
       }
     )
 
     console.log('gecko response: ', response)
     if (response.status === 200) {
+
       const candles = response.data.data.attributes.ohlcv_list
       const bar = {
         time: Number(candles[0][0]) * 1000,
@@ -163,7 +168,7 @@ const fetchLiveGeckoBar = async (
       bar: undefined,
     }
   } catch (err) {
-    console.log('gecko error: ', err)
+    console.log('gecko error on fetchLiveGeckoBar: ', err)
     return {
       error: err,
       bar: undefined,
@@ -331,17 +336,75 @@ export default function useGeckoDatafeed() {
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
+          const { chainId, invertPrice } = symbolInfo
+
           const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
-          console.log('subscribeBars', token0IsBase, poolAddress)
-          // intervalRef.current && clearInterval(intervalRef.current)
-          // intervalRef.current = setInterval(function () {
-          //   fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
-          //     // console.log('bar', bar)
-          //     if (bar) {
-          //       onRealtimeCallback(bar)
-          //     }
-          //   })
-          // }, 10000)
+
+          let timeframe: 'hour' | 'day' | 'minute' = 'hour'
+          let aggregate = '1'
+          if (resolution === '1D') {
+            timeframe = 'day'
+            aggregate = '1'
+          } else if (resolution === '60') {
+            timeframe = 'hour'
+            aggregate = '1'
+          } else if (resolution === '240') {
+            timeframe = 'hour'
+            aggregate = '4'
+          } else if (resolution === '15') {
+            timeframe = 'minute'
+            aggregate = '15'
+          } else if (resolution === '5') {
+            timeframe = 'minute'
+            aggregate = '5'
+          }
+
+
+          intervalRef.current && clearInterval(intervalRef.current)
+          intervalRef.current = setInterval(function () {
+            fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, token0IsBase ? 'base' : 'quote', chainId).then((res) => {
+              const bar = res.bar
+              console.log("resbar", bar, invertPrice)
+              if (bar) {
+                const highWickLength = Math.abs(bar.high - bar.close)
+                const lowWickLength = Math.abs(bar.low - bar.close)
+  
+                // Define max and min wick length
+                const maxWickLength = 0.4 // Maximum wick length as a percentage of the bar's open-close range
+                const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
+  
+                let high = bar.high
+                let low = bar.low
+  
+                // Adjust high and low prices if wick lengths exceed maximum or minimum values
+                if (highWickLength > maxWickLength * (bar.close - bar.open)) {
+                  high = bar.close + maxWickLength * (bar.close - bar.open)
+                } else if (highWickLength < minWickLength * (bar.close - bar.open)) {
+                  high = bar.close + minWickLength * (bar.close - bar.open)
+                }
+                if (lowWickLength > maxWickLength * (bar.close - bar.open)) {
+                  low = bar.close - maxWickLength * (bar.close - bar.open)
+                } else if (lowWickLength < minWickLength * (bar.close - bar.open)) {
+                  low = bar.close - minWickLength * (bar.close - bar.open)
+                }
+                const newBar = {
+                  open: invertPrice ? 1 / bar.open : bar.open,
+                  close: invertPrice ? 1 / bar.close : bar.close,
+                  time: bar.time,
+                  high: invertPrice ? 1 / low : high,
+                  low: invertPrice ? 1 / high : low,
+                }
+                console.log("resbar newBar", newBar)
+                onRealtimeCallback(newBar)
+              }
+            })
+            // fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
+            //   // console.log('bar', bar)
+            //   if (bar) {
+            //     onRealtimeCallback(bar)
+            //   }
+            // })
+          }, 10000)
         },
         unsubscribeBars: () => {
           intervalRef.current && clearInterval(intervalRef.current)
