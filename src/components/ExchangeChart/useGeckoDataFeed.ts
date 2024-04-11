@@ -364,7 +364,6 @@ export default function useGeckoDatafeed() {
           intervalRef.current = setInterval(function () {
             fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, token0IsBase ? 'base' : 'quote', chainId).then((res) => {
               const bar = res.bar
-              console.log("resbar", bar, invertPrice)
               if (bar) {
                 const highWickLength = Math.abs(bar.high - bar.close)
                 const lowWickLength = Math.abs(bar.low - bar.close)
@@ -394,7 +393,6 @@ export default function useGeckoDatafeed() {
                   high: invertPrice ? 1 / low : high,
                   low: invertPrice ? 1 / high : low,
                 }
-                console.log("resbar newBar", newBar)
                 onRealtimeCallback(newBar)
               }
             })
