@@ -4,7 +4,7 @@ import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { BigNumber as BN } from 'bignumber.js'
+import BigNumber, { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError } from 'components/Button'
@@ -42,7 +42,7 @@ import { AlertTriangle } from 'react-feather'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import { useUserSlippageTolerance } from 'state/user/hooks'
+import { useCurrentOutputCurrency, useUserSlippageTolerance } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
@@ -495,8 +495,13 @@ export default function DecreasePositionContent({
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
-  const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(reduceAmount, outputCurrency ?? undefined))
-  // console.log('------usd--------', fiatValueReduceAmount,  outputCurrency, tryParseCurrencyAmount(reduceAmount, outputCurrency))
+  // Function to fix reduceAmount to 8 decimal places
+  function fixedToEightDecimals(amount: string): string {
+    return new BigNumber(amount).toFixed(8);
+}
+
+  const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined))
+  // console.log('-----fiatValueReduceAmount-----','success', fiatValueReduceAmount,tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)) 
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -657,7 +662,7 @@ export default function DecreasePositionContent({
                 }}
                 showMaxButton={false}
                 hideBalance={true}
-                // currency={outputCurrency}
+                currency={outputCurrency}
                 label="Limit price"
                 id="limit-reduce-position-input"
                 fiatValue={fiatValueReduceAmount}

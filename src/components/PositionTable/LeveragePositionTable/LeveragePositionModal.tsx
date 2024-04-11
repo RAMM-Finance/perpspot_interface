@@ -164,7 +164,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
   const outputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token0 : positionKey?.poolKey.token1
   )
-
   // const dataLoading = positionLoading || !existingPosition || !inputCurrency || !outputCurrency
 
   const displayedContent = useMemo(() => {

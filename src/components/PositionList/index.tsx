@@ -132,7 +132,7 @@ export default function PositionList({
             )}
           </ToggleLabel>
         </ToggleWrap> */}
-         <ButtonPrimary
+        <ButtonPrimary
           style={{
             marginLeft: '20px',
             padding: '.5rem',
