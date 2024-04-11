@@ -2,7 +2,7 @@ import { Interface } from '@ethersproject/abi'
 import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { ethers } from 'ethers'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useEffect, useMemo, useRef } from 'react'
@@ -10,6 +10,8 @@ import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { getDecimalAndUsdValueData, tokenDecimal, usdValue, useDataProviderContract } from './useContract'
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -33,16 +35,30 @@ export function usePoolsData(): {
   result: PoolTVLData | undefined
   error: boolean
 } {
+  const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
 
   const { data, isLoading, isError } = useQuery(
     ['queryPoolsData', dataProvider ? 'key' : 'missing key'],
     async () => {
       if (!dataProvider) throw Error('missing dataProvider')
-      const AddQueryData = await client.query(AddQuery, {}).toPromise()
-      const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-      const ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
-      const WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()
+      let AddQueryData
+      let ReduceQueryData
+      let ProvidedQueryData
+      let WithdrawnQueryData 
+      let networkIdForGeckoAPI = 'arbitrum-one'
+      if (chainId === SupportedChainId.BASE) {
+        AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
+        ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+        ProvidedQueryData = await clientBase.query(LiquidityProvidedQuery, {}).toPromise()
+        WithdrawnQueryData = await clientBase.query(LiquidityWithdrawnQuery, {}).toPromise()
+        networkIdForGeckoAPI = 'base'
+      } else {
+        AddQueryData = await client.query(AddQuery, {}).toPromise()
+        ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
+        ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
+        WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()  
+      }
       const pools = new Set<string>()
       ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
         const pool = ethers.utils.getAddress(entry.pool)
@@ -61,8 +77,8 @@ export function usePoolsData(): {
                 ethers.utils.getAddress(token[0]),
                 ethers.utils.getAddress(token[1]),
                 token[2],
-                await getDecimalAndUsdValueData('arbitrum-one', token[0]),
-                await getDecimalAndUsdValueData('arbitrum-one', token[1]),
+                await getDecimalAndUsdValueData(networkIdForGeckoAPI, token[0]),
+                await getDecimalAndUsdValueData(networkIdForGeckoAPI, token[1]),
               ])
             }
             return { poolAdress: (token[0], token[1], token[2]) }
@@ -174,12 +190,23 @@ export function usePoolsData(): {
       amount: entry.reduceAmount,
     }))
 
-    const processEntry = (entry: any) => {
-      const usdValueOfToken = usdValue[entry.token] || 0
-      const totalValue = (usdValueOfToken * entry.amount) / 10 ** tokenDecimal[entry.token]
+    const processEntry = async (entry: any) => {
+      // const usdValueOfToken = usdValue[entry.token] || 0
+      // const totalValue = (usdValueOfToken * entry.amount) / 10 ** tokenDecimal[entry.token]
       const pool = ethers.utils.getAddress(entry.key)
       if (uniqueTokens.get(pool)) {
         const tokens = uniqueTokens?.get(pool)
+        let totalValue
+  
+
+        if (tokens[3]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
+          totalValue = (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals          
+        } else if (tokens[4]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
+          totalValue = (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals          
+        } else {
+          totalValue = 0
+        }
+          
         const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`
         if (totalAmountsByPool[newKey]) {
           totalAmountsByPool[newKey] += totalValue

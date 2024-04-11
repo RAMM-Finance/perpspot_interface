@@ -68,7 +68,7 @@ const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   /* justify-content: space-between; */
-  gap: 2rem;
+  gap: 1rem;
   /* height: 100%; */
   width: 100%;
 `
@@ -267,6 +267,18 @@ function useDerivedDepositPremiumInfo(
   }, [inputError, position, data, isLoading, isError, parsedAmount, inputCurrency, queryKeys])
 }
 
+const CardWrapper = styled(DarkCard)`
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+`
+
 export function DepositPremiumContent({
   positionKey,
   onPositionChange,
@@ -427,7 +439,7 @@ export function DepositPremiumContent({
   const fiatDepositAmount = useUSDPrice(currencyAmount)
   const theme = useTheme()
   return (
-    <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
+    <CardWrapper>
       {showModal && (
         <ConfirmModifyPositionModal
           onDismiss={handleDismiss}
@@ -570,7 +582,7 @@ export function DepositPremiumContent({
           </ButtonError>
         )}
       </div>
-    </DarkCard>
+    </CardWrapper>
   )
 }
 

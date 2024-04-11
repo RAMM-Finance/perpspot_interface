@@ -93,12 +93,8 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  height: 100%;
   // border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
-`
-const ModalWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `
 
 const PositionInfoWrapper = styled(LightCard)`
@@ -124,13 +120,6 @@ const ActionsWrapper = styled.div`
   align-items: center;
   justify-content: flex-start;
   border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
-`
-
-const Hr = styled.hr`
-  background-color: ${({ theme }) => theme.backgroundOutline};
-  border: none;
-  height: 0.25px;
-  width: 80%;
 `
 
 export interface AlteredPositionProperties {
@@ -168,18 +157,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
-    // if (dataLoading)
-    //   return (
-    //     <DarkCard
-    //       width="390px"
-    //       margin="0"
-    //       padding="0"
-    //       style={{ paddingRight: '1rem', paddingLeft: '1rem' }}
-    //       height="350px"
-    //     >
-    //       <LoadingDisplayedContent />
-    //     </DarkCard>
-    //   )
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
       <DecreasePositionContent
         positionKey={positionKey}

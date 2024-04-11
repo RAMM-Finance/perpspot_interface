@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Price, Token } from '@uniswap/sdk-core'
+import { ReversedArrowsIcon } from 'nft/components/icons'
 import { useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -52,8 +53,6 @@ const LmtStyledPriceContainer = styled.button`
 
 export default function TradePrice({ price }: TradePriceProps) {
   const [showInverted, setShowInverted] = useState<boolean>(false)
-
-  const { baseCurrency, quoteCurrency } = price
   // const { data: usdPrice } = useUSDPrice(tryParseCurrencyAmount('1', showInverted ? baseCurrency : quoteCurrency))
   let usdPrice
   let formattedPrice: string
@@ -85,6 +84,7 @@ export default function TradePrice({ price }: TradePriceProps) {
           <Trans>({formatNumber(usdPrice, NumberType.FiatTokenPrice)})</Trans>
         </ThemedText.DeprecatedDarkGray>
       )}
+      <ReversedArrowsIcon />
     </StyledPriceContainer>
   )
 }

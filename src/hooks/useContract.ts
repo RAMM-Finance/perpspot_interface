@@ -80,35 +80,41 @@ const { abi: V2MigratorABI } = V3MigratorJson
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
 export const getDecimalAndUsdValueData = async (network: string, tokenId: string) => {
-  if (network === 'arbitrum-one') {
-    let res: any = await axios.post('https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum', {
-      query: TokenDataFromUniswapQuery(tokenId),
-    })
-
-    const token = res?.data?.data?.token
-    if (token?.lastPriceUSD === '0' || token?.lastPriceUSD === null || !token?.lastPriceUSD) {
-      try {
-        res = await axios.get(
-          `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
-          {
-            headers: {
-              Accept: 'application/json',
-              'x-cg-pro-api-key': apiKey,
-            },
-          }
-        )
-        const data: any = res?.data
-        const usdValues = Object.values(data).map((value: any) => value.usd)
-
-        return { ...token, lastPriceUSD: usdValues[0].toString() }
-      } catch (e) {
-        console.log('COINGECKO ERROR')
-        console.log(e)
-      }
-    }
-
-    return token
+  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-arbitrum'
+  if (network === 'base') {
+    url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-base'
   }
+
+  let res: any = await axios.post(url, {
+    query: TokenDataFromUniswapQuery(tokenId),
+  })
+
+  const token = res?.data?.data?.token
+  if (token?.lastPriceUSD === '0' || token?.lastPriceUSD === null || !token?.lastPriceUSD) {
+    try {
+      res = await axios.get(
+        `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
+        {
+          headers: {
+            Accept: 'application/json',
+            'x-cg-pro-api-key': apiKey,
+          },
+        }
+      )
+      const data: any = res?.data
+      const usdValues = Object.values(data).map((value: any) => value.usd)
+
+      return { ...token, lastPriceUSD: usdValues[0].toString() }
+    } catch (e) {
+      console.log('COINGECKO ERROR')
+      console.log(e)
+    }
+  }
+
+  return token
+  // if (network === 'arbitrum-one') {
+    
+  // }
 }
 
 type PricesMap = { [address: string]: number }
