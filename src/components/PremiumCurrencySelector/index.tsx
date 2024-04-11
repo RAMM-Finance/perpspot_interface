@@ -60,7 +60,7 @@ export function PremiumCurrencySelector({
     <Wrapper>
       <ActiveWrapper>
         <ThemedText.LabelSmall fontSize={13} color="primary">
-          Premium Currency
+          Pay interest with
         </ThemedText.LabelSmall>
         <StyledRowFixed onClick={handleClick}>
           <CurrencyLogo currency={currency} size="15px" />
