@@ -211,7 +211,7 @@ export default function PositionListItem({
 
   // prices
   const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
-
+  
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
 
@@ -235,7 +235,7 @@ export default function PositionListItem({
   if (shouldHidePosition) {
     return null
   }
-
+  // console.log('----prcieLower', priceLower, tickAtLimit,  Bound.LOWER)
   return (
     <LinkRow to={positionSummaryLink}>
       {/* <RowBetween> */}

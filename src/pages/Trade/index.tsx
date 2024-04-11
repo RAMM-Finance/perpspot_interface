@@ -149,6 +149,7 @@ const SwapHeaderWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   height: 100%;
+  width: 100%;
   margin-left: 0.75rem;
   grid-column: 1;
   grid-row: 2;
@@ -166,7 +167,7 @@ const MainWrapper = styled.article<{ pins: boolean }>`
 
   @media only screen and (max-width: 1265px) {
     grid-template-columns: 1fr 0 360px;
-    grid-column-gap: 0.5rem;
+    /* grid-column-gap: 0.75rem; */
   }
 `
 
@@ -217,10 +218,10 @@ const PositionsWrapper = styled.div`
     display: none;
   }
 
-  @media (max-width: 1050px) {
+  /* @media (max-width: 1050px) {
     grid-column: 1 / 3;
-    /* grid-area: 3 / 1 / auto / 2; */
-  }
+     grid-area: 3 / 1 / auto / 2; 
+  } */
 `
 
 const LiquidityDistibutionWrapper = styled.div`
