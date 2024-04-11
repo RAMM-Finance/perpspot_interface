@@ -38,6 +38,7 @@ import { LoadingBubble } from './loading'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
 import { useWeb3React } from '@web3-react/core'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
+import { TokenBN } from 'utils/lmtSDK/internalConstants'
 
 interface TradeModalProps {
   isOpen: boolean
@@ -161,6 +162,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
   const outputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token0 : positionKey?.poolKey.token1
   )
+
   // const dataLoading = positionLoading || !existingPosition || !inputCurrency || !outputCurrency
 
   const [alteredPremium, setAlteredPremium] = useState<BN | undefined>(undefined)
@@ -339,7 +341,6 @@ function MarginPositionInfo({
   }, [position, rate, totalDebtInput])
 
   const estimatedTimeToCloseForAlt = useMemo(() => {
-    console.log('premium Left for alt', premiumLeftForAlt)
     if (!rate || !totalDebtInput || !premiumLeftForAlt) return undefined
 
     const ratePerHour = Number(rate) / 1e18 / (365 * 24)
@@ -351,7 +352,7 @@ function MarginPositionInfo({
       return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else 
       return Math.round(hours * 100) / 100
-  }, [position, rate, premiumLeftForAlt, totalDebtInputForAlt, estimatedTimeToClose])
+  }, [position, rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
 
 
   return (
