@@ -36,6 +36,8 @@ import DecreasePositionContent from './DecreasePositionContent'
 import { DepositPremiumContent } from './DepositPremiumContent'
 import { LoadingBubble } from './loading'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
+import { useWeb3React } from '@web3-react/core'
+import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 
 interface TradeModalProps {
   isOpen: boolean
@@ -50,6 +52,12 @@ export enum TradeModalActiveTab {
   DEPOSIT_PREMIUM,
   WITHDRAW_PREMIUM,
 }
+
+interface DerivedDepositPremiumInfo {
+  newDepositAmount: TokenBN
+  amount: TokenBN
+}
+
 
 const TabElement = styled(BaseButton)<{ isActive: boolean; first?: boolean; last?: boolean }>`
   padding: 0;
@@ -156,6 +164,12 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   // const dataLoading = positionLoading || !existingPosition || !inputCurrency || !outputCurrency
 
+  const [alteredPremium, setAlteredPremium] = useState<BN | undefined>(undefined)
+
+  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined) => {
+    setAlteredPremium(txnInfo?.newDepositAmount)
+  }
+
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
@@ -173,6 +187,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
         inputCurrency={inputCurrency ?? undefined}
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
+        handleTxnInfo={handleTxnInfo}
       />
     ) : activeTab === TradeModalActiveTab.WITHDRAW_PREMIUM ? (
       <WithdrawPremiumContent
@@ -239,6 +254,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
           inputCurrency={inputCurrency ?? undefined}
           outputCurrency={outputCurrency ?? undefined}
           onClose={onClose}
+          alteredPremium={alteredPremium ?? undefined}
         />
       </Wrapper>
     </LmtModal>
@@ -281,6 +297,7 @@ function MarginPositionInfo({
   inputCurrency,
   outputCurrency,
   onClose,
+  alteredPremium
 }: // onClose,
 {
   position: MarginPositionDetails | undefined
@@ -288,12 +305,56 @@ function MarginPositionInfo({
   loading: boolean
   inputCurrency?: Currency | undefined
   outputCurrency?: Currency | undefined
-  onClose: () => void
+  onClose: () => void,
+  alteredPremium?: BN | undefined
 }) {
   const currency0 = useCurrency(position?.poolKey.token0)
   const currency1 = useCurrency(position?.poolKey.token1)
-
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
+  const { account } = useWeb3React()
+
+  const { result: rate } = useInstantaeneousRate(
+    pool?.token0?.address,
+    pool?.token1?.address,
+    pool?.fee,
+    account,
+    position?.isToken0
+  )
+
+
+  const totalDebtInput = position?.totalDebtInput
+  const premiumLeft = position?.premiumLeft
+
+  const totalDebtInputForAlt = alteredPosition?.totalDebtInput
+  const premiumLeftForAlt = alteredPosition?.premiumLeft
+
+  const estimatedTimeToClose = useMemo(() => {
+    if (!rate || !totalDebtInput) return undefined
+
+    const ratePerHour = Number(rate) / 1e18 / (365 * 24)
+    const premPerHour = Number(totalDebtInput) * ratePerHour
+
+    const hours = Number(premiumLeft) / premPerHour
+
+    return Math.round(hours * 100) / 100
+  }, [position, rate, totalDebtInput])
+
+  const estimatedTimeToCloseForAlt = useMemo(() => {
+    console.log('premium Left for alt', premiumLeftForAlt)
+    if (!rate || !totalDebtInput || !premiumLeftForAlt) return undefined
+
+    const ratePerHour = Number(rate) / 1e18 / (365 * 24)
+    const premPerHour = Number(totalDebtInput) * ratePerHour
+
+    const hours = Number(premiumLeftForAlt) / premPerHour
+
+    if (estimatedTimeToClose)
+      return Math.round(hours * 100) / 100 + estimatedTimeToClose
+    else 
+      return Math.round(hours * 100) / 100
+  }, [position, rate, premiumLeftForAlt, totalDebtInputForAlt, estimatedTimeToClose])
+
+
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -335,13 +396,30 @@ function MarginPositionInfo({
           newValue={
             alteredPosition?.premiumLeft
               ? alteredPosition?.premiumLeft.gt(0)
-                ? alteredPosition?.premiumLeft
+                ? alteredPremium
                 : new BN(0)
               : undefined
           }
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
         />
+        <PositionTimeLabel
+          title={<Trans>Estimated Lifetime Of Position</Trans>}
+          description={<Trans>Estimated Lifetime of Position</Trans>}
+          syncing={loading}
+          value={estimatedTimeToClose ? estimatedTimeToClose : undefined}
+          newValue={estimatedTimeToCloseForAlt ? estimatedTimeToCloseForAlt : undefined}
+        />
+        {/* <PositionValueLabelWrapper>
+          <MouseoverTooltip text="Position Health">Estimated Lifetime Of Position</MouseoverTooltip>
+          <AutoColumn>
+            <TextWithLoadingPlaceholder syncing={false} width={65}>
+              <ValueWrapper margin={false}>
+                <GreenText>{String(estimatedTimeToClose) + ' hrs'}</GreenText>
+              </ValueWrapper>
+            </TextWithLoadingPlaceholder>
+          </AutoColumn>
+        </PositionValueLabelWrapper> */}
         <PositionValueLabelWrapper>
           <MouseoverTooltip text="Position Health">Position Health</MouseoverTooltip>
           <AutoColumn>
@@ -550,83 +628,84 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
   }, [baseCurrency, quoteCurrency, tickLower, tickUpper, borrowLiquidityRange])
   const removed = position?.totalPosition.isZero() ?? false
   return (
-    <BorrowLiquidityWrapper>
-      <AutoColumn gap="md">
-        <AutoColumn gap="md">
-          <RowBetween>
-            <Label display="flex" style={{ marginRight: '12px' }}>
-              <Trans>Position Borrowed Range</Trans>
-            </Label>
-            <HideExtraSmall>
-              <>
-                <LmtBorrowRangeBadge removed={removed} inRange={inRange} />
-                <span style={{ width: '8px' }} />
-              </>
-            </HideExtraSmall>
-          </RowBetween>
-          <RowFixed>
-            {baseCurrency && quoteCurrency && (
-              <DarkRateToggle
-                currencyA={baseCurrency}
-                currencyB={quoteCurrency}
-                handleRateToggle={() => setManuallyInverted(!manuallyInverted)}
-              />
-            )}
-          </RowFixed>
-        </AutoColumn>
-        <RowBetween>
-          <SecondLabel padding="12px" width="100%">
-            <AutoColumn gap="sm" justify="center">
-              <ExtentsText>
-                <Trans>Min price</Trans>
-              </ExtentsText>
-              <ThemedText.BodySecondary textAlign="center">
-                {formatTickPrice({
-                  price: priceLower,
-                  atLimit: tickAtLimit,
-                  direction: Bound.LOWER,
-                  numberType: NumberType.TokenTx,
-                })}
-              </ThemedText.BodySecondary>
-              <ExtentsText>
-                {' '}
-                <Trans>
-                  {baseCurrency?.symbol} per {quoteCurrency?.symbol}
-                </Trans>
-              </ExtentsText>
-            </AutoColumn>
-          </SecondLabel>
-          <DoubleArrow>⟷</DoubleArrow>
-          <SecondLabel padding="12px" width="100%">
-            <AutoColumn gap="sm" justify="center">
-              <ExtentsText>
-                <Trans>Max price</Trans>
-              </ExtentsText>
-              <ThemedText.BodySecondary textAlign="center">
-                {formatTickPrice({
-                  price: priceUpper,
-                  atLimit: tickAtLimit,
-                  direction: Bound.UPPER,
-                  numberType: NumberType.TokenTx,
-                })}
-              </ThemedText.BodySecondary>
-              <ExtentsText>
-                {' '}
-                <Trans>
-                  {baseCurrency?.symbol} per {quoteCurrency?.symbol}
-                </Trans>
-              </ExtentsText>
-            </AutoColumn>
-          </SecondLabel>
-        </RowBetween>
-        <CurrentPriceCard
-          inverted={manuallyInverted}
-          pool={pool}
-          currencyQuote={quoteCurrency}
-          currencyBase={baseCurrency}
-        />
-      </AutoColumn>
-    </BorrowLiquidityWrapper>
+    <></>
+    // <BorrowLiquidityWrapper>
+    //   <AutoColumn gap="md">
+    //     <AutoColumn gap="md">
+    //       <RowBetween>
+    //         <Label display="flex" style={{ marginRight: '12px' }}>
+    //           <Trans>Position Borrowed Range</Trans>
+    //         </Label>
+    //         <HideExtraSmall>
+    //           <>
+    //             <LmtBorrowRangeBadge removed={removed} inRange={inRange} />
+    //             <span style={{ width: '8px' }} />
+    //           </>
+    //         </HideExtraSmall>
+    //       </RowBetween>
+    //       <RowFixed>
+    //         {baseCurrency && quoteCurrency && (
+    //           <DarkRateToggle
+    //             currencyA={baseCurrency}
+    //             currencyB={quoteCurrency}
+    //             handleRateToggle={() => setManuallyInverted(!manuallyInverted)}
+    //           />
+    //         )}
+    //       </RowFixed>
+    //     </AutoColumn>
+    //     <RowBetween>
+    //       <SecondLabel padding="12px" width="100%">
+    //         <AutoColumn gap="sm" justify="center">
+    //           <ExtentsText>
+    //             <Trans>Min price</Trans>
+    //           </ExtentsText>
+    //           <ThemedText.BodySecondary textAlign="center">
+    //             {formatTickPrice({
+    //               price: priceLower,
+    //               atLimit: tickAtLimit,
+    //               direction: Bound.LOWER,
+    //               numberType: NumberType.TokenTx,
+    //             })}
+    //           </ThemedText.BodySecondary>
+    //           <ExtentsText>
+    //             {' '}
+    //             <Trans>
+    //               {baseCurrency?.symbol} per {quoteCurrency?.symbol}
+    //             </Trans>
+    //           </ExtentsText>
+    //         </AutoColumn>
+    //       </SecondLabel>
+    //       <DoubleArrow>⟷</DoubleArrow>
+    //       <SecondLabel padding="12px" width="100%">
+    //         <AutoColumn gap="sm" justify="center">
+    //           <ExtentsText>
+    //             <Trans>Max price</Trans>
+    //           </ExtentsText>
+    //           <ThemedText.BodySecondary textAlign="center">
+    //             {formatTickPrice({
+    //               price: priceUpper,
+    //               atLimit: tickAtLimit,
+    //               direction: Bound.UPPER,
+    //               numberType: NumberType.TokenTx,
+    //             })}
+    //           </ThemedText.BodySecondary>
+    //           <ExtentsText>
+    //             {' '}
+    //             <Trans>
+    //               {baseCurrency?.symbol} per {quoteCurrency?.symbol}
+    //             </Trans>
+    //           </ExtentsText>
+    //         </AutoColumn>
+    //       </SecondLabel>
+    //     </RowBetween>
+    //     <CurrentPriceCard
+    //       inverted={manuallyInverted}
+    //       pool={pool}
+    //       currencyQuote={quoteCurrency}
+    //       currencyBase={baseCurrency}
+    //     />
+    //   </AutoColumn>
+    // </BorrowLiquidityWrapper>
   )
 }
 
@@ -680,6 +759,39 @@ function PositionValueLabel({
               {value ? `${formatBNToString(value, type)} ${appendSymbol ?? ''}` : '-'}
               {newValue ? <StyledArrow /> : null}
               {newValue ? `${formatBNToString(newValue, type)} ${appendSymbol ?? ''}` : null}
+            </Row>
+          </ValueWrapper>
+        </TextWithLoadingPlaceholder>
+      </AutoColumn>
+    </PositionValueLabelWrapper>
+  )
+}
+
+function PositionTimeLabel({
+  value,
+  newValue,
+  title,
+  description,
+  syncing
+}: {
+  value?: number
+  newValue?: number
+  title: ReactNode
+  description?: ReactNode
+  syncing: boolean
+}) {
+  // const { formatNumber } = useFormatter()
+
+  return (
+    <PositionValueLabelWrapper>
+      <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
+      <AutoColumn>
+        <TextWithLoadingPlaceholder syncing={syncing} width={65}>
+          <ValueWrapper margin={false}>
+            <Row padding="5px" height="28px">
+              {value ? `${value} hrs` : '-'}
+              {newValue ? <StyledArrow /> : null}
+              {newValue ? `${newValue} hrs` : null}
             </Row>
           </ValueWrapper>
         </TextWithLoadingPlaceholder>

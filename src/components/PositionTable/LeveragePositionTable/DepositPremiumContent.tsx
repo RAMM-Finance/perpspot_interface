@@ -285,6 +285,7 @@ export function DepositPremiumContent({
   inputCurrency,
   outputCurrency,
   positionData,
+  handleTxnInfo
 }: {
   positionKey: TraderPositionKey
   onPositionChange: (newPosition: AlteredPositionProperties) => void
@@ -293,7 +294,8 @@ export function DepositPremiumContent({
   positionData: {
     position: MarginPositionDetails | undefined
     loading: boolean
-  }
+  },
+  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined) => void
 }) {
   const { position } = positionData
   // state inputs, derived, handlers for trade confirmation
@@ -314,6 +316,11 @@ export function DepositPremiumContent({
     position,
     onPositionChange
   )
+
+  useMemo(() => {
+    handleTxnInfo(txnInfo)
+  }, [handleTxnInfo, txnInfo])
+
   const { account, chainId, provider } = useWeb3React()
 
   const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
