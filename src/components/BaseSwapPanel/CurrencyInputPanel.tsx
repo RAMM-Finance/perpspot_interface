@@ -10,6 +10,7 @@ import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Tooltip from 'components/Tooltip'
 import { isSupportedChain } from 'constants/chains'
+import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { darken } from 'polished'
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 import { Lock } from 'react-feather'
@@ -357,7 +358,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
     const theme = useTheme()
     // const { formatCurrencyAmount } = useFormatter()
-    console.log('-usd-', fiatValue, loading)
+    // console.log('-usd-', fiatValue, value, currency)
     const handleDismissSearch = useCallback(() => {
       setModalOpen(false)
     }, [setModalOpen])

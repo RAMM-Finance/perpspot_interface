@@ -503,7 +503,7 @@ export const MediumOnly = styled.span`
 
 export const LargeShow = styled.span`
   display: none;
-  @media (min-width: ${({ theme }) => theme.breakpoint.navSearchInputVisible}px) {
+  @media (min-width: ${({ theme }) => theme.breakpoint.md}px) {
     display: block;
   }
 `

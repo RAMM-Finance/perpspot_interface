@@ -560,7 +560,7 @@ const TradeTabContent = () => {
         outputCurrency={outputCurrency ?? undefined}
         inputCurrency={inputCurrency ?? undefined}
       />
-      <ConfirmAddLimitOrderModal
+      {/*<ConfirmAddLimitOrderModal
         isOpen={lmtShowConfirm}
         trade={limitTrade}
         originalTrade={limitTradeConfirm}
@@ -573,14 +573,14 @@ const TradeTabContent = () => {
         attemptingTxn={lmtAttemptingTxn}
         txHash={lmtTxHash}
         tradeErrorMessage={lmtErrorMessage ? <Trans>{lmtErrorMessage}</Trans> : undefined}
-      />
+      />*/}
       <SwapHeader
         allowedSlippage={allowedSlippage}
         autoPremiumDepositPercent={userPremiumPercent}
         isLimitOrder={isLimitOrder}
       />
       <FilterWrapper>
-        <Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
+        {/*<Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
           <Selector active={!isLimitOrder}>
             <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
               Market
@@ -591,7 +591,7 @@ const TradeTabContent = () => {
               Limit
             </StyledSelectorText>
           </Selector>
-        </Filter>
+        </Filter>*/}
         <PremiumCurrencySelector
           inputCurrency={inputCurrency}
           outputCurrency={outputCurrency}

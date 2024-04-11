@@ -10,13 +10,15 @@ export default function tryParseCurrencyAmount<T extends Currency>(
   value?: string,
   currency?: T
 ): CurrencyAmount<T> | undefined {
-  if (!value || !currency) {
+  if (!value || !currency?.decimals) {
     return undefined
   }
   try {
     const typedValueParsed = parseUnits(value, currency.decimals).toString()
     if (typedValueParsed !== '0') {
+      // console.log('tryParseCurrencyAmount', 'success', CurrencyAmount.fromRawAmount(currency, JSBI.BigInt(typedValueParsed)))
       return CurrencyAmount.fromRawAmount(currency, JSBI.BigInt(typedValueParsed))
+
     }
   } catch (error) {
     // fails if the user specifies too many decimal places of precision (or maybe exceed max uint?)

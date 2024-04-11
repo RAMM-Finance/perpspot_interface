@@ -149,6 +149,7 @@ const SwapHeaderWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   height: 100%;
+  margin-left: 0.75rem;
   grid-column: 1;
   grid-row: 2;
 `
@@ -157,7 +158,7 @@ const MainWrapper = styled.article<{ pins: boolean }>`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1.6fr 0.6fr 365px;
+  grid-template-columns: 1.6fr 0fr 365px;
 
   margin-top: 0.75rem;
   grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
@@ -202,6 +203,7 @@ const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
+  margin-left: 0.75rem;
   margin-top: 0.75rem;
   border-radius: 10px;
   width: 100%;
@@ -209,7 +211,7 @@ const PositionsWrapper = styled.div`
   overflow-y: scroll;
   overflow-x: scroll;
   grid-row: 3;
-  grid-area: 3 / 1 / auto / 3;
+  /* grid-area: 3 / 1 / auto / 3; */
   /* min-width: 740px; */
   ::-webkit-scrollbar {
     display: none;
@@ -372,7 +374,7 @@ export default function Trade({ className }: { className?: string }) {
             <SelectPool />
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
-          <LiquidityDistibutionWrapper>
+          {/* <LiquidityDistibutionWrapper>
             <LiquidityDistributionTable
               bin={binData}
               address0={pool?.token0.address}
@@ -380,7 +382,7 @@ export default function Trade({ className }: { className?: string }) {
               fee={pool?.fee}
               chainId={chainId}
             />
-          </LiquidityDistibutionWrapper>
+          </LiquidityDistibutionWrapper> */}
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
             {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
             {activeTab === ActiveSwapTab.SWAP && <SwapTabContent />}

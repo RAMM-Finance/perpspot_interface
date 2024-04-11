@@ -167,7 +167,7 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'cache-first',
   })
-
+  // console.log('sucess', '-----useUSDPrice----', currencyAmount)
   // Use USDC price for chains not supported by backend yet
   const stablecoinPrice = useStablecoinPrice(!isGqlSupportedChain(currency?.chainId) ? currency : undefined)
   if (!isGqlSupportedChain(currency?.chainId) && currencyAmount && stablecoinPrice) {

@@ -198,7 +198,7 @@ export function LeverageDetailsDropdown({
   allowedSlippage: Percent
 }) {
   const theme = useTheme()
-  const [showDetails, setShowDetails] = useState(true)
+  const [showDetails, setShowDetails] = useState(false)
 
   return (
     <Wrapper style={{ marginTop: '0' }}>

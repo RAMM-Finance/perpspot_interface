@@ -16,24 +16,28 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
 import styled, { useTheme } from 'styled-components/macro'
-import { HideSmall, LargeShow, MEDIA_WIDTHS, SmallOnly, ThemedText } from 'theme'
+import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
 
 const LinkRow = styled(Link)`
   align-items: center;
-  display: flex;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* justify-content: space-between; */
+  /* display: grid; */
+  /* grid-template-columns: 0.2fr 1fr 0.7fr 0.3fr; */
   cursor: pointer;
   user-select: none;
-  /* flex-direction: column; */
-  justify-content: space-between;
   color: ${({ theme }) => theme.textPrimary};
   padding: 16px;
   text-decoration: none;
   font-weight: 500;
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-top: solid 1px ${({ theme }) => theme.backgroundOutline};
+  text-align: center;
+
   & > div:not(:first-child) {
     text-align: center;
   }
@@ -57,11 +61,13 @@ const DataLineItem = styled.div`
 
 const RangeLineItem = styled(DataLineItem)`
   display: flex;
+  /* grid-template-columns: 300px 300px 150px 200px; */
   flex-direction: row;
   align-items: center;
   margin-top: 4px;
   width: 100%;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
     justify-content: space-around;
     margin: auto;
@@ -259,12 +265,12 @@ export default function PositionListItem({
               <HoverInlineText text={currencyBase?.symbol} /> per <HoverInlineText text={currencyQuote?.symbol ?? ''} />
             </Trans>
           </RangeText>{' '}
-          <LargeShow>
+          {/* <LargeShow> */}
             <DoubleArrow>↔</DoubleArrow>{' '}
-          </LargeShow>
-          <SmallOnly>
+          {/* </LargeShow> */}
+          {/* <SmallOnly>
             <DoubleArrow>↔</DoubleArrow>{' '}
-          </SmallOnly>
+          </SmallOnly> */}
           <RangeText>
             <ExtentsText>
               <Trans>Max: </Trans>
