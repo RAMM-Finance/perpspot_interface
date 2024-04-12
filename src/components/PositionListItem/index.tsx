@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { NumberType } from '@uniswap/conedison/format'
+import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -12,7 +12,7 @@ import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
 import styled, { useTheme } from 'styled-components/macro'
@@ -70,7 +70,6 @@ const RangeLineItem = styled(DataLineItem)`
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
     justify-content: space-around;
-    margin: auto;
   `};
 `
 
@@ -188,7 +187,28 @@ export default function PositionListItem({
   tickLower,
   tickUpper,
 }: PositionListItemProps) {
-  const theme = useTheme()
+  const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
+  const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
+  const [isInverted, setIsInverted] = useState(false);
+
+  function handleInvertClick(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    if (priceLower && priceUpper) {
+      const invertedPriceLower = priceUpper.invert();
+      const invertedPriceUpper = priceLower.invert();
+      
+      if (!isInverted) {
+        setPriceLower(invertedPriceLower);
+        setPriceUpper(invertedPriceUpper);
+      } else {
+        setPriceLower(priceLower);
+        setPriceUpper(priceUpper);
+      }
+      setIsInverted(!isInverted);
+    }
+  }
 
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
@@ -197,7 +217,6 @@ export default function PositionListItem({
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
-
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const position = useMemo(() => {
@@ -231,11 +250,21 @@ export default function PositionListItem({
     position?.tickLower,
     position?.tickUpper
   )
+  useEffect(() => {
+    if (priceLower && priceUpper) {
+      setPriceLower(priceLower)
+      setPriceUpper(priceUpper)
+    }
+  }, [position])
 
   if (shouldHidePosition) {
     return null
   }
-  // console.log('----prcieLower', priceLower, tickAtLimit,  Bound.LOWER)
+
+  // const priceLowerValue = priceLower?.toSignificant(10);
+  // const priceUpperValue  = priceUpper?.toSignificant(10);
+  // console.log('----prcieLower', priceLowerValue )
+  // console.log('----priceUpper', priceUpper, tickAtLimit,)
   return (
     <LinkRow to={positionSummaryLink}>
       {/* <RowBetween> */}
@@ -256,18 +285,19 @@ export default function PositionListItem({
             </ExtentsText>
             <Trans>
               <span>
-                {formatTickPrice({
+                {/* {formatTickPrice({
                   price: priceLower,
                   atLimit: tickAtLimit,
                   direction: Bound.LOWER,
-                })}{' '}
+                })}{' '} */}
+                {priceLowerValue?.toSignificant(10)}
               </span>
-              <HoverInlineText text={currencyBase?.symbol} /> per <HoverInlineText text={currencyQuote?.symbol ?? ''} />
+              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol ?? ''} />
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-            <DoubleArrow>↔</DoubleArrow>{' '}
-          {/* </LargeShow> */}
+          <DoubleArrow onClick={(e) => handleInvertClick(e)} >↔</DoubleArrow>{' '}   
+        {/* </LargeShow> */}
           {/* <SmallOnly>
             <DoubleArrow>↔</DoubleArrow>{' '}
           </SmallOnly> */}
@@ -277,14 +307,15 @@ export default function PositionListItem({
             </ExtentsText>
             <Trans>
               <span>
-                {formatTickPrice({
+                {/* {formatTickPrice({
                   price: priceUpper,
                   atLimit: tickAtLimit,
                   direction: Bound.UPPER,
-                })}{' '}
+                })}{' '} */}
+                {priceUpperValue?.toSignificant(10)}
               </span>
-              <HoverInlineText text={currencyBase?.symbol} /> per{' '}
-              <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} />
+              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per{' '}
+              <HoverInlineText maxCharacters={10} text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} />
             </Trans>
           </RangeText>
         </RangeLineItem>
