@@ -19,6 +19,6 @@ export function formatTickPrice({ price, atLimit, direction, placeholder, number
   if (!price && placeholder !== undefined) {
     return placeholder
   }
-
+  // console.log('formatTickPrice', atLimit,numberType, direction )
   return formatPrice(price, numberType ?? NumberType.TokenNonTx)
 }
