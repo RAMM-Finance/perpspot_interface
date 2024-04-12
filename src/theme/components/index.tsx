@@ -476,6 +476,7 @@ export const CustomLightSpinner = styled(Spinner)<{ size: string }>`
 `
 
 export const HideSmall = styled.span`
+  padding: 0.25rem 0.25rem;
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
     display: none;
   `};
