@@ -52,6 +52,7 @@ export interface ApplicationState {
         pool: PoolKey
         priceNow: number
         price24hAgo: number
+        // decimal, multiply by 100% for percentage
         delta24h: number
         high24: number
         low24: number

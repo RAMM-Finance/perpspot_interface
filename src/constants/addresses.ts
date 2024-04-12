@@ -79,9 +79,9 @@ export const LMT_MARGIN_FACILITY: AddressMap = {
 
 export const LMT_QUOTER: AddressMap = {
   [SupportedChainId.BERA_ARTIO]: '0xD4c28F4Ce11878c19212FC32260Cf740b9b84638',
-  [SupportedChainId.ARBITRUM_ONE]: '0xA888bD4d2D305b16EdD40873C90BAd49658637c6',
+  [SupportedChainId.ARBITRUM_ONE]: '0xa014B2Faf61B6f5ceB90b71a588C2Fd3a02DF4b8',
   [SupportedChainId.LINEA]: '0xfdA3E8c8134685c42f22f4B75e275949a6BbA454',
-  [SupportedChainId.BASE]: '0x858BcFf7B40c6d69DF3D4de46c682DB6D54232E0',
+  [SupportedChainId.BASE]: '0x8a866c7309A8630255de7ddbA411B4Ed6AF0e4f3',
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {

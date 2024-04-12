@@ -211,7 +211,7 @@ export default function PositionListItem({
 
   // prices
   const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
-  
+
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
 
@@ -266,8 +266,7 @@ export default function PositionListItem({
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-            <DoubleArrow>↔</DoubleArrow>{' '}
-          {/* </LargeShow> */}
+          <DoubleArrow>↔</DoubleArrow> {/* </LargeShow> */}
           {/* <SmallOnly>
             <DoubleArrow>↔</DoubleArrow>{' '}
           </SmallOnly> */}

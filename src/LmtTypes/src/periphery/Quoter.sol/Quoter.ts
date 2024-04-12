@@ -71,7 +71,7 @@ export declare namespace Quoter {
     name1: PromiseOrValue<string>;
     decimals0: PromiseOrValue<BigNumberish>;
     decimals1: PromiseOrValue<BigNumberish>;
-    sqrtPriceX96: PromiseOrValue<BigNumberish>;
+    tick: PromiseOrValue<BigNumberish>;
   };
 
   export type PoolInfoStructOutput = [
@@ -84,7 +84,7 @@ export declare namespace Quoter {
     string,
     number,
     number,
-    BigNumber
+    number
   ] & {
     token0: string;
     token1: string;
@@ -95,7 +95,7 @@ export declare namespace Quoter {
     name1: string;
     decimals0: number;
     decimals1: number;
-    sqrtPriceX96: BigNumber;
+    tick: number;
   };
 
   export type QuoteExactInputParamsStruct = {

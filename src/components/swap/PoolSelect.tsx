@@ -14,7 +14,6 @@ import { usePoolsData } from 'hooks/useLMTPools'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { Row } from 'nft/components/Flex'
-import { ReversedArrowsIcon } from 'nft/components/icons'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
@@ -26,7 +25,6 @@ import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
   useAddPinnedPool,
   useCurrentPool,
-  useInvertCurrentBaseQuote,
   usePinnedPools,
   useRemovePinnedPool,
   useSetCurrentPool,
@@ -93,7 +91,7 @@ const LabelWrapper = styled.div`
 const SelectPoolWrapper = styled.button`
   display: flex;
   flex-direction: row;
-  max-width: 250px;
+  // max-width: 250px;
   background-color: ${({ theme }) => theme.backgroundSurface};
   justify-content: space-evenly;
   align-items: center;
@@ -477,7 +475,7 @@ export function SelectPool() {
     setAnchorEl(event.currentTarget)
   }
 
-  const handleInvert = useInvertCurrentBaseQuote()
+  // const handleInvert = useInvertCurrentBaseQuote()
 
   const handleClose = () => {
     setAnchorEl(null)
@@ -486,13 +484,13 @@ export function SelectPool() {
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
-  const handleInvertClick = useCallback(
-    (e: any) => {
-      e.stopPropagation()
-      currentPool && handleInvert(!currentPool.invertPrice)
-    },
-    [currentPool, handleInvert]
-  )
+  // const handleInvertClick = useCallback(
+  //   (e: any) => {
+  //     e.stopPropagation()
+  //     currentPool && handleInvert(!currentPool.invertPrice)
+  //   },
+  //   [currentPool, handleInvert]
+  // )
 
   if (!chainId || unsupportedChain(chainId)) {
     return (
@@ -501,29 +499,28 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
-                <ReverseIconContainer>
+                {/* <ReverseIconContainer>
                   <ReversedArrowsIcon />
-                </ReverseIconContainer>
+                </ReverseIconContainer> */}
                 {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
                     currency0={baseCurrency as Currency}
                     currency1={quoteCurrency as Currency}
-                    size={20}
+                    size={40}
                   />
                 )}
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={false}>
                     <Row gap="6">
-                      <ThemedText.HeadlineSmall fontSize={16}>Select Pair</ThemedText.HeadlineSmall>
+                      <ThemedText.HeadlineSmall fontSize={20}>Select Pair</ThemedText.HeadlineSmall>
                     </Row>
                   </TextWithLoadingPlaceholder>
                 </AutoColumn>
               </Row>
             </LabelWrapper>
-            <ChevronIcon $rotated={false} />
+            <ChevronIcon $rotated={false} size={30} />
           </>
         </SelectPoolWrapper>
-
         <StatsSkeleton />
       </MainWrapper>
     )
@@ -536,23 +533,23 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
-                <ReverseIconContainer onClick={handleInvertClick}>
+                {/* <ReverseIconContainer onClick={handleInvertClick}>
                   <ReversedArrowsIcon width="20px" height="20px" />
-                </ReverseIconContainer>
+                </ReverseIconContainer> */}
                 {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
                     currency0={baseCurrency as Currency}
                     currency1={quoteCurrency as Currency}
-                    size={20}
+                    size={40}
                   />
                 )}
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
                     <Row gap="6">
-                      <ThemedText.HeadlineSmall fontSize={16}>
+                      <ThemedText.HeadlineSmall fontSize={20}>
                         {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
                       </ThemedText.HeadlineSmall>
-                      <ThemedText.BodySmall fontSize="12px">
+                      <ThemedText.BodySmall fontSize="14px">
                         ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
                       </ThemedText.BodySmall>
                     </Row>
@@ -560,7 +557,7 @@ export function SelectPool() {
                 </AutoColumn>
               </Row>
             </LabelWrapper>
-            <ChevronIcon $rotated={open} />
+            <ChevronIcon $rotated={open} size={30} />
           </>
         ) : (
           <PoolSelectLoading />
