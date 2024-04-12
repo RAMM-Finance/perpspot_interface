@@ -79,7 +79,6 @@ export function useCheckAMISS(i: number, address0: string | undefined | null) {
 
 export function AddLimitModalHeader({
   trade,
-
   recipient,
   showAcceptChanges,
   onAcceptChanges,
