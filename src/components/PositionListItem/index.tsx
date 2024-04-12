@@ -261,8 +261,6 @@ export default function PositionListItem({
 
   // const priceLowerValue = priceLower?.toSignificant(10);
   // const priceUpperValue  = priceUpper?.toSignificant(10);
-  // console.log('----prcieLower', priceLowerValue )
-  // console.log('----priceUpper', priceUpper, tickAtLimit,)
   return (
     <LinkRow to={positionSummaryLink}>
       {/* <RowBetween> */}

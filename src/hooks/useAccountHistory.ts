@@ -42,14 +42,12 @@ export function useHistoryData(address: any) {
         AddOrderData = await clientBase.query(AddOrderQuery, {}).toPromise()
         CancelOrderData = await clientBase.query(CancelOrderQuery, {}).toPromise()
         ForceCloseData = await clientBase.query(ForceClosedQuery, {}).toPromise()
-  
       } else {
         AddQueryData = await client.query(AddQuery, {}).toPromise()
         ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
         AddOrderData = await client.query(AddOrderQuery, {}).toPromise()
         CancelOrderData = await client.query(CancelOrderQuery, {}).toPromise()
         ForceCloseData = await client.query(ForceClosedQuery, {}).toPromise()
-  
       }
 
       const addQueryFiltered = AddQueryData?.data?.marginPositionIncreaseds.filter((data: any) => {

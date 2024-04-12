@@ -102,7 +102,7 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  height: 100%;
+  min-height: 400px;
   // border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
