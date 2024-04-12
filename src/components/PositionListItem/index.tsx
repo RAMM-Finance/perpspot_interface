@@ -12,7 +12,7 @@ import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useEffect, useMemo, useState } from 'react'
+import { MouseEvent, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bound } from 'state/mint/v3/actions'
 import styled, { useTheme } from 'styled-components/macro'
@@ -191,7 +191,7 @@ export default function PositionListItem({
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false);
 
-  function handleInvertClick(event) {
+  function handleInvertClick(event: MouseEvent<HTMLSpanElement>) {
     event.stopPropagation();
     event.preventDefault();
     
@@ -296,7 +296,7 @@ export default function PositionListItem({
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-          <DoubleArrow onClick={(e) => handleInvertClick(e)} >↔</DoubleArrow>{' '}   
+          <DoubleArrow onClick={(e:MouseEvent<HTMLSpanElement>) => handleInvertClick(e)} >↔</DoubleArrow>{' '}   
         {/* </LargeShow> */}
           {/* <SmallOnly>
             <DoubleArrow>↔</DoubleArrow>{' '}
