@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddOrderQuery,
   AddQuery,
@@ -10,6 +10,8 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 
 import { useDataProviderContract } from './useContract'
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
 
 export function useHistoryData(address: any) {
   const [addData, setAddData] = useState<any>()
@@ -20,6 +22,8 @@ export function useHistoryData(address: any) {
   const dataProvider = useDataProviderContract()
   const [uniqueTokens, setUniqueTokens] = useState<any>()
 
+  const { chainId } = useWeb3React()
+
   const account = useMemo(() => {
     return ethers.utils.getAddress(address)
   }, [address])
@@ -27,11 +31,26 @@ export function useHistoryData(address: any) {
     if (!client || !dataProvider) return
 
     const call = async () => {
-      const AddQueryData = await client.query(AddQuery, {}).toPromise()
-      const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-      const AddOrderData = await client.query(AddOrderQuery, {}).toPromise()
-      const CancelOrderData = await client.query(CancelOrderQuery, {}).toPromise()
-      const ForceCloseData = await client.query(ForceClosedQuery, {}).toPromise()
+      let AddQueryData
+      let ReduceQueryData
+      let AddOrderData
+      let CancelOrderData
+      let ForceCloseData
+      if (chainId === SupportedChainId.BASE) {
+        AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
+        ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+        AddOrderData = await clientBase.query(AddOrderQuery, {}).toPromise()
+        CancelOrderData = await clientBase.query(CancelOrderQuery, {}).toPromise()
+        ForceCloseData = await clientBase.query(ForceClosedQuery, {}).toPromise()
+  
+      } else {
+        AddQueryData = await client.query(AddQuery, {}).toPromise()
+        ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
+        AddOrderData = await client.query(AddOrderQuery, {}).toPromise()
+        CancelOrderData = await client.query(CancelOrderQuery, {}).toPromise()
+        ForceCloseData = await client.query(ForceClosedQuery, {}).toPromise()
+  
+      }
 
       const addQueryFiltered = AddQueryData?.data?.marginPositionIncreaseds.filter((data: any) => {
         if (ethers.utils.getAddress(data.trader) == account) return true

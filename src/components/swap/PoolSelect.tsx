@@ -3,6 +3,7 @@ import Menu from '@mui/material/Menu'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { PoolStatsSection, StatsSkeleton } from 'components/ExchangeChart/PoolStats'
@@ -14,9 +15,11 @@ import { usePoolsData } from 'hooks/useLMTPools'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { Row } from 'nft/components/Flex'
+import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
+import { useNavigate } from 'react-router-dom'
 import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC } from 'state/application/hooks'
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
@@ -117,7 +120,8 @@ const ChevronIcon = styled(ChevronDown)<{ $rotated: boolean }>`
 
 const MainWrapper = styled.div`
   display: grid;
-  grid-template-columns: 0.35fr 1fr;
+  grid-template-columns: 0.3fr 0.1fr 1fr;
+  align-items: center;
   width: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -201,6 +205,16 @@ const Pin = styled.button`
 const PoolSelectLoading = styled(SelectLoadingBar)`
   height: 40px;
   margin: auto;
+`
+
+const EarnButton = styled(SmallButtonPrimary)`
+  border-radius: 8px;
+  width: 50px;
+  padding: 6px;
+  background-color: ${({ theme }) => darken(0.1, theme.accentActive)};
+  &:hover {
+    background-color: ${({ theme }) => darken(0.2, theme.accentActive)};
+  }
 `
 
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
@@ -438,6 +452,7 @@ const ReverseIconContainer = styled.div`
 
 export function SelectPool() {
   const { chainId } = useWeb3React()
+  const navigate = useNavigate()
 
   const currentPool = useCurrentPool()
 
@@ -563,6 +578,9 @@ export function SelectPool() {
           <PoolSelectLoading />
         )}
       </SelectPoolWrapper>
+      <EarnButton onClick={() => navigate('/add/' + poolKey?.token0 + '/' + poolKey?.token1 + '/' + `${poolKey?.fee}`)}>
+        Earn
+      </EarnButton>
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}

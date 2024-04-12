@@ -50,7 +50,7 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers } from 'state/swap/hooks'
+import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -197,6 +197,8 @@ const TradeTabContent = () => {
     account ?? undefined,
     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
   )
+
+  const { activeTab } = useSwapState()
 
   const currencyBalances = useMemo(
     () => ({
@@ -379,6 +381,8 @@ const TradeTabContent = () => {
     () => limitTradeState === LimitTradeState.LOADING || limitTradeState === LimitTradeState.SYNCING,
     [limitTradeState]
   )
+
+  console.log('trade', trade?.premium.toNumber())
 
   const handleCancel = useCallback(() => {
     setTradeState((currentState) => ({
@@ -595,6 +599,7 @@ const TradeTabContent = () => {
           outputCurrency={outputCurrency}
           premiumInPosToken={premiumInPosToken}
           onPremiumCurrencyToggle={() => onPremiumCurrencyToggle(!premiumInPosToken)}
+          premium={trade?.premium}
         />
       </FilterWrapper>
       <LimitInputWrapper>
@@ -708,7 +713,7 @@ const TradeTabContent = () => {
         <OutputSwapSection showDetailsDropdown={false}>
           <InputHeader>
             <ThemedText.BodySecondary>
-              <Trans>Long</Trans>
+              <Trans>{activeTab === 0 ? 'Long' : 'Short'}</Trans>
             </ThemedText.BodySecondary>
           </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>

@@ -399,15 +399,18 @@ export default function AddLiquidity() {
   const handleSetRecommendedRange = useCallback(
     (leftRange: any, rightRange: any) => {
       const minPrice = pricesAtLimit[Bound.LOWER]
-      if (minPrice)
+      if (minPrice) {
         onLeftRangeInput(
-          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange).toString()
+          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange).toFixed(12).toString()
         )
+      }
       const maxPrice = pricesAtLimit[Bound.UPPER]
-      if (maxPrice)
+      if (maxPrice) {
         onRightRangeInput(
-          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * rightRange).toString()
+          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * rightRange).toFixed(12).toString()
         )
+      }
+        
       setSearchParams(searchParams)
 
       sendEvent({

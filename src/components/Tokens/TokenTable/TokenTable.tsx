@@ -252,7 +252,6 @@ export default function TokenTable() {
   const { poolList } = usePoolKeyList()
 
   const { result: poolData, loading: poolsLoading } = usePoolsData()
-
   const loading = poolsLoading || balanceLoading
 
   const poolsInfo = useMemo(() => {
@@ -296,17 +295,19 @@ export default function TokenTable() {
           return pool
         }
       })
-    } else if (!poolData && PoolsOHLCArr && poolList) {
-      return poolList.map((pool: any) => {
-        return {
-          ...pool,
-          TVL: 100000,
-          Volume: 500000,
-          Price: 4000,
-          [`24h Change`]: 1,
-        }
-      })
-    } else {
+    } 
+    // else if (!poolData && PoolsOHLCArr && poolList) {
+    //   return poolList.map((pool: any) => {
+    //     return {
+    //       ...pool,
+    //       TVL: 100000,
+    //       Volume: 500000,
+    //       Price: 4000,
+    //       [`24h Change`]: 1,
+    //     }
+    //   })
+    // }
+     else {
       return null
     }
   }, [poolData, PoolsOHLCArr, chainId, poolList])

@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 import Menu from '@mui/material/Menu'
 import { Currency } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
 import { StyledTokenName } from 'components/BaseSwapPanel'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RowFixed } from 'components/Row'
@@ -40,11 +41,13 @@ export function PremiumCurrencySelector({
   outputCurrency,
   onPremiumCurrencyToggle,
   premiumInPosToken,
+  premium,
 }: {
   inputCurrency: Currency | null | undefined
   outputCurrency: Currency | null | undefined
   onPremiumCurrencyToggle: () => void
   premiumInPosToken: boolean
+  premium: BN | undefined
 }) {
   const currency = premiumInPosToken ? outputCurrency : inputCurrency
   const otherCurrency = premiumInPosToken ? inputCurrency : outputCurrency
@@ -60,7 +63,7 @@ export function PremiumCurrencySelector({
     <Wrapper>
       <ActiveWrapper>
         <ThemedText.LabelSmall fontSize={13} color="primary">
-          Pay interest with
+          {`Pay ${premium ? premium.toNumber().toFixed(5) : ''} interest with`}
         </ThemedText.LabelSmall>
         <StyledRowFixed onClick={handleClick}>
           <CurrencyLogo currency={currency} size="15px" />

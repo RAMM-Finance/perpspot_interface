@@ -34,11 +34,11 @@ export function usePoolsData(): {
   loading: boolean
   result: PoolTVLData | undefined
   error: boolean
-} {
+} { 
   const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
 
-  const { data, isLoading, isError } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ['queryPoolsData', dataProvider ? 'key' : 'missing key'],
     async () => {
       if (!dataProvider) throw Error('missing dataProvider')
@@ -101,11 +101,18 @@ export function usePoolsData(): {
     }
   )
 
+  useEffect(() => {
+    if (chainId) {
+      console.log(`chainId changed to ${chainId}. refetching...`)
+      refetch()
+    }
+  }, [chainId, refetch])
+
+
   const slot0s = [] as any
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
-
     const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData } = data
 
     const slot0ByPool: { [key: string]: any } = {}
@@ -254,5 +261,5 @@ export function usePoolsData(): {
       error: isError,
       result: poolToData,
     }
-  }, [poolToData, isLoading, isError])
+  }, [chainId, poolToData, isLoading, isError])
 }
