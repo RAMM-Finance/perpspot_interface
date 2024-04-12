@@ -86,7 +86,6 @@ export default function PoolSelectorRow({
   const theme = useTheme()
 
   const poolOHLCData = usePoolOHLC(token0?.wrapped?.address, token1?.wrapped?.address, fee)
-  console.log('poolOHLCData.delta24h', poolOHLCData?.delta24h)
   return (
     <Container
       disabled={false}

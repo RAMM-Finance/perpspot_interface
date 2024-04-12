@@ -251,9 +251,7 @@ export default function TokenTable() {
 
   const { poolList } = usePoolKeyList()
 
-  console.log("beforeCallingUsePoolsData")
   const { result: poolData, loading: poolsLoading } = usePoolsData()
-  console.log("poolData", poolData)
   const loading = poolsLoading || balanceLoading
 
   const poolsInfo = useMemo(() => {
