@@ -1,7 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
-import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
+import { POOL_INIT_CODE_HASH, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
@@ -9,11 +9,13 @@ import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenR
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
+import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
+import { Q192 } from 'utils/lmtSDK/internalConstants'
 
 import { useLmtQuoterContract } from './useContract'
 
@@ -21,7 +23,7 @@ interface HydratedPool {
   pool: RawPoolKey
   priceNow: number
   price24hAgo: number
-  delta24h: number
+  delta24h: number // decimal, multiply by 100% for percentage
   high24: number
   low24: number
   token0IsBase: boolean
@@ -34,9 +36,9 @@ export const CHAIN_TO_NETWORK_ID: { [chainId: number]: string } = {
   [SupportedChainId.BASE]: 'base',
 }
 
-const formatEndpoint = (address: string, currency: string, token: 'base' | 'quote', chainId: number) => {
+const formatEndpoint = (address: string, currency: string, token: string, chainId: number) => {
   const network = CHAIN_TO_NETWORK_ID[chainId]
-  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token}`
+  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token.toLowerCase()}`
 }
 
 const getPoolAddress = (tokenA: string, tokenB: string, fee: number, factoryAddress: string) => {
@@ -65,9 +67,12 @@ function switchPoolChain(fromChainId: number, toChainId: number, pool: PoolKey):
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
 
-const sqrtPriceToBN = (sqrtPriceX96: string, decimals0: number, decimals1: number): BN => {
-  const price = new BN(sqrtPriceX96.toString()).div(2 ** 96).exponentiatedBy(2)
-  return price.multipliedBy(10 ** decimals1).div(10 ** decimals0)
+const tickToBN = (tick: number, decimals0: number, decimals1: number): BN => {
+  const sqrtRatioX96 = TickMath.getSqrtRatioAtTick(tick)
+  const ratioX192 = JSBI.multiply(sqrtRatioX96, sqrtRatioX96)
+  const price = new BN(ratioX192.toString()).div(Q192.toString())
+
+  return price.shiftedBy(decimals0 - decimals1)
 }
 
 export function usePoolsOHLC(): {
@@ -107,23 +112,19 @@ export function usePoolsOHLC(): {
         V3_CORE_FACTORY_ADDRESSES[adjustedChainId]
       )
 
-      let denomination
-      if (
-        poolAddress === '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
-        poolAddress === '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
-        poolAddress === '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-      ) {
-        denomination = 'quote'
-      } else {
-        denomination = 'base'
-      }
+      // let denomination
 
-      const endpoint = formatEndpoint(
-        poolAddress.toLocaleLowerCase(),
-        'token',
-        denomination as 'base' | 'quote',
-        adjustedChainId
-      )
+      // if (
+      //   poolAddress === '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
+      //   poolAddress === '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
+      //   poolAddress === '0xC6962004f452bE9203591991D15f6b388e09E8D0'
+      // ) {
+      //   denomination = 'quote'
+      // } else {
+      //   denomination = 'base'
+      // }
+
+      const endpoint = formatEndpoint(poolAddress.toLocaleLowerCase(), 'token', adjustedPool.token0, adjustedChainId)
 
       results.push(
         axios.get(endpoint, {
@@ -146,13 +147,23 @@ export function usePoolsOHLC(): {
       const price24hAgo = data[0][1]
       const priceNow = data[0][4]
       const delta24h = (priceNow - price24hAgo) / price24hAgo
-      const { token0, token1, fee, sqrtPriceX96, decimals0, decimals1 } = list[i]
 
-      const token0Price = sqrtPriceToBN(sqrtPriceX96, decimals0, decimals1)
+      const { token0, token1, fee, tick, decimals0, decimals1 } = list[i]
+
+      const token0Price = tickToBN(tick, decimals0, decimals1)
       const token1Price = new BN(1).div(token0Price)
 
-      const token0IsBase = new BN(priceNow).minus(token0Price).abs().lt(new BN(priceNow).minus(token1Price).abs())
+      const d0 = token0Price.minus(priceNow).abs()
+      const d1 = token1Price.minus(priceNow).abs()
+
+      const token0IsBase = d0.lt(d1)
       const [base, quote, inputInToken0] = getDefaultBaseQuote(token0, token1, chainId)
+      console.log(
+        'quote',
+        quote === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase(),
+        token0Price.toString(),
+        priceNow
+      )
       const defaultBaseIsToken0 = base.toLowerCase() === token0.toLowerCase()
 
       const invert = token0IsBase !== defaultBaseIsToken0
@@ -162,7 +173,7 @@ export function usePoolsOHLC(): {
         low24: invert ? 1 / high24 : low24,
         price24hAgo: invert ? 1 / price24hAgo : price24hAgo,
         priceNow: invert ? 1 / priceNow : priceNow,
-        delta24h,
+        delta24h: invert ? (1 / priceNow - 1 / price24hAgo) / (1 / price24hAgo) : delta24h,
         pool: {
           token0,
           token1,
@@ -174,43 +185,6 @@ export function usePoolsOHLC(): {
     }
 
     return parsed
-    // parse data
-
-    // responses.forEach((res, i) => {
-    //   const data = res.data.data.attributes.ohlcv_list
-    //   const high24 = data[0][2]
-    //   const low24 = data[0][3]
-    //   const price24hAgo = data[0][1]
-    //   const priceNow = data[0][4]
-    //   const delta24h = (priceNow - price24hAgo) / price24hAgo
-    //   const { token0, token1, fee } = list[i]
-
-    //   let base = res?.data?.meta?.base?.address
-    //   let quote = res?.data?.meta?.quote?.address
-    //   const token0IsBase = base ? base?.toLowerCase() === token0.toLowerCase() : true
-
-    //   if (chainId === SupportedChainId.BERA_ARTIO || chainId === SupportedChainId.LINEA) {
-    //     base = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, base)
-    //     quote = switchChainAddress(SupportedChainId.ARBITRUM_ONE, chainId, quote)
-    //   }
-
-    //   parsed[getPoolId(token0, token1, fee)] = {
-    //     high24,
-    //     low24,
-    //     price24hAgo,
-    //     priceNow,
-    //     delta24h,
-    //     pool: {
-    //       token0,
-    //       token1,
-    //       fee,
-    //     },
-    //     base,
-    //     quote,
-    //     token0IsBase,
-    //   }
-    // })
-    // return parsed
   }, [list, chainId])
 
   const queryKey = useMemo(() => {

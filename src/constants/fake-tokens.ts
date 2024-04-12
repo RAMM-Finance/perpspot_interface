@@ -25,18 +25,6 @@ export const TokensArbitrum: { [address: string]: Token } = {
   [ARB_ARBITRUM.address]: ARB_ARBITRUM,
 }
 
-const ARBITRUM_STABLES: string[] = [USDC_ARBITRUM.address]
-const BASE_STABLES: string[] = [USDC_ARBITRUM.address]
-
-export function getStables(chainId: number): string[] {
-  if (chainId === SupportedChainId.ARBITRUM_ONE) {
-    return ARBITRUM_STABLES
-  } else if (chainId === SupportedChainId.BASE) {
-    return BASE_STABLES
-  }
-  return []
-}
-
 export function getNativeAddress(chainId: number): string {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return WETH_ARBITRUM.address
@@ -56,6 +44,18 @@ const USDC_LINEA = new Token(59144, '0x176211869cA2b568f2A7D4EE941E073a821EE1ff'
 const WBTC_LINEA = new Token(59144, '0x3aAB2285ddcDdaD8edf438C1bAB47e1a9D05a9b4', 8, 'WBTC', 'Wrapped BTC')
 const WETH_BASE = new Token(8453, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether')
 const USDC_BASE = new Token(8453, '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', 6, 'USDC', 'USD Coin')
+
+const ARBITRUM_STABLES: string[] = [USDC_ARBITRUM.address]
+const BASE_STABLES: string[] = [USDC_BASE.address]
+
+export function getStables(chainId: number): string[] {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return ARBITRUM_STABLES
+  } else if (chainId === SupportedChainId.BASE) {
+    return BASE_STABLES
+  }
+  return []
+}
 
 export const TokensLinea: { [address: string]: Token } = {
   [WETH_LINEA.address]: WETH_LINEA,

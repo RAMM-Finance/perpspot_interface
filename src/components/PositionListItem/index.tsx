@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { formatPrice, NumberType } from '@uniswap/conedison/format'
+import { NumberType } from '@uniswap/conedison/format'
 import { Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -14,10 +14,8 @@ import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { MouseEvent, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bound } from 'state/mint/v3/actions'
-import styled, { useTheme } from 'styled-components/macro'
+import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
-import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
 
@@ -189,24 +187,24 @@ export default function PositionListItem({
 }: PositionListItemProps) {
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
-  const [isInverted, setIsInverted] = useState(false);
+  const [isInverted, setIsInverted] = useState(false)
 
   function handleInvertClick(event: MouseEvent<HTMLSpanElement>) {
-    event.stopPropagation();
-    event.preventDefault();
-    
+    event.stopPropagation()
+    event.preventDefault()
+
     if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert();
-      const invertedPriceUpper = priceLower.invert();
-      
+      const invertedPriceLower = priceUpper.invert()
+      const invertedPriceUpper = priceLower.invert()
+
       if (!isInverted) {
-        setPriceLower(invertedPriceLower);
-        setPriceUpper(invertedPriceUpper);
+        setPriceLower(invertedPriceLower)
+        setPriceUpper(invertedPriceUpper)
       } else {
-        setPriceLower(priceLower);
-        setPriceUpper(priceUpper);
+        setPriceLower(priceLower)
+        setPriceUpper(priceUpper)
       }
-      setIsInverted(!isInverted);
+      setIsInverted(!isInverted)
     }
   }
 
@@ -230,7 +228,7 @@ export default function PositionListItem({
 
   // prices
   const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
-  
+
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
 
@@ -292,12 +290,12 @@ export default function PositionListItem({
                 })}{' '} */}
                 {priceLowerValue?.toSignificant(10)}
               </span>
-              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol ?? ''} />
+              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per{' '}
+              <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol ?? ''} />
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-          <DoubleArrow onClick={(e:MouseEvent<HTMLSpanElement>) => handleInvertClick(e)} >↔</DoubleArrow>{' '}   
-        {/* </LargeShow> */}
+          <DoubleArrow>↔</DoubleArrow> {/* </LargeShow> */}
           {/* <SmallOnly>
             <DoubleArrow>↔</DoubleArrow>{' '}
           </SmallOnly> */}

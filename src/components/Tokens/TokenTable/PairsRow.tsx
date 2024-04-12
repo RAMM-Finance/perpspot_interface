@@ -414,10 +414,7 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, sortRank, tvl, volume, fee, price, delta } = props
-
-  // const filterNetwork = validateUrlChainParam(useParams<{ chainName?: string }>().chainName?.toUpperCase())
-  // const chainId = CHAIN_NAME_TO_CHAIN_ID[filterNetwork]
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee } = props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -427,17 +424,29 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const currentPool = useCurrentPool()
 
   const currentPoolId = currentPool?.poolId
-  const baseCurrency = useCurrency(tokenA)
-  const quoteCurrency = useCurrency(tokenB)
 
-  const [token0, token1] =
-    baseCurrency && quoteCurrency && quoteCurrency?.wrapped.sortsBefore(baseCurrency?.wrapped)
-      ? [baseCurrency, quoteCurrency]
-      : [quoteCurrency, baseCurrency]
+  const token0Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB) : null
+  const token1Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA) : null
+  const token0 = useCurrency(token0Address)
+  const token1 = useCurrency(token1Address)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
   // const poolOHLCDatas = useAppPoolOHLC()
   const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
+
+  const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
+  const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
+
+  console.log(
+    'token0:',
+    token0?.symbol,
+    token1?.symbol,
+    token1?.wrapped.address,
+    baseCurrency?.symbol,
+    quoteCurrency?.symbol,
+    poolOHLC?.token0IsBase
+  )
+
   const poolId = getPoolId(tokenA, tokenB, fee)
 
   const handleCurrencySelect = useCallback(() => {
@@ -456,6 +465,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
     return [undefined, undefined]
   }, [pool, tickDiscretization])
+
+  const [price, delta] = useMemo(() => {
+    if (poolOHLC) {
+      return [poolOHLC.priceNow, poolOHLC.delta24h]
+    }
+    return [undefined, undefined]
+  }, [poolOHLC])
 
   const { result: rateUtilData } = useRateAndUtil(
     pool?.token0.address,
@@ -492,19 +508,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       <TokenRow
         fee={pool?.fee}
         header={false}
-        // listNumber={sortRank}
-        currency0={token0}
-        currency1={token1}
         tokenInfo={
           <ClickableName>
-            {/* <QueryTokenLogo token={token} /> */}
             <TokenInfoCell>
-              <DoubleCurrencyLogo currency0={token0} currency1={token1} size={20} margin={true} />
+              <DoubleCurrencyLogo currency0={baseCurrency} currency1={quoteCurrency} size={20} margin={true} />
               <TokenName data-cy="token-name">
                 <span>{token0?.symbol}</span>
                 <span>{token1?.symbol}</span>
               </TokenName>
-              {/* <TokenSymbol>{token0.symbol}</TokenSymbol> */}
             </TokenInfoCell>
           </ClickableName>
         }
@@ -512,7 +523,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableContent>
             <PriceInfoCell>
               <Price>{formatDollarAmount({ num: price, long: true })}</Price>
-              <span>{token0?.symbol + '/' + token1?.symbol}</span>
+              <span>{baseCurrency && quoteCurrency ? baseCurrency.symbol + '/' + quoteCurrency.symbol : null}</span>
             </PriceInfoCell>
           </ClickableContent>
         }

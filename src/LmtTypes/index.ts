@@ -74,8 +74,6 @@ export type { ISwapper } from "./src/interfaces/ISwapper";
 export { ISwapper__factory } from "./factories/src/interfaces/ISwapper__factory";
 export type { ITickLens } from "./src/interfaces/ITickLens";
 export { ITickLens__factory } from "./factories/src/interfaces/ITickLens__factory";
-export type { IUniswapInterfaceMulticall } from "./src/interfaces/IUniswapMulticall.sol/IUniswapInterfaceMulticall";
-export { IUniswapInterfaceMulticall__factory } from "./factories/src/interfaces/IUniswapMulticall.sol/IUniswapInterfaceMulticall__factory";
 export type { IWETH9 } from "./src/interfaces/IWETH9";
 export { IWETH9__factory } from "./factories/src/interfaces/IWETH9__factory";
 export type { MarginFacility } from "./src/MarginFacility";

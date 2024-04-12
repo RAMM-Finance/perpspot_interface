@@ -9,7 +9,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { BaseSwapPanel, MarginSelectPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
-import { GrayCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
@@ -844,17 +843,27 @@ const TradeTabContent = () => {
               <Trans>Connect Wallet</Trans>
             </ButtonLight>
           ) : poolNotFound ? (
-            <ButtonError disabled={true}>
-              <ThemedText.BodyPrimary mb="4px">
-                <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.BodyPrimary>
-            </ButtonError>
+            <ButtonLight
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="100%"
+              padding=".5rem"
+              onClick={() => {}}
+              disabled={true}
+              fontWeight={600}
+            >
+              <Trans>Insufficient liquidity for this trade.</Trans>
+            </ButtonLight>
           ) : tradeNotFound && userHasSpecifiedInputOutput && !tradeIsLoading ? (
-            <ButtonError disabled={true}>
-              <ThemedText.BodyPrimary mb="4px">
-                <Trans>Insufficient liquidity for this trade.</Trans>
-              </ThemedText.BodyPrimary>
-            </ButtonError>
+            <ButtonLight
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="100%"
+              padding=".5rem"
+              onClick={() => {}}
+              disabled={true}
+              fontWeight={600}
+            >
+              <Trans>Insufficient liquidity for this trade.</Trans>
+            </ButtonLight>
           ) : noTradeInputError && notApproved ? (
             <>
               <ButtonPrimary
@@ -981,17 +990,31 @@ const TradeTabContent = () => {
               <Trans>Connect Wallet</Trans>
             </ButtonLight>
           ) : poolNotFound ? (
-            <GrayCard style={{ textAlign: 'center' }}>
+            <ButtonError
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="100%"
+              padding="0.5rem"
+              onClick={() => {}}
+              id="leverage-button"
+              disabled={true}
+            >
               <ThemedText.DeprecatedMain mb="4px">
                 <Trans>Insufficient liquidity for this trade.</Trans>
               </ThemedText.DeprecatedMain>
-            </GrayCard>
+            </ButtonError>
           ) : tradeNotFound && limitUserHasSpecifiedInputOutput && !tradeIsLoading ? (
-            <GrayCard style={{ textAlign: 'center' }}>
+            <ButtonError
+              style={{ fontSize: '14px', borderRadius: '10px' }}
+              width="100%"
+              padding="0.5rem"
+              onClick={() => {}}
+              id="leverage-button"
+              disabled={true}
+            >
               <ThemedText.DeprecatedMain mb="4px">
                 <Trans>Insufficient liquidity for this trade.</Trans>
               </ThemedText.DeprecatedMain>
-            </GrayCard>
+            </ButtonError>
           ) : !limitInputError && notApproved ? (
             <>
               <ButtonPrimary
