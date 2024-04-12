@@ -1,4 +1,3 @@
-import { SupportedChainId } from 'constants/chains'
 import { getNativeAddress, getStables } from 'constants/fake-tokens'
 
 export function getDefaultBaseQuote(
@@ -25,21 +24,13 @@ export function getDefaultBaseQuote(
     base = token0
     quote = token1
   } else if (token0IsNative) {
-    base = token0
-    quote = token1
-    inputInToken0 = true
-  } else if (token1IsNative) {
     base = token1
     quote = token0
     inputInToken0 = true
-  }
-
-  if (chainId === SupportedChainId.BASE) {
-    if (token1.toLowerCase() === '0xAC1Bd2486aAf3B5C0fc3Fd868558b082a531B2B4'.toLowerCase()) {
-      base = token0
-      quote = token1
-      inputInToken0 = true
-    }
+  } else if (token1IsNative) {
+    base = token0
+    quote = token1
+    inputInToken0 = true
   }
 
   return [base, quote, inputInToken0]
