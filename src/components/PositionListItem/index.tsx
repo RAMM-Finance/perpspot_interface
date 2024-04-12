@@ -191,7 +191,7 @@ export default function PositionListItem({
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false);
 
-  function handleInvertClick(event) {
+  function handleInvertClick(event: any) {
     event.stopPropagation();
     event.preventDefault();
     
