@@ -6,7 +6,7 @@ import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-
+import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 const LOGO_SIZE = 20
 
 const Container = styled.button<{ disabled: boolean }>`
@@ -86,7 +86,7 @@ export default function PoolSelectorRow({
   const theme = useTheme()
 
   const poolOHLCData = usePoolOHLC(token0?.wrapped?.address, token1?.wrapped?.address, fee)
-
+  console.log('poolOHLCData.delta24h', poolOHLCData?.delta24h)
   return (
     <Container
       disabled={false}
@@ -101,7 +101,8 @@ export default function PoolSelectorRow({
         <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
       </div>
       <p>{poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}</p>
-      <p>{poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h * 100).toFixed(2)}%` : 'N/A'}</p>
+      <DeltaText delta={poolOHLCData?.delta24h}>{poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
+      {/* <p></p> */}
       {/* <p>{formatDollar({ num: tvl, digits: 1 })}</p>
       <p>{formatDollar({ num: volume, digits: 1 })}</p> */}
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
