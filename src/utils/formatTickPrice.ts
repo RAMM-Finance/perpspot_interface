@@ -14,9 +14,6 @@ interface FormatTickPriceArgs {
 }
 
 export function formatTickPrice({ price, atLimit, direction, placeholder, numberType }: FormatTickPriceArgs) {
-  if (!price || !price.numerator || !price.denominator) {
-    throw new Error('Price object is undefined or invalid');
-  }
   if (atLimit[direction]) {
     return direction === Bound.LOWER ? '0' : '∞'
   }
