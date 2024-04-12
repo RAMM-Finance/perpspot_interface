@@ -37,8 +37,16 @@ export function usePoolsData(): {
 } {
   const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
+  // console.log("usePoolsData")
+  console.log("CHECK chainId", chainId)
+  useEffect(() => {
+    if (chainId) {
+      console.log(`chainId changed to ${chainId}. refetching...`)
+      refetch()
+    }
+  }, [chainId])
 
-  const { data, isLoading, isError } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     ['queryPoolsData', dataProvider ? 'key' : 'missing key'],
     async () => {
       if (!dataProvider) throw Error('missing dataProvider')

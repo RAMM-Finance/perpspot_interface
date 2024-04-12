@@ -3,7 +3,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { getInputOutputCurrencies } from 'constants/pools'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
@@ -18,9 +18,10 @@ import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-
+import { useWeb3React } from '@web3-react/core'
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
+import { SupportedChainId } from 'constants/chains'
 
 const PoolListHeader = styled.h4`
   font-size: 12px;
@@ -105,6 +106,8 @@ export const PoolSelector = ({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
+  const { chainId } = useWeb3React()
+
   interface Pool {
     blockTimeStamp: string
     fee: number
@@ -121,8 +124,13 @@ export const PoolSelector = ({
     const call = async () => {
       try {
         setLoading(true)
-
-        const poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
+        let poolQueryData
+        if (chainId === SupportedChainId.BASE) {
+          poolQueryData = await clientBase.query(PoolAddedQuery, {}).toPromise()
+        } else {
+          poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
+        }
+        
 
         setData(poolQueryData)
 
@@ -133,7 +141,7 @@ export const PoolSelector = ({
       }
     }
     call()
-  }, [error, loading])
+  }, [chainId, error, loading])
 
   const availablePools = useMemo(() => {
     if (data) {
