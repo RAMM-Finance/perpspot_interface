@@ -185,7 +185,6 @@ export const PoolSelector = ({
     }
   }, [poolData, data, availablePools])
 
-  console.log('dataInfo', poolData)
   const dropdown = (
     <NavDropdown
       ref={modalRef}
