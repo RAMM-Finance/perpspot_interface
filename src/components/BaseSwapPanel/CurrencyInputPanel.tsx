@@ -10,7 +10,7 @@ import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Tooltip from 'components/Tooltip'
 import { isSupportedChain } from 'constants/chains'
-import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
+import { ReversedArrowsIcon } from 'nft/components/icons'
 import { darken } from 'polished'
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 import { Lock } from 'react-feather'
@@ -25,7 +25,7 @@ import { useCurrencyBalance } from '../../state/connection/hooks'
 import { ButtonGray } from '../Button'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { Input as NumericalInput } from '../NumericalInput'
-import Row, { RowBetween, RowFixed } from '../Row'
+import Row, { RowBetween, RowFixed, RowStart } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
 
@@ -296,6 +296,12 @@ const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean; fontSiz
   max-height: 44px;
 `
 
+const ReverseIconWrapper = styled.div`
+:hover{
+  cursor:pointer;
+}
+`
+
 interface SwapCurrencyInputPanelProps {
   value: string
   onUserInput: (value: string) => void
@@ -324,6 +330,9 @@ interface SwapCurrencyInputPanelProps {
     disabledTooltipBody?: ReactNode
   }
   isPrice?: ReactNode
+  limit?:boolean
+  onPriceToggle?: ()=>void
+  marketButton?: ReactNode
 }
 
 const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputPanelProps>(
@@ -349,8 +358,11 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     loading = false,
     disabled = false,
     numericalInputSettings,
+    limit = false,
     label,
     isPrice,
+    onPriceToggle,
+    marketButton,
     ...rest
   }) => {
     const [modalOpen, setModalOpen] = useState(false)
@@ -391,9 +403,14 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
         )}
 
         <Container hideInput={hideInput}>
+          <RowBetween>
           <ThemedText.SubHeaderSmall style={{ userSelect: 'none', marginBottom: '10px' }}>
             {label}
           </ThemedText.SubHeaderSmall>
+          {limit && <ReverseIconWrapper onClick={onPriceToggle}>
+            <ReversedArrowsIcon  width='15' height='15'/>
+          </ReverseIconWrapper>}
+          </RowBetween>
           <InputRow style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}>
             {!hideInput && (
               <div style={{ display: 'flex', flexGrow: '1' }} onClick={handleDisabledNumericalInputClick}>
@@ -415,7 +432,8 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                 text={numericalInputSettings?.disabledTooltipBody}
               >
                 <Aligner>
-                  <RowFixed>
+                {limit && marketButton? <>{marketButton}</>
+                : <RowFixed>
                     {pair ? (
                       <span style={{ marginRight: '0.5rem' }}>
                         <DoubleCurrencyLogo currency0={pair.token0} currency1={pair.token1} size={24} margin={true} />
@@ -440,13 +458,13 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
                           }
                       </StyledTokenName>
                     )}
-                  </RowFixed>
+                  </RowFixed>}
                   {onCurrencySelect && <StyledDropDown selected={!!currency} />}
                 </Aligner>
               </Tooltip>
-              <div>{isPrice ? <RowFixed>{isPrice}</RowFixed> : null}</div>
             </div>
           </InputRow>
+          <RowStart style={{marginTop:'5px'}}>{isPrice ? isPrice : null}</RowStart>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
               <RowBetween>

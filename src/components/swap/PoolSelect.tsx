@@ -555,7 +555,7 @@ export function SelectPool() {
                   <DoubleCurrencyLogo
                     currency0={baseCurrency as Currency}
                     currency1={quoteCurrency as Currency}
-                    size={40}
+                    size={25}
                   />
                 )}
                 <AutoColumn justify="flex-start">
