@@ -145,7 +145,6 @@ export function usePoolsOHLC(): {
       const defaultBaseIsToken0 = base.toLowerCase() === token0.toLowerCase()
 
       const invert = token0IsBase !== defaultBaseIsToken0
-      console.log('zeke:OHLC', invert, priceNow, token0Price.toString())
 
       parsed[getPoolId(token0, token1, fee)] = {
         high24: invert ? 1 / low24 : high24,

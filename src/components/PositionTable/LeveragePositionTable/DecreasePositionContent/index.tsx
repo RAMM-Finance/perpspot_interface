@@ -435,22 +435,6 @@ export default function DecreasePositionContent({
     [existingPosition, onDebouncedReduceAmount, closePosition]
   )
 
-  // const onInputChange = useCallback(
-  //   (val: string) => {
-  //     const valBN = parseBN(val)
-  //     if (!valBN) {
-  //       onDebouncedReduceAmount('')
-  //       closePosition && setClosePosition(false)
-  //     } else if (existingPosition) {
-  //       if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
-  //       if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
-  //       if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
-  //       setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
-  //     }
-  //   },
-  //   [closePosition, onDebouncedReduceAmount, existingPosition]
-  // )
-
   const theme = useTheme()
 
   const loading = useMemo(
@@ -509,7 +493,7 @@ export default function DecreasePositionContent({
       }
     }
     return undefined
-  }, [baseCurrencyIsInput, inputCurrency, pool, outputCurrency])
+  }, [baseCurrencyIsInput, inputCurrency, limitPrice, pool, outputCurrency])
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
@@ -523,7 +507,7 @@ export default function DecreasePositionContent({
   const fiatValueReduceAmount = useUSDPrice(
     tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
   )
-  // console.log('-----fiatValueReduceAmount-----','success', fiatValueReduceAmount,tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined))
+
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -645,40 +629,6 @@ export default function DecreasePositionContent({
       </div>
       <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
-          {/*<AutoColumn style={{ marginBottom: '10px' }}>
-            <DynamicSection justify="start" gap="md" disabled={false}>
-              <RowBetween>
-                {Boolean(inputCurrency && outputCurrency) && (
-                  <PriceToggleSection>
-                    <div
-                      style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
-                      onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}
-                    >
-                      <ToggleWrapper width="fit-content">
-                        <ToggleElement isActive={!baseCurrencyIsInput}>
-                          <CurrencyLogo currency={outputCurrency} size="15px" />
-                        </ToggleElement>
-                        <ToggleElement isActive={baseCurrencyIsInput}>
-                          <CurrencyLogo currency={inputCurrency} size="15px" />
-                        </ToggleElement>
-                      </ToggleWrapper>
-                    </div>
-                  </PriceToggleSection>
-                )}
-                <PriceSection onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}>
-                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                    Current Price
-                  </ThemedText.DeprecatedMain>
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
-                      {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
-                    </ThemedText.DeprecatedBody>
-                  </div>
-                </PriceSection>
-              </RowBetween>
-            </DynamicSection>
-              </AutoColumn>*/}
-
           <DynamicSection gap="md" disabled={false}>
             <InputSection>
               <SwapCurrencyInputPanelV2

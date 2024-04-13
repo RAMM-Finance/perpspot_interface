@@ -297,7 +297,6 @@ export default function useGeckoDatafeed() {
               }
             })
 
-            // console.log(`[getBars]: returned ${data.length} bar(s)`, data[0]);
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
             onErrorCallback('Unable to load historical data!')
@@ -309,9 +308,7 @@ export default function useGeckoDatafeed() {
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
           const { chainId, invertPrice } = symbolInfo
-          console.log('zeke:invert', invertPrice)
-
-          const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
+          const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
 
           let timeframe: 'hour' | 'day' | 'minute' = 'hour'
           let aggregate = '1'
