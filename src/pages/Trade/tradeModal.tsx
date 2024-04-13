@@ -54,6 +54,7 @@ import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';
@@ -382,8 +383,6 @@ const TradeTabContent = () => {
     [limitTradeState]
   )
 
-  console.log('trade', trade?.premium.toNumber())
-
   const handleCancel = useCallback(() => {
     setTradeState((currentState) => ({
       ...currentState,
@@ -532,6 +531,8 @@ const TradeTabContent = () => {
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
+
+  const isLong = activeTab === 0
 
   if (chainId && unsupportedChain(chainId)) {
     return (
@@ -713,7 +714,7 @@ const TradeTabContent = () => {
         <OutputSwapSection showDetailsDropdown={false}>
           <InputHeader>
             <ThemedText.BodySecondary>
-              <Trans>{activeTab === 0 ? 'Long' : 'Short'}</Trans>
+              <Trans>{isLong ? 'Long' : 'Short'}</Trans>
             </ThemedText.BodySecondary>
           </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
@@ -722,7 +723,12 @@ const TradeTabContent = () => {
                 !isLimitOrder
                   ? tradeState !== LeverageTradeState.VALID || !trade
                     ? '-'
-                    : formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)
+                    : isLong
+                    ? formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)
+                    : (
+                        Number(formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)) *
+                        (1 / priceToPreciseFloat(trade.executionPrice))
+                      ).toString()
                   : limitTradeState !== LimitTradeState.VALID || !limitTrade
                   ? '-'
                   : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
@@ -731,13 +737,12 @@ const TradeTabContent = () => {
               showMaxButton={false}
               hideBalance={false}
               fiatValue={fiatValueTradeOutput}
-              currency={outputCurrency ?? null}
+              currency={isLong ? outputCurrency : inputCurrency ?? null}
               otherCurrency={inputCurrency ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
               loading={tradeIsLoading}
               disabled={true}
-              bothCurrencies={true}
             />
           </Trace>
         </OutputSwapSection>

@@ -84,18 +84,7 @@ export default function SwapTabHeader({
       if (marginInPosToken) {
         onSetMarginInPosToken(!marginInPosToken)
       }
-      if (active === 0 && initial === true) {
-        switchTokens(true)
-      }
-      if (active === 0 && initial === false) {
-        switchTokens(false)
-      }
-      if (active === 1 && initial === true) {
-        switchTokens(false)
-      }
-      if (active === 1 && initial === false) {
-        switchTokens(true)
-      }
+      switchTokens(!inputIsToken0)
       onPremiumCurrencyToggle(false)
       onMarginChange('')
       onDebouncedLeverageFactor('')

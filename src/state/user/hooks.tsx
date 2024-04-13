@@ -139,11 +139,11 @@ export function useCurrentOutputCurrency(): Currency | undefined | null {
   return useCurrency(currentPool?.inputInToken0 ? currentPool?.poolKey.token1 : currentPool?.poolKey.token0)
 }
 
-export function useSelectInputCurrency(): (inputInToken0: boolean) => void {
+export function useSelectInputCurrency(): (inputInToken0: boolean | undefined) => void {
   const dispatch = useAppDispatch()
   const { chainId } = useWeb3React()
   return useCallback(
-    (inputInToken0: boolean) => {
+    (inputInToken0: boolean | undefined) => {
       chainId && dispatch(setInputCurrency({ inputInToken0, chainId }))
     },
     [dispatch, chainId]
