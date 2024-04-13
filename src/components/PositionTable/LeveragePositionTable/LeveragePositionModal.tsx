@@ -88,7 +88,8 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100%;
+  // height: 100%;
+  height: 560px;
   border-radius: 20px;
 `
 
@@ -112,15 +113,13 @@ const PositionInfoWrapper = styled(LightCard)`
   justify-content: flex-start;
   border: none;
   background: ${({ theme }) => theme.backgroundSurface};
-  // border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 0.75rem;
-  padding-top: 1.5rem;
 `
 
 const ActionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0.5rem;
+  padding: 0.75rem;
   align-items: center;
   justify-content: flex-start;
   border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -344,7 +343,7 @@ function MarginPositionInfo({
 
     if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else return Math.round(hours * 100) / 100
-  }, [position, rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
+  }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
 
   return (
     <PositionInfoWrapper>
@@ -424,29 +423,6 @@ function MarginPositionInfo({
   )
 }
 
-// const LoadingMarginPositionInfo = () => {
-//   return (
-//     <PositionInfoWrapper>
-//       <RowBetween justify="center">
-//         <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
-//         <CloseIcon style={{ width: '12px', marginRight: '10px' }} onClick={() => {}} />
-//       </RowBetween>
-//       <PositionValueWrapper>
-//         <LoadingPositionValueLabel title={<Trans>Total Position</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Collateral</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Total Debt</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Premium Deposit</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Position Health</Trans>} />
-//       </PositionValueWrapper>
-//       <LoadingBorrowLiquidity />
-//     </PositionInfoWrapper>
-//   )
-// }
-
-const SmallLoadingBubble = styled(LoadingBubble)`
-  width: 10px;
-  height: 10px;
-`
 const MediumLoadingBubble = styled(LoadingBubble)`
   width: 30px;
   height: 30px;
