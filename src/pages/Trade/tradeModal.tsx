@@ -200,7 +200,6 @@ const TradeTabContent = () => {
   )
 
   const { activeTab } = useSwapState()
-
   const currencyBalances = useMemo(
     () => ({
       [Field.INPUT]: relevantTokenBalances[0],
@@ -972,7 +971,7 @@ const TradeTabContent = () => {
                 ) : tradeIsLoading ? (
                   <Trans>Execute</Trans>
                 ) : (
-                  <Trans>Execute</Trans>
+                  <Trans>{isLong ? 'Long' : 'Short'}</Trans>
                 )}
               </ThemedText.BodyPrimary>
             </ButtonError>
