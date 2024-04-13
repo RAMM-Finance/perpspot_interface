@@ -1,12 +1,12 @@
 import { Currency } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
+import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { useCurrency } from 'hooks/Tokens'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 const LOGO_SIZE = 20
 
 const Container = styled.button<{ disabled: boolean }>`
@@ -97,13 +97,12 @@ export default function PoolSelectorRow({
     >
       <div style={{ display: 'flex' }}>
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
-        <Label>{`${labelIn} - ${labelOut} (${fee / 10000}%)`}</Label>
+        <Label>{`${labelIn}/${labelOut} (${fee / 10000}%)`}</Label>
       </div>
       <p>{poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}</p>
-      <DeltaText delta={poolOHLCData?.delta24h}>{poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
-      {/* <p></p> */}
-      {/* <p>{formatDollar({ num: tvl, digits: 1 })}</p>
-      <p>{formatDollar({ num: volume, digits: 1 })}</p> */}
+      <DeltaText delta={poolOHLCData?.delta24h}>
+        {poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h * 100).toFixed(2)}%` : 'N/A'}
+      </DeltaText>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>
   )

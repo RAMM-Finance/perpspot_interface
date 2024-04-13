@@ -12,7 +12,7 @@ import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { MouseEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
@@ -189,25 +189,6 @@ export default function PositionListItem({
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false)
 
-  function handleInvertClick(event: MouseEvent<HTMLSpanElement>) {
-    event.stopPropagation()
-    event.preventDefault()
-
-    if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert()
-      const invertedPriceUpper = priceLower.invert()
-
-      if (!isInverted) {
-        setPriceLower(invertedPriceLower)
-        setPriceUpper(invertedPriceUpper)
-      } else {
-        setPriceLower(priceLower)
-        setPriceUpper(priceUpper)
-      }
-      setIsInverted(!isInverted)
-    }
-  }
-
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
 
@@ -248,6 +229,7 @@ export default function PositionListItem({
     position?.tickLower,
     position?.tickUpper
   )
+
   useEffect(() => {
     if (priceLower && priceUpper) {
       setPriceLower(priceLower)
@@ -267,11 +249,8 @@ export default function PositionListItem({
       <PrimaryPositionIdData>
         <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
         <ThemedText.SubHeader color="textSecondary">
-          {currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+          {currencyQuote?.symbol}/{currencyBase?.symbol}
         </ThemedText.SubHeader>
-        {/* <FeeTierText>
-            <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>
-          </FeeTierText> */}
       </PrimaryPositionIdData>
       {priceLower && priceUpper ? (
         <RangeLineItem>
@@ -280,36 +259,19 @@ export default function PositionListItem({
               <Trans>Min: </Trans>
             </ExtentsText>
             <Trans>
-              <span>
-                {/* {formatTickPrice({
-                  price: priceLower,
-                  atLimit: tickAtLimit,
-                  direction: Bound.LOWER,
-                })}{' '} */}
-                {priceLowerValue?.toSignificant(10)}
-              </span>
+              <span>{priceLowerValue?.toSignificant(10)}</span>
               <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per{' '}
               <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol ?? ''} />
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-          <DoubleArrow>↔</DoubleArrow> {/* </LargeShow> */}
-          {/* <SmallOnly>
-            <DoubleArrow>↔</DoubleArrow>{' '}
-          </SmallOnly> */}
+          <DoubleArrow>↔</DoubleArrow>
           <RangeText>
             <ExtentsText>
               <Trans>Max: </Trans>
             </ExtentsText>
             <Trans>
-              <span>
-                {/* {formatTickPrice({
-                  price: priceUpper,
-                  atLimit: tickAtLimit,
-                  direction: Bound.UPPER,
-                })}{' '} */}
-                {priceUpperValue?.toSignificant(10)}
-              </span>
+              <span>{priceUpperValue?.toSignificant(10)}</span>
               <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per{' '}
               <HoverInlineText maxCharacters={10} text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} />
             </Trans>
@@ -320,38 +282,11 @@ export default function PositionListItem({
       )}
       {priceLower && priceUpper ? (
         <>
-          {/*<RangeLineItem>
-            Accumulated Fees:
-            <RangeText>
-              {/*<ExtentsText>
-              <Trans>Min: </Trans>
-            </ExtentsText> 
-              <Trans>
-                <span>-</span>
-                <HoverInlineText text={currencyQuote?.symbol} /> +
-              </Trans>
-              <Trans>
-                <span>-</span>
-                <HoverInlineText text={currencyBase?.symbol} />
-              </Trans>
-            </RangeText>
-          </RangeLineItem>*/}
           <RangeLineItem>
             <HideSmall>Estimated APR:</HideSmall>
-            {/* <SmallOnly>
-              <DoubleArrow>↔</DoubleArrow>{' '}
-            </SmallOnly> */}
             <RangeText>
-              {/*<ExtentsText>
-                   <Trans>Max:</Trans>
-                 </ExtentsText> */}
               <Trans>
-                {/* <TextWithLoadingPlaceholder syncing={rateLoading}>
-
-                </TextWithLoadingPlaceholder> */}
                 <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + '+ swap fees'}</span>
-                {/*<HoverInlineText text={currencyBase?.symbol} /> per{' '}
-                   <HoverInlineText maxCharacters={10} text={currencyQuote?.symbol} /> */}
               </Trans>
             </RangeText>
           </RangeLineItem>
@@ -359,7 +294,6 @@ export default function PositionListItem({
       ) : (
         <Loader />
       )}
-      {/* </RowBetween> */}
       <RangeBadge removed={removed} inRange={!outOfRange} />
     </LinkRow>
   )

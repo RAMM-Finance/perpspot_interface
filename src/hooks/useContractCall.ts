@@ -239,5 +239,3 @@ export function useContractCallV2(
     return { result: data, error: error as DecodedError, loading: isLoading, syncing: false }
   }, [data, isLoading, _enabled, error])
 }
-
-// export function useMultipleContractCall()
