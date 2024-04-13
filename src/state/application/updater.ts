@@ -31,11 +31,11 @@ const DEFAULT_POOLS: {
       fee: 500,
     },
     poolId: getPoolId('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', '0x912CE59144191C1204E64559FE8253a0e49E6548', 500),
-    inputInToken0: false,
-    token0IsBase: true,
+    inputInToken0: true,
+    token0IsBase: false,
     token0Symbol: 'WETH',
     token1Symbol: 'ARB',
-    invertPrice: false,
+    invertPrice: true,
   },
   [SupportedChainId.BERA_ARTIO]: {
     poolKey: {

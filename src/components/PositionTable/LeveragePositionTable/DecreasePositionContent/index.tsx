@@ -642,7 +642,7 @@ export default function DecreasePositionContent({
                 showMaxButton={false}
                 hideBalance={true}
                 currency={outputCurrency}
-                label="Limit price"
+                label="Limit Price"
                 id="limit-reduce-position-input"
                 fiatValue={fiatValueReduceAmount}
                 limit={true}
