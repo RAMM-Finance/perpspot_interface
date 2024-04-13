@@ -15,7 +15,7 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
-import { useBulkBinData, useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
+import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useRef, useState } from 'react'
@@ -295,8 +295,7 @@ export default function Trade({ className }: { className?: string }) {
       const baseSymbol = currentPool.token0IsBase ? pool.token0.symbol : pool.token1.symbol
       const quoteSymbol = currentPool.token0IsBase ? pool.token1.symbol : pool.token0.symbol
 
-      const invertPrice =
-        (currentPool.invertPrice && !poolOHLC.invertedGecko) || (!currentPool.invertPrice && poolOHLC.invertedGecko)
+      const invertPrice = poolOHLC.invertedGecko
 
       return JSON.stringify({
         poolAddress,
@@ -310,7 +309,7 @@ export default function Trade({ className }: { className?: string }) {
     return null
   }, [poolOHLC, pool, chainId, currentPool])
 
-  const { result: binData } = useBulkBinData(pool ?? undefined)
+  // const { result: binData } = useBulkBinData(pool ?? undefined)
 
   function positionEntryPrice(marginInPosToken: boolean, totalDebtInput: BN, totalPosition: BN, margin: BN): BN {
     if (marginInPosToken) {

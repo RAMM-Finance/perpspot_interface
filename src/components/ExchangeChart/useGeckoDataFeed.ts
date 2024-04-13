@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { CHAIN_TO_NETWORK_ID } from 'hooks/usePoolsOHLC'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
 import { useMemo, useRef } from 'react'
+import { formatFetchBarEndpoint, formatFetchLiveBarEndpoint } from 'utils/geckoUtils'
 
 import {
   HistoryCallback,
@@ -11,36 +11,20 @@ import {
   SubscribeBarsCallback,
 } from '../../public/charting_library'
 
-const endpoint = 'https://pro-api.coingecko.com/api/v3/onchain'
-
-const formatFetchBarEndpoint = (
-  address: string,
-  timeframe: 'day' | 'hour' | 'minute',
-  aggregate: string,
-  before_timestamp: number,
-  limit: number,
-  currency: string,
-  token: 'base' | 'quote',
-  chainId: number
-) => {
-  const network = CHAIN_TO_NETWORK_ID[chainId] ?? 'arbitrum'
-  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&before_timestamp=${before_timestamp}&limit=${limit}&currency=${currency}&token=${token}`
-}
-
-const formatFetchLiveBarEndpoint = (
-  address: string,
-  timeframe: 'day' | 'hour' | 'minute',
-  aggregate: string,
-  currency: string,
-  token: 'base' | 'quote',
-  chainId: number
-) => {
-  const network = CHAIN_TO_NETWORK_ID[chainId] ?? 'arbitrum'
-  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/${timeframe}?aggregate=${aggregate}&currency=${currency}&token=${token}&limit=1`
-}
-
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
+/*
+ *
+ * @param address: pool address
+ * @param timeframe
+ * @param aggregate
+ * @param before_timestamp
+ * @param limit
+ * @param currency
+ * @param token
+ * @param chainId
+ * @returns
+ */
 const fetchBars = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
@@ -136,7 +120,6 @@ const fetchLiveGeckoBar = async (
   error: any
 }> => {
   try {
-    console.log("gecko request")
     const response = await axios.get(
       formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, 'token', token, chainId),
       {
@@ -149,7 +132,6 @@ const fetchLiveGeckoBar = async (
 
     console.log('gecko response: ', response)
     if (response.status === 200) {
-
       const candles = response.data.data.attributes.ohlcv_list
       const bar = {
         time: Number(candles[0][0]) * 1000,
@@ -189,7 +171,7 @@ const configurationData = {
 type SymbolInfo = LibrarySymbolInfo & {
   poolAddress: string
   chainId: number
-  invertPrice: boolean
+  invertPrice: boolean // indicates whether to invert the gecko data
 }
 
 export default function useGeckoDatafeed() {
@@ -266,16 +248,6 @@ export default function useGeckoDatafeed() {
 
           try {
             // console.log('poolAddress', poolAddress)
-            let denomination
-            if (
-              poolAddress === '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
-              poolAddress === '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
-              poolAddress === '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-            ) {
-              denomination = 'quote'
-            } else {
-              denomination = 'base'
-            }
 
             const { bars, error } = await fetchBars(
               poolAddress.toLowerCase(),
@@ -284,7 +256,7 @@ export default function useGeckoDatafeed() {
               to,
               countBack,
               'token',
-              denomination as 'base' | 'quote',
+              'base',
               chainId
             )
             const noData = bars.length === 0
@@ -337,6 +309,7 @@ export default function useGeckoDatafeed() {
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
           const { chainId, invertPrice } = symbolInfo
+          console.log('zeke:invert', invertPrice)
 
           const { poolAddress, token0IsBase } = JSON.parse(localStorage.getItem('chartData') || '{}')
 
@@ -359,22 +332,21 @@ export default function useGeckoDatafeed() {
             aggregate = '5'
           }
 
-
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, token0IsBase ? 'base' : 'quote', chainId).then((res) => {
+            fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, 'base', chainId).then((res) => {
               const bar = res.bar
               if (bar) {
                 const highWickLength = Math.abs(bar.high - bar.close)
                 const lowWickLength = Math.abs(bar.low - bar.close)
-  
+
                 // Define max and min wick length
                 const maxWickLength = 0.4 // Maximum wick length as a percentage of the bar's open-close range
                 const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
-  
+
                 let high = bar.high
                 let low = bar.low
-  
+
                 // Adjust high and low prices if wick lengths exceed maximum or minimum values
                 if (highWickLength > maxWickLength * (bar.close - bar.open)) {
                   high = bar.close + maxWickLength * (bar.close - bar.open)
