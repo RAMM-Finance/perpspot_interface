@@ -48,7 +48,9 @@ import {
 } from './actions'
 import { getOutputQuote } from './getOutputQuote'
 export function useMarginTradingState(): AppState['margin'] {
-  return useAppSelector((state) => state.margin)
+  const margin = useAppSelector((state) => state.margin)
+  console.log("marginnnn", margin)
+  return margin
 }
 
 export function useMarginTradingActionHandlers(): {
@@ -387,9 +389,9 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Select a token</Trans>
     }
 
-    if (!usingCode) {
-      inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
-    }
+    // if (!usingCode) {
+    //   inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
+    // }
 
     if (!parsedMargin || parsedMargin.isZero()) {
       inputError = inputError ?? <Trans>Enter a margin amount</Trans>
@@ -1341,6 +1343,7 @@ const useSimulateMarginTrade = (
       premiumInPosToken,
       premiumSwapRoute,
     }
+    console.log("@@@@@@@@@@@@@@@@@@result in AddMarginTrade", result)
 
     return result
   }, [

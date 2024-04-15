@@ -12,6 +12,7 @@ import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
 import { getNativeTokenDBAddress } from 'utils/nativeTokens'
+import { SupportedChainId as SupportedChainIdLMT } from 'constants/chains'
 
 import useStablecoinPrice from './useStablecoinPrice'
 
@@ -83,17 +84,31 @@ export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: numbe
       if (!currency || !symbol) throw new Error('Currency not found')
       try {
         if (!apiKey) throw new Error('missing key')
+        let response
+        if (currency?.chainId === SupportedChainIdLMT.BASE) {
+          response = await axios.get(`https://pro-api.coingecko.com/api/v3/simple/token_price/base?contract_addresses=${currency?.wrapped.address}&vs_currencies=usd`,{
+            headers: {
+              Accept: 'application/json',
+              'x-cg-pro-api-key': apiKey,
+            },
+          })
+          if (response.status === 200) {
+            console.log("api result", response.data[currency?.wrapped.address.toLowerCase()]['usd'])
+            return response.data[currency?.wrapped.address.toLowerCase()]['usd']
+          }
 
-        const response = await axios.get(`https://pro-api.coingecko.com/api/v3/coins/${symbol.toLocaleLowerCase()}`, {
-          headers: {
-            Accept: 'application/json',
-            'x-cg-pro-api-key': apiKey,
-          },
-        })
-        if (response.status === 200) {
-          return response.data
+        } else {
+          response = await axios.get(`https://pro-api.coingecko.com/api/v3/coins/${symbol.toLocaleLowerCase()}`, {
+            headers: {
+              Accept: 'application/json',
+              'x-cg-pro-api-key': apiKey,
+            },
+          })
         }
-        throw new Error('Failed to fetch token data')
+        if (response.status === 200) {
+          return response.data.market_data.current_price.usd
+        }
+        throw new Error(`response status ${response.status}`)
       } catch (err) {
         throw new Error('Failed to fetch token data')
       }
@@ -108,7 +123,9 @@ export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: numbe
     if (!data || !currencyAmount) {
       return { data: undefined, isLoading: false }
     }
-    return { data: data.market_data.current_price.usd * parseFloat(currencyAmount.toExact()), isLoading: false }
+    console.log("useUSDPriceBNV2 -> data.current_price.usd, currencyAmount", data, currencyAmount.toExact())
+    console.log("trade?.margin Amount", parseFloat(currencyAmount.toExact()))
+    return { data: data * parseFloat(currencyAmount.toExact()), isLoading: false }
   }, [data, currencyAmount])
 }
 

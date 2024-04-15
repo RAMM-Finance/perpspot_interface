@@ -348,6 +348,8 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
+
+
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
     (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
