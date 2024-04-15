@@ -148,9 +148,7 @@ export abstract class MarginFacilitySDK {
       slippedTickMax: param.slippedTickMax,
       marginInPosToken: param.marginInPosToken,
     }
-
-
-
+    
     console.log("RESLTTTT", param2.marginInPosToken ? param2.positionIsToken0 ? key.token0 : key.token1 : param2.positionIsToken0 ? key.token1 : key.token0)
     console.log("RESLTTTT 2222", param2.margin)
     calldatas.push(
