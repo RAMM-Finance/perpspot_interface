@@ -1242,13 +1242,7 @@ const useSimulateMarginTrade = (
       minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
     console.log("compute4 !!!")
-    console.log("marginInPosToken?", marginInPosToken)
-    if (marginInPosToken) {
-      console.log("marginInOutput!!!!", outputCurrency)
-    } else {
-      console.log("marginInInput!!!!", inputCurrency)
-    }
-
+    
     const params = {
       positionKey,
       margin: marginInPosToken
