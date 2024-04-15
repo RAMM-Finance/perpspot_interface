@@ -1072,7 +1072,7 @@ export default function SimplePool() {
                   >
                     <ThemedText.BodyPrimary fontSize={12}>Yield Source: </ThemedText.BodyPrimary>
                     <ThemedText.BodySecondary fontSize={12}>
-                      {`Variable Premium Rates` + `  + Uniswap Swap Fees`}
+                      {`Variable Interest Rates` + `  + Uniswap Swap Fees`}
                     </ThemedText.BodySecondary>
                   </RowBetween>
                 ) : (

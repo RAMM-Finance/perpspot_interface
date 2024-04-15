@@ -229,14 +229,14 @@ export function LeveragePositionModal(props: TradeModalProps) {
               isActive={activeTab === TradeModalActiveTab.DEPOSIT_PREMIUM}
               onClick={() => setActiveTab(TradeModalActiveTab.DEPOSIT_PREMIUM)}
             >
-              Deposit Premium
+              Deposit Interest
             </TabElement>
             <TabElement
               last={true}
               isActive={activeTab === TradeModalActiveTab.WITHDRAW_PREMIUM}
               onClick={() => setActiveTab(TradeModalActiveTab.WITHDRAW_PREMIUM)}
             >
-              Withdraw Premium
+              Withdraw Interest
             </TabElement>
           </TabsWrapper>
           <ContentWrapper>{displayedContent}</ContentWrapper>
@@ -378,8 +378,8 @@ function MarginPositionInfo({
           type={NumberType.SwapTradeAmount}
         />
         <PositionValueLabel
-          title={<Trans>Premium Deposit</Trans>}
-          description={<Trans>Current premium deposit remaining</Trans>}
+          title={<Trans>Interest Deposit</Trans>}
+          description={<Trans>Current interest deposit remaining</Trans>}
           syncing={loading}
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
           newValue={

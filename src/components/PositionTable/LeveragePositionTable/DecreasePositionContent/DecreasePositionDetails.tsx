@@ -83,7 +83,7 @@ export function DecreasePositionDetails({
               <MouseoverTooltip
                 text={
                   <Trans>
-                    Estimated PnL including premium withdrawn when position is closed at current market price
+                    Estimated PnL including interest withdrawn when position is closed at current market price
                   </Trans>
                 }
               >
@@ -109,9 +109,9 @@ export function DecreasePositionDetails({
         ) : null}
         {removePremium ? (
           <ValueLabel
-            label="Returned Premium"
+            label="Returned Interest"
             description="Position will automatically withdraw your remaining 
-              premium deposit and refund you."
+              interest deposit and refund you."
             value={
               existingPosition?.marginInPosToken
                 ? formatBNToString(txnInfo?.withdrawnPremium, NumberType.SwapTradeAmount)

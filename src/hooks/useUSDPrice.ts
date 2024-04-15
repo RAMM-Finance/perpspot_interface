@@ -174,6 +174,7 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   data: number | undefined
   isLoading: boolean
 } {
+  
   const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
   const currency = currencyAmount?.currency
   const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)
@@ -184,7 +185,6 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'cache-first',
   })
-  // console.log('sucess', '-----useUSDPrice----', currencyAmount)
   // Use USDC price for chains not supported by backend yet
   const stablecoinPrice = useStablecoinPrice(!isGqlSupportedChain(currency?.chainId) ? currency : undefined)
   if (!isGqlSupportedChain(currency?.chainId) && currencyAmount && stablecoinPrice) {
@@ -192,6 +192,7 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   }
 
   const isFirstLoad = networkStatus === NetworkStatus.loading
+  // console.log('sucess', '-----useUSDPrice----', currencyAmount, stablecoinPrice)
 
   // Otherwise, get the price of the token in ETH, and then multiple by the price of ETH
   const ethUSDPrice = data?.token?.project?.markets?.[0]?.price?.value

@@ -275,12 +275,12 @@ export default function TransactionSettings({
         <AutoColumn gap="sm">
           <RowFixed>
             <ThemedText.DeprecatedBlack fontWeight={400} fontSize={14} color={theme.textSecondary}>
-              <Trans>Premium Deposit</Trans>
+              <Trans>Interest Deposit</Trans>
             </ThemedText.DeprecatedBlack>
             <QuestionHelper
               text={
                 <Trans>
-                  When positions are added you are automatically supplying this amount of premium, as a percentage of
+                  When positions are added you are automatically supplying this amount of interest, as a percentage of
                   borrowed amount.
                 </Trans>
               }

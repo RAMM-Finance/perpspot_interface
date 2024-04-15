@@ -1119,7 +1119,7 @@ export function PositionPage() {
                         <RowBetween style={{ alignItems: 'flex-start' }}>
                           <AutoColumn gap="md">
                             <Label>
-                              <Trans>Unclaimed Fees + Premiums</Trans>
+                              <Trans>Unclaimed Fees + Interests</Trans>
                             </Label>
                             {fiatValueOfFees?.greaterThan(new Fraction(1, 100)) ? (
                               <ThemedText.DeprecatedLargeHeader
@@ -1163,7 +1163,7 @@ export function PositionPage() {
                               ) : (
                                 <>
                                   <ThemedText.BodySmall fontWeight={600} color="textSecondary">
-                                    <Trans>Collect Fees + Premiums</Trans>
+                                    <Trans>Collect Fees + Interests</Trans>
                                   </ThemedText.BodySmall>
                                 </>
                               )}
@@ -1196,7 +1196,7 @@ export function PositionPage() {
                       <Label>
                         <ThemedText.DeprecatedLargeHeader color={theme.accentSuccess} fontSize="12px" fontWeight={500}>
                           <Trans>
-                            Premium only APR (variable) : {ratesData ? formatBNToString(ratesData?.apr) + '%' : '-'}
+                            Interest only APR (variable) : {ratesData ? formatBNToString(ratesData?.apr) + '%' : '-'}
                           </Trans>
                         </ThemedText.DeprecatedLargeHeader>
                       </Label>

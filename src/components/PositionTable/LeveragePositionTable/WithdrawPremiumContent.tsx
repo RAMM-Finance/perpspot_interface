@@ -194,7 +194,7 @@ function useDerivedWithdrawPremiumInfo(
         setLastBlockNumber(blockNumber)
         return true
       } catch (err) {
-        console.log('withdraw premium error', err)
+        console.log('withdraw interest error', err)
         throw err
       }
     },
@@ -421,7 +421,7 @@ export function WithdrawPremiumContent({
     <CardWrapper>
       {showModal && (
         <ConfirmModifyPositionModal
-          title="Confirm Withdraw Premium"
+          title="Confirm Withdraw Interest"
           onDismiss={handleDismiss}
           isOpen={showModal}
           attemptingTxn={attemptingTxn}
@@ -587,7 +587,7 @@ function WithdrawPremiumHeader({
               </TruncatedText>
             </RowFixed>
             <RowFixed gap="0px">
-              <ThemedText.BodySmall marginRight="10px">Resulting Premium Deposit</ThemedText.BodySmall>
+              <ThemedText.BodySmall marginRight="10px">Resulting Interest Deposit</ThemedText.BodySmall>
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <ThemedText.BodySecondary>{txnInfo?.newDepositAmount.tokenSymbol}</ThemedText.BodySecondary>
             </RowFixed>
