@@ -401,16 +401,20 @@ export default function AddLiquidity() {
       const minPrice = pricesAtLimit[Bound.LOWER]
       if (minPrice) {
         onLeftRangeInput(
-          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange).toFixed(12).toString()
+          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange)
+            .toFixed(12)
+            .toString()
         )
       }
       const maxPrice = pricesAtLimit[Bound.UPPER]
       if (maxPrice) {
         onRightRangeInput(
-          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * rightRange).toFixed(12).toString()
+          (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * rightRange)
+            .toFixed(12)
+            .toString()
         )
       }
-        
+
       setSearchParams(searchParams)
 
       sendEvent({
@@ -421,20 +425,20 @@ export default function AddLiquidity() {
     [pricesAtLimit, searchParams, setSearchParams, invertPrice, price, onLeftRangeInput, onRightRangeInput]
   )
 
-  const handleSetFullRange = useCallback(() => {
-    getSetFullRange()
+  // const handleSetFullRange = useCallback(() => {
+  //   getSetFullRange()
 
-    const minPrice = pricesAtLimit[Bound.LOWER]
-    if (minPrice) searchParams.set('minPrice', minPrice.toSignificant(5))
-    const maxPrice = pricesAtLimit[Bound.UPPER]
-    if (maxPrice) searchParams.set('maxPrice', maxPrice.toSignificant(5))
-    setSearchParams(searchParams)
+  //   const minPrice = pricesAtLimit[Bound.LOWER]
+  //   if (minPrice) searchParams.set('minPrice', minPrice.toSignificant(5))
+  //   const maxPrice = pricesAtLimit[Bound.UPPER]
+  //   if (maxPrice) searchParams.set('maxPrice', maxPrice.toSignificant(5))
+  //   setSearchParams(searchParams)
 
-    sendEvent({
-      category: 'Liquidity',
-      action: 'Full Range Clicked',
-    })
-  }, [getSetFullRange, pricesAtLimit, searchParams, setSearchParams])
+  //   sendEvent({
+  //     category: 'Liquidity',
+  //     action: 'Full Range Clicked',
+  //   })
+  // }, [getSetFullRange, pricesAtLimit, searchParams, setSearchParams])
 
   // START: sync values with query string
   const oldSearchParams = usePrevious(searchParams)

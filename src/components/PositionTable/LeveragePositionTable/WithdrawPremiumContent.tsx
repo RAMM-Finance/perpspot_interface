@@ -55,17 +55,6 @@ const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
-const StyledBGCard = styled(StyledCard)`
-  background: ${({ theme }) => theme.surface1};
-`
-
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-`
-
 const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
   padding: 0;
   align-items: center;
@@ -75,6 +64,7 @@ const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>
 const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  margin-top: 0.5rem;
   gap: 1rem;
   width: 100%;
 `
@@ -108,7 +98,7 @@ const CloseText = styled(ThemedText.LabelSmall)<{ isActive: boolean }>`
 `
 
 const CardWrapper = styled(DarkCard)`
-  width: 100%;
+  width: 390px;
   margin: 0;
   padding: 0;
   padding-right: 1rem;

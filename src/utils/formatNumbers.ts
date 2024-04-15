@@ -52,7 +52,7 @@ export const formatDollarAmount = ({ num, long = false, digits = 2, round = true
 
 // Convert [Price] to number with necessary precision for price formatting.
 export const priceToPreciseFloat = (price: Price<Currency, Currency> | undefined) => {
-  if (!price) return undefined
+  if (!price) return 0
   const floatForLargerNumbers = parseFloat(price.toFixed(9))
   if (floatForLargerNumbers < 0.1) {
     return parseFloat(price.toSignificant(6))

@@ -1107,13 +1107,13 @@ export default function SimplePool() {
                 <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
                   <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {limWETHPrice && (limWETHPrice / 1e18).toFixed(2)}
+                    {`${limWETHPrice && (limWETHPrice / 1e18).toFixed(2)} limWETH/ETH`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary fontSize={12}>Total Supply (ETH):</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${((limwethSupply / 1e18) * WETHPrice.data).toFixed(2)}`}
+                    {WETHPrice.data && `${limwethSupply / 1e18}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween
@@ -1123,9 +1123,9 @@ export default function SimplePool() {
                     borderBottom: `1px solid ${theme.accentActiveSoft}`,
                   }}
                 >
-                  <ThemedText.BodyPrimary fontSize={12}>Total Backing (USD): </ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `$${((limwethBacking / 1e18) * WETHPrice.data).toFixed(2)}`}
+                    {WETHPrice.data && `${limwethBacking / 1e18}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
@@ -1143,7 +1143,7 @@ export default function SimplePool() {
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${((limwethUtilized / 1e18) * WETHPrice.data).toFixed(2)}%`}
+                    {WETHPrice.data && `${(limwethUtilized / 1e18).toFixed(2)}%`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>

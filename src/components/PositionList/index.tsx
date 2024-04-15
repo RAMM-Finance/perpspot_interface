@@ -76,7 +76,7 @@ export default function PositionList({
     <>
       <DesktopHeader>
         <div>
-          <Trans >Your positions</Trans>
+          <Trans>Your positions</Trans>
           {positions && ' (' + positions.length + ')'}
         </div>
         <ButtonPrimary
@@ -96,42 +96,9 @@ export default function PositionList({
         >
           <Trans>Add New Position</Trans>
         </ButtonPrimary>
-        {/* <ToggleLabel
-          id="desktop-hide-closed-positions"
-          onClick={() => {
-            setUserHideClosedPositions(!userHideClosedPositions)
-          }}
-        >
-          {userHideClosedPositions ? (
-            <ThemedText.BodyPrimary>
-              <Trans>Show closed positions</Trans>
-            </ThemedText.BodyPrimary>
-          ) : (
-            <ThemedText.BodyPrimary>
-              <Trans>Hide closed positions</Trans>
-            </ThemedText.BodyPrimary>
-          )}
-        </ToggleLabel> */}
       </DesktopHeader>
       <MobileHeader>
         <Trans>Your positions</Trans>
-        {/* <ToggleWrap>
-          <ToggleLabel
-            onClick={() => {
-              setUserHideClosedPositions(!userHideClosedPositions)
-            }}
-          >
-            {userHideClosedPositions ? (
-              <ThemedText.BodyPrimary>
-                <Trans>Show closed positions</Trans>
-              </ThemedText.BodyPrimary>
-            ) : (
-              <ThemedText.BodyPrimary>
-                <Trans>Hide closed positions</Trans>
-              </ThemedText.BodyPrimary>
-            )}
-          </ToggleLabel>
-        </ToggleWrap> */}
         <ButtonPrimary
           style={{
             marginLeft: '20px',

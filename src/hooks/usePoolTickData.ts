@@ -22,6 +22,7 @@ const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [
   SupportedChainId.ARBITRUM_ONE,
   // SupportedChainId.ARBITRUM_GOERLI,
   // SupportedChainId.SEPOLIA,
+  SupportedChainId.BASE,
 ]
 
 // Tick with fields parsed to JSBIs, and active liquidity computed.
@@ -196,6 +197,8 @@ function useAllV3Ticks(
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
 
+  console.log('zeke:', data, tickLensTickData, isLoading)
+
   useEffect(() => {
     if (data?.ticks.length) {
       setSubgraphTickData((tickData) => [...tickData, ...data.ticks])
@@ -239,6 +242,7 @@ export function usePoolActiveLiquidity(
   const activeTick = useMemo(() => getActiveTick(pool[1]?.tickCurrent, feeAmount), [pool, feeAmount])
 
   const { isLoading, error, ticks } = useAllV3Ticks(currencyA, currencyB, feeAmount)
+  // console.log('zeke:', ticks, isLoading, error)
 
   return useMemo(() => {
     if (

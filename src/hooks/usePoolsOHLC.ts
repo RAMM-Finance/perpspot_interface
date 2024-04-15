@@ -14,6 +14,7 @@ import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { PoolKey, RawPoolKey } from 'types/lmtv2position'
+import { formatOhlcEndpoint } from 'utils/geckoUtils'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { Q192 } from 'utils/lmtSDK/internalConstants'
 
@@ -34,11 +35,6 @@ interface HydratedPool {
 export const CHAIN_TO_NETWORK_ID: { [chainId: number]: string } = {
   [SupportedChainId.ARBITRUM_ONE]: 'arbitrum',
   [SupportedChainId.BASE]: 'base',
-}
-
-const formatEndpoint = (address: string, currency: string, token: string, chainId: number) => {
-  const network = CHAIN_TO_NETWORK_ID[chainId]
-  return `${endpoint}/networks/${network}/pools/${address}/ohlcv/day?limit=1&currency=${currency}&token=${token.toLowerCase()}`
 }
 
 const getPoolAddress = (tokenA: string, tokenB: string, fee: number, factoryAddress: string) => {
@@ -112,19 +108,7 @@ export function usePoolsOHLC(): {
         V3_CORE_FACTORY_ADDRESSES[adjustedChainId]
       )
 
-      // let denomination
-
-      // if (
-      //   poolAddress === '0x2f5e87C9312fa29aed5c179E456625D79015299c' ||
-      //   poolAddress === '0x0E4831319A50228B9e450861297aB92dee15B44F' ||
-      //   poolAddress === '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-      // ) {
-      //   denomination = 'quote'
-      // } else {
-      //   denomination = 'base'
-      // }
-
-      const endpoint = formatEndpoint(poolAddress.toLocaleLowerCase(), 'token', adjustedPool.token0, adjustedChainId)
+      const endpoint = formatOhlcEndpoint(poolAddress.toLocaleLowerCase(), 'token', 'base', adjustedChainId, 1, 'day')
 
       results.push(
         axios.get(endpoint, {
@@ -158,12 +142,6 @@ export function usePoolsOHLC(): {
 
       const token0IsBase = d0.lt(d1)
       const [base, quote, inputInToken0] = getDefaultBaseQuote(token0, token1, chainId)
-      console.log(
-        'quote',
-        quote === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase(),
-        token0Price.toString(),
-        priceNow
-      )
       const defaultBaseIsToken0 = base.toLowerCase() === token0.toLowerCase()
 
       const invert = token0IsBase !== defaultBaseIsToken0

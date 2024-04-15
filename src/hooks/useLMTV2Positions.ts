@@ -46,7 +46,13 @@ export function useRateAndUtil(
     return data
   }, [token0, token1, fee, tickLower, tickUpper])
 
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 3)
+  const { result, loading, error, syncing } = useContractCallV2(
+    DATA_PROVIDER_ADDRESSES,
+    calldata,
+    ['getUtilAndAPR'],
+    false,
+    true
+  )
 
   return useMemo(() => {
     if (!result) {

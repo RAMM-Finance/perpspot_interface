@@ -7,7 +7,7 @@ import { useWeb3React } from '@web3-react/core'
 import BigNumber, { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
-import { ButtonError } from 'components/Button'
+import { ButtonError, SmallButtonPrimary } from 'components/Button'
 import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
@@ -25,7 +25,6 @@ import { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import Toggle from 'components/Toggle'
-import { ToggleElement, ToggleWrapper } from 'components/Toggle/MultiToggle'
 import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
@@ -35,14 +34,13 @@ import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { DynamicSection } from 'pages/Trade/tradeModal'
-import { PriceToggleSection } from 'pages/Trade/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Trade/tradeModal'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import { useCurrentOutputCurrency, useUserSlippageTolerance } from 'state/user/hooks'
+import { useUserSlippageTolerance } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
@@ -147,6 +145,12 @@ const LabelText = styled.div<{ color: string }>`
   flex-direction: row;
 `
 
+const MarketButton = styled(SmallButtonPrimary)<{ active: boolean }>`
+background-color:${({ active, theme }) => (active ? 'transparent' : theme.accentActive)};
+border-radius: 8px
+border: 1px solid;
+`
+
 const BelowRangeLimitReduceNote = () => {
   const theme = useTheme()
   return (
@@ -231,6 +235,7 @@ export default function DecreasePositionContent({
   }, [positionKey])
   // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
   // const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
+  const [txnThresholdExceeded, setTxnThresholdExceeded] = useState(false)
 
   const { position: orderPosition, syncing: orderSyncing } = useMarginOrderPositionFromPositionId(orderKey)
 
@@ -270,10 +275,13 @@ export default function DecreasePositionContent({
       (!positionKey.isToken0 && borrowLiquidityRange === BorrowedLiquidityRange.ABOVE_RANGE)
     ) {
       setCurrentState((prev) => ({ ...prev, isLimit: false, limitAvailable: false }))
+      setTxnThresholdExceeded(false)
     } else if (borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE) {
       setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
+      setTxnThresholdExceeded(false)
     } else {
       setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
+      setTxnThresholdExceeded(true)
     }
   }, [borrowLiquidityRange, positionKey.isToken0])
 
@@ -427,22 +435,6 @@ export default function DecreasePositionContent({
     [existingPosition, onDebouncedReduceAmount, closePosition]
   )
 
-  // const onInputChange = useCallback(
-  //   (val: string) => {
-  //     const valBN = parseBN(val)
-  //     if (!valBN) {
-  //       onDebouncedReduceAmount('')
-  //       closePosition && setClosePosition(false)
-  //     } else if (existingPosition) {
-  //       if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
-  //       if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
-  //       if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
-  //       setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
-  //     }
-  //   },
-  //   [closePosition, onDebouncedReduceAmount, existingPosition]
-  // )
-
   const theme = useTheme()
 
   const loading = useMemo(
@@ -483,13 +475,25 @@ export default function DecreasePositionContent({
       const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
       const baseIsToken0 = (baseCurrencyIsInput && inputIsToken0) || (!baseCurrencyIsInput && !inputIsToken0)
       if (baseIsToken0) {
+        if (
+          limitPrice === '' ||
+          limitPrice === formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
+        ) {
+          setLimitPrice(formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true))
+        }
         return formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       } else {
+        if (
+          limitPrice === '' ||
+          limitPrice === formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
+        ) {
+          setLimitPrice(formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true))
+        }
         return formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       }
     }
     return undefined
-  }, [baseCurrencyIsInput, inputCurrency, pool, outputCurrency])
+  }, [baseCurrencyIsInput, inputCurrency, limitPrice, pool, outputCurrency])
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
@@ -497,11 +501,13 @@ export default function DecreasePositionContent({
 
   // Function to fix reduceAmount to 8 decimal places
   function fixedToEightDecimals(amount: string): string {
-    return new BigNumber(amount).toFixed(8);
-}
+    return new BigNumber(amount).toFixed(8)
+  }
 
-  const fiatValueReduceAmount = useUSDPrice(tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined))
-  // console.log('-----fiatValueReduceAmount-----','success', fiatValueReduceAmount,tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)) 
+  const fiatValueReduceAmount = useUSDPrice(
+    tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
+  )
+
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -535,8 +541,10 @@ export default function DecreasePositionContent({
                 removePremium={closePosition}
                 allowedSlippage={allowedSlippage}
                 existingPosition={existingPosition}
-                showAcceptChanges={false}
-                onAcceptChanges={() => {}}
+                showAcceptChanges={txnThresholdExceeded}
+                onAcceptChanges={() => {
+                  setTxnThresholdExceeded(false)
+                }}
               />
             ) : null
           }
@@ -545,7 +553,7 @@ export default function DecreasePositionContent({
               errorMessage={currentState.errorMessage ? <Trans>{currentState.errorMessage}</Trans> : undefined}
               onConfirm={handleReducePosition}
               confirmText="Confirm Reduce Position"
-              disabledConfirm={!!inputError || !txnInfo}
+              disabledConfirm={!!inputError || !txnInfo || txnThresholdExceeded}
             />
           }
           title="Confirm Reduce Position"
@@ -567,8 +575,10 @@ export default function DecreasePositionContent({
               <ConfirmLimitReducePositionHeader
                 txnInfo={lmtTxnInfo}
                 inputCurrency={inputCurrency ?? undefined}
-                showAcceptChanges={false}
-                onAcceptChanges={() => {}}
+                showAcceptChanges={txnThresholdExceeded}
+                onAcceptChanges={() => {
+                  setTxnThresholdExceeded(false)
+                }}
                 outputCurrency={outputCurrency ?? undefined}
                 existingPosition={existingPosition}
               />
@@ -579,7 +589,7 @@ export default function DecreasePositionContent({
               errorMessage={currentState.limitErrorMessage ? <Trans>{currentState.limitErrorMessage}</Trans> : null}
               onConfirm={handleReduceLimitPosition}
               confirmText="Confirm Reduce Limit Order"
-              disabledConfirm={!!lmtInputError || lmtTradeState !== DerivedInfoState.VALID}
+              disabledConfirm={!!lmtInputError || lmtTradeState !== DerivedInfoState.VALID || txnThresholdExceeded}
             />
           }
           pendingText={<Trans>Submitting Limit Order ...</Trans>}
@@ -619,40 +629,6 @@ export default function DecreasePositionContent({
       </div>
       <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
-          <AutoColumn style={{ marginBottom: '10px' }}>
-            <DynamicSection justify="start" gap="md" disabled={false}>
-              <RowBetween>
-                {Boolean(inputCurrency && outputCurrency) && (
-                  <PriceToggleSection>
-                    <div
-                      style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
-                      onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}
-                    >
-                      <ToggleWrapper width="fit-content">
-                        <ToggleElement isActive={!baseCurrencyIsInput}>
-                          <CurrencyLogo currency={outputCurrency} size="15px" />
-                        </ToggleElement>
-                        <ToggleElement isActive={baseCurrencyIsInput}>
-                          <CurrencyLogo currency={inputCurrency} size="15px" />
-                        </ToggleElement>
-                      </ToggleWrapper>
-                    </div>
-                  </PriceToggleSection>
-                )}
-                <PriceSection onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}>
-                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                    Current Price
-                  </ThemedText.DeprecatedMain>
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
-                      {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
-                    </ThemedText.DeprecatedBody>
-                  </div>
-                </PriceSection>
-              </RowBetween>
-            </DynamicSection>
-          </AutoColumn>
-
           <DynamicSection gap="md" disabled={false}>
             <InputSection>
               <SwapCurrencyInputPanelV2
@@ -660,12 +636,26 @@ export default function DecreasePositionContent({
                 onUserInput={(str: string) => {
                   setLimitPrice(str)
                 }}
+                onPriceToggle={() => {
+                  setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
+                }}
                 showMaxButton={false}
                 hideBalance={true}
                 currency={outputCurrency}
-                label="Limit price"
+                label="Limit Price"
                 id="limit-reduce-position-input"
                 fiatValue={fiatValueReduceAmount}
+                limit={true}
+                marketButton={
+                  <MarketButton
+                    onClick={() => {
+                      if (currentPrice) setLimitPrice(currentPrice)
+                    }}
+                    active={limitPrice === currentPrice}
+                  >
+                    Market
+                  </MarketButton>
+                }
                 isPrice={
                   <Button
                     sx={{ textTransform: 'none' }}
@@ -678,10 +668,10 @@ export default function DecreasePositionContent({
                       }
                     }}
                   >
-                    {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="18px" />}
+                    {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="16px" />}
                     <ThemedText.BodySecondary fontSize={12}>{quoteCurrency?.symbol}</ThemedText.BodySecondary>
-                    <ThemedText.BodySecondary fontSize={11}>per</ThemedText.BodySecondary>
-                    {baseCurrency && <CurrencyLogo currency={baseCurrency} size="18px" />}
+                    <ThemedText.BodySecondary fontSize={11}>per 1</ThemedText.BodySecondary>
+                    {baseCurrency && <CurrencyLogo currency={baseCurrency} size="16px" />}
                     <ThemedText.BodySecondary fontSize={12}>{baseCurrency?.symbol}</ThemedText.BodySecondary>
                   </Button>
                 }

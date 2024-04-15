@@ -533,6 +533,7 @@ const SwapTabContent = () => {
                     </MouseoverTooltip>
                   </div>
                   <Trans>Approve use of {currencies[Field.INPUT]?.symbol}</Trans>
+                  {/* <Trans>Swap</Trans> */}
                 </>
               )}
             </ButtonPrimary>

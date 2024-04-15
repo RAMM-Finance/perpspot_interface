@@ -2,8 +2,8 @@ import { Trans } from '@lingui/macro'
 import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { Pool, tickToPrice } from '@uniswap/v3-sdk'
+import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { LmtBorrowRangeBadge } from 'components/Badge/RangeBadge'
 import { BaseButton } from 'components/Button'
 import Card, { LightCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -12,33 +12,29 @@ import { TextWrapper } from 'components/HoverInlineText'
 import { LmtModal } from 'components/Modal'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { GreenText } from 'components/OrdersTable/TokenRow'
-import { DarkRateToggle } from 'components/RateToggle'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import { BorrowedLiquidityRange, getLiquidityTicks, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
+import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
 import { ReactNode, useMemo, useState } from 'react'
-import { Bound } from 'state/mint/v3/actions'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled from 'styled-components/macro'
-import { CloseIcon, HideExtraSmall, ThemedText } from 'theme'
+import { CloseIcon, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
-import { formatTickPrice } from 'utils/formatTickPrice'
+import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
 import DecreasePositionContent from './DecreasePositionContent'
 import { DepositPremiumContent } from './DepositPremiumContent'
 import { LoadingBubble } from './loading'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
-import { useWeb3React } from '@web3-react/core'
-import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
-import { TokenBN } from 'utils/lmtSDK/internalConstants'
 
 interface TradeModalProps {
   isOpen: boolean
@@ -58,7 +54,6 @@ interface DerivedDepositPremiumInfo {
   newDepositAmount: TokenBN
   amount: TokenBN
 }
-
 
 const TabElement = styled(BaseButton)<{ isActive: boolean; first?: boolean; last?: boolean }>`
   padding: 0;
@@ -93,7 +88,8 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100%;
+  // height: 100%;
+  height: 560px;
   border-radius: 20px;
 `
 
@@ -117,15 +113,13 @@ const PositionInfoWrapper = styled(LightCard)`
   justify-content: flex-start;
   border: none;
   background: ${({ theme }) => theme.backgroundSurface};
-  // border-left: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 0.75rem;
-  padding-top: 1.5rem;
 `
 
 const ActionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0.5rem;
+  padding: 0.75rem;
   align-items: center;
   justify-content: flex-start;
   border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -298,7 +292,7 @@ function MarginPositionInfo({
   inputCurrency,
   outputCurrency,
   onClose,
-  alteredPremium
+  alteredPremium,
 }: // onClose,
 {
   position: MarginPositionDetails | undefined
@@ -306,7 +300,7 @@ function MarginPositionInfo({
   loading: boolean
   inputCurrency?: Currency | undefined
   outputCurrency?: Currency | undefined
-  onClose: () => void,
+  onClose: () => void
   alteredPremium?: BN | undefined
 }) {
   const currency0 = useCurrency(position?.poolKey.token0)
@@ -321,7 +315,6 @@ function MarginPositionInfo({
     account,
     position?.isToken0
   )
-
 
   const totalDebtInput = position?.totalDebtInput
   const premiumLeft = position?.premiumLeft
@@ -348,12 +341,9 @@ function MarginPositionInfo({
 
     const hours = Number(premiumLeftForAlt) / premPerHour
 
-    if (estimatedTimeToClose)
-      return Math.round(hours * 100) / 100 + estimatedTimeToClose
-    else 
-      return Math.round(hours * 100) / 100
-  }, [position, rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
-
+    if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
+    else return Math.round(hours * 100) / 100
+  }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
 
   return (
     <PositionInfoWrapper>
@@ -394,11 +384,7 @@ function MarginPositionInfo({
           syncing={loading}
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
           newValue={
-            alteredPosition?.premiumLeft
-              ? alteredPosition?.premiumLeft.gt(0)
-                ? alteredPremium
-                : new BN(0)
-              : undefined
+            alteredPosition?.premiumLeft ? (alteredPosition?.premiumLeft.gt(0) ? alteredPremium : new BN(0)) : undefined
           }
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
@@ -437,29 +423,6 @@ function MarginPositionInfo({
   )
 }
 
-// const LoadingMarginPositionInfo = () => {
-//   return (
-//     <PositionInfoWrapper>
-//       <RowBetween justify="center">
-//         <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
-//         <CloseIcon style={{ width: '12px', marginRight: '10px' }} onClick={() => {}} />
-//       </RowBetween>
-//       <PositionValueWrapper>
-//         <LoadingPositionValueLabel title={<Trans>Total Position</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Collateral</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Total Debt</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Premium Deposit</Trans>} />
-//         <LoadingPositionValueLabel title={<Trans>Position Health</Trans>} />
-//       </PositionValueWrapper>
-//       <LoadingBorrowLiquidity />
-//     </PositionInfoWrapper>
-//   )
-// }
-
-const SmallLoadingBubble = styled(LoadingBubble)`
-  width: 10px;
-  height: 10px;
-`
 const MediumLoadingBubble = styled(LoadingBubble)`
   width: 30px;
   height: 30px;
@@ -772,7 +735,7 @@ function PositionTimeLabel({
   newValue,
   title,
   description,
-  syncing
+  syncing,
 }: {
   value?: number
   newValue?: number

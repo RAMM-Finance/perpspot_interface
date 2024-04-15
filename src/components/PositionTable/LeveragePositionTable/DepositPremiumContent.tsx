@@ -71,6 +71,7 @@ const InputWrapper = styled.div`
   gap: 1rem;
   /* height: 100%; */
   width: 100%;
+  margin-top: 0.5rem;
 `
 
 const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
@@ -88,9 +89,9 @@ enum DerivedInfoState {
 
 const InputSection = styled.div`
   background-color: ${({ theme }) => theme.surface1};
-  /* margin-bottom: 2rem; */
-  margin-top: 1.5rem;
+  margin-bottom: 10px;
   padding: 10px;
+  margin-top: 5px;
   &:focus-within {
     border: 1px solid ${({ theme }) => theme.accentActive};
   }
@@ -268,7 +269,7 @@ function useDerivedDepositPremiumInfo(
 }
 
 const CardWrapper = styled(DarkCard)`
-  width: 100%;
+  width: 390px;
   margin: 0;
   padding: 0;
   padding-right: 1rem;
@@ -285,7 +286,7 @@ export function DepositPremiumContent({
   inputCurrency,
   outputCurrency,
   positionData,
-  handleTxnInfo
+  handleTxnInfo,
 }: {
   positionKey: TraderPositionKey
   onPositionChange: (newPosition: AlteredPositionProperties) => void
@@ -294,7 +295,7 @@ export function DepositPremiumContent({
   positionData: {
     position: MarginPositionDetails | undefined
     loading: boolean
-  },
+  }
   handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined) => void
 }) {
   const { position } = positionData
@@ -390,7 +391,19 @@ export function DepositPremiumContent({
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
     }
-  }, [account, chainId, provider, txnInfo, position, pool, outputCurrency, inputCurrency, positionKey, amount])
+  }, [
+    account,
+    chainId,
+    provider,
+    tradeState,
+    txnInfo,
+    position,
+    pool,
+    outputCurrency,
+    inputCurrency,
+    positionKey,
+    amount,
+  ])
 
   const handleDeposit = useCallback(() => {
     if (!callback || !position || !txnInfo || !inputCurrency || !outputCurrency) {

@@ -1,7 +1,9 @@
 import { Currency } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { SupportedChainId } from 'constants/chains'
 import { getInputOutputCurrencies } from 'constants/pools'
 import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
@@ -18,10 +20,9 @@ import { ChevronDown, ChevronUp } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { useWeb3React } from '@web3-react/core'
+
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
-import { SupportedChainId } from 'constants/chains'
 
 const PoolListHeader = styled.h4`
   font-size: 12px;
@@ -130,8 +131,6 @@ export const PoolSelector = ({
         } else {
           poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
         }
-        
-
         setData(poolQueryData)
 
         setLoading(false)
