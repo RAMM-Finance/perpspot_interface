@@ -355,7 +355,6 @@ const TradeTabContent = () => {
     trade?.margin,
     (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
   )
-
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
