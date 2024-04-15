@@ -499,15 +499,15 @@ export default function DecreasePositionContent({
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
-  // Function to fix reduceAmount to 8 decimal places
+  // Note: This function fixes the input amount to 5 decimal places. Specifying more than 5 decimal places
+  // in the input amount may cause an error, as it exceeds the specified decimal precision of 5. in tryParseCurrencyAmount
   function fixedToEightDecimals(amount: string): string {
-    return new BigNumber(amount).toFixed(8)
+    return new BigNumber(amount).toFixed(5)
   }
 
   const fiatValueReduceAmount = useUSDPrice(
     tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
   )
-
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -644,7 +644,6 @@ export default function DecreasePositionContent({
                 currency={outputCurrency}
                 label="Limit Price"
                 id="limit-reduce-position-input"
-                fiatValue={fiatValueReduceAmount}
                 limit={true}
                 marketButton={
                   <MarketButton

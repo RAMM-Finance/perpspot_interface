@@ -1,7 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
@@ -45,6 +45,7 @@ import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { BaseFooter } from './DepositPremiumContent'
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 
 interface DerivedWithdrawPremiumInfo {
   newDepositAmount: TokenBN
@@ -304,7 +305,15 @@ export function WithdrawPremiumContent({
 
   const inputCurrencyBalance = useCurrencyBalance(account, inputCurrency ?? undefined)
 
+  const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+    if (!amount || !inputCurrency || isNaN(Number(amount))) return undefined
+    return CurrencyAmount.fromRawAmount(inputCurrency, new BN(amount).shiftedBy(inputCurrency.decimals).toFixed(0))
+  }, [amount, inputCurrency])
+
   const marginFacility = useMarginFacilityContract(true)
+
+  const fiatWithDrawtAmount = useUSDPrice(currencyAmount)
+
 
   const addTransaction = useTransactionAdder()
 
@@ -439,6 +448,7 @@ export function WithdrawPremiumContent({
             value={withdrawAll ? String(position?.premiumLeft.toNumber()) : amount}
             id="withdraw-premium-input"
             showMaxButton={false}
+            fiatValue={fiatWithDrawtAmount}
             onUserInput={(str: string) => {
               if (inputCurrencyBalance) {
                 const balance = inputCurrencyBalance.toExact()

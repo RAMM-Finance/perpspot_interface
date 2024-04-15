@@ -149,7 +149,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
     premiumDeposit: undefined,
   })
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
-  // console.log('existingPosition', existingPosition?.premiumDeposit.toString())
   const inputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token1 : positionKey?.poolKey.token0
   )
