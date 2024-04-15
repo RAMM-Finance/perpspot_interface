@@ -127,7 +127,32 @@ export abstract class MarginFacilitySDK {
         )
       }
     }
+    console.log("borrowToken1", param.positionKey.isToken0)
+    console.log("amount", param.depositPremium)
+    const key = {
+      token0: param.positionKey.poolKey.token0,
+      token1: param.positionKey.poolKey.token1,
+      fee: param.positionKey.poolKey.fee.toString(),
+    }
+    const param2 = {
+      margin: param.margin,
+      simulatedOutput: param.simulatedOutput,
+      borrowAmount: param.borrowAmount,
+      positionIsToken0: param.positionKey.isToken0,
+      executionOption: param.executionOption,
+      trader: param.positionKey.trader,
+      minOutput: param.minimumOutput,
+      deadline: param.deadline,
+      executionData: [],
+      slippedTickMin: param.slippedTickMin,
+      slippedTickMax: param.slippedTickMax,
+      marginInPosToken: param.marginInPosToken,
+    }
 
+
+
+    console.log("RESLTTTT", param2.marginInPosToken ? param2.positionIsToken0 ? key.token0 : key.token1 : param2.positionIsToken0 ? key.token1 : key.token0)
+    console.log("RESLTTTT 2222", param2.margin)
     calldatas.push(
       MarginFacilitySDK.INTERFACE.encodeFunctionData('addPosition', [
         {

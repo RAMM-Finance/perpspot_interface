@@ -281,6 +281,7 @@ const TradeTabContent = () => {
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   const poolNotFound = poolState !== PoolState.EXISTS
+
   const {
     trade,
     tradeApprovalInfo,
