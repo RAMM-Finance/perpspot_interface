@@ -60,7 +60,7 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
-export function useUSDPriceBNV2(amount?: TokenBN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
+export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
   const symbol = useMemo(() => {
     if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
     if (currency?.symbol === 'USDC') return 'usd-coin'
@@ -80,9 +80,17 @@ export function useUSDPriceBNV2(amount?: TokenBN, currency?: Currency): { data: 
   const [prevAmount, setPrevAmount] = useState<TokenBN | undefined>(undefined)
 
   const currencyAmount = useMemo(() => {
-    if (amount && currency && amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
-      setPrevAmount(amount)
-      return BnToCurrencyAmount(amount, currency)
+    if (amount && currency) {
+      if ('tokenAddress' in amount) { 
+        if (amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
+          setPrevAmount(amount)
+          return BnToCurrencyAmount(amount, currency) 
+        } else {
+          return undefined
+        }
+      } else {
+        return BnToCurrencyAmount(amount, currency)
+      }
     }
     else return undefined
   }, [amount, currency])

@@ -1674,7 +1674,6 @@ const useSimulateMarginTrade = (
       const disabled = noAccountQueryKey.length === 0
 
       if (disabled) {
-        console.log("disabled in no account???", disabled)
         return {
           state: LeverageTradeState.INVALID,
           contractError: undefined,
