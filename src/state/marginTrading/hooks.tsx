@@ -1203,7 +1203,7 @@ const useSimulateMarginTrade = (
       inputIsToken0 ? pool.token0 : pool.token1,
       inputIsToken0 ? pool.token1 : pool.token0
     )
-    console.log("compute1 !!!")
+
     // amount of input (minus fees) swapped for position token.
     let swapInput: BN
     // simulatedOutput in contracts
@@ -1220,9 +1220,9 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       amountOut = new BN(output.toString())
     }
-    console.log("compute2 !!!")
+
     const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
-    console.log("compute3 !!!")
+
     // min output = (margin + borrowAmount) * current price * (1 - slippage)
     const currentPrice = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
     const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
@@ -1241,8 +1241,7 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
-    console.log("compute4 !!!")
-    
+
     const params = {
       positionKey,
       margin: marginInPosToken
@@ -1263,46 +1262,16 @@ const useSimulateMarginTrade = (
       minPremiumOutput,
     }
 
-    console.log("PARAMS", params)
     const calldata = MarginFacilitySDK.addPositionParameters(params)
-    console.log("compute5 !!!")
-    console.log("CALLDATA", calldata)
-
-    let swapAndDepositPremium
-    let depositPremium
-    let addPosition
-
-    if (params.depositPremium) {
-      if (params.premiumInPosToken) {
-        swapAndDepositPremium = calldata[0]
-      } else {
-        depositPremium = calldata[0]
-      }
-    }
-    addPosition = calldata[1]
-
-    if (swapAndDepositPremium) {
-      console.log("CALLING SWAP AND DEPOSIT PREMIUM")
-      await marginFacility.callStatic.multicall([swapAndDepositPremium])
-    }
-    if (depositPremium) {
-      console.log("CALLING DEPOSIT PREMIUM")
-      await marginFacility.callStatic.multicall([depositPremium])
-    }
-    if (addPosition) {
-      console.log("CALLING ADD POSITION")
-      await marginFacility.callStatic.multicall([addPosition])
-    }
-    
-
+ 
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
-    console.log("compute6 !!!")
+
     const {
       totalPosition: newTotalPosition,
       borrowInfo,
       fees,
     } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
-    console.log("compute7 !!!")
+
     const poolKey = {
       token0: pool.token0.address,
       token1: pool.token1.address,
@@ -1324,7 +1293,7 @@ const useSimulateMarginTrade = (
         lastGrowth: '0',
       }
     })
-    console.log("compute8 !!!")
+
     const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
 
     let expectedAddedOutput: JSBI
@@ -1333,7 +1302,7 @@ const useSimulateMarginTrade = (
     } else {
       expectedAddedOutput = newTotalPosition
     }
-    console.log("compute9 !!!")
+
     const executionPrice = new Price<Currency, Currency>(
       inputCurrency,
       outputCurrency,
@@ -1342,7 +1311,7 @@ const useSimulateMarginTrade = (
         ? JSBI.subtract(expectedAddedOutput, BnToJSBI(marginInOutput, outputCurrency))
         : expectedAddedOutput.toString()
     )
-    console.log("compute10 !!!")
+    
     const result: AddMarginTrade = {
       margin: new TokenBN(
         marginInPosToken ? marginInOutput : marginInInput,
@@ -1373,7 +1342,6 @@ const useSimulateMarginTrade = (
       premiumInPosToken,
       premiumSwapRoute,
     }
-    console.log("@@@@@@@@@@@@@@@@@@result in AddMarginTrade", result)
 
     return result
   }, [
