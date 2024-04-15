@@ -368,9 +368,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     const [modalOpen, setModalOpen] = useState(false)
     const { account, chainId } = useWeb3React()
     const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
-    const theme = useTheme()
     // const { formatCurrencyAmount } = useFormatter()
-    // console.log('-usd-', fiatValue, value, currency)
     const handleDismissSearch = useCallback(() => {
       setModalOpen(false)
     }, [setModalOpen])
@@ -465,12 +463,15 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
             </div>
           </InputRow>
           <RowStart style={{marginTop:'5px'}}>{isPrice ? isPrice : null}</RowStart>
+            <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
+              <FiatValue fiatValue={fiatValue} priceImpact={priceImpact}/>
+            </LoadingOpacityContainer>
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
               <RowBetween>
-                <LoadingOpacityContainer $loading={loading}>
-                  <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-                </LoadingOpacityContainer>
+                {/* <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
+                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+                </LoadingOpacityContainer> */}
                 {account ? (
                   <RowFixed style={{ height: '16px' }}>
                     <ThemedText.DeprecatedBody
