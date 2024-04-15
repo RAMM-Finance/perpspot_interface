@@ -5,7 +5,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { RouterPreference } from 'state/routing/slice'
@@ -13,6 +13,7 @@ import { TradeState } from 'state/routing/types'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
 import { getNativeTokenDBAddress } from 'utils/nativeTokens'
 import { SupportedChainId as SupportedChainIdLMT } from 'constants/chains'
+import { TokenBN } from 'utils/lmtSDK/internalConstants'
 
 import useStablecoinPrice from './useStablecoinPrice'
 
@@ -59,7 +60,7 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
-export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
+export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
   const symbol = useMemo(() => {
     if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
     if (currency?.symbol === 'USDC') return 'usd-coin'
@@ -74,10 +75,26 @@ export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: numbe
     if (currency?.symbol == 'LINK') return 'chainlink'
     return currency?.symbol
   }, [currency])
+
+
+  const [prevAmount, setPrevAmount] = useState<TokenBN | undefined>(undefined)
+
   const currencyAmount = useMemo(() => {
-    if (amount && currency) return BnToCurrencyAmount(amount, currency)
+    if (amount && currency) {
+      if ('tokenAddress' in amount) { 
+        if (amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
+          setPrevAmount(amount)
+          return BnToCurrencyAmount(amount, currency) 
+        } else {
+          return undefined
+        }
+      } else {
+        return BnToCurrencyAmount(amount, currency)
+      }
+    }
     else return undefined
   }, [amount, currency])
+    
   const { data } = useQuery(
     ['usdPrice', currency],
     async () => {
@@ -93,7 +110,6 @@ export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: numbe
             },
           })
           if (response.status === 200) {
-            console.log("api result", response.data[currency?.wrapped.address.toLowerCase()]['usd'])
             return response.data[currency?.wrapped.address.toLowerCase()]['usd']
           }
 
@@ -123,8 +139,6 @@ export function useUSDPriceBNV2(amount?: BN, currency?: Currency): { data: numbe
     if (!data || !currencyAmount) {
       return { data: undefined, isLoading: false }
     }
-    console.log("useUSDPriceBNV2 -> data.current_price.usd, currencyAmount", data, currencyAmount.toExact())
-    console.log("trade?.margin Amount", parseFloat(currencyAmount.toExact()))
     return { data: data * parseFloat(currencyAmount.toExact()), isLoading: false }
   }, [data, currencyAmount])
 }
