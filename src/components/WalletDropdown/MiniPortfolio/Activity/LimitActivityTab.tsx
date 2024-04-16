@@ -12,12 +12,15 @@ import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useHistoryData } from 'hooks/useAccountHistory'
 import { tokenDecimal } from 'hooks/useContract'
 import { atom, useAtom } from 'jotai'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 
 import PortfolioRow from '../PortfolioRow'
 import { ActivityTableRow } from './LimitActivityRow'
 import { Activity, ActivityDescriptionType, ActivityMap } from './types'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { SupportedChainId } from 'constants/chains'
+import { entropyToMnemonic } from 'ethers/lib/utils'
 
 const LoadingContainer = styled(HistoryContainer)`
   margin-top: 12px;
@@ -132,13 +135,27 @@ function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = 
 
 const lastFetchedAtom = atom<number | undefined>(0)
 
-function getDescriptor(entry: any, tokens: any) {
+async function getDescriptor(chainId: number | undefined, entry: any, tokens: any) {
   const token0Name = tokens[entry.token0]?.symbol ?? tokens[entry.token0]?.name
   const token1Name = tokens[entry.token1]?.symbol ?? tokens[entry.token1]?.name
-  const token0Decimal = tokenDecimal[entry.token0]
-  const token1Decimal = tokenDecimal[entry.token1]
+
+  let networkIdForGeckoApi = 'arbitrum-one'
+  if (SupportedChainId.ARBITRUM_ONE === chainId) {
+    networkIdForGeckoApi = 'arbitrum-one'
+  } else if (SupportedChainId.BASE === chainId) {
+    networkIdForGeckoApi = 'base'
+  } 
+
+  
+  // const token0Decimal = tokenDecimal[entry.token0]
+  // const token1Decimal = tokenDecimal[entry.token1]
+  
+  const token0Decimal = (await getDecimalAndUsdValueData(chainId, entry.token0))?.decimals
+  const token1Decimal = (await getDecimalAndUsdValueData(chainId, entry.token1))?.decimals
+  
   // console.log('------getDescriptor token name', tokens[entry.token0]?.name, token0Name, token1Name)
   // console.log('------getDescriptor entry', entry);
+  // console.log("entry actionType", entry.actionType)
   if (entry.actionType == ActivityDescriptionType.ADD_ORDER) {
     const price = entry.marginIsPosToken
       ? entry.positionisToken0
@@ -170,6 +187,7 @@ function getDescriptor(entry: any, tokens: any) {
       return 'Canceled order for ' + token0Name + ' with ' + token1Name + `, Pair: ${token0Name}/${token1Name}`
     else return 'Canceled order for ' + token1Name + ' with' + token0Name
   } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
+    console.log("ADD POSITION ENTRY", entry)
     const price = entry.marginIsPosToken
       ? entry.positionIsToken0
         ? Number(entry.addedAmount) / 10 ** token0Decimal / (Number(entry.borrowAmount) / 10 ** token1Decimal)
@@ -191,10 +209,10 @@ function getDescriptor(entry: any, tokens: any) {
     if (entry.positionIsToken0)
       return (
         'Added ' +
-        String(Number(entry.addedAmount) / 10 ** token0Decimal) +
+        String(Number(entry.addedAmount) / 10 ** token0Decimal) + ' ' +
         token0Name +
         '  with ' +
-        String(margin) +
+        String(margin) + ' ' +
         (entry.marginIsPosToken ? token0Name : token1Name) +
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${price.toFixed(7)}`
@@ -202,11 +220,11 @@ function getDescriptor(entry: any, tokens: any) {
     else
       return (
         'Added ' +
-        String(Number(entry.addedAmount) / 10 ** token1Decimal) +
+        String(Number(entry.addedAmount) / 10 ** token1Decimal) + ' ' +
         token1Name +
         '  with ' +
-        String(margin) +
-        (entry.marginIsPosToken ? token1Name : token0Name) +
+        String(margin) + ' ' +
+        (entry.marginIsPosToken ? token1Name : token0Name) + 
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${price.toFixed(7)}`
       )
@@ -244,7 +262,7 @@ function getDescriptor(entry: any, tokens: any) {
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
-        String(Number(entry.reduceAmount) / 10 ** token0Decimal) +
+        String(Number(entry.reduceAmount) / 10 ** token0Decimal) + ' ' +
         token0Name +
         ' from ' +
         token0Name +
@@ -257,7 +275,7 @@ function getDescriptor(entry: any, tokens: any) {
     else
       return (
         'Reduced ' +
-        String(Number(entry.reduceAmount) / 10 ** token1Decimal) +
+        String(Number(entry.reduceAmount) / 10 ** token1Decimal) + ' ' +
         token1Name +
         ' for ' +
         token0Name +
@@ -326,27 +344,60 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
 
   const history = useHistoryData(account)
-  console.log('------history-------', history)
-  const historyToShow = useMemo(() => {
-    if (!history) return
-    const processedHistory: any[] = []
-    history?.forEach((entry: any) => {
-      const descriptor = getDescriptor(entry, tokens)
+  // const historyToShow = useMemo(() => {
+  //   if (!history) return
+  //   const processedHistory: any[] = []
+  //   history?.forEach((entry: any) => {
+  //     const descriptor = getDescriptor(chainId, entry, tokens)
 
-      // console.log(descriptor, '--------descriptor----------')
-      processedHistory.push({
-        chainId,
-        status: undefined,
-        timestamp: Number(entry.blockTimestamp),
-        title: entry.actionType,
-        descriptor: descriptor ?? ' ',
-        logos: undefined,
-        currencies: [entry.token0, entry.token1],
-        hash: entry.transactionHash,
-        isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
-      })
-    })
-    return processedHistory
+  //     // console.log(descriptor, '--------descriptor----------')
+  //     processedHistory.push({
+  //       chainId,
+  //       status: undefined,
+  //       timestamp: Number(entry.blockTimestamp),
+  //       title: entry.actionType,
+  //       descriptor: descriptor ?? ' ',
+  //       logos: undefined,
+  //       currencies: [entry.token0, entry.token1],
+  //       hash: entry.transactionHash,
+  //       isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
+  //     })
+  //   })
+  //   console.log("HISTORY TO SHOW - processedHistory", processedHistory)
+  //   return processedHistory
+  // }, [history])
+
+  const [historyToShow, setHistoryToShow] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!history) return
+        const processedHistory: any[] = []
+        const promises = history?.map(async (entry: any) => {
+          const descriptor = await getDescriptor(chainId, entry, tokens)
+          processedHistory.push({
+            chainId,
+            status: undefined,
+            timestamp: Number(entry.blockTimestamp),
+            title: entry.actionType,
+            descriptor: descriptor ?? ' ',
+            logos: undefined,
+            currencies: [entry.token0, entry.token1],
+            hash: entry.transactionHash,
+            isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
+          })
+        })
+        const promiseRes = await Promise.all(promises)
+        console.log('TEST = processedHistory ', processedHistory)
+        setHistoryToShow(processedHistory)
+        return Promise.resolve()
+      } catch(err) {
+        console.error('failed to call getDescriptor')
+        return Promise.reject(err)
+      }
+    }
+    fetchData()
   }, [history])
 
   // We only refetch remote activity if the user renavigates to the activity tab by changing tabs or opening the drawer

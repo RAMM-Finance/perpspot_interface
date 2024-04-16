@@ -55,6 +55,7 @@ import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } fro
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
+import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';
@@ -189,17 +190,26 @@ export const Selector = styled.div<{ active: boolean }>`
 const TradeTabContent = () => {
   // const theme = useTheme()
   const { account, chainId } = useWeb3React()
+  const { activeTab } = useSwapState()
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
   const { onUserInput, onSetMarginInPosToken } = useSwapActionHandlers()
-  const inputCurrency = useCurrentInputCurrency()
-  const outputCurrency = useCurrentOutputCurrency()
+  const input = useCurrentInputCurrency()
+  const output = useCurrentOutputCurrency()
+
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
-    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
+    useMemo(() => [input ?? undefined, output ?? undefined], [input, output])
   )
 
-  const { activeTab } = useSwapState()
+  const longOrShort = useMemo(() => {
+    if (!input || !output || !chainId) return [undefined, undefined, undefined]
+    return getDefaultBaseQuote(input.wrapped.address, output.wrapped.address, chainId)
+  }, [input, output, chainId])
+
+  const inputCurrency = useCurrency(activeTab === 0 ? longOrShort[1] : longOrShort[0])
+  const outputCurrency = useCurrency(activeTab === 0 ? longOrShort[0] : longOrShort[1])
+
   const currencyBalances = useMemo(
     () => ({
       [Field.INPUT]: relevantTokenBalances[0],
@@ -281,6 +291,7 @@ const TradeTabContent = () => {
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   const poolNotFound = poolState !== PoolState.EXISTS
+
   const {
     trade,
     tradeApprovalInfo,
@@ -348,11 +359,12 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
+  // console.log("FIAT VALUE TRADE MARGIN: ", trade?.margin, marginInPosToken, outputCurrency, inputCurrency)
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
     (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
   )
-
+  // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))

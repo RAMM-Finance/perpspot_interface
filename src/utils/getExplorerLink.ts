@@ -30,6 +30,18 @@ export function getExplorerLink(chainId: number, data: string, type: ExplorerDat
       default:
         return `https://arbiscan.io/`
     }
+  } else if (chainId === SupportedChainId.BASE) {
+    switch (type) {
+      case ExplorerDataType.TRANSACTION:
+        return `https://basescan.org/tx/${data}`
+      case ExplorerDataType.ADDRESS:
+      case ExplorerDataType.TOKEN:
+        return `https://basescan.org/address/${data}`
+      case ExplorerDataType.BLOCK:
+        return `https://basescan.org/block/${data}`
+      default:
+        return `https://basescan.org/`
+    }
   }
 
   const prefix = BLOCK_EXPLORER_PREFIXES[chainId] ?? 'https://etherscan.io'

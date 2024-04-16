@@ -53,6 +53,7 @@ function processDescriptor(descriptor: string, title?: string) {
   const priceIndex = modifiedDescriptor.indexOf('Price')
   const actionDescription = modifiedDescriptor.slice(0, priceIndex)
   let price = priceIndex !== -1 ? modifiedDescriptor.slice(priceIndex) : ''
+  
   let priceNumber = 0
   // Extract the number following 'Price:' using regular expression.
   const priceRegex = /Price:\s*([\d.]+)/
@@ -67,7 +68,6 @@ function processDescriptor(descriptor: string, title?: string) {
     // Extract the number and token following 'Pnl' using regular expression.
     const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
-
     if (pnlMatch) {
       pnlNumber = parseFloat(pnlMatch[1])
       marginToken = pnlMatch[2]
@@ -86,8 +86,8 @@ export function ActivityRow({
   const timeSince = useTimeStamp(timestamp)
   // descript modified
   const { actionDescription, marginToken, pnlNumber, priceNumber } = processDescriptor(descriptor, title)
-  // console.log(actionDescription, descriptor, '-----descriptor----')
-  //
+  // console.log(descriptor, '-----descriptor----')
+  // console.log('-----------marginToken', marginToken)
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
   const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
 

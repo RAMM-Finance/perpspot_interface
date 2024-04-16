@@ -98,7 +98,7 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: 400px;
+  min-height: 450px;
   // border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
@@ -149,7 +149,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
     premiumDeposit: undefined,
   })
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
-  // console.log('existingPosition', existingPosition?.premiumDeposit.toString())
   const inputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token1 : positionKey?.poolKey.token0
   )
@@ -230,14 +229,14 @@ export function LeveragePositionModal(props: TradeModalProps) {
               isActive={activeTab === TradeModalActiveTab.DEPOSIT_PREMIUM}
               onClick={() => setActiveTab(TradeModalActiveTab.DEPOSIT_PREMIUM)}
             >
-              Deposit Premium
+              Deposit Interest
             </TabElement>
             <TabElement
               last={true}
               isActive={activeTab === TradeModalActiveTab.WITHDRAW_PREMIUM}
               onClick={() => setActiveTab(TradeModalActiveTab.WITHDRAW_PREMIUM)}
             >
-              Withdraw Premium
+              Withdraw Interest
             </TabElement>
           </TabsWrapper>
           <ContentWrapper>{displayedContent}</ContentWrapper>
@@ -331,7 +330,7 @@ function MarginPositionInfo({
     const hours = Number(premiumLeft) / premPerHour
 
     return Math.round(hours * 100) / 100
-  }, [position, rate, totalDebtInput])
+  }, [rate, totalDebtInput, premiumLeft])
 
   const estimatedTimeToCloseForAlt = useMemo(() => {
     if (!rate || !totalDebtInput || !premiumLeftForAlt) return undefined
@@ -344,7 +343,7 @@ function MarginPositionInfo({
     if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else return Math.round(hours * 100) / 100
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
-
+  // console.log('Interest', alteredPremium, alteredPosition.premiumLeft )
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -379,8 +378,8 @@ function MarginPositionInfo({
           type={NumberType.SwapTradeAmount}
         />
         <PositionValueLabel
-          title={<Trans>Premium Deposit</Trans>}
-          description={<Trans>Current premium deposit remaining</Trans>}
+          title={<Trans>Interest Deposit</Trans>}
+          description={<Trans>Current interest deposit remaining</Trans>}
           syncing={loading}
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
           newValue={

@@ -335,14 +335,14 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
         />
         <ValueLabel
-          description="Initial Premium Deposit for this position, which can be replenished on the position table. When your deposit is depleted, your position will be force closed."
-          label="Initial Premium deposit"
+          description="Initial Interest Deposit for this position, which can be replenished on the position table. When your deposit is depleted, your position will be force closed."
+          label="Initial Interest deposit"
           value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? (trade.premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) : ''}
         />
         <ValueLabel
-          description="Variable Premium Rate. Rate % * borrow amount is the hourly amount your premium deposit is depleted."
+          description="Variable Interest Rate. Rate % * borrow amount is the hourly amount your interest deposit is depleted."
           label="Hourly Borrow Rate"
           value={formatBNToString(trade?.borrowRate, NumberType.SwapTradeAmount)}
           syncing={syncing}

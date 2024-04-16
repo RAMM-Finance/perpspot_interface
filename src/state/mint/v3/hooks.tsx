@@ -24,6 +24,7 @@ import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { getTickToPrice } from 'utils/getTickToPrice'
+import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
 
 import { BIG_INT_ZERO } from '../../../constants/misc'
 import { PoolState } from '../../../hooks/usePools'
@@ -527,7 +528,7 @@ export function useDerivedLmtMintInfo(
   currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
   dependentField: Field
   parsedAmounts: { [field in Field]?: CurrencyAmount<Currency> }
-  position: Position | undefined
+  position: LmtLpPosition | undefined
   noLiquidity?: boolean
   errorMessage?: ReactNode
   invalidPool: boolean
@@ -809,7 +810,7 @@ export function useDerivedLmtMintInfo(
     )
 
   // create position entity based on users selection
-  const position: Position | undefined = useMemo(() => {
+  const position: LmtLpPosition | undefined = useMemo(() => {
     if (
       !poolForPosition ||
       !tokenA ||
@@ -830,7 +831,7 @@ export function useDerivedLmtMintInfo(
       : BIG_INT_ZERO
 
     if (amount0 !== undefined && amount1 !== undefined) {
-      return Position.fromAmounts({
+      return LmtLpPosition.fromAmounts({
         pool: poolForPosition,
         tickLower,
         tickUpper,

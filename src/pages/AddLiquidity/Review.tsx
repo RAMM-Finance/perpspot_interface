@@ -3,6 +3,7 @@ import { Position } from '@uniswap/v3-sdk'
 import { AutoColumn } from 'components/Column'
 import { PositionPreview } from 'components/PositionPreview'
 import styled from 'styled-components/macro'
+import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
 
 import { Bound, Field } from '../../state/mint/v3/actions'
 
@@ -15,7 +16,7 @@ export function Review({
   outOfRange,
   ticksAtLimit,
 }: {
-  position?: Position
+  position?: Position | LmtLpPosition
   existingPosition?: Position
   parsedAmounts: { [field in Field]?: CurrencyAmount<Currency> }
   priceLower?: Price<Currency, Currency>

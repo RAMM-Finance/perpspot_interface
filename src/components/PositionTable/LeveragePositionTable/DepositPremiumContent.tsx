@@ -318,9 +318,9 @@ export function DepositPremiumContent({
     onPositionChange
   )
 
-  useMemo(() => {
-    handleTxnInfo(txnInfo)
-  }, [handleTxnInfo, txnInfo])
+  // useMemo(() => {
+  //   handleTxnInfo(txnInfo)
+  // }, [handleTxnInfo, txnInfo])
 
   const { account, chainId, provider } = useWeb3React()
 
@@ -333,7 +333,7 @@ export function DepositPremiumContent({
     currencyAmount,
     chainId ? LMT_MARGIN_FACILITY[chainId] : undefined
   )
-
+  // console.log('DepositPremiumContent', amount, txnInfo)
   const updateAllowance = useCallback(async () => {
     try {
       await approve()
@@ -475,7 +475,7 @@ export function DepositPremiumContent({
               disabledConfirm={!!inputError || !txnInfo}
             />
           }
-          title="Confirm Deposit Premium"
+          title="Confirm Deposit Iterest"
           pendingText={<Trans>Depositing ...</Trans>}
           currencyToAdd={outputCurrency ?? undefined}
           recipient={account ?? null}
@@ -675,7 +675,7 @@ function DepositPremiumHeader({
             </RowFixed>
             <RowFixed gap="0px">
               <ThemedText.BodySmall fontSize="11px" marginRight="10px" textAlign="end">
-                Resulting Premium Deposit
+                Resulting Interest Deposit
               </ThemedText.BodySmall>
               <CurrencyLogo currency={inputCurrency} size="15px" style={{ marginRight: '4px' }} />
               <ThemedText.BodySecondary>{txnInfo?.newDepositAmount.tokenSymbol}</ThemedText.BodySecondary>

@@ -29,10 +29,9 @@ import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorr
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { useUSDPrice } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { DynamicSection } from 'pages/Trade/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Trade/tradeModal'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -499,15 +498,19 @@ export default function DecreasePositionContent({
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
-  // Function to fix reduceAmount to 8 decimal places
-  function fixedToEightDecimals(amount: string): string {
-    return new BigNumber(amount).toFixed(8)
+  //Note: fixedToEightDecimals function converts the given string 'amount' into a BigNumber format to retrieve the USD price.
+  function fixedToEightDecimals(amount: string): BigNumber | undefined {
+    if (!amount  || isNaN(Number(reduceAmount))) return undefined
+    return new BigNumber(amount)
   }
 
-  const fiatValueReduceAmount = useUSDPrice(
-    tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
-  )
+  // const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+  //   if (!reduceAmount || !outputCurrency || isNaN(Number(reduceAmount))) return undefined
+  //   return CurrencyAmount.fromRawAmount(outputCurrency, new BN(reduceAmount).shiftedBy(outputCurrency.decimals).toFixed(0))
+  // }, [reduceAmount, outputCurrency])
 
+  const fiatValueReduceAmount = useUSDPriceBNV2(fixedToEightDecimals(reduceAmount), outputCurrency)
+  // console.log('fiatValueReduceAmount',fiatValueReduceAmount )
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -644,7 +647,6 @@ export default function DecreasePositionContent({
                 currency={outputCurrency}
                 label="Limit Price"
                 id="limit-reduce-position-input"
-                fiatValue={fiatValueReduceAmount}
                 limit={true}
                 marketButton={
                   <MarketButton

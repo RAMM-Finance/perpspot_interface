@@ -9,7 +9,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
-import { getDecimalAndUsdValueData, tokenDecimal, usdValue, useDataProviderContract } from './useContract'
+import { useDataProviderContract } from './useContract'
+import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 
@@ -77,8 +78,8 @@ export function usePoolsData(): {
                 ethers.utils.getAddress(token[0]),
                 ethers.utils.getAddress(token[1]),
                 token[2],
-                await getDecimalAndUsdValueData(networkIdForGeckoAPI, token[0]),
-                await getDecimalAndUsdValueData(networkIdForGeckoAPI, token[1]),
+                await getDecimalAndUsdValueData(chainId, token[0]),
+                await getDecimalAndUsdValueData(chainId, token[1]),
               ])
             }
             return { poolAdress: (token[0], token[1], token[2]) }

@@ -48,7 +48,8 @@ import {
 } from './actions'
 import { getOutputQuote } from './getOutputQuote'
 export function useMarginTradingState(): AppState['margin'] {
-  return useAppSelector((state) => state.margin)
+  const margin = useAppSelector((state) => state.margin)
+  return margin
 }
 
 export function useMarginTradingActionHandlers(): {
@@ -387,9 +388,9 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Select a token</Trans>
     }
 
-    if (!usingCode) {
-      inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
-    }
+    // if (!usingCode) {
+    //   inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
+    // }
 
     if (!parsedMargin || parsedMargin.isZero()) {
       inputError = inputError ?? <Trans>Enter a margin amount</Trans>
@@ -1178,7 +1179,6 @@ const useSimulateMarginTrade = (
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
-
     if (
       !pool ||
       !marginInInput ||
@@ -1198,7 +1198,6 @@ const useSimulateMarginTrade = (
     ) {
       throw new Error('Invalid position')
     }
-
     const swapRoute = new Route(
       [pool],
       inputIsToken0 ? pool.token0 : pool.token1,
@@ -1243,7 +1242,7 @@ const useSimulateMarginTrade = (
       minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
 
-    const calldata = MarginFacilitySDK.addPositionParameters({
+    const params = {
       positionKey,
       margin: marginInPosToken
         ? marginInOutput.shiftedBy(outputCurrency.decimals).toFixed(0)
@@ -1261,8 +1260,10 @@ const useSimulateMarginTrade = (
       marginInPosToken,
       premiumInPosToken,
       minPremiumOutput,
-    })
+    }
 
+    const calldata = MarginFacilitySDK.addPositionParameters(params)
+ 
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
     const {
@@ -1310,7 +1311,7 @@ const useSimulateMarginTrade = (
         ? JSBI.subtract(expectedAddedOutput, BnToJSBI(marginInOutput, outputCurrency))
         : expectedAddedOutput.toString()
     )
-
+    
     const result: AddMarginTrade = {
       margin: new TokenBN(
         marginInPosToken ? marginInOutput : marginInInput,
@@ -1625,6 +1626,8 @@ const useSimulateMarginTrade = (
       if (!blockNumber) throw new Error('missing block number')
       try {
         const result = await computeData()
+        console.log("addPosition:computeData", result)
+        console.log(result)
         setBlockNumber(blockNumber)
         return result
       } catch (err) {
@@ -1649,7 +1652,6 @@ const useSimulateMarginTrade = (
   return useMemo(() => {
     if (account) {
       const disabled = queryKey.length === 0
-
       if (disabled) {
         return {
           state: LeverageTradeState.INVALID,

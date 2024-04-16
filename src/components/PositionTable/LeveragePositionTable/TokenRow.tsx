@@ -290,7 +290,7 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.PNL]: <Trans>Profit/Loss based on mark price excluding slippage+fees+premiums</Trans>,
   [PositionSortMethod.REMAINING]: (
     <Trans>
-      Remaining Premium that maintains this position. Your position is forced closed when your deposit is depleted.{' '}
+      Remaining Interest that maintains this position. Your position is forced closed when your deposit is depleted.{' '}
     </Trans>
   ),
   [PositionSortMethod.ACTIONS]: '',
@@ -766,11 +766,11 @@ export const LoadedRow = memo(
                         <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
                       </RowBetween>
                       <RowBetween>
-                        <div>Premiums paid:</div>
+                        <div>Interest paid:</div>
                         <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
                       </RowBetween>
                       <RowBetween>
-                        <div>PnL inc. prem:</div>
+                        <div>PnL inc. int:</div>
                         {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
                         ' ' +
                         details.marginInPosToken
@@ -778,7 +778,7 @@ export const LoadedRow = memo(
                           : inputCurrency?.symbol}
                       </RowBetween>
                       <RowBetween>
-                        <div>PnL inc. prem (USD):</div>
+                        <div>PnL inc. int (USD):</div>
                         <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
                       </RowBetween>
                     </AutoColumn>

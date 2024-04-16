@@ -85,7 +85,7 @@ export function PostionsContainer({
             History
           </TabNavItem>*/}
           <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-            Unclaimed Premiums
+            Unclaimed Interests
           </TabNavItem>
           <TabNavItem id={4} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             Activities

@@ -91,9 +91,9 @@ export function AdvancedAddLimitDetails({
           syncing={syncing}
         />
         <ValueLabel
-          description="Amount of premiums to be initially escrowed and held for order to be filled"
+          description="Amount of interest to be initially escrowed and held for order to be filled"
           value={formatBNToString(trade?.additionalPremium, NumberType.SwapTradeAmount)}
-          label="Premium Depositing"
+          label="Interest Depositing"
           symbolAppend={inputCurrency?.symbol}
           syncing={syncing}
         />
