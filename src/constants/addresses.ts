@@ -137,7 +137,7 @@ export const LIM_WETH: AddressMap = {
 export const BRP_ADDRESS: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0xf95416717a29F6D95d6BD1A39E94C6Bfc2B42e3e',
   [SupportedChainId.LINEA]: '0x5438D5541471c2aEfb11c4DdC33dC2699d7A7dEA',
-  [SupportedChainId.BASE]: '',
+  [SupportedChainId.BASE]: '0x31EA2dD90Bd140d565726531f402D461E25A5f60',
 }
 
 // celo v3 addresses
