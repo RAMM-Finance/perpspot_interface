@@ -17,6 +17,8 @@ import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 
 import useStablecoinPrice from './useStablecoinPrice'
+import { log } from 'console'
+import { useWeb3React } from '@web3-react/core'
 
 // ETH amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -61,15 +63,21 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
-export async function getDecimalAndUsdValueData(network: string, tokenId: string) {
+export async function getDecimalAndUsdValueData(chainId: number | undefined, tokenId: string) {
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
-  if (network === 'arbitrum-one') {
-    url = url + 'arbitrum'
-  } else if (network === 'base') {
-    url = url + 'base'
+  let network = 'arbitrum-one'
+
+  if (chainId === SupportedChainIdLMT.ARBITRUM_ONE) {
+    url += 'arbitrum'
+    network = 'arbitrum-one'
+  } else if (chainId === SupportedChainIdLMT.BASE) {
+    url += 'base'
+    network = 'base'
   } else {
-    url = url + 'arbitrum'
+    url += 'arbitrum'
+    network = 'arbitrum-one'
   }
+  
 
   let res: any = await axios.post(url, {
     query: TokenDataFromUniswapQuery(tokenId),
@@ -104,28 +112,30 @@ export async function getDecimalAndUsdValueData(network: string, tokenId: string
 }
 
 export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
-  const symbol = useMemo(() => {
+  // const symbol = useMemo(() => {
     
-    if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
-    if (currency?.symbol === 'USDC') return 'usd-coin'
-    if (currency?.symbol === 'UNI') return 'uniswap'
-    if (currency?.symbol == 'STG') return 'stargate-finance'
-    if (currency?.symbol == 'ARB') return 'arbitrum'
-    if (currency?.symbol == 'RDNT') return 'radiant-capital'
-    if (currency?.symbol == 'XPET') return 'xpet-tech'
-    if (currency?.symbol == 'GNS') return 'gains-network'
-    if (currency?.symbol == 'CRV') return 'curve-dao-token'
-    if (currency?.symbol == 'LDO') return 'lido-dao'
-    if (currency?.symbol == 'LINK') return 'chainlink'
-    return currency?.symbol
-  }, [currency])
+  //   if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
+  //   if (currency?.symbol === 'USDC') return 'usd-coin'
+  //   if (currency?.symbol === 'UNI') return 'uniswap'
+  //   if (currency?.symbol == 'STG') return 'stargate-finance'
+  //   if (currency?.symbol == 'ARB') return 'arbitrum'
+  //   if (currency?.symbol == 'RDNT') return 'radiant-capital'
+  //   if (currency?.symbol == 'XPET') return 'xpet-tech'
+  //   if (currency?.symbol == 'GNS') return 'gains-network'
+  //   if (currency?.symbol == 'CRV') return 'curve-dao-token'
+  //   if (currency?.symbol == 'LDO') return 'lido-dao'
+  //   if (currency?.symbol == 'LINK') return 'chainlink'
+  //   return currency?.symbol
+  // }, [currency])
 
-
+  const { chainId } = useWeb3React() 
   const [prevAmount, setPrevAmount] = useState<TokenBN | undefined>(undefined)
 
   const currencyAmount = useMemo(() => {
     if (amount && currency) {
       if ('tokenAddress' in amount) { 
+        // console.log("AMOUNTTTT : ", amount)
+        // console.log("CURRENCCCYYYY : ", currency)
         if (amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
           setPrevAmount(amount)
           return BnToCurrencyAmount(amount, currency) 
@@ -142,19 +152,11 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
   const { data } = useQuery(
     ['usdPrice', currency],
     async () => {
-      if (!currency || !symbol) throw new Error('Currency not found')
+      if (!currency) throw new Error('Currency not found')
       try {
         if (!apiKey) throw new Error('missing key')
 
-        const url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
-        let chain = 'arbitrum-one'
-        if (currency?.chainId === SupportedChainIdLMT.BASE) {
-          chain = 'base'
-          
-        } else {
-          chain = 'arbitrum-one'
-        }
-        const token = await getDecimalAndUsdValueData(chain, currency?.wrapped.address)
+        const token = await getDecimalAndUsdValueData(chainId, currency?.wrapped.address)
         // response = await axios.get(`https://pro-api.coingecko.com/api/v3/simple/token_price/base?contract_addresses=${currency?.wrapped.address}&vs_currencies=usd`,{
         //     headers: {
         //       Accept: 'application/json',

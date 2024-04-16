@@ -359,10 +359,12 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
+  // console.log("FIAT VALUE TRADE MARGIN: ", trade?.margin, marginInPosToken, outputCurrency, inputCurrency)
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
     (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
   )
+  // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))

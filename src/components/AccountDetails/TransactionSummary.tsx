@@ -277,10 +277,11 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
       let tokenInfoFromUniswap
       let tokenAmount
       if (info.tradeType === TradeType.EXACT_INPUT) {
-        tokenInfoFromUniswap = await getDecimalAndUsdValueData('arbitrum-one', info.inputCurrencyId)
+        
+        tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.inputCurrencyId)
         tokenAmount = info.inputCurrencyAmountRaw
       } else {
-        tokenInfoFromUniswap = await getDecimalAndUsdValueData('arbitrum-one', info.outputCurrencyId)
+        tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.outputCurrencyId)
         tokenAmount = info.outputCurrencyAmountRaw
       }
 

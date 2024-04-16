@@ -78,8 +78,8 @@ export function usePoolsData(): {
                 ethers.utils.getAddress(token[0]),
                 ethers.utils.getAddress(token[1]),
                 token[2],
-                await getDecimalAndUsdValueData(networkIdForGeckoAPI, token[0]),
-                await getDecimalAndUsdValueData(networkIdForGeckoAPI, token[1]),
+                await getDecimalAndUsdValueData(chainId, token[0]),
+                await getDecimalAndUsdValueData(chainId, token[1]),
               ])
             }
             return { poolAdress: (token[0], token[1], token[2]) }
