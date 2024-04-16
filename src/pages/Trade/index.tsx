@@ -366,7 +366,7 @@ export default function Trade({ className }: { className?: string }) {
     }
   }, [leveragePositions?.length, poolKey, poolOHLC])
 
-  console.log('positions', leveragePositions)
+  // console.log('positions', leveragePositions)
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
   // const pinnedPools = usePinnedPools()

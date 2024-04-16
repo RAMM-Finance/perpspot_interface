@@ -9,7 +9,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
-import { getDecimalAndUsdValueData, tokenDecimal, usdValue, useDataProviderContract } from './useContract'
+import { useDataProviderContract } from './useContract'
+import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 

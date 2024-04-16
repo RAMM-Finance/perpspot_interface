@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { getDecimalAndUsdValueData } from 'hooks/useContract'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useEffect, useState } from 'react'
 

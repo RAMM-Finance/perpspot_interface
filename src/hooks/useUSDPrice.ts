@@ -14,6 +14,7 @@ import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
 import { getNativeTokenDBAddress } from 'utils/nativeTokens'
 import { SupportedChainId as SupportedChainIdLMT } from 'constants/chains'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
+import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 
 import useStablecoinPrice from './useStablecoinPrice'
 
@@ -60,8 +61,51 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
+export async function getDecimalAndUsdValueData(network: string, tokenId: string) {
+  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  if (network === 'arbitrum-one') {
+    url = url + 'arbitrum'
+  } else if (network === 'base') {
+    url = url + 'base'
+  } else {
+    url = url + 'arbitrum'
+  }
+
+  let res: any = await axios.post(url, {
+    query: TokenDataFromUniswapQuery(tokenId),
+  })
+
+  const token = res?.data?.data?.token
+  if (!token || !token?.lastPriceUSD) {
+    try {
+      res = await axios.get(
+        `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
+        {
+          headers: {
+            Accept: 'application/json',
+            'x-cg-pro-api-key': apiKey,
+          },
+        }
+      )
+      const data: any = res?.data
+      const usdValues = Object.values(data).map((value: any) => value.usd)
+
+      return { ...token, lastPriceUSD: usdValues[0].toString() }
+    } catch (e) {
+      console.log('COINGECKO ERROR')
+      console.log(e)
+    }
+  }
+
+  return token
+  // if (network === 'arbitrum-one') {
+    
+  // }
+}
+
 export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
   const symbol = useMemo(() => {
+    
     if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
     if (currency?.symbol === 'USDC') return 'usd-coin'
     if (currency?.symbol === 'UNI') return 'uniswap'
@@ -101,30 +145,33 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
       if (!currency || !symbol) throw new Error('Currency not found')
       try {
         if (!apiKey) throw new Error('missing key')
-        let response
-        if (currency?.chainId === SupportedChainIdLMT.BASE) {
-          response = await axios.get(`https://pro-api.coingecko.com/api/v3/simple/token_price/base?contract_addresses=${currency?.wrapped.address}&vs_currencies=usd`,{
-            headers: {
-              Accept: 'application/json',
-              'x-cg-pro-api-key': apiKey,
-            },
-          })
-          if (response.status === 200) {
-            return response.data[currency?.wrapped.address.toLowerCase()]['usd']
-          }
 
+        const url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+        let chain = 'arbitrum-one'
+        if (currency?.chainId === SupportedChainIdLMT.BASE) {
+          chain = 'base'
+          
         } else {
-          response = await axios.get(`https://pro-api.coingecko.com/api/v3/coins/${symbol.toLocaleLowerCase()}`, {
-            headers: {
-              Accept: 'application/json',
-              'x-cg-pro-api-key': apiKey,
-            },
-          })
+          chain = 'arbitrum-one'
         }
-        if (response.status === 200) {
-          return response.data.market_data.current_price.usd
-        }
-        throw new Error(`response status ${response.status}`)
+        const token = await getDecimalAndUsdValueData(chain, currency?.wrapped.address)
+        // response = await axios.get(`https://pro-api.coingecko.com/api/v3/simple/token_price/base?contract_addresses=${currency?.wrapped.address}&vs_currencies=usd`,{
+        //     headers: {
+        //       Accept: 'application/json',
+        //       'x-cg-pro-api-key': apiKey,
+        //     },
+        //   })
+        //   if (response.status === 200) {
+        //     return response.data[currency?.wrapped.address.toLowerCase()]['usd']
+        //   }
+
+
+        // if (response.status === 200) {
+        //   return response.data.market_data.current_price.usd
+        // }
+        console.log(`LAST PRICE USD of ${token?.symbol} : `, token?.lastPriceUSD)
+        return token?.lastPriceUSD
+        // throw new Error(`response status ${response.status}`)
       } catch (err) {
         throw new Error('Failed to fetch token data')
       }
