@@ -29,11 +29,13 @@ import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorr
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { DynamicSection } from 'pages/Trade/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Trade/tradeModal'
+import { darken } from 'polished'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { parseBN } from 'state/marginTrading/hooks'
@@ -145,9 +147,19 @@ const LabelText = styled.div<{ color: string }>`
 `
 
 const MarketButton = styled(SmallButtonPrimary)<{ active: boolean }>`
-background-color:${({ active, theme }) => (active ? 'transparent' : theme.accentActive)};
-border-radius: 8px
-border: 1px solid;
+  background-color: ${({ active, theme }) => (active ? 'transparent' : theme.accentAction)};
+  border-radius: 8px;
+  &:hover {
+    background-color: ${({ active, theme }) => (active ? 'transparent' : darken(0.1, theme.accentAction))};
+  }
+  &:active {
+    background-color: transparent;
+    border: none;
+  }
+  &:focus {
+    background-color: transparent;
+    border: none;
+  }
 `
 
 const BelowRangeLimitReduceNote = () => {
@@ -254,7 +266,7 @@ export default function DecreasePositionContent({
 
   const [showSettings, setShowSettings] = useState(false)
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
-  const [limitPrice, setLimitPrice] = useState<string>('')
+  const [limitPrice, setLimitPrice] = useState<string | undefined>(undefined)
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
@@ -312,7 +324,7 @@ export default function DecreasePositionContent({
   } = useDerivedReduceLimitPositionInfo(
     currentState.isLimit,
     reduceAmount,
-    limitPrice,
+    limitPrice ?? '',
     orderKey,
     baseCurrencyIsInput,
     // setLmtTradeState,
@@ -434,6 +446,22 @@ export default function DecreasePositionContent({
     [existingPosition, onDebouncedReduceAmount, closePosition]
   )
 
+  // const onInputChange = useCallback(
+  //   (val: string) => {
+  //     const valBN = parseBN(val)
+  //     if (!valBN) {
+  //       onDebouncedReduceAmount('')
+  //       closePosition && setClosePosition(false)
+  //     } else if (existingPosition) {
+  //       if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
+  //       if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
+  //       if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
+  //       setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
+  //     }
+  //   },
+  //   [closePosition, onDebouncedReduceAmount, existingPosition]
+  // )
+
   const theme = useTheme()
 
   const loading = useMemo(
@@ -469,48 +497,59 @@ export default function DecreasePositionContent({
     }))
   }, [currentState])
 
-  const currentPrice = useMemo(() => {
+  const [currentPrice, inversePrice] = useMemo(() => {
     if (pool && inputCurrency && outputCurrency) {
       const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
       const baseIsToken0 = (baseCurrencyIsInput && inputIsToken0) || (!baseCurrencyIsInput && !inputIsToken0)
+      const token0Price = formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
+      const token1Price = formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
       if (baseIsToken0) {
-        if (
-          limitPrice === '' ||
-          limitPrice === formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
-        ) {
-          setLimitPrice(formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true))
-        }
-        return formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
+        return [token0Price, token1Price]
       } else {
-        if (
-          limitPrice === '' ||
-          limitPrice === formatBNToString(new BN(pool.token0Price.toFixed(18)), NumberType.FiatTokenPrice, true)
-        ) {
-          setLimitPrice(formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true))
-        }
-        return formatBNToString(new BN(pool.token1Price.toFixed(18)), NumberType.FiatTokenPrice, true)
+        return [token1Price, token0Price]
       }
     }
-    return undefined
-  }, [baseCurrencyIsInput, inputCurrency, limitPrice, pool, outputCurrency])
+    return [undefined, undefined]
+  }, [baseCurrencyIsInput, inputCurrency, pool, outputCurrency])
+
+  const percentagesArePositive = useMemo(() => {
+    if (!inputCurrency || !outputCurrency) return true
+    const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
+    if ((inputIsToken0 && !baseCurrencyIsInput) || (!inputIsToken0 && baseCurrencyIsInput)) {
+      return true
+    } else {
+      return false
+    }
+  }, [inputCurrency, outputCurrency, baseCurrencyIsInput])
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
-  //Note: fixedToEightDecimals function converts the given string 'amount' into a BigNumber format to retrieve the USD price.
-  function fixedToEightDecimals(amount: string): BigNumber | undefined {
-    if (!amount  || isNaN(Number(reduceAmount))) return undefined
-    return new BigNumber(amount)
+  // Function to fix reduceAmount to 8 decimal places
+  function fixedToEightDecimals(amount: string): string {
+    return new BigNumber(amount).toFixed(8)
   }
 
-  // const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
-  //   if (!reduceAmount || !outputCurrency || isNaN(Number(reduceAmount))) return undefined
-  //   return CurrencyAmount.fromRawAmount(outputCurrency, new BN(reduceAmount).shiftedBy(outputCurrency.decimals).toFixed(0))
-  // }, [reduceAmount, outputCurrency])
+  function setPercentageValues(percent: number) {
+    if (currentPrice) {
+      console.log('currentPrice', currentPrice)
+      const value = parseFloat(currentPrice.replace(',', ''))
+      console.log('value', value)
+      const adjustedValue = value * percent
+      console.log('percent', percent)
+      console.log('adjustedVal', adjustedValue)
+      console.log('adjustedValString', adjustedValue.toString())
+      setLimitPrice(() => adjustedValue.toString())
+    } else {
+      return
+    }
+  }
 
-  const fiatValueReduceAmount = useUSDPriceBNV2(fixedToEightDecimals(reduceAmount), outputCurrency)
-  // console.log('fiatValueReduceAmount',fiatValueReduceAmount )
+  const fiatValueReduceAmount = useUSDPrice(
+    tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
+  )
+  // console.log('-----fiatValueReduceAmount-----','success', fiatValueReduceAmount,tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined))
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -632,50 +671,103 @@ export default function DecreasePositionContent({
       </div>
       <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
+          {/* <AutoColumn style={{ marginBottom: '10px' }}>
+            <DynamicSection justify="start" gap="md" disabled={false}>
+              <RowBetween>
+                {Boolean(inputCurrency && outputCurrency) && (
+                  <PriceToggleSection>
+                    <div
+                      style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
+                      onClick={() => {
+                        setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
+                        inversePrice && setLimitPrice(() => inversePrice.replace(',', ''))
+                      }}
+                    >
+                      <ToggleWrapper width="fit-content">
+                        <ToggleElement isActive={!baseCurrencyIsInput}>
+                          <CurrencyLogo currency={outputCurrency} size="15px" />
+                        </ToggleElement>
+                        <ToggleElement isActive={baseCurrencyIsInput}>
+                          <CurrencyLogo currency={inputCurrency} size="15px" />
+                        </ToggleElement>
+                      </ToggleWrapper>
+                    </div>
+                  </PriceToggleSection>
+                )}
+                <PriceSection onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}>
+                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
+                    Current Price
+                  </ThemedText.DeprecatedMain>
+                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
+                      {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
+                    </ThemedText.DeprecatedBody>
+                  </div>
+                </PriceSection>
+              </RowBetween>
+            </DynamicSection>
+          </AutoColumn> */}
+
           <DynamicSection gap="md" disabled={false}>
             <InputSection>
               <SwapCurrencyInputPanelV2
-                value={limitPrice}
+                value={limitPrice !== undefined ? limitPrice : currentPrice ? currentPrice.replace(',', '') : '0'}
                 onUserInput={(str: string) => {
                   setLimitPrice(str)
                 }}
                 onPriceToggle={() => {
                   setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
+                  inversePrice && setLimitPrice(() => inversePrice.replace(',', ''))
                 }}
                 showMaxButton={false}
                 hideBalance={true}
                 currency={outputCurrency}
                 label="Limit Price"
                 id="limit-reduce-position-input"
+                fiatValue={fiatValueReduceAmount}
                 limit={true}
                 marketButton={
                   <MarketButton
                     onClick={() => {
-                      if (currentPrice) setLimitPrice(currentPrice)
+                      currentPrice && setLimitPrice(currentPrice.replace(',', ''))
                     }}
-                    active={limitPrice === currentPrice}
+                    active={limitPrice === undefined ? true : limitPrice === currentPrice?.replace(',', '')}
                   >
                     Market
                   </MarketButton>
                 }
                 isPrice={
-                  <Button
-                    sx={{ textTransform: 'none' }}
-                    style={{ display: 'flex', gap: '5px', padding: 0, marginTop: '3px' }}
-                    onClick={() => {
-                      setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
-                      const val = parseBN(limitPrice)
-                      if (val && !val?.isZero()) {
-                        setLimitPrice(formatBNToString(new BN(1).div(val), NumberType.SwapTradeAmount))
-                      }
-                    }}
-                  >
-                    {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="16px" />}
-                    <ThemedText.BodySecondary fontSize={12}>{quoteCurrency?.symbol}</ThemedText.BodySecondary>
-                    <ThemedText.BodySecondary fontSize={11}>per 1</ThemedText.BodySecondary>
-                    {baseCurrency && <CurrencyLogo currency={baseCurrency} size="16px" />}
-                    <ThemedText.BodySecondary fontSize={12}>{baseCurrency?.symbol}</ThemedText.BodySecondary>
-                  </Button>
+                  <RowBetween>
+                    <Button
+                      sx={{ textTransform: 'none' }}
+                      style={{ display: 'flex', gap: '5px', padding: 0, marginTop: '3px' }}
+                      onClick={() => {
+                        setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
+                        inversePrice && setLimitPrice(() => inversePrice.replace(',', ''))
+                      }}
+                    >
+                      {quoteCurrency && <CurrencyLogo currency={quoteCurrency} size="16px" />}
+                      <ThemedText.BodySecondary fontSize={12}>{quoteCurrency?.symbol}</ThemedText.BodySecondary>
+                      <ThemedText.BodySecondary fontSize={11}>per 1</ThemedText.BodySecondary>
+                      {baseCurrency && <CurrencyLogo currency={baseCurrency} size="16px" />}
+                      <ThemedText.BodySecondary fontSize={12}>{baseCurrency?.symbol}</ThemedText.BodySecondary>
+                    </Button>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                      {percentagesArePositive ? (
+                        <>
+                          <SmallButtonPrimary onClick={() => setPercentageValues(1.01)}>+1%</SmallButtonPrimary>
+                          <SmallButtonPrimary onClick={() => setPercentageValues(1.05)}>+5%</SmallButtonPrimary>
+                          <SmallButtonPrimary onClick={() => setPercentageValues(1.1)}>+10%</SmallButtonPrimary>
+                        </>
+                      ) : (
+                        <>
+                          <SmallButtonPrimary onClick={() => setPercentageValues(0.99)}>-1%</SmallButtonPrimary>
+                          <SmallButtonPrimary onClick={() => setPercentageValues(0.95)}>-5%</SmallButtonPrimary>
+                          <SmallButtonPrimary onClick={() => setPercentageValues(0.9)}>-10%</SmallButtonPrimary>
+                        </>
+                      )}
+                    </div>
+                  </RowBetween>
                 }
               />
             </InputSection>
