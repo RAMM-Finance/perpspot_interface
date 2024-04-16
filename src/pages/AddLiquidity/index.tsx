@@ -153,6 +153,7 @@ export default function AddLiquidity() {
     depositBDisabled,
     invertPrice,
     ticksAtLimit,
+    contractErrorMessage,
   } = useDerivedLmtMintInfo(
     baseCurrency ?? undefined,
     quoteCurrency ?? undefined,
@@ -165,7 +166,7 @@ export default function AddLiquidity() {
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
     useV3MintActionHandlers(noLiquidity)
 
-  const isValid = !errorMessage && !invalidRange
+  const isValid = !errorMessage && !invalidRange && !contractErrorMessage
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
@@ -548,7 +549,9 @@ export default function AddLiquidity() {
           }
           error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
         >
-          <Text fontWeight={500}>{errorMessage ? errorMessage : <Trans>Preview</Trans>}</Text>
+          <Text fontWeight={500}>
+            {contractErrorMessage ? contractErrorMessage : errorMessage ? errorMessage : <Trans>Preview</Trans>}
+          </Text>
         </StyledButtonError>
       </AutoColumn>
     )
@@ -637,7 +640,6 @@ export default function AddLiquidity() {
                 inRange={!outOfRange}
                 ticksAtLimit={ticksAtLimit}
               />
-
               <AutoColumn justify="center" gap="md">
                 <div style={{ width: '90%' }}>
                   <ThemedText.BodyPrimary fontWeight={700} mb="10px">

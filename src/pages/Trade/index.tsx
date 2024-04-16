@@ -309,8 +309,6 @@ export default function Trade({ className }: { className?: string }) {
     return null
   }, [poolOHLC, pool, chainId, currentPool])
 
-  // const { result: binData } = useBulkBinData(pool ?? undefined)
-
   function positionEntryPrice(marginInPosToken: boolean, totalDebtInput: BN, totalPosition: BN, margin: BN): BN {
     if (marginInPosToken) {
       return totalDebtInput.div(totalPosition.minus(margin))

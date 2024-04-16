@@ -1,7 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/solidity'
 import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount, Price, Rounding, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import {
   encodeSqrtRatioX96,
   FeeAmount,
@@ -14,19 +14,28 @@ import {
   tickToPrice,
 } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { id } from 'ethers/lib/utils'
+import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
+import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
+import { useContractCallV2 } from 'hooks/useContractCall'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
+import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
+import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getTickToPrice } from 'utils/getTickToPrice'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 
-import { BIG_INT_ZERO } from '../../../constants/misc'
+import { BIG_INT_ZERO, ZERO_PERCENT } from '../../../constants/misc'
 import { PoolState } from '../../../hooks/usePools'
 import { useCurrencyBalances } from '../../connection/hooks'
 import { AppState } from '../../types'
@@ -44,6 +53,8 @@ import { tryParseLmtTick, tryParseTick } from './utils'
 export function useV3MintState(): AppState['mintV3'] {
   return useAppSelector((state) => state.mintV3)
 }
+
+const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
 export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
   onFieldAInput: (typedValue: string) => void
@@ -506,6 +517,50 @@ export function useV3DerivedMintInfo(
   }
 }
 
+const useSimulateMint = (
+  enabled: boolean,
+  hasExistingPosition?: boolean,
+  tokenId?: string,
+  position?: LmtLpPosition,
+  allowedSlippage?: Percent,
+  account?: string
+): { contractError: DecodedError | undefined; success: boolean } => {
+  const calldata = useMemo(() => {
+    if (position && allowedSlippage && account) {
+      return hasExistingPosition && tokenId
+        ? LmtNFTPositionManager.addCallParameters(position, {
+            tokenId,
+            slippageTolerance: allowedSlippage,
+            deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+          }).calldata
+        : LmtNFTPositionManager.addCallParameters(position, {
+            slippageTolerance: allowedSlippage,
+            recipient: account,
+            deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+          }).calldata
+    } else {
+      return undefined
+    }
+  }, [allowedSlippage, account, hasExistingPosition, position, tokenId])
+
+  const { result, loading, error } = useContractCallV2(
+    LMT_NFT_POSITION_MANAGER,
+    calldata,
+    ['addLiquidity', calldata ? id(calldata) : ''],
+    true,
+    enabled && !!calldata ? true : false
+  )
+
+  return useMemo(() => {
+    if (error) {
+      return { contractError: parseContractError(error), success: false }
+    } else if (result && !loading) {
+      return { contractError: undefined, success: true }
+    }
+    return { contractError: undefined, success: false }
+  }, [error, loading, result])
+}
+
 export function useDerivedLmtMintInfo(
   currencyA?: Currency,
   currencyB?: Currency,
@@ -539,6 +594,7 @@ export function useDerivedLmtMintInfo(
   invertPrice: boolean
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
   llpBalance: number | undefined
+  contractErrorMessage: ReactNode | undefined
 } {
   const { account, provider } = useWeb3React()
   const vaultContract = useVaultContract()
@@ -928,6 +984,54 @@ export function useDerivedLmtMintInfo(
 
   const invalidPool = poolState === PoolState.INVALID
 
+  const argentWalletContract = useArgentWalletContract()
+  const allowedSlippage = useUserSlippageToleranceWithDefault(
+    outOfRange ? ZERO_PERCENT : DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE
+  )
+
+  const [approvalAmountA, approvalAmountB] = useMemo(() => {
+    return [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
+  }, [parsedAmounts])
+  const { chainId } = useWeb3React()
+  // check whether the user has approved the router on the tokens
+  const [approvalA, approveACallback] = useApproveCallback(
+    argentWalletContract ? undefined : approvalAmountA,
+    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
+  )
+
+  const [approvalB, approveBCallback] = useApproveCallback(
+    argentWalletContract ? undefined : approvalAmountB,
+    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
+  )
+
+  const { tokenId } = useParams<{ currencyIdA?: string; currencyIdB?: string; feeAmount?: string; tokenId?: string }>()
+
+  const showApprovalA =
+    !argentWalletContract && approvalA !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_A]
+  const showApprovalB =
+    !argentWalletContract && approvalB !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_B]
+
+  const simulateEnabled =
+    !errorMessage && !invalidPool && !invalidRange && !showApprovalA && !showApprovalB && !!account
+
+  const hasExistingPosition = !!existingPosition
+  const { contractError, success } = useSimulateMint(
+    simulateEnabled,
+    hasExistingPosition,
+    tokenId,
+    position,
+    allowedSlippage,
+    account
+  )
+
+  const contractErrorMessage = useMemo(() => {
+    let message: ReactNode | undefined
+    if (contractError) {
+      message = <Trans>{getErrorMessage(contractError)}</Trans>
+    }
+    return message
+  }, [contractError])
+
   return {
     dependentField,
     currencies,
@@ -950,6 +1054,7 @@ export function useDerivedLmtMintInfo(
     invertPrice,
     ticksAtLimit,
     llpBalance,
+    contractErrorMessage,
   }
 }
 
