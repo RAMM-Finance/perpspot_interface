@@ -330,7 +330,7 @@ function MarginPositionInfo({
     const hours = Number(premiumLeft) / premPerHour
 
     return Math.round(hours * 100) / 100
-  }, [position, rate, totalDebtInput])
+  }, [rate, totalDebtInput, premiumLeft])
 
   const estimatedTimeToCloseForAlt = useMemo(() => {
     if (!rate || !totalDebtInput || !premiumLeftForAlt) return undefined
@@ -343,7 +343,7 @@ function MarginPositionInfo({
     if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else return Math.round(hours * 100) / 100
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
-
+  // console.log('Interest',  position?.premiumLeft, alteredPosition.premiumLeft, alteredPosition )
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -383,7 +383,7 @@ function MarginPositionInfo({
           syncing={loading}
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
           newValue={
-            alteredPosition?.premiumLeft ? (alteredPosition?.premiumLeft.gt(0) ? alteredPremium : new BN(0)) : undefined
+            alteredPosition?.premiumLeft ? (alteredPosition?.premiumLeft.gt(0) ? alteredPosition.premiumLeft : new BN(0)) : undefined
           }
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
@@ -393,8 +393,7 @@ function MarginPositionInfo({
           description={<Trans>Estimated Lifetime of Position</Trans>}
           syncing={loading}
           value={estimatedTimeToClose ? estimatedTimeToClose : undefined}
-          newValue={estimatedTimeToCloseForAlt ? estimatedTimeToCloseForAlt : undefined}
-        />
+          newValue={estimatedTimeToCloseForAlt ? estimatedTimeToCloseForAlt : undefined}/>
         {/* <PositionValueLabelWrapper>
           <MouseoverTooltip text="Position Health">Estimated Lifetime Of Position</MouseoverTooltip>
           <AutoColumn>
@@ -753,7 +752,7 @@ function PositionTimeLabel({
             <Row padding="5px" height="28px">
               {value ? `${value} hrs` : '-'}
               {newValue ? <StyledArrow /> : null}
-              {newValue ? `${newValue} hrs` : null}
+              {newValue ? (newValue < 0 ? '0 hrs' : `${newValue} hrs`) : null}
             </Row>
           </ValueWrapper>
         </TextWithLoadingPlaceholder>

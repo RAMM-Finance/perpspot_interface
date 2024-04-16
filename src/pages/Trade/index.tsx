@@ -317,9 +317,12 @@ export default function Trade({ className }: { className?: string }) {
   }
 
   const match = useMemo(() => {
-    if (!leveragePositions || !poolKey) {
+    let currentPrice: number
+
+    if (!leveragePositions || !poolKey || !poolOHLC) {
       return undefined
     } else {
+      currentPrice = poolOHLC.priceNow
       return leveragePositions
         .filter(
           (position: MarginPositionDetails) =>
@@ -328,31 +331,40 @@ export default function Trade({ className }: { className?: string }) {
             position.poolKey.fee === poolKey.fee
         )
         .map((matchedPosition: MarginPositionDetails) => {
-          if (matchedPosition.borrowInfo.length === 2) {
+          const postionEntryPrice = positionEntryPrice(
+            matchedPosition.marginInPosToken,
+            matchedPosition.totalDebtInput,
+            matchedPosition.totalPosition,
+            matchedPosition.margin
+          ).toNumber()
+          if (matchedPosition.borrowInfo.length > 1) {
+            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+              return {
+                entryPrice: 1 / postionEntryPrice,
+                long: false,
+              }
+            }
             return {
-              entryPrice: positionEntryPrice(
-                matchedPosition.marginInPosToken,
-                matchedPosition.totalDebtInput,
-                matchedPosition.totalPosition,
-                matchedPosition.margin
-              ).toNumber(),
+              entryPrice: postionEntryPrice,
               long: false,
             }
           } else {
+            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+              return {
+                entryPrice: 1 / postionEntryPrice,
+                long: true,
+              }
+            }
             return {
-              entryPrice: positionEntryPrice(
-                matchedPosition.marginInPosToken,
-                matchedPosition.totalDebtInput,
-                matchedPosition.totalPosition,
-                matchedPosition.margin
-              ).toNumber(),
+              entryPrice: postionEntryPrice,
               long: true,
             }
           }
         })
     }
-  }, [leveragePositions, poolKey])
+  }, [leveragePositions?.length, poolKey, poolOHLC])
 
+  // console.log('positions', leveragePositions)
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
   // const pinnedPools = usePinnedPools()

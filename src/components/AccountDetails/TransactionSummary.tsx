@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { getDecimalAndUsdValueData } from 'hooks/useContract'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useEffect, useState } from 'react'
 
@@ -277,10 +277,11 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
       let tokenInfoFromUniswap
       let tokenAmount
       if (info.tradeType === TradeType.EXACT_INPUT) {
-        tokenInfoFromUniswap = await getDecimalAndUsdValueData('arbitrum-one', info.inputCurrencyId)
+        
+        tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.inputCurrencyId)
         tokenAmount = info.inputCurrencyAmountRaw
       } else {
-        tokenInfoFromUniswap = await getDecimalAndUsdValueData('arbitrum-one', info.outputCurrencyId)
+        tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.outputCurrencyId)
         tokenAmount = info.outputCurrencyAmountRaw
       }
 
