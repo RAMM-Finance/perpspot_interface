@@ -364,8 +364,6 @@ export default function Trade({ className }: { className?: string }) {
     }
   }, [leveragePositions?.length, poolKey, poolOHLC])
 
-  console.log('leveragepos', leveragePositions)
-
   // console.log('positions', leveragePositions)
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 

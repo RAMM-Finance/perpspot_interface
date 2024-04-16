@@ -141,7 +141,7 @@ export const PoolDataChart = ({
                 ?.activeChart()
                 .createPositionLine()
                 .setPrice(entryPrices[1].entryPrice)
-                .setText(entryPrices[1].long ? 'Open Long' : 'Open Short')
+                .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
                 .setLineColor('#3a3e5e')
                 .setLineWidth(0.5)
                 .setQuantityBackgroundColor('#3A404F23')
