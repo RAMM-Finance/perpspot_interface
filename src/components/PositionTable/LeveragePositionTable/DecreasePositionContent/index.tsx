@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { Button } from '@mui/material'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency, Percent, Price } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import BigNumber, { BigNumber as BN } from 'bignumber.js'
@@ -499,15 +499,14 @@ export default function DecreasePositionContent({
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
-  // Note: This function fixes the input amount to 5 decimal places. Specifying more than 5 decimal places
-  // in the input amount may cause an error, as it exceeds the specified decimal precision of 5. in tryParseCurrencyAmount
-  function fixedToEightDecimals(amount: string): string {
-    return new BigNumber(amount).toFixed(5)
-  }
 
-  const fiatValueReduceAmount = useUSDPrice(
-    tryParseCurrencyAmount(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
-  )
+  const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+    if (!reduceAmount || !outputCurrency || isNaN(Number(reduceAmount))) return undefined
+    return CurrencyAmount.fromRawAmount(outputCurrency, new BN(reduceAmount).shiftedBy(outputCurrency.decimals).toFixed(0))
+  }, [reduceAmount, outputCurrency])
+
+  const fiatValueReduceAmount = useUSDPrice(currencyAmount)
+  // console.log('fiatValueReduceAmount',useUSDPrice(currencyAmount) , )
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>

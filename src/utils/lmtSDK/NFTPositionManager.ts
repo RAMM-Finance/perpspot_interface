@@ -7,6 +7,7 @@ import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
 
 import { ONE, ZERO } from './internalConstants'
+import { LmtLpPosition } from './LpPosition'
 import { MulticallSDK } from './multicall'
 
 // type guard
@@ -127,23 +128,25 @@ export abstract class NonfungiblePositionManager {
     return calldatas
   }
 
-  public static addCallParameters(position: Position, options: AddLiquidityOptions): MethodParameters {
+  public static addCallParameters(position: LmtLpPosition, options: AddLiquidityOptions): MethodParameters {
     // get amounts
     const { amount0: amount0Max, amount1: amount1Max } = position.mintAmounts
 
     // adjust for slippage
-    const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
+    // const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
 
     const deadline = toHex(options.deadline)
     let calldata: string
     const amount0Desired = new BN(amount0Max.toString()).times(1000).div(1001).toFixed(0)
     const amount1Desired = new BN(amount1Max.toString()).times(1000).div(1001).toFixed(0)
-    const amount0Min = new BN(minimumAmounts.amount0.toString()).gt(amount0Desired)
-      ? amount0Desired
-      : minimumAmounts.amount0.toString()
-    const amount1Min = new BN(minimumAmounts.amount1.toString()).gt(amount1Desired)
-      ? amount1Desired
-      : minimumAmounts.amount1.toString()
+
+    const minimumAmounts = position.customMintAmountsWithSlippage(
+      JSBI.BigInt(amount0Desired),
+      JSBI.BigInt(amount1Desired),
+      options.slippageTolerance
+    )
+    const amount0Min = minimumAmounts.amount0.toString()
+    const amount1Min = minimumAmounts.amount1.toString()
     // mint
     if (isMint(options)) {
       const recipient: string = validateAndParseAddress(options.recipient)

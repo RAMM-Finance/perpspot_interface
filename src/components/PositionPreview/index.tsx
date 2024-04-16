@@ -16,6 +16,7 @@ import { useTheme } from 'styled-components/macro'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatTickPrice } from 'utils/formatTickPrice'
+import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
 const PositionPreviewWrapper = styled.div``
@@ -26,7 +27,7 @@ export const PositionPreview = ({
   baseCurrencyDefault,
   ticksAtLimit,
 }: {
-  position: Position
+  position: Position | LmtLpPosition
   title?: ReactNode
   inRange: boolean
   baseCurrencyDefault?: Currency | undefined

@@ -419,9 +419,9 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
     case TransactionType.CANCEL_LIMIT_ORDER:
       return <Trans>Cancel Limit Order Summary</Trans>
     case TransactionType.PREMIUM_DEPOSIT:
-      return <Trans>Deposit Premium Summary</Trans>
+      return <Trans>Deposit Interest Summary</Trans>
     case TransactionType.PREMIUM_WITHDRAW:
-      return <Trans>Withdraw Premium Summary</Trans>
+      return <Trans>Withdraw Interest Summary</Trans>
     case TransactionType.MINT_LLP:
       return <Trans>Mint LLP Summary</Trans>
     case TransactionType.REDEEM_LLP:

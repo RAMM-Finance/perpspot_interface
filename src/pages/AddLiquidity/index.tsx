@@ -929,7 +929,7 @@ export default function AddLiquidity() {
                                 {/*<AlertTriangle stroke={theme.deprecated_primary2} size="16px" />*/}
                                 <ThemedText.DeprecatedLabel ml="12px" fontSize="12px">
                                   <Trans>
-                                    Your position will earn only premiums when out of range, but trading fees as well
+                                    Your position will earn only interests when out of range, but trading fees as well
                                     when in range.
                                   </Trans>
                                 </ThemedText.DeprecatedLabel>
