@@ -330,7 +330,7 @@ function MarginPositionInfo({
     const hours = Number(premiumLeft) / premPerHour
 
     return Math.round(hours * 100) / 100
-  }, [position, rate, totalDebtInput])
+  }, [rate, totalDebtInput, premiumLeft])
 
   const estimatedTimeToCloseForAlt = useMemo(() => {
     if (!rate || !totalDebtInput || !premiumLeftForAlt) return undefined
@@ -343,7 +343,7 @@ function MarginPositionInfo({
     if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else return Math.round(hours * 100) / 100
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
-
+  // console.log('Interest', alteredPremium, alteredPosition.premiumLeft )
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">

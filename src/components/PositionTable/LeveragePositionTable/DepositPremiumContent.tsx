@@ -318,9 +318,9 @@ export function DepositPremiumContent({
     onPositionChange
   )
 
-  useMemo(() => {
-    handleTxnInfo(txnInfo)
-  }, [handleTxnInfo, txnInfo])
+  // useMemo(() => {
+  //   handleTxnInfo(txnInfo)
+  // }, [handleTxnInfo, txnInfo])
 
   const { account, chainId, provider } = useWeb3React()
 
@@ -333,7 +333,7 @@ export function DepositPremiumContent({
     currencyAmount,
     chainId ? LMT_MARGIN_FACILITY[chainId] : undefined
   )
-
+  // console.log('DepositPremiumContent', amount, txnInfo)
   const updateAllowance = useCallback(async () => {
     try {
       await approve()
