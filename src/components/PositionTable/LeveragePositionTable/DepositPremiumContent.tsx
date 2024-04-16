@@ -333,7 +333,6 @@ export function DepositPremiumContent({
     currencyAmount,
     chainId ? LMT_MARGIN_FACILITY[chainId] : undefined
   )
-  // console.log('DepositPremiumContent', amount, txnInfo)
   const updateAllowance = useCallback(async () => {
     try {
       await approve()
