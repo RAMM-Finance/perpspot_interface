@@ -133,6 +133,8 @@ function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = 
 const lastFetchedAtom = atom<number | undefined>(0)
 
 function getDescriptor(entry: any, tokens: any) {
+  console.log('------getDescriptor entry', entry)
+  console.log('------getDescriptor tokens', tokens)
   const token0Name = tokens[entry.token0]?.symbol ?? tokens[entry.token0]?.name
   const token1Name = tokens[entry.token1]?.symbol ?? tokens[entry.token1]?.name
   const token0Decimal = tokenDecimal[entry.token0]
@@ -326,7 +328,6 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
 
   const history = useHistoryData(account)
-  console.log('------history-------', history)
   const historyToShow = useMemo(() => {
     if (!history) return
     const processedHistory: any[] = []
