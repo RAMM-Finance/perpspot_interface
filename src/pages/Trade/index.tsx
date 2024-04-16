@@ -337,7 +337,7 @@ export default function Trade({ className }: { className?: string }) {
             matchedPosition.totalPosition,
             matchedPosition.margin
           ).toNumber()
-          if (matchedPosition.borrowInfo.length > 1) {
+          if (!matchedPosition.isToken0) {
             if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
               return {
                 entryPrice: 1 / postionEntryPrice,
@@ -363,6 +363,8 @@ export default function Trade({ className }: { className?: string }) {
         })
     }
   }, [leveragePositions?.length, poolKey, poolOHLC])
+
+  console.log('leveragepos', leveragePositions)
 
   // console.log('positions', leveragePositions)
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
