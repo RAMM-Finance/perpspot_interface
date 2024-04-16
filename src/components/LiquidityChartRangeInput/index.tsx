@@ -115,6 +115,7 @@ export default function LiquidityChartRangeInput({
           (!ticksAtLimit[isSorted ? Bound.LOWER : Bound.UPPER] || mode === 'handle' || mode === 'reset') &&
           leftRangeValue > 0
         ) {
+          console.log('zeke:5')
           onLeftRangeInput(leftRangeValue.toFixed(6))
         }
 

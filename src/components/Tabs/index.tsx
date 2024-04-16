@@ -1,13 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
 import SettingsTab from 'components/Settings'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/marginTrading/hooks'
-import { ActiveSwapTab } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
 import { useCurrentPool, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
+import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 // import Styles from "./tabs.styles.less";
 
 const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
@@ -33,6 +33,26 @@ const SettingWrapper = styled.div`
   width: 8px;
 `
 
+export function useCurrentTabIsLong() {
+  const currentPool = useCurrentPool()
+  const inputIsToken0 = currentPool?.inputInToken0
+  const { chainId } = useWeb3React()
+  return useMemo(() => {
+    if (currentPool && chainId) {
+      const { poolKey } = currentPool
+      const [base, quote, inputInToken0ByDefault] = getDefaultBaseQuote(poolKey.token0, poolKey.token1, chainId)
+      if (inputIsToken0 && inputInToken0ByDefault) {
+        return true
+      } else if (!inputIsToken0 && !inputInToken0ByDefault) {
+        return true
+      } else {
+        return false
+      }
+    }
+    return undefined
+  }, [chainId, inputIsToken0, currentPool])
+}
+
 // the order of displayed base currencies from left to right is always in sort order
 // currencyA is treated as the preferred base currency
 export default function SwapTabHeader({
@@ -46,60 +66,72 @@ export default function SwapTabHeader({
   autoPremiumDepositPercent?: Percent
   isLimitOrder?: boolean
 }) {
-  const { activeTab } = useSwapState()
-  const { onActiveTabChange, onSetMarginInPosToken } = useSwapActionHandlers()
+  /**
+   * activeTab can be derived from the current pool
+   *
+   */
+  const { onSetIsSwap } = useMarginTradingActionHandlers()
+  const { isSwap } = useMarginTradingState()
 
-  const { onMarginChange, onLeverageFactorChange, onPremiumCurrencyToggle } = useMarginTradingActionHandlers()
+  const { onMarginChange, onLeverageFactorChange, onPremiumCurrencyToggle, onSetMarginInPosToken } =
+    useMarginTradingActionHandlers()
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler('', onLeverageFactorChange)
   const { marginInPosToken } = useMarginTradingState()
 
   // const inputIsToken0: boolean | undefined = useAppSelector((state) => state.user.currentInputInToken0)
   const currentPool = useCurrentPool()
-  const inputIsToken0 = currentPool?.inputInToken0
-  const switchTokens = useSelectInputCurrency()
+  const setInputIsToken0 = useSelectInputCurrency()
 
-  useEffect(() => {
-    if (activeTab === 0 && inputIsToken0 !== undefined && localStorage.getItem('defaultInputToken') === null) {
-      localStorage.setItem('defaultInputToken', JSON.stringify(inputIsToken0))
-    }
-    return
-  }, [activeTab, inputIsToken0])
-
-  const keyExists = localStorage.getItem('defaultInputToken') === null
-
-  const initial = useMemo(() => {
-    if (keyExists) {
-      return undefined
-    } else {
-      return JSON.parse(localStorage.getItem('defaultInputToken') || '{}')
-    }
-  }, [keyExists])
+  const isLong = useCurrentTabIsLong()
+  const { chainId } = useWeb3React()
 
   const handleTabChange = useCallback(
-    (active: ActiveSwapTab) => {
-      if (active === activeTab) {
+    (_isSwap: boolean, _isLong: boolean) => {
+      if (!currentPool || !chainId) return
+      if (isSwap && _isSwap === isSwap) {
+        return
+      } else if (!isSwap && !_isSwap && isLong === _isLong) {
         return
       }
-      if (marginInPosToken) {
-        onSetMarginInPosToken(!marginInPosToken)
+      if (!_isSwap) {
+        if (marginInPosToken) {
+          onSetMarginInPosToken(!marginInPosToken)
+        }
+        const [, , inputInToken0ByDefault] = getDefaultBaseQuote(
+          currentPool.poolKey.token0,
+          currentPool.poolKey.token1,
+          chainId
+        )
+        // if _isLong
+        if (_isLong) {
+          setInputIsToken0(inputInToken0ByDefault)
+        } else {
+          setInputIsToken0(!inputInToken0ByDefault)
+        }
+
+        onPremiumCurrencyToggle(false)
+        onMarginChange('')
+        onDebouncedLeverageFactor('')
+        onSetIsSwap(_isSwap)
+      } else {
+        onMarginChange('')
+        onDebouncedLeverageFactor('')
+        onSetIsSwap(_isSwap)
       }
-      switchTokens(!inputIsToken0)
-      onPremiumCurrencyToggle(false)
-      onMarginChange('')
-      onDebouncedLeverageFactor('')
-      onActiveTabChange(active)
     },
     [
-      onActiveTabChange,
+      onSetIsSwap,
       onMarginChange,
       onDebouncedLeverageFactor,
-      switchTokens,
+      setInputIsToken0,
+      chainId,
+      currentPool,
+      isLong,
       onSetMarginInPosToken,
       marginInPosToken,
-      activeTab,
       onPremiumCurrencyToggle,
-      initial,
+      isSwap,
     ]
   )
   return (
@@ -114,34 +146,34 @@ export default function SwapTabHeader({
     >
       <TabWrapper>
         <TabElement
-          onClick={() => handleTabChange(ActiveSwapTab.LONG)}
-          isActive={activeTab === ActiveSwapTab.LONG}
+          onClick={() => handleTabChange(false, true)}
+          isActive={isLong && !isSwap}
           // selectedTab={selectedTab}
           tabValue="Long"
           fontSize="14px"
           first={true}
-          activeTab={activeTab}
+          activeTab={0}
         >
           <Trans>Long</Trans>
         </TabElement>
         <TabElement
-          onClick={() => handleTabChange(ActiveSwapTab.SHORT)}
-          isActive={activeTab === ActiveSwapTab.SHORT}
+          onClick={() => handleTabChange(false, false)}
+          isActive={!isLong && !isSwap}
           // selectedTab={selectedTab}
           tabValue="Short"
           fontSize="14px"
-          activeTab={activeTab}
+          activeTab={1}
         >
           <Trans>Short</Trans>
         </TabElement>
         <TabElement
-          onClick={() => handleTabChange(ActiveSwapTab.SWAP)}
-          isActive={activeTab === ActiveSwapTab.SWAP}
+          onClick={() => handleTabChange(true, false)}
+          isActive={isSwap}
           // selectedTab={selectedTab}
           tabValue="Swap"
           fontSize="14px"
           last={true}
-          activeTab={activeTab}
+          activeTab={2}
         >
           <Trans>Swap</Trans>
         </TabElement>

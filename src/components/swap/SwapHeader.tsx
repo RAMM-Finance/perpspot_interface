@@ -17,14 +17,12 @@ export default function SwapHeader({
   autoPremiumDepositPercent,
   isLimitOrder,
 }: SwapHeaderProps) {
-  // console.log(activeTab)
   return (
     <>
       <StyledSwapHeader>
         <SwapTabHeader
           autoSlippage={allowedSlippage}
           autoPremiumDepositPercent={autoPremiumDepositPercent}
-          // autoSlippedTick={autoSlippedTick}
           isLimitOrder={isLimitOrder}
         />
       </StyledSwapHeader>

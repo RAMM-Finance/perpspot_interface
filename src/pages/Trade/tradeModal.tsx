@@ -21,6 +21,7 @@ import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { AddMarginPositionConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { AddLimitDetailsDropdown, LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
 import SwapHeader from 'components/swap/SwapHeader'
+import { useCurrentTabIsLong } from 'components/Tabs'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
@@ -50,12 +51,11 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
-import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';
@@ -190,25 +190,17 @@ export const Selector = styled.div<{ active: boolean }>`
 const TradeTabContent = () => {
   // const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  const { activeTab } = useSwapState()
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
-  const { onUserInput, onSetMarginInPosToken } = useSwapActionHandlers()
-  const input = useCurrentInputCurrency()
-  const output = useCurrentOutputCurrency()
+  const { onSetMarginInPosToken } = useMarginTradingActionHandlers()
+  const { onUserInput } = useSwapActionHandlers()
+  const inputCurrency = useCurrentInputCurrency()
+  const outputCurrency = useCurrentOutputCurrency()
 
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
-    useMemo(() => [input ?? undefined, output ?? undefined], [input, output])
+    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
   )
-
-  const longOrShort = useMemo(() => {
-    if (!input || !output || !chainId) return [undefined, undefined, undefined]
-    return getDefaultBaseQuote(input.wrapped.address, output.wrapped.address, chainId)
-  }, [input, output, chainId])
-
-  const inputCurrency = useCurrency(activeTab === 0 ? longOrShort[1] : longOrShort[0])
-  const outputCurrency = useCurrency(activeTab === 0 ? longOrShort[0] : longOrShort[1])
 
   const currencyBalances = useMemo(
     () => ({
@@ -268,14 +260,8 @@ const TradeTabContent = () => {
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
-  const {
-    onLeverageFactorChange,
-    onMarginChange,
-    onChangeTradeType,
-    onPriceInput,
-    onPriceToggle,
-    onPremiumCurrencyToggle,
-  } = useMarginTradingActionHandlers()
+  const { onLeverageFactorChange, onMarginChange, onPriceInput, onPriceToggle, onPremiumCurrencyToggle } =
+    useMarginTradingActionHandlers()
 
   const handleSetMarginInPosToken = useCallback(() => {
     if (marginInPosToken) {
@@ -542,8 +528,7 @@ const TradeTabContent = () => {
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
-
-  const isLong = activeTab === 0
+  const isLong = useCurrentTabIsLong()
 
   if (chainId && unsupportedChain(chainId)) {
     return (
@@ -574,38 +559,12 @@ const TradeTabContent = () => {
         outputCurrency={outputCurrency ?? undefined}
         inputCurrency={inputCurrency ?? undefined}
       />
-      {/*<ConfirmAddLimitOrderModal
-        isOpen={lmtShowConfirm}
-        trade={limitTrade}
-        originalTrade={limitTradeConfirm}
-        onConfirm={handleAddLimit}
-        onDismiss={handleConfirmDismiss}
-        onAcceptChanges={() => {
-          return
-        }}
-        onCancel={handleCancel}
-        attemptingTxn={lmtAttemptingTxn}
-        txHash={lmtTxHash}
-        tradeErrorMessage={lmtErrorMessage ? <Trans>{lmtErrorMessage}</Trans> : undefined}
-      />*/}
       <SwapHeader
         allowedSlippage={allowedSlippage}
         autoPremiumDepositPercent={userPremiumPercent}
         isLimitOrder={isLimitOrder}
       />
       <FilterWrapper>
-        {/*<Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
-          <Selector active={!isLimitOrder}>
-            <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
-              Market
-            </StyledSelectorText>
-          </Selector>
-          <Selector active={isLimitOrder}>
-            <StyledSelectorText lineHeight="20px" active={isLimitOrder}>
-              Limit
-            </StyledSelectorText>
-          </Selector>
-        </Filter>*/}
         <PremiumCurrencySelector
           inputCurrency={inputCurrency}
           outputCurrency={outputCurrency}
@@ -748,7 +707,7 @@ const TradeTabContent = () => {
               showMaxButton={false}
               hideBalance={false}
               fiatValue={fiatValueTradeOutput}
-              currency={isLong ? outputCurrency : inputCurrency ?? null}
+              currency={outputCurrency}
               otherCurrency={inputCurrency ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}

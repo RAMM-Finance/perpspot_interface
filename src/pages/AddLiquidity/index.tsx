@@ -401,6 +401,7 @@ export default function AddLiquidity() {
     (leftRange: any, rightRange: any) => {
       const minPrice = pricesAtLimit[Bound.LOWER]
       if (minPrice) {
+        console.log('zeke:1')
         onLeftRangeInput(
           (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange)
             .toFixed(12)
@@ -415,7 +416,7 @@ export default function AddLiquidity() {
             .toString()
         )
       }
-
+      console.log('zeke:searchParams', searchParams)
       setSearchParams(searchParams)
 
       sendEvent({
@@ -426,21 +427,6 @@ export default function AddLiquidity() {
     [pricesAtLimit, searchParams, setSearchParams, invertPrice, price, onLeftRangeInput, onRightRangeInput]
   )
 
-  // const handleSetFullRange = useCallback(() => {
-  //   getSetFullRange()
-
-  //   const minPrice = pricesAtLimit[Bound.LOWER]
-  //   if (minPrice) searchParams.set('minPrice', minPrice.toSignificant(5))
-  //   const maxPrice = pricesAtLimit[Bound.UPPER]
-  //   if (maxPrice) searchParams.set('maxPrice', maxPrice.toSignificant(5))
-  //   setSearchParams(searchParams)
-
-  //   sendEvent({
-  //     category: 'Liquidity',
-  //     action: 'Full Range Clicked',
-  //   })
-  // }, [getSetFullRange, pricesAtLimit, searchParams, setSearchParams])
-
   // START: sync values with query string
   const oldSearchParams = usePrevious(searchParams)
 
@@ -448,12 +434,14 @@ export default function AddLiquidity() {
   useEffect(() => {
     const minPrice = searchParams.get('minPrice')
     const oldMinPrice = oldSearchParams?.get('minPrice')
+    console.log('zeke:minPrice', minPrice, oldMinPrice, oldSearchParams)
     if (
       minPrice &&
       typeof minPrice === 'string' &&
       !isNaN(minPrice as any) &&
       (!oldMinPrice || oldMinPrice !== minPrice)
     ) {
+      console.log('zeke:2')
       onLeftRangeInput(minPrice)
     }
     // disable eslint rule because this hook only cares about the url->input state data flow
@@ -757,6 +745,7 @@ export default function AddLiquidity() {
                                     currencyB={quoteCurrency}
                                     handleRateToggle={() => {
                                       if (!ticksAtLimit[Bound.LOWER] && !ticksAtLimit[Bound.UPPER]) {
+                                        console.log('zeke:3')
                                         onLeftRangeInput(
                                           (invertPrice ? priceLower : priceUpper?.invert())?.toSignificant(6) ?? ''
                                         )

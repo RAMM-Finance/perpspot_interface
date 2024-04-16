@@ -2,13 +2,14 @@ import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { TOKEN_SHORTHANDS } from 'constants/tokens'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
 import { useBestTrade } from 'hooks/useBestTrade'
 // import { useLimitlessPositionFromKeys } from 'hooks/useV3Positions'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
+import { ParsedQs } from 'qs'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
-import { setMarginInPosToken } from 'state/marginTrading/actions'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
 import {
   useCurrentInputCurrency,
@@ -24,28 +25,17 @@ import { AppState } from '../types'
 import {
   ActiveSwapTab,
   Field,
-  selectCurrency,
   selectPool,
   setActiveTab,
   setLeverage,
   setLeverageFactor,
   setLTV,
   setRecipient,
-  // setSwapTab,
-  switchCurrencies,
   typeInput,
 } from './actions'
 import { SwapState } from './reducer'
 // import { useLeveragePosition } from 'hooks/useV3Positions'
-import {
-  CurrencyState,
-  SerializedCurrencyState,
-  useSwapAndLimitContext,
-  useSwapContext,
-} from './SwapContext'
-import { ParsedQs } from 'qs'
-import { useEffect } from 'react'
-import { TOKEN_SHORTHANDS } from 'constants/tokens'
+import { CurrencyState, SerializedCurrencyState, useSwapAndLimitContext, useSwapContext } from './SwapContext'
 
 export function useSwapState(): AppState['swap'] {
   return useAppSelector((state) => state.swap)
@@ -54,21 +44,18 @@ export function useSwapState(): AppState['swap'] {
 export function useSwapActionHandlers(): {
   onCurrencySelection: (field: Field, currency: Currency) => void
   onPoolSelection(currencyIn: Currency, currencyOut: Currency, poolKey: RawPoolKey): void
-  // onSwitchTokens: (newOutputHasTax: boolean, previouslyEstimatedOutput: string) => void
   onSwitchTokens: (options: { previouslyEstimatedOutput: string }) => void
   onUserInput: (field: Field, typedValue: string) => void
   onChangeRecipient: (recipient: string | null) => void
   onLeverageFactorChange: (leverage: string) => void
   onLeverageChange: (leverage: boolean) => void
-  onActiveTabChange: (activeTab: ActiveSwapTab) => void
+  // onActiveTabChange: (activeTab: ActiveSwapTab) => void
   onLTVChange: (ltv: string) => void
-  onSetMarginInPosToken: (marginInPosToken: boolean) => void
 } {
   const dispatch = useAppDispatch()
 
   const { swapState, setSwapState } = useSwapContext()
   const { currencyState, setCurrencyState } = useSwapAndLimitContext()
-
 
   const onCurrencySelection = useCallback(
     (field: Field, currency: Currency) => {
@@ -93,20 +80,6 @@ export function useSwapActionHandlers(): {
     },
     [setCurrencyState, setSwapState]
   )
-
-  // const onCurrencySelection = useCallback(
-  //   (field: Field, currency: Currency) => {
-  //     console.log("ON CURRENCY SELECTION")
-  //     console.log(currency)
-  //     dispatch(
-  //       selectCurrency({
-  //         field,
-  //         currencyId: currency.isToken ? currency.address : currency.isNative ? 'ETH' : '',
-  //       })
-  //     )
-  //   },
-  //   [dispatch]
-  // )
 
   const onPoolSelection = useCallback(
     (currencyIn: Currency, currencyOut: Currency, poolKey: RawPoolKey) => {
@@ -151,14 +124,6 @@ export function useSwapActionHandlers(): {
     [setCurrencyState, setSwapState, swapState.independentField]
   )
 
-
-  // const onSwitchTokens = useCallback(
-  //   (leverage: boolean) => {
-  //     dispatch(switchCurrencies({ leverage }))
-  //   },
-  //   [dispatch]
-  // )
-
   const onUserInput = useCallback(
     (field: Field, typedValue: string) => {
       console.log(field)
@@ -168,30 +133,9 @@ export function useSwapActionHandlers(): {
     [dispatch]
   )
 
-  
-  // const onUserInput = useCallback(
-  //   (field: Field, typedValue: string) => {
-  //     setSwapState((state) => {
-  //       return {
-  //         ...state,
-  //         independentField: field,
-  //         typedValue,
-  //       }
-  //     })
-  //   },
-  //   [setSwapState]
-  // )
-
   const onChangeRecipient = useCallback(
     (recipient: string | null) => {
       dispatch(setRecipient({ recipient }))
-    },
-    [dispatch]
-  )
-
-  const onSetMarginInPosToken = useCallback(
-    (marginInPosToken: boolean) => {
-      dispatch(setMarginInPosToken({ marginInPosToken }))
     },
     [dispatch]
   )
@@ -232,10 +176,8 @@ export function useSwapActionHandlers(): {
     onChangeRecipient,
     onLeverageFactorChange,
     onLeverageChange,
-    onActiveTabChange,
     onLTVChange,
     onPoolSelection,
-    onSetMarginInPosToken,
   }
 }
 
@@ -570,7 +512,6 @@ export function queryParametersToCurrencyState(parsedQs: ParsedQs): SerializedCu
     outputCurrencyId: outputCurrency === '' ? undefined : outputCurrency ?? undefined,
   }
 }
-
 
 export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
   const typedValue = parseTokenAmountURLParameter(parsedQs.exactAmount)

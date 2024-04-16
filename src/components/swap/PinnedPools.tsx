@@ -4,7 +4,6 @@ import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentPool, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components'
 import { ThemedText } from 'theme'
@@ -56,8 +55,9 @@ const DeltaText = styled.span<{ delta: number | undefined }>`
 `
 
 const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
-  const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
-  const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
+  const { onPremiumCurrencyToggle, onMarginChange, onSetMarginInPosToken, onSetIsSwap } =
+    useMarginTradingActionHandlers()
+
   const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
@@ -85,7 +85,7 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id && token0.symbol && token1.symbol && poolOHLCData) {
       onMarginChange('')
-      onActiveTabChange(0)
+      onSetIsSwap(false)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
       setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
@@ -97,7 +97,7 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
     poolId,
     id,
     onMarginChange,
-    onActiveTabChange,
+    onSetIsSwap,
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
     poolOHLCData,

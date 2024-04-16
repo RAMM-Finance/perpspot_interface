@@ -79,7 +79,7 @@ const SwapTabContent = () => {
   const theme = useTheme()
   const { account, chainId } = useWeb3React()
 
-  const { onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const { onUserInput, onChangeRecipient } = useSwapActionHandlers()
   const currentPool = useCurrentPool()
   const inputIsToken0 = currentPool?.inputInToken0
   const switchTokens = useSelectInputCurrency()
@@ -300,9 +300,8 @@ const SwapTabContent = () => {
     })
     if (txHash) {
       onUserInput(Field.INPUT, '')
-      onLeverageFactorChange('1')
     }
-  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash, onLeverageFactorChange])
+  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
 
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onUserInput(Field.INPUT, maxInputAmount.toExact())

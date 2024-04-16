@@ -1,10 +1,11 @@
 import { getNativeAddress, getStables } from 'constants/fake-tokens'
+import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
 
 export function getDefaultBaseQuote(
   tokenA: string,
   tokenB: string,
   chainId: number
-): [base: string, quote: string, inputInToken0: boolean] {
+): [base: string, quote: string, inputInToken0ByDefault: boolean] {
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA]
   const stables = getStables(chainId)
   const native = getNativeAddress(chainId)
@@ -34,4 +35,15 @@ export function getDefaultBaseQuote(
   }
 
   return [base, quote, inputInToken0]
+}
+
+export function positionIsLong(chainId: number, position: MarginPositionDetails, poolKey: PoolKey): boolean {
+  const [base, quote, inputIsToken0ByDefault] = getDefaultBaseQuote(poolKey.token0, poolKey.token1, chainId)
+  const isToken0 = position.isToken0
+
+  if ((isToken0 && inputIsToken0ByDefault) || (!isToken0 && !inputIsToken0ByDefault)) {
+    return true
+  }
+
+  return false
 }

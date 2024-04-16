@@ -24,7 +24,6 @@ import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC } from 'state/application/h
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import { useSwapActionHandlers } from 'state/swap/hooks'
 import {
   useAddPinnedPool,
   useCurrentPool,
@@ -222,8 +221,8 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   const token1 = useCurrency(poolKey.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  const { onPremiumCurrencyToggle, onMarginChange } = useMarginTradingActionHandlers()
-  const { onSetMarginInPosToken, onActiveTabChange } = useSwapActionHandlers()
+  const { onPremiumCurrencyToggle, onMarginChange, onSetMarginInPosToken, onSetIsSwap } =
+    useMarginTradingActionHandlers()
 
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
@@ -277,7 +276,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol && chainId) {
       localStorage.removeItem('defaultInputToken')
       onMarginChange('')
-      onActiveTabChange(0)
+      onSetIsSwap(false)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
       setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
@@ -287,7 +286,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
   }, [
     token0,
     token1,
-    onActiveTabChange,
+    onSetIsSwap,
     id,
     poolId,
     handleClose,

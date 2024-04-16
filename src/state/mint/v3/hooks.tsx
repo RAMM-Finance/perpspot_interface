@@ -67,7 +67,7 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldAInput = useCallback(
     (typedValue: string) => {
-      console.log('onFieldAInput', typedValue)
+      console.log('zeke:onFieldAInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_A, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -75,7 +75,7 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldBInput = useCallback(
     (typedValue: string) => {
-      console.log('onFieldBInput', typedValue)
+      console.log('zeke:onFieldBInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_B, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -85,6 +85,7 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onLeftRangeInput = useCallback(
     (typedValue: string) => {
+      console.log('zeke:leftRange', searchParams.get('minPrice'), !!typedValue)
       dispatch(typeLeftRangeInput({ typedValue }))
       const paramMinPrice = searchParams.get('minPrice')
       if (!paramMinPrice || (paramMinPrice && paramMinPrice !== typedValue)) {
@@ -97,6 +98,7 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onRightRangeInput = useCallback(
     (typedValue: string) => {
+      console.log('zeke:rightRange', typedValue)
       dispatch(typeRightRangeInput({ typedValue }))
       const paramMaxPrice = searchParams.get('maxPrice')
       if (!paramMaxPrice || (paramMaxPrice && paramMaxPrice !== typedValue)) {
@@ -713,6 +715,26 @@ export function useDerivedLmtMintInfo(
   // parse typed range values and determine closest ticks
   // lower should always be a smaller tick
   const ticks = useMemo(() => {
+    // console.log('zeke:ticks changed', rightRangeTypedValue, leftRangeTypedValue, {
+    //   [Bound.LOWER]:
+    //     typeof existingPosition?.tickLower === 'number'
+    //       ? existingPosition.tickLower
+    //       : (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+    //         (!invertPrice && typeof leftRangeTypedValue === 'boolean')
+    //       ? tickSpaceLimits[Bound.LOWER]
+    //       : invertPrice
+    //       ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization, true)
+    //       : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization, true),
+    //   [Bound.UPPER]:
+    //     typeof existingPosition?.tickUpper === 'number'
+    //       ? existingPosition.tickUpper
+    //       : (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+    //         (invertPrice && typeof leftRangeTypedValue === 'boolean')
+    //       ? tickSpaceLimits[Bound.UPPER]
+    //       : invertPrice
+    //       ? tryParseLmtTick(token1, token0, feeAmount, leftRangeTypedValue.toString(), tickDiscretization)
+    //       : tryParseLmtTick(token0, token1, feeAmount, rightRangeTypedValue.toString(), tickDiscretization),
+    // })
     return {
       [Bound.LOWER]:
         typeof existingPosition?.tickLower === 'number'
