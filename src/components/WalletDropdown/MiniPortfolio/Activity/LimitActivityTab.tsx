@@ -135,7 +135,7 @@ function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = 
 
 const lastFetchedAtom = atom<number | undefined>(0)
 
-function getFixedDecimal(amount: number, decimal?: number) {
+function getFixedDecimal(amount: number, decimal?: number, fixed?: number) {
   let value
   if (decimal) {
     value = Number(amount) / 10 ** decimal
@@ -143,7 +143,7 @@ function getFixedDecimal(amount: number, decimal?: number) {
     value = Number(amount)
   }
   const decimalPlaces = (value.toString().split('.')[1] || []).length
-  const displayValue = decimalPlaces > 10 ? value.toFixed(10) : value.toString()
+  const displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
   return displayValue
 }
 
@@ -223,37 +223,33 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       return (
         'Added ' +
         getFixedDecimal(entry.addedAmount, token0Decimal) + 
-        // String((Number(entry.addedAmount) / 10 ** token0Decimal).toFixed(7)) 
         ' ' +
         token0Name +
         '  with ' +
         getFixedDecimal(margin) + 
-        // String(margin.toFixed(7)) + 
         ' ' +
         (entry.marginInPosToken ? token0Name : token1Name) +
         `, Pair: ${token0Name}/${token1Name}` +
-        `, Price: ${price.toFixed(7)}`
+        `, Price: ${getFixedDecimal(price, 0, 7)}`
       )
     else
       return (
         'Added ' +
         getFixedDecimal(entry.addedAmount, token1Decimal) + 
-        // String((Number(entry.addedAmount) / 10 ** token1Decimal).toFixed(7))
         ' ' +
         token1Name +
         '  with ' +
         getFixedDecimal(margin) + 
-        // String(margin.toFixed(7)) + 
         ' ' +
         (entry.marginInPosToken ? token1Name : token0Name) + 
         `, Pair: ${token0Name}/${token1Name}` +
-        `, Price: ${price.toFixed(7)}`
+        `, Price: ${getFixedDecimal(price, 0, 7)}`
       )
   } else if (entry.actionType == ActivityDescriptionType.FORCE_CLOSED) {
     if (entry.positionIsToken0)
       return (
         'Force Closed ' +
-        String(Number(entry.forcedClosedAmount) / 10 ** token0Decimal) +
+        getFixedDeciaml(entry.forcedClosedAmount, token0Decimal) +
         token0Name +
         ' for ' +
         token0Name +
@@ -263,7 +259,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     else
       return (
         'Force Closed ' +
-        String(Number(entry.forcedClosedAmount) / 10 ** token1Decimal) +
+        getFixedDeciaml(entry.forcedClosedAmount, token1Decimal) +
         token1Name +
         ' from ' +
         token0Name +
@@ -283,7 +279,6 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
-        // String((Number(entry.reduceAmount) / 10 ** token0Decimal).toFixed(7)) + 
         getFixedDecimal(entry.reduceAmount, token0Decimal) +
         ' ' +
         token0Name +
@@ -292,13 +287,12 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         '/' +
         token1Name +
         `, Pair: ${token0Name}/${token1Name}` +
-        `, Price: ${Number(price).toFixed(7)}` +
-        ` Pnl: ${PnL.toFixed(9)} ${marginToken}`
+        `, Price: ${getFixedDecimal(Number(price), 0, 7)}` +
+        ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken}`
       )
     else
       return (
         'Reduced ' +
-        // String((Number(entry.reduceAmount) / 10 ** token1Decimal).toFixed(7)) + ' ' +
         getFixedDecimal(entry.reduceAmount, token1Decimal) +
         ' ' +
         token1Name +
@@ -307,8 +301,8 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         '/' +
         token1Name +
         `, Pair: ${token0Name}/${token1Name}` +
-        `, Price:  ${Number(price).toFixed(7)}` +
-        ` Pnl: ${PnL.toFixed(9)} ${marginToken}`
+        `, Price:  ${getFixedDecimal(Number(price), 0, 7)}` +
+        ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken}`
       )
   } else {
     return ' '
