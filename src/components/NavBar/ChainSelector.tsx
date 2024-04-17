@@ -22,8 +22,8 @@ import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
   SupportedChainId.ARBITRUM_ONE,
-  SupportedChainId.BERA_ARTIO,
-  SupportedChainId.LINEA,
+  // SupportedChainId.BERA_ARTIO,
+  // SupportedChainId.LINEA,
   SupportedChainId.BASE,
 ]
 

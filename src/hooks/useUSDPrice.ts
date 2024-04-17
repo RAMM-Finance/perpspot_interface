@@ -64,16 +64,26 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
 export async function getDecimalAndUsdValueData(chainId: number | undefined, tokenId: string) {
+  console.log("GET DECIMAL AND USD VALUE DATA : ", chainId, tokenId)
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network = 'arbitrum-one'
 
   if (chainId === SupportedChainIdLMT.ARBITRUM_ONE) {
+    if (tokenId === "ETH") {
+      tokenId = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    }
     url += 'arbitrum'
     network = 'arbitrum-one'
   } else if (chainId === SupportedChainIdLMT.BASE) {
+    if (tokenId === "ETH") {
+      tokenId = "0x4200000000000000000000000000000000000006"
+    }
     url += 'base'
     network = 'base'
   } else {
+    if (tokenId === "ETH") {
+      tokenId = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    }
     url += 'arbitrum'
     network = 'arbitrum-one'
   }
@@ -100,8 +110,7 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
 
       return { ...token, lastPriceUSD: usdValues[0].toString() }
     } catch (e) {
-      console.log('COINGECKO ERROR')
-      console.log(e)
+      console.error('COINGECKO ERROR', e)
     }
   }
 
@@ -134,8 +143,6 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
   const currencyAmount = useMemo(() => {
     if (amount && currency) {
       if ('tokenAddress' in amount) { 
-        // console.log("AMOUNTTTT : ", amount)
-        // console.log("CURRENCCCYYYY : ", currency)
         if (amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
           setPrevAmount(amount)
           return BnToCurrencyAmount(amount, currency) 
@@ -171,7 +178,6 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
         // if (response.status === 200) {
         //   return response.data.market_data.current_price.usd
         // }
-        console.log(`LAST PRICE USD of ${token?.symbol} : `, token?.lastPriceUSD)
         return token?.lastPriceUSD
         // throw new Error(`response status ${response.status}`)
       } catch (err) {

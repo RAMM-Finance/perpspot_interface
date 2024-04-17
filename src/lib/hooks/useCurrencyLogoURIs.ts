@@ -25,7 +25,7 @@ export function chainIdToNetworkName(networkId: SupportedChainId): Network {
   }
 }
 
-export function getNativeLogoURI(chainId: SupportedChainId = SupportedChainId.ARBITRUM_ONE): string {
+export function getNativeLogoURI(): string {
   return EthereumLogo
 }
 

@@ -86,7 +86,7 @@ const L2LogoContainer = styled.div<{ $backgroundColor?: string }>`
  * Renders an image by prioritizing a list of sources, and then eventually a fallback triangle alert
  */
 export function PortfolioLogo({
-  chainId = SupportedChainId.ARBITRUM_ONE,
+  chainId,
   accountAddress,
   currencies,
   images,
@@ -97,9 +97,11 @@ export function PortfolioLogo({
   const chainLogo = squareLogoUrl ?? logoUrl
   const { avatar, loading } = useENSAvatar(accountAddress, false)
   const theme = useTheme()
+  const currency0 = currencies?.[0]
+  const currency1 = currencies?.[1]
 
-  const [src, nextSrc] = useTokenLogoSource(currencies?.[0]?.wrapped.address, chainId, currencies?.[0]?.isNative)
-  const [src2, nextSrc2] = useTokenLogoSource(currencies?.[1]?.wrapped.address, chainId, currencies?.[1]?.isNative)
+  const [src, nextSrc] = useTokenLogoSource(currency0?.isNative ? null : currency0?.wrapped.address, chainId, currency0?.isNative)
+  const [src2, nextSrc2] = useTokenLogoSource(currency1?.isNative ? null : currency1?.wrapped.address, chainId, currency1?.isNative)
 
   let component
   if (accountAddress) {
