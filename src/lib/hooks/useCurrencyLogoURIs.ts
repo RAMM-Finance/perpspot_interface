@@ -66,7 +66,7 @@ export default function useCurrencyLogoURIs(
     const logoURIs = [...locations]
     if (currency) {
       if (currency.isNative || currency.address === NATIVE_CHAIN_ID) {
-        logoURIs.push(getNativeLogoURI(currency.chainId))
+        logoURIs.push(getNativeLogoURI())
       } else if (currency.isToken || currency.address) {
         const checksummedAddress = isAddress(currency.address)
         const logoURI = checksummedAddress && getTokenLogoURI(checksummedAddress, currency.chainId)
