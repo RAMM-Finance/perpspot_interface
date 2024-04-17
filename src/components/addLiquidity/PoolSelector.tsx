@@ -74,9 +74,9 @@ export const PoolSelector = ({
   const location = useLocation()
   const navigate = useNavigate()
 
-  if (location.pathname !== '/add/' && setSelectPair) {
-    setSelectPair(false)
-  }
+  // if (location.pathname !== '/add/' && setSelectPair) {
+  //   setSelectPair(false)
+  // }
   const currentId = useMemo(() => {
     if (inputCurrencyId && outputCurrencyId && fee) {
       return getPoolId(inputCurrencyId, outputCurrencyId, fee)
@@ -269,7 +269,7 @@ export const PoolSelector = ({
               <ThemedText.BodySmall
                 fontSize={largeWidth ? '16px' : ''}
                 color="secondary"
-              >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+              >{`${inputCurrency ? inputCurrency.symbol : ''} - ${outputCurrency ? outputCurrency.symbol : ''}`}</ThemedText.BodySmall>
             </Row>
             <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
           </>

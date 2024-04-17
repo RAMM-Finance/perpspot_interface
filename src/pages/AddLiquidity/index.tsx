@@ -107,6 +107,7 @@ export default function AddLiquidity() {
     feeAmount: feeAmountFromUrl,
     tokenId,
   })
+  console.log("SELECT PAIR", selectPair)
   const { account, chainId, provider } = useWeb3React()
   const theme = useTheme()
 
@@ -364,6 +365,7 @@ export default function AddLiquidity() {
 
   const addIsUnsupported = useIsSwapUnsupported(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
 
+
   const clearAll = useCallback(() => {
     onFieldAInput('')
     onFieldBInput('')
@@ -371,8 +373,13 @@ export default function AddLiquidity() {
     onRightRangeInput('')
     navigate(`/add/`)
     setSelectPair(true)
-  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, setSelectPair])
 
+  useEffect(() => {
+    if (chainId) {
+      clearAll()
+    }
+  }, [chainId])
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
