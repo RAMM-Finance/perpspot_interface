@@ -341,23 +341,23 @@ export default function Trade({ className }: { className?: string }) {
             if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
               return {
                 entryPrice: 1 / postionEntryPrice,
-                long: false,
-              }
-            }
-            return {
-              entryPrice: postionEntryPrice,
-              long: false,
-            }
-          } else {
-            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
-              return {
-                entryPrice: 1 / postionEntryPrice,
                 long: true,
               }
             }
             return {
               entryPrice: postionEntryPrice,
               long: true,
+            }
+          } else {
+            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+              return {
+                entryPrice: 1 / postionEntryPrice,
+                long: false,
+              }
+            }
+            return {
+              entryPrice: postionEntryPrice,
+              long: false,
             }
           }
         })
