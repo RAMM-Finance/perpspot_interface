@@ -318,7 +318,7 @@ function MarginPositionInfo({
   const totalDebtInput = position?.totalDebtInput
   const premiumLeft = position?.premiumLeft
 
-  const totalDebtInputForAlt = alteredPosition?.totalDebtInput
+  // const totalDebtInputForAlt = alteredPosition?.totalDebtInput
   const premiumLeftForAlt = alteredPosition?.premiumLeft
 
   const estimatedTimeToClose = useMemo(() => {
@@ -343,7 +343,7 @@ function MarginPositionInfo({
     if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else return Math.round(hours * 100) / 100
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
-  // console.log('Interest',  position?.premiumLeft, alteredPosition.premiumLeft, alteredPosition )
+  // console.log('Interest',alteredPosition.premiumLeft, alteredPremium )
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -382,9 +382,7 @@ function MarginPositionInfo({
           description={<Trans>Current interest deposit remaining</Trans>}
           syncing={loading}
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
-          newValue={
-            alteredPosition?.premiumLeft ? (alteredPosition?.premiumLeft.gt(0) ? alteredPosition.premiumLeft : new BN(0)) : undefined
-          }
+          newValue={alteredPremium ? (alteredPremium.gt(0) ? alteredPremium : new BN(0)) : undefined}
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
         />
@@ -752,7 +750,7 @@ function PositionTimeLabel({
             <Row padding="5px" height="28px">
               {value ? `${value} hrs` : '-'}
               {newValue ? <StyledArrow /> : null}
-              {newValue ? (newValue < 0 ? '0 hrs' : `${newValue} hrs`) : null}
+              {newValue ? `${newValue} hrs` : null}           
             </Row>
           </ValueWrapper>
         </TextWithLoadingPlaceholder>
