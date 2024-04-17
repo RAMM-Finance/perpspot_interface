@@ -707,7 +707,7 @@ const TradeTabContent = () => {
               showMaxButton={false}
               hideBalance={false}
               fiatValue={fiatValueTradeOutput}
-              currency={outputCurrency}
+              currency={isLong ? outputCurrency : inputCurrency}
               otherCurrency={inputCurrency ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
