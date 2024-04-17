@@ -135,6 +135,18 @@ function combineActivities(localMap: ActivityMap = {}, remoteMap: ActivityMap = 
 
 const lastFetchedAtom = atom<number | undefined>(0)
 
+function getFixedDecimal(amount: number, decimal?: number) {
+  let value
+  if (decimal) {
+    value = Number(amount) / 10 ** decimal
+  } else {
+    value = Number(amount)
+  }
+  const decimalPlaces = (value.toString().split('.')[1] || []).length
+  const displayValue = decimalPlaces > 10 ? value.toFixed(10) : value.toString()
+  return displayValue
+}
+
 async function getDescriptor(chainId: number | undefined, entry: any, tokens: any) {
   const token0Name = tokens[entry.token0]?.symbol ?? tokens[entry.token0]?.name
   const token1Name = tokens[entry.token1]?.symbol ?? tokens[entry.token1]?.name
@@ -157,7 +169,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
   // console.log('------getDescriptor entry', entry);
   // console.log("entry actionType", entry.actionType)
   if (entry.actionType == ActivityDescriptionType.ADD_ORDER) {
-    const price = entry.marginIsPosToken
+    const price = entry.marginInPosToken
       ? entry.positionisToken0
         ? token0Decimal / entry.startoutput
         : token1Decimal / entry.startoutput
@@ -188,7 +200,8 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     else return 'Canceled order for ' + token1Name + ' with' + token0Name
   } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
     console.log("ADD POSITION ENTRY", entry)
-    const price = entry.marginIsPosToken
+    console.log("MARGIN IS POS TOKEN", entry.marginInPosToken)
+    const price = entry.marginInPosToken
       ? entry.positionIsToken0
         ? Number(entry.addedAmount) / 10 ** token0Decimal / (Number(entry.borrowAmount) / 10 ** token1Decimal)
         : Number(entry.addedAmount) / 10 ** token1Decimal / (Number(entry.borrowAmount) / 10 ** token0Decimal)
@@ -199,7 +212,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       : Number(entry.addedAmount) /
         10 ** token1Decimal /
         ((Number(entry.marginAmount) + Number(entry.borrowAmount)) / 10 ** token0Decimal)
-    const margin = entry.marginIsPosToken
+    const margin = entry.marginInPosToken
       ? entry.positionIsToken0
         ? Number(entry.marginAmount / 10 ** token0Decimal)
         : Number(entry.marginAmount / 10 ** token1Decimal)
@@ -209,22 +222,30 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     if (entry.positionIsToken0)
       return (
         'Added ' +
-        String(Number(entry.addedAmount) / 10 ** token0Decimal) + ' ' +
+        getFixedDecimal(entry.addedAmount, token0Decimal) + 
+        // String((Number(entry.addedAmount) / 10 ** token0Decimal).toFixed(7)) 
+        ' ' +
         token0Name +
         '  with ' +
-        String(margin) + ' ' +
-        (entry.marginIsPosToken ? token0Name : token1Name) +
+        getFixedDecimal(margin) + 
+        // String(margin.toFixed(7)) + 
+        ' ' +
+        (entry.marginInPosToken ? token0Name : token1Name) +
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${price.toFixed(7)}`
       )
     else
       return (
         'Added ' +
-        String(Number(entry.addedAmount) / 10 ** token1Decimal) + ' ' +
+        getFixedDecimal(entry.addedAmount, token1Decimal) + 
+        // String((Number(entry.addedAmount) / 10 ** token1Decimal).toFixed(7))
+        ' ' +
         token1Name +
         '  with ' +
-        String(margin) + ' ' +
-        (entry.marginIsPosToken ? token1Name : token0Name) + 
+        getFixedDecimal(margin) + 
+        // String(margin.toFixed(7)) + 
+        ' ' +
+        (entry.marginInPosToken ? token1Name : token0Name) + 
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${price.toFixed(7)}`
       )
@@ -251,18 +272,20 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       )
   } else if (entry.actionType == ActivityDescriptionType.REDUCE_POSITION) {
     const price = String(-(Number(entry.amount0) / 10 ** token0Decimal) / (Number(entry.amount1) / 10 ** token1Decimal))
-    const PnL = entry.marginIsPosToken
+    const PnL = entry.marginInPosToken
       ? entry.positionIsToken0
         ? Number(entry.PnL) / 10 ** token0Decimal
         : Number(entry.PnL) / 10 ** token1Decimal
       : entry.positionIsToken0
       ? Number(entry.PnL) / 10 ** token1Decimal
       : Number(entry.PnL) / 10 ** token0Decimal
-    const marginToken = entry.marginIsPosToken ? token0Name : token1Name
+    const marginToken = entry.marginInPosToken ? token0Name : token1Name
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
-        String(Number(entry.reduceAmount) / 10 ** token0Decimal) + ' ' +
+        // String((Number(entry.reduceAmount) / 10 ** token0Decimal).toFixed(7)) + 
+        getFixedDecimal(entry.reduceAmount, token0Decimal) +
+        ' ' +
         token0Name +
         ' from ' +
         token0Name +
@@ -270,12 +293,14 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         token1Name +
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${Number(price).toFixed(7)}` +
-        ` Pnl: ${PnL.toFixed(8)} ${marginToken}`
+        ` Pnl: ${PnL.toFixed(9)} ${marginToken}`
       )
     else
       return (
         'Reduced ' +
-        String(Number(entry.reduceAmount) / 10 ** token1Decimal) + ' ' +
+        // String((Number(entry.reduceAmount) / 10 ** token1Decimal).toFixed(7)) + ' ' +
+        getFixedDecimal(entry.reduceAmount, token1Decimal) +
+        ' ' +
         token1Name +
         ' for ' +
         token0Name +
