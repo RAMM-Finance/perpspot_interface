@@ -28,6 +28,7 @@ import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { positionIsLong } from 'utils/getBaseQuote'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -317,7 +318,7 @@ export default function Trade({ className }: { className?: string }) {
   const match = useMemo(() => {
     let currentPrice: number
 
-    if (!leveragePositions || !poolKey || !poolOHLC) {
+    if (!leveragePositions || !poolKey || !poolOHLC || !chainId) {
       return undefined
     } else {
       currentPrice = poolOHLC.priceNow
@@ -335,7 +336,8 @@ export default function Trade({ className }: { className?: string }) {
             matchedPosition.totalPosition,
             matchedPosition.margin
           ).toNumber()
-          if (!matchedPosition.isToken0) {
+          const isLong = positionIsLong(chainId, matchedPosition, poolKey)
+          if (isLong) {
             if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
               return {
                 entryPrice: 1 / postionEntryPrice,
@@ -360,7 +362,7 @@ export default function Trade({ className }: { className?: string }) {
           }
         })
     }
-  }, [poolKey, poolOHLC, leveragePositions])
+  }, [poolKey, poolOHLC, leveragePositions, chainId])
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
