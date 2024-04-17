@@ -160,7 +160,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   const [alteredPremium, setAlteredPremium] = useState<BN | undefined>(undefined)
 
-  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined) => {
+  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined | null) => {
     setAlteredPremium(txnInfo?.newDepositAmount)
   }
   const displayedContent = useMemo(() => {

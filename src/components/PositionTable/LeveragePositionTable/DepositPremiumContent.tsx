@@ -118,7 +118,7 @@ function useDerivedDepositPremiumInfo(
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
   onPositionChange: (newPosition: AlteredPositionProperties) => void,
-  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined) => void
+  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined | null) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   tradeState: DerivedInfoState
@@ -227,13 +227,13 @@ function useDerivedDepositPremiumInfo(
     if (parsedAmount && position && inputCurrency) {
       onPositionChange({ premiumLeft: position?.premiumLeft.minus(parsedAmount) })
       handleTxnInfo({
-          newDepositAmount: new TokenBN(position?.premiumLeft.plus(parsedAmount), inputCurrency?.wrapped, false),
-          amount: new TokenBN(parsedAmount, inputCurrency.wrapped, false),
+        newDepositAmount: new TokenBN(position?.premiumLeft.plus(parsedAmount), inputCurrency?.wrapped, false),
+        amount: new TokenBN(parsedAmount, inputCurrency.wrapped, false),
       })
     } else {
       if (position) {
         onPositionChange({})
-        handleTxnInfo();
+        handleTxnInfo(null)
       }
     }
   }, [parsedAmount, position, onPositionChange, handleTxnInfo, inputCurrency])
@@ -302,7 +302,7 @@ export function DepositPremiumContent({
     position: MarginPositionDetails | undefined
     loading: boolean
   }
-  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined) => void
+  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined | null) => void
 }) {
   const { position } = positionData
   // state inputs, derived, handlers for trade confirmation
