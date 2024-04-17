@@ -249,7 +249,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     if (entry.positionIsToken0)
       return (
         'Force Closed ' +
-        getFixedDeciaml(entry.forcedClosedAmount, token0Decimal) +
+        getFixedDecimal(entry.forcedClosedAmount, token0Decimal) +
         token0Name +
         ' for ' +
         token0Name +
@@ -259,7 +259,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     else
       return (
         'Force Closed ' +
-        getFixedDeciaml(entry.forcedClosedAmount, token1Decimal) +
+        getFixedDecimal(entry.forcedClosedAmount, token1Decimal) +
         token1Name +
         ' from ' +
         token0Name +
