@@ -90,10 +90,12 @@ function parseAddLeverage(
   const paidAmount = info.margin
 
   const addedPosition = info.expectedAddedPosition
+  
+  console.log("INFOOOOOO",info)
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`Deposited ${paidAmount} ${formatSymbol(tokenIn?.symbol)}, Recieved ${addedPosition} ${formatSymbol(
+      {`Deposited ${paidAmount} ${formatSymbol(tokenIn?.symbol)}, Received ${addedPosition} ${formatSymbol(
         tokenOut?.symbol
       )}`}
     </Descriptor>
@@ -223,12 +225,16 @@ function parseReduceLeverage(
   chainId: SupportedChainId,
   tokens: TokenAddressMap
 ): Partial<Activity> {
+  
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  console.log("TOKENIN", info.inputCurrencyId, chainId, tokens, tokenIn)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
+  console.log("TOKENOUT", info.outputCurrencyId, chainId, tokens, tokenOut)
   const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
+
+  console.log("INFO!!!", info)
 
   const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
 

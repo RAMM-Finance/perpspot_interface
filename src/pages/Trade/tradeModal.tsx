@@ -196,6 +196,8 @@ const TradeTabContent = () => {
   const { onUserInput } = useSwapActionHandlers()
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
+  console.log("INPUT CURRENCY", inputCurrency)
+  console.log("OUTPUT CURRENCY", outputCurrency)
 
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
@@ -906,7 +908,7 @@ const TradeTabContent = () => {
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
-                                )} ${inputCurrency?.symbol} required.`
+                                )} ${(marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) ?? undefined} required.`
                               : null}
                           </Trans>
                         }
@@ -1057,7 +1059,7 @@ const TradeTabContent = () => {
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
-                                )} ${outputCurrency?.symbol} required.`
+                                )} ${(marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) ?? undefined} required.`
                               : null}
                           </Trans>
                         }
