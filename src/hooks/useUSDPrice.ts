@@ -87,7 +87,6 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
     network = 'arbitrum-one'
   }
   
-
   let res: any = await axios.post(url, {
     query: TokenDataFromUniswapQuery(tokenId),
   })
