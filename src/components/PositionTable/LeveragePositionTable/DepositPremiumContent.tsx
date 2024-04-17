@@ -117,7 +117,8 @@ function useDerivedDepositPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
-  onPositionChange: (newPosition: AlteredPositionProperties) => void
+  onPositionChange: (newPosition: AlteredPositionProperties) => void,
+  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   tradeState: DerivedInfoState
@@ -223,14 +224,19 @@ function useDerivedDepositPremiumInfo(
   }, [parsedAmount, isError, error])
 
   useEffect(() => {
-    if (parsedAmount && position && data) {
+    if (parsedAmount && position && inputCurrency) {
       onPositionChange({ premiumLeft: position?.premiumLeft.minus(parsedAmount) })
+      handleTxnInfo({
+          newDepositAmount: new TokenBN(position?.premiumLeft.plus(parsedAmount), inputCurrency?.wrapped, false),
+          amount: new TokenBN(parsedAmount, inputCurrency.wrapped, false),
+      })
     } else {
       if (position) {
         onPositionChange({})
+        handleTxnInfo();
       }
     }
-  }, [parsedAmount, position, data, onPositionChange])
+  }, [parsedAmount, position, onPositionChange, handleTxnInfo, inputCurrency])
 
   return useMemo(() => {
     if (data && position && parsedAmount && inputCurrency && !!queryKeys.length) {
@@ -315,16 +321,16 @@ export function DepositPremiumContent({
     amount,
     positionKey,
     position,
-    onPositionChange
+    onPositionChange,
+    handleTxnInfo
   )
-  
-  // console.log('Interest txnInfo', txnInfo)
-  //Note :If you include txnInfo in the dependency array, it may lead to infinite rendering
-  useEffect(() => {
-    if (txnInfo) {
-      handleTxnInfo(txnInfo)
-    }
-  }, [handleTxnInfo]);
+
+  // console.log('Interest txnInfo', txnInfo, position)
+  // useEffect(() => {
+  //   if (txnInfo) {
+  //     handleTxnInfo(txnInfo)
+  //   }
+  // }, [handleTxnInfo]);
 
   const { account, chainId, provider } = useWeb3React()
 
