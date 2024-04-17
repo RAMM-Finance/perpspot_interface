@@ -90,7 +90,10 @@ export function PremiumCurrencySelector({
         anchorEl={anchorEl}
         onClose={handleClose}
       >
-        <TokenItem onClick={onPremiumCurrencyToggle}>
+        <TokenItem onClick={() => {
+          onPremiumCurrencyToggle()
+          handleClose()
+          }}>
           <RowFixed>
             <CurrencyLogo currency={otherCurrency} size="15px" />
             <StyledTokenName className="token-symbol-container" active={Boolean(otherCurrency && otherCurrency.symbol)}>
