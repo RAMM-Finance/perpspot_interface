@@ -41,7 +41,7 @@ export function positionIsLong(chainId: number, position: MarginPositionDetails,
   const [base, quote, inputIsToken0ByDefault] = getDefaultBaseQuote(poolKey.token0, poolKey.token1, chainId)
   const isToken0 = position.isToken0
 
-  if ((isToken0 && inputIsToken0ByDefault) || (!isToken0 && !inputIsToken0ByDefault)) {
+  if ((!isToken0 && inputIsToken0ByDefault) || (isToken0 && !inputIsToken0ByDefault)) {
     return true
   }
 
