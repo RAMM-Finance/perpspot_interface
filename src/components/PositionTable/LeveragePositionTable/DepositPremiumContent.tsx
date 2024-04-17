@@ -317,10 +317,14 @@ export function DepositPremiumContent({
     position,
     onPositionChange
   )
-
-  // useMemo(() => {
-  //   handleTxnInfo(txnInfo)
-  // }, [handleTxnInfo, txnInfo])
+  
+  // console.log('Interest txnInfo', txnInfo)
+  //Note :If you include txnInfo in the dependency array, it may lead to infinite rendering
+  useEffect(() => {
+    if (txnInfo) {
+      handleTxnInfo(txnInfo)
+    }
+  }, [handleTxnInfo]);
 
   const { account, chainId, provider } = useWeb3React()
 
