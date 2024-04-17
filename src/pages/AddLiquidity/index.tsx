@@ -100,6 +100,13 @@ export default function AddLiquidity() {
     feeAmount: feeAmountFromUrl,
     tokenId,
   } = useParams<{ currencyIdA?: string; currencyIdB?: string; feeAmount?: string; tokenId?: string }>()
+
+  console.log("USE PARAMS", {
+    currencyIdA,
+    currencyIdB,
+    feeAmount: feeAmountFromUrl,
+    tokenId,
+  })
   const { account, chainId, provider } = useWeb3React()
   const theme = useTheme()
 

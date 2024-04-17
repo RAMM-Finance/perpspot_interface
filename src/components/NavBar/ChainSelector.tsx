@@ -19,6 +19,7 @@ import { useTheme } from 'styled-components/macro'
 import * as styles from './ChainSelector.css'
 import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
+import { useLocation } from 'react-router-dom'
 
 const NETWORK_SELECTOR_CHAINS = [
   SupportedChainId.ARBITRUM_ONE,
@@ -54,12 +55,20 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
 
   const [pendingChainId, setPendingChainId] = useState<SupportedChainId | undefined>(undefined)
 
+  const location = useLocation();
+
   const onSelectChain = useCallback(
     async (targetChainId: SupportedChainId) => {
       setPendingChainId(targetChainId)
       await selectChain(targetChainId)
       setPendingChainId(undefined)
       setIsOpen(false)
+      // console.log("LOCATION", location)
+      // if (location.pathname.includes('/add/')) {
+      //   window.history.replaceState({}, document.title, '/add/')
+      // }
+        
+    
     },
     [selectChain, setIsOpen]
   )

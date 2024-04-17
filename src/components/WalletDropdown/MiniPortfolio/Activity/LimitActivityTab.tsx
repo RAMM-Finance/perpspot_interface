@@ -199,8 +199,6 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       return 'Canceled order for ' + token0Name + ' with ' + token1Name + `, Pair: ${token0Name}/${token1Name}`
     else return 'Canceled order for ' + token1Name + ' with' + token0Name
   } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
-    console.log("ADD POSITION ENTRY", entry)
-    console.log("MARGIN IS POS TOKEN", entry.marginInPosToken)
     const price = entry.marginInPosToken
       ? entry.positionIsToken0
         ? Number(entry.addedAmount) / 10 ** token0Decimal / (Number(entry.borrowAmount) / 10 ** token1Decimal)

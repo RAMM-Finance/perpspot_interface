@@ -64,7 +64,6 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
 export async function getDecimalAndUsdValueData(chainId: number | undefined, tokenId: string) {
-  console.log("GET DECIMAL AND USD VALUE DATA : ", chainId, tokenId)
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network = 'arbitrum-one'
 
