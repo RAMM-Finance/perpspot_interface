@@ -87,12 +87,9 @@ function parseAddLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
-  console.log("TOKENIN", info, info.inputCurrencyId, chainId, tokens, tokenIn)
   const paidAmount = info.margin
 
   const addedPosition = info.expectedAddedPosition
-  
-  // console.log("INFOOOOOO",info)
 
   const descriptor = (
     <Descriptor color="textSecondary">
@@ -228,14 +225,10 @@ function parseReduceLeverage(
 ): Partial<Activity> {
   
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  console.log("TOKENIN", info.inputCurrencyId, chainId, tokens, tokenIn)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-  console.log("TOKENOUT", info.outputCurrencyId, chainId, tokens, tokenOut)
   const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
-
-  console.log("INFO!!!", info)
 
   const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
 
@@ -381,7 +374,6 @@ export function parseLocalActivity(
 
 export function useLocalActivities(): ActivityMap | undefined {
   const allTransactions = useMultichainTransactions()
-  console.log("ALL TX : ", allTransactions)
   const { chainId } = useWeb3React()
   const tokens = useCombinedActiveList()
 

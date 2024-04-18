@@ -1647,7 +1647,6 @@ const useSimulateMarginTrade = (
       try {
         const result = await computeData()
         console.log('addPosition:computeData', result)
-        console.log(result)
         setBlockNumber(blockNumber)
         return result
       } catch (err) {

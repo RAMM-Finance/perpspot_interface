@@ -345,10 +345,11 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
+  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
   // console.log("FIAT VALUE TRADE MARGIN: ", trade?.margin, marginInPosToken, outputCurrency, inputCurrency)
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
-    (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
+    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) || undefined,
   )
   // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
@@ -453,10 +454,11 @@ const TradeTabContent = () => {
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
-    inputCurrency ?? undefined,
-    outputCurrency ?? undefined,
+    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) || undefined,
+    outputCurrency || undefined,
     allowedSlippage
   )
+
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
@@ -527,8 +529,9 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
-  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
+
   const isLong = useCurrentTabIsLong()
+  
 
   if (chainId && unsupportedChain(chainId)) {
     return (
