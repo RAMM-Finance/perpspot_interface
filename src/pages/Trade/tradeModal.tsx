@@ -856,7 +856,7 @@ const TradeTabContent = () => {
               {inputNotApproved && (
                 <ButtonPrimary
                   onClick={updateInputAllowance}
-                  style={{ fontSize: '14px', borderRadius: '10px', marginRight: ".5rem" }}
+                  style={{ fontSize: '14px', borderRadius: '10px', ...(outputNotApproved ? { marginRight: ".5rem" } : {}) }}
                   width="100%"
                   padding=".5rem"
                   disabled={inputApprovalState === ApprovalState.PENDING}
@@ -901,7 +901,7 @@ const TradeTabContent = () => {
               {outputNotApproved && (
                 <ButtonPrimary
                   onClick={updateOutputAllowance}
-                  style={{ fontSize: '14px', borderRadius: '10px', marginLeft: '.5rem' }}
+                  style={{ fontSize: '14px', borderRadius: '10px', ...(inputNotApproved ? { marginLeft: ".5rem" } : {}) }}
                   width="100%"
                   padding=".5rem"
                   disabled={inputApprovalState === ApprovalState.PENDING}
