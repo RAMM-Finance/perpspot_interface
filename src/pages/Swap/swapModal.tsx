@@ -203,17 +203,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
         : undefined),
     isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefined
   )
-  console.log(
-    'usePermit2Allowance Params: ',
-    maximumAmountIn ??
-      (parsedAmounts[Field.INPUT]?.currency.isToken
-        ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
-        : undefined),
-    isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefined
-  )
-  console.log('ALLOWANCEEE', allowance)
-  console.log('chain ID and isSupportedChain', connectedChainId, isSupportedChain(connectedChainId))
-  if (connectedChainId) console.log('ROUTER_ADDRESSES', ROUTER_ADDRESSES[connectedChainId])
+
   const { callback: swapCallback } = useSwapCallback(
     trade, // simulated swap trade
     swapFiatValues,
@@ -404,12 +394,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
       setIsAllowancePending(false)
     }
   }, [allowance, connectedChainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
-
-  console.log('!isValid', !isValid)
-  console.log('routeIsSyncing', routeIsSyncing)
-  console.log('routeIsLoading', routeIsLoading)
-  console.log('priceImpactTooHigh', priceImpactTooHigh)
-  console.log('allowance.state !== AllowanceState.ALLOWED', allowance.state, AllowanceState.ALLOWED)
 
   return (
     <Wrapper>

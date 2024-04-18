@@ -1,7 +1,7 @@
 import { t } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-import { nativeOnChain } from '@uniswap/smart-order-router'
+// import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
@@ -34,6 +34,7 @@ import {
 
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
+import { nativeOnChain } from 'constants/tokens'
 
 export function getCurrency(
   currencyId: string,

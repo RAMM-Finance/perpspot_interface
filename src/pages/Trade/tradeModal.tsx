@@ -327,7 +327,11 @@ const TradeTabContent = () => {
     tradeApprovalInfo?.outputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
+  
+  // console.log("marginInPosToken || premiumInPosToken", marginInPosToken, premiumInPosToken)
 
+  // console.log("inputApprovalState", inputApprovalState)
+  // console.log("outputApprovalState", outputApprovalState)
   const notApproved =
     marginInPosToken || premiumInPosToken
       ? inputApprovalState === ApprovalState.NOT_APPROVED || outputApprovalState === ApprovalState.NOT_APPROVED
