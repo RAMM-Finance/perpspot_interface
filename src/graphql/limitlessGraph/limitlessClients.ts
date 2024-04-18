@@ -5,7 +5,7 @@ import { cacheExchange, createClient, fetchExchange } from '@urql/core'
 // import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
 const APIURL = 'https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph'
-const APIURL_BASE = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-base/0.0.1'
+const APIURL_BASE = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-base/0.0.2'
 // const APIURL = 'https://api.studio.thegraph.com/query//limitless-subgraph/'
 
 export const client = createClient({

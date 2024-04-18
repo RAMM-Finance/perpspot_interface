@@ -87,11 +87,12 @@ function parseAddLeverage(
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
+  console.log("TOKENIN", info, info.inputCurrencyId, chainId, tokens, tokenIn)
   const paidAmount = info.margin
 
   const addedPosition = info.expectedAddedPosition
   
-  console.log("INFOOOOOO",info)
+  // console.log("INFOOOOOO",info)
 
   const descriptor = (
     <Descriptor color="textSecondary">
@@ -380,6 +381,7 @@ export function parseLocalActivity(
 
 export function useLocalActivities(): ActivityMap | undefined {
   const allTransactions = useMultichainTransactions()
+  console.log("ALL TX : ", allTransactions)
   const { chainId } = useWeb3React()
   const tokens = useCombinedActiveList()
 
