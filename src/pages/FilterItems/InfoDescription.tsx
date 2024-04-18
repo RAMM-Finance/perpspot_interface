@@ -1,0 +1,129 @@
+import { Box } from 'nft/components/Box'
+import { body } from 'nft/css/common.css'
+import { useEffect, useReducer, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import styled, { css } from 'styled-components/macro'
+import { ThemedText } from 'theme'
+
+const DescriptionText = styled.div<{ readMore: boolean }>`
+  vertical-align: top;
+  text-overflow: ellipsis;
+  color: ${({ theme }) => theme.textTertiary};
+  ${({ readMore }) =>
+    readMore
+      ? css`
+          white-space: normal;
+          overflow: visible;
+          display: inline;
+          max-width: 100%;
+        `
+      : css`
+          white-space: nowrap;
+          overflow: hidden;
+          display: inline-block;
+          max-width: min(calc(100% - 112px), 600px);
+        `}
+
+  a[href] {
+    color: ${({ theme }) => theme.textSecondary};
+    text-decoration: none;
+
+    :hover {
+      opacity: ${({ theme }) => theme.opacity.hover};
+    }
+
+    :focus {
+      opacity: ${({ theme }) => theme.opacity.click};
+    }
+  }
+`
+
+const ReadMore = styled.span`
+  vertical-align: top;
+  color: ${({ theme }) => theme.textSecondary};
+  cursor: pointer;
+  margin-left: 4px;
+`
+
+const ToggleDescriptionText = ({ description }: { description: string }) => {
+  const [showReadMore, setShowReadMore] = useState(false)
+  const [readMore, toggleReadMore] = useReducer((state) => !state, false)
+  const descriptionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (descriptionRef.current) {
+        setShowReadMore(descriptionRef.current.offsetWidth <= descriptionRef.current.scrollWidth)
+      }
+    }
+
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [description])
+
+  return (
+    <Box marginTop={{ sm: '12', md: '16' }} style={{ maxWidth: '680px' }}>
+      <DescriptionText readMore={readMore} ref={descriptionRef} className={body}>
+        <ReactMarkdown
+          source={description}
+          allowedTypes={['link', 'paragraph', 'strong', 'code', 'emphasis', 'text']}
+          renderers={{ paragraph: 'span' }}
+        />
+      </DescriptionText>
+      {showReadMore && (
+        <ReadMore className={body} onClick={toggleReadMore}>
+          show {readMore ? 'less' : 'more'}
+        </ReadMore>
+      )}
+    </Box>
+  )
+}
+
+const InfoDescription = ({ title }: { title?: boolean }) => {
+  return (
+    <Box
+      display="flex"
+      //   marginTop={isMobile && !stats.bannerImageUrl ? (collectionSocialsIsOpen ? '52' : '20') : '0'}
+      justifyContent="center"
+      position="relative"
+      flexDirection="column"
+      width="full"
+    >
+      {/* {isCollectionStatsLoading && (
+            <Box as="div" borderRadius="round" position="absolute" className={styles.collectionImageIsLoadingBackground} />
+          )} */}
+      {/* <Box
+            as={isCollectionStatsLoading ? 'div' : 'img'}
+            background="explicitWhite"
+            borderRadius="round"
+            position="absolute"
+            className={isCollectionStatsLoading ? styles.collectionImageIsLoading : styles.collectionImage}
+            src={stats.isFoundation && !stats.imageUrl ? '/nft/svgs/marketplaces/foundation.svg' : stats.imageUrl}
+          /> */}
+      <Box>
+        {/* <CollectionName
+              collectionStats={stats}
+              name={''}
+              isVerified={stats.isVerified ?? false}
+              isMobile={isMobile}
+              collectionSocialsIsOpen={collectionSocialsIsOpen}
+              toggleCollectionSocials={toggleCollectionSocials}
+            /> */}
+        {title ? (
+          <ThemedText.HeadlineSmall>dev testing title1...... 1</ThemedText.HeadlineSmall>
+        ) : (
+          <ToggleDescriptionText description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes" />
+        )}
+        {/* <StatsRow display={{ sm: 'none', md: 'flex' }} overflow="hidden" stats={stats} marginTop="20" /> */}
+      </Box>
+      {/* TODO: mobile display section */}
+      {/* <ToggleDescriptionText description="dev testing2..... 2" /> */}
+      {/* <div id="nft-anchor-mobile" />
+          <StatsRow isMobile display={{ sm: 'flex', md: 'none' }} stats={stats} marginTop="20" marginBottom="12" /> */}
+    </Box>
+  )
+}
+
+export default InfoDescription
