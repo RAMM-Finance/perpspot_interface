@@ -63,6 +63,11 @@ export default function SimplePool() {
   const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
 
+  const [data, setData] = useState<any>()
+  const [mW, setMW] = useState<any>()
+  const [llpPrice, setLlpPrice] = useState<any>()
+  const [limWETHPrice, setLimWETHPrice] = useState<any>()
+
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const ref = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -275,6 +280,35 @@ export default function SimplePool() {
     )
   }
 
+  const WETH = useCurrency(
+    chainId === 8453 ? '0x4200000000000000000000000000000000000006' : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  )
+  const WBTC = useCurrency(
+    chainId === 8453 ? '0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad' : '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
+  )
+  const USDC = useCurrency(
+    chainId === 8453 ? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' : '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  )
+
+  const WETHCurrencyAmount: BN | undefined = useMemo(() => {
+    if (!WETH) return undefined
+    return new BN(1)
+  }, [WETH])
+
+  const WBTCCurrencyAmount: BN | undefined = useMemo(() => {
+    if (!WBTC) return undefined
+    return new BN(1)
+  }, [WBTC])
+
+  // const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
+  //   if (!USDC) return undefined
+  //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
+  // }, [USDC])
+
+  const WETHPrice = useUSDPriceBNV2(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
+  const WBTCPrice = useUSDPriceBNV2(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
+  const USDCPrice = 1
+
   // allowance / approval
   const [vaultApprovalState, approveVault] = useApproveCallback(
     parsedAmounts[Field.CURRENCY_A],
@@ -459,7 +493,7 @@ export default function SimplePool() {
     } catch (err) {
       throw new Error('reff')
     }
-  }, [account, chainId, limweth, provider, parsedAmounts])
+  }, [account, chainId, limweth, provider, parsedAmounts, WETHPrice, limWETHPrice])
 
   useEffect(() => {
     if (
@@ -469,7 +503,8 @@ export default function SimplePool() {
       !chainId ||
       !provider ||
       buy ||
-      outputCurrency?.symbol === 'LLP'
+      outputCurrency?.symbol === 'LLP' ||
+      !WETHPrice.data
     ) {
       return
     }
@@ -484,6 +519,7 @@ export default function SimplePool() {
       })
       .catch((error) => {
         console.log('hi', error)
+        if (chainId === 8453) setLiqError(true)
         if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
       })
   }, [
@@ -500,6 +536,7 @@ export default function SimplePool() {
     outputCurrency?.symbol,
     quoteCurrency?.decimals,
     buy,
+    WETHPrice,
   ])
 
   //limWETH deposit
@@ -698,7 +735,7 @@ export default function SimplePool() {
       call()
     }
     if (outputCurrency?.symbol !== 'LLP') {
-      const call = async () => {
+      const call2 = async () => {
         try {
           const balance = await limweth.balanceOf(account)
           console.log('balance', balance.toString())
@@ -707,7 +744,7 @@ export default function SimplePool() {
           console.log('codebyowners err')
         }
       }
-      call()
+      call2()
     }
   }, [account, provider, vaultContract, attemptingTxn, outputCurrency?.symbol])
 
@@ -729,11 +766,6 @@ export default function SimplePool() {
     }
     call()
   }, [provider, limweth])
-
-  const [data, setData] = useState<any>()
-  const [mW, setMW] = useState<any>()
-  const [llpPrice, setLlpPrice] = useState<any>()
-  const [limWETHPrice, setLimWETHPrice] = useState<any>()
 
   useEffect(() => {
     if (!provider || !limweth) return
@@ -800,16 +832,6 @@ export default function SimplePool() {
 
   // Pool currently unavailable for price values
 
-  const WETH = useCurrency(
-    chainId === 8453 ? '0x4200000000000000000000000000000000000006' : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-  )
-  const WBTC = useCurrency(
-    chainId === 8453 ? '0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad' : '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
-  )
-  const USDC = useCurrency(
-    chainId === 8453 ? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' : '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-  )
-
   // const WETH_ARB = useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
   // const WBTC_ARB = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
   // const USDC_ARB = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
@@ -845,25 +867,6 @@ export default function SimplePool() {
   //   }
 
   // }, [USDC_ARB, USDC_BASE, chainId])
-
-  const WETHCurrencyAmount: BN | undefined = useMemo(() => {
-    if (!WETH) return undefined
-    return new BN(1)
-  }, [WETH])
-
-  const WBTCCurrencyAmount: BN | undefined = useMemo(() => {
-    if (!WBTC) return undefined
-    return new BN(1)
-  }, [WBTC])
-
-  // const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
-  //   if (!USDC) return undefined
-  //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
-  // }, [USDC])
-
-  const WETHPrice = useUSDPriceBNV2(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
-  const WBTCPrice = useUSDPriceBNV2(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
-  const USDCPrice = 1
 
   const indexData = useMemo(() => {
     if (data && mW && WETHPrice && WBTCPrice && chainId === 8453) {
@@ -1003,11 +1006,20 @@ export default function SimplePool() {
       <AutoColumn>
         <RowStart style={{ marginBottom: '20px' }}>
           <AutoColumn gap="5px">
-            <ThemedText.DeprecatedMediumHeader color="textSecondary">Buy / Sell LLP</ThemedText.DeprecatedMediumHeader>
-            <ThemedText.BodyPrimary flexWrap="wrap">
-              By minting LLP you will gain index exposure to BTC, ETH, and USDC while earning fees from uniswap+premiums
-              and points from Limitless.
-            </ThemedText.BodyPrimary>
+            <ThemedText.DeprecatedMediumHeader color="textSecondary">
+              Buy / Sell {chainId === 8453 ? 'limWETH' : 'LLP'}
+            </ThemedText.DeprecatedMediumHeader>
+            {chainId === 8453 ? (
+              <ThemedText.BodyPrimary flexWrap="wrap">
+                By minting limWETH you will gain index exposure to ETH, while earning fees from uniswap+premiums and
+                points from Limitless.
+              </ThemedText.BodyPrimary>
+            ) : (
+              <ThemedText.BodyPrimary flexWrap="wrap">
+                By minting LLP you will gain index exposure to BTC, ETH, and USDC while earning fees from
+                uniswap+premiums and points from Limitless.
+              </ThemedText.BodyPrimary>
+            )}
           </AutoColumn>
         </RowStart>
         <AddLiquidityRow align="start">
@@ -1113,7 +1125,7 @@ export default function SimplePool() {
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Total Supply (ETH):</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${limwethSupply / 1e18}`}
+                    {WETHPrice.data && `${(limwethSupply / 1e18).toFixed(4)}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween
@@ -1125,7 +1137,7 @@ export default function SimplePool() {
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${limwethBacking / 1e18}`}
+                    {WETHPrice.data && `${(limwethBacking / 1e18).toFixed(4)}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
@@ -1293,7 +1305,8 @@ export default function SimplePool() {
                   </>
                 )}
               </ButtonError>
-            ) : errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value ? (
+            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value) ||
+              (errorMessage && limWETHBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value) ? (
               <ButtonError text={errorMessage}></ButtonError>
             ) : liqError ? (
               <ButtonError text="Not enough liquidity"></ButtonError>

@@ -11,7 +11,7 @@ import { NavLink } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import bannerIBG from '../../components/Leaderboard/bannerIBG.png'
+import banner from '../../components/Leaderboard/banner.png'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -165,12 +165,12 @@ const BannerWrapper = styled.div`
   padding: 16px;
   background-position: center;
   background-size: cover;
-  /* background-image: linear-gradient(to bottom, rgba(7, 7, 7, 0.5) 40%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%), url(${bannerIBG}); */
+  /* background-image: linear-gradient(to bottom, rgba(7, 7, 7, 0.5) 40%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%), url(${banner}); */
 `
-const BannerIBG = styled.img`
+const Banner = styled.img`
   width: 100%;
-  height: 100%;
-  opacity: 0.4;
+  height: 450px;
+  opacity: 0.6;
   position: absolute;
   top: 0;
   left: 0;
@@ -252,9 +252,9 @@ export default function LeaderboardPage() {
 
   return (
     <>
+      <Banner src={banner} alt="banner_backgroundImg" />
       <PageWrapper>
         <BannerWrapper>
-          <BannerIBG src={bannerIBG} alt="banner_backgroundImg" />
           <BannerTextWrapper>
             <BannerText>LMT Season 1</BannerText>
             <BannerBtnWrapper>

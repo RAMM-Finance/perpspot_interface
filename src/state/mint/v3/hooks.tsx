@@ -18,7 +18,7 @@ import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
 import { id } from 'ethers/lib/utils'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
-import { useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
+import { useLimweth, useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
 import { useContractCallV2 } from 'hooks/useContractCall'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
@@ -67,7 +67,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldAInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:onFieldAInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_A, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -75,7 +74,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldBInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:onFieldBInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_B, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -85,7 +83,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onLeftRangeInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:leftRange', searchParams.get('minPrice'), !!typedValue)
       dispatch(typeLeftRangeInput({ typedValue }))
       const paramMinPrice = searchParams.get('minPrice')
       if (!paramMinPrice || (paramMinPrice && paramMinPrice !== typedValue)) {
@@ -98,7 +95,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onRightRangeInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:rightRange', typedValue)
       dispatch(typeRightRangeInput({ typedValue }))
       const paramMaxPrice = searchParams.get('maxPrice')
       if (!paramMaxPrice || (paramMaxPrice && paramMaxPrice !== typedValue)) {
@@ -597,9 +593,11 @@ export function useDerivedLmtMintInfo(
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
   llpBalance: number | undefined
   contractErrorMessage: ReactNode | undefined
+  limBalance: number | undefined
 } {
   const { account, provider } = useWeb3React()
   const vaultContract = useVaultContract()
+  const limweth = useLimweth()
 
   const { independentField, typedValue, leftRangeTypedValue, rightRangeTypedValue, startPriceTypedValue } =
     useV3MintState()
@@ -974,10 +972,13 @@ export function useDerivedLmtMintInfo(
   }
 
   const llpBal = useRef<number>(0)
+  const limBal = useRef<number>(0)
+
   let llpBalance
+  let limBalance
 
   useEffect(() => {
-    if (!account || !provider || !vaultContract) return
+    if (!account || !provider || !vaultContract || !limweth) return
 
     const call = async () => {
       try {
@@ -988,20 +989,43 @@ export function useDerivedLmtMintInfo(
         console.log('codebyowners err')
       }
     }
+    const callLim = async () => {
+      try {
+        const balance = await limweth.balanceOf(account)
+        console.log('balance', balance.toString())
+        limBal.current = Number(balance) / 1e18
+      } catch (error) {
+        console.log('codebyowners err')
+      }
+    }
     call()
-  }, [account, provider, vaultContract])
+    callLim()
+  }, [account, provider, vaultContract, limweth])
 
   if (currencyA?.symbol === 'LLP') {
     if (!Number(typedValue)) {
       errorMessage = <Trans> Enter an amount</Trans>
     } else if (llpBal.current === 0) {
-      errorMessage = <Trans> LLP</Trans>
+      errorMessage = <Trans> Insufficient LLP Balance</Trans>
     } else if (Number(typedValue) <= llpBal.current) {
       errorMessage = null
     } else {
       errorMessage = <Trans>Insufficient LLP Balance</Trans>
     }
     llpBalance = llpBal.current
+  }
+
+  if (currencyA?.symbol === 'limWETH') {
+    if (!Number(typedValue)) {
+      errorMessage = <Trans> Enter an amount</Trans>
+    } else if (llpBal.current === 0) {
+      errorMessage = <Trans> Insufficient limWETH Balance</Trans>
+    } else if (Number(typedValue) <= limBal.current) {
+      errorMessage = null
+    } else {
+      errorMessage = <Trans>Insufficient limWETH Balance</Trans>
+    }
+    limBalance = limBal.current
   }
 
   const invalidPool = poolState === PoolState.INVALID
@@ -1077,6 +1101,7 @@ export function useDerivedLmtMintInfo(
     ticksAtLimit,
     llpBalance,
     contractErrorMessage,
+    limBalance,
   }
 }
 

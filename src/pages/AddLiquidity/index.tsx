@@ -358,7 +358,6 @@ export default function AddLiquidity() {
 
   const addIsUnsupported = useIsSwapUnsupported(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
 
-
   const clearAll = useCallback(() => {
     onFieldAInput('')
     onFieldBInput('')
@@ -408,7 +407,6 @@ export default function AddLiquidity() {
     (leftRange: any, rightRange: any) => {
       const minPrice = pricesAtLimit[Bound.LOWER]
       if (minPrice) {
-        console.log('zeke:1')
         onLeftRangeInput(
           (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange)
             .toFixed(12)
@@ -423,7 +421,6 @@ export default function AddLiquidity() {
             .toString()
         )
       }
-      console.log('zeke:searchParams', searchParams)
       setSearchParams(searchParams)
 
       sendEvent({
@@ -441,20 +438,18 @@ export default function AddLiquidity() {
   useEffect(() => {
     const minPrice = searchParams.get('minPrice')
     const oldMinPrice = oldSearchParams?.get('minPrice')
-    console.log('zeke:minPrice', minPrice, oldMinPrice, oldSearchParams)
     if (
       minPrice &&
       typeof minPrice === 'string' &&
       !isNaN(minPrice as any) &&
       (!oldMinPrice || oldMinPrice !== minPrice)
     ) {
-      console.log('zeke:2')
       onLeftRangeInput(minPrice)
     }
     // disable eslint rule because this hook only cares about the url->input state data flow
     // input state -> url updates are handled in the input handlers
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-dep
+  }, [searchParams, oldSearchParams, onLeftRangeInput])
 
   useEffect(() => {
     const maxPrice = searchParams.get('maxPrice')
@@ -567,6 +562,14 @@ export default function AddLiquidity() {
     }),
     [usdcValueCurrencyB]
   )
+
+  const onPoolSwitch = useCallback(() => {
+    onFieldAInput('')
+    onFieldBInput('')
+    onLeftRangeInput('')
+    onRightRangeInput('')
+    navigate(`/add/`)
+  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
 
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const ownsNFT =
@@ -692,6 +695,7 @@ export default function AddLiquidity() {
                             inputCurrencyId={currencyIdB}
                             outputCurrencyId={currencyIdA}
                             fee={feeAmount}
+                            onPoolSwitch={onPoolSwitch}
                           />
                         </RowBetween>
                       </AutoColumn>{' '}
@@ -752,7 +756,6 @@ export default function AddLiquidity() {
                                     currencyB={quoteCurrency}
                                     handleRateToggle={() => {
                                       if (!ticksAtLimit[Bound.LOWER] && !ticksAtLimit[Bound.UPPER]) {
-                                        console.log('zeke:3')
                                         onLeftRangeInput(
                                           (invertPrice ? priceLower : priceUpper?.invert())?.toSignificant(6) ?? ''
                                         )

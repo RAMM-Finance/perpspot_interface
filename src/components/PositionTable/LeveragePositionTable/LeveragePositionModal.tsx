@@ -160,10 +160,9 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   const [alteredPremium, setAlteredPremium] = useState<BN | undefined>(undefined)
 
-  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined) => {
+  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined | null) => {
     setAlteredPremium(txnInfo?.newDepositAmount)
   }
-
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
@@ -319,7 +318,8 @@ function MarginPositionInfo({
   const premiumLeft = position?.premiumLeft
 
   // const totalDebtInputForAlt = alteredPosition?.totalDebtInput
-  const premiumLeftForAlt = alteredPosition?.premiumLeft
+  // const premiumLeftForAlt = alteredPosition?.premiumLeft
+  const premiumLeftForAlt = alteredPremium
 
   const estimatedTimeToClose = useMemo(() => {
     if (!rate || !totalDebtInput) return undefined
