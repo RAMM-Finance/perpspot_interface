@@ -17,7 +17,7 @@ import { useIsMobile } from 'nft/hooks'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dispatch, SetStateAction } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -49,6 +49,7 @@ export const PoolSelector = ({
   fee,
   inputCurrencyId,
   outputCurrencyId,
+  onPoolSwitch,
 }: {
   largeWidth: boolean
   bg?: boolean
@@ -57,6 +58,7 @@ export const PoolSelector = ({
   fee?: number
   inputCurrencyId?: string // current input id
   outputCurrencyId?: string // current output id
+  onPoolSwitch?: () => void
 }) => {
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -71,7 +73,6 @@ export const PoolSelector = ({
     return () => clearTimeout(tokenLoaderTimer)
   }, [])
 
-  const location = useLocation()
   const navigate = useNavigate()
 
   // if (location.pathname !== '/add/' && setSelectPair) {
@@ -86,13 +87,16 @@ export const PoolSelector = ({
 
   const handlePoolSelect = useCallback(
     (currency0: Currency, currency1: Currency, fee: number) => {
-      const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
-      if ((currentId && poolId !== currentId) || (selectPair && !currentId)) {
-        const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
-        navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+      if (onPoolSwitch) {
+        onPoolSwitch()
+        const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
+        if ((currentId && poolId !== currentId) || (selectPair && !currentId)) {
+          const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
+          navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+        }
       }
     },
-    [navigate, currentId, selectPair]
+    [navigate, currentId, selectPair, onPoolSwitch]
   )
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
@@ -266,10 +270,9 @@ export const PoolSelector = ({
                 currency1={outputCurrency as Currency}
                 size={20}
               />
-              <ThemedText.BodySmall
-                fontSize={largeWidth ? '16px' : ''}
-                color="secondary"
-              >{`${inputCurrency ? inputCurrency.symbol : ''} - ${outputCurrency ? outputCurrency.symbol : ''}`}</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize={largeWidth ? '16px' : ''} color="secondary">{`${
+                inputCurrency ? inputCurrency.symbol : ''
+              } - ${outputCurrency ? outputCurrency.symbol : ''}`}</ThemedText.BodySmall>
             </Row>
             <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
           </>
