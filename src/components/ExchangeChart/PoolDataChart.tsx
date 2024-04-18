@@ -4,7 +4,7 @@ import { fadeInOut } from 'components/Loader/styled'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import moment from 'moment'
 import { IChartingLibraryWidget, widget } from 'public/charting_library'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
@@ -69,6 +69,61 @@ export const PoolDataChart = ({
     }
   }, [symbol])
 
+  const entrys = entryPrices ? entryPrices.length : undefined
+
+  const entries = useMemo(() => {
+    if (!entryPrices) return null
+    if (entryPrices?.length === 1) {
+      return tvWidgetRef.current
+        ?.activeChart()
+        .createPositionLine()
+        .setPrice(entryPrices[0].entryPrice)
+        .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
+        .setLineColor('#3a3e5e')
+        .setLineWidth(0.5)
+        .setQuantityBackgroundColor('#3A404F23')
+        .setQuantityBorderColor('#3A404F23')
+        .setQuantityTextColor('#3A404F23')
+        .setBodyFont('courier, courier new, serif')
+        .setBodyBackgroundColor('#3a3e5e')
+        .setBodyBorderColor('#3a3e5e')
+        .setBodyTextColor('white')
+    } else if (entryPrices?.length === 2) {
+      return (
+        tvWidgetRef.current
+          ?.activeChart()
+          .createPositionLine()
+          .setPrice(entryPrices[0].entryPrice)
+          .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
+          .setLineColor('#3a3e5e')
+          .setLineWidth(0.5)
+          .setQuantityBackgroundColor('#3A404F23')
+          .setQuantityBorderColor('#3A404F23')
+          .setQuantityTextColor('#3A404F23')
+          .setBodyFont('courier, courier new, serif')
+          .setBodyBackgroundColor('#3a3e5e')
+          .setBodyBorderColor('#3a3e5e')
+          .setBodyTextColor('white') &&
+        tvWidgetRef.current
+          ?.activeChart()
+          .createPositionLine()
+          .setPrice(entryPrices[1].entryPrice)
+          .setText(entryPrices[1].long ? 'Open Long' : 'Open Short')
+          .setLineColor('#3a3e5e')
+          .setLineWidth(0.5)
+          .setQuantityBackgroundColor('#3A404F23')
+          .setQuantityBorderColor('#3A404F23')
+          .setQuantityTextColor('#3A404F23')
+          .setBodyFont('courier, courier new, serif')
+          .setBodyBackgroundColor('#3a3e5e')
+          .setBodyBorderColor('#3a3e5e')
+          .setBodyTextColor('white')
+      )
+    } else {
+      return null
+    }
+  }, [entrys])
+
   useEffect(() => {
     // Function to initialize the TradingView widget
     if (symbolRef.current) {
@@ -106,6 +161,7 @@ export const PoolDataChart = ({
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
+          entries
           if (entryPrices?.length === 1) {
             return tvWidgetRef.current
               ?.activeChart()
@@ -141,7 +197,7 @@ export const PoolDataChart = ({
                 ?.activeChart()
                 .createPositionLine()
                 .setPrice(entryPrices[1].entryPrice)
-                .setText(entryPrices[0].long ? 'Open Long' : 'Open Short')
+                .setText(entryPrices[1].long ? 'Open Long' : 'Open Short')
                 .setLineColor('#3a3e5e')
                 .setLineWidth(0.5)
                 .setQuantityBackgroundColor('#3A404F23')
@@ -153,7 +209,7 @@ export const PoolDataChart = ({
                 .setBodyTextColor('white')
             )
           } else {
-            return
+            return null
           }
         })
       }
@@ -173,7 +229,7 @@ export const PoolDataChart = ({
         tvWidgetRef.current = null
       }
     }
-  }, [chainId, datafeed, symbol, entryPrices?.length])
+  }, [chainId, datafeed, symbol])
 
   const theme = useTheme()
 
