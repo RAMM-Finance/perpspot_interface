@@ -238,15 +238,15 @@ export default function LeaderboardTable() {
     } else {
       setLoading(false)
       return prevData
-        .sort((a: any, b: any) => a.totalPoints - b.totalPoints)
+        .filter((obj: any, index: any) => {
+          return index === prevData.findIndex((o: any) => obj.trader === o.trader)
+        })
+        .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
         .map((user: any, index: number) => {
           return {
             ...user,
             rank: index + 1,
           }
-        })
-        .filter((obj: any, index: any) => {
-          return index === prevData.findIndex((o: any) => obj.trader === o.trader)
         })
     }
   }, [prevData, chainId])
