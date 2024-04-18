@@ -59,7 +59,6 @@ export function Chart({
 
   useEffect(() => {
     if (!brushDomain) {
-      console.log('zeke:resetting brush domain', current, zoomLevels.initialMin, zoomLevels.initialMax, xScale.domain())
       onBrushDomainChange(xScale.domain() as [number, number], undefined)
     }
   }, [brushDomain, onBrushDomainChange, xScale, current])

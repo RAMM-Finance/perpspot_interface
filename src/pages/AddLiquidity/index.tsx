@@ -407,7 +407,6 @@ export default function AddLiquidity() {
     (leftRange: any, rightRange: any) => {
       const minPrice = pricesAtLimit[Bound.LOWER]
       if (minPrice) {
-        console.log('zeke:1')
         onLeftRangeInput(
           (Number(invertPrice ? price?.invert().toSignificant(6) : price?.toSignificant(6)) * leftRange)
             .toFixed(12)

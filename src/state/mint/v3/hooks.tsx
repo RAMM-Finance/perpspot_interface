@@ -67,7 +67,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldAInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:onFieldAInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_A, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -75,7 +74,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldBInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:onFieldBInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_B, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -85,7 +83,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onLeftRangeInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:leftRange', searchParams.get('minPrice'), !!typedValue)
       dispatch(typeLeftRangeInput({ typedValue }))
       const paramMinPrice = searchParams.get('minPrice')
       if (!paramMinPrice || (paramMinPrice && paramMinPrice !== typedValue)) {
@@ -98,7 +95,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onRightRangeInput = useCallback(
     (typedValue: string) => {
-      console.log('zeke:rightRange', typedValue)
       dispatch(typeRightRangeInput({ typedValue }))
       const paramMaxPrice = searchParams.get('maxPrice')
       if (!paramMaxPrice || (paramMaxPrice && paramMaxPrice !== typedValue)) {
