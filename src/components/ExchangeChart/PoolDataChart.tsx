@@ -72,7 +72,7 @@ export const PoolDataChart = ({
   const entrys = entryPrices ? entryPrices.length : undefined
 
   const entries = useMemo(() => {
-    if (!entryPrices) return null
+    if (!entryPrices || !tvWidgetRef.current || !chartReady) return null
     if (entryPrices?.length === 1) {
       return tvWidgetRef.current
         ?.activeChart()
