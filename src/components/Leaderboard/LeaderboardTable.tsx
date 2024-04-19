@@ -274,8 +274,6 @@ export default function LeaderboardTable() {
   // // Output the arrays (or do whatever is needed with them)
   // console.log('userdata', users, lpPoints, rPoints, tPoints);
 
-  console.log('comdata', combinedData, 'chain', chainId)
-
   return (
     <>
       <LeaderboardHeader />

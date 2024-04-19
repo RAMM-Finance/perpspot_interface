@@ -226,7 +226,6 @@ export function useStoredData(addresses: any) {
         })
 
         const data = await Promise.all(dataPromises)
-        console.log('add', data)
 
         // Rank the data based on totalPoints
         // const rankedData = data.map((item: any, index: any, arr: any) => {
