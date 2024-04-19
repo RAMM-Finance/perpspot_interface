@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { useWeb3React } from '@web3-react/core'
 import { ethers } from 'ethers'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
@@ -15,8 +16,8 @@ import {
 import { tokenDecimal, usdValue, useBRP, useDataProviderContract, useReferralContract } from 'hooks/useContract'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
+
 import { firestore } from '../../firebaseConfig'
-import { collection, getDocs, addDoc, doc, updateDoc, where, query } from 'firebase/firestore'
 
 interface AddPositionData {
   trader: string
@@ -205,14 +206,14 @@ export function useStoredData(addresses: any) {
           let tPoints = tradePoints[index].toNumber()
 
           const q = query(
-            collection(firestore, 'swap-points'), 
+            collection(firestore, 'swap-points'),
             where('account', '==', address),
             where('chainId', '==', chainId)
           )
 
           const querySnapshot = await getDocs(q)
-          const data = querySnapshot.docs.map(doc => doc.data())
-          
+          const data = querySnapshot.docs.map((doc) => doc.data())
+
           if (data[0] && data[0].amount) {
             tPoints += data[0].amount
           }
@@ -225,24 +226,25 @@ export function useStoredData(addresses: any) {
         })
 
         const data = await Promise.all(dataPromises)
+        console.log('add', data)
 
         // Rank the data based on totalPoints
-        const rankedData = data.map((item: any, index: any, arr: any) => {
-          // Determine rank based on totalPoints
-          const rank =
-            arr
-              .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
-              .findIndex((sortedItem: any) => sortedItem.trader === item.trader) + 1
-          return { ...item, rank }
-        })
+        // const rankedData = data.map((item: any, index: any, arr: any) => {
+        //   // Determine rank based on totalPoints
+        //   const rank =
+        //     arr
+        //       .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
+        //       .findIndex((sortedItem: any) => sortedItem.trader === item.trader) + 1
+        //   return { ...item, rank }
+        // })
 
-        setPointsData(rankedData)
+        setPointsData(data)
       } catch (err) {
         console.log('prev data errr', err)
       }
     }
     call()
-  }, [brp, addresses])
+  }, [brp, addresses, chainId])
 
   return pointsData
 }
@@ -502,7 +504,7 @@ export function usePointsData() {
       amount1Collected = amount1Collected > 0 ? amount1Collected : 0
 
       let lpAddress = ethers.utils.getAddress(entry.operator)
-      
+
       if (sameTokenIdCollects.length > 0 && lpAddress == '0x0000000000000000000000000000000000000000')
         lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
       if (!lpPositionsByUniqueLps[lpAddress]) {

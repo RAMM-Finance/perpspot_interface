@@ -12,6 +12,7 @@ import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
 import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
@@ -240,43 +241,70 @@ export default function SimplePool() {
 
   function IndexHeader() {
     return (
-      <HeaderCellWrapper>
-        <HeaderCell style={{ paddingLeft: '20px' }}>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            Token
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-        <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            Price
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-        <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            Pool
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-        <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            {outputCurrency?.symbol === 'LLP' ? 'Weight' : 'My Balance'}
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-        <HeaderCell isWrap={true}>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            {outputCurrency?.symbol === 'LLP' ? 'Target Weight' : 'Total Balance'}
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-        <HeaderCell>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            Utililzation
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-        <HeaderCell isWrap={true}>
-          <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-            Maxiumum Withdrawable
-          </ThemedText.SubHeaderSmall>
-        </HeaderCell>
-      </HeaderCellWrapper>
+      <>
+        {outputCurrency?.symbol === 'LLP' ? (
+          <HeaderCellWrapper>
+            <HeaderCell style={{ paddingLeft: '20px' }}>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Token
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Price
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Pool
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Weight
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell isWrap={true}>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Target Weight
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Utililzation
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell isWrap={true}>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Maximum Withdrawable
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+          </HeaderCellWrapper>
+        ) : (
+          <HeaderCellWrapperSmall>
+            <HeaderCell style={{ paddingLeft: '20px' }}>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Token
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Price
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Utilized
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell>
+              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+                Maximum Withdrawable
+              </ThemedText.SubHeaderSmall>
+            </HeaderCell>
+          </HeaderCellWrapperSmall>
+        )}
+      </>
     )
   }
 
@@ -395,7 +423,7 @@ export default function SimplePool() {
     }
 
     setAttemptingTxn(true)
-
+    setLiqError(false)
     limWethMintStaticCallback()
       .then((response) => {
         console.log('limMint', response)
@@ -751,9 +779,10 @@ export default function SimplePool() {
   const [limwethSupply, setLimwethSupply] = useState<any>()
   const [limwethBacking, setlimwethBacking] = useState<any>()
   const [limwethUtilized, setlimwethUtilized] = useState<any>()
+  const [limwethMax, setlimwethMax] = useState<any>()
 
   useEffect(() => {
-    if (!provider || !limweth) return
+    if (!provider || !limweth || !account) return
 
     const call = async () => {
       const supply = await limweth.totalSupply()
@@ -763,9 +792,10 @@ export default function SimplePool() {
       setLimwethSupply(supply)
       setlimwethBacking(backing)
       setlimwethUtilized(utilized)
+      setlimwethMax(backing.sub(utilized))
     }
     call()
-  }, [provider, limweth])
+  }, [provider, limweth, account])
 
   useEffect(() => {
     if (!provider || !limweth) return
@@ -869,16 +899,14 @@ export default function SimplePool() {
   // }, [USDC_ARB, USDC_BASE, chainId])
 
   const indexData = useMemo(() => {
-    if (data && mW && WETHPrice && WBTCPrice && chainId === 8453) {
+    if (WETH && WETHPrice && chainId === 8453 && limwethUtilized && limwethBacking && limwethMax) {
       return [
         {
           token: WETH,
           price: WETHPrice?.data,
-          poolBal: data[3][0],
-          weight: data[4][0],
-          targetWeight: 50,
-          util: data[5][0],
-          maxWith: mW[0].maxShares,
+          util: limwethUtilized,
+          maxWith: limwethMax,
+          backing: limwethBacking,
         },
       ]
     } else if (data && mW && WETHPrice && WBTCPrice && chainId !== 8453) {
@@ -914,7 +942,20 @@ export default function SimplePool() {
     } else {
       return undefined
     }
-  }, [data, mW, USDCPrice, WETHPrice, WBTCPrice, WETH, WBTC, USDC])
+  }, [
+    data,
+    mW,
+    USDCPrice,
+    WETHPrice,
+    WBTCPrice,
+    WETH,
+    WBTC,
+    USDC,
+    chainId,
+    limwethUtilized,
+    limwethBacking,
+    limwethMax,
+  ])
 
   const activePrice = useMemo(() => {
     if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
@@ -1125,7 +1166,7 @@ export default function SimplePool() {
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Total Supply (ETH):</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${(limwethSupply / 1e18).toFixed(4)}`}
+                    {`${(limwethSupply / 1e18).toFixed(4)}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween
@@ -1137,7 +1178,7 @@ export default function SimplePool() {
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${(limwethBacking / 1e18).toFixed(4)}`}
+                    {`${(limwethBacking / 1e18).toFixed(4)}`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
@@ -1155,7 +1196,7 @@ export default function SimplePool() {
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {WETHPrice.data && `${(limwethUtilized / 1e18).toFixed(2)}%`}
+                    {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
@@ -1334,7 +1375,7 @@ export default function SimplePool() {
             </>
           )} */}
 
-          <ThemedText.BodySecondary>LLP Index Composition</ThemedText.BodySecondary>
+          <ThemedText.BodySecondary>{chainId === 8453 ? 'limWETH' : 'LLP'} Index Composition</ThemedText.BodySecondary>
           <IndexWrapper>
             <IndexHeader />
 
@@ -1408,67 +1449,46 @@ export default function SimplePool() {
                 })
               : indexData &&
                 WETHPrice &&
-                indexData
-                  .filter((token: any) => token.token.symbol === 'WETH')
-                  .map((tok: any) => {
-                    return (
-                      <LoadedCellWrapper key={tok.token.symbol}>
-                        <LoadedCell style={{ paddingLeft: '20px' }}>
-                          <CurrencyLogo currency={tok.token} size="20px" />
-                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            {tok.token.symbol}
-                          </ThemedText.BodySmall>
-                        </LoadedCell>
-                        <LoadedCell>
-                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            {formatDollarAmount({ num: tok?.price, long: true })}
-                          </ThemedText.BodySmall>
-                        </LoadedCell>
-                        <LoadedCell>
-                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            {tok.poolBal
-                              ? formatDollarAmount({
-                                  num: tok.poolBal / Number(`1e${tok.token.decimals}`),
-                                  long: true,
-                                }) +
-                                ' ' +
-                                tok.token.symbol
-                              : '-'}
-                          </ThemedText.BodySmall>
-                        </LoadedCell>
-                        <LoadedCell>
-                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            -
-                          </ThemedText.BodySmall>
-                        </LoadedCell>
-                        <LoadedCell>
-                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            {tok.util
-                              ? formatDollarAmount({
-                                  num: (Number(tok.util) / Number(`1e${18}`)) * 100,
-                                  long: true,
-                                })
-                              : '-'}
-                            %
-                          </ThemedText.BodySmall>
-                        </LoadedCell>
-                        <LoadedCell>
-                          <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-                            {tok.poolBal
-                              ? formatDollarAmount({
-                                  num:
-                                    (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
-                                    (1 - Number(tok.util) / Number(`1e${18}`)),
-                                  long: true,
-                                }) +
-                                ' ' +
-                                tok.token.symbol
-                              : '-'}
-                          </ThemedText.BodySmall>
-                        </LoadedCell>
-                      </LoadedCellWrapper>
-                    )
-                  })}
+                outputCurrency?.symbol === 'limWETH' &&
+                indexData.map((tok: any) => {
+                  return (
+                    <LoadedCellWrapper isShort={true} key={tok.token.symbol}>
+                      <LoadedCell style={{ paddingLeft: '20px' }}>
+                        <CurrencyLogo currency={tok.token} size="20px" />
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {tok.token.symbol}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {formatDollarAmount({ num: tok?.price, long: true })}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {tok.util
+                            ? formatDollarAmount({
+                                num: Number(tok.util) / Number(`1e${18}`),
+                                long: true,
+                              })
+                            : '-'}{' '}
+                          {tok.token.symbol}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                          {tok.maxWith
+                            ? formatDollarAmount({
+                                num: Number(tok.maxWith) / Number(`1e${18}`),
+                                long: true,
+                              })
+                            : '-'}{' '}
+                          {tok.token.symbol}
+                        </ThemedText.BodySmall>
+                      </LoadedCell>
+                    </LoadedCellWrapper>
+                  )
+                })}
           </IndexWrapper>
         </AutoColumn>
 
@@ -1525,9 +1545,9 @@ const LoadedCell = styled.div`
   gap: 5px;
 `
 
-const LoadedCellWrapper = styled.div`
+const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
+  grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '2fr 2fr 2fr 2fr 2fr 2fr 3fr')};
   padding: 10px;
   border-radius: 10px;
   :hover {
@@ -1546,6 +1566,12 @@ const HeaderCell = styled.div<{ isWrap?: boolean }>`
 const HeaderCellWrapper = styled.div`
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 10px;
+`
+const HeaderCellWrapperSmall = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 3fr;
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
 `
@@ -1675,6 +1701,17 @@ const ErrorButton = styled(ButtonPrimary)`
     opacity: 95%;
   }
   cursor: pointer;
+`
+
+const MediumLoadingBubble = styled(LoadingBubble)`
+  width: 65%;
+`
+const LongLoadingBubble = styled(LoadingBubble)`
+  width: 90%;
+`
+const IconLoadingBubble = styled(LoadingBubble)`
+  border-radius: 50%;
+  width: 24px;
 `
 
 function ButtonBlue({ text, onClick }: { text?: string; onClick?: React.MouseEventHandler<HTMLButtonElement> }) {
