@@ -45,7 +45,7 @@ import Swap from './Swap'
 import Tokens from './Tokens'
 import Trade from './Trade'
 import { RedirectPathToSwapOnly } from './Trade/redirects'
-import FilterItems from './FilterItems'
+import NewItemsListPage from './NewItemsList'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
 // const Vote = lazy(() => import('./Vote'))
@@ -246,8 +246,8 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
-                  <Route path="nft" element={<FilterItems/>} />
-                  <Route path="nft/?/activity" element={<FilterItems/>} />
+                  <Route path="new" element={<NewItemsListPage/>} />
+                  <Route path="new/?/activity" element={<NewItemsListPage/>} />
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
                   {/* <Route path="pool/v2" element={<PoolV2 />} /> */}

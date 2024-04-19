@@ -1,9 +1,15 @@
+import Row from 'components/Row'
 import { Box } from 'nft/components/Box'
+import { Column } from 'nft/components/Flex'
+import { DiscordIcon } from 'nft/components/icons'
 import { body } from 'nft/css/common.css'
 import { useEffect, useReducer, useRef, useState } from 'react'
+import { Bookmark, GitHub } from 'react-feather'
 import ReactMarkdown from 'react-markdown'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+
+import { ReactComponent as X } from '../../components/Footer/twitter.svg'
 
 const DescriptionText = styled.div<{ readMore: boolean }>`
   vertical-align: top;
@@ -64,7 +70,7 @@ const ToggleDescriptionText = ({ description }: { description: string }) => {
   }, [description])
 
   return (
-    <Box marginTop={{ sm: '12', md: '16' }} style={{ maxWidth: '680px' }}>
+    <Box style={{ maxWidth: '680px' }}>
       <DescriptionText readMore={readMore} ref={descriptionRef} className={body}>
         <ReactMarkdown
           source={description}
@@ -81,7 +87,20 @@ const ToggleDescriptionText = ({ description }: { description: string }) => {
   )
 }
 
-const InfoDescription = ({ title }: { title?: boolean }) => {
+const IconWrapper = styled.div`
+  margin-left: 2.5rem;
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+`
+
+const Link = styled.a`
+  cursor: pointer;
+`
+
+const InfoDescription = ({ title, description }: { title?: boolean; description: string }) => {
   return (
     <Box
       display="flex"
@@ -112,9 +131,25 @@ const InfoDescription = ({ title }: { title?: boolean }) => {
               toggleCollectionSocials={toggleCollectionSocials}
             /> */}
         {title ? (
-          <ThemedText.HeadlineSmall>dev testing title1...... 1</ThemedText.HeadlineSmall>
+          <Row>
+            <ThemedText.HeadlineMedium color="textSecondary">{description}</ThemedText.HeadlineMedium>
+            <IconWrapper>
+              <Link href="https://twitter.com/LimitlessFi_" rel="noopener noreferrer" target="_blank">
+                <X fill="#b8c0dc" width="18px" />
+              </Link>
+              <Link href="https://discord.com/invite/v7Dq4vTvUE" rel="noopener noreferrer" target="_blank">
+                <DiscordIcon fill="#b8c0dc" width="28px" />
+              </Link>
+              <Link rel="noopener noreferrer" target="_blank">
+                <GitHub fill="#b8c0dc" width="23px" />
+              </Link>
+              <Link href="https://linktr.ee/limitlessfi" rel="noopener noreferrer" target="_blank">
+                <Bookmark fill="#b8c0dc" width="23px" />
+              </Link>
+            </IconWrapper>
+          </Row>
         ) : (
-          <ToggleDescriptionText description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes" />
+          <ToggleDescriptionText description={description} />
         )}
         {/* <StatsRow display={{ sm: 'none', md: 'flex' }} overflow="hidden" stats={stats} marginTop="20" /> */}
       </Box>
@@ -126,4 +161,13 @@ const InfoDescription = ({ title }: { title?: boolean }) => {
   )
 }
 
-export default InfoDescription
+const InfoDescriptionSection = ({ title, description }: { title: string; description: string }) => {
+  return (
+    <Column marginTop="40" marginBottom="28">
+      <InfoDescription title={true} description={title} />
+      <InfoDescription description={description} />
+    </Column>
+  )
+}
+
+export default InfoDescriptionSection
