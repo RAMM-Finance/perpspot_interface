@@ -20,9 +20,9 @@ const StatsItem = ({ children, label, shouldHide }: { children: ReactNode; label
   )
 }
 
-const ItemStats = () => {
+const InfoItemStats = () => {
   return (
-    <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28">
+    <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
       <StatsItem label="Global floor" shouldHide={false}>
         ETH
       </StatsItem>
@@ -48,4 +48,4 @@ const ItemStats = () => {
   )
 }
 
-export default ItemStats
+export default InfoItemStats

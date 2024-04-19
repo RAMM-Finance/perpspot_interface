@@ -208,7 +208,7 @@ export const CardContainer = ({ id, img, info, secondInfo, selected, isDisabled 
             <Row gap="8" justifyContent="space-between">
               <StyledPrimaryDetails>
                 <PrimaryInfoContainer>{info} </PrimaryInfoContainer>
-                <PrimaryInfoContainer>{id}</PrimaryInfoContainer>
+                {/* <PrimaryInfoContainer>{id}</PrimaryInfoContainer> */}
               </StyledPrimaryDetails>
             </Row>
             <Row justifyContent="space-between">
@@ -220,7 +220,7 @@ export const CardContainer = ({ id, img, info, secondInfo, selected, isDisabled 
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
       <StyledActionButton isDisabled={false} selected={false}>
-        Add to Bag
+        Add 
       </StyledActionButton>
     </StyledCardContainer>
   )

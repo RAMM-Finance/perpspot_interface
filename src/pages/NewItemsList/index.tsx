@@ -7,11 +7,16 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components/macro'
 
 import ItemImg from '../../assets/images/newItem.png'
+import ItemImg2 from '../../assets/images/newItem2.webp'
+import ItemImg3 from '../../assets/images/newItem3.webp'
+import ItemImg4 from '../../assets/images/newItem4.webp'
+import ItemImg5 from '../../assets/images/newItem5.webp'
+import ItemImg6 from '../../assets/images/newItem6.webp'
 import Logo from '../../assets/svg/full_logo_black.svg'
 import banner from '../../components/Leaderboard/banner.png'
 import { CardContainer } from './CardContainer'
 import InfoDescriptionSection from './InfoDescription'
-import ItemStats from './ItemStats'
+import InfoItemStats from './InfoItemStats'
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -150,6 +155,9 @@ const Banner = styled.div<{ src: string }>`
 
 const CollectionDescriptionSection = styled(Column)`
   position: relative;
+  justify-content: center;
+  border-bottom: 1px solid;
+  border-color: ${({ theme }) => theme.backgroundInteractive};
   @media screen and (min-width: ${XLARGE_MEDIA_BREAKPOINT}) {
     padding-left: 48px;
     padding-right: 48px;
@@ -172,7 +180,7 @@ const CollectionDescriptionSection = styled(Column)`
 `
 
 const InfoImg = styled.img`
-  position: absolute;
+  /* position: absolute; */
   left: 45px;
   top: -110px;
   box-shadow: ${({ theme }) => theme.roundedImageShadow};
@@ -187,12 +195,12 @@ const InfoImg = styled.img`
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
 
-  @media (max-width: 639px) {
+  /* @media (max-width: 639px) {
     border-width: 2px;
-    height: 80px;
+    height: 100px;
     top: -32px;
-    width: 80px;
-  }
+    width: 100px;
+  } */
 `
 
 // const FadeInColumn = styled(Column)`
@@ -211,7 +219,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#222',
-      img: ItemImg,
+      img: ItemImg2,
       info: 'Limitless test2',
       secondInfo: '4.72WETH',
       selected: false,
@@ -219,7 +227,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#333',
-      img: ItemImg,
+      img: ItemImg3,
       info: 'Limitless test3',
       secondInfo: '4.72WETH',
       selected: false,
@@ -227,7 +235,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#444',
-      img: ItemImg,
+      img: ItemImg4,
       info: 'Limitless test4',
       secondInfo: '4.72WETH',
       selected: false,
@@ -235,7 +243,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#555',
-      img: ItemImg,
+      img: ItemImg5,
       info: 'Limitless test5',
       secondInfo: '4.72WETH',
       selected: false,
@@ -243,7 +251,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#666',
-      img: ItemImg,
+      img: ItemImg6,
       info: 'Limitless test6',
       secondInfo: '4.72WETH',
       selected: false,
@@ -259,7 +267,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#888',
-      img: ItemImg,
+      img: ItemImg2,
       info: 'Limitless test8',
       secondInfo: '4.72WETH',
       selected: false,
@@ -267,7 +275,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#999',
-      img: ItemImg,
+      img: ItemImg4,
       info: 'Limitless test9',
       secondInfo: '4.72WETH',
       selected: false,
@@ -275,7 +283,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#1010',
-      img: ItemImg,
+      img: ItemImg6,
       info: 'Limitless test1010',
       secondInfo: '4.72WETH',
       selected: false,
@@ -283,7 +291,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#1212',
-      img: ItemImg,
+      img: ItemImg5,
       info: 'Limitless test 1212',
       secondInfo: '4.72WETH',
       selected: false,
@@ -291,7 +299,7 @@ const NewItemsListPage = () => {
     },
     {
       id: '#1313',
-      img: ItemImg,
+      img: ItemImg3,
       info: 'Limitless test1313',
       secondInfo: '4.72WETH',
       selected: false,
@@ -313,7 +321,7 @@ const NewItemsListPage = () => {
   const isActivityToggled = pathname.includes('/activity')
   const navigate = useNavigate()
 
-  //TODO: Add query string parameter to the URL in the ("?")following format
+  // //TODO: Add query string parameter to the URL in the ("?")following format
   const toggleActivity = () => {
     isActivityToggled ? navigate(`/new`) : navigate(`/new/?/activity`)
   }
@@ -327,21 +335,23 @@ const NewItemsListPage = () => {
         <Banner src={banner} />
       </BannerWrapper>
       <CollectionDescriptionSection>
-        <InfoImg src={Logo} alt="Logo" />
-        <InfoDescriptionSection
-          title="LimitLess"
-          description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes."
-        />
-        <ItemStats />
+        <Row margin="auto" gap="16">
+          <InfoImg src={Logo} alt="Logo" />
+          <InfoDescriptionSection
+            title="LimitLess"
+            description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes."
+          />
+        </Row>
+        {/* <ItemStats /> */}
         {/* {collectionStats && <CollectionStats sta  ts={collectionStats} isMobile={flase} />} */}
         <div id="nft-anchor" />
-        <ActivitySwitcher
+        {/* <ActivitySwitcher
           showActivity={isActivityToggled}
           toggleActivity={() => {
             toggleActivity()
             //isFiltersExpanded && setFiltersExpanded(false)
           }}
-        />
+        /> */}
       </CollectionDescriptionSection>
       {/* Filter , ListItem section */}
       <CollectionDisplaySection>

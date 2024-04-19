@@ -10,12 +10,13 @@ import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import { ReactComponent as X } from '../../components/Footer/twitter.svg'
+import InfoItemStats from './InfoItemStats'
 
 const DescriptionText = styled.div<{ readMore: boolean }>`
   vertical-align: top;
   text-overflow: ellipsis;
   color: ${({ theme }) => theme.textTertiary};
-  ${({ readMore }) =>
+  /* ${({ readMore }) =>
     readMore
       ? css`
           white-space: normal;
@@ -41,7 +42,7 @@ const DescriptionText = styled.div<{ readMore: boolean }>`
     :focus {
       opacity: ${({ theme }) => theme.opacity.click};
     }
-  }
+  } */
 `
 
 const ReadMore = styled.span`
@@ -56,33 +57,35 @@ const ToggleDescriptionText = ({ description }: { description: string }) => {
   const [readMore, toggleReadMore] = useReducer((state) => !state, false)
   const descriptionRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (descriptionRef.current) {
-        setShowReadMore(descriptionRef.current.offsetWidth <= descriptionRef.current.scrollWidth)
-      }
-    }
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     if (descriptionRef.current) {
+  //       setShowReadMore(descriptionRef.current.offsetWidth <= descriptionRef.current.scrollWidth)
+  //     }
+  //   }
 
-    handleResize()
+  //   handleResize()
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [description])
+  //   window.addEventListener('resize', handleResize)
+  //   return () => window.removeEventListener('resize', handleResize)
+  // }, [description])
 
   return (
-    <Box style={{ maxWidth: '680px' }}>
+    // <Box style={{ maxWidth: '680px' }}>
+    <Box>
       <DescriptionText readMore={readMore} ref={descriptionRef} className={body}>
-        <ReactMarkdown
+        {description}
+        {/* <ReactMarkdown
           source={description}
           allowedTypes={['link', 'paragraph', 'strong', 'code', 'emphasis', 'text']}
           renderers={{ paragraph: 'span' }}
-        />
+        /> */}
       </DescriptionText>
-      {showReadMore && (
+      {/* {showReadMore && (
         <ReadMore className={body} onClick={toggleReadMore}>
           show {readMore ? 'less' : 'more'}
         </ReadMore>
-      )}
+      )} */}
     </Box>
   )
 }
@@ -166,6 +169,7 @@ const InfoDescriptionSection = ({ title, description }: { title: string; descrip
     <Column marginTop="40" marginBottom="28">
       <InfoDescription title={true} description={title} />
       <InfoDescription description={description} />
+      <InfoItemStats/>
     </Column>
   )
 }
