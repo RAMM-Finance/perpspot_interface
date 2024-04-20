@@ -1,10 +1,11 @@
 import Column from 'components/Column'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
-import { ActivitySwitcher } from 'nft/components/collection'
 // import { getSortDropdownOptions } from 'nft/components/collection/CollectionNfts'
 import { Row } from 'nft/components/Flex'
+import { ArrowUpRight } from 'react-feather'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 import ItemImg from '../../assets/images/newItem.png'
 import ItemImg2 from '../../assets/images/newItem2.webp'
@@ -16,7 +17,6 @@ import Logo from '../../assets/svg/full_logo_black.svg'
 import banner from '../../components/Leaderboard/banner.png'
 import { CardContainer } from './CardContainer'
 import InfoDescriptionSection from './InfoDescription'
-import InfoItemStats from './InfoItemStats'
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -28,6 +28,26 @@ import InfoItemStats from './InfoItemStats'
 //     display: none;
 //   }
 // `
+const FaqWrapper = styled.div`
+  margin: 50px auto;
+  width: 48%;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+`
+
+const FaqElement = styled.div`
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  :hover {
+    cursor: pointer;
+    opacity: 75%;
+  }
+`
 
 const InfiniteScrollWrapperCss = css`
   margin: 0 16px;
@@ -420,6 +440,23 @@ const NewItemsListPage = () => {
           </InfiniteScrollWrapper>
         </CollectionAssetsContainer>
       </CollectionDisplaySection>
+      <FaqWrapper>
+        <FaqElement>
+          <a
+            href="https://limitless.gitbook.io/limitless/intro/limitless-lp-token-llp"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
+              Earning with LLP
+            </ThemedText.BodySecondary>
+          </a>
+          <ArrowUpRight size="20" />
+        </FaqElement>{' '}
+        <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
+          Read our LLP documentation to better understand how to earn.
+        </ThemedText.BodyPrimary>
+      </FaqWrapper>
     </CollectionContainer>
   )
 }
