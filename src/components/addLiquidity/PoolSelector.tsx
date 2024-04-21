@@ -127,7 +127,7 @@ export const PoolSelector = ({
         </Row>
         <Row>
           <Column paddingX="8">
-            {poolList.map((curr: any) => {
+            {poolList?.map((curr: any) => {
               const id = getPoolId(curr.token0, curr.token1, curr.fee)
               return (
                 <PoolSelectorRow
