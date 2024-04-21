@@ -1,7 +1,7 @@
 import { t } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-import { nativeOnChain } from '@uniswap/smart-order-router'
+// import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
@@ -34,6 +34,7 @@ import {
 
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
+import { nativeOnChain } from 'constants/tokens'
 
 export function getCurrency(
   currencyId: string,
@@ -93,7 +94,7 @@ function parseAddLeverage(
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`Deposited ${paidAmount} ${formatSymbol(tokenIn?.symbol)}, Recieved ${addedPosition} ${formatSymbol(
+      {`Deposited ${paidAmount} ${formatSymbol(tokenIn?.symbol)}, Received ${addedPosition} ${formatSymbol(
         tokenOut?.symbol
       )}`}
     </Descriptor>
@@ -223,9 +224,9 @@ function parseReduceLeverage(
   chainId: SupportedChainId,
   tokens: TokenAddressMap
 ): Partial<Activity> {
+  
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-
   const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)

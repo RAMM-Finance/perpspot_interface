@@ -284,7 +284,7 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
         tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.outputCurrencyId)
         tokenAmount = info.outputCurrencyAmountRaw
       }
-
+      
       const tPoint = (tokenInfoFromUniswap?.lastPriceUSD * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
 
       const q = query(

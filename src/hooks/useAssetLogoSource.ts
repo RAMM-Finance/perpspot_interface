@@ -35,7 +35,7 @@ function prioritizeLogoSources(uris: string[]) {
 }
 
 function getInitialUrl(address?: string | null, chainId?: number | null, isNative?: boolean) {
-  if (chainId && isNative) return getNativeLogoURI(chainId)
+  if (chainId && isNative) return getNativeLogoURI()
 
   const networkName = chainId ? chainIdToNetworkName(chainId) : 'ethereum'
   const checksummedAddress = isAddress(address)

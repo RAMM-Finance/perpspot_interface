@@ -69,6 +69,38 @@ export const PoolDataChart = ({
     }
   }, [symbol])
 
+  // const entry = useMemo(() => {
+  //   if (!entryPrices) false
+  //   return true
+  // }, [entryPrices])
+  // const chartUp = useMemo(() => {
+  //   if (!tvWidgetRef.current?.activeChart()) false
+  //   return true
+  // }, [tvWidgetRef])
+
+  // const entries = useMemo(() => {
+  //   if (!entryPrices || !entry || !chartUp) return
+  //   if (entryPrices?.length > 1) {
+  //     const newPos = entryPrices?.length - 1
+  //     return tvWidgetRef.current
+  //       ?.activeChart()
+  //       .createPositionLine()
+  //       .setPrice(entryPrices[newPos].entryPrice)
+  //       .setText(entryPrices[newPos].long ? 'Open Long' : 'Open Short')
+  //       .setLineColor('#3a3e5e')
+  //       .setLineWidth(0.5)
+  //       .setQuantityBackgroundColor('#3A404F23')
+  //       .setQuantityBorderColor('#3A404F23')
+  //       .setQuantityTextColor('#3A404F23')
+  //       .setBodyFont('courier, courier new, serif')
+  //       .setBodyBackgroundColor('#3a3e5e')
+  //       .setBodyBorderColor('#3a3e5e')
+  //       .setBodyTextColor('white')
+  //   } else {
+  //     return
+  //   }
+  // }, [entry, chartUp])
+
   useEffect(() => {
     // Function to initialize the TradingView widget
     if (symbolRef.current) {
@@ -106,6 +138,7 @@ export const PoolDataChart = ({
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
+          // entries
           if (entryPrices?.length === 1) {
             return tvWidgetRef.current
               ?.activeChart()
@@ -173,7 +206,7 @@ export const PoolDataChart = ({
         tvWidgetRef.current = null
       }
     }
-  }, [chainId, datafeed, symbol, entryPrices?.length])
+  }, [chainId, datafeed, symbol])
 
   const theme = useTheme()
 

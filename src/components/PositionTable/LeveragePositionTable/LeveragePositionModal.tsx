@@ -89,7 +89,7 @@ const Wrapper = styled.div`
   flex-direction: row;
   width: 100%;
   // height: 100%;
-  height: 560px;
+  height: 565px;
   border-radius: 20px;
 `
 
@@ -160,10 +160,9 @@ export function LeveragePositionModal(props: TradeModalProps) {
 
   const [alteredPremium, setAlteredPremium] = useState<BN | undefined>(undefined)
 
-  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined) => {
+  const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined | null) => {
     setAlteredPremium(txnInfo?.newDepositAmount)
   }
-
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
@@ -283,6 +282,13 @@ const LoadingDisplayedContent = styled(LoadingBubble)`
   width: 100%;
   height: 100%;
 `
+function formatHours(hours: number) {
+  const totalMinutes = hours * 60
+  const days = Math.floor(hours / 24)
+  const remainingHours = Math.floor(hours % 24)
+  const minutes = Math.round(totalMinutes % 60)
+  return `${days}d ${remainingHours}h ${minutes}m`
+}
 
 function MarginPositionInfo({
   position,
@@ -318,8 +324,9 @@ function MarginPositionInfo({
   const totalDebtInput = position?.totalDebtInput
   const premiumLeft = position?.premiumLeft
 
-  const totalDebtInputForAlt = alteredPosition?.totalDebtInput
-  const premiumLeftForAlt = alteredPosition?.premiumLeft
+  // const totalDebtInputForAlt = alteredPosition?.totalDebtInput
+  // const premiumLeftForAlt = alteredPosition?.premiumLeft
+  const premiumLeftForAlt = alteredPremium
 
   const estimatedTimeToClose = useMemo(() => {
     if (!rate || !totalDebtInput) return undefined
@@ -328,7 +335,6 @@ function MarginPositionInfo({
     const premPerHour = Number(totalDebtInput) * ratePerHour
 
     const hours = Number(premiumLeft) / premPerHour
-
     return Math.round(hours * 100) / 100
   }, [rate, totalDebtInput, premiumLeft])
 
@@ -343,7 +349,8 @@ function MarginPositionInfo({
     if (estimatedTimeToClose) return Math.round(hours * 100) / 100 + estimatedTimeToClose
     else return Math.round(hours * 100) / 100
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
-  // console.log('Interest', alteredPremium, alteredPosition.premiumLeft )
+
+  // console.log('Interest',alteredPosition.premiumLeft, alteredPremium )
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -382,29 +389,17 @@ function MarginPositionInfo({
           description={<Trans>Current interest deposit remaining</Trans>}
           syncing={loading}
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
-          newValue={
-            alteredPosition?.premiumLeft ? (alteredPosition?.premiumLeft.gt(0) ? alteredPremium : new BN(0)) : undefined
-          }
+          newValue={alteredPremium ? (alteredPremium.gt(0) ? alteredPremium : new BN(0)) : undefined}
           appendSymbol={inputCurrency?.symbol}
           type={NumberType.SwapTradeAmount}
         />
         <PositionTimeLabel
-          title={<Trans>Estimated Lifetime Of Position</Trans>}
+          title={<Trans>Lifetime</Trans>}
           description={<Trans>Estimated Lifetime of Position</Trans>}
           syncing={loading}
-          value={estimatedTimeToClose ? estimatedTimeToClose : undefined}
-          newValue={estimatedTimeToCloseForAlt ? estimatedTimeToCloseForAlt : undefined}
+          value={estimatedTimeToClose ? formatHours(estimatedTimeToClose) : undefined}
+          newValue={estimatedTimeToCloseForAlt ? formatHours(estimatedTimeToCloseForAlt) : undefined}
         />
-        {/* <PositionValueLabelWrapper>
-          <MouseoverTooltip text="Position Health">Estimated Lifetime Of Position</MouseoverTooltip>
-          <AutoColumn>
-            <TextWithLoadingPlaceholder syncing={false} width={65}>
-              <ValueWrapper margin={false}>
-                <GreenText>{String(estimatedTimeToClose) + ' hrs'}</GreenText>
-              </ValueWrapper>
-            </TextWithLoadingPlaceholder>
-          </AutoColumn>
-        </PositionValueLabelWrapper> */}
         <PositionValueLabelWrapper>
           <MouseoverTooltip text="Position Health">Position Health</MouseoverTooltip>
           <AutoColumn>
@@ -589,86 +584,7 @@ const BorrowLiquidityRangeSection = ({ position, pool }: { position?: MarginPosi
     }
   }, [baseCurrency, quoteCurrency, tickLower, tickUpper, borrowLiquidityRange])
   const removed = position?.totalPosition.isZero() ?? false
-  return (
-    <></>
-    // <BorrowLiquidityWrapper>
-    //   <AutoColumn gap="md">
-    //     <AutoColumn gap="md">
-    //       <RowBetween>
-    //         <Label display="flex" style={{ marginRight: '12px' }}>
-    //           <Trans>Position Borrowed Range</Trans>
-    //         </Label>
-    //         <HideExtraSmall>
-    //           <>
-    //             <LmtBorrowRangeBadge removed={removed} inRange={inRange} />
-    //             <span style={{ width: '8px' }} />
-    //           </>
-    //         </HideExtraSmall>
-    //       </RowBetween>
-    //       <RowFixed>
-    //         {baseCurrency && quoteCurrency && (
-    //           <DarkRateToggle
-    //             currencyA={baseCurrency}
-    //             currencyB={quoteCurrency}
-    //             handleRateToggle={() => setManuallyInverted(!manuallyInverted)}
-    //           />
-    //         )}
-    //       </RowFixed>
-    //     </AutoColumn>
-    //     <RowBetween>
-    //       <SecondLabel padding="12px" width="100%">
-    //         <AutoColumn gap="sm" justify="center">
-    //           <ExtentsText>
-    //             <Trans>Min price</Trans>
-    //           </ExtentsText>
-    //           <ThemedText.BodySecondary textAlign="center">
-    //             {formatTickPrice({
-    //               price: priceLower,
-    //               atLimit: tickAtLimit,
-    //               direction: Bound.LOWER,
-    //               numberType: NumberType.TokenTx,
-    //             })}
-    //           </ThemedText.BodySecondary>
-    //           <ExtentsText>
-    //             {' '}
-    //             <Trans>
-    //               {baseCurrency?.symbol} per {quoteCurrency?.symbol}
-    //             </Trans>
-    //           </ExtentsText>
-    //         </AutoColumn>
-    //       </SecondLabel>
-    //       <DoubleArrow>⟷</DoubleArrow>
-    //       <SecondLabel padding="12px" width="100%">
-    //         <AutoColumn gap="sm" justify="center">
-    //           <ExtentsText>
-    //             <Trans>Max price</Trans>
-    //           </ExtentsText>
-    //           <ThemedText.BodySecondary textAlign="center">
-    //             {formatTickPrice({
-    //               price: priceUpper,
-    //               atLimit: tickAtLimit,
-    //               direction: Bound.UPPER,
-    //               numberType: NumberType.TokenTx,
-    //             })}
-    //           </ThemedText.BodySecondary>
-    //           <ExtentsText>
-    //             {' '}
-    //             <Trans>
-    //               {baseCurrency?.symbol} per {quoteCurrency?.symbol}
-    //             </Trans>
-    //           </ExtentsText>
-    //         </AutoColumn>
-    //       </SecondLabel>
-    //     </RowBetween>
-    //     <CurrentPriceCard
-    //       inverted={manuallyInverted}
-    //       pool={pool}
-    //       currencyQuote={quoteCurrency}
-    //       currencyBase={baseCurrency}
-    //     />
-    //   </AutoColumn>
-    // </BorrowLiquidityWrapper>
-  )
+  return <></>
 }
 
 const PositionValueLabelWrapper = styled.div`
@@ -736,14 +652,12 @@ function PositionTimeLabel({
   description,
   syncing,
 }: {
-  value?: number
-  newValue?: number
+  value?: string
+  newValue?: string
   title: ReactNode
   description?: ReactNode
   syncing: boolean
 }) {
-  // const { formatNumber } = useFormatter()
-
   return (
     <PositionValueLabelWrapper>
       <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
@@ -751,9 +665,9 @@ function PositionTimeLabel({
         <TextWithLoadingPlaceholder syncing={syncing} width={65}>
           <ValueWrapper margin={false}>
             <Row padding="5px" height="28px">
-              {value ? `${value} hrs` : '-'}
+              {value}
               {newValue ? <StyledArrow /> : null}
-              {newValue ? `${newValue} hrs` : null}
+              {newValue}
             </Row>
           </ValueWrapper>
         </TextWithLoadingPlaceholder>

@@ -61,7 +61,7 @@ export function Chart({
     if (!brushDomain) {
       onBrushDomainChange(xScale.domain() as [number, number], undefined)
     }
-  }, [brushDomain, onBrushDomainChange, xScale])
+  }, [brushDomain, onBrushDomainChange, xScale, current])
 
   return (
     <>

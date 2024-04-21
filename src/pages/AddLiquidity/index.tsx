@@ -100,6 +100,7 @@ export default function AddLiquidity() {
     feeAmount: feeAmountFromUrl,
     tokenId,
   } = useParams<{ currencyIdA?: string; currencyIdB?: string; feeAmount?: string; tokenId?: string }>()
+
   const { account, chainId, provider } = useWeb3React()
   const theme = useTheme()
 
@@ -153,6 +154,7 @@ export default function AddLiquidity() {
     depositBDisabled,
     invertPrice,
     ticksAtLimit,
+    contractErrorMessage,
   } = useDerivedLmtMintInfo(
     baseCurrency ?? undefined,
     quoteCurrency ?? undefined,
@@ -165,7 +167,7 @@ export default function AddLiquidity() {
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
     useV3MintActionHandlers(noLiquidity)
 
-  const isValid = !errorMessage && !invalidRange
+  const isValid = !errorMessage && !invalidRange && !contractErrorMessage
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
@@ -363,8 +365,13 @@ export default function AddLiquidity() {
     onRightRangeInput('')
     navigate(`/add/`)
     setSelectPair(true)
-  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, setSelectPair])
 
+  useEffect(() => {
+    if (chainId) {
+      clearAll()
+    }
+  }, [chainId])
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
@@ -414,7 +421,6 @@ export default function AddLiquidity() {
             .toString()
         )
       }
-
       setSearchParams(searchParams)
 
       sendEvent({
@@ -424,21 +430,6 @@ export default function AddLiquidity() {
     },
     [pricesAtLimit, searchParams, setSearchParams, invertPrice, price, onLeftRangeInput, onRightRangeInput]
   )
-
-  // const handleSetFullRange = useCallback(() => {
-  //   getSetFullRange()
-
-  //   const minPrice = pricesAtLimit[Bound.LOWER]
-  //   if (minPrice) searchParams.set('minPrice', minPrice.toSignificant(5))
-  //   const maxPrice = pricesAtLimit[Bound.UPPER]
-  //   if (maxPrice) searchParams.set('maxPrice', maxPrice.toSignificant(5))
-  //   setSearchParams(searchParams)
-
-  //   sendEvent({
-  //     category: 'Liquidity',
-  //     action: 'Full Range Clicked',
-  //   })
-  // }, [getSetFullRange, pricesAtLimit, searchParams, setSearchParams])
 
   // START: sync values with query string
   const oldSearchParams = usePrevious(searchParams)
@@ -457,8 +448,8 @@ export default function AddLiquidity() {
     }
     // disable eslint rule because this hook only cares about the url->input state data flow
     // input state -> url updates are handled in the input handlers
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-dep
+  }, [searchParams, oldSearchParams, onLeftRangeInput])
 
   useEffect(() => {
     const maxPrice = searchParams.get('maxPrice')
@@ -548,7 +539,9 @@ export default function AddLiquidity() {
           }
           error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
         >
-          <Text fontWeight={500}>{errorMessage ? errorMessage : <Trans>Preview</Trans>}</Text>
+          <Text fontWeight={500}>
+            {contractErrorMessage ? contractErrorMessage : errorMessage ? errorMessage : <Trans>Preview</Trans>}
+          </Text>
         </StyledButtonError>
       </AutoColumn>
     )
@@ -569,6 +562,14 @@ export default function AddLiquidity() {
     }),
     [usdcValueCurrencyB]
   )
+
+  const onPoolSwitch = useCallback(() => {
+    onFieldAInput('')
+    onFieldBInput('')
+    onLeftRangeInput('')
+    onRightRangeInput('')
+    navigate(`/add/`)
+  }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
 
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const ownsNFT =
@@ -637,7 +638,6 @@ export default function AddLiquidity() {
                 inRange={!outOfRange}
                 ticksAtLimit={ticksAtLimit}
               />
-
               <AutoColumn justify="center" gap="md">
                 <div style={{ width: '90%' }}>
                   <ThemedText.BodyPrimary fontWeight={700} mb="10px">
@@ -695,6 +695,7 @@ export default function AddLiquidity() {
                             inputCurrencyId={currencyIdB}
                             outputCurrencyId={currencyIdA}
                             fee={feeAmount}
+                            onPoolSwitch={onPoolSwitch}
                           />
                         </RowBetween>
                       </AutoColumn>{' '}

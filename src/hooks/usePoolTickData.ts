@@ -197,8 +197,6 @@ function useAllV3Ticks(
     loading: isLoading,
   } = useTicksFromSubgraph(useSubgraph ? currencyA : undefined, currencyB, feeAmount, skipNumber)
 
-  console.log('zeke:', data, tickLensTickData, isLoading)
-
   useEffect(() => {
     if (data?.ticks.length) {
       setSubgraphTickData((tickData) => [...tickData, ...data.ticks])

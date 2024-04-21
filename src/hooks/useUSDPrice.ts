@@ -68,23 +68,31 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
   let network = 'arbitrum-one'
 
   if (chainId === SupportedChainIdLMT.ARBITRUM_ONE) {
+    if (tokenId === "ETH") {
+      tokenId = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    }
     url += 'arbitrum'
     network = 'arbitrum-one'
   } else if (chainId === SupportedChainIdLMT.BASE) {
+    if (tokenId === "ETH") {
+      tokenId = "0x4200000000000000000000000000000000000006"
+    }
     url += 'base'
     network = 'base'
   } else {
+    if (tokenId === "ETH") {
+      tokenId = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    }
     url += 'arbitrum'
     network = 'arbitrum-one'
   }
   
-
   let res: any = await axios.post(url, {
     query: TokenDataFromUniswapQuery(tokenId),
   })
 
   const token = res?.data?.data?.token
-  if (!token || !token?.lastPriceUSD) {
+  if (!token || !token?.lastPriceUSD || token.lastPriceUSD === '0') {
     try {
       res = await axios.get(
         `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
@@ -100,8 +108,7 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
 
       return { ...token, lastPriceUSD: usdValues[0].toString() }
     } catch (e) {
-      console.log('COINGECKO ERROR')
-      console.log(e)
+      console.error('COINGECKO ERROR', e)
     }
   }
 
@@ -134,8 +141,6 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
   const currencyAmount = useMemo(() => {
     if (amount && currency) {
       if ('tokenAddress' in amount) { 
-        // console.log("AMOUNTTTT : ", amount)
-        // console.log("CURRENCCCYYYY : ", currency)
         if (amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
           setPrevAmount(amount)
           return BnToCurrencyAmount(amount, currency) 
@@ -171,7 +176,6 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
         // if (response.status === 200) {
         //   return response.data.market_data.current_price.usd
         // }
-        console.log(`LAST PRICE USD of ${token?.symbol} : `, token?.lastPriceUSD)
         return token?.lastPriceUSD
         // throw new Error(`response status ${response.status}`)
       } catch (err) {

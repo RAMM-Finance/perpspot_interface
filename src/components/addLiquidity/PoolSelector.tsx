@@ -1,14 +1,9 @@
 import { Currency } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { SupportedChainId } from 'constants/chains'
 import { getInputOutputCurrencies } from 'constants/pools'
-import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
-import { PoolAddedQuery } from 'graphql/limitlessGraph/queries'
 import { useCurrency } from 'hooks/Tokens'
-import { usePoolsData } from 'hooks/useLMTPools'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { Box } from 'nft/components/Box'
 import { Portal } from 'nft/components/common/Portal'
@@ -17,7 +12,8 @@ import { useIsMobile } from 'nft/hooks'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Dispatch, SetStateAction } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { usePoolKeyList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -49,6 +45,7 @@ export const PoolSelector = ({
   fee,
   inputCurrencyId,
   outputCurrencyId,
+  onPoolSwitch,
 }: {
   largeWidth: boolean
   bg?: boolean
@@ -57,6 +54,7 @@ export const PoolSelector = ({
   fee?: number
   inputCurrencyId?: string // current input id
   outputCurrencyId?: string // current output id
+  onPoolSwitch?: () => void
 }) => {
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -71,12 +69,11 @@ export const PoolSelector = ({
     return () => clearTimeout(tokenLoaderTimer)
   }, [])
 
-  const location = useLocation()
   const navigate = useNavigate()
 
-  if (location.pathname !== '/add/' && setSelectPair) {
-    setSelectPair(false)
-  }
+  // if (location.pathname !== '/add/' && setSelectPair) {
+  //   setSelectPair(false)
+  // }
   const currentId = useMemo(() => {
     if (inputCurrencyId && outputCurrencyId && fee) {
       return getPoolId(inputCurrencyId, outputCurrencyId, fee)
@@ -86,13 +83,16 @@ export const PoolSelector = ({
 
   const handlePoolSelect = useCallback(
     (currency0: Currency, currency1: Currency, fee: number) => {
-      const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
-      if ((currentId && poolId !== currentId) || (selectPair && !currentId)) {
-        const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
-        navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+      if (onPoolSwitch) {
+        onPoolSwitch()
+        const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
+        if ((currentId && poolId !== currentId) || (selectPair && !currentId)) {
+          const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
+          navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+        }
       }
     },
-    [navigate, currentId, selectPair]
+    [navigate, currentId, selectPair, onPoolSwitch]
   )
   // Search needs to be refactored to handle pools instead of single currency - will refactor once datapipeline for pool
   // list is created/connected
@@ -103,86 +103,9 @@ export const PoolSelector = ({
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
-  const [data, setData] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
+  const { poolList } = usePoolKeyList()
 
-  const { chainId } = useWeb3React()
-
-  interface Pool {
-    blockTimeStamp: string
-    fee: number
-    id: string
-    pool: string
-    tickDiscretization: number
-    token0: string
-    token1: string
-    __typename: string
-  }
-
-  useEffect(() => {
-    if (!client || !PoolAddedQuery || loading || error) return
-    const call = async () => {
-      try {
-        setLoading(true)
-        let poolQueryData
-        if (chainId === SupportedChainId.BASE) {
-          poolQueryData = await clientBase.query(PoolAddedQuery, {}).toPromise()
-        } else {
-          poolQueryData = await client.query(PoolAddedQuery, {}).toPromise()
-        }
-        setData(poolQueryData)
-
-        setLoading(false)
-      } catch (error) {
-        setError(error)
-        setLoading(false)
-      }
-    }
-    call()
-  }, [chainId, error, loading])
-
-  const availablePools = useMemo(() => {
-    if (data) {
-      return data.data?.poolAddeds
-        .filter(
-          (val: Pool) =>
-            val.token0 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1' &&
-            val.token1 !== '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'
-        )
-        .map((val: Pool) => {
-          return { token0: val.token0, token1: val.token1, fee: val.fee }
-        })
-    } else {
-      return undefined
-    }
-  }, [data])
-
-  const { result: poolData } = usePoolsData()
-
-  const dataInfo = useMemo(() => {
-    if (poolData && data) {
-      const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
-
-      return availablePools?.map((pool: any) => {
-        if (
-          Object.keys(lowerCasePool).find(
-            (pair: any) => `${pool?.token0?.address}-${pool?.token1?.address}-${pool?.fee}`
-          )
-        ) {
-          return {
-            ...pool,
-            tvl: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.totalValueLocked,
-            volume: lowerCasePool[`${pool.token0}-${pool.token1}-${pool.fee}`]?.volume,
-          }
-        } else {
-          return pool
-        }
-      })
-    } else {
-      return null
-    }
-  }, [poolData, data, availablePools])
+  // const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
 
   const dropdown = (
     <NavDropdown
@@ -204,23 +127,22 @@ export const PoolSelector = ({
         </Row>
         <Row>
           <Column paddingX="8">
-            {dataInfo &&
-              dataInfo.map((curr: any) => {
-                const id = getPoolId(curr.token0, curr.token1, curr.fee)
-                return (
-                  <PoolSelectorRow
-                    currencyId={[curr.token0, curr.token1]}
-                    onPoolSelect={handlePoolSelect}
-                    key={`${curr.token0}-${curr.token1}-${curr.fee}`}
-                    fee={curr?.fee}
-                    setIsOpen={setIsOpen}
-                    setSelectPair={setSelectPair}
-                    tvl={curr.tvl}
-                    volume={curr.volume}
-                    active={currentId === id}
-                  />
-                )
-              })}
+            {poolList?.map((curr: any) => {
+              const id = getPoolId(curr.token0, curr.token1, curr.fee)
+              return (
+                <PoolSelectorRow
+                  currencyId={[curr.token0, curr.token1]}
+                  onPoolSelect={handlePoolSelect}
+                  key={`${curr.token0}-${curr.token1}-${curr.fee}`}
+                  fee={curr.fee}
+                  setIsOpen={setIsOpen}
+                  setSelectPair={setSelectPair}
+                  // tvl={poolTvlData[id]?.totalValueLocked}
+                  // volume={poolTvlData[id]?.volume}
+                  active={currentId === id}
+                />
+              )
+            })}
           </Column>
         </Row>
       </SelectorScrollBox>
@@ -266,10 +188,9 @@ export const PoolSelector = ({
                 currency1={outputCurrency as Currency}
                 size={20}
               />
-              <ThemedText.BodySmall
-                fontSize={largeWidth ? '16px' : ''}
-                color="secondary"
-              >{`${inputCurrency?.symbol} - ${outputCurrency?.symbol}`}</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontSize={largeWidth ? '16px' : ''} color="secondary">{`${
+                inputCurrency ? inputCurrency.symbol : ''
+              } - ${outputCurrency ? outputCurrency.symbol : ''}`}</ThemedText.BodySmall>
             </Row>
             <Row gap="8">{isOpen ? <ChevronUp {...chevronProps} /> : <ChevronDown {...chevronProps} />}</Row>
           </>

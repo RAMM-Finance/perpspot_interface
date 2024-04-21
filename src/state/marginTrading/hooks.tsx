@@ -40,8 +40,10 @@ import { AppState } from '../types'
 import {
   MarginField,
   setBaseCurrencyIsInputToken,
+  setIsSwap,
   setLimit,
   setLocked,
+  setMarginInPosToken,
   setPremiumInPosToken,
   setPrice,
   typeInput,
@@ -61,6 +63,8 @@ export function useMarginTradingActionHandlers(): {
   onPriceInput: (typedValue: string) => void
   onPriceToggle: (baseCurrencyIsInputToken: boolean) => void
   onPremiumCurrencyToggle: (premiumInPosToken: boolean) => void
+  onSetMarginInPosToken: (marginInPosToken: boolean) => void
+  onSetIsSwap: (isSwap: boolean) => void
 } {
   const dispatch = useAppDispatch()
 
@@ -113,9 +117,23 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onSetMarginInPosToken = useCallback(
+    (marginInPosToken: boolean) => {
+      dispatch(setMarginInPosToken({ marginInPosToken }))
+    },
+    [dispatch]
+  )
+
   const onPremiumCurrencyToggle = useCallback(
     (premiumInPosToken: boolean) => {
       dispatch(setPremiumInPosToken({ premiumInPosToken }))
+    },
+    [dispatch]
+  )
+
+  const onSetIsSwap = useCallback(
+    (isSwap: boolean) => {
+      dispatch(setIsSwap({ isSwap }))
     },
     [dispatch]
   )
@@ -128,6 +146,8 @@ export function useMarginTradingActionHandlers(): {
     onPriceInput,
     onPriceToggle,
     onPremiumCurrencyToggle,
+    onSetMarginInPosToken,
+    onSetIsSwap,
   }
 }
 
@@ -1263,7 +1283,7 @@ const useSimulateMarginTrade = (
     }
 
     const calldata = MarginFacilitySDK.addPositionParameters(params)
- 
+
     const multicallResult = await marginFacility.callStatic.multicall(calldata)
 
     const {
@@ -1311,7 +1331,7 @@ const useSimulateMarginTrade = (
         ? JSBI.subtract(expectedAddedOutput, BnToJSBI(marginInOutput, outputCurrency))
         : expectedAddedOutput.toString()
     )
-    
+
     const result: AddMarginTrade = {
       margin: new TokenBN(
         marginInPosToken ? marginInOutput : marginInInput,
@@ -1626,8 +1646,7 @@ const useSimulateMarginTrade = (
       if (!blockNumber) throw new Error('missing block number')
       try {
         const result = await computeData()
-        console.log("addPosition:computeData", result)
-        console.log(result)
+        console.log('addPosition:computeData', result)
         setBlockNumber(blockNumber)
         return result
       } catch (err) {

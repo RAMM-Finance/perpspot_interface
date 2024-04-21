@@ -22,17 +22,17 @@ import React, { useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
+import { useMarginTradingState } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { positionIsLong } from 'utils/getBaseQuote'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
-import { ActiveSwapTab } from '../../state/swap/actions'
-import { useSwapState } from '../../state/swap/hooks'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
@@ -251,8 +251,7 @@ export default function Trade({ className }: { className?: string }) {
   const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
   const { account, chainId } = useWeb3React()
-
-  const { activeTab } = useSwapState()
+  const { isSwap } = useMarginTradingState()
 
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
@@ -309,8 +308,6 @@ export default function Trade({ className }: { className?: string }) {
     return null
   }, [poolOHLC, pool, chainId, currentPool])
 
-  // const { result: binData } = useBulkBinData(pool ?? undefined)
-
   function positionEntryPrice(marginInPosToken: boolean, totalDebtInput: BN, totalPosition: BN, margin: BN): BN {
     if (marginInPosToken) {
       return totalDebtInput.div(totalPosition.minus(margin))
@@ -321,7 +318,7 @@ export default function Trade({ className }: { className?: string }) {
   const match = useMemo(() => {
     let currentPrice: number
 
-    if (!leveragePositions || !poolKey || !poolOHLC) {
+    if (!leveragePositions || !poolKey || !poolOHLC || !chainId) {
       return undefined
     } else {
       currentPrice = poolOHLC.priceNow
@@ -339,18 +336,8 @@ export default function Trade({ className }: { className?: string }) {
             matchedPosition.totalPosition,
             matchedPosition.margin
           ).toNumber()
-          if (matchedPosition.borrowInfo.length > 1) {
-            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
-              return {
-                entryPrice: 1 / postionEntryPrice,
-                long: false,
-              }
-            }
-            return {
-              entryPrice: postionEntryPrice,
-              long: false,
-            }
-          } else {
+          const isLong = positionIsLong(chainId, matchedPosition, poolKey)
+          if (isLong) {
             if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
               return {
                 entryPrice: 1 / postionEntryPrice,
@@ -361,19 +348,24 @@ export default function Trade({ className }: { className?: string }) {
               entryPrice: postionEntryPrice,
               long: true,
             }
+          } else {
+            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+              return {
+                entryPrice: 1 / postionEntryPrice,
+                long: false,
+              }
+            }
+            return {
+              entryPrice: postionEntryPrice,
+              long: false,
+            }
           }
         })
     }
-  }, [leveragePositions?.length, poolKey, poolOHLC])
+  }, [poolKey, poolOHLC, leveragePositions, chainId])
 
-  // console.log('positions', leveragePositions)
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
-  // const pinnedPools = usePinnedPools()
-  // const isPin = useMemo(() => {
-  //   console.log('pinnedpools', pinnedPools)
-  //   return pinnedPools && pinnedPools.length > 0
-  // }, [pinnedPools])
   const isPin = false
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
@@ -385,18 +377,9 @@ export default function Trade({ className }: { className?: string }) {
             <SelectPool />
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
-          {/* <LiquidityDistibutionWrapper>
-            <LiquidityDistributionTable
-              bin={binData}
-              address0={pool?.token0.address}
-              address1={pool?.token1?.address}
-              fee={pool?.fee}
-              chainId={chainId}
-            />
-          </LiquidityDistibutionWrapper> */}
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
-            {(activeTab === ActiveSwapTab.LONG || activeTab === ActiveSwapTab.SHORT) && <TradeTabContent />}
-            {activeTab === ActiveSwapTab.SWAP && <SwapTabContent />}
+            {!isSwap && <TradeTabContent />}
+            {isSwap && <SwapTabContent />}
           </SwapWrapper>
           <PositionsWrapper>
             <PostionsContainer

@@ -21,7 +21,6 @@ import confirmPriceImpactWithoutFee from 'components/swap/confirmPriceImpactWith
 import ConfirmSwapModal from 'components/swap/ConfirmSwapModal'
 import PriceImpactWarning from 'components/swap/PriceImpactWarning'
 import SwapDetailsDropdown from 'components/swap/SwapDetailsDropdown'
-import SwapHeader from 'components/swap/SwapHeader'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
@@ -38,7 +37,7 @@ import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfoForSwapPage, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
-import { useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
+import { useExpertModeManager } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { LinkStyledButton, ThemedText } from 'theme'
@@ -49,10 +48,15 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
-import { InputHeader, ArrowContainer, DetailsSwapSection, getIsValidSwapQuote, InputSection, OutputSwapSection } from '.'
 import { CurrencyState, useSwapAndLimitContext } from '../../state/swap/SwapContext'
-import { useCurrency } from 'hooks/Tokens'
-
+import {
+  ArrowContainer,
+  DetailsSwapSection,
+  getIsValidSwapQuote,
+  InputHeader,
+  InputSection,
+  OutputSwapSection,
+} from '.'
 
 const TRADE_STRING = 'SwapRouter'
 const Wrapper = styled.div`
@@ -84,9 +88,9 @@ interface SwapTabContentProps {
 const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const theme = useTheme()
   const { account, chainId: connectedChainId } = useWeb3React()
-  const { chainId, prefilledState, currencyState } = useSwapAndLimitContext()
+  const { currencyState } = useSwapAndLimitContext()
 
-  const { onCurrencySelection, onSwitchTokens, onUserInput, onChangeRecipient, onLeverageFactorChange } = useSwapActionHandlers()
+  const { onCurrencySelection, onSwitchTokens, onUserInput, onChangeRecipient } = useSwapActionHandlers()
 
   const [swapQuoteReceivedDate] = useState<Date | undefined>()
 
@@ -133,7 +137,6 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
-
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
       // setInputCurrency(inputCurrency)
@@ -175,7 +178,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
     wrapType,
     execute: onWrap,
     inputError: wrapInputError,
-  // } = useWrapCallback(inputCurrency, outputCurrency, typedValue)
+    // } = useWrapCallback(inputCurrency, outputCurrency, typedValue)
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
 
@@ -200,14 +203,7 @@ const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
         : undefined),
     isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefined
   )
-  console.log("usePermit2Allowance Params: ", maximumAmountIn ??
-  (parsedAmounts[Field.INPUT]?.currency.isToken
-    ? (parsedAmounts[Field.INPUT] as CurrencyAmount<Token>)
-    : undefined),
-isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefined)
-  console.log("ALLOWANCEEE", allowance)
-  console.log("chain ID and isSupportedChain", connectedChainId, isSupportedChain(connectedChainId))
-  if (connectedChainId) console.log("ROUTER_ADDRESSES", ROUTER_ADDRESSES[connectedChainId])
+
   const { callback: swapCallback } = useSwapCallback(
     trade, // simulated swap trade
     swapFiatValues,
@@ -342,9 +338,8 @@ isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefi
     })
     if (txHash) {
       onUserInput(Field.INPUT, '')
-      onLeverageFactorChange('1')
     }
-  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash, onLeverageFactorChange])
+  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
 
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onUserInput(Field.INPUT, maxInputAmount.toExact())
@@ -400,13 +395,6 @@ isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefi
     }
   }, [allowance, connectedChainId, maximumAmountIn?.currency.address, maximumAmountIn?.currency.symbol])
 
-
-  console.log("!isValid", !isValid)
-  console.log("routeIsSyncing", routeIsSyncing)
-  console.log("routeIsLoading", routeIsLoading)
-  console.log("priceImpactTooHigh", priceImpactTooHigh)
-  console.log("allowance.state !== AllowanceState.ALLOWED", allowance.state, AllowanceState.ALLOWED)
-
   return (
     <Wrapper>
       <ConfirmSwapModal
@@ -459,7 +447,7 @@ isSupportedChain(connectedChainId) ? ROUTER_ADDRESSES[connectedChainId] : undefi
             <ArrowContainer
               onClick={() => {
                 onSwitchTokens({
-                  previouslyEstimatedOutput: formattedAmounts[dependentField]
+                  previouslyEstimatedOutput: formattedAmounts[dependentField],
                 })
               }}
               color={theme.textPrimary}

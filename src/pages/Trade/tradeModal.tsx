@@ -21,6 +21,7 @@ import DiscreteSliderMarks from 'components/Slider/MUISlider'
 import { AddMarginPositionConfirmModal } from 'components/swap/ConfirmSwapModal'
 import { AddLimitDetailsDropdown, LeverageDetailsDropdown } from 'components/swap/SwapDetailsDropdown'
 import SwapHeader from 'components/swap/SwapHeader'
+import { useCurrentTabIsLong } from 'components/Tabs'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
@@ -50,12 +51,11 @@ import {
 } from 'state/marginTrading/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
-import { useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
+import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
-import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';
@@ -190,25 +190,17 @@ export const Selector = styled.div<{ active: boolean }>`
 const TradeTabContent = () => {
   // const theme = useTheme()
   const { account, chainId } = useWeb3React()
-  const { activeTab } = useSwapState()
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
-  const { onUserInput, onSetMarginInPosToken } = useSwapActionHandlers()
-  const input = useCurrentInputCurrency()
-  const output = useCurrentOutputCurrency()
+  const { onSetMarginInPosToken } = useMarginTradingActionHandlers()
+  const { onUserInput } = useSwapActionHandlers()
+  const inputCurrency = useCurrentInputCurrency()
+  const outputCurrency = useCurrentOutputCurrency()
 
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
-    useMemo(() => [input ?? undefined, output ?? undefined], [input, output])
+    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
   )
-
-  const longOrShort = useMemo(() => {
-    if (!input || !output || !chainId) return [undefined, undefined, undefined]
-    return getDefaultBaseQuote(input.wrapped.address, output.wrapped.address, chainId)
-  }, [input, output, chainId])
-
-  const inputCurrency = useCurrency(activeTab === 0 ? longOrShort[1] : longOrShort[0])
-  const outputCurrency = useCurrency(activeTab === 0 ? longOrShort[0] : longOrShort[1])
 
   const currencyBalances = useMemo(
     () => ({
@@ -268,14 +260,8 @@ const TradeTabContent = () => {
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
-  const {
-    onLeverageFactorChange,
-    onMarginChange,
-    onChangeTradeType,
-    onPriceInput,
-    onPriceToggle,
-    onPremiumCurrencyToggle,
-  } = useMarginTradingActionHandlers()
+  const { onLeverageFactorChange, onMarginChange, onPriceInput, onPriceToggle, onPremiumCurrencyToggle } =
+    useMarginTradingActionHandlers()
 
   const handleSetMarginInPosToken = useCallback(() => {
     if (marginInPosToken) {
@@ -311,6 +297,8 @@ const TradeTabContent = () => {
     outputCurrency?.wrapped.address
   )
 
+  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
+
   const {
     orderKey,
     contractError: limitContractError,
@@ -341,12 +329,18 @@ const TradeTabContent = () => {
     tradeApprovalInfo?.outputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
-
+  
   const notApproved =
     marginInPosToken || premiumInPosToken
       ? inputApprovalState === ApprovalState.NOT_APPROVED || outputApprovalState === ApprovalState.NOT_APPROVED
       : inputApprovalState === ApprovalState.NOT_APPROVED
 
+  const inputNotApproved = 
+    (!marginInPosToken || !premiumInPosToken) ? inputApprovalState === ApprovalState.NOT_APPROVED : false;
+
+  const outputNotApproved = 
+    (marginInPosToken || premiumInPosToken) ? outputApprovalState === ApprovalState.NOT_APPROVED : false
+  
   const noTradeInputError = useMemo(() => {
     return !inputError
   }, [inputError])
@@ -362,7 +356,7 @@ const TradeTabContent = () => {
   // console.log("FIAT VALUE TRADE MARGIN: ", trade?.margin, marginInPosToken, outputCurrency, inputCurrency)
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
-    (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
+    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) || undefined,
   )
   // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
@@ -467,10 +461,11 @@ const TradeTabContent = () => {
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
-    inputCurrency ?? undefined,
-    outputCurrency ?? undefined,
+    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) || undefined,
+    outputCurrency || undefined,
     allowedSlippage
   )
+
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
@@ -541,9 +536,9 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
-  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
-  const isLong = activeTab === 0
+  const isLong = useCurrentTabIsLong()
+  
 
   if (chainId && unsupportedChain(chainId)) {
     return (
@@ -574,38 +569,12 @@ const TradeTabContent = () => {
         outputCurrency={outputCurrency ?? undefined}
         inputCurrency={inputCurrency ?? undefined}
       />
-      {/*<ConfirmAddLimitOrderModal
-        isOpen={lmtShowConfirm}
-        trade={limitTrade}
-        originalTrade={limitTradeConfirm}
-        onConfirm={handleAddLimit}
-        onDismiss={handleConfirmDismiss}
-        onAcceptChanges={() => {
-          return
-        }}
-        onCancel={handleCancel}
-        attemptingTxn={lmtAttemptingTxn}
-        txHash={lmtTxHash}
-        tradeErrorMessage={lmtErrorMessage ? <Trans>{lmtErrorMessage}</Trans> : undefined}
-      />*/}
       <SwapHeader
         allowedSlippage={allowedSlippage}
         autoPremiumDepositPercent={userPremiumPercent}
         isLimitOrder={isLimitOrder}
       />
       <FilterWrapper>
-        {/*<Filter onClick={() => onChangeTradeType(!isLimitOrder)}>
-          <Selector active={!isLimitOrder}>
-            <StyledSelectorText lineHeight="20px" active={!isLimitOrder}>
-              Market
-            </StyledSelectorText>
-          </Selector>
-          <Selector active={isLimitOrder}>
-            <StyledSelectorText lineHeight="20px" active={isLimitOrder}>
-              Limit
-            </StyledSelectorText>
-          </Selector>
-        </Filter>*/}
         <PremiumCurrencySelector
           inputCurrency={inputCurrency}
           outputCurrency={outputCurrency}
@@ -748,7 +717,7 @@ const TradeTabContent = () => {
               showMaxButton={false}
               hideBalance={false}
               fiatValue={fiatValueTradeOutput}
-              currency={isLong ? outputCurrency : inputCurrency ?? null}
+              currency={isLong ? outputCurrency : inputCurrency}
               otherCurrency={inputCurrency ?? null}
               showCommonBases={true}
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
@@ -880,54 +849,59 @@ const TradeTabContent = () => {
             >
               <Trans>Insufficient liquidity for this trade.</Trans>
             </ButtonLight>
-          ) : noTradeInputError && notApproved ? (
+          ) : noTradeInputError
+           && (inputNotApproved || outputNotApproved) 
+           ? (
             <>
-              <ButtonPrimary
-                onClick={updateInputAllowance}
-                style={{ fontSize: '14px', borderRadius: '10px' }}
-                width="100%"
-                padding=".5rem"
-                disabled={inputApprovalState === ApprovalState.PENDING}
-              >
-                {inputApprovalState === ApprovalState.PENDING ? (
-                  <>
-                    <Loader size="20px" />
-                    <Trans>Approval pending</Trans>
-                  </>
-                ) : (
-                  <>
-                    <MouseoverTooltip
-                      text={
-                        <Trans>
-                          Permission is required for Limitless to use each token.{' '}
-                          {tradeApprovalInfo && formattedMargin
-                            ? `Allowance of ${
-                                !marginInPosToken
-                                  ? formatNumberOrString(
-                                      Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
-                                      NumberType.SwapTradeAmount
-                                    )
-                                  : formatNumberOrString(
-                                      Number(tradeApprovalInfo.additionalPremium.toExact()),
-                                      NumberType.SwapTradeAmount
-                                    )
-                              } ${inputCurrency?.symbol} required.`
-                            : null}
-                        </Trans>
-                      }
-                    >
-                      <RowBetween>
-                        <Info size={20} />
-                        <Trans>Approve use of {inputCurrency?.symbol}</Trans>
-                      </RowBetween>
-                    </MouseoverTooltip>
-                  </>
-                )}
-              </ButtonPrimary>
-              {marginInPosToken && (
+              {inputNotApproved && (
+                <ButtonPrimary
+                  onClick={updateInputAllowance}
+                  style={{ fontSize: '14px', borderRadius: '10px', ...(outputNotApproved ? { marginRight: ".5rem" } : {}) }}
+                  width="100%"
+                  padding=".5rem"
+                  disabled={inputApprovalState === ApprovalState.PENDING}
+                >
+                  {inputApprovalState === ApprovalState.PENDING ? (
+                    <>
+                      <Loader size="20px" />
+                      <Trans>Approval pending</Trans>
+                    </>
+                  ) : (
+                    <>
+                      <MouseoverTooltip
+                        text={
+                          <Trans>
+                            Permission is required for Limitless to use each token.{' '}
+                            {tradeApprovalInfo && formattedMargin
+                              ? `Allowance of ${
+                                  !marginInPosToken
+                                    ? formatNumberOrString(
+                                        Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                        NumberType.SwapTradeAmount
+                                      )
+                                    : formatNumberOrString(
+                                        Number(tradeApprovalInfo.additionalPremium.toExact()),
+                                        NumberType.SwapTradeAmount
+                                      )
+                                } ${inputCurrency?.symbol} required.`
+                              : null}
+                          </Trans>
+                        }
+                      >
+                        <RowBetween>
+                          <Info size={20} />
+                          {' '}
+                          <Trans>Approve use of {inputCurrency?.symbol}</Trans>
+                        </RowBetween>
+                      </MouseoverTooltip>
+                    </>
+                  )}
+                </ButtonPrimary>
+              )}
+              {outputNotApproved && (
                 <ButtonPrimary
                   onClick={updateOutputAllowance}
-                  style={{ fontSize: '14px', borderRadius: '10px' }}
+                  style={{ fontSize: '14px', borderRadius: '10px', ...(inputNotApproved ? { marginLeft: ".5rem" } : {}) }}
                   width="100%"
                   padding=".5rem"
                   disabled={inputApprovalState === ApprovalState.PENDING}
@@ -947,13 +921,14 @@ const TradeTabContent = () => {
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
-                                )} ${inputCurrency?.symbol} required.`
+                                )} ${(marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) ?? undefined} required.`
                               : null}
                           </Trans>
                         }
                       >
                         <RowBetween>
                           <Info size={20} />
+                          {' '}
                           <Trans>Approve use of {outputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
@@ -1098,7 +1073,7 @@ const TradeTabContent = () => {
                               ? `Allowance of ${formatNumberOrString(
                                   Number(formattedMargin),
                                   NumberType.SwapTradeAmount
-                                )} ${outputCurrency?.symbol} required.`
+                                )} ${(marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) ?? undefined} required.`
                               : null}
                           </Trans>
                         }

@@ -4,6 +4,7 @@ import {
   MarginField,
   replaceMarginTradeState,
   setBaseCurrencyIsInputToken,
+  setIsSwap,
   setLimit,
   setLocked,
   setMarginInPosToken,
@@ -24,6 +25,7 @@ export interface MarginTradeState {
   readonly baseCurrencyIsInputToken: boolean
   readonly marginInPosToken: boolean
   readonly premiumInPosToken: boolean
+  readonly isSwap: boolean
 }
 
 const initialState: MarginTradeState = {
@@ -36,6 +38,7 @@ const initialState: MarginTradeState = {
   marginInPosToken: false,
   baseCurrencyIsInputToken: false,
   premiumInPosToken: false,
+  isSwap: false,
 }
 
 export default createReducer<MarginTradeState>(initialState, (builder) =>
@@ -56,6 +59,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             baseCurrencyIsInputToken,
             marginInPosToken,
             premiumInPosToken,
+            isSwap,
           },
         }
       ) => {
@@ -69,6 +73,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
           baseCurrencyIsInputToken,
           marginInPosToken,
           premiumInPosToken,
+          isSwap,
         }
       }
     )
@@ -115,6 +120,12 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
       return {
         ...state,
         premiumInPosToken,
+      }
+    })
+    .addCase(setIsSwap, (state, { payload: { isSwap } }) => {
+      return {
+        ...state,
+        isSwap,
       }
     })
 )

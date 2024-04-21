@@ -568,14 +568,10 @@ export function PositionPage() {
     }
   }, [
     chainId,
-    feeValue0,
-    feeValue1,
     currency0ForFeeCollectionPurposes,
     currency1ForFeeCollectionPurposes,
-    positionManager,
     account,
     tokenId,
-    addTransaction,
     provider,
     lmtPositionManager,
   ])
@@ -589,7 +585,7 @@ export function PositionPage() {
       !account ||
       !tokenId ||
       !provider ||
-      !feeValue1|| 
+      !feeValue1 ||
       !feeValue0
     )
       return
@@ -618,8 +614,8 @@ export function PositionPage() {
           type: TransactionType.COLLECT_FEES,
           currencyId0: currencyId(currency0ForFeeCollectionPurposes),
           currencyId1: currencyId(currency1ForFeeCollectionPurposes),
-          expectedCurrencyOwed0: feeValue0?.multiply(10**feeValue0?.currency.decimals).toExact(),
-          expectedCurrencyOwed1: feeValue1?.multiply(10**feeValue1?.currency.decimals).toExact(),
+          expectedCurrencyOwed0: feeValue0?.multiply(10 ** feeValue0?.currency.decimals).toExact(),
+          expectedCurrencyOwed1: feeValue1?.multiply(10 ** feeValue1?.currency.decimals).toExact(),
         })
 
         return response.hash
@@ -638,7 +634,6 @@ export function PositionPage() {
     feeValue1,
     currency0ForFeeCollectionPurposes,
     currency1ForFeeCollectionPurposes,
-    positionManager,
     account,
     tokenId,
     addTransaction,
@@ -655,9 +650,9 @@ export function PositionPage() {
       !positionManager ||
       !account ||
       !tokenId ||
-      !provider || 
+      !provider ||
       !feeValue1 ||
-      !feeValue0 
+      !feeValue0
     )
       return
 
@@ -725,7 +720,7 @@ export function PositionPage() {
     addTransaction,
     provider,
   ])
- 
+
   // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
@@ -861,42 +856,14 @@ export function PositionPage() {
                   <RowFixed>
                     <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={14} margin={true} />
                     <ThemedText.DeprecatedLabel fontSize="14px" mr="10px">
-                      &nbsp;{currencyQuote?.symbol}&nbsp;/&nbsp;{currencyBase?.symbol}
+                      &nbsp;{currencyQuote?.symbol}/{currencyBase?.symbol}
                     </ThemedText.DeprecatedLabel>
                     <Badge style={{ marginRight: '8px' }}>
                       <BadgeText>
                         <Trans>{new Percent(feeAmount, 1_000_000).toSignificant()}%</Trans>
                       </BadgeText>
                     </Badge>
-                    {/*<RangeBadge removed={removed} inRange={inRange} />*/}
                   </RowFixed>
-                  {ownsNFT && (
-                    <ActionButtonResponsiveRow>
-                      {/*currency0 && currency1 && feeAmount && tokenId ? (
-                      <SmallButtonPrimary
-                        as={Link}
-                        to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
-                        padding="5px 8px"
-                        width="fit-content"
-                        $borderRadius="12px"
-                        style={{ marginRight: '8px' }}
-                      >
-                        <Trans>Increase Liquidity</Trans>
-                      </SmallButtonPrimary>
-                    ) : null */}
-                      {/*tokenId && !removed ? (
-                      <SmallButtonPrimary
-                        as={Link}
-                        to={`/remove/${tokenId}`}
-                        padding="5px 8px"
-                        width="fit-content"
-                        $borderRadius="12px"
-                      >
-                        <Trans>Remove Liquidity</Trans>
-                      </SmallButtonPrimary>
-                    ) : null*/}
-                    </ActionButtonResponsiveRow>
-                  )}
                 </ResponsiveRow>
                 <RowBetween></RowBetween>
               </AutoColumn>
@@ -905,38 +872,7 @@ export function PositionPage() {
                   style={{
                     marginRight: '12px',
                   }}
-                >
-                  {/*'result' in metadata ? (
-                  <DarkCard
-                    width="100%"
-                    height="100%"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexDirection: 'column',
-                      justifyContent: 'space-around',
-                      minWidth: '340px',
-                    }}
-                  >
-                    <NFT image={metadata.result.image} height={400} />
-                    {typeof chainId === 'number' && owner && !ownsNFT ? (
-                      <ExternalLink href={getExplorerLink(chainId, owner, ExplorerDataType.ADDRESS)}>
-                        <Trans>Owner</Trans>
-                      </ExternalLink>
-                    ) : null}
-                  </DarkCard>
-                ) : (
-                  <DarkCard
-                    width="100%"
-                    height="100%"
-                    style={{
-                      minWidth: '340px',
-                    }}
-                  >
-                    <Loader />
-                  </DarkCard>
-                )*/}
-                </HideSmall>
+                ></HideSmall>
                 <AutoColumn gap="sm" style={{ width: '100%', height: '100%' }}>
                   <DarkCard>
                     <AutoColumn gap="md" style={{ width: '100%' }}>

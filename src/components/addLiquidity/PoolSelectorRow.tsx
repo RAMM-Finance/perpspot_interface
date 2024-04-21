@@ -56,8 +56,8 @@ const Logo = styled.img`
 
 interface PoolSelectorRowProps {
   currencyId: string[]
-  tvl: number
-  volume: number
+  // tvl: number
+  // volume: number
   onPoolSelect: (currencyIn: Currency, currencyOut: Currency, fee: number) => void
   setIsOpen: Dispatch<SetStateAction<boolean>>
   fee: number
@@ -71,8 +71,8 @@ export default function PoolSelectorRow({
   setIsOpen,
   fee,
   setSelectPair,
-  tvl,
-  volume,
+  // tvl,
+  // volume,
   active,
 }: PoolSelectorRowProps) {
   const baseCurrency = useCurrency(currencyId[0])

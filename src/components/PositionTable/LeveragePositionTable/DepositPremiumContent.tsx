@@ -117,7 +117,8 @@ function useDerivedDepositPremiumInfo(
   amount: string,
   positionKey: TraderPositionKey,
   position: MarginPositionDetails | undefined,
-  onPositionChange: (newPosition: AlteredPositionProperties) => void
+  onPositionChange: (newPosition: AlteredPositionProperties) => void,
+  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined | null) => void
 ): {
   txnInfo: DerivedDepositPremiumInfo | undefined
   tradeState: DerivedInfoState
@@ -223,14 +224,19 @@ function useDerivedDepositPremiumInfo(
   }, [parsedAmount, isError, error])
 
   useEffect(() => {
-    if (parsedAmount && position && data) {
+    if (parsedAmount && position && inputCurrency) {
       onPositionChange({ premiumLeft: position?.premiumLeft.minus(parsedAmount) })
+      handleTxnInfo({
+        newDepositAmount: new TokenBN(position?.premiumLeft.plus(parsedAmount), inputCurrency?.wrapped, false),
+        amount: new TokenBN(parsedAmount, inputCurrency.wrapped, false),
+      })
     } else {
       if (position) {
         onPositionChange({})
+        handleTxnInfo(null)
       }
     }
-  }, [parsedAmount, position, data, onPositionChange])
+  }, [parsedAmount, position, onPositionChange, handleTxnInfo, inputCurrency])
 
   return useMemo(() => {
     if (data && position && parsedAmount && inputCurrency && !!queryKeys.length) {
@@ -296,7 +302,7 @@ export function DepositPremiumContent({
     position: MarginPositionDetails | undefined
     loading: boolean
   }
-  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined) => void
+  handleTxnInfo: (txnInfo: DerivedDepositPremiumInfo | undefined | null) => void
 }) {
   const { position } = positionData
   // state inputs, derived, handlers for trade confirmation
@@ -315,12 +321,16 @@ export function DepositPremiumContent({
     amount,
     positionKey,
     position,
-    onPositionChange
+    onPositionChange,
+    handleTxnInfo
   )
 
-  // useMemo(() => {
-  //   handleTxnInfo(txnInfo)
-  // }, [handleTxnInfo, txnInfo])
+  // console.log('Interest txnInfo', txnInfo, position)
+  // useEffect(() => {
+  //   if (txnInfo) {
+  //     handleTxnInfo(txnInfo)
+  //   }
+  // }, [handleTxnInfo]);
 
   const { account, chainId, provider } = useWeb3React()
 
@@ -333,7 +343,6 @@ export function DepositPremiumContent({
     currencyAmount,
     chainId ? LMT_MARGIN_FACILITY[chainId] : undefined
   )
-  // console.log('DepositPremiumContent', amount, txnInfo)
   const updateAllowance = useCallback(async () => {
     try {
       await approve()

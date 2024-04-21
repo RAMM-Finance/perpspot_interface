@@ -14,7 +14,7 @@ import { ReversedArrowsIcon } from 'nft/components/icons'
 import { darken } from 'polished'
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 import { Lock } from 'react-feather'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 import { ThemedText } from 'theme'
 // import { ThemedText } from 'theme/components'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
@@ -405,7 +405,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
           <ThemedText.SubHeaderSmall style={{ userSelect: 'none', marginBottom: '10px' }}>
             {label}
           </ThemedText.SubHeaderSmall>
-          {limit && <ReverseIconWrapper onClick={onPriceToggle}>
+          {limit && <ReverseIconWrapper onClick={ onPriceToggle}>
             <ReversedArrowsIcon  width='15' height='15'/>
           </ReverseIconWrapper>}
           </RowBetween>

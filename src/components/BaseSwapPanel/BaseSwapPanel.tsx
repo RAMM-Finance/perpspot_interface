@@ -513,7 +513,7 @@ interface MarginSelectPanelProps {
   premium?: CurrencyAmount<Currency>
   marginInPosToken: boolean
   existingPosition?: boolean
-  onMarginTokenChange?: () => void
+  onMarginTokenChange: () => void
 }
 
 export function MarginSelectPanel({
@@ -677,7 +677,10 @@ export function MarginSelectPanel({
         anchorEl={anchorEl}
         onClose={handleClose}
       >
-        <TokenItem onClick={onMarginTokenChange}>
+        <TokenItem onClick={() => {
+          onMarginTokenChange()
+          handleClose()
+          }}>
           <RowFixed>
             <CurrencyLogo currency={otherCurrency} size="15px" />
             <StyledTokenName className="token-symbol-container" active={Boolean(otherCurrency && otherCurrency.symbol)}>

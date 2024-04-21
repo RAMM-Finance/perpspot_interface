@@ -3,12 +3,12 @@ import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { ethers } from 'ethers'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useTokenContract } from 'hooks/useContract'
 import { useSingleCallResult } from 'lib/hooks/multicall'
@@ -93,13 +93,11 @@ export function PoolStatsSection({
       address0 &&
       address1 &&
       fee &&
-      Object.keys(poolData).find((pair: any) => `${address0}-${address1}-${fee}`)
+      Object.keys(poolData).find((pair: any) => pair === getPoolId(address0, address1, fee)) !== undefined
     ) {
       return [
-        new BN(poolData[`${ethers.utils.getAddress(address0)}-${ethers.utils.getAddress(address1)}-${fee}`]?.volume),
-        new BN(
-          poolData[`${ethers.utils.getAddress(address0)}-${ethers.utils.getAddress(address1)}-${fee}`]?.totalValueLocked
-        ),
+        new BN(poolData[getPoolId(address0, address1, fee)]?.volume),
+        new BN(poolData[getPoolId(address0, address1, fee)]?.totalValueLocked),
       ]
     } else {
       return [new BN(0), new BN(0)]

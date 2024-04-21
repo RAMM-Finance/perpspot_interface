@@ -19,20 +19,20 @@ import { ZoomLevels } from './types'
 
 const ZOOM_LEVELS: Record<FeeAmount, ZoomLevels> = {
   [FeeAmount.LOWEST]: {
-    initialMin: 0.999,
-    initialMax: 1.001,
+    initialMin: 0.9,
+    initialMax: 1.1,
     min: 0.00001,
-    max: 1.5,
+    max: 2,
   },
   [FeeAmount.LOW]: {
-    initialMin: 0.999,
-    initialMax: 1.001,
+    initialMin: 0.9,
+    initialMax: 1.1,
     min: 0.00001,
-    max: 1.5,
+    max: 2,
   },
   [FeeAmount.MEDIUM]: {
     initialMin: 0.5,
-    initialMax: 2,
+    initialMax: 1.5,
     min: 0.00001,
     max: 20,
   },

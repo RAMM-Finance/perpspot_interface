@@ -1,7 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/solidity'
 import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount, Price, Rounding, Token } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import {
   encodeSqrtRatioX96,
   FeeAmount,
@@ -14,19 +14,28 @@ import {
   tickToPrice,
 } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
+import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { id } from 'ethers/lib/utils'
+import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
+import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
+import { useLimweth, useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
+import { useContractCallV2 } from 'hooks/useContractCall'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
+import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
+import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getTickToPrice } from 'utils/getTickToPrice'
+import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 
-import { BIG_INT_ZERO } from '../../../constants/misc'
+import { BIG_INT_ZERO, ZERO_PERCENT } from '../../../constants/misc'
 import { PoolState } from '../../../hooks/usePools'
 import { useCurrencyBalances } from '../../connection/hooks'
 import { AppState } from '../../types'
@@ -45,6 +54,8 @@ export function useV3MintState(): AppState['mintV3'] {
   return useAppSelector((state) => state.mintV3)
 }
 
+const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
+
 export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
   onFieldAInput: (typedValue: string) => void
   onFieldBInput: (typedValue: string) => void
@@ -56,7 +67,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldAInput = useCallback(
     (typedValue: string) => {
-      console.log('onFieldAInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_A, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -64,7 +74,6 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onFieldBInput = useCallback(
     (typedValue: string) => {
-      console.log('onFieldBInput', typedValue)
       dispatch(typeInput({ field: Field.CURRENCY_B, typedValue, noLiquidity: noLiquidity === true }))
     },
     [dispatch, noLiquidity]
@@ -506,6 +515,50 @@ export function useV3DerivedMintInfo(
   }
 }
 
+const useSimulateMint = (
+  enabled: boolean,
+  hasExistingPosition?: boolean,
+  tokenId?: string,
+  position?: LmtLpPosition,
+  allowedSlippage?: Percent,
+  account?: string
+): { contractError: DecodedError | undefined; success: boolean } => {
+  const calldata = useMemo(() => {
+    if (position && allowedSlippage && account) {
+      return hasExistingPosition && tokenId
+        ? LmtNFTPositionManager.addCallParameters(position, {
+            tokenId,
+            slippageTolerance: allowedSlippage,
+            deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+          }).calldata
+        : LmtNFTPositionManager.addCallParameters(position, {
+            slippageTolerance: allowedSlippage,
+            recipient: account,
+            deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+          }).calldata
+    } else {
+      return undefined
+    }
+  }, [allowedSlippage, account, hasExistingPosition, position, tokenId])
+
+  const { result, loading, error } = useContractCallV2(
+    LMT_NFT_POSITION_MANAGER,
+    calldata,
+    ['addLiquidity', calldata ? id(calldata) : ''],
+    true,
+    enabled && !!calldata ? true : false
+  )
+
+  return useMemo(() => {
+    if (error) {
+      return { contractError: parseContractError(error), success: false }
+    } else if (result && !loading) {
+      return { contractError: undefined, success: true }
+    }
+    return { contractError: undefined, success: false }
+  }, [error, loading, result])
+}
+
 export function useDerivedLmtMintInfo(
   currencyA?: Currency,
   currencyB?: Currency,
@@ -539,9 +592,12 @@ export function useDerivedLmtMintInfo(
   invertPrice: boolean
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
   llpBalance: number | undefined
+  contractErrorMessage: ReactNode | undefined
+  limBalance: number | undefined
 } {
   const { account, provider } = useWeb3React()
   const vaultContract = useVaultContract()
+  const limweth = useLimweth()
 
   const { independentField, typedValue, leftRangeTypedValue, rightRangeTypedValue, startPriceTypedValue } =
     useV3MintState()
@@ -657,6 +713,26 @@ export function useDerivedLmtMintInfo(
   // parse typed range values and determine closest ticks
   // lower should always be a smaller tick
   const ticks = useMemo(() => {
+    // console.log('zeke:ticks changed', rightRangeTypedValue, leftRangeTypedValue, {
+    //   [Bound.LOWER]:
+    //     typeof existingPosition?.tickLower === 'number'
+    //       ? existingPosition.tickLower
+    //       : (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+    //         (!invertPrice && typeof leftRangeTypedValue === 'boolean')
+    //       ? tickSpaceLimits[Bound.LOWER]
+    //       : invertPrice
+    //       ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization, true)
+    //       : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization, true),
+    //   [Bound.UPPER]:
+    //     typeof existingPosition?.tickUpper === 'number'
+    //       ? existingPosition.tickUpper
+    //       : (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+    //         (invertPrice && typeof leftRangeTypedValue === 'boolean')
+    //       ? tickSpaceLimits[Bound.UPPER]
+    //       : invertPrice
+    //       ? tryParseLmtTick(token1, token0, feeAmount, leftRangeTypedValue.toString(), tickDiscretization)
+    //       : tryParseLmtTick(token0, token1, feeAmount, rightRangeTypedValue.toString(), tickDiscretization),
+    // })
     return {
       [Bound.LOWER]:
         typeof existingPosition?.tickLower === 'number'
@@ -896,10 +972,13 @@ export function useDerivedLmtMintInfo(
   }
 
   const llpBal = useRef<number>(0)
+  const limBal = useRef<number>(0)
+
   let llpBalance
+  let limBalance
 
   useEffect(() => {
-    if (!account || !provider || !vaultContract) return
+    if (!account || !provider || !vaultContract || !limweth) return
 
     const call = async () => {
       try {
@@ -910,14 +989,24 @@ export function useDerivedLmtMintInfo(
         console.log('codebyowners err')
       }
     }
+    const callLim = async () => {
+      try {
+        const balance = await limweth.balanceOf(account)
+        console.log('balance', balance.toString())
+        limBal.current = Number(balance) / 1e18
+      } catch (error) {
+        console.log('codebyowners err')
+      }
+    }
     call()
-  }, [account, provider, vaultContract])
+    callLim()
+  }, [account, provider, vaultContract, limweth])
 
   if (currencyA?.symbol === 'LLP') {
     if (!Number(typedValue)) {
       errorMessage = <Trans> Enter an amount</Trans>
     } else if (llpBal.current === 0) {
-      errorMessage = <Trans> LLP</Trans>
+      errorMessage = <Trans> Insufficient LLP Balance</Trans>
     } else if (Number(typedValue) <= llpBal.current) {
       errorMessage = null
     } else {
@@ -926,7 +1015,68 @@ export function useDerivedLmtMintInfo(
     llpBalance = llpBal.current
   }
 
+  if (currencyA?.symbol === 'limWETH') {
+    if (!Number(typedValue)) {
+      errorMessage = <Trans> Enter an amount</Trans>
+    } else if (llpBal.current === 0) {
+      errorMessage = <Trans> Insufficient limWETH Balance</Trans>
+    } else if (Number(typedValue) <= limBal.current) {
+      errorMessage = null
+    } else {
+      errorMessage = <Trans>Insufficient limWETH Balance</Trans>
+    }
+    limBalance = limBal.current
+  }
+
   const invalidPool = poolState === PoolState.INVALID
+
+  const argentWalletContract = useArgentWalletContract()
+  const allowedSlippage = useUserSlippageToleranceWithDefault(
+    outOfRange ? ZERO_PERCENT : DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE
+  )
+
+  const [approvalAmountA, approvalAmountB] = useMemo(() => {
+    return [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
+  }, [parsedAmounts])
+  const { chainId } = useWeb3React()
+  // check whether the user has approved the router on the tokens
+  const [approvalA, approveACallback] = useApproveCallback(
+    argentWalletContract ? undefined : approvalAmountA,
+    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
+  )
+
+  const [approvalB, approveBCallback] = useApproveCallback(
+    argentWalletContract ? undefined : approvalAmountB,
+    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
+  )
+
+  const { tokenId } = useParams<{ currencyIdA?: string; currencyIdB?: string; feeAmount?: string; tokenId?: string }>()
+
+  const showApprovalA =
+    !argentWalletContract && approvalA !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_A]
+  const showApprovalB =
+    !argentWalletContract && approvalB !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_B]
+
+  const simulateEnabled =
+    !errorMessage && !invalidPool && !invalidRange && !showApprovalA && !showApprovalB && !!account
+
+  const hasExistingPosition = !!existingPosition
+  const { contractError, success } = useSimulateMint(
+    simulateEnabled,
+    hasExistingPosition,
+    tokenId,
+    position,
+    allowedSlippage,
+    account
+  )
+
+  const contractErrorMessage = useMemo(() => {
+    let message: ReactNode | undefined
+    if (contractError) {
+      message = <Trans>{getErrorMessage(contractError)}</Trans>
+    }
+    return message
+  }, [contractError])
 
   return {
     dependentField,
@@ -950,6 +1100,8 @@ export function useDerivedLmtMintInfo(
     invertPrice,
     ticksAtLimit,
     llpBalance,
+    contractErrorMessage,
+    limBalance,
   }
 }
 
