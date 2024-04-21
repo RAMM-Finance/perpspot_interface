@@ -1,10 +1,13 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
+import { abi } from 'abis_v2/Quoter.json'
+import { BigNumber as BN } from 'bignumber.js'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { LMT_QUOTER } from 'constants/addresses'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
-import { useLmtQuoterContract } from 'hooks/useContract'
-import { useSingleCallResult } from 'lib/hooks/multicall'
+import { Interface } from 'ethers/lib/utils'
+import { useContractCallV2 } from 'hooks/useContractCall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PoolKey } from 'types/lmtv2position'
@@ -21,23 +24,12 @@ import {
   updateBlockNumber,
 } from './reducer'
 
+const quoterAbi = new Interface(abi)
+
 export function useModalIsOpen(modal: ApplicationModal): boolean {
   const openModal = useAppSelector((state: AppState) => state.application.openModal)
   return openModal === modal
 }
-
-// export function useBlockNumber(): number | undefined {
-//   return useAppSelector((state: AppState) => state.application.blockNumber)
-// }
-
-// export function useFastForwardBlockNumber(): (update: number) => void {
-//   const dispatch = useAppDispatch()
-//   const block = useBlockNumber()
-//   return useCallback(
-//     (update: number) => block && update > block && dispatch(updateBlockNumber({ blockNumber: update })),
-//     [dispatch, block]
-//   )
-// }
 
 /** @ref https://dashboard.moonpay.com/api_reference/client_side_api#ip_addresses */
 interface MoonpayIPAddressesResponse {
@@ -61,16 +53,54 @@ async function getMoonpayAvailability(): Promise<boolean> {
   return data.isBuyAllowed ?? false
 }
 
-export function usePoolKeyList() {
-  const lmtQuoter = useLmtQuoterContract()
-  const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getPoolKeys', [])
+interface PoolContractInfo {
+  decimals0: number
+  decimals1: number
+  fee: number
+  name0: string
+  name1: string
+  symbol0: string
+  symbol1: string
+  tick: number
+  token0: string
+  token1: string
+  apr: number
+  utilTotal: number
+}
+export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; loading: boolean; error: any } {
+  // const lmtQuoter = useLmtQuoterContract()
+  const calldata = useMemo(() => {
+    return quoterAbi.encodeFunctionData('getPoolKeys', [])
+  }, [])
+  // const { result, error, loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
+  const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getPoolKeys'])
+
   const poolList = useMemo(() => {
     if (result) {
-      return result[0]
+      const data = quoterAbi.decodeFunctionResult('getPoolKeys', result)
+      return data[0].map((pool: any) => {
+        const apr = new BN(pool.apr.toString()).shiftedBy(-16)
+        const util = new BN(pool.utilTotal.toString()).shiftedBy(-16)
+        return {
+          token0: pool.token0,
+          token1: pool.token1,
+          fee: pool.fee,
+          tick: pool.tick,
+          name0: pool.name0,
+          name1: pool.name1,
+          symbol0: pool.symbol0,
+          symbol1: pool.symbol1,
+          decimals0: pool.decimals0,
+          decimals1: pool.decimals1,
+          apr: apr.toNumber(),
+          utilTotal: util.toNumber(),
+        }
+      })
     } else {
       return undefined
     }
   }, [result])
+
   return useMemo(() => {
     return { poolList, loading, error }
   }, [poolList, loading, error])
@@ -78,6 +108,28 @@ export function usePoolKeyList() {
 
 export function useAppPoolOHLC() {
   return useAppSelector((state: AppState) => state.application.poolPriceData)
+}
+
+export function usePoolOHLCs():
+  | {
+      [poolId: string]: {
+        pool: PoolKey
+        priceNow: number
+        price24hAgo: number
+        delta24h: number
+        high24: number
+        low24: number
+        token0IsBase: boolean
+        invertedGecko: boolean
+      }
+    }
+  | undefined {
+  const { chainId } = useWeb3React()
+  const poolsOHLC = useAppSelector((state: AppState) => state.application.poolPriceData)
+  return useMemo(() => {
+    if (!chainId) return undefined
+    return poolsOHLC[chainId]
+  }, [chainId, poolsOHLC])
 }
 
 export function usePoolOHLC(

@@ -1,6 +1,8 @@
 import { Interface } from '@ethersproject/abi'
 import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
@@ -11,8 +13,6 @@ import { useQuery } from 'react-query'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
-import { useWeb3React } from '@web3-react/core'
-import { SupportedChainId } from 'constants/chains'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -35,7 +35,7 @@ export function usePoolsData(): {
   loading: boolean
   result: PoolTVLData | undefined
   error: boolean
-} { 
+} {
   const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
 
@@ -46,7 +46,7 @@ export function usePoolsData(): {
       let AddQueryData
       let ReduceQueryData
       let ProvidedQueryData
-      let WithdrawnQueryData 
+      let WithdrawnQueryData
       let networkIdForGeckoAPI = 'arbitrum-one'
       if (chainId === SupportedChainId.BASE) {
         AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
@@ -58,7 +58,7 @@ export function usePoolsData(): {
         AddQueryData = await client.query(AddQuery, {}).toPromise()
         ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
         ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
-        WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()  
+        WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()
       }
       const pools = new Set<string>()
       ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
@@ -108,7 +108,6 @@ export function usePoolsData(): {
       refetch()
     }
   }, [chainId, refetch])
-
 
   const slot0s = [] as any
 
@@ -205,16 +204,15 @@ export function usePoolsData(): {
       if (uniqueTokens.get(pool)) {
         const tokens = uniqueTokens?.get(pool)
         let totalValue
-  
 
         if (tokens[3]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals          
+          totalValue = (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals
         } else if (tokens[4]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals          
+          totalValue = (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals
         } else {
           totalValue = 0
         }
-          
+
         const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`
         if (totalAmountsByPool[newKey]) {
           totalAmountsByPool[newKey] += totalValue
@@ -250,7 +248,7 @@ export function usePoolsData(): {
     // console.log('provideddataprocessed', ProvidedDataProcessed, WithdrawDataProcessed)
 
     Object.keys(TVLDataPerPool).forEach((key) => {
-      poolToData[key] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }
+      poolToData[key.toLowerCase()] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }
     })
 
     return poolToData
@@ -262,5 +260,5 @@ export function usePoolsData(): {
       error: isError,
       result: poolToData,
     }
-  }, [chainId, poolToData, isLoading, isError])
+  }, [poolToData, isLoading, isError])
 }

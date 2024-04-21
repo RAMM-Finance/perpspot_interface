@@ -547,9 +547,6 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
-                {/* <ReverseIconContainer onClick={handleInvertClick}>
-                  <ReversedArrowsIcon width="20px" height="20px" />
-                </ReverseIconContainer> */}
                 {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
                     currency0={baseCurrency as Currency}

@@ -1,23 +1,18 @@
 import { Trans } from '@lingui/macro'
-import { NumberType } from '@uniswap/conedison/format'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SparklineMap } from 'graphql/data/TopTokens'
-import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
-import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
-import { roundToBin } from 'utils/roundToBin'
 
 import { useCurrency } from '../../../hooks/Tokens'
 import { ButtonPrimary } from '../../Button'
@@ -410,11 +405,13 @@ interface LoadedRowProps {
   volume?: number
   price?: number
   delta?: number
+  apr?: number
+  utilTotal?: number
 }
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, utilTotal } = props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -437,16 +434,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
 
-  console.log(
-    'token0:',
-    token0?.symbol,
-    token1?.symbol,
-    token1?.wrapped.address,
-    baseCurrency?.symbol,
-    quoteCurrency?.symbol,
-    poolOHLC?.token0IsBase
-  )
-
   const poolId = getPoolId(tokenA, tokenB, fee)
 
   const handleCurrencySelect = useCallback(() => {
@@ -455,31 +442,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
   }, [setCurrentPool, currentPoolId, poolId, poolOHLC, token0, token1])
 
-  const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
-  const [tickLower, tickUpper] = useMemo(() => {
-    if (pool && tickDiscretization) {
-      return [
-        roundToBin(pool.tickCurrent - 1000, tickDiscretization, true),
-        roundToBin(pool.tickCurrent + 1000, tickDiscretization, false),
-      ]
-    }
-    return [undefined, undefined]
-  }, [pool, tickDiscretization])
-
   const [price, delta] = useMemo(() => {
     if (poolOHLC) {
       return [poolOHLC.priceNow, poolOHLC.delta24h]
     }
     return [undefined, undefined]
   }, [poolOHLC])
-
-  const { result: rateUtilData } = useRateAndUtil(
-    pool?.token0.address,
-    pool?.token1.address,
-    pool?.fee,
-    tickLower,
-    tickUpper
-  )
 
   const filterString = useAtomValue(filterStringAtom)
 
@@ -538,16 +506,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           <>
-            <ClickableRate
-              rate={Number(formatBNToString(rateUtilData?.apr.times(1), NumberType.TokenNonTx))}
-            >{`${formatBNToString(rateUtilData?.apr.times(1), NumberType.TokenNonTx)} %`}</ClickableRate>
+            <ClickableRate rate={apr}>{apr !== undefined ? `${apr?.toFixed(4)} %` : '-'}</ClickableRate>
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span>
           </>
         }
         UtilRate={
-          <ClickableRate rate={Number(formatBNToString(rateUtilData?.util.times(1)))}>{`${formatBNToString(
-            rateUtilData?.util.times(1)
-          )} %`}</ClickableRate>
+          <ClickableRate rate={utilTotal}>{utilTotal !== undefined ? `${utilTotal?.toFixed(4)} %` : '-'}</ClickableRate>
         }
         first={tokenListIndex === 0}
         last={tokenListIndex === tokenListLength - 1}

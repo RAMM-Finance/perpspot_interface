@@ -6,7 +6,7 @@ import { MarginPositionDetails, OrderPositionKey } from 'types/lmtv2position'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 
-import { useContractCall } from './useContractCall'
+import { useContractCallV2 } from './useContractCall'
 /**
  * fetches the limit pnl for a given reduction of margin position, returns in inputCurrency.
  * @param orderKey
@@ -47,7 +47,7 @@ export function useEstimatedPnL(
     return DataProviderSDK.INTERFACE.encodeFunctionData('getEstimatedPnl', params)
   }, [orderKey, existingPosition, reduceAmount, limitPrice, outputCurrency, inputCurrency])
 
-  const { loading, error, result } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 1)
+  const { loading, error, result } = useContractCallV2(DATA_PROVIDER_ADDRESSES, calldata, ['getEstimatedPnL'])
 
   return useMemo(() => {
     if (result && outputCurrency && inputCurrency) {
