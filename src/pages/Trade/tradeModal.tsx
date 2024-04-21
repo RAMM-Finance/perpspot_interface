@@ -297,6 +297,8 @@ const TradeTabContent = () => {
     outputCurrency?.wrapped.address
   )
 
+  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
+
   const {
     orderKey,
     contractError: limitContractError,
@@ -327,12 +329,18 @@ const TradeTabContent = () => {
     tradeApprovalInfo?.outputApprovalAmount,
     LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
-
+  
   const notApproved =
     marginInPosToken || premiumInPosToken
       ? inputApprovalState === ApprovalState.NOT_APPROVED || outputApprovalState === ApprovalState.NOT_APPROVED
       : inputApprovalState === ApprovalState.NOT_APPROVED
 
+  const inputNotApproved = 
+    (!marginInPosToken || !premiumInPosToken) ? inputApprovalState === ApprovalState.NOT_APPROVED : false;
+
+  const outputNotApproved = 
+    (marginInPosToken || premiumInPosToken) ? outputApprovalState === ApprovalState.NOT_APPROVED : false
+  
   const noTradeInputError = useMemo(() => {
     return !inputError
   }, [inputError])
@@ -348,7 +356,7 @@ const TradeTabContent = () => {
   // console.log("FIAT VALUE TRADE MARGIN: ", trade?.margin, marginInPosToken, outputCurrency, inputCurrency)
   const fiatValueTradeMargin = useUSDPriceBNV2(
     trade?.margin,
-    (marginInPosToken ? outputCurrency : inputCurrency) ?? undefined
+    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) || undefined,
   )
   // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
@@ -453,10 +461,11 @@ const TradeTabContent = () => {
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
-    inputCurrency ?? undefined,
-    outputCurrency ?? undefined,
+    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) || undefined,
+    outputCurrency || undefined,
     allowedSlippage
   )
+
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
@@ -527,8 +536,9 @@ const TradeTabContent = () => {
     return undefined
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
-  const existingPositionOpen = existingPosition && existingPosition.openTime > 0
+
   const isLong = useCurrentTabIsLong()
+  
 
   if (chainId && unsupportedChain(chainId)) {
     return (
@@ -839,54 +849,59 @@ const TradeTabContent = () => {
             >
               <Trans>Insufficient liquidity for this trade.</Trans>
             </ButtonLight>
-          ) : noTradeInputError && notApproved ? (
+          ) : noTradeInputError
+           && (inputNotApproved || outputNotApproved) 
+           ? (
             <>
-              <ButtonPrimary
-                onClick={updateInputAllowance}
-                style={{ fontSize: '14px', borderRadius: '10px' }}
-                width="100%"
-                padding=".5rem"
-                disabled={inputApprovalState === ApprovalState.PENDING}
-              >
-                {inputApprovalState === ApprovalState.PENDING ? (
-                  <>
-                    <Loader size="20px" />
-                    <Trans>Approval pending</Trans>
-                  </>
-                ) : (
-                  <>
-                    <MouseoverTooltip
-                      text={
-                        <Trans>
-                          Permission is required for Limitless to use each token.{' '}
-                          {tradeApprovalInfo && formattedMargin
-                            ? `Allowance of ${
-                                !marginInPosToken
-                                  ? formatNumberOrString(
-                                      Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
-                                      NumberType.SwapTradeAmount
-                                    )
-                                  : formatNumberOrString(
-                                      Number(tradeApprovalInfo.additionalPremium.toExact()),
-                                      NumberType.SwapTradeAmount
-                                    )
-                              } ${inputCurrency?.symbol} required.`
-                            : null}
-                        </Trans>
-                      }
-                    >
-                      <RowBetween>
-                        <Info size={20} />
-                        <Trans>Approve use of {inputCurrency?.symbol}</Trans>
-                      </RowBetween>
-                    </MouseoverTooltip>
-                  </>
-                )}
-              </ButtonPrimary>
-              {marginInPosToken && (
+              {inputNotApproved && (
+                <ButtonPrimary
+                  onClick={updateInputAllowance}
+                  style={{ fontSize: '14px', borderRadius: '10px', ...(outputNotApproved ? { marginRight: ".5rem" } : {}) }}
+                  width="100%"
+                  padding=".5rem"
+                  disabled={inputApprovalState === ApprovalState.PENDING}
+                >
+                  {inputApprovalState === ApprovalState.PENDING ? (
+                    <>
+                      <Loader size="20px" />
+                      <Trans>Approval pending</Trans>
+                    </>
+                  ) : (
+                    <>
+                      <MouseoverTooltip
+                        text={
+                          <Trans>
+                            Permission is required for Limitless to use each token.{' '}
+                            {tradeApprovalInfo && formattedMargin
+                              ? `Allowance of ${
+                                  !marginInPosToken
+                                    ? formatNumberOrString(
+                                        Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                        NumberType.SwapTradeAmount
+                                      )
+                                    : formatNumberOrString(
+                                        Number(tradeApprovalInfo.additionalPremium.toExact()),
+                                        NumberType.SwapTradeAmount
+                                      )
+                                } ${inputCurrency?.symbol} required.`
+                              : null}
+                          </Trans>
+                        }
+                      >
+                        <RowBetween>
+                          <Info size={20} />
+                          {' '}
+                          <Trans>Approve use of {inputCurrency?.symbol}</Trans>
+                        </RowBetween>
+                      </MouseoverTooltip>
+                    </>
+                  )}
+                </ButtonPrimary>
+              )}
+              {outputNotApproved && (
                 <ButtonPrimary
                   onClick={updateOutputAllowance}
-                  style={{ fontSize: '14px', borderRadius: '10px' }}
+                  style={{ fontSize: '14px', borderRadius: '10px', ...(inputNotApproved ? { marginLeft: ".5rem" } : {}) }}
                   width="100%"
                   padding=".5rem"
                   disabled={inputApprovalState === ApprovalState.PENDING}
@@ -913,6 +928,7 @@ const TradeTabContent = () => {
                       >
                         <RowBetween>
                           <Info size={20} />
+                          {' '}
                           <Trans>Approve use of {outputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>

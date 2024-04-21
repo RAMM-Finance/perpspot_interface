@@ -10,15 +10,12 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
 import JSBI from 'jsbi'
-import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 import { formatOhlcEndpoint } from 'utils/geckoUtils'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { Q192 } from 'utils/lmtSDK/internalConstants'
-
-import { useLmtQuoterContract } from './useContract'
 
 interface HydratedPool {
   pool: RawPoolKey
@@ -71,18 +68,18 @@ const tickToBN = (tick: number, decimals0: number, decimals1: number): BN => {
   return price.shiftedBy(decimals0 - decimals1)
 }
 
-export function usePoolsOHLC(): {
+export function usePoolsOHLC(list: any[] | undefined): {
   poolsOHLC: Record<string, HydratedPool> | undefined
   loading: boolean
   error: any
 } {
-  const quoter = useLmtQuoterContract()
-  const poolKeys = useSingleCallResult(quoter, 'getPoolKeys')
+  // const quoter = useLmtQuoterContract()
+  // const poolKeys = useSingleCallResult(quoter, 'getPoolKeys')
 
-  const list = useMemo(() => {
-    if (poolKeys.error || !poolKeys.result) return []
-    return poolKeys.result[0]
-  }, [poolKeys])
+  // const list = useMemo(() => {
+  //   if (poolKeys.error || !poolKeys.result) return []
+  //   return poolKeys.result[0]
+  // }, [poolKeys])
 
   const { chainId } = useWeb3React()
 

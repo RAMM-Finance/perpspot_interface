@@ -180,7 +180,7 @@ export default function LeaderboardTable() {
 
   const userData = useMemo(() => {
     return createUserDataObj(usersArr, tradePoints)
-  }, [usersArr])
+  }, [usersArr, tradePoints])
 
   console.log('userData', userData)
   function LeaderboardHeader() {

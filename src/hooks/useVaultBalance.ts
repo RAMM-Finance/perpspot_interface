@@ -1,34 +1,20 @@
-import { LMT_VAULT } from 'constants/addresses'
+import { BigNumber as BN } from 'bignumber.js'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
-import { LPVaultSDK } from 'utils/lmtSDK/LPVault'
 
-import { useContractCall } from './useContractCall'
+import { useVaultContract } from './useContract'
 
-const useVaultBalance = () => {
-  // const vault = useVaultContract()
-  const calldata = useMemo(() => {
-    return LPVaultSDK.INTERFACE.encodeFunctionData('totalAssets')
-  }, [])
-
-  const { result, error, loading, syncing } = useContractCall(LMT_VAULT, calldata, false, 5)
+const useVaultBalance = (): { result: number | null; loading: boolean; error: any } => {
+  const vault = useVaultContract()
+  const { result, loading, error } = useSingleCallResult(vault, 'totalAssets')
 
   return useMemo(() => {
-
-    let decodedResult
-    try {
-      decodedResult =result? LPVaultSDK.INTERFACE.decodeFunctionResult('totalAssets', result).toString() : undefined
-    } catch(err){
-      decodedResult = '0'
-    }
-
     return {
-      result: decodedResult,
-      error,
+      result: result ? new BN(result[0].toString()).shiftedBy(-18).toNumber() : null,
       loading,
+      error,
     }
   }, [loading, error, result])
 }
-
-
 
 export default useVaultBalance
