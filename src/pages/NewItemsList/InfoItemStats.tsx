@@ -15,7 +15,7 @@ const StatsItem = ({ children, label, shouldHide }: { children: ReactNode; label
   return (
     <Box display={shouldHide ? 'none' : 'flex'} flexDirection="column" alignItems="baseline" gap="6" height="min">
       <ThemedText.SubHeader color="textSecondary">{children}</ThemedText.SubHeader>
-      <ThemedText.CellName color="stateLabel">{label}</ThemedText.CellName>
+      <ThemedText.CellName color="stateLabel" fontSize="14px">{label}</ThemedText.CellName>
     </Box>
   )
 }
@@ -23,27 +23,27 @@ const StatsItem = ({ children, label, shouldHide }: { children: ReactNode; label
 const InfoItemStats = () => {
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
-      <StatsItem label="Global floor" shouldHide={false}>
+      <StatsItem label="Total boxes" shouldHide={false}>
         ETH
       </StatsItem>
-      <StatsItem label="Floor 24H" shouldHide={false}>
+      <StatsItem label="Total unlockable boxes" shouldHide={false}>
         <PercentChange isNegative={false}>
           {/* {arrow} */}
           {/* {floorChangeStr} */}%
         </PercentChange>
       </StatsItem>
-      <StatsItem label="Total volume" shouldHide={false}>
+      <StatsItem label="Total LMT" shouldHide={false}>
         ETH
       </StatsItem>
       {/* <StatsItem label="Items" shouldHide={isMobile ?? false}>
           {totalSupplyStr}
         </StatsItem> */}
-      <StatsItem label="Unique owners" shouldHide={false}>
+      <StatsItem label="LMT required per unlock" shouldHide={false}>
         %
       </StatsItem>
-      <StatsItem label="Listed" shouldHide={false}>
+      {/* <StatsItem label="LMT required per unlock" shouldHide={false}>
         %
-      </StatsItem>
+      </StatsItem> */}
     </Row>
   )
 }

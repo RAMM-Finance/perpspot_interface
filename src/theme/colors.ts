@@ -206,7 +206,7 @@ export const darkTheme = {
 
   stateOverlayHover: opacify(12, colors.gray300),
   stateOverlayPressed: opacify(24, colors.gray200),
-  stateLabel: opacify(30, colors.gray200),
+  stateLabel: opacify(60, colors.gray200),
 
   searchBackground: `#2b3039`,
   searchOutline: `rgba(255,255,255,0.07)`,

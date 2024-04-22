@@ -36,14 +36,14 @@ export function PoolStatsSection({
   address0,
   address1,
   fee,
-  invertPrice,
-}: {
+}: // invertPrice,
+{
   poolData: any
   address0?: string
   address1?: string
   fee?: number
   chainId?: number
-  invertPrice?: boolean
+  // invertPrice?: boolean
 }) {
   const { chainId } = useWeb3React()
   const poolAddress = useMemo(() => {
@@ -65,27 +65,14 @@ export function PoolStatsSection({
   ])
 
   const [currentPrice, low24h, high24h, delta24h] = useMemo(() => {
-    if (!poolOHLC || invertPrice === undefined) return [null, null, null, null]
-    if (invertPrice) {
-      return [
-        new BN(1).div(new BN(poolOHLC.priceNow)),
-        new BN(1).div(new BN(poolOHLC.high24)),
-        new BN(1).div(new BN(poolOHLC.low24)),
-        new BN(1)
-          .div(poolOHLC.priceNow)
-          .minus(new BN(1).div(new BN(poolOHLC.price24hAgo)))
-          .div(new BN(1).div(poolOHLC.priceNow))
-          .times(100),
-      ]
-    } else {
-      return [
-        new BN(poolOHLC.priceNow),
-        new BN(poolOHLC.low24),
-        new BN(poolOHLC.high24),
-        new BN(poolOHLC.priceNow).minus(new BN(poolOHLC.price24hAgo)).div(new BN(poolOHLC.priceNow)).times(100),
-      ]
-    }
-  }, [poolOHLC, invertPrice])
+    if (!poolOHLC) return [null, null, null, null]
+    return [
+      new BN(poolOHLC.priceNow),
+      new BN(poolOHLC.low24),
+      new BN(poolOHLC.high24),
+      new BN(poolOHLC.priceNow).minus(new BN(poolOHLC.price24hAgo)).div(new BN(poolOHLC.priceNow)).times(100),
+    ]
+  }, [poolOHLC])
 
   const [volume, tvl] = useMemo(() => {
     if (
