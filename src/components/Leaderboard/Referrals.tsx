@@ -115,7 +115,7 @@ function canRefer(address: any) {
     return true
   else if (ethers.utils.getAddress(address) == ethers.utils.getAddress('0x5455d09d5a5B962eEdD8C0C9451eabe8cD0e61FF'))
     return true
-  else return false
+  else return true
 }
 function decodeResult(result: any) {
   try {
@@ -445,6 +445,7 @@ const Referrals = () => {
   const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       const bytes32 = ethers.utils.formatBytes32String(ref.toString())
+      console.log('?wtfwtwfwfwefewfwfew',bytes32, ref.toString() )
       // const bytes32 = defaultAbiCoder.encode(['string'], [ref.toString()]).toString()
       const response = await referralContract?.setReferralCodeByUser(bytes32)
       return response as TransactionResponse
@@ -611,7 +612,8 @@ const Referrals = () => {
 
             {/*codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>*/}
             {codesNonZero ? (
-              codeUsing ? (
+              //codeUsing 
+              true? (
                 <SmallButtonPrimary disabled={refCodesExist?.[0]} onClick={handleCreateReferral}>
                   Generate Code
                 </SmallButtonPrimary>
@@ -761,21 +763,21 @@ const Referrals = () => {
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-              <StyledCard>
+              {/*<StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Recently Updated Referral LMT</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && lastRecordedPoints}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
-              <StyledCard>
+              </StyledCard>*/}
+              {/*<StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Claimable Rewards</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>{simulatedRewards + ' USDC'}</ThemedText.BodySecondary>
                   <SmallButtonPrimary onClick={handleClaimRewards}>Collect</SmallButtonPrimary>
                 </CardWrapper>
-              </StyledCard>{' '}
+              </StyledCard>{' '}*/}
             </div>
             {/* <StyledCard style={{ padding: '15px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
