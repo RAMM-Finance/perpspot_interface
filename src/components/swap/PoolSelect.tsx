@@ -279,7 +279,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
       onSetIsSwap(false)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
-      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
+      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
       handleClose()
       dispatch(setBLScrollPosition(undefined))
     }
@@ -461,26 +461,25 @@ export function SelectPool() {
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
 
+  const poolOHLC = usePoolOHLC(currentPool?.poolKey.token0, currentPool?.poolKey.token1, currentPool?.poolKey.fee)
+
   const baseQuoteSymbol = useMemo(() => {
-    if (currentPool) {
-      const base = currentPool.token0IsBase ? currentPool.token0Symbol : currentPool.token1Symbol
-      const quote = currentPool.token0IsBase ? currentPool.token1Symbol : currentPool.token0Symbol
-      return currentPool.invertPrice ? `${quote}/${base}` : `${base}/${quote}`
+    if (currentPool && poolOHLC) {
+      const base = poolOHLC.token0IsBase ? currentPool.token0Symbol : currentPool.token1Symbol
+      const quote = poolOHLC.token0IsBase ? currentPool.token1Symbol : currentPool.token0Symbol
+      return `${base}/${quote}`
     }
     return null
-  }, [currentPool])
+  }, [currentPool, poolOHLC])
 
   const [baseAddress, quoteAddress] = useMemo(() => {
-    if (currentPool) {
-      let base = currentPool.token0IsBase ? currentPool.poolKey.token0 : currentPool.poolKey.token1
-      let quote = currentPool.token0IsBase ? currentPool.poolKey.token1 : currentPool.poolKey.token0
-      if (currentPool.invertPrice) {
-        ;[base, quote] = [quote, base]
-      }
+    if (currentPool && poolOHLC) {
+      const base = poolOHLC.token0IsBase ? currentPool.poolKey.token0 : currentPool.poolKey.token1
+      const quote = poolOHLC.token0IsBase ? currentPool.poolKey.token1 : currentPool.poolKey.token0
       return [base, quote]
     }
     return [null, null]
-  }, [currentPool])
+  }, [currentPool, poolOHLC])
 
   const baseCurrency = useCurrency(baseAddress)
   const quoteCurrency = useCurrency(quoteAddress)
@@ -583,7 +582,6 @@ export function SelectPool() {
         address0={poolKey?.token0}
         address1={poolKey?.token1}
         fee={poolKey?.fee}
-        invertPrice={currentPool?.invertPrice}
       />
       <StyledMenu
         id="simple-menu"

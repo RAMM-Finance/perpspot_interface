@@ -88,7 +88,7 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
       onSetIsSwap(false)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
-      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol, false)
+      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
     }
   }, [
     token0,

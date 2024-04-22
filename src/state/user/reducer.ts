@@ -61,7 +61,7 @@ export interface UserState {
       token0Symbol: string
       token1Symbol: string
       // invert the price data for displays
-      invertPrice: boolean
+      // invertPrice: boolean
     }
   }
   timestamp: number
@@ -145,11 +145,11 @@ const userSlice = createSlice({
         }
       }
     },
-    invertCurrentPoolPrice(state, action) {
-      if (state.currentPoolKeys[action.payload.chainId]) {
-        state.currentPoolKeys[action.payload.chainId].invertPrice = action.payload.invertPrice
-      }
-    },
+    // invertCurrentPoolPrice(state, action) {
+    //   if (state.currentPoolKeys[action.payload.chainId]) {
+    //     state.currentPoolKeys[action.payload.chainId].invertPrice = action.payload.invertPrice
+    //   }
+    // },
     setPinnedPools(state, action) {
       state.pinnedKeys[action.payload.chainId] = action.payload.pinnedPools
     },
@@ -165,7 +165,7 @@ const userSlice = createSlice({
         token0IsBase: action.payload.token0IsBase,
         token0Symbol: action.payload.token0Symbol,
         token1Symbol: action.payload.token1Symbol,
-        invertPrice: action.payload.invertPrice,
+        // invertPrice: action.payload.invertPrice,
       }
     },
     updateUserPremiumDepositPercent(state, action) {
@@ -288,6 +288,6 @@ export const {
   setPinnedPools,
   setCurrentPool,
   setInputCurrency,
-  invertCurrentPoolPrice,
+  // invertCurrentPoolPrice,
 } = userSlice.actions
 export default userSlice.reducer

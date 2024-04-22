@@ -298,8 +298,8 @@ export default function Trade({ className }: { className?: string }) {
 
       return JSON.stringify({
         poolAddress,
-        baseSymbol: currentPool.invertPrice ? quoteSymbol : baseSymbol,
-        quoteSymbol: currentPool.invertPrice ? baseSymbol : quoteSymbol,
+        baseSymbol,
+        quoteSymbol,
         token0IsBase: currentPool.token0IsBase,
         invertPrice,
         chainId,
