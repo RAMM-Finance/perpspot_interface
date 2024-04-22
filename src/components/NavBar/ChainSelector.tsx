@@ -63,12 +63,6 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
       await selectChain(targetChainId)
       setPendingChainId(undefined)
       setIsOpen(false)
-      // console.log("LOCATION", location)
-      // if (location.pathname.includes('/add/')) {
-      //   window.history.replaceState({}, document.title, '/add/')
-      // }
-        
-    
     },
     [selectChain, setIsOpen]
   )

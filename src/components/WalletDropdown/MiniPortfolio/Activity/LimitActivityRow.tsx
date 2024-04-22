@@ -86,6 +86,7 @@ export function ActivityRow({
   const timeSince = useTimeStamp(timestamp)
   // descript modified
   const { actionDescription, marginToken, pnlNumber, priceNumber } = processDescriptor(descriptor, title)
+  
   // console.log(descriptor, '-----descriptor----')
   // console.log('-----------marginToken', marginToken)
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
@@ -135,15 +136,15 @@ export function ActivityRow({
                     <ArrowUpRight size="16px" />
                   </MouseoverTooltip>
                 </ThemedText.SubHeaderSmall>
-                <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
-                  {pnlNumber && (
+                {pnlNumber ? (
+                  <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                     <ActivityPrice>
                       <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
                       {marginToken}
                     </ActivityPrice>
-                  )}
                   {ENSName ?? otherAccount}
-                </ThemedText.SubHeaderSmall>
+                  </ThemedText.SubHeaderSmall>
+                ) : null}
               </RowBetween>
               <ThemedText.SubHeaderSmall
                 style={{ gap: '5px' }}
@@ -157,7 +158,7 @@ export function ActivityRow({
                     <ActivityPrice>
                       {`Price: ${isInverted ? ((1 / priceNumber) as number).toFixed(5) : priceNumber.toFixed(5)}`}
                     </ActivityPrice>
-                    {invertedTooltipLogo}
+                    {invertedTooltipLogo} 
                   </>
                 )}
               </ThemedText.SubHeaderSmall>

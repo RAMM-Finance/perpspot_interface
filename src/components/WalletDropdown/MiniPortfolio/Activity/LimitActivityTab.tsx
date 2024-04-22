@@ -143,7 +143,10 @@ function getFixedDecimal(amount: number, decimal?: number, fixed?: number) {
     value = Number(amount)
   }
   const decimalPlaces = (value.toString().split('.')[1] || []).length
-  const displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
+  let displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
+  if (Number(displayValue).toString() === "0" || Number(displayValue).toString() === "-0") {
+    displayValue = '0'
+  }
   return displayValue
 }
 
@@ -273,7 +276,8 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       : entry.positionIsToken0
       ? Number(entry.PnL) / 10 ** token1Decimal
       : Number(entry.PnL) / 10 ** token0Decimal
-    const marginToken = entry.marginInPosToken ? token0Name : token1Name
+
+    const marginToken = (entry.marginInPosToken && entry.positionInPosToken) ? token0Name : token1Name
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
@@ -393,6 +397,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
         const processedHistory: any[] = []
         const promises = history?.map(async (entry: any) => {
           const descriptor = await getDescriptor(chainId, entry, tokens)
+          // console.log("descriptor : ", descriptor)
           processedHistory.push({
             chainId,
             status: undefined,
