@@ -39,7 +39,8 @@ const StyledTokenRow = styled.div<{
   background-color: ${({ theme }) => theme.backgroundSurface};
   display: grid;
   font-size: 12px;
-  grid-template-columns: 4fr 4fr 3.5fr 4.5fr 4fr 4fr 2fr 5fr;
+  // grid-template-columns: 4fr 4fr 3.5fr 4.5fr 4fr 4fr 2fr 5fr;
+  grid-template-columns: 4fr 4fr 3.5fr 4.5fr 4fr 4fr 3fr 4fr;
   padding-left: 1rem;
   padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -520,8 +521,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         // @ts-ignore
         currency1={token1?.address}
       />
-
-      {/*</ClickableContent> */}
     </RowWrapper>
   ) : null
 })

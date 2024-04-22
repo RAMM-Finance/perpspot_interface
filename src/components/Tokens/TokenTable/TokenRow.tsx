@@ -1,19 +1,8 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { InterfaceEventName } from '@uniswap/analytics-events'
-import { formatNumber, formatUSDPrice, NumberType } from '@uniswap/conedison/format'
-import { ParentSize } from '@visx/responsive'
-import SparklineChart from 'components/Charts/SparklineChart'
-import QueryTokenLogo from 'components/Logo/QueryTokenLogo'
-import { MouseoverTooltip } from 'components/Tooltip'
 import { SparklineMap, TopToken } from 'graphql/data/TopTokens'
-import { CHAIN_NAME_TO_CHAIN_ID, getTokenDetailsURL, validateUrlChainParam } from 'graphql/data/util'
-import { useAtomValue } from 'jotai/utils'
-import { ForwardedRef, forwardRef } from 'react'
-import { CSSProperties, ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { Link, useParams } from 'react-router-dom'
-import styled, { css, useTheme } from 'styled-components/macro'
+import { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
 
 import {
@@ -23,16 +12,7 @@ import {
   SMALL_MEDIA_BREAKPOINT,
 } from '../constants'
 import { LoadingBubble } from '../loading'
-import {
-  filterStringAtom,
-  filterTimeAtom,
-  sortAscendingAtom,
-  sortMethodAtom,
-  TokenSortMethod,
-  useSetSortMethod,
-} from '../state'
-import { ArrowCell, DeltaText, formatDelta, getDeltaArrow } from '../TokenDetails/PriceChart'
-import { TokenRow } from './PairsRow'
+import { TokenSortMethod } from '../state'
 
 export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
