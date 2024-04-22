@@ -223,8 +223,8 @@ export const CardContainer = ({img, info, selected, isDisabled, isLocked, handle
           </StyledInfoContainer>
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
-      <StyledActionButton isDisabled={false} selected={false} onClick={handleUnlockBox}>
-        Add 
+      <StyledActionButton isDisabled={isLocked} selected={false} onClick={handleUnlockBox}>
+        Unlock 
       </StyledActionButton>
     </StyledCardContainer>
   )

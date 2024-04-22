@@ -348,24 +348,25 @@ const NewItemsListPage = () => {
       console.log('check' ,brp, account);
       const call = async () => {
         try {
-          // const totalBoxes = await brp.numBoxes(account)
-          // const totalUnlockableBoxes = await brp.claimableBoxes(account)
-          // const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
+          const totalBoxes = await brp.numBoxes(account)
+          const totalUnlockableBoxes = await brp.claimableBoxes(account)
+          const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
 
           const lastRecordedTradePoints = await brp.lastRecordedTradePoints(account)
           const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
           const lastRecordedPoints = await brp.lastRecordedPoints(account)
 
+
           const totalLMT = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
           const totalLMTString = totalLMT.toString()
 
           setTotalLMT(totalLMTString)
-          // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
-          // console.log('total',  totalBoxes, totalUnlockableBoxes,lmtRequiredPerUnlock )
+          console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
+          console.log('total',  totalBoxes, totalUnlockableBoxes,lmtRequiredPerUnlock )
           // setBRPData({
           //   totalBoxes,
           //   totalUnlockableBoxes,
-          //   MTRequiredPerUnlock
+          //   lmtRequiredPerUnlock
           // });
         } catch (error) {
           console.log(error, 'get brp data error')
@@ -413,8 +414,8 @@ const NewItemsListPage = () => {
         <Row gap="16">
           {/* <InfoImg src={Logo} alt="Logo" /> */}
           <InfoDescriptionSection
-            title="LimitLess"
-            description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes."
+            title="Use and Unlock "
+            description="Earn LMT and unlock treasure boxes"
             stats={totalLMT}
           />
         </Row>
