@@ -2,6 +2,7 @@ import Column from 'components/Column'
 import { Row } from 'nft/components/Flex'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import LockStatusBadge from './LockStatusBadge'
 
 const ItemImgContainer = styled.div<{ isDisabled?: boolean }>`
   position: relative;
@@ -189,12 +190,13 @@ interface ICardContainerProps {
   id: string
   img: string
   info: string
-  secondInfo: string
+  // secondInfo: string
   selected?: boolean
   isDisabled?: boolean
+  isLocked: boolean
 }
 
-export const CardContainer = ({ id, img, info, secondInfo, selected, isDisabled }: ICardContainerProps) => {
+export const CardContainer = ({img, info, selected, isDisabled, isLocked }: ICardContainerProps) => {
   return (
     <StyledCardContainer selected={false} isDisabled={false}>
       <ItemImgContainer isDisabled={true}>
@@ -213,7 +215,8 @@ export const CardContainer = ({ id, img, info, secondInfo, selected, isDisabled 
             </Row>
             <Row justifyContent="space-between">
               <Row whiteSpace="nowrap" overflow="hidden">
-                <SecondaryInfoContainer>{secondInfo}</SecondaryInfoContainer>
+                <LockStatusBadge isLocked={isLocked}/>
+                {/* <SecondaryInfoContainer>{secondInfo}</SecondaryInfoContainer> */}
               </Row>
             </Row>
           </StyledInfoContainer>

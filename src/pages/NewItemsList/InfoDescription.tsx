@@ -1,15 +1,11 @@
 import Row from 'components/Row'
 import { Box } from 'nft/components/Box'
 import { Column } from 'nft/components/Flex'
-import { DiscordIcon } from 'nft/components/icons'
 import { body } from 'nft/css/common.css'
-import { useEffect, useReducer, useRef, useState } from 'react'
-import { Bookmark, GitHub } from 'react-feather'
-import ReactMarkdown from 'react-markdown'
+import { useReducer, useRef, useState } from 'react'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { ReactComponent as X } from '../../components/Footer/twitter.svg'
 import InfoItemStats from './InfoItemStats'
 
 const DescriptionText = styled.div<{ readMore: boolean }>`
@@ -90,18 +86,6 @@ const ToggleDescriptionText = ({ description }: { description: string }) => {
   )
 }
 
-const IconWrapper = styled.div`
-  margin-left: 2.5rem;
-  margin-top: 0.5rem;
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  align-items: center;
-`
-
-const Link = styled.a`
-  cursor: pointer;
-`
 
 const InfoDescription = ({ title, description }: { title?: boolean; description: string }) => {
   return (
@@ -136,20 +120,6 @@ const InfoDescription = ({ title, description }: { title?: boolean; description:
         {title ? (
           <Row>
             <ThemedText.HeadlineMedium color="textSecondary">{description}</ThemedText.HeadlineMedium>
-            <IconWrapper>
-              <Link href="https://twitter.com/LimitlessFi_" rel="noopener noreferrer" target="_blank">
-                <X fill="#b8c0dc" width="18px" />
-              </Link>
-              <Link href="https://discord.com/invite/v7Dq4vTvUE" rel="noopener noreferrer" target="_blank">
-                <DiscordIcon fill="#b8c0dc" width="28px" />
-              </Link>
-              <Link rel="noopener noreferrer" target="_blank">
-                <GitHub fill="#b8c0dc" width="23px" />
-              </Link>
-              <Link href="https://linktr.ee/limitlessfi" rel="noopener noreferrer" target="_blank">
-                <Bookmark fill="#b8c0dc" width="23px" />
-              </Link>
-            </IconWrapper>
           </Row>
         ) : (
           <ToggleDescriptionText description={description} />
@@ -166,7 +136,7 @@ const InfoDescription = ({ title, description }: { title?: boolean; description:
 
 const InfoDescriptionSection = ({ title, description }: { title: string; description: string }) => {
   return (
-    <Column marginTop="40" marginBottom="28">
+    <Column marginTop="40" marginBottom="28" gap="18" marginX="24">
       <InfoDescription title={true} description={title} />
       <InfoDescription description={description} />
       <InfoItemStats/>
