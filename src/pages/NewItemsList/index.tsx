@@ -13,10 +13,10 @@ import ItemImg3 from '../../assets/images/newItem3.webp'
 import ItemImg4 from '../../assets/images/newItem4.webp'
 import ItemImg5 from '../../assets/images/newItem5.webp'
 import ItemImg6 from '../../assets/images/newItem6.webp'
-import Logo from '../../assets/svg/full_logo_black.svg'
 import banner from '../../components/Leaderboard/banner.png'
 import { CardContainer } from './CardContainer'
 import InfoDescriptionSection from './InfoDescription'
+
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -28,6 +28,8 @@ import InfoDescriptionSection from './InfoDescription'
 //     display: none;
 //   }
 // `
+
+
 const FaqWrapper = styled.div`
   margin: 50px auto;
   width: 48%;
@@ -233,105 +235,105 @@ const NewItemsListPage = () => {
       id: '#111',
       img: ItemImg,
       info: 'Limitless test1',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: false
     },
     {
       id: '#222',
       img: ItemImg2,
       info: 'Limitless test2',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#333',
       img: ItemImg3,
       info: 'Limitless test3',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: false
     },
     {
       id: '#444',
       img: ItemImg4,
       info: 'Limitless test4',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#555',
       img: ItemImg5,
       info: 'Limitless test5',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#666',
       img: ItemImg6,
       info: 'Limitless test6',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: false
     },
     {
       id: '#777',
       img: ItemImg,
       info: 'Limitless test7',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: false
     },
     {
       id: '#888',
       img: ItemImg2,
       info: 'Limitless test8',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#999',
       img: ItemImg4,
       info: 'Limitless test9',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#1010',
       img: ItemImg6,
       info: 'Limitless test1010',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#1212',
       img: ItemImg5,
       info: 'Limitless test 1212',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: false
     },
     {
       id: '#1313',
       img: ItemImg3,
       info: 'Limitless test1313',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: true
     },
     {
       id: '#1414',
       img: ItemImg,
       info: 'Limitless test1414',
-      secondInfo: '4.72WETH',
       selected: false,
       isDisabled: false,
+      isLocked: false
     },
   ]
 
@@ -355,8 +357,8 @@ const NewItemsListPage = () => {
         <Banner src={banner} />
       </BannerWrapper>
       <CollectionDescriptionSection>
-        <Row margin="auto" gap="16">
-          <InfoImg src={Logo} alt="Logo" />
+        <Row gap="16">
+          {/* <InfoImg src={Logo} alt="Logo" /> */}
           <InfoDescriptionSection
             title="LimitLess"
             description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes."
@@ -425,15 +427,15 @@ const NewItemsListPage = () => {
               dataLength={20}
               style={{ overflow: 'unset', height: '100%' }}
               > */}
-            {itemData.map(({ id, img, info, secondInfo, selected, isDisabled }) => (
+            {itemData.map(({ id, img, info, selected, isDisabled, isLocked }) => (
               <CardContainer
                 key={id}
                 id={id}
                 img={img}
                 info={info}
-                secondInfo={secondInfo}
                 selected={selected}
                 isDisabled={isDisabled}
+                isLocked={isLocked}
               />
             ))}
             {/* </InfiniteScroll> */}
