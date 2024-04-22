@@ -506,7 +506,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           <>
-            <ClickableRate rate={apr}>{apr !== undefined ? `${apr?.toFixed(4)} %` : '-'}</ClickableRate>
+            <ClickableRate rate={apr}>{apr !== undefined ? `${apr?.toPrecision(4)} %` : '-'}</ClickableRate>
             <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span>
           </>
         }

@@ -137,8 +137,6 @@ export const PoolSelector = ({
                   fee={curr.fee}
                   setIsOpen={setIsOpen}
                   setSelectPair={setSelectPair}
-                  // tvl={poolTvlData[id]?.totalValueLocked}
-                  // volume={poolTvlData[id]?.volume}
                   active={currentId === id}
                 />
               )

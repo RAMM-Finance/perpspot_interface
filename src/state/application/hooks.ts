@@ -4,10 +4,10 @@ import { useWeb3React } from '@web3-react/core'
 import { abi } from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { LMT_QUOTER } from 'constants/addresses'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
-import { useContractCallV2 } from 'hooks/useContractCall'
+import { useLmtQuoterContract } from 'hooks/useContract'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PoolKey } from 'types/lmtv2position'
@@ -64,23 +64,15 @@ interface PoolContractInfo {
   tick: number
   token0: string
   token1: string
-  apr: number
-  utilTotal: number
 }
 export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; loading: boolean; error: any } {
-  // const lmtQuoter = useLmtQuoterContract()
-  const calldata = useMemo(() => {
-    return quoterAbi.encodeFunctionData('getPoolKeys', [])
-  }, [])
-  // const { result, error, loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
-  const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getPoolKeys'])
+  const lmtQuoter = useLmtQuoterContract()
+
+  const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
 
   const poolList = useMemo(() => {
     if (result) {
-      const data = quoterAbi.decodeFunctionResult('getPoolKeys', result)
-      return data[0].map((pool: any) => {
-        const apr = new BN(pool.apr.toString()).shiftedBy(-16)
-        const util = new BN(pool.utilTotal.toString()).shiftedBy(-16)
+      return result[0].map((pool: any) => {
         return {
           token0: pool.token0,
           token1: pool.token1,
@@ -92,8 +84,6 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
           symbol1: pool.symbol1,
           decimals0: pool.decimals0,
           decimals1: pool.decimals1,
-          apr: apr.toNumber(),
-          utilTotal: util.toNumber(),
         }
       })
     } else {
@@ -104,6 +94,40 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
   return useMemo(() => {
     return { poolList, loading, error }
   }, [poolList, loading, error])
+}
+
+export function usePoolsAprUtilList(): {
+  poolList: { [poolId: string]: { apr: number; utilTotal: number } } | undefined
+  loading: boolean
+  error: any
+} {
+  const lmtQuoter = useLmtQuoterContract()
+  const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getAllAprUtil', ['1000'], {
+    gasRequired: 10000000,
+  })
+
+  const list = useMemo(() => {
+    if (result) {
+      const poolList: { [poolId: string]: { apr: number; utilTotal: number } } = {}
+      result[0].forEach((item: any) => {
+        poolList[getPoolId(item.key.token0, item.key.token1, item.key.fee)] = {
+          apr: new BN(item.apr.toString()).shiftedBy(-16).toNumber(),
+          utilTotal: new BN(item.utilTotal.toString()).shiftedBy(-16).toNumber(),
+        }
+      })
+      return poolList
+    } else {
+      return undefined
+    }
+  }, [result])
+
+  return useMemo(() => {
+    return {
+      poolList: list,
+      loading,
+      error,
+    }
+  }, [list, loading, error])
 }
 
 export function useAppPoolOHLC() {

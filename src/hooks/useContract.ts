@@ -18,7 +18,6 @@ import ERC721_ABI from 'abis/erc721.json'
 import ERC1155_ABI from 'abis/erc1155.json'
 import { ArgentWalletDetector, EnsPublicResolver, EnsRegistrar, Erc20, Erc721, Erc1155, Weth } from 'abis/types'
 import WETH_ABI from 'abis/weth.json'
-import axios from 'axios'
 import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
   BRP_ADDRESS,
@@ -39,8 +38,7 @@ import {
   V3_MIGRATOR_ADDRESSES,
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
-import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter'
+import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter.sol/Quoter'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
@@ -117,7 +115,7 @@ const { abi: V2MigratorABI } = V3MigratorJson
 
 //   return token
 //   // if (network === 'arbitrum-one') {
-    
+
 //   // }
 // }
 
