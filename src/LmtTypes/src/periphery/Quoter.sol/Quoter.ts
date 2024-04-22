@@ -61,6 +61,18 @@ export type LiquidityLoanStructOutput = [
 };
 
 export declare namespace Quoter {
+  export type AprUtilInfoStruct = {
+    key: PoolKeyStruct;
+    apr: PromiseOrValue<BigNumberish>;
+    utilTotal: PromiseOrValue<BigNumberish>;
+  };
+
+  export type AprUtilInfoStructOutput = [
+    PoolKeyStructOutput,
+    BigNumber,
+    BigNumber
+  ] & { key: PoolKeyStructOutput; apr: BigNumber; utilTotal: BigNumber };
+
   export type PoolInfoStruct = {
     token0: PromiseOrValue<string>;
     token1: PromiseOrValue<string>;
@@ -129,14 +141,19 @@ export declare namespace Quoter {
 
 export interface QuoterInterface extends utils.Interface {
   functions: {
+    "getAllAprUtil(int24)": FunctionFragment;
     "getPoolKeys()": FunctionFragment;
     "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool))": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "getPoolKeys" | "quoteExactInput"
+    nameOrSignatureOrTopic: "getAllAprUtil" | "getPoolKeys" | "quoteExactInput"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "getAllAprUtil",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "getPoolKeys",
     values?: undefined
@@ -146,6 +163,10 @@ export interface QuoterInterface extends utils.Interface {
     values: [Quoter.QuoteExactInputParamsStruct]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "getAllAprUtil",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getPoolKeys",
     data: BytesLike
@@ -185,6 +206,11 @@ export interface Quoter extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    getAllAprUtil(
+      tickDiff: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[Quoter.AprUtilInfoStructOutput[]]>;
+
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<[Quoter.PoolInfoStructOutput[]]>;
@@ -194,6 +220,11 @@ export interface Quoter extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  getAllAprUtil(
+    tickDiff: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<Quoter.AprUtilInfoStructOutput[]>;
 
   getPoolKeys(
     overrides?: CallOverrides
@@ -205,6 +236,11 @@ export interface Quoter extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    getAllAprUtil(
+      tickDiff: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<Quoter.AprUtilInfoStructOutput[]>;
+
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<Quoter.PoolInfoStructOutput[]>;
@@ -234,6 +270,11 @@ export interface Quoter extends BaseContract {
   filters: {};
 
   estimateGas: {
+    getAllAprUtil(
+      tickDiff: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPoolKeys(overrides?: CallOverrides): Promise<BigNumber>;
 
     quoteExactInput(
@@ -243,6 +284,11 @@ export interface Quoter extends BaseContract {
   };
 
   populateTransaction: {
+    getAllAprUtil(
+      tickDiff: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getPoolKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     quoteExactInput(

@@ -1,5 +1,4 @@
 import { DiscordIcon } from 'nft/components/icons'
-import React from 'react'
 import { Bookmark, GitHub } from 'react-feather'
 import styled from 'styled-components/macro'
 

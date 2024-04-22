@@ -1,14 +1,14 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { ArrowDown, ArrowUp, Info } from 'react-feather'
-import { useAppPoolOHLC, usePoolKeyList } from 'state/application/hooks'
+import { usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -55,29 +55,7 @@ const TokenDataContainer = styled.div`
   height: 100%;
   width: 100%;
 `
-
-// const NoTokenDisplay = styled.div`
-//   display: flex;
-//   justify-content: center;
-//   width: 100%;
-//   height: 60px;
-//   color: ${({ theme }) => theme.textSecondary};
-//   font-size: 16px;
-//   font-weight: 500;
-//   align-items: center;
-//   padding: 0px 28px;
-//   gap: 8px;
-// `
-
-// function NoTokensState({ message }: { message: ReactNode }) {
-//   return (
-//     <GridContainer>
-//       <HeaderRow />
-//       <NoTokenDisplay>{message}</NoTokenDisplay>
-//     </GridContainer>
-//   )
-// }
-
+const PAGE_SIZE = 20
 function LoadingRow(props: { first?: boolean; last?: boolean }) {
   return (
     <TokenRow
@@ -119,7 +97,6 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 // }
 enum TokenSortMethod {
   PRICE = 'Price',
-  // PERCENT_CHANGE = 'Change',
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
   APR = 'Est APR',
@@ -169,15 +146,6 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE_CHANGE]: <Trans>24H Change in Price</Trans>,
 }
 
-function getSortedData(dataToSort: any, sortOrder: boolean, category: string) {
-  if (!Array.isArray(dataToSort)) return
-  if (sortOrder) {
-    return dataToSort.sort((a: any, b: any) => (a[category] > b[category] ? 1 : -1))
-  } else {
-    return dataToSort.sort((a: any, b: any) => (a[category] > b[category] ? -1 : 1))
-  }
-}
-
 // price, TVL, volume, util rate, expected apr
 
 /* Get singular header cell for header row */
@@ -190,7 +158,6 @@ function HeaderCell({
   const sortAscending = useAtomValue(sortAscendingAtom)
   const handleSortCategory = useSetSortMethod(category)
   const sortMethod = useAtomValue(sortMethodAtom)
-
   const description = HEADER_DESCRIPTIONS[category]
 
   return (
@@ -238,106 +205,99 @@ export default function TokenTable() {
   const sortAscending = useAtom(sortAscendingAtom)
   const sortMethod = useAtom(sortMethodAtom)
 
-  const PoolsOHLC = useAppPoolOHLC()
-
-  const PoolsOHLCArr = useMemo(() => {
-    if (!PoolsOHLC || Object.keys(PoolsOHLC).length === 0 || !chainId || !PoolsOHLC[chainId]) return null
-    return Object.keys(PoolsOHLC[chainId]).map((key) => {
-      return { id: key, ...PoolsOHLC[chainId][key] }
-    })
-  }, [PoolsOHLC, chainId])
+  const poolOHLCs = usePoolOHLCs()
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
   const { poolList } = usePoolKeyList()
-
-  const { result: poolData, loading: poolsLoading } = usePoolsData()
+  const { poolList: aprList } = usePoolsAprUtilList()
+  console.log('zeke:', aprList)
+  const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   const loading = poolsLoading || balanceLoading
 
-  const poolsInfo = useMemo(() => {
-    if (poolData && vaultBal) {
+  const protocolTvL = useMemo(() => {
+    if (poolTvlData && !balanceLoading) {
       return {
         tvl:
-          Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-          Number(vaultBal) / 1e18,
-        volume: Object.values(poolData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+          Number(vaultBal),
+        volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
       }
     } else {
       return null
     }
-  }, [poolData, vaultBal])
+  }, [poolTvlData, vaultBal, balanceLoading])
 
-  const dataInfo = useMemo(() => {
-    if (poolData && PoolsOHLCArr && poolList) {
-      const lowerCasePool = Object.fromEntries(Object.entries(poolData).map(([k, v]) => [k.toLowerCase(), v]))
+  const sortedPools = useMemo(() => {
+    if (!poolTvlData || !poolList || poolList.length === 0 || !poolOHLCs || loading || !aprList) return []
 
-      if (chainId == 80085) {
-        return poolList.map((pool: any) => {
-          return {
-            ...pool,
-            TVL: 100000,
-            Volume: 500000,
-            Price: 4000,
-            [`24h Change`]: 1,
-          }
-        })
+    return poolList.sort((a, b) => {
+      const aId = getPoolId(a.token0, a.token1, a.fee)
+      const bId = getPoolId(b.token0, b.token1, b.fee)
+      if (sortMethod[0] === TokenSortMethod.PRICE) {
+        if (poolOHLCs[aId].priceNow === undefined || poolOHLCs[bId].priceNow === undefined) return 0
+        return sortAscending[0]
+          ? poolOHLCs[aId].priceNow - poolOHLCs[bId].priceNow
+          : poolOHLCs[aId].priceNow - poolOHLCs[bId].priceNow
+      } else if (sortMethod[0] === TokenSortMethod.TOTAL_VALUE_LOCKED) {
+        if (poolTvlData[aId] === undefined || poolTvlData[bId] === undefined) return 0
+        return sortAscending[0]
+          ? poolTvlData[aId].totalValueLocked - poolTvlData[bId].totalValueLocked
+          : poolTvlData[bId].totalValueLocked - poolTvlData[aId].totalValueLocked
+      } else if (sortMethod[0] === TokenSortMethod.VOLUME) {
+        if (poolTvlData[aId] === undefined || poolTvlData[bId] === undefined) return 0
+        return sortAscending[0]
+          ? poolTvlData[aId].volume - poolTvlData[bId].volume
+          : poolTvlData[bId].volume - poolTvlData[aId].volume
+      } else if (sortMethod[0] === TokenSortMethod.APR) {
+        if (aprList[aId] === undefined || aprList[bId] === undefined) return 0
+        return sortAscending[0] ? aprList[aId].apr - aprList[bId].apr : aprList[bId].apr - aprList[aId].apr
+      } else if (sortMethod[0] === TokenSortMethod.URate) {
+        if (aprList[aId] === undefined || aprList[bId] === undefined) return 0
+        return sortAscending[0]
+          ? aprList[aId].utilTotal - aprList[bId].utilTotal
+          : aprList[bId].utilTotal - aprList[aId].utilTotal
+      } else if (sortMethod[0] === TokenSortMethod.PRICE_CHANGE) {
+        if (poolOHLCs[aId].delta24h === undefined || poolOHLCs[bId].delta24h === undefined) return 0
+        return sortAscending[0]
+          ? poolOHLCs[aId].delta24h - poolOHLCs[bId].delta24h
+          : poolOHLCs[bId].delta24h - poolOHLCs[aId].delta24h
       }
-      return PoolsOHLCArr.map((pool: any) => {
-        if (Object.keys(lowerCasePool).find((pair: any) => pool.id)) {
-          return {
-            ...pool,
-            TVL: lowerCasePool[`${pool.id}`]?.totalValueLocked,
-            Volume: lowerCasePool[`${pool.id}`]?.volume,
-            Price: pool.priceNow,
-            [`24h Change`]: pool.delta24h,
-          }
-        } else {
-          return pool
-        }
-      })
-    } 
-    // else if (!poolData && PoolsOHLCArr && poolList) {
-    //   return poolList.map((pool: any) => {
-    //     return {
-    //       ...pool,
-    //       TVL: 100000,
-    //       Volume: 500000,
-    //       Price: 4000,
-    //       [`24h Change`]: 1,
-    //     }
-    //   })
-    // }
-     else {
-      return null
-    }
-  }, [poolData, PoolsOHLCArr, chainId, poolList])
+      return 0
+    })
+  }, [poolTvlData, sortAscending, sortMethod, poolOHLCs, poolList, loading, aprList])
 
   /* loading and error state */
   return (
     <>
       <PairInfoContainer>
-        <TVLInfoContainer poolsInfo={poolsInfo} />
+        <TVLInfoContainer poolsInfo={protocolTvL} />
         <HowToDetails />
       </PairInfoContainer>
       <SearchBar />
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
-          {dataInfo && !loading ? (
-            (getSortedData(dataInfo, sortAscending[0], sortMethod[0]) || []).map((dat: any, i: number) => (
-              <PLoadedRow
-                key={`${dat.token0}-${dat.token1}-${dat.fee}`}
-                tokenListIndex={i++}
-                tokenListLength={i++}
-                tokenA={dat.pool?.token0 ?? dat.token0}
-                tokenB={dat.pool?.token1 ?? dat.token1}
-                fee={dat.pool?.fee ?? dat.fee}
-                tvl={dat.TVL}
-                volume={dat.Volume}
-                price={dat.priceNow}
-                delta={dat.delta24h}
-              />
-            ))
+          {!loading && poolTvlData && poolOHLCs && aprList ? (
+            sortedPools.map((pool, i: number) => {
+              const id = getPoolId(pool.token0, pool.token1, pool.fee)
+              return (
+                <PLoadedRow
+                  key={getPoolId(pool.token0, pool.token1, pool.fee)}
+                  tokenListIndex={i++}
+                  tokenListLength={i++}
+                  tokenA={pool.token0}
+                  tokenB={pool.token1}
+                  fee={pool.fee}
+                  tvl={poolTvlData[id]?.totalValueLocked}
+                  volume={poolTvlData[id]?.volume}
+                  price={poolOHLCs[id]?.priceNow}
+                  delta={poolOHLCs[id]?.delta24h}
+                  apr={aprList[id]?.apr}
+                  utilTotal={aprList[id]?.utilTotal}
+                />
+              )
+            })
           ) : (
             <LoadingRows rowCount={PAGE_SIZE} />
           )}

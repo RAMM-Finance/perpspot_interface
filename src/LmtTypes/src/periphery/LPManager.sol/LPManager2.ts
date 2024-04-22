@@ -70,35 +70,86 @@ export declare namespace LPManager2 {
     liquidity: BigNumber;
     key: PoolKeyStructOutput;
   };
+
+  export type RebalanceReturnStruct = {
+    token0Supplied: PromiseOrValue<BigNumberish>;
+    token1Supplied: PromiseOrValue<BigNumberish>;
+    token0Withdrawn: PromiseOrValue<BigNumberish>;
+    token1Withdrawn: PromiseOrValue<BigNumberish>;
+  };
+
+  export type RebalanceReturnStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    token0Supplied: BigNumber;
+    token1Supplied: BigNumber;
+    token0Withdrawn: BigNumber;
+    token1Withdrawn: BigNumber;
+  };
 }
 
 export interface LPManager2Interface extends utils.Interface {
   functions: {
+    "UtilizedByKey(bytes32)": FunctionFragment;
+    "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getPosition(uint256)": FunctionFragment;
+    "getTokenIdsFromKey((address,address,uint24))": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
+    "keyToTokenIds(bytes32,uint256)": FunctionFragment;
     "lastRebalanceCenterTicks(bytes32)": FunctionFragment;
-    "provideLiquidity((address,address,uint24),int24,int24,uint256,address)": FunctionFragment;
+    "provideLiquidity((address,address,uint24),int24,int24,uint256)": FunctionFragment;
+    "rebalanceAroundCurrentPrice((address,address,uint24),int24,int24,uint256,int24)": FunctionFragment;
+    "removeTokenById(bytes32,uint256)": FunctionFragment;
     "setStrategist(address)": FunctionFragment;
     "withdrawLiquidity(uint256,uint128)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "UtilizedByKey"
+      | "getMaxWithdrawable"
       | "getPosition"
+      | "getTokenIdsFromKey"
       | "initialize"
+      | "keyToTokenIds"
       | "lastRebalanceCenterTicks"
       | "provideLiquidity"
+      | "rebalanceAroundCurrentPrice"
+      | "removeTokenById"
       | "setStrategist"
       | "withdrawLiquidity"
   ): FunctionFragment;
 
   encodeFunctionData(
+    functionFragment: "UtilizedByKey",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMaxWithdrawable",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getPosition",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getTokenIdsFromKey",
+    values: [PoolKeyStruct]
+  ): string;
+  encodeFunctionData(
     functionFragment: "initialize",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "keyToTokenIds",
+    values: [PromiseOrValue<BytesLike>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "lastRebalanceCenterTicks",
@@ -110,9 +161,22 @@ export interface LPManager2Interface extends utils.Interface {
       PoolKeyStruct,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
+      PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "rebalanceAroundCurrentPrice",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeTokenById",
+    values: [PromiseOrValue<BytesLike>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "setStrategist",
@@ -124,16 +188,40 @@ export interface LPManager2Interface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "UtilizedByKey",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMaxWithdrawable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getPosition",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTokenIdsFromKey",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "keyToTokenIds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "lastRebalanceCenterTicks",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "provideLiquidity",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "rebalanceAroundCurrentPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeTokenById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -202,16 +290,39 @@ export interface LPManager2 extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    UtilizedByKey(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { maxWithdrawable: BigNumber }>;
+
     getPosition(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[LPManager2.PositionStructOutput]>;
+
+    getTokenIdsFromKey(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
 
     initialize(
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    keyToTokenIds(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     lastRebalanceCenterTicks(
       arg0: PromiseOrValue<BytesLike>,
@@ -223,7 +334,21 @@ export interface LPManager2 extends BaseContract {
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
       tokenAmount: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    rebalanceAroundCurrentPrice(
+      key: PoolKeyStruct,
+      tickOuter: PromiseOrValue<BigNumberish>,
+      tickInner: PromiseOrValue<BigNumberish>,
+      percentageUse: PromiseOrValue<BigNumberish>,
+      rebalanceThreshold: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    removeTokenById(
+      key: PromiseOrValue<BytesLike>,
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -239,16 +364,39 @@ export interface LPManager2 extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  UtilizedByKey(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getMaxWithdrawable(
+    key: PoolKeyStruct,
+    tickLower: PromiseOrValue<BigNumberish>,
+    tickUpper: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getPosition(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<LPManager2.PositionStructOutput>;
+
+  getTokenIdsFromKey(
+    key: PoolKeyStruct,
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
 
   initialize(
     _vault: PromiseOrValue<string>,
     _poolManager: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  keyToTokenIds(
+    arg0: PromiseOrValue<BytesLike>,
+    arg1: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   lastRebalanceCenterTicks(
     arg0: PromiseOrValue<BytesLike>,
@@ -260,7 +408,21 @@ export interface LPManager2 extends BaseContract {
     tickLower: PromiseOrValue<BigNumberish>,
     tickUpper: PromiseOrValue<BigNumberish>,
     tokenAmount: PromiseOrValue<BigNumberish>,
-    token: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  rebalanceAroundCurrentPrice(
+    key: PoolKeyStruct,
+    tickOuter: PromiseOrValue<BigNumberish>,
+    tickInner: PromiseOrValue<BigNumberish>,
+    percentageUse: PromiseOrValue<BigNumberish>,
+    rebalanceThreshold: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  removeTokenById(
+    key: PromiseOrValue<BytesLike>,
+    tokenId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -276,16 +438,39 @@ export interface LPManager2 extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    UtilizedByKey(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPosition(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<LPManager2.PositionStructOutput>;
+
+    getTokenIdsFromKey(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
 
     initialize(
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    keyToTokenIds(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     lastRebalanceCenterTicks(
       arg0: PromiseOrValue<BytesLike>,
@@ -297,7 +482,6 @@ export interface LPManager2 extends BaseContract {
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
       tokenAmount: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
@@ -306,6 +490,21 @@ export interface LPManager2 extends BaseContract {
         liquidity: BigNumber;
       }
     >;
+
+    rebalanceAroundCurrentPrice(
+      key: PoolKeyStruct,
+      tickOuter: PromiseOrValue<BigNumberish>,
+      tickInner: PromiseOrValue<BigNumberish>,
+      percentageUse: PromiseOrValue<BigNumberish>,
+      rebalanceThreshold: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<LPManager2.RebalanceReturnStructOutput>;
+
+    removeTokenById(
+      key: PromiseOrValue<BytesLike>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setStrategist(
       strategist: PromiseOrValue<string>,
@@ -342,8 +541,25 @@ export interface LPManager2 extends BaseContract {
   };
 
   estimateGas: {
+    UtilizedByKey(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPosition(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTokenIdsFromKey(
+      key: PoolKeyStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -351,6 +567,12 @@ export interface LPManager2 extends BaseContract {
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    keyToTokenIds(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     lastRebalanceCenterTicks(
@@ -363,7 +585,21 @@ export interface LPManager2 extends BaseContract {
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
       tokenAmount: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    rebalanceAroundCurrentPrice(
+      key: PoolKeyStruct,
+      tickOuter: PromiseOrValue<BigNumberish>,
+      tickInner: PromiseOrValue<BigNumberish>,
+      percentageUse: PromiseOrValue<BigNumberish>,
+      rebalanceThreshold: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    removeTokenById(
+      key: PromiseOrValue<BytesLike>,
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -380,8 +616,25 @@ export interface LPManager2 extends BaseContract {
   };
 
   populateTransaction: {
+    UtilizedByKey(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMaxWithdrawable(
+      key: PoolKeyStruct,
+      tickLower: PromiseOrValue<BigNumberish>,
+      tickUpper: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getPosition(
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTokenIdsFromKey(
+      key: PoolKeyStruct,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -389,6 +642,12 @@ export interface LPManager2 extends BaseContract {
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    keyToTokenIds(
+      arg0: PromiseOrValue<BytesLike>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     lastRebalanceCenterTicks(
@@ -401,7 +660,21 @@ export interface LPManager2 extends BaseContract {
       tickLower: PromiseOrValue<BigNumberish>,
       tickUpper: PromiseOrValue<BigNumberish>,
       tokenAmount: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    rebalanceAroundCurrentPrice(
+      key: PoolKeyStruct,
+      tickOuter: PromiseOrValue<BigNumberish>,
+      tickInner: PromiseOrValue<BigNumberish>,
+      percentageUse: PromiseOrValue<BigNumberish>,
+      rebalanceThreshold: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeTokenById(
+      key: PromiseOrValue<BytesLike>,
+      tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -1,3 +1,5 @@
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import {
@@ -10,8 +12,6 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 
 import { useDataProviderContract } from './useContract'
-import { useWeb3React } from '@web3-react/core'
-import { SupportedChainId } from 'constants/chains'
 
 export function useHistoryData(address: any) {
   const [addData, setAddData] = useState<any>()

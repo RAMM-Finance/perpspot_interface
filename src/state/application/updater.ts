@@ -10,7 +10,7 @@ import { setCurrentPool } from 'state/user/reducer'
 import { PoolKey } from 'types/lmtv2position'
 import { supportedChainId } from 'utils/supportedChainId'
 
-import { useCloseModal } from './hooks'
+import { useCloseModal, usePoolKeyList } from './hooks'
 import { updateChainId, updatePoolPriceData } from './reducer'
 
 const DEFAULT_POOLS: {
@@ -87,8 +87,8 @@ export default function Updater(): null {
 
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
-
-  const { poolsOHLC } = usePoolsOHLC()
+  const { poolList } = usePoolKeyList()
+  const { poolsOHLC } = usePoolsOHLC(poolList)
 
   useEffect(() => {
     if (poolsOHLC && chainId) {
