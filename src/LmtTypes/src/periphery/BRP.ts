@@ -32,6 +32,7 @@ export interface BRPInterface extends utils.Interface {
     "addAllPoint(address,uint256,uint256,uint256)": FunctionFragment;
     "addAllPoints(address[],uint256[],uint256[],uint256[])": FunctionFragment;
     "claimRewards()": FunctionFragment;
+    "claimableBoxes(address)": FunctionFragment;
     "getBlock()": FunctionFragment;
     "getData(address[])": FunctionFragment;
     "getLastUpdate()": FunctionFragment;
@@ -42,11 +43,18 @@ export interface BRPInterface extends utils.Interface {
     "lastRecordedLpPoints(address)": FunctionFragment;
     "lastRecordedPoints(address)": FunctionFragment;
     "lastRecordedTradePoints(address)": FunctionFragment;
+    "numBoxes(address)": FunctionFragment;
     "owner()": FunctionFragment;
+    "pointPerUnlocks()": FunctionFragment;
+    "pointsUsedForUnlocks(address)": FunctionFragment;
     "push(address,uint256)": FunctionFragment;
+    "randomWithinRange(uint256,uint256)": FunctionFragment;
     "rewardToken()": FunctionFragment;
+    "setPointPerUnlocks(uint256)": FunctionFragment;
+    "setRewardToken(address)": FunctionFragment;
     "setlastUpdate()": FunctionFragment;
     "tierToRewards(uint256)": FunctionFragment;
+    "unlockBox()": FunctionFragment;
     "updateAllPoint(address,uint256,uint256,uint256)": FunctionFragment;
     "updateAllPoints(address[],uint256[],uint256[],uint256[])": FunctionFragment;
     "updatePoint(address,uint256)": FunctionFragment;
@@ -59,6 +67,7 @@ export interface BRPInterface extends utils.Interface {
       | "addAllPoint"
       | "addAllPoints"
       | "claimRewards"
+      | "claimableBoxes"
       | "getBlock"
       | "getData"
       | "getLastUpdate"
@@ -69,11 +78,18 @@ export interface BRPInterface extends utils.Interface {
       | "lastRecordedLpPoints"
       | "lastRecordedPoints"
       | "lastRecordedTradePoints"
+      | "numBoxes"
       | "owner"
+      | "pointPerUnlocks"
+      | "pointsUsedForUnlocks"
       | "push"
+      | "randomWithinRange"
       | "rewardToken"
+      | "setPointPerUnlocks"
+      | "setRewardToken"
       | "setlastUpdate"
       | "tierToRewards"
+      | "unlockBox"
       | "updateAllPoint"
       | "updateAllPoints"
       | "updatePoint"
@@ -102,6 +118,10 @@ export interface BRPInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "claimRewards",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimableBoxes",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "getBlock", values?: undefined): string;
   encodeFunctionData(
@@ -137,14 +157,38 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "lastRecordedTradePoints",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "numBoxes",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "pointPerUnlocks",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pointsUsedForUnlocks",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(
     functionFragment: "push",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "randomWithinRange",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "rewardToken",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPointPerUnlocks",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRewardToken",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "setlastUpdate",
@@ -154,6 +198,7 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "tierToRewards",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(functionFragment: "unlockBox", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "updateAllPoint",
     values: [
@@ -197,6 +242,10 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "claimRewards",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "claimableBoxes",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getBlock", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getData", data: BytesLike): Result;
   decodeFunctionResult(
@@ -222,10 +271,31 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "lastRecordedTradePoints",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "numBoxes", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pointPerUnlocks",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pointsUsedForUnlocks",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "push", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "randomWithinRange",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "rewardToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPointPerUnlocks",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRewardToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -236,6 +306,7 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "tierToRewards",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unlockBox", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "updateAllPoint",
     data: BytesLike
@@ -256,12 +327,14 @@ export interface BRPInterface extends utils.Interface {
 
   events: {
     "AddedUser(address)": EventFragment;
+    "BoxUnlocked(address,uint256,uint256)": EventFragment;
     "ClaimedRebates(address,address,uint256,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "UpdatedPoints()": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AddedUser"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoxUnlocked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ClaimedRebates"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UpdatedPoints"): EventFragment;
@@ -273,6 +346,18 @@ export interface AddedUserEventObject {
 export type AddedUserEvent = TypedEvent<[string], AddedUserEventObject>;
 
 export type AddedUserEventFilter = TypedEventFilter<AddedUserEvent>;
+
+export interface BoxUnlockedEventObject {
+  who: string;
+  claimableBoxes: BigNumber;
+  randomNumber: BigNumber;
+}
+export type BoxUnlockedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  BoxUnlockedEventObject
+>;
+
+export type BoxUnlockedEventFilter = TypedEventFilter<BoxUnlockedEvent>;
 
 export interface ClaimedRebatesEventObject {
   claimer: string;
@@ -347,6 +432,16 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    claimableBoxes(
+      who: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        claimableBoxes: BigNumber;
+        totalPoints: BigNumber;
+      }
+    >;
+
     getBlock(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getData(
@@ -389,7 +484,19 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    numBoxes(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    pointPerUnlocks(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    pointsUsedForUnlocks(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     push(
       token: PromiseOrValue<string>,
@@ -397,7 +504,23 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    randomWithinRange(
+      rangelow: PromiseOrValue<BigNumberish>,
+      rangeHigh: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     rewardToken(overrides?: CallOverrides): Promise<[string]>;
+
+    setPointPerUnlocks(
+      pointPerUnlocks_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setRewardToken(
+      rewardToken_: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     setlastUpdate(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -407,6 +530,10 @@ export interface BRP extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    unlockBox(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     updateAllPoint(
       user: PromiseOrValue<string>,
@@ -462,6 +589,16 @@ export interface BRP extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  claimableBoxes(
+    who: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & {
+      claimableBoxes: BigNumber;
+      totalPoints: BigNumber;
+    }
+  >;
+
   getBlock(overrides?: CallOverrides): Promise<BigNumber>;
 
   getData(
@@ -504,7 +641,19 @@ export interface BRP extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  numBoxes(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   owner(overrides?: CallOverrides): Promise<string>;
+
+  pointPerUnlocks(overrides?: CallOverrides): Promise<BigNumber>;
+
+  pointsUsedForUnlocks(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   push(
     token: PromiseOrValue<string>,
@@ -512,7 +661,23 @@ export interface BRP extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  randomWithinRange(
+    rangelow: PromiseOrValue<BigNumberish>,
+    rangeHigh: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   rewardToken(overrides?: CallOverrides): Promise<string>;
+
+  setPointPerUnlocks(
+    pointPerUnlocks_: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setRewardToken(
+    rewardToken_: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   setlastUpdate(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -522,6 +687,10 @@ export interface BRP extends BaseContract {
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  unlockBox(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   updateAllPoint(
     user: PromiseOrValue<string>,
@@ -575,6 +744,16 @@ export interface BRP extends BaseContract {
 
     claimRewards(overrides?: CallOverrides): Promise<BigNumber>;
 
+    claimableBoxes(
+      who: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        claimableBoxes: BigNumber;
+        totalPoints: BigNumber;
+      }
+    >;
+
     getBlock(overrides?: CallOverrides): Promise<BigNumber>;
 
     getData(
@@ -617,7 +796,19 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    numBoxes(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<string>;
+
+    pointPerUnlocks(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pointsUsedForUnlocks(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     push(
       token: PromiseOrValue<string>,
@@ -625,7 +816,23 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    randomWithinRange(
+      rangelow: PromiseOrValue<BigNumberish>,
+      rangeHigh: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     rewardToken(overrides?: CallOverrides): Promise<string>;
+
+    setPointPerUnlocks(
+      pointPerUnlocks_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRewardToken(
+      rewardToken_: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setlastUpdate(overrides?: CallOverrides): Promise<void>;
 
@@ -633,6 +840,8 @@ export interface BRP extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    unlockBox(overrides?: CallOverrides): Promise<[BigNumber, BigNumber]>;
 
     updateAllPoint(
       user: PromiseOrValue<string>,
@@ -673,6 +882,17 @@ export interface BRP extends BaseContract {
       user?: PromiseOrValue<string> | null
     ): AddedUserEventFilter;
     AddedUser(user?: PromiseOrValue<string> | null): AddedUserEventFilter;
+
+    "BoxUnlocked(address,uint256,uint256)"(
+      who?: PromiseOrValue<string> | null,
+      claimableBoxes?: null,
+      randomNumber?: null
+    ): BoxUnlockedEventFilter;
+    BoxUnlocked(
+      who?: PromiseOrValue<string> | null,
+      claimableBoxes?: null,
+      randomNumber?: null
+    ): BoxUnlockedEventFilter;
 
     "ClaimedRebates(address,address,uint256,uint256,uint256)"(
       claimer?: PromiseOrValue<string> | null,
@@ -717,6 +937,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    claimableBoxes(
+      who: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getBlock(overrides?: CallOverrides): Promise<BigNumber>;
 
     getData(
@@ -759,7 +984,19 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    numBoxes(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pointPerUnlocks(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pointsUsedForUnlocks(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     push(
       token: PromiseOrValue<string>,
@@ -767,7 +1004,23 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    randomWithinRange(
+      rangelow: PromiseOrValue<BigNumberish>,
+      rangeHigh: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     rewardToken(overrides?: CallOverrides): Promise<BigNumber>;
+
+    setPointPerUnlocks(
+      pointPerUnlocks_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setRewardToken(
+      rewardToken_: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     setlastUpdate(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -776,6 +1029,10 @@ export interface BRP extends BaseContract {
     tierToRewards(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    unlockBox(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     updateAllPoint(
@@ -833,6 +1090,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    claimableBoxes(
+      who: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getBlock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getData(
@@ -875,7 +1137,19 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    numBoxes(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    pointPerUnlocks(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    pointsUsedForUnlocks(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     push(
       token: PromiseOrValue<string>,
@@ -883,7 +1157,23 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    randomWithinRange(
+      rangelow: PromiseOrValue<BigNumberish>,
+      rangeHigh: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     rewardToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    setPointPerUnlocks(
+      pointPerUnlocks_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRewardToken(
+      rewardToken_: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     setlastUpdate(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -892,6 +1182,10 @@ export interface BRP extends BaseContract {
     tierToRewards(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    unlockBox(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     updateAllPoint(

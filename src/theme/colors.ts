@@ -149,8 +149,13 @@ const commonTheme = {
   shortBtnBackground: colors.red900,
   swapBtnBackground: colors.blue900,
   
+  roundedImageShadow: 'rgba(245, 245, 245, 0.1) 0px 4px 12px',
+
   hoverState: opacify(24, colors.blue200),
   hoverDefault: opacify(8, colors.gray300),
+
+  stateLabel: opacify(30, colors.gray200),
+
 }
 
 export const darkTheme = {
@@ -194,11 +199,15 @@ export const darkTheme = {
 
   deepShadow: '12px 16px 24px rgba(0, 0, 0, 0.24), 12px 8px 12px rgba(0, 0, 0, 0.24), 4px 4px 8px rgba(0, 0, 0, 0.32);',
   shallowShadow: '4px 4px 10px rgba(0, 0, 0, 0.24), 2px 2px 4px rgba(0, 0, 0, 0.12), 1px 2px 2px rgba(0, 0, 0, 0.12);',
+  
+  roundedImageShadow: 'rgba(245, 245, 245, 0.1) 0px 4px 12px',
 
   networkDefaultShadow: `0px 40px 120px ${opacify(16, colors.blue400)}`,
 
   stateOverlayHover: opacify(12, colors.gray300),
   stateOverlayPressed: opacify(24, colors.gray200),
+  stateLabel: opacify(30, colors.gray200),
+
   searchBackground: `#2b3039`,
   searchOutline: `rgba(255,255,255,0.07)`,
 }
@@ -244,10 +253,13 @@ export const lightTheme = {
   deepShadow: '12px 16px 24px rgba(0, 0, 0, 0.24), 12px 8px 12px rgba(0, 0, 0, 0.24), 4px 4px 8px rgba(0, 0, 0, 0.32);',
   shallowShadow: '4px 4px 10px rgba(0, 0, 0, 0.24), 2px 2px 4px rgba(0, 0, 0, 0.12), 1px 2px 2px rgba(0, 0, 0, 0.12);',
 
+  roundedImageShadow: 'rgba(245, 245, 245, 0.1) 0px 4px 12px',
+
   networkDefaultShadow: `0px 40px 120px ${opacify(16, colors.blue400)}`,
 
   stateOverlayHover: opacify(8, colors.gray300),
   stateOverlayPressed: opacify(24, colors.gray200),
+  stateLabel: opacify(30, colors.gray200),
 
   searchBackground: `#2b3039`,
   searchOutline: `rgba(255,255,255,0.07)`,

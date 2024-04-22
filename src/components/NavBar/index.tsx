@@ -111,6 +111,9 @@ export const PageTabs = () => {
         <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
           <Trans>Docs</Trans>
         </MenuItem>
+        <MenuItem href="/new" isActive={pathname.startsWith('/new')}>
+          <Trans>New</Trans>
+        </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
       {micrositeEnabled && (
