@@ -211,7 +211,6 @@ export function useLimweth(withSignerIfPossible?: boolean) {
 export function useBRP(withSignerIfPossible?: boolean) {
   return useContract<BRP>(BRP_ADDRESS, BRP_ABI, withSignerIfPossible)
 }
-
 // returns null on errors
 export function useContract<T extends Contract = Contract>(
   addressOrAddressMap: string | { [chainId: number]: string } | undefined,

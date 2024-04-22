@@ -216,7 +216,7 @@ export default function TokenTable() {
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   const loading = poolsLoading || balanceLoading
 
-  const protocolTvL = useMemo(() => {
+  const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading) {
       return {
         tvl:
@@ -227,7 +227,7 @@ export default function TokenTable() {
     } else {
       return null
     }
-  }, [poolTvlData, vaultBal, balanceLoading])
+  }, [chainId, poolTvlData, vaultBal, balanceLoading])
 
   const filterString = useAtomValue(filterStringAtom)
   const filteredPools = useMemo(() => {
@@ -290,7 +290,7 @@ export default function TokenTable() {
   return (
     <>
       <PairInfoContainer>
-        <TVLInfoContainer poolsInfo={protocolTvL} />
+        <TVLInfoContainer poolsInfo={protocolTvl} loading={loading} />
         <HowToDetails />
       </PairInfoContainer>
       <SearchBar />
@@ -373,19 +373,19 @@ const TVLInfoWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
 `
 
-function TVLInfoContainer({ poolsInfo }: { poolsInfo?: any }) {
+function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any, loading?: boolean }) {
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
+          {loading ? '-' : (poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0')}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
+          {loading ? '-' : (poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0')}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

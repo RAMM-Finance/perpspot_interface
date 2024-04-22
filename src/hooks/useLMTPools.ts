@@ -47,13 +47,11 @@ export function usePoolsData(): {
       let ReduceQueryData
       let ProvidedQueryData
       let WithdrawnQueryData
-      let networkIdForGeckoAPI = 'arbitrum-one'
       if (chainId === SupportedChainId.BASE) {
         AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
         ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
         ProvidedQueryData = await clientBase.query(LiquidityProvidedQuery, {}).toPromise()
         WithdrawnQueryData = await clientBase.query(LiquidityWithdrawnQuery, {}).toPromise()
-        networkIdForGeckoAPI = 'base'
       } else {
         AddQueryData = await client.query(AddQuery, {}).toPromise()
         ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
@@ -93,6 +91,7 @@ export function usePoolsData(): {
         reduceData: ReduceQueryData.data.marginPositionReduceds,
         providedData: ProvidedQueryData.data.liquidityProvideds,
         withdrawnData: WithdrawnQueryData.data.liquidityWithdrawns,
+        useQueryChainId: chainId
       }
     },
     {
@@ -104,7 +103,6 @@ export function usePoolsData(): {
 
   useEffect(() => {
     if (chainId) {
-      console.log(`chainId changed to ${chainId}. refetching...`)
       refetch()
     }
   }, [chainId, refetch])
@@ -112,8 +110,12 @@ export function usePoolsData(): {
   const slot0s = [] as any
 
   const poolToData = useMemo(() => {
+    
     if (isLoading || isError || !data) return undefined
-    const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData } = data
+    
+    const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, useQueryChainId } = data
+    
+    if (chainId !== useQueryChainId) return undefined
 
     const slot0ByPool: { [key: string]: any } = {}
     const slot0ByPoolAddress: { [key: string]: any } = {}
