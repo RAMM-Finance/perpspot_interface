@@ -247,11 +247,16 @@ export default function TokenTable() {
   const sortedPools = useMemo(() => {
     if (!poolTvlData || !filteredPools || filteredPools.length === 0 || !poolOHLCs || loading || !aprList) return []
 
+    console.log("FILTERED POOLS", filteredPools)
     return filteredPools.sort((a, b) => {
       const aId = getPoolId(a.token0, a.token1, a.fee)
       const bId = getPoolId(b.token0, b.token1, b.fee)
+      console.log("POOL OHLCS", poolOHLCs)
+      console.log("AID", aId)
+      console.log("BID", bId)
+      
       if (sortMethod[0] === TokenSortMethod.PRICE) {
-        if (poolOHLCs[aId].priceNow === undefined || poolOHLCs[bId].priceNow === undefined) return 0
+        if (poolOHLCs[aId]?.priceNow === undefined || poolOHLCs[bId]?.priceNow === undefined) return 0
         if (!sortAscending[0]) {
           return poolOHLCs[aId].priceNow > poolOHLCs[bId].priceNow ? 1 : -1
         } else {
