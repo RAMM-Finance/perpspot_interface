@@ -7,7 +7,7 @@ import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { ArrowDown, ArrowUp, Info } from 'react-feather'
+import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -166,9 +166,9 @@ function HeaderCell({
       {sortMethod === category && (
         <>
           {sortAscending ? (
-            <ArrowUp size={12} strokeWidth={1.8} color={theme.accentActive} />
+            <ChevronUp size={12} strokeWidth={1.8} color={theme.accentActive} />
           ) : (
-            <ArrowDown size={12} strokeWidth={1.8} color={theme.accentActive} />
+            <ChevronDown size={12} strokeWidth={1.8} color={theme.accentActive} />
           )}
         </>
       )}
