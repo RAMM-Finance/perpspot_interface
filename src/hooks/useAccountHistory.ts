@@ -59,8 +59,6 @@ export function useHistoryData(address: any) {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
       })
-      console.log('addQueryFiltered', addQueryFiltered)
-      console.log('reduceQueryFiltered', reduceQueryFiltered)
 
       const addOrderFiltered = AddOrderData?.data?.orderAddeds.filter((data: any) => {
         if (ethers.utils.getAddress(data.trader) == account) return true
