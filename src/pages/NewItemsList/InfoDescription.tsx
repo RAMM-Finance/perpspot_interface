@@ -134,12 +134,12 @@ const InfoDescription = ({ title, description }: { title?: boolean; description:
   )
 }
 
-const InfoDescriptionSection = ({ title, description }: { title: string; description: string }) => {
+const InfoDescriptionSection = ({ title, description, stats }: { title: string; description: string, stats: any }) => {
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24">
       <InfoDescription title={true} description={title} />
       <InfoDescription description={description} />
-      <InfoItemStats/>
+      <InfoItemStats stats={stats}/>
     </Column>
   )
 }

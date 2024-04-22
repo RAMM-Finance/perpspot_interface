@@ -20,7 +20,7 @@ const StatsItem = ({ children, label, shouldHide }: { children: ReactNode; label
   )
 }
 
-const InfoItemStats = () => {
+const InfoItemStats = ({stats} : {stats: any}) => {
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
       <StatsItem label="Total boxes" shouldHide={false}>
@@ -33,7 +33,7 @@ const InfoItemStats = () => {
         </PercentChange>
       </StatsItem>
       <StatsItem label="Total LMT" shouldHide={false}>
-        ETH
+        {stats} ETH
       </StatsItem>
       {/* <StatsItem label="Items" shouldHide={isMobile ?? false}>
           {totalSupplyStr}

@@ -194,9 +194,10 @@ interface ICardContainerProps {
   selected?: boolean
   isDisabled?: boolean
   isLocked: boolean
+  handleUnlockBox: () => void
 }
 
-export const CardContainer = ({img, info, selected, isDisabled, isLocked }: ICardContainerProps) => {
+export const CardContainer = ({img, info, selected, isDisabled, isLocked, handleUnlockBox }: ICardContainerProps) => {
   return (
     <StyledCardContainer selected={false} isDisabled={false}>
       <ItemImgContainer isDisabled={true}>
@@ -222,7 +223,7 @@ export const CardContainer = ({img, info, selected, isDisabled, isLocked }: ICar
           </StyledInfoContainer>
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
-      <StyledActionButton isDisabled={false} selected={false}>
+      <StyledActionButton isDisabled={false} selected={false} onClick={handleUnlockBox}>
         Add 
       </StyledActionButton>
     </StyledCardContainer>

@@ -16,6 +16,11 @@ import ItemImg6 from '../../assets/images/newItem6.webp'
 import banner from '../../components/Leaderboard/banner.png'
 import { CardContainer } from './CardContainer'
 import InfoDescriptionSection from './InfoDescription'
+import { useBRP } from 'hooks/useContract'
+import { useWeb3React } from '@web3-react/core'
+import { useCallback, useEffect, useState } from 'react'
+import { BigNumber } from 'ethers'
+import { isAddress } from 'ethers/lib/utils'
 
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
@@ -230,6 +235,21 @@ const InfoImg = styled.img`
 // `
 
 const NewItemsListPage = () => {
+  const { account, chainId } = useWeb3React()
+  const brp = useBRP()
+
+  // const [brpData, setBRPData] = useState({
+  //   totalBoxes: null,
+  //   totalUnlockableBoxes: null,
+  //   MTRequiredPerUnlock: null,
+  // });
+  const [totalLMT, setTotalLMT] = useState('')
+   // const totalBoxes = brp.numBoxes(account)
+  // const totalUnlockableBoxes = brp.claimableBoxes(account)
+  // const MTRequiredPerUnlock = brp.pointPerUnlocks()
+  // const TotalLMT = brp.lastRecordedTradePoints(account)+ 
+  // brp.lastRecordedLpPoints(account)+ brp.lastRecordedPoints(account)
+
   const itemData = [
     {
       id: '#111',
@@ -319,34 +339,67 @@ const NewItemsListPage = () => {
       isDisabled: false,
       isLocked: false
     },
-    {
-      id: '#1313',
-      img: ItemImg3,
-      info: 'Limitless test1313',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#1414',
-      img: ItemImg,
-      info: 'Limitless test1414',
-      selected: false,
-      isDisabled: false,
-      isLocked: false
-    },
   ]
 
   const { pathname } = useLocation()
 
+  useEffect(() => {
+    if (brp && account){
+      console.log('check' ,brp, account);
+      const call = async () => {
+        try {
+          // const totalBoxes = await brp.numBoxes(account)
+          // const totalUnlockableBoxes = await brp.claimableBoxes(account)
+          // const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
+
+          const lastRecordedTradePoints = await brp.lastRecordedTradePoints(account)
+          const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
+          const lastRecordedPoints = await brp.lastRecordedPoints(account)
+
+          const totalLMT = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
+          const totalLMTString = totalLMT.toString()
+
+          setTotalLMT(totalLMTString)
+          // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
+          // console.log('total',  totalBoxes, totalUnlockableBoxes,lmtRequiredPerUnlock )
+          // setBRPData({
+          //   totalBoxes,
+          //   totalUnlockableBoxes,
+          //   MTRequiredPerUnlock
+          // });
+        } catch (error) {
+          console.log(error, 'get brp data error')
+        }
+      }
+      call()
+    }
+  }, [brp, account])
+
+
+  const handleUnlockBox = useCallback(async() => {
+    if (brp && account) {
+      try {
+        const gasLimit = 1000000
+        const tx = await brp.unlockBox({
+          gasLimit,
+          from: account 
+        })
+        const receipt = await tx.wait()
+        console.log('Unlock successful:', receipt)
+      } catch(error) {
+        console.error(error, 'BRP instance is not available')
+      }
+    }
+  }, [brp, account])
+
   // toggle item or Activity
-  const isActivityToggled = pathname.includes('/activity')
-  const navigate = useNavigate()
+  // const isActivityToggled = pathname.includes('/activity')
+  // const navigate = useNavigate()
 
   // //TODO: Add query string parameter to the URL in the ("?")following format
-  const toggleActivity = () => {
-    isActivityToggled ? navigate(`/new`) : navigate(`/new/?/activity`)
-  }
+  // const toggleActivity = () => {
+  //   isActivityToggled ? navigate(`/new`) : navigate(`/new/?/activity`)
+  // }
   // const setSortBy = useCollectionFilters((state) => state.setSortBy)
 
   // const sortDropDownOptions: DropDownOption[] = useMemo(() => getSortDropdownOptions(setSortBy, false), [setSortBy])
@@ -362,6 +415,7 @@ const NewItemsListPage = () => {
           <InfoDescriptionSection
             title="LimitLess"
             description="Milady Maker is a collection of 10,000 generative pfpNFT's in a neochibi aesthetic inspired by street style tribes."
+            stats={totalLMT}
           />
         </Row>
         {/* <ItemStats /> */}
@@ -436,6 +490,7 @@ const NewItemsListPage = () => {
                 selected={selected}
                 isDisabled={isDisabled}
                 isLocked={isLocked}
+                handleUnlockBox={handleUnlockBox}
               />
             ))}
             {/* </InfiniteScroll> */}
