@@ -136,32 +136,33 @@ export function ActivityRow({
                     <ArrowUpRight size="16px" />
                   </MouseoverTooltip>
                 </ThemedText.SubHeaderSmall>
-                {pnlNumber ? (
+                {(typeof pnlNumber !== 'undefined') ? (
                   <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                     <ActivityPrice>
-                      <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber.toFixed(8)} `}</DeltaText>
+                      <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber} `}</DeltaText>
                       {marginToken}
                     </ActivityPrice>
                   {ENSName ?? otherAccount}
                   </ThemedText.SubHeaderSmall>
-                ) : null}
+                  ) : null
+                }
               </RowBetween>
-              <ThemedText.SubHeaderSmall
-                style={{ gap: '5px' }}
-                fontSize={12}
-                fontWeight={500}
-                display="flex"
-                alignItems="center"
-              >
-                {priceNumber && (
+              {priceNumber ? (
+                <ThemedText.SubHeaderSmall
+                  style={{ gap: '5px' }}
+                  fontSize={12}
+                  fontWeight={500}
+                  display="flex"
+                  alignItems="center"
+                >
                   <>
                     <ActivityPrice>
                       {`Price: ${isInverted ? ((1 / priceNumber) as number).toFixed(5) : priceNumber.toFixed(5)}`}
                     </ActivityPrice>
                     {invertedTooltipLogo} 
                   </>
-                )}
-              </ThemedText.SubHeaderSmall>
+                </ThemedText.SubHeaderSmall>
+              ) : null}
             </AutoColumn>
           </ActivityTableRow>
         }

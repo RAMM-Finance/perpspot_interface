@@ -6,7 +6,7 @@ import { usePoolsData } from 'hooks/useLMTPools'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
-import { ReactNode, useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo, useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -20,6 +20,11 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
+import { useLimweth } from 'hooks/useContract'
+import { SupportedChainId } from 'constants/chains'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { NumberType } from '@uniswap/conedison/format'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 
 const GridContainer = styled.div`
   display: flex;
@@ -216,18 +221,44 @@ export default function TokenTable() {
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   const loading = poolsLoading || balanceLoading
 
+  const [limWethBal, setLimWethBal] = useState<number | null>(null)
+  const limWeth = useLimweth()
+
+  useEffect(() => {
+    const getBalance = async (limWeth: any) => {
+      const limWethBal = await limWeth?.tokenBalance()
+      const decimals = await limWeth?.decimals()
+      const tokenBalance = parseFloat(limWethBal.toString()) / (10 ** decimals)
+      const price = (await getDecimalAndUsdValueData(chainId, "0x4200000000000000000000000000000000000006"))?.lastPriceUSD // BASE WETH PRICE
+      setLimWethBal(price * tokenBalance)
+    }
+    if (chainId === SupportedChainId.BASE) {
+      getBalance(limWeth)
+    }
+  }, [chainId, limWeth])
+
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading) {
-      return {
-        tvl:
-          Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-          Number(vaultBal),
-        volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+      if (chainId === SupportedChainId.BASE) {
+        return {
+          tvl:
+            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            Number(vaultBal) + 
+            Number(limWethBal || 0),
+          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+        }
+      } else {
+        return {
+          tvl:
+            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            Number(vaultBal),
+          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+        }
       }
     } else {
       return null
     }
-  }, [chainId, poolTvlData, vaultBal, balanceLoading])
+  }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
   const filterString = useAtomValue(filterStringAtom)
   const filteredPools = useMemo(() => {

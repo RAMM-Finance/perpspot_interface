@@ -144,6 +144,7 @@ function getFixedDecimal(amount: number, decimal?: number, fixed?: number) {
   }
   const decimalPlaces = (value.toString().split('.')[1] || []).length
   let displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
+
   if (Number(displayValue).toString() === "0" || Number(displayValue).toString() === "-0") {
     displayValue = '0'
   }
@@ -153,14 +154,6 @@ function getFixedDecimal(amount: number, decimal?: number, fixed?: number) {
 async function getDescriptor(chainId: number | undefined, entry: any, tokens: any) {
   const token0Name = tokens[entry.token0]?.symbol ?? tokens[entry.token0]?.name
   const token1Name = tokens[entry.token1]?.symbol ?? tokens[entry.token1]?.name
-
-  let networkIdForGeckoApi = 'arbitrum-one'
-  if (SupportedChainId.ARBITRUM_ONE === chainId) {
-    networkIdForGeckoApi = 'arbitrum-one'
-  } else if (SupportedChainId.BASE === chainId) {
-    networkIdForGeckoApi = 'base'
-  } 
-
   
   // const token0Decimal = tokenDecimal[entry.token0]
   // const token1Decimal = tokenDecimal[entry.token1]
@@ -276,8 +269,8 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       : entry.positionIsToken0
       ? Number(entry.PnL) / 10 ** token1Decimal
       : Number(entry.PnL) / 10 ** token0Decimal
-
-    const marginToken = (entry.marginInPosToken && entry.positionInPosToken) ? token0Name : token1Name
+  
+    const marginToken = (entry.marginInPosToken && entry.positionIsToken0) ? token0Name : token1Name
     if (entry.positionIsToken0)
       return (
         'Reduced ' +

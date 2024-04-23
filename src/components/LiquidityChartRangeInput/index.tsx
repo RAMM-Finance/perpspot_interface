@@ -149,7 +149,6 @@ export default function LiquidityChartRangeInput({
       if (d === 'e' && ticksAtLimit[isSorted ? Bound.UPPER : Bound.LOWER]) return '∞'
 
       const percent = (x < price ? -1 : 1) * ((Math.max(x, price) - Math.min(x, price)) / price) * 100
-
       return price ? `${format(Math.abs(percent) > 1 ? '.2~s' : '.2~f')(percent)}%` : ''
     },
     [isSorted, price, ticksAtLimit]

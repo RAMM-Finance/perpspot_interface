@@ -367,8 +367,6 @@ export default function AddLiquidity() {
     setSelectPair(true)
   }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, setSelectPair])
 
-  console.log('currencyIdA', baseCurrency)
-
   useEffect(() => {
     if (currencyIdA === undefined) {
       setSelectPair(() => true)
