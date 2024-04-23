@@ -389,6 +389,7 @@ export default function SimplePool() {
     cb()
       .then((response) => {
         console.log(response)
+        setLiqError(false)
         setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
       })
       .catch((error) => {
@@ -439,6 +440,7 @@ export default function SimplePool() {
     setLiqError(false)
     limWethMintStaticCallback()
       .then((response) => {
+        setLiqError(false)
         console.log('limMint', response)
         setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
       })
@@ -500,11 +502,13 @@ export default function SimplePool() {
     cbredeem()
       .then((response) => {
         console.log(response)
+        setLiqError(false)
         setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
         setLiqError(false)
       })
       .catch((error) => {
         console.log('referrr', error)
+        setValue(0)
         if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
       })
   }, [
@@ -555,11 +559,12 @@ export default function SimplePool() {
     limWethStaticWithdrawCallback()
       .then((response) => {
         console.log(response)
-        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
         setLiqError(false)
+        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
       })
       .catch((error) => {
         console.log('hi', error)
+        setValue(0)
         if (chainId === 8453) setLiqError(true)
         if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
       })
@@ -993,24 +998,6 @@ export default function SimplePool() {
     cursor: 'pointer',
   }
 
-  const chartData = useMemo(
-    () => [
-      { value: 60, date: '2010-06-10T00:00:00.000Z' },
-      { value: 50, date: '2010-06-11T00:00:00.000Z' },
-      { value: 0, date: '2010-06-12T00:00:00.000Z' },
-      { value: 30, date: '2010-06-13T00:00:00.000Z' },
-      { value: -20, date: '2010-06-14T00:00:00.000Z' },
-      { value: 30, date: '2010-06-15T00:00:00.000Z' },
-      { value: 50, date: '2010-06-16T00:00:00.000Z' },
-      { value: 0, date: '2010-06-17T00:00:00.000Z' },
-      { value: 30, date: '2010-06-18T00:00:00.000Z' },
-      { value: -10, date: '2010-06-19T00:00:00.000Z' },
-    ],
-    []
-  )
-  const getX = (d: any) => new Date(d.date).getTime()
-  const getY = (d: any) => d.value
-
   const dropdown = (
     <NavDropdown
       onClick={() => {
@@ -1235,6 +1222,7 @@ export default function SimplePool() {
                 <Selector
                   onClick={() => {
                     setBuy(true)
+                    setValue(0)
                   }}
                   active={buy}
                 >
@@ -1243,6 +1231,7 @@ export default function SimplePool() {
                 <Selector
                   onClick={() => {
                     setBuy(false)
+                    setValue(0)
                   }}
                   active={!buy}
                 >
@@ -1255,9 +1244,9 @@ export default function SimplePool() {
               onUserInput={onFieldAInput}
               onMax={() => {
                 !buy && chainId !== 8453
-                  ? onFieldAInput(llpBalance.toFixed(5).toString())
+                  ? onFieldAInput(llpBalance.toString())
                   : !buy && chainId === 8453
-                  ? onFieldAInput(limWETHBalance.toFixed(5).toString())
+                  ? onFieldAInput(limWETHBalance.toString())
                   : onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
               }}
               showMaxButton={true}
@@ -1362,7 +1351,9 @@ export default function SimplePool() {
             />
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
-            ) : liqError ? (
+            ) : liqError && chainId === 42161 ? (
+              <ButtonError text="Not enough liquidity"></ButtonError>
+            ) : liqError && chainId === 8453 && limWETHBalance > Number(formattedAmounts[Field.CURRENCY_A]) ? (
               <ButtonError text="Not enough liquidity"></ButtonError>
             ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonError onClick={approveVault}>

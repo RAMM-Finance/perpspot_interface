@@ -28,7 +28,6 @@ import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
-import { positionIsLong } from 'utils/getBaseQuote'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -336,30 +335,34 @@ export default function Trade({ className }: { className?: string }) {
             matchedPosition.totalPosition,
             matchedPosition.margin
           ).toNumber()
-          const isLong = positionIsLong(chainId, matchedPosition, poolKey)
-          if (isLong) {
-            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
-              return {
-                entryPrice: 1 / postionEntryPrice,
-                long: true,
-              }
-            }
-            return {
-              entryPrice: postionEntryPrice,
-              long: true,
-            }
-          } else {
-            if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
-              return {
-                entryPrice: 1 / postionEntryPrice,
-                long: false,
-              }
-            }
-            return {
-              entryPrice: postionEntryPrice,
-              long: false,
-            }
+          // const isLong = positionIsLong(chainId, matchedPosition, poolKey)
+          // if (isLong) {
+          //   if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+          //     return {
+          //       entryPrice: 1 / postionEntryPrice,
+          //       long: true,
+          //     }
+          //   }
+          //   return {
+          //     entryPrice: postionEntryPrice,
+          //     long: true,
+          //   }
+          // } else {
+          //   if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+          //     return {
+          //       entryPrice: 1 / postionEntryPrice,
+          //       long: false,
+          //     }
+          //   }
+          //   return {
+          //     entryPrice: postionEntryPrice,
+          //     long: false,
+          //   }
+          // }
+          if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
+            return 1 / postionEntryPrice
           }
+          return postionEntryPrice
         })
     }
   }, [poolKey, poolOHLC, leveragePositions, chainId])
