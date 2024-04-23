@@ -369,8 +369,12 @@ const TVLInfoWrapper = styled.div`
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   height: 7rem;
+  /* width: 20rem; */
   padding: 0.5rem;
   background-color: ${({ theme }) => theme.backgroundSurface};
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.sm}px) {
+    width: 20rem;
+  }
 `
 
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any, loading?: boolean }) {
