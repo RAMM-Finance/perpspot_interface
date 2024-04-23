@@ -174,15 +174,21 @@ export default function LeaderboardTable() {
     return sortedArrRanked
   }
 
-  const usersArr = useMemo(() => {
-    return extractUsers(tradePoints)
-  }, [tradePoints])
+  // const usersArr = useMemo(() => {
+  //   return extractUsers(tradePoints)
+  // }, [tradePoints])
+
+  // const userData = useMemo(() => {
+  //   return createUserDataObj(usersArr, tradePoints)
+  // }, [usersArr, tradePoints, chainId])
 
   const userData = useMemo(() => {
-    return createUserDataObj(usersArr, tradePoints)
-  }, [usersArr, tradePoints])
+    const extUsers = extractUsers(tradePoints)
+    return createUserDataObj(extUsers, tradePoints)
+  }, [tradePoints])
 
   console.log('userData', userData)
+
   function LeaderboardHeader() {
     return (
       <HeaderCellWrapper>
@@ -229,12 +235,12 @@ export default function LeaderboardTable() {
   const [loading, setLoading] = useState(true)
 
   const combinedData = useMemo(() => {
-    if (!prevData) {
+    if (!prevData || !chainId) {
       setLoading(true)
       return undefined
-    } else if (prevData && chainId !== 8453) {
-      setLoading(false)
-      return prevData
+    // } else if (prevData && chainId !== 8453) {
+    //   setLoading(false)
+    //   return prevData
     } else {
       setLoading(false)
       return prevData

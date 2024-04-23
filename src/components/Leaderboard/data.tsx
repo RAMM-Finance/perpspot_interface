@@ -2,7 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { useWeb3React } from '@web3-react/core'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
   CollectQuery,
@@ -18,6 +18,7 @@ import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
 
 import { firestore } from '../../firebaseConfig'
+import { SupportedChainId } from 'constants/chains'
 
 interface AddPositionData {
   trader: string
@@ -193,6 +194,7 @@ export function useStoredData(addresses: any) {
 
   const [pointsData, setPointsData] = useState<any>()
 
+  // if (!chainId) return null
   useEffect(() => {
     if (!brp) return
 
@@ -283,14 +285,34 @@ export function usePointsData() {
     const call = async () => {
       try {
         setLoading(true)
-        const AddQueryData = await client.query(AddQuery, {}).toPromise()
-        const ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-        const AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
-        const CollectQueryData = await client.query(CollectQuery, {}).toPromise()
-        const DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
-        const DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
-        const WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
-        const registerQueryData = await client.query(RegisterQuery, {}).toPromise()
+        let AddQueryData
+        let ReduceQueryData
+        let AddLiqQueryData
+        let CollectQueryData
+        let DecreaseLiquidityData
+        let DepositQuery
+        let WithdrawQuery
+        let registerQueryData
+        // if (chainId === SupportedChainId.BASE) {
+          // AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
+          // ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+          // AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
+          // CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
+          // DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
+          // DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
+          // WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
+          // registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
+        // } else {
+          AddQueryData = await client.query(AddQuery, {}).toPromise()
+          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
+          AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
+          CollectQueryData = await client.query(CollectQuery, {}).toPromise()
+          DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
+          DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
+          WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
+          registerQueryData = await client.query(RegisterQuery, {}).toPromise()
+        // }
+        
         console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
 
         const vaultDataByAddress: { [key: string]: any } = {}
