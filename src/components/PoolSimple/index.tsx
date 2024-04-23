@@ -11,7 +11,7 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
-import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, MOBILE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
@@ -43,11 +43,26 @@ import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.sv
 import { Field } from '../../state/mint/v3/actions'
 
 const AddLiquidityRow = styled(RowBetween)`
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+  gap: 10px;
+   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: grid;
     width: 100%;
     grid-template-rows: 0.9fr 1fr;
-    row-gap: 10px;
+  }
+`
+
+const ThemedTextSubHeaderSmall = styled(ThemedText.SubHeaderSmall)<{mobileFont?: string}>`
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    font-size: ${({ mobileFont }) => mobileFont ? `${mobileFont} !important` : '9px !important'};
+    text-align: center;
+    text-overflow: ellipsis;
+  }
+`
+
+const ThemedTextBodySmall = styled(ThemedText.BodySmall)`
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    font-size: 8px !important;
+    text-overflow: ellipsis;
   }
 `
 
@@ -245,39 +260,39 @@ export default function SimplePool() {
         {outputCurrency?.symbol === 'LLP' ? (
           <HeaderCellWrapper>
             <HeaderCell style={{ paddingLeft: '20px' }}>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
                 Token
-              </ThemedText.SubHeaderSmall>
+              </ThemedTextSubHeaderSmall>
             </HeaderCell>
             <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
                 Price
-              </ThemedText.SubHeaderSmall>
+              </ThemedTextSubHeaderSmall>
             </HeaderCell>
             <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
                 Pool
-              </ThemedText.SubHeaderSmall>
+              </ThemedTextSubHeaderSmall>
             </HeaderCell>
             <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
                 Weight
-              </ThemedText.SubHeaderSmall>
+              </ThemedTextSubHeaderSmall>
             </HeaderCell>
             <HeaderCell isWrap={true}>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
                 Target Weight
-              </ThemedText.SubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Utililzation
-              </ThemedText.SubHeaderSmall>
+              </ThemedTextSubHeaderSmall>
             </HeaderCell>
             <HeaderCell isWrap={true}>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13} mobileFont={"7px"}>
+                Utililzation
+              </ThemedTextSubHeaderSmall>
+            </HeaderCell>
+            <HeaderCell isWrap={true}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
                 Maximum Withdrawable
-              </ThemedText.SubHeaderSmall>
+              </ThemedTextSubHeaderSmall>
             </HeaderCell>
           </HeaderCellWrapper>
         ) : (
@@ -1402,7 +1417,6 @@ export default function SimplePool() {
               <ThemedText.BodySecondary>LLP Index Composition</ThemedText.BodySecondary>
               <IndexWrapper>
                 <IndexHeader />
-
                 {indexData &&
                   WETHPrice &&
                   WBTCPrice &&
@@ -1413,55 +1427,55 @@ export default function SimplePool() {
                         <LoadedCellWrapper key={tok.token.symbol}>
                           <LoadedCell style={{ paddingLeft: '20px' }}>
                             <CurrencyLogo currency={tok.token} size="20px" />
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary" >
                               {tok.token.symbol}
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
                           <LoadedCell>
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {formatDollarAmount({ num: tok?.price, long: true })}
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
                           <LoadedCell>
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {formatDollarAmount({
                                 num: tok.poolBal / Number(`1e${tok.token.decimals}`),
                                 long: true,
                               }) +
                                 ' ' +
                                 tok.token.symbol}
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
                           <LoadedCell>
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {formatDollarAmount({
                                 num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
                                 long: true,
                               })}
                               %
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
                           <LoadedCell>
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {formatDollarAmount({
                                 num: Number(tok.targetWeight),
                                 long: true,
                               })}
                               %
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
 
                           <LoadedCell>
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {formatDollarAmount({
                                 num: (Number(tok.util) / Number(`1e${18}`)) * 100,
                                 long: true,
                               })}
                               %
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
                           <LoadedCell>
-                            <ThemedText.BodySmall fontWeight={700} color="textSecondary">
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {formatDollarAmount({
                                 num:
                                   (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
@@ -1470,7 +1484,7 @@ export default function SimplePool() {
                               }) +
                                 ' ' +
                                 tok.token.symbol}
-                            </ThemedText.BodySmall>
+                            </ThemedTextBodySmall>
                           </LoadedCell>
                         </LoadedCellWrapper>
                       </>
@@ -1562,11 +1576,11 @@ const DetailsCard = styled.div`
   height: 378px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
-
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    width: 100%;
-    height: 99%;
-  }
+  width:100%;
+  min-width:260px;
+   @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
+    width: 80vw;
+  } 
 `
 
 const LoadedCell = styled.div`
@@ -1574,6 +1588,11 @@ const LoadedCell = styled.div`
   display: flex;
   align-items: center;
   gap: 5px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-left: 0 !important;
+    flex-wrap: wrap;
+    text-overflow: ellipsis
+  } 
 `
 
 const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
@@ -1581,10 +1600,16 @@ const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
   grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '2fr 2fr 2fr 2fr 2fr 2fr 3fr')};
   padding: 10px;
   border-radius: 10px;
+  gap: 10px;
   :hover {
     background-color: rgba(255, 255, 255, 0.05);
   }
   justify-content: center;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-left: 0px;
+    grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '1fr 1fr 1fr 1fr 1fr 1fr 1fr')};
+    gap: 7px;
+  } 
 `
 
 const HeaderCell = styled.div<{ isWrap?: boolean }>`
@@ -1593,18 +1618,29 @@ const HeaderCell = styled.div<{ isWrap?: boolean }>`
     white-space: ${({ isWrap }) => (isWrap ? 'wrap' : 'nowrap')};
     /* text-align: ${({ isWrap }) => (isWrap ? 'center' : 'left')}; */
   }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-left: 0px !important;
+  } 
 `
 const HeaderCellWrapper = styled.div`
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
+  gap: 10px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-right: 0;
+    padding-left: 0;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 7px;
+  } 
 `
 const HeaderCellWrapperSmall = styled.div`
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 3fr;
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
   padding: 10px;
+  gap: 10px;
 `
 
 const IndexWrapper = styled.div`
@@ -1612,6 +1648,7 @@ const IndexWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
   width: 100%;
+  min-width: 330px;
   margin-right: 0.125rem;
   margin-top: 10px;
   overflow-y: scroll;
@@ -1622,13 +1659,17 @@ const IndexWrapper = styled.div`
 
 const FaqWrapper = styled.div`
   margin-top: 50px;
-  width: 48%;
+  width: 55%;
+  min-width: 260px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 20px;
+   @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}){
+     width: 100%;
+  }
 `
 
 const FaqElement = styled.div`
@@ -1650,10 +1691,12 @@ const CurrencyWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
+  width: 100%;
+  min-width: 260px;
+
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    width: 90vw;
-    min-width: 500px;
+  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}){
+     width: 80vw;
   }
 `
 
