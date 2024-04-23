@@ -116,12 +116,15 @@ export function useDerivedReducePositionInfo(
         : new BN(result.amount0.toString()).times(-1).toFixed(0)
     )
     const marginDecimals = position.isToken0
-      ? position.marginInPosToken? position.token0Decimals: position.token1Decimals
-      : position.marginInPosToken? position.token1Decimals: position.token0Decimals
+      ? position.marginInPosToken
+        ? position.token0Decimals
+        : position.token1Decimals
+      : position.marginInPosToken
+      ? position.token1Decimals
+      : position.token0Decimals
 
-    const PnL = new BN(result.PnL.toString())
-      .shiftedBy(-marginDecimals)
-      // .times(position.margin.times(new BN(reducePercent).shiftedBy(-18)))
+    const PnL = new BN(result.PnL.toString()).shiftedBy(-marginDecimals)
+    // .times(position.margin.times(new BN(reducePercent).shiftedBy(-18)))
     // console.log('pnl hereeree',position,inputCurrency, outputCurrency, result.PnL.toString())
     let PnLWithPremium = null
     if (closePosition) {

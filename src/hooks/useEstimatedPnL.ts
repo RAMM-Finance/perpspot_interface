@@ -1,12 +1,12 @@
 import { Currency } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
-import { DATA_PROVIDER_ADDRESSES } from 'constants/addresses'
+import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { MarginPositionDetails, OrderPositionKey } from 'types/lmtv2position'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 
-import { useContractCallV2 } from './useContractCall'
+import { useDataProviderContract } from './useContract'
 /**
  * fetches the limit pnl for a given reduction of margin position, returns in inputCurrency.
  * @param orderKey
@@ -47,22 +47,22 @@ export function useEstimatedPnL(
     return DataProviderSDK.INTERFACE.encodeFunctionData('getEstimatedPnl', params)
   }, [orderKey, existingPosition, reduceAmount, limitPrice, outputCurrency, inputCurrency])
 
-  const { loading, error, result } = useContractCallV2(DATA_PROVIDER_ADDRESSES, calldata, ['getEstimatedPnL'])
-
+  const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [])
   return useMemo(() => {
-    if (result && outputCurrency && inputCurrency) {
-      const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getEstimatedPnl', result)[0]
+    if (callStates.length > 0 && callStates[0] && inputCurrency) {
       return {
-        loading,
-        error,
-        result: new TokenBN(parsed.toString(), inputCurrency.wrapped, true),
-      }
-    } else {
-      return {
-        loading,
-        error,
-        result: undefined,
+        loading: callStates[0].loading,
+        error: callStates[0].error,
+        result: callStates[0].result
+          ? new TokenBN(callStates[0].result[0].toString(), inputCurrency.wrapped, true)
+          : undefined,
       }
     }
-  }, [result, loading, error, outputCurrency, inputCurrency])
+    return {
+      loading: false,
+      error: undefined,
+      result: undefined,
+    }
+  }, [callStates, inputCurrency])
 }

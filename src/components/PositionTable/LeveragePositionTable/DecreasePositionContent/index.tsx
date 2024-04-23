@@ -29,10 +29,9 @@ import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorr
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { useUSDPrice, useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { DynamicSection } from 'pages/Trade/tradeModal'
 import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Trade/tradeModal'
 import { darken } from 'polished'
@@ -668,43 +667,6 @@ export default function DecreasePositionContent({
       </div>
       <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
-          {/* <AutoColumn style={{ marginBottom: '10px' }}>
-            <DynamicSection justify="start" gap="md" disabled={false}>
-              <RowBetween>
-                {Boolean(inputCurrency && outputCurrency) && (
-                  <PriceToggleSection>
-                    <div
-                      style={{ width: 'fit-content', display: 'flex', alignItems: 'center' }}
-                      onClick={() => {
-                        setBaseCurrencyIsInput(() => !baseCurrencyIsInput)
-                        inversePrice && setLimitPrice(() => inversePrice.replace(',', ''))
-                      }}
-                    >
-                      <ToggleWrapper width="fit-content">
-                        <ToggleElement isActive={!baseCurrencyIsInput}>
-                          <CurrencyLogo currency={outputCurrency} size="15px" />
-                        </ToggleElement>
-                        <ToggleElement isActive={baseCurrencyIsInput}>
-                          <CurrencyLogo currency={inputCurrency} size="15px" />
-                        </ToggleElement>
-                      </ToggleWrapper>
-                    </div>
-                  </PriceToggleSection>
-                )}
-                <PriceSection onClick={() => setBaseCurrencyIsInput(() => !baseCurrencyIsInput)}>
-                  <ThemedText.DeprecatedMain fontWeight={535} fontSize={12} color="text1">
-                    Current Price
-                  </ThemedText.DeprecatedMain>
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <ThemedText.DeprecatedBody fontWeight={535} fontSize={12} color="textSecondary">
-                      {currentPrice ? `${currentPrice} ${quoteCurrency?.symbol} per ${baseCurrency?.symbol}` : '-'}
-                    </ThemedText.DeprecatedBody>
-                  </div>
-                </PriceSection>
-              </RowBetween>
-            </DynamicSection>
-          </AutoColumn> */}
-
           <DynamicSection gap="md" disabled={false}>
             <InputSection>
               <SwapCurrencyInputPanelV2
@@ -722,6 +684,7 @@ export default function DecreasePositionContent({
                 label="Limit Price"
                 id="limit-reduce-position-input"
                 fiatValue={fiatValueReduceAmount}
+                showFiat={true}
                 limit={true}
                 marketButton={
                   <MarketButton
@@ -790,6 +753,7 @@ export default function DecreasePositionContent({
             showMaxButton={false}
             hideBalance={true}
             fiatValue={fiatValueReduceAmount}
+            showFiat={true}
             currency={outputCurrency}
             label="Reduce Total Position By"
             id="reduce-position-input"

@@ -363,6 +363,18 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
   )
 }
 
+function checkFilterString(pool: any, str: string[]): boolean {
+  return str.every((x: string) => {
+    x = x.trim().toLowerCase()
+    // const name0 = pool.name0.toLowerCase()
+    // const name1 = pool.name1.toLowerCase()
+    const symbol0 = pool.symbol0.toLowerCase()
+    const symbol1 = pool.symbol1.toLowerCase()
+    const fee = pool.fee.toString()
+    return fee.includes(x) || symbol0.includes(x) || symbol1.includes(x)
+  })
+}
+
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
@@ -376,6 +388,7 @@ function useFilteredKeys() {
 
   return useMemo(() => {
     if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId]) {
+      const str = poolFilterString.trim().toLowerCase()
       let list = [...poolList]
       if (sortMethod === PoolSortMethod.PRICE) {
         list = list.filter((pool) => {
@@ -420,21 +433,35 @@ function useFilteredKeys() {
       }
 
       if (poolFilterString && poolFilterString.trim().length > 0) {
+        const str = poolFilterString.trim().toLowerCase()
+
+        // if delimiter
+        if (str.split('/').length > 1 || str.split(',').length > 1) {
+          const delimiters = ['/', ',']
+          let maxLength = 0
+          let maxDelimiter = ''
+          delimiters.forEach((delimiter) => {
+            const length = str.split(delimiter).length
+
+            if (length > maxLength) {
+              maxLength = length
+              maxDelimiter = delimiter
+            }
+          })
+          let arr = str.split(maxDelimiter)
+
+          arr = arr.filter((x) => x.trim().length > 0 && x !== maxDelimiter)
+
+          return list.filter((pool) => {
+            return checkFilterString(pool, arr)
+          })
+        }
+
         return list.filter((pool) => {
-          const name0 = pool.name0.toLowerCase()
-          const name1 = pool.name1.toLowerCase()
           const symbol0 = pool.symbol0.toLowerCase()
           const symbol1 = pool.symbol1.toLowerCase()
           const fee = pool.fee.toString()
-          const filterString = poolFilterString.toLowerCase()
-
-          return (
-            name0.includes(filterString) ||
-            name1.includes(filterString) ||
-            fee.includes(filterString) ||
-            symbol0.includes(filterString) ||
-            symbol1.includes(filterString)
-          )
+          return fee.includes(str) || symbol0.includes(str) || symbol1.includes(str)
         })
       }
       return list
@@ -497,14 +524,6 @@ export function SelectPool() {
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
-  // const handleInvertClick = useCallback(
-  //   (e: any) => {
-  //     e.stopPropagation()
-  //     currentPool && handleInvert(!currentPool.invertPrice)
-  //   },
-  //   [currentPool, handleInvert]
-  // )
-
   if (!chainId || unsupportedChain(chainId)) {
     return (
       <MainWrapper>
@@ -512,9 +531,6 @@ export function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
-                {/* <ReverseIconContainer>
-                  <ReversedArrowsIcon />
-                </ReverseIconContainer> */}
                 {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
                     currency0={baseCurrency as Currency}

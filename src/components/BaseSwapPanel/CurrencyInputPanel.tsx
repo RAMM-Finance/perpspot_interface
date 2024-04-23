@@ -14,7 +14,7 @@ import { ReversedArrowsIcon } from 'nft/components/icons'
 import { darken } from 'polished'
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 import { Lock } from 'react-feather'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { ThemedText } from 'theme'
 // import { ThemedText } from 'theme/components'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
@@ -315,6 +315,7 @@ interface SwapCurrencyInputPanelProps {
   hideInput?: boolean
   otherCurrency?: Currency | null
   fiatValue?: { data?: number; isLoading: boolean } 
+  showFiat?: boolean
   priceImpact?: Percent
   id: string
   showCommonBases?: boolean
@@ -350,6 +351,7 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     disableNonToken,
     renderBalance,
     fiatValue,
+    showFiat = false,
     priceImpact,
     hideBalance = false,
     pair = null, // used for double token logo
@@ -383,6 +385,8 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     }, [tooltipVisible, numericalInputSettings])
 
     const chainAllowed = isSupportedChain(chainId)
+
+    const theme = useTheme()
 
     // reset tooltip state when currency changes
     useEffect(() => setTooltipVisible(false), [currency])
@@ -463,15 +467,23 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
             </div>
           </InputRow>
           <RowStart style={{marginTop:'5px'}}>{isPrice ? isPrice : null}</RowStart>
-            <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
-              <FiatValue fiatValue={fiatValue} priceImpact={priceImpact}/>
-            </LoadingOpacityContainer>
+          {showFiat && (
+            fiatValue?.isLoading || !fiatValue?.data ? (
+              <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
+                <ThemedText.DeprecatedBody fontSize={12} color={theme.textSecondary}>
+                  - $
+                </ThemedText.DeprecatedBody>
+              </LoadingOpacityContainer>
+            ) : (
+              <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
+                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact}/>
+              </LoadingOpacityContainer>
+            )
+                        
+          )}
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
               <RowBetween>
-                {/* <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
-                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
-                </LoadingOpacityContainer> */}
                 {account ? (
                   <RowFixed style={{ height: '16px' }}>
                     <ThemedText.DeprecatedBody
