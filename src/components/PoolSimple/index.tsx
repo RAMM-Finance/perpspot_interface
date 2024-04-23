@@ -11,7 +11,7 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
-import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, MOBILE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import { MEDIUM_MEDIA_BREAKPOINT, MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
@@ -44,25 +44,23 @@ import { Field } from '../../state/mint/v3/actions'
 
 const AddLiquidityRow = styled(RowBetween)`
   gap: 10px;
-   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     display: grid;
     width: 100%;
     grid-template-rows: 0.9fr 1fr;
   }
 `
 
-const ThemedTextSubHeaderSmall = styled(ThemedText.SubHeaderSmall)<{mobileFont?: string}>`
+const ThemedTextSubHeaderSmall = styled(ThemedText.SubHeaderSmall)<{ mobileFont?: string }>`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    font-size: ${({ mobileFont }) => mobileFont ? `${mobileFont} !important` : '9px !important'};
+    font-size: ${({ mobileFont }) => (mobileFont ? `${mobileFont} !important` : '9px !important')};
     text-align: center;
-    text-overflow: ellipsis;
   }
 `
 
 const ThemedTextBodySmall = styled(ThemedText.BodySmall)`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     font-size: 8px !important;
-    text-overflow: ellipsis;
   }
 `
 
@@ -285,7 +283,7 @@ export default function SimplePool() {
               </ThemedTextSubHeaderSmall>
             </HeaderCell>
             <HeaderCell isWrap={true}>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13} mobileFont={"7px"}>
+              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13} mobileFont="7px">
                 Utililzation
               </ThemedTextSubHeaderSmall>
             </HeaderCell>
@@ -1427,7 +1425,7 @@ export default function SimplePool() {
                         <LoadedCellWrapper key={tok.token.symbol}>
                           <LoadedCell style={{ paddingLeft: '20px' }}>
                             <CurrencyLogo currency={tok.token} size="20px" />
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary" >
+                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
                               {tok.token.symbol}
                             </ThemedTextBodySmall>
                           </LoadedCell>
@@ -1576,11 +1574,11 @@ const DetailsCard = styled.div`
   height: 378px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
-  width:100%;
-  min-width:260px;
-   @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
+  width: 100%;
+  min-width: 260px;
+  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
     width: 80vw;
-  } 
+  }
 `
 
 const LoadedCell = styled.div`
@@ -1591,8 +1589,7 @@ const LoadedCell = styled.div`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     padding-left: 0 !important;
     flex-wrap: wrap;
-    text-overflow: ellipsis
-  } 
+  }
 `
 
 const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
@@ -1609,7 +1606,7 @@ const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
     padding-left: 0px;
     grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '1fr 1fr 1fr 1fr 1fr 1fr 1fr')};
     gap: 7px;
-  } 
+  }
 `
 
 const HeaderCell = styled.div<{ isWrap?: boolean }>`
@@ -1620,7 +1617,7 @@ const HeaderCell = styled.div<{ isWrap?: boolean }>`
   }
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     padding-left: 0px !important;
-  } 
+  }
 `
 const HeaderCellWrapper = styled.div`
   display: grid;
@@ -1633,7 +1630,7 @@ const HeaderCellWrapper = styled.div`
     padding-left: 0;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     gap: 7px;
-  } 
+  }
 `
 const HeaderCellWrapperSmall = styled.div`
   display: grid;
@@ -1667,8 +1664,8 @@ const FaqWrapper = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-   @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}){
-     width: 100%;
+  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
+    width: 100%;
   }
 `
 
@@ -1695,8 +1692,8 @@ const CurrencyWrapper = styled.div`
   min-width: 260px;
 
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}){
-     width: 80vw;
+  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
+    width: 80vw;
   }
 `
 
@@ -1745,7 +1742,7 @@ const StyledSelectorText = styled.div<{ active: boolean }>`
 `
 
 const Selector = styled.div<{ active: boolean }>`
-  font-color: ${({ active, theme }) => (active ? theme.background : 'none')};
+  color: ${({ active, theme }) => (active ? theme.background : 'none')};
   width: 100%;
   border-radius: 5px;
   padding: 8px;
