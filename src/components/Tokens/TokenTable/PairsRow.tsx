@@ -82,14 +82,17 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 2fr 5fr;
+    /* grid-template-columns: 4fr 4fr 4fr 4fr 4fr 4fr 2fr 5fr; */
+    grid-template-columns: 4fr 4fr 4fr 4fr;
+  }
 
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 1fr 10fr 5fr 5fr 1.2fr;
+    /* grid-template-columns: 1fr 10fr 5fr 5fr 1.2fr; */
+    grid-template-columns: 4fr 4fr 4fr;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    grid-template-columns: 2fr 3fr;
+    grid-template-columns: 2fr 1fr;
     min-width: unset;
     border-bottom: 0.5px solid ${({ theme }) => theme.backgroundModule};
 
@@ -176,6 +179,9 @@ const NameCell = styled(Cell)`
   /* gap: 8px; */
 `
 const PriceCell = styled(DataCell)`
+  /* @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    display: none;
+  } */
   /* padding-right: 8px; */
 `
 /* const PercentChangeInfoCell = styled(Cell)`
@@ -188,6 +194,12 @@ const PriceCell = styled(DataCell)`
     line-height: 16px;
   }
 ` */
+
+const PriceChangeCell = styled(DataCell)`
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    display: none;
+  }
+`
 const PriceInfoCell = styled(Cell)`
   justify-content: flex-start;
   display: flex;
@@ -349,9 +361,9 @@ export function TokenRow({
       <PriceCell data-testid="price-cell" sortable={header}>
         {price}
       </PriceCell>
-      <PriceCell data-testid="price-change-cell" sortable={header}>
+      <PriceChangeCell data-testid="price-change-cell" sortable={header}>
         {priceChange}
-      </PriceCell>
+      </PriceChangeCell>
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {APR}
       </VolumeCell>
