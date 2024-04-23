@@ -179,9 +179,10 @@ export default function JoinModal() {
   }, [useCodeCallback, account, referralContract, chainId, provider, path, txHash, attemptingTxn, errorMessage])
   const [pendingChainId, setPendingChainId] = useState<SupportedChainId | undefined>(undefined)
   const selectChain = useSelectChain()
-  const isArbitrum = chainId == 42161
+  // const isArbitrum = chainId == 42161
+  const isBase = chainId == 8453
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const targetChainId = 42161
+  const targetChainId = 8453
   const onSelectChain = useCallback(async () => {
     setPendingChainId(targetChainId)
     await selectChain(targetChainId)
@@ -229,11 +230,11 @@ export default function JoinModal() {
               <ThemedText.SubHeader>Connected</ThemedText.SubHeader>
             )}
           </Actions>
-          <Actions active={codeExists && walletConnected && !isArbitrum}>
+          <Actions active={codeExists && walletConnected && !isBase}>
             <Status>
-              <ThemedText.BodySmall fontWeight={800}> {!isArbitrum ? '2' : '✓'}</ThemedText.BodySmall>
+              <ThemedText.BodySmall fontWeight={800}> {!isBase ? '2' : '✓'}</ThemedText.BodySmall>
             </Status>
-            {!isArbitrum ? (
+            {!isBase ? (
               <>
                 {' '}
                 <ThemedText.SubHeader>Switch Network</ThemedText.SubHeader>
@@ -244,14 +245,14 @@ export default function JoinModal() {
                   onClick={onSelectChain}
                   fontWeight={600}
                 >
-                  <Trans>Switch To Aribtrum </Trans>
+                  <Trans>Switch To Base </Trans>
                 </ButtonPrimary>
               </>
             ) : (
-              <ThemedText.SubHeader>Switched To Arbitrum</ThemedText.SubHeader>
+              <ThemedText.SubHeader>Switched To Base</ThemedText.SubHeader>
             )}
           </Actions>
-          <Actions active={codeExists && walletConnected && isArbitrum}>
+          <Actions active={codeExists && walletConnected && isBase}>
             <Status>
               <ThemedText.BodySmall fontWeight={800}>3</ThemedText.BodySmall>
             </Status>

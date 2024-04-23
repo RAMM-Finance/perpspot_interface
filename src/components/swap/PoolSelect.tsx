@@ -24,6 +24,7 @@ import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC } from 'state/application/h
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
+import { useV3MintActionHandlers } from 'state/mint/v3/hooks'
 import {
   useAddPinnedPool,
   useCurrentPool,
@@ -484,6 +485,8 @@ export function SelectPool() {
 
   const poolKey = currentPool?.poolKey
   const { result: poolData } = usePoolsData()
+  const token0 = useCurrency(poolKey?.token0 ?? null)
+  const token1 = useCurrency(poolKey?.token1 ?? null)
 
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
@@ -523,6 +526,23 @@ export function SelectPool() {
 
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
+
+  // const handleInvertClick = useCallback(
+  //   (e: any) => {
+  //     e.stopPropagation()
+  //     currentPool && handleInvert(!currentPool.invertPrice)
+  //   },
+  //   [currentPool, handleInvert]
+  // )
+
+  const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
+
+  const onPoolSwitch = useCallback(() => {
+    onFieldAInput('')
+    onFieldBInput('')
+    onLeftRangeInput('')
+    onRightRangeInput('')
+  }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
 
   if (!chainId || unsupportedChain(chainId)) {
     return (
@@ -589,7 +609,12 @@ export function SelectPool() {
           <PoolSelectLoading />
         )}
       </SelectPoolWrapper>
-      <EarnButton onClick={() => navigate('/add/' + poolKey?.token0 + '/' + poolKey?.token1 + '/' + `${poolKey?.fee}`)}>
+      <EarnButton
+        onClick={() => {
+          onPoolSwitch()
+          navigate(`/add/${token0?.wrapped.address}/${token1?.wrapped.address}/${poolKey?.fee}`)
+        }}
+      >
         Earn
       </EarnButton>
       <PoolStatsSection

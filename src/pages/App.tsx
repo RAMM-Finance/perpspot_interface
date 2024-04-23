@@ -36,6 +36,7 @@ import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
 import LeaderboardPage from './Leaderboard'
 import MigrateV2 from './MigrateV2'
+import NewItemsListPage from './NewItemsList'
 import NotFound from './NotFound'
 import Pool from './Pool'
 import { PositionPage } from './Pool/PositionPage'
@@ -45,7 +46,6 @@ import Swap from './Swap'
 import Tokens from './Tokens'
 import Trade from './Trade'
 import { RedirectPathToSwapOnly } from './Trade/redirects'
-import NewItemsListPage from './NewItemsList'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
 // const Vote = lazy(() => import('./Vote'))
@@ -246,15 +246,15 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
-                  <Route path="new" element={<NewItemsListPage/>} />
-                  <Route path="new/?/activity" element={<NewItemsListPage/>} />
+                  <Route path="new" element={<NewItemsListPage />} />
+                  <Route path="new/?/activity" element={<NewItemsListPage />} />
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
                   {/* <Route path="pool/v2" element={<PoolV2 />} /> */}
                   <Route path="pool" element={<Pool />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
-                  <Route path="join" element={<Navigate to="/swap" />} />
+                  <Route path="join" element={<Navigate to="/trade" />} />
                   <Route path="join/:id" element={<Trade />} />
                   {/* <Route path="pools/v2/find" element={<PoolFinder />} />
                   <Route path="pools/v2" element={<PoolV2 />} /> */}

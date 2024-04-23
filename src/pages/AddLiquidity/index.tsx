@@ -92,7 +92,7 @@ const PriceAndToggleWrapper = styled(RowBetween)`
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)
 
 export default function AddLiquidity() {
-  const [selectPair, setSelectPair] = useState(true)
+  const [selectPair, setSelectPair] = useState(false)
   const navigate = useNavigate()
   const {
     currencyIdA,
@@ -367,11 +367,18 @@ export default function AddLiquidity() {
     setSelectPair(true)
   }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, setSelectPair])
 
+  console.log('currencyIdA', baseCurrency)
+
   useEffect(() => {
-    if (chainId) {
-      clearAll()
+    if (currencyIdA === undefined) {
+      setSelectPair(() => true)
     }
-  }, [chainId])
+    if ((chainId && baseCurrency) || selectPair) {
+      if (baseCurrency?.symbol === 'UNKNOWN') {
+        clearAll()
+      }
+    }
+  }, [clearAll, chainId, baseCurrency, currencyIdA, selectPair])
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
