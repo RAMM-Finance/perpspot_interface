@@ -4,7 +4,6 @@ import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { sendEvent } from 'components/analytics'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -18,7 +17,7 @@ import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
 import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
-import { useToken } from 'hooks/Tokens'
+import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { usePool } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
@@ -116,7 +115,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       !positionSDK ||
       !liquidityPercentage ||
       !provider ||
-      !maxLiquidityToWithdraw
+      !maxLiquidityToWithdraw ||
+      !tokenId
     ) {
       return
     }
@@ -165,11 +165,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
           .getSigner()
           .sendTransaction(newTxn)
           .then((response: TransactionResponse) => {
-            sendEvent({
-              category: 'Liquidity',
-              action: 'RemoveV3',
-              label: [liquidityValue0.currency.symbol, liquidityValue1.currency.symbol].join('/'),
-            })
             setTxnHash(response.hash)
             setAttemptingTxn(false)
             addTransaction(response, {
@@ -228,7 +223,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const {
     loading: lmtPositionLoading,
     position: lmtPositionDetails,
-    error: lmtPositionError,
     // maxWithdrawable: maxWithdrawableValue,
   } = useLmtLpPositionFromTokenId(parsedTokenId)
   // console.log('lmtPositionDetails', lmtPositionDetails)
@@ -245,22 +239,17 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
 
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
+  const currency0 = useCurrency(token0Address)
+  const currency1 = useCurrency(token1Address)
 
   // construct Position from details returned
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
   const position = useMemo(() => {
-    if (
-      pool &&
-      liquidity &&
-      typeof tickLower === 'number' &&
-      typeof tickUpper === 'number' &&
-      !lmtPositionLoading &&
-      !lmtPositionError
-    ) {
+    if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number' && !lmtPositionLoading) {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
     }
     return undefined
-  }, [liquidity, pool, tickLower, tickUpper, lmtPositionError, lmtPositionLoading])
+  }, [liquidity, pool, tickLower, tickUpper, lmtPositionLoading])
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
@@ -291,24 +280,24 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       <AutoColumn gap="sm" style={{ padding: '16px' }}>
         <RowBetween align="flex-end">
           <Text fontSize={16} fontWeight={500}>
-            <Trans>Pooled {liquidityValue0?.currency?.symbol}:</Trans>
+            <Trans>Pooled {currency0?.symbol}:</Trans>
           </Text>
           <RowFixed>
             <Text fontSize={16} fontWeight={500} marginLeft="6px">
               {liquidityValue0 && <FormattedCurrencyAmount currencyAmount={liquidityValue0} />}
             </Text>
-            <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={liquidityValue0?.currency} />
+            <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
           </RowFixed>
         </RowBetween>
         <RowBetween align="flex-end">
           <Text fontSize={16} fontWeight={500}>
-            <Trans>Pooled {liquidityValue1?.currency?.symbol}:</Trans>
+            <Trans>Pooled {currency1?.symbol}:</Trans>
           </Text>
           <RowFixed>
             <Text fontSize={16} fontWeight={500} marginLeft="6px">
               {liquidityValue1 && <FormattedCurrencyAmount currencyAmount={liquidityValue1} />}
             </Text>
-            <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={liquidityValue1?.currency} />
+            <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
           </RowFixed>
         </RowBetween>
         {feeValue0?.greaterThan(0) || feeValue1?.greaterThan(0) ? (
@@ -318,24 +307,24 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
             </ThemedText.DeprecatedItalic>
             <RowBetween>
               <Text fontSize={16} fontWeight={500}>
-                <Trans>{feeValue0?.currency?.symbol} Earned:</Trans>
+                <Trans>{currency0?.symbol} Earned:</Trans>
               </Text>
               <RowFixed>
                 <Text fontSize={16} fontWeight={500} marginLeft="6px">
                   {feeValue0 && <FormattedCurrencyAmount currencyAmount={feeValue0} />}
                 </Text>
-                <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={feeValue0?.currency} />
+                <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
               </RowFixed>
             </RowBetween>
             <RowBetween>
               <Text fontSize={16} fontWeight={500}>
-                <Trans>{feeValue1?.currency?.symbol} Earned:</Trans>
+                <Trans>{currency1?.symbol} Earned:</Trans>
               </Text>
               <RowFixed>
                 <Text fontSize={16} fontWeight={500} marginLeft="6px">
                   {feeValue1 && <FormattedCurrencyAmount currencyAmount={feeValue1} />}
                 </Text>
-                <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={feeValue1?.currency} />
+                <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
               </RowFixed>
             </RowBetween>
           </>
@@ -383,16 +372,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
             <AutoColumn gap="lg">
               <RowBetween>
                 <RowFixed>
-                  <DoubleCurrencyLogo
-                    currency0={liquidityValue0?.currency}
-                    currency1={liquidityValue1?.currency}
-                    size={16}
-                    margin={true}
-                  />
+                  <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={16} margin={true} />
                   <ThemedText.DeprecatedLabel
                     fontSize="14px"
                     ml="8px"
-                  >{`${liquidityValue0?.currency?.symbol}/${liquidityValue1?.currency?.symbol}`}</ThemedText.DeprecatedLabel>
+                  >{`${token0?.symbol}/${token1?.symbol}`}</ThemedText.DeprecatedLabel>
                 </RowFixed>
                 <RangeBadge removed={removed} inRange={!outOfRange} />
               </RowBetween>
@@ -420,35 +404,31 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       </SmallMaxButton>
                     </AutoRow>
                   </RowBetween>
-                  <Slider
-                    max={100}
-                    value={percentForSlider}
-                    onChange={onPercentSelectForSlider}
-                  />
+                  <Slider max={100} value={percentForSlider} onChange={onPercentSelectForSlider} />
                 </AutoColumn>
               </DarkCardOutline>
               <DarkCardOutline>
                 <AutoColumn gap="md">
                   <RowBetween>
                     <ThemedText.BodySmall fontWeight={600}>
-                      <Trans>Pooled {liquidityValue0?.currency?.symbol}:</Trans>
+                      <Trans>Pooled {currency0?.symbol}:</Trans>
                     </ThemedText.BodySmall>
                     <RowFixed>
                       <ThemedText.BodySmall fontWeight={600} ml="6px">
                         {liquidityValue0 && <FormattedCurrencyAmount currencyAmount={liquidityValue0} />}
                       </ThemedText.BodySmall>
-                      <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={liquidityValue0?.currency} />
+                      <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency0} />
                     </RowFixed>
                   </RowBetween>
                   <RowBetween>
                     <ThemedText.BodySmall fontWeight={600}>
-                      <Trans>Pooled {liquidityValue1?.currency?.symbol}:</Trans>
+                      <Trans>Pooled {currency1?.symbol}:</Trans>
                     </ThemedText.BodySmall>
                     <RowFixed>
                       <ThemedText.BodySmall fontWeight={600} ml="6px">
                         {liquidityValue1 && <FormattedCurrencyAmount currencyAmount={liquidityValue1} />}
                       </ThemedText.BodySmall>
-                      <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={liquidityValue1?.currency} />
+                      <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency1} />
                     </RowFixed>
                   </RowBetween>
                   {feeValue0?.greaterThan(0) || feeValue1?.greaterThan(0) ? (
@@ -456,24 +436,24 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       <Break />
                       <RowBetween>
                         <Text fontSize={16} fontWeight={500}>
-                          <Trans>{feeValue0?.currency?.symbol} Earned:</Trans>
+                          <Trans>{currency0?.symbol} Earned:</Trans>
                         </Text>
                         <RowFixed>
                           <Text fontSize={16} fontWeight={500} marginLeft="6px">
                             {feeValue0 && <FormattedCurrencyAmount currencyAmount={feeValue0} />}
                           </Text>
-                          <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={feeValue0?.currency} />
+                          <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
                         </RowFixed>
                       </RowBetween>
                       <RowBetween>
                         <Text fontSize={16} fontWeight={500}>
-                          <Trans>{feeValue1?.currency?.symbol} Earned:</Trans>
+                          <Trans>{currency1?.symbol} Earned:</Trans>
                         </Text>
                         <RowFixed>
                           <Text fontSize={16} fontWeight={500} marginLeft="6px">
                             {feeValue1 && <FormattedCurrencyAmount currencyAmount={feeValue1} />}
                           </Text>
-                          <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={feeValue1?.currency} />
+                          <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
                         </RowFixed>
                       </RowBetween>
                     </>

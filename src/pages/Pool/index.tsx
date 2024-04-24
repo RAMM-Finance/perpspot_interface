@@ -320,8 +320,8 @@ export default function Pool() {
                     <ErrorContainer>
                       <ButtonPrimary
                         style={{
-                          marginLeft: '20px',
                           marginBottom: '30px',
+                          marginTop: '30px',
                           padding: '.5rem',
                           width: 'fit-content',
                           fontSize: '0.8rem',

@@ -237,6 +237,14 @@ export abstract class NonfungiblePositionManager {
       calldatas.push(NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [tokenId]))
     }
 
+    // console.log('zeke:remove', calldatas.length, {
+    //   tokenId,
+    //   liquidity: partialPosition.liquidity.toString(),
+    //   amount0Min: JSBI.lessThan(computedAmount0, amount0Min) ? computedAmount0.toString() : toHex(amount0Min),
+    //   amount1Min: JSBI.lessThan(computedAmount1, amount1Min) ? computedAmount1.toString() : toHex(amount1Min),
+    //   deadline,
+    // })
+
     return {
       calldata: MulticallSDK.encodeMulticall(calldatas),
       value: toHex(0),

@@ -199,7 +199,7 @@ export default function PositionListItem({
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const position = useMemo(() => {
-    if (pool) {
+    if (pool && tickLower && tickUpper) {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
     }
     return undefined
