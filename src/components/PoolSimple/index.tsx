@@ -44,7 +44,7 @@ import { Field } from '../../state/mint/v3/actions'
 
 const AddLiquidityRow = styled(RowBetween)`
   gap: 10px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     display: grid;
     width: 100%;
     grid-template-rows: 0.9fr 1fr;
@@ -1565,10 +1565,11 @@ const DetailsCard = styled.div`
   height: 378px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
-  width: 100%;
-  min-width: 260px;
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
-    width: 80vw;
+  /* width: 100%; */
+  /* min-width: 260px; */
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 100%;
+    height: 99%;
   }
 `
 
@@ -1679,12 +1680,10 @@ const CurrencyWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 100%;
-  min-width: 260px;
-
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
-    width: 80vw;
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 90vw;
+    min-width: 500px;
   }
 `
 

@@ -7,6 +7,7 @@ import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
+import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
@@ -71,10 +72,16 @@ const RangeLineItem = styled(DataLineItem)`
   `};
 `
 
-const DoubleArrow = styled.span`
+const DoubleArrow = styled.button`
   font-size: 22px;
   margin: 0 6px;
   color: ${({ theme }) => theme.textSecondary};
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  &:focus {
+    outline: none;
+  }
 `
 
 const RangeText = styled(ThemedText.Caption)<{ color?: string }>`
@@ -241,6 +248,25 @@ export default function PositionListItem({
     return null
   }
 
+  function handleInvertClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (priceLower && priceUpper) {
+      const invertedPriceLower = priceUpper.invert();
+      const invertedPriceUpper = priceLower.invert();
+
+      if (!isInverted) {
+        setPriceLower(invertedPriceLower);
+        setPriceUpper(invertedPriceUpper);
+      } else {
+        setPriceLower(priceLower);
+        setPriceUpper(priceUpper);
+      }
+      setIsInverted(!isInverted);
+    }
+  }
+
   // const priceLowerValue = priceLower?.toSignificant(10);
   // const priceUpperValue  = priceUpper?.toSignificant(10);
   return (
@@ -265,7 +291,14 @@ export default function PositionListItem({
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-          <DoubleArrow>↔</DoubleArrow>
+          <MouseoverTooltip
+            text={
+              <Trans>
+                Inverted
+              </Trans>
+            }>
+            <DoubleArrow onClick={(e) => handleInvertClick(e)} >↔</DoubleArrow>{' '}  
+          </MouseoverTooltip>
           <RangeText>
             <ExtentsText>
               <Trans>Max: </Trans>
