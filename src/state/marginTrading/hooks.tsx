@@ -444,16 +444,7 @@ export function useDerivedAddPositionInfo(
     }
 
     return inputError
-  }, [
-    account,
-    usingCode,
-    currencies,
-    maxLeverage,
-    parsedMargin,
-    currencyBalances,
-    parsedLeverageFactor,
-    tradeApprovalInfo,
-  ])
+  }, [account, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, tradeApprovalInfo])
 
   const noAccountInputError = useMemo(() => {
     if (!account) {
@@ -1587,12 +1578,16 @@ const useSimulateMarginTrade = (
       return []
     }
 
-    if (marginInPosToken && inputApprovalState !== ApprovalState.APPROVED) {
-      return []
-    } else if (
-      !marginInPosToken &&
-      outputApprovalState !== ApprovalState.APPROVED &&
-      inputApprovalState !== ApprovalState.APPROVED
+    // if not approved then no query key
+    if (
+      (marginInPosToken && premiumInPosToken && outputApprovalState !== ApprovalState.APPROVED) ||
+      (marginInPosToken &&
+        !premiumInPosToken &&
+        (inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED)) ||
+      (!marginInPosToken &&
+        premiumInPosToken &&
+        (inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED)) ||
+      (!marginInPosToken && !premiumInPosToken && inputApprovalState !== ApprovalState.APPROVED)
     ) {
       return []
     }
@@ -1622,6 +1617,7 @@ const useSimulateMarginTrade = (
     deadline,
     additionalPremium,
     marginInPosToken,
+    premiumInPosToken,
     blockNumber,
     inputApprovalState,
     outputApprovalState,
@@ -1633,6 +1629,7 @@ const useSimulateMarginTrade = (
     marginFacility,
     inputError,
   ])
+
   const {
     data: data,
     isLoading: loading,
@@ -1642,7 +1639,7 @@ const useSimulateMarginTrade = (
     queryKey,
     enabled: queryKey.length > 0,
     queryFn: async () => {
-      console.log('addPosition:queryFn')
+      console.log('zeke:addPosition:queryFn')
       if (!blockNumber) throw new Error('missing block number')
       try {
         const result = await computeData()
