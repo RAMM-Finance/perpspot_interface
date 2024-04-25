@@ -69,7 +69,6 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
   const lmtQuoter = useLmtQuoterContract()
 
   const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
-
   const poolList = useMemo(() => {
     if (result) {
       return result[0].map((pool: any) => {
