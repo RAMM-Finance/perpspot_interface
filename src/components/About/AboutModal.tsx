@@ -21,7 +21,7 @@ export default function AboutModal() {
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">2. Limitless Pairs.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            Supports every possible assets/pairs. Permissionless listing(coming soon).
+            Supports every possible assets/pairs with permissionless listing. Trade or leverage farm anything, including your favorite memecoins, with liquidation free leverage
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>

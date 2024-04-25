@@ -18,7 +18,7 @@ import { Row } from 'nft/components/Flex'
 import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, Star } from 'react-feather'
+import { ChevronDown, ChevronUp, Star } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
 import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC } from 'state/application/hooks'
 import { setBLScrollPosition } from 'state/application/reducer'
@@ -354,9 +354,9 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
       {sortMethod === currentSortMethod && (
         <>
           {sortAscending ? (
-            <ArrowUp size={16} strokeWidth={1.8} color={theme.accentActive} />
+            <ChevronUp size={16} strokeWidth={1.8} color={theme.accentActive} />
           ) : (
-            <ArrowDown size={16} strokeWidth={1.8} color={theme.accentActive} />
+            <ChevronDown size={16} strokeWidth={1.8} color={theme.accentActive} />
           )}
         </>
       )}

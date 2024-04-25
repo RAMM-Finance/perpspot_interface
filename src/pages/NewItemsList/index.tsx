@@ -238,11 +238,7 @@ const NewItemsListPage = () => {
   const { account, chainId } = useWeb3React()
   const brp = useBRP()
 
-  // const [brpData, setBRPData] = useState({
-  //   totalBoxes: null,
-  //   totalUnlockableBoxes: null,
-  //   MTRequiredPerUnlock: null,
-  // });
+  const [brpData, setBRPData] = useState<any>();
   const [totalLMT, setTotalLMT] = useState('')
    // const totalBoxes = brp.numBoxes(account)
   // const totalUnlockableBoxes = brp.claimableBoxes(account)
@@ -363,11 +359,11 @@ const NewItemsListPage = () => {
           setTotalLMT(totalLMTString)
           console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
           console.log('total',  totalBoxes, totalUnlockableBoxes,lmtRequiredPerUnlock )
-          // setBRPData({
-          //   totalBoxes,
-          //   totalUnlockableBoxes,
-          //   lmtRequiredPerUnlock
-          // });
+          setBRPData({
+            totalBoxes: totalBoxes.toString(),
+            totalUnlockableBoxes: totalUnlockableBoxes.toString(),
+            lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString()
+          });
         } catch (error) {
           console.log(error, 'get brp data error')
         }
@@ -417,6 +413,7 @@ const NewItemsListPage = () => {
             title="Use and Unlock "
             description="Earn LMT and unlock treasure boxes"
             stats={totalLMT}
+            brpData = {brpData}
           />
         </Row>
         {/* <ItemStats /> */}

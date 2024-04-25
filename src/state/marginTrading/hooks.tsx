@@ -13,7 +13,6 @@ import { useDataProviderContract, useLmtQuoterContract, useMarginFacilityContrac
 import { useLmtFeePercent } from 'hooks/useLmtFeePercent'
 import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useMaxLeverage } from 'hooks/useMaxLeverage'
-import { useUsingCode } from 'hooks/usePointsInfo'
 import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -207,7 +206,6 @@ export function useDerivedAddPositionInfo(
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
   const { account } = useWeb3React()
-  const usingCode = useUsingCode()
 
   // if existing position then use marginInPosToken from existing position
   const { marginInPosToken: newMarginInPosToken, premiumInPosToken } = useMarginTradingState()
@@ -342,33 +340,28 @@ export function useDerivedAddPositionInfo(
       ? _additionalPremiumInputToken.times(price)
       : _additionalPremiumInputToken
 
-    let inputApprovalAmount: CurrencyAmount<Currency>
-    let outputApprovalAmount: CurrencyAmount<Currency>
+    let inputApprovalAmount: BN = new BN(0)
+    let outputApprovalAmount: BN = new BN(0)
     if (marginInPosToken) {
-      if (premiumInPosToken) {
-        inputApprovalAmount = BnToCurrencyAmount(new BN(0), outputCurrency)
-        outputApprovalAmount = BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), outputCurrency)
-      } else {
-        inputApprovalAmount = BnToCurrencyAmount(_additionalPremium, inputCurrency)
-        outputApprovalAmount = BnToCurrencyAmount(parsedMargin, outputCurrency)
-      }
+      outputApprovalAmount = outputApprovalAmount.plus(parsedMargin)
     } else {
-      if (premiumInPosToken) {
-        inputApprovalAmount = BnToCurrencyAmount(parsedMargin, inputCurrency)
-        outputApprovalAmount = BnToCurrencyAmount(_additionalPremium, outputCurrency)
-      } else {
-        inputApprovalAmount = BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), inputCurrency)
-        outputApprovalAmount = BnToCurrencyAmount(new BN(0), outputCurrency)
-      }
+      inputApprovalAmount = inputApprovalAmount.plus(parsedMargin)
     }
+
+    if (premiumInPosToken) {
+      outputApprovalAmount = outputApprovalAmount.plus(_additionalPremium)
+    } else {
+      inputApprovalAmount = inputApprovalAmount.plus(_additionalPremium)
+    }
+
     return {
       premiumDeposit:
         account && existingPosition
           ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
           : BnToCurrencyAmount(new BN(0), inputCurrency),
       additionalPremium: BnToCurrencyAmount(_additionalPremium, premiumInPosToken ? outputCurrency : inputCurrency),
-      inputApprovalAmount,
-      outputApprovalAmount,
+      inputApprovalAmount: BnToCurrencyAmount(inputApprovalAmount, inputCurrency),
+      outputApprovalAmount: BnToCurrencyAmount(outputApprovalAmount, outputCurrency),
     }
   }, [
     existingPosition,
@@ -408,10 +401,6 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Select a token</Trans>
     }
 
-    if (!usingCode) {
-      inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
-    }
-
     if (!parsedMargin || parsedMargin.isZero()) {
       inputError = inputError ?? <Trans>Enter a margin amount</Trans>
     }
@@ -436,7 +425,7 @@ export function useDerivedAddPositionInfo(
       if (balanceIn.lessThan(amountIn)) {
         inputError = inputError ?? <Trans>Insufficient {balanceIn.currency.symbol}</Trans>
       }
-    } else if (balanceOut && tradeApprovalInfo && parsedMargin) {
+    } else if (balanceOut && tradeApprovalInfo) {
       const amountOut = tradeApprovalInfo.outputApprovalAmount
       if (balanceOut.lessThan(amountOut)) {
         inputError = inputError ?? <Trans>Insufficient {balanceOut.currency.symbol}</Trans>
@@ -444,22 +433,14 @@ export function useDerivedAddPositionInfo(
     }
 
     return inputError
-  }, [
-    account,
-    usingCode,
-    currencies,
-    maxLeverage,
-    parsedMargin,
-    currencyBalances,
-    parsedLeverageFactor,
-    tradeApprovalInfo,
-  ])
+  }, [account, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, tradeApprovalInfo])
 
   const noAccountInputError = useMemo(() => {
     if (!account) {
       if (
         !parsedMargin ||
         !parsedLeverageFactor ||
+        parsedMargin.isLessThanOrEqualTo(0) ||
         !maxLeverage ||
         parsedMargin.isZero() ||
         (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) ||
@@ -1587,15 +1568,20 @@ const useSimulateMarginTrade = (
       return []
     }
 
-    if (marginInPosToken && inputApprovalState !== ApprovalState.APPROVED) {
-      return []
-    } else if (
-      !marginInPosToken &&
-      outputApprovalState !== ApprovalState.APPROVED &&
-      inputApprovalState !== ApprovalState.APPROVED
+    // if not approved then no query key
+    if (
+      (marginInPosToken && premiumInPosToken && outputApprovalState !== ApprovalState.APPROVED) ||
+      (marginInPosToken &&
+        !premiumInPosToken &&
+        (inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED)) ||
+      (!marginInPosToken &&
+        premiumInPosToken &&
+        (inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED)) ||
+      (!marginInPosToken && !premiumInPosToken && inputApprovalState !== ApprovalState.APPROVED)
     ) {
       return []
     }
+
     return [
       'addMarginTrade',
       positionKey,
@@ -1622,6 +1608,7 @@ const useSimulateMarginTrade = (
     deadline,
     additionalPremium,
     marginInPosToken,
+    premiumInPosToken,
     blockNumber,
     inputApprovalState,
     outputApprovalState,
@@ -1633,6 +1620,7 @@ const useSimulateMarginTrade = (
     marginFacility,
     inputError,
   ])
+
   const {
     data: data,
     isLoading: loading,

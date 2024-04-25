@@ -123,11 +123,13 @@ const StepCounter = ({
 
   // for button clicks
   const handleDecrement = useCallback(() => {
+    console.log('zeke:local, decrement')
     setUseLocalValue(false)
     onUserInput(decrement())
   }, [decrement, onUserInput])
 
   const handleIncrement = useCallback(() => {
+    console.log('zeke:local, increment')
     setUseLocalValue(false)
     onUserInput(increment())
   }, [increment, onUserInput])

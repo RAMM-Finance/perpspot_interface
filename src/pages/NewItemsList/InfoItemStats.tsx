@@ -20,17 +20,16 @@ const StatsItem = ({ children, label, shouldHide }: { children: ReactNode; label
   )
 }
 
-const InfoItemStats = ({stats} : {stats: any}) => {
+const InfoItemStats = ({stats, brpData} : {stats: any, brpData: any}) => {
+  console.log('brpData', brpData)
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
       <StatsItem label="Total boxes" shouldHide={false}>
-        
+        {brpData?.totalBoxes}
       </StatsItem>
       <StatsItem label="Total unlockable boxes" shouldHide={false}>
-        <PercentChange isNegative={false}>
-          {/* {arrow} */}
-          {/* {floorChangeStr} */}
-        </PercentChange>
+        {brpData?.totalUnlockableBoxes[0]}
+
       </StatsItem>
       <StatsItem label="Total LMT" shouldHide={false}>
         {stats} 
@@ -39,7 +38,7 @@ const InfoItemStats = ({stats} : {stats: any}) => {
           {totalSupplyStr}
         </StatsItem> */}
       <StatsItem label="LMT required per unlock" shouldHide={false}>
-        
+        {brpData?.lmtRequiredPerUnlock}
       </StatsItem>
       {/* <StatsItem label="LMT required per unlock" shouldHide={false}>
         %

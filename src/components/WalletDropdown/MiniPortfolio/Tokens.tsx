@@ -116,7 +116,7 @@ function TokenRow({ token, quantity, denominatedValue, tokenProjectMarket }: Tok
       properties={{ chain_id: currency.chainId, token_name: token?.name, address: token?.address }}
     >
       <PortfolioRow
-        left={<PortfolioLogo chainId={currency.chainId} currencies={[currency]} size="40px" />}
+        left={<PortfolioLogo chainId={currency.chainId} currencies={[currency]} size="25px" />}
         title={<ThemedText.SubHeaderSmall width="75px">{token?.name}</ThemedText.SubHeaderSmall>}
         descriptor={
           <TokenBalanceText>

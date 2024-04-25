@@ -13,7 +13,7 @@ import { Z_INDEX } from 'theme/zIndex'
 import DefaultMenu from './DefaultMenu'
 
 const DRAWER_WIDTH_XL = '350px'
-const DRAWER_WIDTH = '290px'
+const DRAWER_WIDTH = '340px'
 const DRAWER_MARGIN = '8px'
 const DRAWER_OFFSET = '10px'
 const DRAWER_TOP_MARGIN_MOBILE_WEB = '72px'

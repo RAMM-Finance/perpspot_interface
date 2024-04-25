@@ -2,13 +2,13 @@ import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount, Position } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { DATA_PROVIDER_ADDRESSES } from 'constants/addresses'
 import { BigNumber } from 'ethers'
 import { useToken } from 'hooks/Tokens'
-import { useContractCall } from 'hooks/useContractCall'
+import { useDataProviderContract } from 'hooks/useContract'
 import { useParsedBurnAmounts } from 'hooks/useParsedBurnAmounts'
 import { usePool } from 'hooks/usePools'
 import { useLMTPositionFees, useV3PositionFees } from 'hooks/useV3PositionFees'
+import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PositionDetails } from 'types/position'
@@ -109,28 +109,33 @@ export function useMaxLiquidityToWithdraw(
   // if liquidity in bin < liquidity in position + MIN_LIQ then return liquidity in bin - MIN_LIQ,
   // get all liquidities in bin + all borrowed liquidities
   const calldata = useMemo(() => {
-    if (!position || !currency0 || !currency1 || !fee) return undefined
+    if (!position || !currency0 || !currency1 || !fee) return []
 
     const poolKey = {
       token0: currency0,
       token1: currency1,
       fee,
     }
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getMaxWithdrawable', [
-      poolKey,
-      position.tickLower,
-      position.tickUpper,
-    ])
+    return [
+      DataProviderSDK.INTERFACE.encodeFunctionData('getMaxWithdrawable', [
+        poolKey,
+        position.tickLower,
+        position.tickUpper,
+      ]),
+    ]
   }, [position, currency0, currency1, fee])
 
-  const { result, error, loading } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 1)
+  const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata, {
+    gasRequired: 10_000_000,
+  })
 
   return useMemo(() => {
-    if (!result || !position || loading || error) return undefined
+    if (callStates.length === 0 || !position || !callStates[0].result) return undefined
 
-    const maxLiquidity = DataProviderSDK.INTERFACE.decodeFunctionResult('getMaxWithdrawable', result)[0]
+    const maxLiquidity = callStates[0]?.result[0] as BigNumber
     return maxLiquidity.lt(position.liquidity) ? maxLiquidity : position.liquidity
-  }, [result, position, error, loading])
+  }, [position, callStates])
 }
 
 export function useDerivedLmtBurnInfo(
@@ -175,15 +180,8 @@ export function useDerivedLmtBurnInfo(
   )
 
   const liquidityPercentage = new Percent(percent, 100)
-
-  // const discountedAmount0 = positionSDK
-  //   ? liquidityPercentage.multiply(positionSDK.amount0.quotient).quotient
-  //   : undefined
-  // const discountedAmount1 = positionSDK
-  //   ? liquidityPercentage.multiply(positionSDK.amount1.quotient).quotient
-  //   : undefined
   const maxLiquidityToWithdraw = useMaxLiquidityToWithdraw(position, token0?.address, token1?.address, position?.fee)
-  // console.log('maxLiquidityToWithdraw', maxLiquidityToWithdraw?.toString(), position?.liquidity.toString())
+
   const { result: parsedLiquidity } = useParsedBurnAmounts(
     position?.tokenId.toString(),
     maxLiquidityToWithdraw,
@@ -194,15 +192,6 @@ export function useDerivedLmtBurnInfo(
 
   const liquidityValue0 = parsedLiquidity ? parsedLiquidity.amount0 : undefined
   const liquidityValue1 = parsedLiquidity ? parsedLiquidity.amount1 : undefined
-
-  // const liquidityValue0 =
-  //   token0 && discountedAmount0
-  //     ? CurrencyAmount.fromRawAmount(asWETH ? token0 : unwrappedToken(token0), discountedAmount0)
-  //     : undefined
-  // const liquidityValue1 =
-  //   token1 && discountedAmount1
-  //     ? CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), discountedAmount1)
-  //     : undefined
 
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, position?.tokenId, asWETH)
 

@@ -1,11 +1,11 @@
 // import { SupportedChainId } from '@looksrare/sdk'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
-import { DATA_PROVIDER_ADDRESSES } from 'constants/addresses'
+import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 
-import { useContractCall } from './useContractCall'
+import { useDataProviderContract } from './useContract'
 
 // margin must be in input token amount
 export function useMaxLeverage(
@@ -20,7 +20,7 @@ export function useMaxLeverage(
   outputCurrencyDecimals?: number,
   startingLeverage = 120,
   stepSize = 2
-) {
+): { loading: boolean; error: any; result: BN | undefined } {
   const calldata = useMemo(() => {
     if (marginInPosToken) {
       if (
@@ -85,38 +85,25 @@ export function useMaxLeverage(
     marginInPosToken,
   ])
 
-  const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  // const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
+    gasRequired: 10_000_000,
+  })
 
   return useMemo(() => {
-    if (error || loading) {
+    if (callStates[0]) {
       return {
-        loading,
-        error,
-        result: undefined,
-      }
-    }
-
-    if (result) {
-      try {
-        const decoded = DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result)
-        return {
-          loading,
-          error,
-          result: new BN(decoded.toString()).shiftedBy(-18),
-        }
-      } catch {
-        return {
-          loading,
-          error: 'error decoding result',
-          result: new BN(0),
-        }
+        loading: callStates[0].loading,
+        error: callStates[0].error,
+        result: callStates[0].result ? new BN(callStates[0].result[0].toString()).shiftedBy(-18) : undefined,
       }
     }
 
     return {
-      loading,
-      error,
+      loading: false,
+      error: undefined,
       result: undefined,
     }
-  }, [loading, error, result])
+  }, [callStates])
 }

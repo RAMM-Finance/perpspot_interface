@@ -532,13 +532,13 @@ export default function DecreasePositionContent({
 
   function setPercentageValues(percent: number) {
     if (currentPrice) {
-      console.log('currentPrice', currentPrice)
+      // console.log('currentPrice', currentPrice)
       const value = parseFloat(currentPrice.replace(',', ''))
-      console.log('value', value)
+      // console.log('value', value)
       const adjustedValue = value * percent
-      console.log('percent', percent)
-      console.log('adjustedVal', adjustedValue)
-      console.log('adjustedValString', adjustedValue.toString())
+      // console.log('percent', percent)
+      // console.log('adjustedVal', adjustedValue)
+      // console.log('adjustedValString', adjustedValue.toString())
       setLimitPrice(() => adjustedValue.toString())
     } else {
       return

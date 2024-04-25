@@ -794,11 +794,11 @@ export default function AddLiquidity() {
                                       onSetRecommendedRange={() => handleSetRecommendedRange(0.7, 1.3)}
                                     />
                                     <PresetsButtons
-                                      btnName={`-20% ~ -10% ${quoteCurrency?.symbol} only`}
+                                      btnName={`-20% ~ -10% ${quoteCurrency ? quoteCurrency?.symbol : ''} only`}
                                       onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 0.9)}
                                     />
                                     <PresetsButtons
-                                      btnName={`+10% ~ +20% ${baseCurrency?.symbol} only`}
+                                      btnName={`+10% ~ +20% ${baseCurrency ? baseCurrency?.symbol : ''} only`}
                                       onSetRecommendedRange={() => handleSetRecommendedRange(1.1, 1.2)}
                                     />
                                   </>

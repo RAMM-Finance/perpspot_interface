@@ -238,10 +238,8 @@ export default function Pool() {
   })
 
   const theme = useTheme()
-  // const codeActive = useUsingCode()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
-  // const { positions, loading: positionsLoading } = useV3Positions(account)
   const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
 
   const [openPositions, closedPositions] = lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
@@ -262,7 +260,6 @@ export default function Pool() {
   }
 
   const showConnectAWallet = Boolean(!account)
-  // const showV2Features = Boolean(V2_FACTORY_ADDRESSES[chainId]) //Potentially needed later
 
   return (
     <>
@@ -320,8 +317,8 @@ export default function Pool() {
                     <ErrorContainer>
                       <ButtonPrimary
                         style={{
-                          marginLeft: '20px',
                           marginBottom: '30px',
+                          marginTop: '30px',
                           padding: '.5rem',
                           width: 'fit-content',
                           fontSize: '0.8rem',
