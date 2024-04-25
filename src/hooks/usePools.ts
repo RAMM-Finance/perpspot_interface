@@ -12,7 +12,7 @@ import { SupportedChainId } from 'constants/chains'
 import { utils } from 'ethers'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   BORROW_INIT_CODE_HASH,
@@ -23,6 +23,10 @@ import {
 } from '../constants/addresses'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useLmtPoolManagerContract } from './useContract'
+import axios from 'axios'
+import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
+import { supportedChainId } from 'utils/supportedChainId'
+import { Nullish } from '@uniswap/conedison/types'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
 // Classes are expensive to instantiate, so this caches the recently instantiated pools.
@@ -142,6 +146,8 @@ export function usePools(
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
   const filteredAddresses = poolAddresses.filter((item) => item !== '')
+  // console.log('poolManager', JSON.stringify(poolManager))
+  // console.log('filteredAddr', JSON.stringify(filteredAddresses))
   const poolParams = useSingleContractMultipleData(
     poolManager,
     'PoolParams',
@@ -171,8 +177,9 @@ export function usePools(
       // console.log('26', poolParams[index])
 
       const { result: poolParam, loading: addedPoolLoading, valid: addedPoolValid } = poolParams[index]
-
+      // console.log('conditions', tokens, slot0Valid, liquidityValid, addedPoolValid)
       if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid) return [PoolState.INVALID, null]
+      // console.log('poolParam', poolParam)
       if (!poolParam) return [PoolState.NOT_ADDED, null]
       // console.log('2')
       if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null]
@@ -320,4 +327,64 @@ export function computeLiquidityManagerAddress({
     keccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [token0, token1, fee])]),
     initCodeHashManualOverride ?? LIQUITITY_INIT_CODE_HASH
   )
+}
+
+export function usePool24hVolume(pools: any) {
+  const { chainId } = useWeb3React()
+  const [updatedPools, setUpdatedPools] = useState<any[] | null>(null)
+
+  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  let network
+
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    url += 'arbitrum'
+    network = 'arbitrum-one'
+  } else if (chainId === SupportedChainId.BASE) {
+    url += 'base'
+    network = 'base'
+  } else {
+    url += 'arbitrum'
+    network = 'arbitrum-one'
+  }
+
+  useEffect(() => {
+    const fetchData = async (pools: any) => {
+      const promises = pools.map((pool: any) => {
+        const token0 = pool.token0
+        const token1 = pool.token1
+        try {
+          let res: any = axios.post(url, {
+            query: Pool24hVolumeQuery(token0, token1),
+          })
+          const dailySnapshots = res.data.data.liquidityPoolDailySnapshots
+          console.log("dailySnapshots",dailySnapshots)
+          
+          for (let i = 0; i < dailySnapshots.length; i++) {
+            if (dailySnapshots[i].dailyVolumeUSD !== 0) {
+              console.log("Daily Volume USD", { 
+                ...pool, 
+                'dailySnapshot': dailySnapshots[i].dailyVolumeUSD 
+              })
+              return { 
+                ...pool, 
+                'dailySnapshot': dailySnapshots[i].dailyVolumeUSD 
+              }
+            }
+          }
+          return null
+        } catch(err) {
+          console.error(err)
+        }
+      })
+      const results = await Promise.all(promises)
+      setUpdatedPools(results)
+    }
+    if (pools) {
+      fetchData(pools)
+    }
+  }, [pools])
+  if (updatedPools) {
+    return updatedPools
+  }
+  return pools
 }

@@ -408,9 +408,9 @@ export function useDerivedAddPositionInfo(
       inputError = inputError ?? <Trans>Select a token</Trans>
     }
 
-    // if (!usingCode) {
-    //   inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
-    // }
+    if (!usingCode) {
+      inputError = inputError ?? <Trans>Not whitelisted nor using code</Trans>
+    }
 
     if (!parsedMargin || parsedMargin.isZero()) {
       inputError = inputError ?? <Trans>Enter a margin amount</Trans>

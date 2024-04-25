@@ -25,6 +25,7 @@ import { SupportedChainId } from 'constants/chains'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { NumberType } from '@uniswap/conedison/format'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { usePool24hVolume } from 'hooks/usePools'
 
 const GridContainer = styled.div`
   display: flex;
@@ -106,7 +107,7 @@ enum TokenSortMethod {
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
   APR = 'Est APR',
-  URate = 'Util Rate',
+  DailyLMT = 'Daily LMT',
   PRICE_CHANGE = '24h Change',
 }
 
@@ -143,10 +144,9 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
       liquidity between 90% and 110% of current price
     </Trans>
   ),
-  [TokenSortMethod.URate]: (
+  [TokenSortMethod.DailyLMT]: (
     <Trans>
-      Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
-      APR.
+      Daily LMT emitted per USD value provided.
     </Trans>
   ),
   [TokenSortMethod.PRICE_CHANGE]: <Trans>24H Change in Price</Trans>,
@@ -200,7 +200,7 @@ function PHeaderRow() {
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
       APR={<HeaderCell category={TokenSortMethod.APR} />}
-      UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
+      UtilRate={<HeaderCell category={TokenSortMethod.DailyLMT} />}
       sparkLine={null}
     />
   )
@@ -302,7 +302,7 @@ export default function TokenTable() {
       } else if (sortMethod[0] === TokenSortMethod.APR) {
         if (aprList[aId] === undefined || aprList[bId] === undefined) return 0
         return !sortAscending[0] ? aprList[aId].apr - aprList[bId].apr : aprList[bId].apr - aprList[aId].apr
-      } else if (sortMethod[0] === TokenSortMethod.URate) {
+      } else if (sortMethod[0] === TokenSortMethod.DailyLMT) {
         if (aprList[aId] === undefined || aprList[bId] === undefined) return 0
         return !sortAscending[0]
           ? aprList[aId].utilTotal - aprList[bId].utilTotal
@@ -317,6 +317,8 @@ export default function TokenTable() {
     })
   }, [poolTvlData, sortAscending, sortMethod, poolOHLCs, filteredPools, loading, aprList])
 
+  const updatedPools = usePool24hVolume(sortedPools)
+  // console.log("UPDATED POOLS", updatedPools)
   /* loading and error state */
   return (
     <>
