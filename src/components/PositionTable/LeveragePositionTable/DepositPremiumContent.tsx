@@ -508,6 +508,7 @@ export function DepositPremiumContent({
                 }
               }
             }}
+            showFiat={true}
             showMaxButton={true}
             onMax={() => {
               inputCurrencyBalance && setAmount(inputCurrencyBalance.toExact())

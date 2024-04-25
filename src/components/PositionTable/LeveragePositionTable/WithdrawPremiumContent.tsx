@@ -27,6 +27,7 @@ import Toggle from 'components/Toggle'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
+import { useUSDPrice } from 'hooks/useUSDPrice'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -45,7 +46,6 @@ import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { BaseFooter } from './DepositPremiumContent'
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
-import { useUSDPrice } from 'hooks/useUSDPrice'
 
 interface DerivedWithdrawPremiumInfo {
   newDepositAmount: TokenBN
@@ -314,7 +314,6 @@ export function WithdrawPremiumContent({
 
   const fiatWithDrawtAmount = useUSDPrice(currencyAmount)
 
-
   const addTransaction = useTransactionAdder()
 
   // callback
@@ -467,6 +466,7 @@ export function WithdrawPremiumContent({
                 }
               }
             }}
+            showFiat={true}
             hideBalance={true}
             currency={inputCurrency}
           />

@@ -471,15 +471,14 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
             fiatValue?.isLoading || !fiatValue?.data ? (
               <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
                 <ThemedText.DeprecatedBody fontSize={12} color={theme.textSecondary}>
-                  - $
+                  $ -
                 </ThemedText.DeprecatedBody>
               </LoadingOpacityContainer>
             ) : (
               <LoadingOpacityContainer $loading={fiatValue?.isLoading}>
                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact}/>
               </LoadingOpacityContainer>
-            )
-                        
+            )       
           )}
           {Boolean(!hideInput && !hideBalance) && (
             <FiatRow>
