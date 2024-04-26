@@ -244,21 +244,16 @@ export const RegisterQuery = `
   }
 `
 
-export const Pool24hVolumeQuery = (token0: string, token1: string) => {
+export const Pool24hVolumeQuery = (token0: string, token1: string, timestamp: number) => {
   return `
-    query {
-      liquidityPoolDailySnapshots(orderBy: timestamp, orderDirection: desc) {
-        dailyVolumeUSD
-        pool {
-          id
-          inputTokens(
-            where: {id_in: ["${token0}", "${token1}"]}
-          ) {
-            id
-          }
-        }
-        id
-      }
+  query {
+    liquidityPoolDailySnapshots(
+      where: {pool_: {inputTokens: ["${token0}", "${token1}"]}, timestamp_gte: "${timestamp}"}
+      orderBy: timestamp
+      orderDirection: desc
+    ) {
+      dailyVolumeUSD
     }
+  }
   `
 }

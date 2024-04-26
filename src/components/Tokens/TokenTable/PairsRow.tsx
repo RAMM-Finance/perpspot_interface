@@ -520,7 +520,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         APR={
           <>
             <ClickableRate rate={apr}>{apr !== undefined ? `${apr?.toPrecision(4)} %` : '-'}</ClickableRate>
-            <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span>
+            {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span> */}
           </>
         }
         UtilRate={

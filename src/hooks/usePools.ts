@@ -27,6 +27,9 @@ import axios from 'axios'
 import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
 import { supportedChainId } from 'utils/supportedChainId'
 import { Nullish } from '@uniswap/conedison/types'
+import { query } from 'firebase/firestore'
+import { getDecimalAndUsdValueData } from './useUSDPrice'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
 // Classes are expensive to instantiate, so this caches the recently instantiated pools.
@@ -329,9 +332,11 @@ export function computeLiquidityManagerAddress({
   )
 }
 
-export function usePool24hVolume(pools: any) {
+export function useDailyFeeAPR(pools: any): { [key: string]: { dailyFeeAPR: number } } | null {
+  
   const { chainId } = useWeb3React()
-  const [updatedPools, setUpdatedPools] = useState<any[] | null>(null)
+  const [dailyFeeAPRs, setDailyFeeAPRs] = useState<{ [key: string]: { dailyFeeAPR: number } } | null>(null)
+  const timestamp = Math.floor(Date.now() / 1000) - (86400 * 7)
 
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network
@@ -347,44 +352,73 @@ export function usePool24hVolume(pools: any) {
     network = 'arbitrum-one'
   }
 
+  console.log("CHAIN ID AND NETWORK", network, chainId)
+
   useEffect(() => {
+    if (!pools || pools.length === 0) return;
     const fetchData = async (pools: any) => {
+      // for (let i = 0; i < pools.length; i++) {
+      //   const token00 = pools[i]?.token0
+      //   const token11 = pools[i]?.token1
+      //   let result = await axios.post(url, {
+      //     query: Pool24hVolumeQuery(token00, token11, timestamp),
+      //   })
+      //   console.log(`RESLT ${i}!!!`, token00, token11, result)
+      //   const dailySnapshots = result?.data?.data?.liquidityPoolDailySnapshots
+      //   if (dailySnapshots) {
+      //     const sum = dailySnapshots.reduce((acc: any, curr: any) => acc + Number(curr.dailyVolumeUSD), 0)
+      //     console.log("SUM", sum)
+      //   }
+      // }
+
       const promises = pools.map((pool: any) => {
-        const token0 = pool.token0
-        const token1 = pool.token1
-        try {
-          let res: any = axios.post(url, {
-            query: Pool24hVolumeQuery(token0, token1),
-          })
-          const dailySnapshots = res.data.data.liquidityPoolDailySnapshots
-          console.log("dailySnapshots",dailySnapshots)
-          
-          for (let i = 0; i < dailySnapshots.length; i++) {
-            if (dailySnapshots[i].dailyVolumeUSD !== 0) {
-              console.log("Daily Volume USD", { 
-                ...pool, 
-                'dailySnapshot': dailySnapshots[i].dailyVolumeUSD 
-              })
-              return { 
-                ...pool, 
-                'dailySnapshot': dailySnapshots[i].dailyVolumeUSD 
-              }
-            }
+        
+        return axios.post(url, {
+          query: Pool24hVolumeQuery(pool.token0, pool.token1, timestamp),
+        }).then(async (res: any) => {
+          const weeklySnapshots = res?.data?.data?.liquidityPoolDailySnapshots
+
+          if (weeklySnapshots) {
+            const swapVolume24h = (weeklySnapshots.reduce((acc: any, curr: any) => acc + Number(curr.dailyVolumeUSD), 0)) / 7
+            // assuming that the user's 24h swap volume is 1% of total 24h swap volume, and liquidity share is 1%
+            const user24hSwapVolume = swapVolume24h * 0.01
+            const liqShare = 0.01
+            
+            const estimatedDailyFee = user24hSwapVolume * (pool.fee / 10000) * liqShare
+            
+            const [token0Data, token1Data] = await Promise.all([
+              getDecimalAndUsdValueData(chainId, pool.token0),
+              getDecimalAndUsdValueData(chainId, pool.token1)
+            ]);
+            
+            const token0Price = token0Data?.lastPriceUSD;
+            const token1Price = token1Data?.lastPriceUSD;
+
+            const poolPrice = token0Price * token1Price
+            const dailyFeeAPR = (estimatedDailyFee / poolPrice) * 365 * 100
+            const poolId = getPoolId(pool.token0, pool.token1, pool.fee)
+            return { [poolId]: dailyFeeAPR }
           }
           return null
-        } catch(err) {
+        }).catch(err => {
           console.error(err)
-        }
+        })
       })
       const results = await Promise.all(promises)
-      setUpdatedPools(results)
+
+      const dailyFeeAPRsObj = results.reduce((acc, curr) => {
+        const key = Object.keys(curr)[0]
+        return { ...acc, [key] : {dailyFeeAPR: curr[key]}}
+      }, {})
+
+      setDailyFeeAPRs(dailyFeeAPRsObj)
     }
     if (pools) {
       fetchData(pools)
     }
   }, [pools])
-  if (updatedPools) {
-    return updatedPools
+  if (dailyFeeAPRs) {
+    return dailyFeeAPRs
   }
-  return pools
+  return null
 }
