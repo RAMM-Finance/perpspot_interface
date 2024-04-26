@@ -1,27 +1,18 @@
+import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import { useBRP } from 'hooks/useContract'
 // import { getSortDropdownOptions } from 'nft/components/collection/CollectionNfts'
 import { Row } from 'nft/components/Flex'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowUpRight } from 'react-feather'
-import { useLocation, useNavigate } from 'react-router-dom'
-import styled, { css } from 'styled-components/macro'
+import { useAddPopup } from 'state/application/hooks'
+import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import ItemImg from '../../assets/images/newItem.png'
-import ItemImg2 from '../../assets/images/newItem2.webp'
-import ItemImg3 from '../../assets/images/newItem3.webp'
-import ItemImg4 from '../../assets/images/newItem4.webp'
-import ItemImg5 from '../../assets/images/newItem5.webp'
-import ItemImg6 from '../../assets/images/newItem6.webp'
 import banner from '../../components/Leaderboard/banner.png'
-import { CardContainer } from './CardContainer'
+import BoxesContainr, { TBRPData } from './BoxesContainr'
 import InfoDescriptionSection from './InfoDescription'
-import { useBRP } from 'hooks/useContract'
-import { useWeb3React } from '@web3-react/core'
-import { useCallback, useEffect, useState } from 'react'
-import { BigNumber } from 'ethers'
-import { isAddress } from 'ethers/lib/utils'
-
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -33,7 +24,6 @@ import { isAddress } from 'ethers/lib/utils'
 //     display: none;
 //   }
 // `
-
 
 const FaqWrapper = styled.div`
   margin: 50px auto;
@@ -54,44 +44,6 @@ const FaqElement = styled.div`
     cursor: pointer;
     opacity: 75%;
   }
-`
-
-const InfiniteScrollWrapperCss = css`
-  margin: 0 16px;
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(calc(50% - 8px), 1fr));
-
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.sm}px) {
-    gap: 8px;
-    margin: 0 20px;
-  }
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.md}px) {
-    grid-template-columns: repeat(auto-fill, minmax(calc(33.33333% - 8px), 1fr));
-    gap: 12px;
-    margin: 0 26px;
-  }
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.lg}px) {
-    gap: 16px;
-    margin: 0 48px;
-    grid-template-columns: repeat(auto-fill, minmax(calc(33.33333% - 12px), 1fr));
-  }
-
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.xl}px) {
-    gap: 20px;
-    grid-template-columns: repeat(auto-fill, minmax(calc(25% - 16px), 1fr));
-  }
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.xxl}px) {
-    gap: 22px;
-    grid-template-columns: repeat(auto-fill, minmax(calc(20% - 16px), 1fr));
-  }
-
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.xxxl}px) {
-    grid-template-columns: repeat(auto-fill, minmax(calc(20% - 50px), 1fr));
-  }
-`
-const InfiniteScrollWrapper = styled.div`
-  ${InfiniteScrollWrapperCss}
 `
 
 // const SweepButton = styled.div<{ toggled: boolean; disabled?: boolean }>`
@@ -128,15 +80,6 @@ const InfiniteScrollWrapper = styled.div`
 //   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
 //     gap: 10px;
 //   }
-// `
-
-// const ActionsContainer = styled.div`
-//   display: flex;
-//   flex: 1 1 auto;
-//   gap: 10px;
-//   justify-content: space-between;
-
-//   ${InfiniteScrollWrapperCss}
 // `
 
 const CollectionContainer = styled(Column)`
@@ -238,112 +181,49 @@ const NewItemsListPage = () => {
   const { account, chainId } = useWeb3React()
   const brp = useBRP()
 
-  const [brpData, setBRPData] = useState<any>();
-  const [totalLMT, setTotalLMT] = useState('')
-   // const totalBoxes = brp.numBoxes(account)
-  // const totalUnlockableBoxes = brp.claimableBoxes(account)
-  // const MTRequiredPerUnlock = brp.pointPerUnlocks()
-  // const TotalLMT = brp.lastRecordedTradePoints(account)+ 
-  // brp.lastRecordedLpPoints(account)+ brp.lastRecordedPoints(account)
+  const [brpData, setBRPData] = useState<TBRPData>({
+    totalBoxes: 0,
+    totalUnlockableBoxes: '0',
+    lmtRequiredPerUnlock: '0',
+  })
+  const [totalLMT, setTotalLMT] = useState('0')
+  const [loading, setLoading] = useState(true)
 
-  const itemData = [
-    {
-      id: '#111',
-      img: ItemImg,
-      info: 'Limitless test1',
-      selected: false,
-      isDisabled: false,
-      isLocked: false
-    },
-    {
-      id: '#222',
-      img: ItemImg2,
-      info: 'Limitless test2',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#333',
-      img: ItemImg3,
-      info: 'Limitless test3',
-      selected: false,
-      isDisabled: false,
-      isLocked: false
-    },
-    {
-      id: '#444',
-      img: ItemImg4,
-      info: 'Limitless test4',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#555',
-      img: ItemImg5,
-      info: 'Limitless test5',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#666',
-      img: ItemImg6,
-      info: 'Limitless test6',
-      selected: false,
-      isDisabled: false,
-      isLocked: false
-    },
-    {
-      id: '#777',
-      img: ItemImg,
-      info: 'Limitless test7',
-      selected: false,
-      isDisabled: false,
-      isLocked: false
-    },
-    {
-      id: '#888',
-      img: ItemImg2,
-      info: 'Limitless test8',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#999',
-      img: ItemImg4,
-      info: 'Limitless test9',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#1010',
-      img: ItemImg6,
-      info: 'Limitless test1010',
-      selected: false,
-      isDisabled: false,
-      isLocked: true
-    },
-    {
-      id: '#1212',
-      img: ItemImg5,
-      info: 'Limitless test 1212',
-      selected: false,
-      isDisabled: false,
-      isLocked: false
-    },
-  ]
+  const addPopup = useAddPopup()
 
-  const { pathname } = useLocation()
+  const handleUnlockBox = useCallback(async () => {
+    if (brp && account) {
+      try {
+        const gasLimit = 1000000
+        const tx = await brp.unlockBox({
+          gasLimit,
+          from: account,
+        })
+        const receipt = await tx.wait()
+        setLoading(true)
+        // console.log('Unlock successful:', receipt)
+        addPopup(
+          { txn: { hash: receipt.transactionHash }, isUnlockBox: true },
+          'unlock Success',
+          Number.MAX_SAFE_INTEGER
+        )
+        setBRPData((prevData) => ({
+          ...prevData,
+          totalUnlockableBoxes: (parseInt(prevData.totalUnlockableBoxes) - 1).toString(),
+        }))
+        setLoading(false)
+      } catch (error) {
+        setLoading(false)
+        console.error(error, 'BRP instance is not available')
+      }
+    }
+  }, [brp, account, addPopup])
 
   useEffect(() => {
-    if (brp && account){
-      console.log('check' ,brp, account);
+    if (brp && account) {
       const call = async () => {
         try {
+          setLoading(true)
           const totalBoxes = await brp.numBoxes(account)
           const totalUnlockableBoxes = await brp.claimableBoxes(account)
           const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
@@ -352,19 +232,20 @@ const NewItemsListPage = () => {
           const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
           const lastRecordedPoints = await brp.lastRecordedPoints(account)
 
-
           const totalLMT = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
           const totalLMTString = totalLMT.toString()
 
           setTotalLMT(totalLMTString)
-          console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
-          console.log('total',  totalBoxes, totalUnlockableBoxes,lmtRequiredPerUnlock )
+          // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
+          // console.log('total boxes', totalBoxes, totalUnlockableBoxes, lmtRequiredPerUnlock)
           setBRPData({
-            totalBoxes: totalBoxes.toString(),
-            totalUnlockableBoxes: totalUnlockableBoxes.toString(),
-            lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString()
-          });
+            totalBoxes: totalBoxes.toNumber(),
+            totalUnlockableBoxes: totalUnlockableBoxes[0]?.toString(),
+            lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString(),
+          })
+          setLoading(false)
         } catch (error) {
+          setLoading(false)
           console.log(error, 'get brp data error')
         }
       }
@@ -372,34 +253,10 @@ const NewItemsListPage = () => {
     }
   }, [brp, account])
 
+  // useEffect(() => {
+  //   addPopup({ txn: { hash: '0xde0fea27570e870df0fe08fbe6ee021b61b54732590102b9893479295ff8f60d',}, isUnlockBox: true }, '0xde0fea27570e870df0fe08fbe6ee021b61b54732590102b9893479295ff8f60d',)
+  // }, [addPopup])
 
-  const handleUnlockBox = useCallback(async() => {
-    if (brp && account) {
-      try {
-        const gasLimit = 1000000
-        const tx = await brp.unlockBox({
-          gasLimit,
-          from: account 
-        })
-        const receipt = await tx.wait()
-        console.log('Unlock successful:', receipt)
-      } catch(error) {
-        console.error(error, 'BRP instance is not available')
-      }
-    }
-  }, [brp, account])
-
-  // toggle item or Activity
-  // const isActivityToggled = pathname.includes('/activity')
-  // const navigate = useNavigate()
-
-  // //TODO: Add query string parameter to the URL in the ("?")following format
-  // const toggleActivity = () => {
-  //   isActivityToggled ? navigate(`/new`) : navigate(`/new/?/activity`)
-  // }
-  // const setSortBy = useCollectionFilters((state) => state.setSortBy)
-
-  // const sortDropDownOptions: DropDownOption[] = useMemo(() => getSortDropdownOptions(setSortBy, false), [setSortBy])
   return (
     <CollectionContainer>
       {/* Banner, Info title description section */}
@@ -408,92 +265,25 @@ const NewItemsListPage = () => {
       </BannerWrapper>
       <CollectionDescriptionSection>
         <Row gap="16">
-          {/* <InfoImg src={Logo} alt="Logo" /> */}
           <InfoDescriptionSection
             title="Use and Unlock "
             description="Earn LMT and unlock treasure boxes"
             stats={totalLMT}
-            brpData = {brpData}
+            brpData={brpData}
+            loading={loading}
           />
         </Row>
-        {/* <ItemStats /> */}
-        {/* {collectionStats && <CollectionStats sta  ts={collectionStats} isMobile={flase} />} */}
-        <div id="nft-anchor" />
-        {/* <ActivitySwitcher
-          showActivity={isActivityToggled}
-          toggleActivity={() => {
-            toggleActivity()
-            //isFiltersExpanded && setFiltersExpanded(false)
-          }}
-        /> */}
       </CollectionDescriptionSection>
-      {/* Filter , ListItem section */}
       <CollectionDisplaySection>
-        {/* todo : add filters */}
-        <CollectionAssetsContainer hideUnderneath={false}>
-          {/* <ActionsContainer>
-            <ActionsSubContainer>
-              <TraceEvent
-                events={[BrowserEvent.onClick]}
-                element={InterfaceElementName.NFT_FILTER_BUTTON}
-                name={NFTEventName.NFT_FILTER_OPENED}
-                shouldLogImpression={false}
-                properties={{ collection_address: undefined, chain_id: undefined }}
-              >
-                <FilterButton
-                  isMobile={false}
-                  isFiltersExpanded={false}
-                  // collectionCount={}
-                  onClick={() => {
-                    // if (bagExpanded && !screenSize['xl']) toggleBag()
-                    // setFiltersExpanded(!isFiltersExpanded)
-                  }}
-                />
-              </TraceEvent>
-              <SortDropdownContainer isFiltersExpanded={false}>
-                <SortDropdown dropDownOptions={sortDropDownOptions} />
-              </SortDropdownContainer>
-              <CollectionSearch />
-            </ActionsSubContainer>
-            {/* {!hasErc1155s && }
-            <SweepButton
-              toggled={false}
-              disabled={false}
-              onClick={() => {
-                console.log('sweepbutton click')
-              }}
-              data-testid="nft-sweep-button"
-            >
-              <SweepIcon viewBox="0 0 24 24" width="20px" height="20px" />
-              <ThemedText.BodySecondary fontWeight={600} color="currentColor" lineHeight="20px">
-                Sweep
-              </ThemedText.BodySecondary>
-            </SweepButton>
-          </ActionsContainer> */}
-          <InfiniteScrollWrapper>
-            {/* The filter chips are displayed based on whether the filters are expanded */}
-            {/* <InfiniteScroll
-              next={() => {console.log("")}}
-              hasMore={false}
-              loader={false}
-              dataLength={20}
-              style={{ overflow: 'unset', height: '100%' }}
-              > */}
-            {itemData.map(({ id, img, info, selected, isDisabled, isLocked }) => (
-              <CardContainer
-                key={id}
-                id={id}
-                img={img}
-                info={info}
-                selected={selected}
-                isDisabled={isDisabled}
-                isLocked={isLocked}
-                handleUnlockBox={handleUnlockBox}
-              />
-            ))}
-            {/* </InfiniteScroll> */}
-          </InfiniteScrollWrapper>
-        </CollectionAssetsContainer>
+        {/* <InfiniteScroll
+          next={() => {console.log("")}}
+          hasMore={false}
+          loader={false}
+          dataLength={20}
+          style={{ overflow: 'unset', height: '100%' }}
+          > */}
+        <BoxesContainr brpData={brpData} handleUnlockBox={handleUnlockBox} loading={loading} />
+        {/* </InfiniteScroll> */}
       </CollectionDisplaySection>
       <FaqWrapper>
         <FaqElement>

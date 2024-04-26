@@ -12,7 +12,7 @@ export const PortfolioRowWrapper = styled(Row)<{ onClick?: any; display?: string
   display: ${({ display }) => display && display};
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} background-color`};
   position: relative;
-   ${({ isBorder, theme }) => isBorder ? `
+  ${({ isBorder, theme }) => isBorder ? `
     border-bottom: 2px solid ${theme.tableBorder};
   ` : `
     border-bottom: none;

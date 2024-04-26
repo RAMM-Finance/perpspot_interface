@@ -1,7 +1,9 @@
+import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import { useCallback, useEffect } from 'react'
 import { X } from 'react-feather'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 import { useRemovePopup } from '../../state/application/hooks'
 import { PopupContent } from '../../state/application/reducer'
@@ -65,8 +67,27 @@ export default function PopupItem({
   let popupContent
   let transactionType: TransactionType
   if ('txn' in content) {
-    popupContent = TransactionPopup({ hash: content.txn.hash, removeThisPopup })
-
+    if (content.isUnlockBox) {
+      popupContent = (
+        <Popup>
+          <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
+          <PortfolioRow
+            isPopUp={true}
+            left={<></>}
+            title={
+              <ThemedText.SubHeader fontWeight={500} color="textSecondary">
+                Unlock Treasure Box
+              </ThemedText.SubHeader>
+            }
+            descriptor={
+              <ThemedText.BodySmall marginTop="0.5rem">Successfully unlocked the treasure box</ThemedText.BodySmall>
+            }
+          />
+        </Popup>
+      )
+    } else {
+      popupContent = TransactionPopup({ hash: content.txn.hash, removeThisPopup })
+    }
     return <>{popupContent}</>
   } else if ('failedSwitchNetwork' in content) {
     popupContent = <FailedNetworkSwitchPopup chainId={content.failedSwitchNetwork} />
