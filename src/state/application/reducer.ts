@@ -8,6 +8,7 @@ export type PopupContent =
       txn: {
         hash: string
       }
+      isUnlockBox?: boolean
     }
   | {
       failedSwitchNetwork: SupportedChainId

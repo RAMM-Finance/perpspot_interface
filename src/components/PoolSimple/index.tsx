@@ -1181,6 +1181,20 @@ export default function SimplePool() {
                   <ThemedText.BodySecondary fontSize={12}>
                     {`${(limwethBacking / 1e18).toFixed(4)}`}
                   </ThemedText.BodySecondary>
+
+                </RowBetween>
+                <RowBetween
+                  style={{
+                    marginBottom: '10px',
+                    paddingBottom: '20px',
+                    borderBottom: `1px solid ${theme.accentActiveSoft}`,
+                  }}
+                >
+                  <ThemedText.BodyPrimary fontSize={12}>Daily LMT rewards: </ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    1 LMT per USD 
+                  </ThemedText.BodySecondary>
+
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
@@ -1535,7 +1549,7 @@ export default function SimplePool() {
                 rel="noopener noreferrer"
               >
                 <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                  Earning with LLP
+                  Earning with LimWETH
                 </ThemedText.BodySecondary>
               </a>
               <ArrowUpRight size="20" />

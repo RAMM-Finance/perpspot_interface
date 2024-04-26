@@ -1,48 +1,49 @@
+import { LoadingBubble } from 'components/Tokens/loading'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
 import { ReactNode } from 'react'
 import { ThemedText } from 'theme'
-import styled from 'styled-components/macro'
 
-const PercentChange = styled.div<{ isNegative: boolean }>`
-  color: ${({ theme, isNegative }) => (isNegative ? theme.accentFailure : theme.accentSuccess)};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
-const StatsItem = ({ children, label, shouldHide }: { children: ReactNode; label: string; shouldHide: boolean }) => {
+const StatsItem = ({
+  children,
+  label,
+  shouldHide,
+  loading,
+}: {
+  children: ReactNode
+  label: string
+  shouldHide: boolean
+  loading: boolean
+}) => {
   return (
     <Box display={shouldHide ? 'none' : 'flex'} flexDirection="column" alignItems="baseline" gap="6" height="min">
-      <ThemedText.SubHeader color="textSecondary">{children}</ThemedText.SubHeader>
-      <ThemedText.CellName color="stateLabel" fontSize="14px">{label}</ThemedText.CellName>
+      <ThemedText.SubHeader color="textSecondary">
+        {loading ? <LoadingBubble width="80px" /> : children}
+      </ThemedText.SubHeader>
+      <ThemedText.CellName color="stateLabel" fontSize="14px">
+        {label}
+      </ThemedText.CellName>
     </Box>
   )
 }
 
-const InfoItemStats = ({stats, brpData} : {stats: any, brpData: any}) => {
-  console.log('brpData', brpData)
+const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; loading: boolean }) => {
+  // console.log('brpData', brpData)
+  // console.log('stats', stats)
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
-      <StatsItem label="Total boxes" shouldHide={false}>
+      <StatsItem label="Total boxes" shouldHide={false} loading={loading}>
         {brpData?.totalBoxes}
       </StatsItem>
-      <StatsItem label="Total unlockable boxes" shouldHide={false}>
-        {brpData?.totalUnlockableBoxes[0]}
-
+      <StatsItem label="Total unlockable boxes" shouldHide={false} loading={loading}>
+        {brpData?.totalUnlockableBoxes}
       </StatsItem>
-      <StatsItem label="Total LMT" shouldHide={false}>
-        {stats} 
+      <StatsItem label="Total LMT" shouldHide={false} loading={loading}>
+        {stats}
       </StatsItem>
-      {/* <StatsItem label="Items" shouldHide={isMobile ?? false}>
-          {totalSupplyStr}
-        </StatsItem> */}
-      <StatsItem label="LMT required per unlock" shouldHide={false}>
+      <StatsItem label="LMT required per unlock" shouldHide={false} loading={loading}>
         {brpData?.lmtRequiredPerUnlock}
       </StatsItem>
-      {/* <StatsItem label="LMT required per unlock" shouldHide={false}>
-        %
-      </StatsItem> */}
     </Row>
   )
 }

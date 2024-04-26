@@ -1,7 +1,10 @@
 import Column from 'components/Column'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { Row } from 'nft/components/Flex'
+import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+
 import LockStatusBadge from './LockStatusBadge'
 
 const ItemImgContainer = styled.div<{ isDisabled?: boolean }>`
@@ -80,15 +83,14 @@ const PrimaryInfoContainer = styled(ThemedText.BodyPrimary)`
   line-height: 20px;
 `
 
-const SecondaryInfoContainer = styled(ThemedText.BodySecondary)`
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  line-height: 24px;
-`
+// const SecondaryInfoContainer = styled(ThemedText.BodySecondary)`
+//   overflow: hidden;
+//   white-space: nowrap;
+//   text-overflow: ellipsis;
+//   line-height: 24px;
+// `
 
 const StyledActionButton = styled(ThemedText.BodySecondary)<{
-  selected: boolean
   isDisabled: boolean
 }>`
   position: absolute;
@@ -98,8 +100,7 @@ const StyledActionButton = styled(ThemedText.BodySecondary)<{
   left: 8px;
   right: 8px;
   color: ${({ theme, isDisabled }) => (isDisabled ? theme.textPrimary : theme.accentTextLightPrimary)};
-  background: ${({ theme, selected, isDisabled }) =>
-    selected ? theme.accentCritical : isDisabled ? theme.backgroundInteractive : theme.accentAction};
+  background: ${({ theme, isDisabled }) => (isDisabled ? theme.backgroundInteractive : theme.accentAction)};
   transition: ${({ theme }) =>
     `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
   will-change: transform;
@@ -137,7 +138,7 @@ const StyledActionButton = styled(ThemedText.BodySecondary)<{
   }
 `
 
-const StyledCardContainer = styled.div<{ selected: boolean; isDisabled: boolean }>`
+const StyledCardContainer = styled.div<{ isDisabled: boolean }>`
   position: relative;
   border-radius: 12px;
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -154,20 +155,12 @@ const StyledCardContainer = styled.div<{ selected: boolean; isDisabled: boolean 
     right: 0px;
     bottom: 0px;
     left: 0px;
-    border: ${({ selected }) => (selected ? '3px' : '1px')} solid;
+    border: 1px solid;
     border-radius: 12px;
-    border-color: ${({ theme, selected }) => (selected ? theme.accentAction : theme.backgroundOutline)};
+    border-color: ${({ theme }) =>  theme.backgroundOutline};
     pointer-events: none;
     transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} border`};
     will-change: border;
-
-    @media screen and (max-width: ${BREAKPOINTS.sm}px) {
-      ${({ selected, theme }) => selected && `border-color: ${theme.accentCritical}`};
-    }
-  }
-
-  :hover::after {
-    ${({ selected, theme }) => selected && `border-color: ${theme.accentCritical}`};
   }
 
   :hover {
@@ -187,20 +180,18 @@ const StyledCardContainer = styled.div<{ selected: boolean; isDisabled: boolean 
 `
 
 interface ICardContainerProps {
-  id: string
+  id?: string
   img: string
-  info: string
+  info: string | ReactNode
   // secondInfo: string
-  selected?: boolean
-  isDisabled?: boolean
   isLocked: boolean
   handleUnlockBox: () => void
 }
 
-export const CardContainer = ({img, info, selected, isDisabled, isLocked, handleUnlockBox }: ICardContainerProps) => {
+export const CardContainer = ({ img, info, isLocked, handleUnlockBox }: ICardContainerProps) => {
   return (
-    <StyledCardContainer selected={false} isDisabled={false}>
-      <ItemImgContainer isDisabled={true}>
+    <StyledCardContainer isDisabled={isLocked}>
+      <ItemImgContainer isDisabled={isLocked}>
         <StyledMediaContainer>
           <StyledMediaImg src={img} />
         </StyledMediaContainer>
@@ -216,16 +207,47 @@ export const CardContainer = ({img, info, selected, isDisabled, isLocked, handle
             </Row>
             <Row justifyContent="space-between">
               <Row whiteSpace="nowrap" overflow="hidden">
-                <LockStatusBadge isLocked={isLocked}/>
+                <LockStatusBadge isLocked={isLocked} />
                 {/* <SecondaryInfoContainer>{secondInfo}</SecondaryInfoContainer> */}
               </Row>
             </Row>
           </StyledInfoContainer>
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
-      <StyledActionButton isDisabled={isLocked} selected={false} onClick={handleUnlockBox}>
-        Unlock 
+      <StyledActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleUnlockBox())}>
+        {isLocked ? 'Locked' : 'Unlock'}
       </StyledActionButton>
+    </StyledCardContainer>
+  )
+}
+
+export const LoadingCardContainer = () => {
+  return (
+    <StyledCardContainer isDisabled={true}>
+      <ItemImgContainer isDisabled={true}>
+        <StyledMediaContainer>
+          <LoadingBubble width="1500px" height="180px" />
+        </StyledMediaContainer>
+      </ItemImgContainer>
+      <StyledDetailsRelativeContainer>
+        <StyledDetailsContainer>
+          <StyledInfoContainer>
+            <Row gap="8" justifyContent="space-between">
+              <StyledPrimaryDetails>
+                <PrimaryInfoContainer>
+                  <LoadingBubble width="120px" height="18px" />
+                </PrimaryInfoContainer>
+              </StyledPrimaryDetails>
+            </Row>
+            <Row justifyContent="space-between">
+              <Row whiteSpace="nowrap" overflow="hidden">
+                <LoadingBubble width="65px" height="16px" margin="3px 0" />
+              </Row>
+            </Row>
+          </StyledInfoContainer>
+        </StyledDetailsContainer>
+      </StyledDetailsRelativeContainer>
+      <StyledActionButton isDisabled={true}>Loading...</StyledActionButton>
     </StyledCardContainer>
   )
 }
