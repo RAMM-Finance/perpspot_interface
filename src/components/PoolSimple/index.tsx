@@ -1549,7 +1549,7 @@ export default function SimplePool() {
                 rel="noopener noreferrer"
               >
                 <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                  Earning with LLP
+                  Earning with LimWETH
                 </ThemedText.BodySecondary>
               </a>
               <ArrowUpRight size="20" />
