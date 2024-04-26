@@ -217,6 +217,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Redeemed limWETH`,
     [TransactionStatus.Failed]: t`Redeeming limWETH failed`,
   },
+  [TransactionType.UNLOCK_Box]: {
+    [TransactionStatus.Pending]: t`Unlocking Box`,
+    [TransactionStatus.Confirmed]: t`Successfully unlocked box`,
+    [TransactionStatus.Failed]: t`Unlock Box failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

@@ -58,6 +58,7 @@ export enum TransactionType {
   REDEEM_LLP,
   MINT_limWETH,
   REDEEM_limWETH,
+  UNLOCK_Box
 }
 
 interface BaseTransactionInfo {
@@ -293,6 +294,12 @@ export interface RedeemlimWETHInfo {
   inputCurrencyId: string
   outputCurrencyId: string
 }
+
+export interface UnlockBoxInfo {
+  type: TransactionType.UNLOCK_Box
+  inputCurrencyId: string
+  outputCurrencyId: string
+}
 export type TransactionInfo =
   | ApproveTransactionInfo
   | ExactOutputSwapTransactionInfo
@@ -326,6 +333,7 @@ export type TransactionInfo =
   | RedeemLLPInfo
   | MintlimWETHInfo
   | RedeemlimWETHInfo
+  | UnlockBoxInfo
 
 export interface TransactionDetails {
   hash: string

@@ -157,7 +157,6 @@ function Web3StatusInner() {
   const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
 
   const allTransactions = useAllTransactions()
-
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)
     return txs.filter(isTransactionRecent).sort(newTransactionsFirst)
