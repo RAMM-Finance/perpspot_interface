@@ -57,7 +57,7 @@ const BoxesDisplaySection = styled(Row)`
 
 export type TBRPData = {
   totalBoxes: number
-  totalUnlockableBoxes: string
+  totalUnlockableBoxes: number
   lmtRequiredPerUnlock: string
 }
 
@@ -75,7 +75,7 @@ const BoxesContainr = ({ brpData, handleUnlockBox, loading }: IBoxesContainerPro
   // Generate an array of booleans to represent whether each box is locked or not
   const lockedBoxes = Array(totalBoxes)
     .fill(true)
-    .map((_, index) => index + 1 > parseInt(totalUnlockableBoxes))
+    .map((_, index) => index + 1 > totalUnlockableBoxes)
 
   // Shuffle the lockedBoxes
   // for (let i = lockedBoxes.length - 1; i > 0; i--) {

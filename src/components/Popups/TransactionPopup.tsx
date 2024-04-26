@@ -5,6 +5,7 @@ import { PortfolioLogo } from 'components/WalletDropdown/MiniPortfolio/Portfolio
 import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import useENSName from 'hooks/useENSName'
 import { X } from 'react-feather'
+import { useActivePopups } from 'state/application/hooks'
 import { useCombinedActiveList } from 'state/lists/hooks'
 import { useTransaction } from 'state/transactions/hooks'
 import { TransactionDetails } from 'state/transactions/types'
@@ -13,8 +14,6 @@ import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
-import { useActivePopups } from 'state/application/hooks'
-import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 
 export const Descriptor = styled(ThemedText.BodySmall)`
   display: flex;
@@ -23,11 +22,10 @@ export const Descriptor = styled(ThemedText.BodySmall)`
   text-overflow: ellipsis;
 `
 
-
 function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chainId: number }) {
   const success = tx.receipt?.status === 1
   const tokens = useCombinedActiveList()
-  
+
   const activity = parseLocalActivity(tx, chainId, tokens)
   const { ENSName } = useENSName(activity?.otherAccount)
 
@@ -36,7 +34,7 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
   const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
 
   return (
-    <PortfolioRow 
+    <PortfolioRow
       isPopUp={true}
       left={
         success ? (
@@ -65,6 +63,38 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
       }
       onClick={() => window.open(explorerUrl, '_blank')}
     />
+  )
+}
+
+export function UnlockBoxPopupContent({ txn, removeThisPopup }: { txn: string; removeThisPopup: () => void }) {
+  // const success = tx.receipt?.status === 1
+  const { chainId } = useWeb3React()
+
+  const theme = useTheme()
+
+  // const tokens = useCombinedActiveList()
+
+  if (!chainId || !txn) return null
+
+  // const activity = parseLocalActivity(txn, chainId, tokens)
+  // const { ENSName } = useENSName(activity?.otherAccount)
+  const explorerUrl = getExplorerLink(chainId, txn, ExplorerDataType.TRANSACTION)
+  // console.log('UnlockBoxPopupContent', explorerUrl, chainId, tokens )
+  return (
+    <Popup>
+      <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
+      <PortfolioRow
+        isPopUp={true}
+        left={<></>}
+        title={<ThemedText.SubHeader fontWeight={500}>Unlock Treasure Box</ThemedText.SubHeader>}
+        descriptor={
+          <ThemedText.BodySmall fontWeight={500} marginTop="0.5rem" color="textSecondary">
+            Successfully unlocked the treasure box
+          </ThemedText.BodySmall>
+        }
+        onClick={() => window.open(explorerUrl, '_blank')}
+      />
+    </Popup>
   )
 }
 
@@ -112,7 +142,6 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
 
   const tx = useTransaction(hash)
   const theme = useTheme()
-
   if (!chainId || !tx) return null
 
   switch (tx.info.type) {
@@ -126,17 +155,15 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
   }
 }
 
-
 export function TransactionStatusPopup() {
-  const activePopups:any = useActivePopups();
+  const activePopups: any = useActivePopups()
   // const { account  } : any = useWeb3React();
 
   // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
-  console.log('---------activePopups-----',activePopups )
   return (
     <StatusPopup>
-     {activePopups.map((item: any) => (
+      {activePopups.map((item: any) => (
         <TransactionStatusPopupItem key={item.key} hash={item.content.txn.hash} />
       ))}
     </StatusPopup>
@@ -144,11 +171,11 @@ export function TransactionStatusPopup() {
 }
 
 function TransactionStatusPopupItem({ hash, removeThisPopup }: { hash?: string; removeThisPopup?: () => void }) {
-  const tx:any = useTransaction(hash)
-  const { chainId  } : any = useWeb3React();
+  const tx: any = useTransaction(hash)
+  const { chainId }: any = useWeb3React()
   // const success = tx.receipt?.status === 1
   const tokens = useCombinedActiveList()
-  const activity:any = parseLocalActivity(tx, chainId, tokens)
+  const activity: any = parseLocalActivity(tx, chainId, tokens)
   const { ENSName } = useENSName(activity?.otherAccount)
   return (
     <div>

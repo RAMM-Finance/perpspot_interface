@@ -13,6 +13,9 @@ import { ThemedText } from 'theme'
 import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainr, { TBRPData } from './BoxesContainr'
 import InfoDescriptionSection from './InfoDescription'
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionResponse } from '@ethersproject/abstract-provider'
+import { TransactionType } from 'state/transactions/types'
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -183,41 +186,76 @@ const NewItemsListPage = () => {
 
   const [brpData, setBRPData] = useState<TBRPData>({
     totalBoxes: 0,
-    totalUnlockableBoxes: '0',
+    totalUnlockableBoxes: 0,
     lmtRequiredPerUnlock: '0',
   })
   const [totalLMT, setTotalLMT] = useState('0')
   const [loading, setLoading] = useState(true)
 
   const addPopup = useAddPopup()
+  const addTransaction = useTransactionAdder()
+
+
+  const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
+    if (!brp || !account) {
+      throw new Error('BRP or account not available')
+    }
+
+    try {
+      const gasLimit = 1000000;
+      const tx = await brp.unlockBox({
+        gasLimit,
+        from: account,
+      });
+      
+      // const receipt = await tx.wait()
+      return tx as TransactionResponse
+    } catch (error) {
+      console.error(error, 'BRP instance is not available');
+      throw error;
+    }
+  }, [brp, account])
 
   const handleUnlockBox = useCallback(async () => {
     if (brp && account) {
       try {
-        const gasLimit = 1000000
-        const tx = await brp.unlockBox({
-          gasLimit,
-          from: account,
+        // addPopup({ content: 'Loading...', removeAfterMs: 5000 });
+        // const gasLimit = 1000000
+        // const tx = await brp.unlockBox({
+        //   gasLimit,
+        //   from: account,
+        // })
+        // const receipt = await tx.wait()
+        // setAttemptingTxn(true)
+
+        unlockBoxCallback()
+        .then((response : any) => {
+          setLoading(true)
+          // setTxHash(response?.hash)
+          // setError(undefined)
+          addTransaction(response, {
+            type: TransactionType.UNLOCK_Box,
+            inputCurrencyId: '',
+            outputCurrencyId: '',
+          })
+          // addPopup(
+          //   { txn: { hash: response?.transactionHash }, isUnlockBox: true },
+          //   'unlock Success',
+          //   Number.MAX_SAFE_INTEGER
+          // )
+          return response.hash
         })
-        const receipt = await tx.wait()
-        setLoading(true)
-        // console.log('Unlock successful:', receipt)
-        addPopup(
-          { txn: { hash: receipt.transactionHash }, isUnlockBox: true },
-          'unlock Success',
-          Number.MAX_SAFE_INTEGER
-        )
-        setBRPData((prevData) => ({
-          ...prevData,
-          totalUnlockableBoxes: (parseInt(prevData.totalUnlockableBoxes) - 1).toString(),
-        }))
+        // setBRPData((prevData) => ({
+        //   ...prevData,
+        //   totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
+        // }))
         setLoading(false)
       } catch (error) {
         setLoading(false)
         console.error(error, 'BRP instance is not available')
       }
     }
-  }, [brp, account, addPopup])
+  }, [brp, account, unlockBoxCallback, addTransaction])
 
   useEffect(() => {
     if (brp && account) {
@@ -237,10 +275,10 @@ const NewItemsListPage = () => {
 
           setTotalLMT(totalLMTString)
           // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
-          // console.log('total boxes', totalBoxes, totalUnlockableBoxes, lmtRequiredPerUnlock)
+          // console.log('total boxes', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
           setBRPData({
             totalBoxes: totalBoxes.toNumber(),
-            totalUnlockableBoxes: totalUnlockableBoxes[0]?.toString(),
+            totalUnlockableBoxes: totalUnlockableBoxes[0]?.toNumber(),
             lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString(),
           })
           setLoading(false)
@@ -252,10 +290,6 @@ const NewItemsListPage = () => {
       call()
     }
   }, [brp, account])
-
-  // useEffect(() => {
-  //   addPopup({ txn: { hash: '0xde0fea27570e870df0fe08fbe6ee021b61b54732590102b9893479295ff8f60d',}, isUnlockBox: true }, '0xde0fea27570e870df0fe08fbe6ee021b61b54732590102b9893479295ff8f60d',)
-  // }, [addPopup])
 
   return (
     <CollectionContainer>

@@ -3,12 +3,11 @@ import { useCallback, useEffect } from 'react'
 import { X } from 'react-feather'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
 import { useRemovePopup } from '../../state/application/hooks'
 import { PopupContent } from '../../state/application/reducer'
 import FailedNetworkSwitchPopup from './FailedNetworkSwitchPopup'
-import TransactionPopup from './TransactionPopup'
+import TransactionPopup, { UnlockBoxPopupContent } from './TransactionPopup'
 
 const StyledClose = styled(X)`
   position: absolute;
@@ -68,23 +67,7 @@ export default function PopupItem({
   let transactionType: TransactionType
   if ('txn' in content) {
     if (content.isUnlockBox) {
-      popupContent = (
-        <Popup>
-          <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
-          <PortfolioRow
-            isPopUp={true}
-            left={<></>}
-            title={
-              <ThemedText.SubHeader fontWeight={500} color="textSecondary">
-                Unlock Treasure Box
-              </ThemedText.SubHeader>
-            }
-            descriptor={
-              <ThemedText.BodySmall marginTop="0.5rem">Successfully unlocked the treasure box</ThemedText.BodySmall>
-            }
-          />
-        </Popup>
-      )
+      popupContent = <UnlockBoxPopupContent txn={content.txn.hash} removeThisPopup={removeThisPopup}/>
     } else {
       popupContent = TransactionPopup({ hash: content.txn.hash, removeThisPopup })
     }
