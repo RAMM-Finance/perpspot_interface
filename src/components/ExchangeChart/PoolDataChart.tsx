@@ -64,20 +64,18 @@ export const PoolDataChart = ({
       localStorage.setItem('chartData', symbol)
     }
   }, [symbol])
-
   const entryLength = useMemo(() => {
     if (!entryPrices) return 0
     return entryPrices.length
   }, [entryPrices])
 
   const entries = useMemo(() => {
-    if (!entryLength || !entryPrices || !tvWidgetRef.current) return
-    if (entryLength > 0) {
-      const newPos = entryLength - 1
+    if (!entryLength || !entryPrices || chartDataLoading || !chainId) return
+    else if (entryLength === 1) {
       return tvWidgetRef.current
         ?.activeChart()
         .createPositionLine()
-        .setPrice(entryPrices[newPos])
+        .setPrice(entryPrices[0])
         .setText('Entry Price')
         .setLineColor('#3a3e5e')
         .setLineWidth(0.5)
@@ -88,10 +86,41 @@ export const PoolDataChart = ({
         .setBodyBackgroundColor('#3a3e5e')
         .setBodyBorderColor('#3a3e5e')
         .setBodyTextColor('white')
+    } else if (entryLength === 2) {
+      return (
+        tvWidgetRef.current
+          ?.activeChart()
+          .createPositionLine()
+          .setPrice(entryPrices[0])
+          .setText('Entry Price')
+          .setLineColor('#3a3e5e')
+          .setLineWidth(0.5)
+          .setQuantityBackgroundColor('#3A404F23')
+          .setQuantityBorderColor('#3A404F23')
+          .setQuantityTextColor('#3A404F23')
+          .setBodyFont('courier, courier new, serif')
+          .setBodyBackgroundColor('#3a3e5e')
+          .setBodyBorderColor('#3a3e5e')
+          .setBodyTextColor('white') &&
+        tvWidgetRef.current
+          ?.activeChart()
+          .createPositionLine()
+          .setPrice(entryPrices[1])
+          .setText('Entry Price')
+          .setLineColor('#3a3e5e')
+          .setLineWidth(0.5)
+          .setQuantityBackgroundColor('#3A404F23')
+          .setQuantityBorderColor('#3A404F23')
+          .setQuantityTextColor('#3A404F23')
+          .setBodyFont('courier, courier new, serif')
+          .setBodyBackgroundColor('#3a3e5e')
+          .setBodyBorderColor('#3a3e5e')
+          .setBodyTextColor('white')
+      )
     } else {
-      return
+      return null
     }
-  }, [tvWidgetRef, entryLength])
+  }, [chartDataLoading, entryLength])
 
   useEffect(() => {
     // Function to initialize the TradingView widget
@@ -130,74 +159,23 @@ export const PoolDataChart = ({
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
-
-          entries
-
-          {
-            if (entryPrices?.length === 1) {
-              return tvWidgetRef.current
-                ?.activeChart()
-                .createPositionLine()
-                .setPrice(entryPrices[0])
-                .setText('Entry Price')
-                .setLineColor('#3a3e5e')
-                .setLineWidth(0.5)
-                .setQuantityBackgroundColor('#3A404F23')
-                .setQuantityBorderColor('#3A404F23')
-                .setQuantityTextColor('#3A404F23')
-                .setBodyFont('courier, courier new, serif')
-                .setBodyBackgroundColor('#3a3e5e')
-                .setBodyBorderColor('#3a3e5e')
-                .setBodyTextColor('white')
-            } else if (entryPrices?.length === 2) {
-              return (
-                tvWidgetRef.current
-                  ?.activeChart()
-                  .createPositionLine()
-                  .setPrice(entryPrices[0])
-                  .setText('Entry Price')
-                  .setLineColor('#3a3e5e')
-                  .setLineWidth(0.5)
-                  .setQuantityBackgroundColor('#3A404F23')
-                  .setQuantityBorderColor('#3A404F23')
-                  .setQuantityTextColor('#3A404F23')
-                  .setBodyFont('courier, courier new, serif')
-                  .setBodyBackgroundColor('#3a3e5e')
-                  .setBodyBorderColor('#3a3e5e')
-                  .setBodyTextColor('white') &&
-                tvWidgetRef.current
-                  ?.activeChart()
-                  .createPositionLine()
-                  .setPrice(entryPrices[1])
-                  .setText('Entry Price')
-                  .setLineColor('#3a3e5e')
-                  .setLineWidth(0.5)
-                  .setQuantityBackgroundColor('#3A404F23')
-                  .setQuantityBorderColor('#3A404F23')
-                  .setQuantityTextColor('#3A404F23')
-                  .setBodyFont('courier, courier new, serif')
-                  .setBodyBackgroundColor('#3a3e5e')
-                  .setBodyBorderColor('#3a3e5e')
-                  .setBodyTextColor('white')
-              )
-            } else {
-              return
-            }
-          }
         })
       }
 
       if (tvWidgetRef.current) {
+        setChartDataLoading(() => true)
         tvWidgetRef.current.remove()
         tvWidgetRef.current = null
       }
 
       if (chartContainerRef.current) {
         initTradingView()
+        entries
       }
     }
     return () => {
       if (tvWidgetRef.current) {
+        setChartDataLoading(() => true)
         tvWidgetRef.current.remove()
         tvWidgetRef.current = null
       }

@@ -6,7 +6,6 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
-import Disclaimer from 'components/NavBar/Disclaimer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
@@ -373,7 +372,7 @@ export default function Trade({ className }: { className?: string }) {
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
-        {warning ? null : <Disclaimer setWarning={setWarning} />}
+        {/* {warning ? null : <Disclaimer setWarning={setWarning} />} */}
         <MainWrapper pins={isPin}>
           <PinWrapper>{/* <PinnedPools pinnedPools={pinnedPools} /> */}</PinWrapper>
           <SwapHeaderWrapper>
