@@ -2,10 +2,23 @@ import Column from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { Row } from 'nft/components/Flex'
 import { ReactNode } from 'react'
-import styled from 'styled-components/macro'
+import styled, { keyframes } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 
 import LockStatusBadge from './LockStatusBadge'
+
+const CardFadeOut = keyframes`
+    from {
+    opacity: 1;
+    visibility: visible;
+    display: block;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+  }
+`
 
 const ItemImgContainer = styled.div<{ isDisabled?: boolean }>`
   position: relative;
@@ -138,7 +151,7 @@ const StyledActionButton = styled(ThemedText.BodySecondary)<{
   }
 `
 
-const StyledCardContainer = styled.div<{ isDisabled: boolean }>`
+const StyledCardContainer = styled.div<{ isDisabled: boolean; shouldHide?: boolean }>`
   position: relative;
   border-radius: 12px;
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -147,6 +160,7 @@ const StyledCardContainer = styled.div<{ isDisabled: boolean }>`
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   isolation: isolate;
+  animation: ${({ shouldHide }) => (shouldHide ? CardFadeOut : 'none')} 0.5s forwards;
 
   :after {
     content: '';
@@ -157,7 +171,7 @@ const StyledCardContainer = styled.div<{ isDisabled: boolean }>`
     left: 0px;
     border: 1px solid;
     border-radius: 12px;
-    border-color: ${({ theme }) =>  theme.backgroundOutline};
+    border-color: ${({ theme }) => theme.backgroundOutline};
     pointer-events: none;
     transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} border`};
     will-change: border;
@@ -185,12 +199,14 @@ interface ICardContainerProps {
   info: string | ReactNode
   // secondInfo: string
   isLocked: boolean
-  handleUnlockBox: () => void
+  handleUnlockBox: (index : number) => void
+  shouldHide?: boolean
+  index: number
 }
 
-export const CardContainer = ({ img, info, isLocked, handleUnlockBox }: ICardContainerProps) => {
+export const CardContainer = ({ img, info, isLocked, handleUnlockBox, shouldHide, index }: ICardContainerProps) => {
   return (
-    <StyledCardContainer isDisabled={isLocked}>
+    <StyledCardContainer isDisabled={isLocked} shouldHide={shouldHide}>
       <ItemImgContainer isDisabled={isLocked}>
         <StyledMediaContainer>
           <StyledMediaImg src={img} />
@@ -214,7 +230,7 @@ export const CardContainer = ({ img, info, isLocked, handleUnlockBox }: ICardCon
           </StyledInfoContainer>
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
-      <StyledActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleUnlockBox())}>
+      <StyledActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleUnlockBox(index))}>
         {isLocked ? 'Locked' : 'Unlock'}
       </StyledActionButton>
     </StyledCardContainer>

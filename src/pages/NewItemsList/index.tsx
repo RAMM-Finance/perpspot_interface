@@ -1,3 +1,4 @@
+import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
@@ -6,16 +7,14 @@ import { useBRP } from 'hooks/useContract'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowUpRight } from 'react-feather'
-import { useAddPopup } from 'state/application/hooks'
+import { useTransactionAdder } from 'state/transactions/hooks'
+import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainr, { TBRPData } from './BoxesContainr'
 import InfoDescriptionSection from './InfoDescription'
-import { useTransactionAdder } from 'state/transactions/hooks'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { TransactionType } from 'state/transactions/types'
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -181,7 +180,7 @@ const InfoImg = styled.img`
 // `
 
 const NewItemsListPage = () => {
-  const { account, chainId, provider} = useWeb3React()
+  const { account, chainId, provider } = useWeb3React()
   const brp = useBRP()
 
   const [brpData, setBRPData] = useState<TBRPData>({
@@ -192,6 +191,7 @@ const NewItemsListPage = () => {
   const [totalLMT, setTotalLMT] = useState('0')
   const [loading, setLoading] = useState(true)
 
+  const [hiddenCards, setHiddenCards] = useState<number[]>([])
   // const addPopup = useAddPopup()
   const addTransaction = useTransactionAdder()
 
@@ -201,7 +201,7 @@ const NewItemsListPage = () => {
     }
 
     try {
-      const gasLimit = 1000000;
+      const gasLimit = 1000000
       const tx = await brp.unlockBox({
         gasLimit,
         from: account,
@@ -210,30 +210,35 @@ const NewItemsListPage = () => {
       return tx as TransactionResponse
     } catch (error) {
       console.error(error, 'BRP instance is not available')
-      throw error;
+      throw error
     }
   }, [brp, account])
 
-  const handleUnlockBox = useCallback(async () => {
-    if (brp && account) {
-      try {
-        unlockBoxCallback()
-        .then((response : any) => {
-          addTransaction(response, {
+  const handleUnlockBox = useCallback(
+    async (index: number) => {
+      if (brp && account) {
+        try {
+          const response = await unlockBoxCallback()
+          await addTransaction(response, {
             type: TransactionType.UNLOCK_Box,
             inputCurrencyId: '',
             outputCurrencyId: '',
           })
-          return response.hash
-        }).catch((error) => {
-          console.error('Unlock box error', error)
-        })
-      } catch (error) {
-        setLoading(false)
-        console.error(error, 'BRP instance is not available')
+          setBRPData((prevData) => ({
+            ...prevData,
+            totalBoxes: prevData.totalBoxes - 1,
+            totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
+          }))
+          setHiddenCards((prevState) => [...prevState, index])
+          setLoading(false)
+        } catch (error) {
+          setLoading(false)
+          console.error(error, 'BRP instance is not available')
+        }
       }
-    }
-  }, [brp, account, unlockBoxCallback, addTransaction])
+    },
+    [brp, account, unlockBoxCallback, addTransaction]
+  )
 
   useEffect(() => {
     if (brp && account && chainId && provider) {
@@ -294,7 +299,12 @@ const NewItemsListPage = () => {
           dataLength={20}
           style={{ overflow: 'unset', height: '100%' }}
           > */}
-        <BoxesContainr brpData={brpData} handleUnlockBox={handleUnlockBox} loading={loading} />
+        <BoxesContainr
+          brpData={brpData}
+          handleUnlockBox={handleUnlockBox}
+          loading={loading}
+          hiddenCards={hiddenCards}
+        />
         {/* </InfiniteScroll> */}
       </CollectionDisplaySection>
       <FaqWrapper>

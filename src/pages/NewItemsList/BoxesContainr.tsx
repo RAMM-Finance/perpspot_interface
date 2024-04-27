@@ -1,5 +1,5 @@
 import { Row } from 'nft/components/Flex'
-import styled, { css } from 'styled-components/macro'
+import styled, { css, keyframes } from 'styled-components/macro'
 
 import ItemImg from '../../assets/images/newItem.png'
 import ItemImg2 from '../../assets/images/newItem2.webp'
@@ -8,6 +8,30 @@ import ItemImg4 from '../../assets/images/newItem4.webp'
 import ItemImg5 from '../../assets/images/newItem5.webp'
 import ItemImg6 from '../../assets/images/newItem6.webp'
 import { CardContainer, LoadingCardContainer } from './CardContainer'
+import { useEffect, useState } from 'react'
+
+const CardFadeOut = keyframes`
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50%);
+  }
+`
+
+const CardFadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`
+
 
 const InfiniteScrollWrapperCss = css`
   margin: 0 16px;
@@ -63,35 +87,60 @@ export type TBRPData = {
 
 interface IBoxesContainerProps {
   brpData: TBRPData
-  handleUnlockBox: () => void
+  handleUnlockBox: (index: number) => void
   loading: boolean
+  hiddenCards: number[]
 }
 
-const BoxesContainr = ({ brpData, handleUnlockBox, loading }: IBoxesContainerProps) => {
+interface BoxData {
+  id: string
+  img: string
+  info: string
+  isLocked: boolean
+}
+
+const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxesContainerProps) => {
   const { totalBoxes, totalUnlockableBoxes } = brpData
   // const numTotalBoxes = Number(totalBoxes)
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4, ItemImg5, ItemImg6]
 
+  const [itemData, setItemData] = useState<BoxData[]>([])
   // Generate an array of booleans to represent whether each box is locked or not
-  const lockedBoxes = Array(totalBoxes)
-    .fill(true)
-    .map((_, index) => index + 1 > totalUnlockableBoxes)
+  // const lockedBoxes = Array(totalBoxes)
+  //   .fill(true)
+  //   .map((_, index) => index + 1 > totalUnlockableBoxes)
 
-  // Shuffle the lockedBoxes
-  // for (let i = lockedBoxes.length - 1; i > 0; i--) {
-  //   const j = Math.floor(Math.random() * (i + 1))
-  //   ;[lockedBoxes[i], lockedBoxes[j]] = [lockedBoxes[j], lockedBoxes[i]]
-  // }
-  const itemData = Array.from({ length: totalBoxes }, (_, index) => {
-    // const isLocked = index + 1 <= totalUnlockableBoxes;
-    const randomImgNumber = Math.floor(Math.random() * 6)
-    return {
-      id: `#${index + 1}`,
-      img: itemImages[randomImgNumber],
-      info: `Limitless test ${index + 1}`,
-      isLocked: lockedBoxes[index],
-    }
-  })
+  // const itemData = Array.from({ length: totalBoxes }, (_, index) => {
+  //   // const isLocked = index + 1 <= totalUnlockableBoxes;
+  //   const randomImgNumber = Math.floor(Math.random() * 6)
+  //   return {
+  //     id: `#${index + 1}`,
+  //     img: itemImages[randomImgNumber],
+  //     info: `Limitless test ${index + 1}`,
+  //     isLocked: lockedBoxes[index],
+  //   }
+  // })
+
+  useEffect(() => {
+    // Generate an array of booleans to represent whether each box is locked or not
+    const lockedBoxes = Array(totalBoxes)
+      .fill(true)
+      .map((_, index) => index + 1 > totalUnlockableBoxes)
+
+    const newData = Array.from({ length: totalBoxes }, (_, index) => {
+      // const isLocked = index + 1 <= totalUnlockableBoxes;
+      const randomImgNumber = Math.floor(Math.random() * 6)
+      return {
+        id: `#${index + 1}`,
+        img: itemImages[randomImgNumber],
+        info: `Limitless test ${index + 1}`,
+        isLocked: lockedBoxes[index],
+      }
+    })
+
+    setItemData(newData)
+  }, [totalBoxes, totalUnlockableBoxes, itemImages.length])
+
   // console.log('BoxesContainr', lockedBoxes, totalBoxes, totalUnlockableBoxes)
   if (loading) {
     return (
@@ -113,12 +162,13 @@ const BoxesContainr = ({ brpData, handleUnlockBox, loading }: IBoxesContainerPro
   return (
     <BoxesDisplaySection>
       <InfiniteScrollWrapper>
-        {itemData.map(({ id, img, info, isLocked }) => (
-          <CardContainer id={id} key={id} img={img} info={info} isLocked={isLocked} handleUnlockBox={handleUnlockBox} />
+        {itemData.map(({ id, img, info, isLocked }, index) => (
+          <CardContainer id={id} key={id} img={img} info={info} isLocked={isLocked} handleUnlockBox={handleUnlockBox} shouldHide={hiddenCards.includes(index)} index={index}/>
         ))}
       </InfiniteScrollWrapper>
     </BoxesDisplaySection>
   )
 }
+
 
 export default BoxesContainr
