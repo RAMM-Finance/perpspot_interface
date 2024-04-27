@@ -98,6 +98,8 @@ export type { AggregatorV3Interface } from "./src/periphery/LPVault.sol/Aggregat
 export { AggregatorV3Interface__factory } from "./factories/src/periphery/LPVault.sol/AggregatorV3Interface__factory";
 export type { LPVault } from "./src/periphery/LPVault.sol/LPVault";
 export { LPVault__factory } from "./factories/src/periphery/LPVault.sol/LPVault__factory";
+export type { OwnedToken } from "./src/periphery/LPVault.sol/OwnedToken";
+export { OwnedToken__factory } from "./factories/src/periphery/LPVault.sol/OwnedToken__factory";
 export type { PriceFeed } from "./src/periphery/LPVault.sol/PriceFeed";
 export { PriceFeed__factory } from "./factories/src/periphery/LPVault.sol/PriceFeed__factory";
 export type { PriceFeedInterface } from "./src/periphery/LPVault.sol/PriceFeedInterface";

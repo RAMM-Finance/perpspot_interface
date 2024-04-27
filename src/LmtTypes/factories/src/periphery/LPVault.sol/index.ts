@@ -3,5 +3,6 @@
 /* eslint-disable */
 export { AggregatorV3Interface__factory } from "./AggregatorV3Interface__factory";
 export { LPVault__factory } from "./LPVault__factory";
+export { OwnedToken__factory } from "./OwnedToken__factory";
 export { PriceFeed__factory } from "./PriceFeed__factory";
 export { PriceFeedInterface__factory } from "./PriceFeedInterface__factory";

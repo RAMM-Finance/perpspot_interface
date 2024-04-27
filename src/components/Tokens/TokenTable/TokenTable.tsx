@@ -2,11 +2,14 @@ import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { SupportedChainId } from 'constants/chains'
+import { useLimweth } from 'hooks/useContract'
 import { usePoolsData } from 'hooks/useLMTPools'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
-import { ReactNode, useCallback, useMemo, useState, useEffect } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -20,11 +23,6 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-import { useLimweth } from 'hooks/useContract'
-import { SupportedChainId } from 'constants/chains'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { NumberType } from '@uniswap/conedison/format'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 
 const GridContainer = styled.div`
   display: flex;
@@ -228,8 +226,9 @@ export default function TokenTable() {
     const getBalance = async (limWeth: any) => {
       const limWethBal = await limWeth?.tokenBalance()
       const decimals = await limWeth?.decimals()
-      const tokenBalance = parseFloat(limWethBal.toString()) / (10 ** decimals)
-      const price = (await getDecimalAndUsdValueData(chainId, "0x4200000000000000000000000000000000000006"))?.lastPriceUSD // BASE WETH PRICE
+      const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
+      const price = (await getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'))
+        ?.lastPriceUSD // BASE WETH PRICE
       setLimWethBal(price * tokenBalance)
     }
     if (chainId === SupportedChainId.BASE) {
@@ -243,7 +242,7 @@ export default function TokenTable() {
         return {
           tvl:
             Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-            Number(vaultBal) + 
+            Number(vaultBal) +
             Number(limWethBal || 0),
           volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
         }
@@ -281,7 +280,7 @@ export default function TokenTable() {
     return filteredPools.sort((a, b) => {
       const aId = getPoolId(a.token0, a.token1, a.fee)
       const bId = getPoolId(b.token0, b.token1, b.fee)
-      
+
       if (sortMethod[0] === TokenSortMethod.PRICE) {
         if (poolOHLCs[aId]?.priceNow === undefined || poolOHLCs[bId]?.priceNow === undefined) return 0
         if (!sortAscending[0]) {
@@ -408,19 +407,19 @@ const TVLInfoWrapper = styled.div`
   }
 `
 
-function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any, loading?: boolean }) {
+function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading ? '-' : (poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0')}
+          {loading ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading ? '-' : (poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0')}
+          {loading ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

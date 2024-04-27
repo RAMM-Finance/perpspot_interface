@@ -250,6 +250,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     "checkPositionExists(address,address,bool)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "executioner()": FunctionFragment;
+    "fd()": FunctionFragment;
     "forceClose((address,address,uint24),(address,bool,uint256,int24,int24))": FunctionFragment;
     "getBorrowInfo(address,address,bool)": FunctionFragment;
     "getLastRepayTime(address,address,bool)": FunctionFragment;
@@ -282,6 +283,7 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "checkPositionExists"
       | "depositPremium"
       | "executioner"
+      | "fd"
       | "forceClose"
       | "getBorrowInfo"
       | "getLastRepayTime"
@@ -361,6 +363,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     functionFragment: "executioner",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "fd", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "forceClose",
     values: [PoolKeyStruct, ForceCloseParamsStruct]
@@ -517,6 +520,7 @@ export interface MarginFacilityInterface extends utils.Interface {
     functionFragment: "executioner",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "fd", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "forceClose", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getBorrowInfo",
@@ -844,6 +848,10 @@ export interface MarginFacility extends BaseContract {
 
     executioner(overrides?: CallOverrides): Promise<[string]>;
 
+    fd(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     forceClose(
       key: PoolKeyStruct,
       param: ForceCloseParamsStruct,
@@ -1057,6 +1065,10 @@ export interface MarginFacility extends BaseContract {
   ): Promise<ContractTransaction>;
 
   executioner(overrides?: CallOverrides): Promise<string>;
+
+  fd(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   forceClose(
     key: PoolKeyStruct,
@@ -1277,6 +1289,8 @@ export interface MarginFacility extends BaseContract {
     ): Promise<void>;
 
     executioner(overrides?: CallOverrides): Promise<string>;
+
+    fd(overrides?: CallOverrides): Promise<void>;
 
     forceClose(
       key: PoolKeyStruct,
@@ -1635,6 +1649,10 @@ export interface MarginFacility extends BaseContract {
 
     executioner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    fd(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     forceClose(
       key: PoolKeyStruct,
       param: ForceCloseParamsStruct,
@@ -1820,6 +1838,10 @@ export interface MarginFacility extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     executioner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    fd(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     forceClose(
       key: PoolKeyStruct,

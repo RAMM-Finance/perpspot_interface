@@ -105,8 +105,8 @@ export const Spinner = styled.div`
   border-bottom: 1px solid transparent;
   border-left: 2px solid ${({ theme }) => theme.textPrimary};
   background: transparent;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   position: relative;
   transition: 250ms ease border-color;

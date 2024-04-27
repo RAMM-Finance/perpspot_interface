@@ -9,7 +9,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { BaseSwapPanel, MarginSelectPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
-import { AutoColumn } from 'components/Column'
+import Column, { AutoColumn } from 'components/Column'
 import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
@@ -185,6 +185,15 @@ export const Selector = styled.div<{ active: boolean }>`
   cursor: pointer;
 
   ${OpacityHoverState}
+`
+
+const ApprovalInfoSection = styled.div`
+  // border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `
 
 const TradeTabContent = () => {
@@ -890,7 +899,7 @@ const TradeTabContent = () => {
                         }
                       >
                         <RowBetween>
-                          <Info size={20} /> <Trans>Approve use of {inputCurrency?.symbol}</Trans>
+                          <Info size={20} /> <Trans> Approve use of {inputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
                     </>
@@ -932,7 +941,7 @@ const TradeTabContent = () => {
                         }
                       >
                         <RowBetween>
-                          <Info size={20} /> <Trans>Approve use of {outputCurrency?.symbol}</Trans>
+                          <Info size={20} /> <Trans> Approve use of {outputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
                     </>
@@ -1047,7 +1056,7 @@ const TradeTabContent = () => {
                     >
                       <RowBetween>
                         <Info size={20} />
-                        <Trans>Approve use of {inputCurrency?.symbol}</Trans>
+                        <Trans> Approve use of {inputCurrency?.symbol}</Trans>
                       </RowBetween>
                     </MouseoverTooltip>
                   </>
@@ -1085,7 +1094,7 @@ const TradeTabContent = () => {
                       >
                         <RowBetween>
                           <Info size={20} />
-                          <Trans>Approve use of {outputCurrency?.symbol}</Trans>
+                          <Trans> Approve use of {outputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
                     </>
@@ -1122,7 +1131,44 @@ const TradeTabContent = () => {
             </ButtonError>
           ))}
       </div>
-      {/* {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} /> */}
+      {notApproved && (
+        <ApprovalInfoSection>
+          <ThemedText.ApprovalInfo>
+            {(marginInPosToken && premiumInPosToken) ||
+              (!marginInPosToken &&
+                !premiumInPosToken &&
+                `Margin + Interest approval amount: ${
+                  premiumInPosToken
+                    ? tradeApprovalInfo?.outputApprovalAmount?.toExact()
+                    : tradeApprovalInfo?.inputApprovalAmount?.toExact()
+                } ${premiumInPosToken ? outputCurrency?.wrapped.symbol : inputCurrency?.wrapped.symbol}`)}
+            {marginInPosToken && !premiumInPosToken && (
+              <Column>
+                <div>
+                  Margin approval amount: {tradeApprovalInfo?.outputApprovalAmount?.toExact()}{' '}
+                  {outputCurrency?.wrapped.symbol}
+                </div>
+                <div>
+                  Interest approval amount: {tradeApprovalInfo?.inputApprovalAmount?.toExact()}{' '}
+                  {inputCurrency?.wrapped.symbol}
+                </div>
+              </Column>
+            )}
+            {!marginInPosToken && premiumInPosToken && (
+              <Column>
+                <div>
+                  Margin approval amount: {tradeApprovalInfo?.inputApprovalAmount?.toExact()}{' '}
+                  {inputCurrency?.wrapped.symbol}
+                </div>
+                <div>
+                  Interest approval amount: {tradeApprovalInfo?.outputApprovalAmount?.toExact()}{' '}
+                  {outputCurrency?.wrapped.symbol}
+                </div>
+              </Column>
+            )}
+          </ThemedText.ApprovalInfo>
+        </ApprovalInfoSection>
+      )}
     </Wrapper>
   )
 }

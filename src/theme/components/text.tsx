@@ -61,6 +61,9 @@ export const ThemedText = {
   LabelSmall(props: TextProps) {
     return <TextWrapper fontWeight={600} fontSize={14} color="textSecondary" {...props} />
   },
+  ApprovalInfo(props: TextProps) {
+    return <TextWrapper fontWeight={500} fontSize={12} color="textPrimary" {...props} />
+  },
   Link(props: TextProps) {
     return <TextWrapper fontWeight={600} fontSize={14} color="accentAction" {...props} />
   },
