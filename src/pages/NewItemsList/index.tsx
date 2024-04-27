@@ -181,7 +181,7 @@ const InfoImg = styled.img`
 // `
 
 const NewItemsListPage = () => {
-  const { account, chainId } = useWeb3React()
+  const { account, chainId, provider} = useWeb3React()
   const brp = useBRP()
 
   const [brpData, setBRPData] = useState<TBRPData>({
@@ -192,9 +192,8 @@ const NewItemsListPage = () => {
   const [totalLMT, setTotalLMT] = useState('0')
   const [loading, setLoading] = useState(true)
 
-  const addPopup = useAddPopup()
+  // const addPopup = useAddPopup()
   const addTransaction = useTransactionAdder()
-
 
   const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
     if (!brp || !account) {
@@ -206,12 +205,11 @@ const NewItemsListPage = () => {
       const tx = await brp.unlockBox({
         gasLimit,
         from: account,
-      });
-      
-      // const receipt = await tx.wait()
+      })
+
       return tx as TransactionResponse
     } catch (error) {
-      console.error(error, 'BRP instance is not available');
+      console.error(error, 'BRP instance is not available')
       throw error;
     }
   }, [brp, account])
@@ -219,37 +217,17 @@ const NewItemsListPage = () => {
   const handleUnlockBox = useCallback(async () => {
     if (brp && account) {
       try {
-        // addPopup({ content: 'Loading...', removeAfterMs: 5000 });
-        // const gasLimit = 1000000
-        // const tx = await brp.unlockBox({
-        //   gasLimit,
-        //   from: account,
-        // })
-        // const receipt = await tx.wait()
-        // setAttemptingTxn(true)
-
         unlockBoxCallback()
         .then((response : any) => {
-          setLoading(true)
-          // setTxHash(response?.hash)
-          // setError(undefined)
           addTransaction(response, {
             type: TransactionType.UNLOCK_Box,
             inputCurrencyId: '',
             outputCurrencyId: '',
           })
-          // addPopup(
-          //   { txn: { hash: response?.transactionHash }, isUnlockBox: true },
-          //   'unlock Success',
-          //   Number.MAX_SAFE_INTEGER
-          // )
           return response.hash
+        }).catch((error) => {
+          console.error('Unlock box error', error)
         })
-        // setBRPData((prevData) => ({
-        //   ...prevData,
-        //   totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
-        // }))
-        setLoading(false)
       } catch (error) {
         setLoading(false)
         console.error(error, 'BRP instance is not available')
@@ -258,7 +236,7 @@ const NewItemsListPage = () => {
   }, [brp, account, unlockBoxCallback, addTransaction])
 
   useEffect(() => {
-    if (brp && account) {
+    if (brp && account && chainId && provider) {
       const call = async () => {
         try {
           setLoading(true)
@@ -289,7 +267,7 @@ const NewItemsListPage = () => {
       }
       call()
     }
-  }, [brp, account])
+  }, [brp, account, chainId, provider, handleUnlockBox])
 
   return (
     <CollectionContainer>
