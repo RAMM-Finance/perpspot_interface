@@ -224,11 +224,11 @@ const NewItemsListPage = () => {
             inputCurrencyId: '',
             outputCurrencyId: '',
           })
-          setBRPData((prevData) => ({
-            ...prevData,
-            totalBoxes: prevData.totalBoxes - 1,
-            totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
-          }))
+          // setBRPData((prevData) => ({
+          //   ...prevData,
+          //   totalBoxes: prevData.totalBoxes - 1,
+          //   totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
+          // }))
           setHiddenCards((prevState) => [...prevState, index])
           setLoading(false)
         } catch (error) {
@@ -237,11 +237,11 @@ const NewItemsListPage = () => {
         }
       }
     },
-    [brp, account, unlockBoxCallback, addTransaction]
+    [brp, account, unlockBoxCallback, addTransaction, setHiddenCards]
   )
 
   useEffect(() => {
-    if (brp && account && chainId && provider) {
+    if (brp && account) {
       const call = async () => {
         try {
           setLoading(true)
@@ -264,6 +264,8 @@ const NewItemsListPage = () => {
             totalUnlockableBoxes: totalUnlockableBoxes[0]?.toNumber(),
             lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString(),
           })
+          setHiddenCards([])
+          // console.log('get Totalboxes', brpData, hiddenCards, totalBoxes)
           setLoading(false)
         } catch (error) {
           setLoading(false)
@@ -272,7 +274,7 @@ const NewItemsListPage = () => {
       }
       call()
     }
-  }, [brp, account, chainId, provider, handleUnlockBox])
+  }, [brp, account, handleUnlockBox, setHiddenCards])
 
   return (
     <CollectionContainer>

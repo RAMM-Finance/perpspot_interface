@@ -54,7 +54,7 @@ import { Field } from 'state/swap/actions'
 import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
@@ -86,6 +86,10 @@ const Wrapper = styled.div`
   }
   ::-webkit-scrollbar-track {
     margin-top: 5px;
+  }
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    width: 70vw;
+    margin: auto;
   }
 `
 const LimitInputWrapper = styled.div`

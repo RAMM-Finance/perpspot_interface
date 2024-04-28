@@ -133,6 +133,11 @@ const MainWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
   gap: 0.7rem;
+
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: flex;
+    flex-wrap: wrap;
+  }
 `
 
 const PoolListHeader = styled.div`

@@ -16,7 +16,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
 
@@ -29,6 +29,12 @@ const StatsWrapper = styled.div`
   width: 100%;
   white-space: nowrap;
   height: 35px;
+
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    height: 100%;
+  }
 `
 
 export function PoolStatsSection({

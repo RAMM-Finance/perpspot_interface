@@ -1,5 +1,7 @@
 import { Row } from 'nft/components/Flex'
-import styled, { css, keyframes } from 'styled-components/macro'
+import { useEffect, useState } from 'react'
+import styled, { css } from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 import ItemImg from '../../assets/images/newItem.png'
 import ItemImg2 from '../../assets/images/newItem2.webp'
@@ -8,30 +10,6 @@ import ItemImg4 from '../../assets/images/newItem4.webp'
 import ItemImg5 from '../../assets/images/newItem5.webp'
 import ItemImg6 from '../../assets/images/newItem6.webp'
 import { CardContainer, LoadingCardContainer } from './CardContainer'
-import { useEffect, useState } from 'react'
-
-const CardFadeOut = keyframes`
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-50%);
-  }
-`
-
-const CardFadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(-50%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`
-
 
 const InfiniteScrollWrapperCss = css`
   margin: 0 16px;
@@ -163,12 +141,26 @@ const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxe
     <BoxesDisplaySection>
       <InfiniteScrollWrapper>
         {itemData.map(({ id, img, info, isLocked }, index) => (
-          <CardContainer id={id} key={id} img={img} info={info} isLocked={isLocked} handleUnlockBox={handleUnlockBox} shouldHide={hiddenCards.includes(index)} index={index}/>
+          <CardContainer
+            id={id}
+            key={id}
+            img={img}
+            info={info}
+            isLocked={isLocked}
+            handleUnlockBox={handleUnlockBox}
+            shouldHide={hiddenCards.includes(index)}
+            index={index}
+          />
         ))}
       </InfiniteScrollWrapper>
+      {!itemData ||
+        (itemData.length === 0 && (
+          <ThemedText.BodySecondary fontSize="18px" marginLeft="28%">
+            No Treasure Boxes
+          </ThemedText.BodySecondary>
+        ))}
     </BoxesDisplaySection>
   )
 }
-
 
 export default BoxesContainr
