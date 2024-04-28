@@ -199,20 +199,19 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     if (!account) return undefined
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
-  const dataProvider = useDataProviderContract()
-  useEffect(() => {
-    if (dataProvider && account) {
-      const call = async () => {
-        try {
-          const positions = await dataProvider.getActiveMarginPositions(account)
-          console.log('zeke:', positions)
-        } catch (err) {
-          console.log('zeke:err', err)
-        }
-      }
-      call()
-    }
-  }, [dataProvider, account])
+  // const dataProvider = useDataProviderContract()
+  // useEffect(() => {
+  //   if (dataProvider && account) {
+  //     const call = async () => {
+  //       try {
+  //         const positions = await dataProvider.getActiveMarginPositions(account)
+  //       } catch (err) {
+  //         console.log('zeke:err', err)
+  //       }
+  //     }
+  //     call()
+  //   }
+  // }, [dataProvider, account])
 
   const { result, loading, error, syncing } = useContractCallV2(
     DATA_PROVIDER_ADDRESSES,

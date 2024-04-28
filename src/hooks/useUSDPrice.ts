@@ -1,24 +1,23 @@
 import { NetworkStatus } from '@apollo/client'
 import { Currency, CurrencyAmount, Price, SupportedChainId, TradeType } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
+import { SupportedChainId as SupportedChainIdLMT } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
-import { useState, useMemo } from 'react'
+import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
+import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
-import { getNativeTokenDBAddress } from 'utils/nativeTokens'
-import { SupportedChainId as SupportedChainIdLMT } from 'constants/chains'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
-import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
+import { getNativeTokenDBAddress } from 'utils/nativeTokens'
 
 import useStablecoinPrice from './useStablecoinPrice'
-import { log } from 'console'
-import { useWeb3React } from '@web3-react/core'
 
 // ETH amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -68,25 +67,25 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
   let network = 'arbitrum-one'
 
   if (chainId === SupportedChainIdLMT.ARBITRUM_ONE) {
-    if (tokenId === "ETH") {
-      tokenId = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    if (tokenId === 'ETH') {
+      tokenId = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
     }
     url += 'arbitrum'
     network = 'arbitrum-one'
   } else if (chainId === SupportedChainIdLMT.BASE) {
-    if (tokenId === "ETH") {
-      tokenId = "0x4200000000000000000000000000000000000006"
+    if (tokenId === 'ETH') {
+      tokenId = '0x4200000000000000000000000000000000000006'
     }
     url += 'base'
     network = 'base'
   } else {
-    if (tokenId === "ETH") {
-      tokenId = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    if (tokenId === 'ETH') {
+      tokenId = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
     }
     url += 'arbitrum'
     network = 'arbitrum-one'
   }
-  
+
   let res: any = await axios.post(url, {
     query: TokenDataFromUniswapQuery(tokenId),
   })
@@ -114,13 +113,16 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
 
   return token
   // if (network === 'arbitrum-one') {
-    
+
   // }
 }
 
-export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { data: number | undefined; isLoading: boolean } {
+export function useUSDPriceBNV2(
+  amount?: BN | TokenBN,
+  currency?: Currency
+): { data: number | undefined; isLoading: boolean } {
   // const symbol = useMemo(() => {
-    
+
   //   if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
   //   if (currency?.symbol === 'USDC') return 'usd-coin'
   //   if (currency?.symbol === 'UNI') return 'uniswap'
@@ -135,25 +137,24 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
   //   return currency?.symbol
   // }, [currency])
 
-  const { chainId } = useWeb3React() 
+  const { chainId } = useWeb3React()
   const [prevAmount, setPrevAmount] = useState<TokenBN | undefined>(undefined)
 
   const currencyAmount = useMemo(() => {
     if (amount && currency) {
-      if ('tokenAddress' in amount) { 
+      if ('tokenAddress' in amount) {
         if (amount.tokenAddress === currency.wrapped.address && prevAmount !== amount) {
           setPrevAmount(amount)
-          return BnToCurrencyAmount(amount, currency) 
+          return BnToCurrencyAmount(amount, currency)
         } else {
           return undefined
         }
       } else {
         return BnToCurrencyAmount(amount, currency)
       }
-    }
-    else return undefined
+    } else return undefined
   }, [amount, currency])
-    
+
   const { data } = useQuery(
     ['usdPrice', currency],
     async () => {
@@ -171,7 +172,6 @@ export function useUSDPriceBNV2(amount?: BN | TokenBN, currency?: Currency): { d
         //   if (response.status === 200) {
         //     return response.data[currency?.wrapped.address.toLowerCase()]['usd']
         //   }
-
 
         // if (response.status === 200) {
         //   return response.data.market_data.current_price.usd
@@ -241,7 +241,6 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   data: number | undefined
   isLoading: boolean
 } {
-  
   const chain = currencyAmount?.currency.chainId ? chainIdToBackendName(currencyAmount?.currency.chainId) : undefined
   const currency = currencyAmount?.currency
   const { data: ethValue, isLoading: isEthValueLoading } = useETHValue(currencyAmount)

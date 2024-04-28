@@ -39,59 +39,76 @@ export function usePoolsData(): {
   const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
 
+  const queryKey = useMemo(() => {
+    if (!chainId || !dataProvider) return []
+    return ['queryPoolsData', chainId, dataProvider.address]
+  }, [chainId, dataProvider])
+
   const { data, isLoading, isError, refetch } = useQuery(
-    ['queryPoolsData', dataProvider ? 'key' : 'missing key'],
+    queryKey,
     async () => {
       if (!dataProvider) throw Error('missing dataProvider')
-      let AddQueryData
-      let ReduceQueryData
-      let ProvidedQueryData
-      let WithdrawnQueryData
-      if (chainId === SupportedChainId.BASE) {
-        AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-        ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
-        ProvidedQueryData = await clientBase.query(LiquidityProvidedQuery, {}).toPromise()
-        WithdrawnQueryData = await clientBase.query(LiquidityWithdrawnQuery, {}).toPromise()
-      } else {
-        AddQueryData = await client.query(AddQuery, {}).toPromise()
-        ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-        ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
-        WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()
-      }
-      const pools = new Set<string>()
-      ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
-        const pool = ethers.utils.getAddress(entry.pool)
-        if (!pools.has(pool)) {
-          pools.add(pool)
+      if (!chainId) throw Error('missing chainId')
+      try {
+        // console.log('zeke:1')
+        let AddQueryData
+        let ReduceQueryData
+        let ProvidedQueryData
+        let WithdrawnQueryData
+        if (chainId === SupportedChainId.BASE) {
+          console.log('zeke:base')
+          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
+          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+          ProvidedQueryData = await clientBase.query(LiquidityProvidedQuery, {}).toPromise()
+          WithdrawnQueryData = await clientBase.query(LiquidityWithdrawnQuery, {}).toPromise()
+        } else {
+          console.log('zeke:arb')
+          AddQueryData = await client.query(AddQuery, {}).toPromise()
+          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
+          ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
+          WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()
         }
-      })
-      const uniqueTokens_ = new Map<string, any>()
-      await Promise.all(
-        Array.from(pools).map(async (pool: any) => {
-          const token = await dataProvider.getPoolkeys(pool)
-          if (token) {
-            const poolAdress = ethers.utils.getAddress(pool)
-            if (!uniqueTokens_.has(poolAdress)) {
-              uniqueTokens_.set(poolAdress, [
-                ethers.utils.getAddress(token[0]),
-                ethers.utils.getAddress(token[1]),
-                token[2],
-                await getDecimalAndUsdValueData(chainId, token[0]),
-                await getDecimalAndUsdValueData(chainId, token[1]),
-              ])
-            }
-            return { poolAdress: (token[0], token[1], token[2]) }
-          } else return null
+        const pools = new Set<string>()
+        ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
+          const pool = ethers.utils.getAddress(entry.pool)
+          if (!pools.has(pool)) {
+            pools.add(pool)
+          }
         })
-      )
-      return {
-        uniquePools: Array.from(pools),
-        uniqueTokens: uniqueTokens_,
-        addData: AddQueryData.data.marginPositionIncreaseds,
-        reduceData: ReduceQueryData.data.marginPositionReduceds,
-        providedData: ProvidedQueryData.data.liquidityProvideds,
-        withdrawnData: WithdrawnQueryData.data.liquidityWithdrawns,
-        useQueryChainId: chainId,
+        // console.log('zeke:2')
+        const uniqueTokens_ = new Map<string, any>()
+        await Promise.all(
+          Array.from(pools).map(async (pool: any) => {
+            // console.log('zeke:2.1', pool)
+            const token = await dataProvider.getPoolkeys(pool)
+            if (token) {
+              const poolAdress = ethers.utils.getAddress(pool)
+              if (!uniqueTokens_.has(poolAdress)) {
+                uniqueTokens_.set(poolAdress, [
+                  ethers.utils.getAddress(token[0]),
+                  ethers.utils.getAddress(token[1]),
+                  token[2],
+                  await getDecimalAndUsdValueData(chainId, token[0]),
+                  await getDecimalAndUsdValueData(chainId, token[1]),
+                ])
+              }
+              return { poolAdress: (token[0], token[1], token[2]) }
+            } else return null
+          })
+        )
+        // console.log('zeke:3')
+        return {
+          uniquePools: Array.from(pools),
+          uniqueTokens: uniqueTokens_,
+          addData: AddQueryData.data.marginPositionIncreaseds,
+          reduceData: ReduceQueryData.data.marginPositionReduceds,
+          providedData: ProvidedQueryData.data.liquidityProvideds,
+          withdrawnData: WithdrawnQueryData.data.liquidityWithdrawns,
+          useQueryChainId: chainId,
+        }
+      } catch (err) {
+        console.log('zeke:', err)
+        throw err
       }
     },
     {

@@ -235,7 +235,7 @@ function useFilteredPairs() {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
-            console.log('zeke:1')
+
             const aPrice = poolOHLCData[chainId][aId]?.priceNow
             const bPrice = poolOHLCData[chainId][bId]?.priceNow
             return bPrice - aPrice
@@ -245,7 +245,7 @@ function useFilteredPairs() {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
-            console.log('zeke:2')
+
             const aPrice = poolOHLCData[chainId][aId]?.priceNow
             const bPrice = poolOHLCData[chainId][bId]?.priceNow
             return aPrice - bPrice
@@ -445,7 +445,6 @@ export default function TokenTable() {
   }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
   const sortedPools = useFilteredPairs()
-  console.log('zeke:', sortedPools?.length)
 
   /* loading and error state */
   return (
