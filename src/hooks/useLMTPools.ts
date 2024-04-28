@@ -91,7 +91,7 @@ export function usePoolsData(): {
         reduceData: ReduceQueryData.data.marginPositionReduceds,
         providedData: ProvidedQueryData.data.liquidityProvideds,
         withdrawnData: WithdrawnQueryData.data.liquidityWithdrawns,
-        useQueryChainId: chainId
+        useQueryChainId: chainId,
       }
     },
     {
@@ -110,11 +110,10 @@ export function usePoolsData(): {
   const slot0s = [] as any
 
   const poolToData = useMemo(() => {
-    
     if (isLoading || isError || !data) return undefined
-    
+
     const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, useQueryChainId } = data
-    
+
     if (chainId !== useQueryChainId) return undefined
 
     const slot0ByPool: { [key: string]: any } = {}

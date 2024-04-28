@@ -104,7 +104,6 @@ export function usePoolsAprUtilList(): {
   const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getAllAprUtil', ['1000'], {
     gasRequired: 10000000,
   })
-  console.log('getallapr', result, loading,error)
 
   const list = useMemo(() => {
     if (result) {
