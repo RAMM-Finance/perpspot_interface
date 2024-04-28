@@ -106,6 +106,8 @@ export type { PriceFeedInterface } from "./src/periphery/LPVault.sol/PriceFeedIn
 export { PriceFeedInterface__factory } from "./factories/src/periphery/LPVault.sol/PriceFeedInterface__factory";
 export type { NonfungiblePositionManager } from "./src/periphery/NonfungiblePositionManager";
 export { NonfungiblePositionManager__factory } from "./factories/src/periphery/NonfungiblePositionManager__factory";
+export type { IV3Pool } from "./src/periphery/Quoter.sol/IV3Pool";
+export { IV3Pool__factory } from "./factories/src/periphery/Quoter.sol/IV3Pool__factory";
 export type { PeripheryImmutableState } from "./src/periphery/Quoter.sol/PeripheryImmutableState";
 export { PeripheryImmutableState__factory } from "./factories/src/periphery/Quoter.sol/PeripheryImmutableState__factory";
 export type { Quoter } from "./src/periphery/Quoter.sol/Quoter";
