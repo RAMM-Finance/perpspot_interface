@@ -410,24 +410,24 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
               <DarkCardOutline>
                 <AutoColumn gap="md">
                   <RowBetween>
-                    <ThemedText.BodySmall fontWeight={600}>
+                    <Text fontSize={16} fontWeight={500}>
                       <Trans>Pooled {currency0?.symbol}:</Trans>
-                    </ThemedText.BodySmall>
+                    </Text>
                     <RowFixed>
-                      <ThemedText.BodySmall fontWeight={600} ml="6px">
+                      <Text fontSize={16} fontWeight={500}>
                         {liquidityValue0 && <FormattedCurrencyAmount currencyAmount={liquidityValue0} />}
-                      </ThemedText.BodySmall>
+                      </Text>
                       <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency0} />
                     </RowFixed>
                   </RowBetween>
                   <RowBetween>
-                    <ThemedText.BodySmall fontWeight={600}>
+                    <Text fontSize={16} fontWeight={500}>
                       <Trans>Pooled {currency1?.symbol}:</Trans>
-                    </ThemedText.BodySmall>
+                    </Text>
                     <RowFixed>
-                      <ThemedText.BodySmall fontWeight={600} ml="6px">
+                      <Text fontSize={16} fontWeight={500}>
                         {liquidityValue1 && <FormattedCurrencyAmount currencyAmount={liquidityValue1} />}
-                      </ThemedText.BodySmall>
+                      </Text>
                       <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency1} />
                     </RowFixed>
                   </RowBetween>
