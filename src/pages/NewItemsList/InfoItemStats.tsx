@@ -2,26 +2,51 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
 import { ReactNode } from 'react'
+import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+
+import bluePill from '../../assets/images/bluePill.jpg'
+
+const BluePillImg = styled.img`
+  position: absolute;
+  width: 76px;
+  height: 37px;
+  background-color: transparent;
+  transform: scale(1.3);
+  opacity: 0.8;
+  right: -58px;
+  bottom: -10.5px;
+  z-index: -999;
+`
 
 const StatsItem = ({
   children,
   label,
   shouldHide,
   loading,
+  labelImg,
 }: {
   children: ReactNode
   label: string
   shouldHide: boolean
   loading: boolean
+  labelImg?: string
 }) => {
   return (
-    <Box display={shouldHide ? 'none' : 'flex'} flexDirection="column" alignItems="baseline" gap="6" height="min">
+    <Box
+      position="relative"
+      display={shouldHide ? 'none' : 'flex'}
+      flexDirection="column"
+      alignItems="baseline"
+      gap="6"
+      height="min"
+    >
       <ThemedText.SubHeader color="textSecondary">
         {loading ? <LoadingBubble width="80px" /> : children}
       </ThemedText.SubHeader>
       <ThemedText.CellName color="stateLabel" fontSize="14px">
         {label}
+        {!loading && labelImg && <BluePillImg src={labelImg} />}
       </ThemedText.CellName>
     </Box>
   )
@@ -43,6 +68,9 @@ const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; 
       </StatsItem>
       <StatsItem label="LMT required per unlock" shouldHide={false} loading={loading}>
         {brpData?.lmtRequiredPerUnlock}
+      </StatsItem>
+      <StatsItem label="My NZT balance" shouldHide={false} loading={loading} labelImg={bluePill}>
+        0
       </StatsItem>
     </Row>
   )
