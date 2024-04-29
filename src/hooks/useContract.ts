@@ -75,50 +75,6 @@ const { abi: MulticallABI } = UniswapInterfaceMulticallJson
 const { abi: NFTPositionManagerABI } = NonfungiblePositionManagerJson
 const { abi: V2MigratorABI } = V3MigratorJson
 
-// const apiKey = process.env.REACT_APP_GECKO_API_KEY
-
-// export const getDecimalAndUsdValueData = async (network: string, tokenId: string) => {
-//   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
-//   if (network === 'arbitrum-one') {
-//     url = url + 'arbitrum'
-//   } else if (network === 'base') {
-//     url = url + 'base'
-//   } else {
-//     url = url + 'arbitrum'
-//   }
-
-//   let res: any = await axios.post(url, {
-//     query: TokenDataFromUniswapQuery(tokenId),
-//   })
-
-//   const token = res?.data?.data?.token
-//   if (!token || !token?.lastPriceUSD) {
-//     try {
-//       res = await axios.get(
-//         `https://pro-api.coingecko.com/api/v3/simple/token_price/${network}?contract_addresses=${tokenId}&vs_currencies=usd`,
-//         {
-//           headers: {
-//             Accept: 'application/json',
-//             'x-cg-pro-api-key': apiKey,
-//           },
-//         }
-//       )
-//       const data: any = res?.data
-//       const usdValues = Object.values(data).map((value: any) => value.usd)
-
-//       return { ...token, lastPriceUSD: usdValues[0].toString() }
-//     } catch (e) {
-//       console.log('COINGECKO ERROR')
-//       console.log(e)
-//     }
-//   }
-
-//   return token
-//   // if (network === 'arbitrum-one') {
-
-//   // }
-// }
-
 type PricesMap = { [address: string]: number }
 
 const usdValueData: PricesMap = {
@@ -147,6 +103,10 @@ const usdValueData: PricesMap = {
   '0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978': 0.6, //crv
   '0x6694340fc020c5E6B96567843da2df01b2CE1eb6': 0.6, // stg
 }
+
+export const dailyLMT = new Proxy<any>({}, {
+  get: (target, address: string) => {address in target? target[address] : 1}
+})
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
   get: (target, address: string) => (address in target ? target[address] : 0),

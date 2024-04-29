@@ -25,7 +25,7 @@ import { SupportedChainId } from 'constants/chains'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { NumberType } from '@uniswap/conedison/format'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
-import { useDailyFeeAPR } from 'hooks/usePools'
+// import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
   display: flex;
@@ -216,7 +216,6 @@ export default function TokenTable() {
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
   const { poolList } = usePoolKeyList()
-  console.log("POOLLIST ", poolList)
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
@@ -276,12 +275,6 @@ export default function TokenTable() {
     })
   }, [poolList, filterString])
 
-  console.log("FILTERED POOLS", filteredPools)
-  console.log("POOL TVL DATA", poolTvlData)
-  console.log("POOL OHLCS", poolOHLCs)
-  console.log("LOADING", loading)
-  console.log("APR LIST", aprList)
-
   const sortedPools = useMemo(() => {
     if (!poolTvlData || !filteredPools || filteredPools.length === 0 || !poolOHLCs || loading || !aprList) return []
 
@@ -324,9 +317,6 @@ export default function TokenTable() {
     })
   }, [poolTvlData, sortAscending, sortMethod, poolOHLCs, filteredPools, loading, aprList])
 
-
-  console.log("SORTED POOLS!!!!!!!!!!!!!!!!!", sortedPools)
-
   // const dailyFeeAPRs = useDailyFeeAPR(sortedPools)
   // console.log("DAILY FEE APRS", JSON.stringify(dailyFeeAPRs))
   // console.log("POOL TVL DATA", JSON.stringify(poolTvlData))
@@ -358,9 +348,9 @@ export default function TokenTable() {
                   volume={poolTvlData[id]?.volume}
                   price={poolOHLCs[id]?.priceNow}
                   delta={poolOHLCs[id]?.delta24h}
-                  apr={aprList[id]?.apr
-                    //  + (dailyFeeAPRs ? dailyFeeAPRs[id]?.dailyFeeAPR ? dailyFeeAPRs[id]?.dailyFeeAPR : 0 : 0)
-                    }
+                  apr={(aprList[id]?.apr || 0)
+                    // + (dailyFeeAPRs ? dailyFeeAPRs[id]?.dailyFeeAPR || 0 : 0)
+                  }
                   utilTotal={aprList[id]?.utilTotal}
                 />
               )
