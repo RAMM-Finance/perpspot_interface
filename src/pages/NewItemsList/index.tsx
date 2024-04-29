@@ -90,10 +90,10 @@ const CollectionContainer = styled(Column)`
   will-change: width;
 `
 
-const CollectionAssetsContainer = styled.div<{ hideUnderneath: boolean }>`
-  width: 100%;
-  position: ${({ hideUnderneath }) => (hideUnderneath ? 'fixed' : 'static')};
-`
+// const CollectionAssetsContainer = styled.div<{ hideUnderneath: boolean }>`
+//   width: 100%;
+//   position: ${({ hideUnderneath }) => (hideUnderneath ? 'fixed' : 'static')};
+// `
 
 const CollectionDisplaySection = styled(Row)`
   width: 100%;
@@ -151,21 +151,21 @@ const CollectionDescriptionSection = styled(Column)`
   }
 `
 
-const InfoImg = styled.img`
-  /* position: absolute; */
-  left: 45px;
-  top: -110px;
-  box-shadow: ${({ theme }) => theme.roundedImageShadow};
-  height: 143px;
-  vertical-align: top;
-  width: 143px;
-  border-style: solid;
-  border-width: 3px;
-  border-radius: 100%;
-  border-color: ${({ theme }) => theme.white};
-  /* background-color: #fff; */
-  -webkit-tap-highlight-color: transparent;
-  box-sizing: border-box;
+// const InfoImg = styled.img`
+//   /* position: absolute; */
+//   left: 45px;
+//   top: -110px;
+//   box-shadow: ${({ theme }) => theme.roundedImageShadow};
+//   height: 143px;
+//   vertical-align: top;
+//   width: 143px;
+//   border-style: solid;
+//   border-width: 3px;
+//   border-radius: 100%;
+//   border-color: ${({ theme }) => theme.white};
+//   /* background-color: #fff; */
+//   -webkit-tap-highlight-color: transparent;
+//   box-sizing: border-box;
 
   /* @media (max-width: 639px) {
     border-width: 2px;
@@ -173,14 +173,14 @@ const InfoImg = styled.img`
     top: -32px;
     width: 100px;
   } */
-`
+// `
 
 // const FadeInColumn = styled(Column)`
 //   ${portfolioFadeInAnimation}
 // `
 
 const NewItemsListPage = () => {
-  const { account, chainId, provider } = useWeb3React()
+  const { account } = useWeb3React()
   const brp = useBRP()
 
   const [brpData, setBRPData] = useState<TBRPData>({
