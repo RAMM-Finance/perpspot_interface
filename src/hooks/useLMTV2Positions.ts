@@ -3,6 +3,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
 import { useMemo } from 'react'
@@ -14,7 +15,7 @@ import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { roundToBin } from 'utils/roundToBin'
 
 import { useDataProviderContract } from './useContract'
-import { useContractCall, useContractCallV2 } from './useContractCall'
+import { useContractCallV2 } from './useContractCall'
 import { computePoolAddress, POOL_INIT_CODE_HASH_2 } from './usePools'
 import { convertToBN } from './useV3Positions'
 
@@ -85,10 +86,10 @@ export function useInstantaeneousRate(
   fee: number | undefined,
   trader: string | undefined,
   positionIsToken0: boolean | undefined
-): { loading: boolean; error: DecodedError | undefined; result: string | undefined } {
+): { loading: boolean; error: boolean; result: string | undefined } {
   // console.log('contractcall2')
   const calldata = useMemo(() => {
-    if (!token0 || !token1 || !fee || !trader || positionIsToken0 == undefined) return undefined
+    if (!token0 || !token1 || !fee || !trader || positionIsToken0 == undefined) return []
     const params = [
       {
         token0,
@@ -98,29 +99,36 @@ export function useInstantaeneousRate(
       trader,
       positionIsToken0,
     ]
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', params)
+    return [DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', params)]
   }, [token0, token1, fee, trader, positionIsToken0])
 
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata, {
+    gasRequired: 10_000_000,
+  })
 
   return useMemo(() => {
-    if (!result) {
+    if (callStates.length === 0) {
       return {
-        loading,
-        error,
+        loading: false,
+        error: false,
         result: undefined,
-        syncing,
-      }
-    } else {
-      const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getPostInstantaneousRate', result)
-      return {
-        loading,
-        error,
-        result: parsed.toString(),
-        syncing,
       }
     }
-  }, [result, loading, error, syncing])
+    if (!callStates[0] || !callStates[0].result) {
+      return {
+        loading: callStates[0]?.loading ?? false,
+        error: callStates[0]?.error,
+        result: undefined,
+      }
+    } else {
+      return {
+        loading: callStates[0].loading,
+        error: callStates[0].error,
+        result: callStates[0].result[0].toString(),
+      }
+    }
+  }, [callStates])
 }
 
 // BinData[] |
@@ -372,32 +380,45 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
 } {
   const { chainId } = useWeb3React()
   const calldata = useMemo(() => {
-    if (!key || !chainId) return undefined
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getMarginPosition', [
-      computePoolAddress({
-        factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.ARBITRUM_ONE],
-        tokenA: key.poolKey.token0,
-        tokenB: key.poolKey.token1,
-        fee: key.poolKey.fee,
-        initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO ? POOL_INIT_CODE_HASH_2 : undefined,
-      }),
-      key.trader,
-      key.isToken0,
-    ])
+    if (!key || !chainId) return []
+    return [
+      DataProviderSDK.INTERFACE.encodeFunctionData('getMarginPosition', [
+        computePoolAddress({
+          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.ARBITRUM_ONE],
+          tokenA: key.poolKey.token0,
+          tokenB: key.poolKey.token1,
+          fee: key.poolKey.fee,
+          initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO ? POOL_INIT_CODE_HASH_2 : undefined,
+        }),
+        key.trader,
+        key.isToken0,
+      ]),
+    ]
   }, [key, chainId])
-  // console.log('contractcall5')
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+
+  const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata, {
+    gasRequired: 10_000_000,
+  })
 
   return useMemo(() => {
-    if (!result || !key) {
+    if (callStates.length === 0) {
       return {
-        loading,
-        error,
+        loading: false,
+        error: false,
         position: undefined,
-        syncing,
+        syncing: false,
+      }
+    }
+    if (!key || !callStates[0] || !callStates[0].result) {
+      return {
+        loading: callStates[0]?.loading ?? false,
+        error: callStates[0]?.error,
+        position: undefined,
+        syncing: callStates[0]?.syncing ?? false,
       }
     } else {
-      const position = DataProviderSDK.INTERFACE.decodeFunctionResult('getMarginPosition', result)[0]
+      const position = callStates[0].result[0]
       const outputDecimals = position.isToken0
         ? Number(position.token0Decimals.toString())
         : Number(position.token1Decimals.toString())
@@ -407,9 +428,9 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         : Number(position.token0Decimals.toString())
 
       return {
-        loading,
-        error,
-        syncing,
+        loading: callStates[0].loading,
+        error: callStates[0].error,
+        syncing: callStates[0].syncing,
         position: {
           poolKey: key.poolKey,
           positionId: new BN(0),
@@ -444,7 +465,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         },
       }
     }
-  }, [result, loading, error, key, syncing])
+  }, [callStates, key])
 }
 
 export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): {
@@ -455,7 +476,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
 } {
   const { chainId } = useWeb3React()
   const calldata = useMemo(() => {
-    if (!key || !chainId) return undefined
+    if (!key || !chainId) return []
     // const orderId = computeOrderId(key.poolKey, key.trader, key.isToken0, key.isAdd)
     // getOrderInfo(address pool, address trader, bool positionIsToken0, bool isAdd)
     const pool = computePoolAddress({
@@ -466,20 +487,31 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
       initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO ? POOL_INIT_CODE_HASH_2 : undefined,
     })
 
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])
+    return [DataProviderSDK.INTERFACE.encodeFunctionData('getOrderInfo', [pool, key.trader, key.isToken0, key.isAdd])]
   }, [key, chainId])
 
-  const { result, loading, error, syncing } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
+  const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata, {
+    gasRequired: 10_000_000,
+  })
   return useMemo(() => {
-    if (!result || !key) {
+    if (callStates.length === 0) {
       return {
-        loading,
-        error,
+        loading: false,
+        error: false,
         position: undefined,
-        syncing,
+        syncing: false,
+      }
+    }
+    if (!callStates[0] || !callStates[0].result || !key) {
+      return {
+        loading: callStates[0]?.loading ?? false,
+        error: callStates[0]?.error,
+        position: undefined,
+        syncing: callStates[0]?.syncing ?? false,
       }
     } else {
-      const position = DataProviderSDK.INTERFACE.decodeFunctionResult('getOrderInfo', result)[0]
+      const position = callStates[0].result[0]
       const positionDecimals = position.positionIsToken0 ? position.token0Decimals : position.token1Decimals
       let inputDecimals = position.positionIsToken0
         ? Number(position.token1Decimals.toString())
@@ -496,8 +528,8 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
       const minOutput = convertToBN(position.minOutput, position.isAdd ? outputDecimals : inputDecimals)
 
       return {
-        loading,
-        error,
+        loading: callStates[0].loading,
+        error: callStates[0].error,
         position: {
           key: key.poolKey,
           isAdd: position.isAdd,
@@ -512,10 +544,10 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
           currentOutput: convertToBN(position.currentOutput, position.isAdd ? outputDecimals : inputDecimals),
           marginInPosToken: position.marginInPosToken,
         },
-        syncing,
+        syncing: callStates[0].syncing,
       }
     }
-  }, [result, loading, error, key, syncing])
+  }, [callStates, key])
 }
 
 export interface BinData {
