@@ -246,18 +246,21 @@ export const RegisterQuery = `
 
 export const Pool24hVolumeQuery = (poolAddress: string, timestamp: number) => {
   return `
-    query {
+  query {
       liquidityPool(id: "${poolAddress}") {
         dailySnapshots(
+          where: {timestamp_gte: "${timestamp}"}
           orderBy: timestamp
           orderDirection: desc
-          first: 7
         ) {
           dailyVolumeUSD
+          timestamp
+          pool {
+            id
+          }
         }
       }
     }
-    
   `
 }
 // query {

@@ -4,7 +4,7 @@ import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenR
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { ForwardedRef, forwardRef, useEffect, useMemo } from 'react'
+import { ForwardedRef, forwardRef, useState, useEffect, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -489,100 +489,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     return [undefined, undefined]
   }, [poolOHLC])
 
-  const _queryUniswap = async (query: string): Promise<any> => {
-    const { data } = await axios({
-      url: "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-arbitrum-one",
-      method: "post",
-      data: {
-        query,
-      },
-    })
-    const errors = data.errors;
-    if (errors && errors.length > 0) {
-      console.error("Uniswap Subgraph Errors", { errors, query });
-      throw new Error(`Uniswap Subgraph Errors: ${JSON.stringify(errors)}`);
-    }
-
-    return data.data;
-  }
-
-  const sortTokens = (token0: Token, token1: Token): Token[] => {
-    if (token0.address < token1.address) {
-      return [token0, token1];
-    }
-    return [token1, token0];
-  };
-
-  const getPoolFromPair = async (
-    token0: Token,
-    token1: Token
-  ): Promise<any[]> => {
-    const sortedTokens = sortTokens(token0, token1);
-
-    // let feeGrowthGlobal = `feeGrowthGlobal0X128\nfeeGrowthGlobal1X128`;
-    // if (getCurrentNetwork().disabledTopPositions) {
-    //   feeGrowthGlobal = "";
-    // }
-
-    console.log("SORTED TOKENS 0, 1", sortedTokens[0].address, sortedTokens[1].address)
-  
-    const res = await _queryUniswap(`{
-      pools(orderBy: feeTier, where: {
-          token0: "${sortedTokens[0].address}",
-          token1: "${sortedTokens[1].address}"}) {
-        id
-        tick
-        sqrtPrice
-        feeTier
-        liquidity
-        token0Price
-        token1Price
-      }
-    }`);
-  
-    return res
-  };
-
-  const _getPoolPositionsByPage = async (
-    poolAddress: string,
-    page: number
-  ): Promise<any[]> => {
-    try {
-      const res = await _queryUniswap(`{
-      positions(where: {
-        pool: "${poolAddress}",
-        liquidity_gt: 0,
-      }, first: 1000, skip: ${page * 1000}) {
-        id
-        tickLower {
-          tickIdx
-          feeGrowthOutside0X128
-          feeGrowthOutside1X128
-        }
-        tickUpper {
-          tickIdx
-          feeGrowthOutside0X128
-          feeGrowthOutside1X128
-        }
-        depositedToken0
-        depositedToken1
-        liquidity
-        collectedFeesToken0
-        collectedFeesToken1
-        feeGrowthInside0LastX128
-        feeGrowthInside1LastX128
-        transaction {
-          timestamp
-        }
-      }
-    }`)
-  
-      return res.positions;
-    } catch (e) {
-      return []
-    }
-  }
-
   const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: number) => {
     let url = "https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-"
     if (chainId === SupportedChainId.BASE) {
@@ -594,6 +500,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     let query = `{
       ticks(first: 1000, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
         liquidityGross
+        liquidityNet
       }
     }`
     // ticks(first: 1000, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
@@ -614,8 +521,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   }
 
   const getAvgTradingVolume = async (poolAddress: string) => {
-    
-    const timestamp = Math.floor(Date.now() / 1000) - (86400 * 7)
+    const days = 7
+    const timestamp = Math.floor(Date.now() / 1000) - (86400 * days)
 
     let url = "https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-"
     if (chainId === SupportedChainId.BASE) {
@@ -633,6 +540,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     });
 
     const volumes = data?.data?.data?.liquidityPool.dailySnapshots.map((ele: any) => Number(ele.dailyVolumeUSD) )
+
     const volume24h = volumes.reduce((acc: number, curr: number) => acc + curr, 0) / 7;
     
     return volume24h
@@ -640,10 +548,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const getLiquidityFromTick = (poolTicks: any[]) => {
     let liquidity = new BN(0)
+    let liqNet = new BN(0)
     // liquidity = poolTicks.reduce((acc, curr) => acc + new BN(curr.liquidityGross), 0)
     for (let i = 0; i < poolTicks.length; i++) {
       liquidity = liquidity.plus(new BN(poolTicks[i].liquidityGross))
     }
+    // for (let i = 0; i < poolTicks.length; i++) {
+    //   liqNet = liquidity.plus(new BN(poolTicks[i].liquidityNet))
+    // }
     return liquidity
   }
 
@@ -652,6 +564,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       getPoolTicks(poolAddress, tickLower, tickUpper),
       getAvgTradingVolume(poolAddress)
     ])
+
     return { poolTicks: poolTicks, volume24h: volume24h }
 
   }
@@ -748,8 +661,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     volume24h: number,
     feeTierPercentage: number
   ): number => {
+
     const liquidityPercentage: number = liquidityDelta / (liquidityGross.toNumber() + liquidityDelta) //0.01 // 
-    console.log("LIQUIDITY PERCENTAGE", liquidityPercentage)
     return feeTierPercentage * volume24h * liquidityPercentage
   }
 
@@ -774,12 +687,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
       const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
-      const estimatedFee: number = (p >= pl && p <= pu) ? getEstimateFee(liquidityDelta, liquidityGross, volume24h, feeTierPercentage) : 0
+      let liqGross = liquidityGross
+      if (liquidityGross.eq(new BN(0))) {
+        liqGross = new BN(liquidityDelta * 100)
+      }
+        
 
-      console.log("LiquidityDelta", liquidityDelta)
-      console.log("LiquidityGross", liquidityGross.toNumber())
-      console.log("Volume24h", volume24h)
-      console.log("feeTierPercentage", feeTierPercentage)
+      const estimatedFee: number = (p >= pl && p <= pu) ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
+
       return {
         estimatedFee,
         token0: { amount: deltaX, priceUSD: deltaX * position.token0PriceUSD },
@@ -796,7 +711,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     token1: string | undefined
   ): any => {
 
-    if (poolTicks.length === 0 || !liquidityGross) return
+    // if (poolTicks.length === 0) return
     // console.log("POSITION", position)
 
       const est_result = feeAprEstimation(
@@ -804,9 +719,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         liquidityGross,
         volume24h
       )
-      console.log("EST_RESLT", est_result)
-      console.log("TOKEN 0 TOKEN 1", token0, token1)
-      
+
       const fee_est = est_result.estimatedFee
       const apy = (fee_est * 365 / position.amount) * 100
       const dailyIncome = apy / 365
@@ -815,6 +728,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   
   }
 
+  const [estimatedAPR, setEstimatedAPR] = useState<number>(0)
+
   useEffect(() => {
     const fetchData = async () => {
       if (token0 && token1 && pool && tickSpacing) {
@@ -822,9 +737,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         const amount: number = 1000
         const base: number = 1.0001
         if (token0?.wrapped.address && token1?.wrapped.address) {
-
-          const getPoolResult = await getPoolFromPair(token0?.wrapped, token1?.wrapped)
-          console.log("GET POOL RESULT ", getPoolResult)
 
           const token0Res = await getDecimalAndUsdValueData(chainId, token0?.wrapped.address)
           const token1Res = await getDecimalAndUsdValueData(chainId, token1?.wrapped.address)
@@ -881,29 +793,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
                 tokenB: token1.wrapped, 
                 fee: pool.fee
               })
-              const res = await _getPoolPositionsByPage(poolAddress, 0)
-              console.log("GET POOL POSITION", res)
-              // const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(pool.fee, lowerTick, upperTick, poolAddress, token0.wrapped, token1.wrapped)
-              // try {
-              //   const { apy, dailyIncome } = estimateAPR(position, poolTicks, liquidityGross, volume24h, token0.symbol, token1.symbol)
-                
-              //   console.log("APY AND DAILY INCOME", {apy, dailyIncome}, token0.symbol, token1.symbol)
-              //   console.log("*********************************")
-                
-              // } catch (err) {
-              //   console.error(err, "POSITION" + position, "POOLTICKS" + poolTicks, "LIQUIDITY GROSS" + liquidityGross, "volume" + volume24h, token0.symbol, token1.symbol, "POOLADDRESS" + poolAddress)
-              // }
-              
-              
-              // console.log({ poolTicks, volume24h, liquidityGross })
-              // try {
-
-              // } catch(error) {
-              //   console.error("ERRoR on ESTIMATE APR", error, token0.symbol, token1.symbol)
-              // }
-              
-  
-              
+              // const res = await _getPoolPositionsByPage(poolAddress, 0)
+              // console.log("GET POOL POSITION", res)
+              const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(pool.fee, lowerTick, upperTick, poolAddress, token0.wrapped, token1.wrapped)
+              try {
+                const { apy, dailyIncome } = estimateAPR(position, poolTicks, liquidityGross, volume24h, token0.symbol, token1.symbol)
+                setEstimatedAPR(apy)
+            
+              } catch (err) {
+                console.error(err, "POSITION" + position, "POOLTICKS" + poolTicks, "LIQUIDITY GROSS" + liquidityGross, "volume" + volume24h, token0.symbol, token1.symbol, "POOLADDRESS" + poolAddress)
+              }  
             }
           }
           
@@ -1012,7 +911,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           <>
-            <ClickableRate rate={apr}>{apr !== undefined ? `${apr?.toPrecision(4)} %` : '-'}</ClickableRate>
+            <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>{apr !== undefined ? `${(apr + estimatedAPR)?.toPrecision(4)} %` : '-'}</ClickableRate>
             {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span> */}
           </>
         }

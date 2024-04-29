@@ -44,6 +44,13 @@ const ZOOM_LEVELS: Record<FeeAmount, ZoomLevels> = {
   },
 }
 
+const DEFAULT = {
+  initialMin: 0.7,
+  initialMax: 1.3,
+  min: 0.00001,
+  max: 20,
+}
+
 const ChartWrapper = styled.div`
   position: relative;
 
@@ -196,7 +203,7 @@ export default function LiquidityChartRangeInput({
             brushLabels={brushLabelValue}
             brushDomain={brushDomain}
             onBrushDomainChange={onBrushDomainChangeEnded}
-            zoomLevels={ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM]}
+            zoomLevels={DEFAULT} // ZOOM_LEVELS[feeAmount ?? FeeAmount.MEDIUM]}
             ticksAtLimit={ticksAtLimit}
           />
         </ChartWrapper>

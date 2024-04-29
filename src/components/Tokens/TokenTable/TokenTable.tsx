@@ -448,7 +448,6 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  console.log("SORTED POOLS", sortedPools)
   // const dailyFeeAPRs = useDailyFeeAPR(sortedPools)
   // console.log("DAILY FEE APRS", JSON.stringify(dailyFeeAPRs))
   // console.log("POOL TVL DATA", JSON.stringify(poolTvlData))

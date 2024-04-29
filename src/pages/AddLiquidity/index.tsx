@@ -581,6 +581,22 @@ export default function AddLiquidity() {
     addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
   const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)
 
+  const LmtPerDay: string = useMemo(() => {
+    const LmtPerUsdPerDay = 1
+    console.log("CURRENCY A FIAT", currencyAFiat)
+    console.log("CURRENY B FIAT", currencyBFiat)
+    if (!currencyAFiat.isLoading && 
+        !currencyBFiat.isLoading && 
+        currencyAFiat.data !== undefined && 
+        currencyBFiat.data !== undefined) {
+        return ((currencyAFiat.data + currencyBFiat.data) * LmtPerUsdPerDay).toString()
+      } else {
+        return '-'
+      }
+  }, [currencyAFiat, currencyBFiat])
+
+  console.log("LMTPERDAY", LmtPerDay)
+
   return (
     <>
       <ScrollablePage>
@@ -792,6 +808,7 @@ export default function AddLiquidity() {
                                     <PresetsButtons
                                       btnName="-30% ~ +30% wide"
                                       onSetRecommendedRange={() => handleSetRecommendedRange(0.7, 1.3)}
+                                      isRecommended={true}
                                     />
                                     <PresetsButtons
                                       btnName={`-20% ~ -10% ${quoteCurrency ? quoteCurrency?.symbol : ''} only`}
@@ -1021,7 +1038,7 @@ export default function AddLiquidity() {
                             <ThemedText.BodySecondary style={{ marginBottom: '5px' }}>Details</ThemedText.BodySecondary>
                             <OutlineCard>
                               <RowBetween style={{ marginBottom: '6px' }}>
-                                <ThemedText.BodySmall>Estimated APR: </ThemedText.BodySmall>
+                                <ThemedText.BodySmall>Estimated APR:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
                                   <ThemedText.BodySmall>
                                     {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
@@ -1029,12 +1046,20 @@ export default function AddLiquidity() {
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
-                              <RowBetween>
+                              <RowBetween style={{ marginBottom: '6px' }}>
                                 <ThemedText.BodySmall>Utilization Rate:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={80} height="14px">
                                   <ThemedText.BodySmall>
                                     {`${formatBNToString(aprUtil?.util, NumberType.TokenNonTx)} %`}
                                   </ThemedText.BodySmall>
+                                </TextWithLoadingPlaceholder>
+                              </RowBetween>
+                              <RowBetween>
+                                <ThemedText.BodySmall>LMT Per Day:</ThemedText.BodySmall>
+                                <TextWithLoadingPlaceholder syncing={rateLoading} width={80} height="14px">
+                                <ThemedText.BodySmall>
+                                  {LmtPerDay !== '-' ? parseFloat(LmtPerDay).toFixed(6) : LmtPerDay}
+                                </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
                             </OutlineCard>
