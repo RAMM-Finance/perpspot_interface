@@ -105,7 +105,6 @@ export function usePoolsAprUtilList(): {
     gasRequired: 10000000,
   })
 
-  console.log("USE POOLS APR UTIL LIST -> UES LMT QUOTER CONTRACT RESLT", result)
   const list = useMemo(() => {
     if (result) {
       const poolList: { [poolId: string]: { apr: number; utilTotal: number } } = {}

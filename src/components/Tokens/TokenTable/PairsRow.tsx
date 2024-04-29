@@ -305,7 +305,7 @@ export const InfoIconContainer = styled.div`
   cursor: help;
 `
 
-interface Position = {
+interface Position {
   currentPrice: number
   token0PriceUSD: number
   token1PriceUSD: number
