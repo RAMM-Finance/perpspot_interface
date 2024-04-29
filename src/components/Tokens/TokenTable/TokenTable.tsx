@@ -23,6 +23,9 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { NumberType } from '@uniswap/conedison/format'
+// import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
   display: flex;
@@ -97,7 +100,7 @@ enum TokenSortMethod {
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
   APR = 'Est APR',
-  URate = 'Util Rate',
+  DAILY_LMT = 'Daily LMT',
   PRICE_CHANGE = '24h Change',
 }
 
@@ -134,10 +137,9 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
       liquidity between 90% and 110% of current price
     </Trans>
   ),
-  [TokenSortMethod.URate]: (
+  [TokenSortMethod.DAILY_LMT]: (
     <Trans>
-      Utilization rate is the averaged utilization rate across all ticks of the pool. The higher it is, the higher the
-      APR.
+      Daily LMT emitted per USD value provided.
     </Trans>
   ),
   [TokenSortMethod.PRICE_CHANGE]: <Trans>24H Change in Price</Trans>,
@@ -191,7 +193,7 @@ function PHeaderRow() {
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
       APR={<HeaderCell category={TokenSortMethod.APR} />}
-      UtilRate={<HeaderCell category={TokenSortMethod.URate} />}
+      UtilRate={<HeaderCell category={TokenSortMethod.DAILY_LMT} />}
       sparkLine={null}
     />
   )
@@ -291,7 +293,7 @@ function useFilteredPairs() {
             return aTvl - bTvl
           })
         }
-      } else if (sortMethod === TokenSortMethod.URate) {
+      } else if (sortMethod === TokenSortMethod.DAILY_LMT) {
         if (sortAscending) {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
@@ -446,6 +448,10 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
+  console.log("SORTED POOLS", sortedPools)
+  // const dailyFeeAPRs = useDailyFeeAPR(sortedPools)
+  // console.log("DAILY FEE APRS", JSON.stringify(dailyFeeAPRs))
+  // console.log("POOL TVL DATA", JSON.stringify(poolTvlData))
   /* loading and error state */
   return (
     <>
@@ -457,7 +463,9 @@ export default function TokenTable() {
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
-          {!loading && poolTvlData && poolOHLCs && aprList ? (
+          {!loading && poolTvlData && poolOHLCs && aprList
+          //  && dailyFeeAPRs 
+           ? (
             sortedPools.map((pool, i: number) => {
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
               return (
@@ -472,7 +480,9 @@ export default function TokenTable() {
                   volume={poolTvlData[id]?.volume}
                   price={poolOHLCs[id]?.priceNow}
                   delta={poolOHLCs[id]?.delta24h}
-                  apr={aprList[id]?.apr}
+                  apr={(aprList[id]?.apr || 0)
+                    // + (dailyFeeAPRs ? dailyFeeAPRs[id]?.dailyFeeAPR || 0 : 0)
+                  }
                   utilTotal={aprList[id]?.utilTotal}
                 />
               )

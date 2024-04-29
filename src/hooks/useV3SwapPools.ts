@@ -41,7 +41,7 @@ export function useV3SwapPools(
   return useMemo(() => {
     return {
       pools: pools
-        .filter((tuple): tuple is [PoolState.EXISTS, Pool] => {
+        .filter((tuple): tuple is [PoolState.EXISTS, Pool, number] => {
           return tuple[0] === PoolState.EXISTS && tuple[1] !== null
         })
         .map(([, pool]) => pool),
