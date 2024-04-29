@@ -25,7 +25,7 @@ const SearchInput = styled.input`
   border-radius: 12px;
   border: 1.5px solid ${({ theme }) => theme.backgroundOutline};
   height: 40px;
-  width: 300px;
+  width: 370px;
   margin-bottom: 1rem;
   font-size: 16px;
   font-size: 14px;
@@ -97,7 +97,7 @@ export default function SearchBar() {
           </TraceEvent>
         )}
       >
-        Filter tokens
+        Search (e.g. WETH/USDC)
       </Trans>
     </SearchBarContainer>
   )

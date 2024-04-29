@@ -3,5 +3,6 @@
 /* eslint-disable */
 export type { AggregatorV3Interface } from "./AggregatorV3Interface";
 export type { LPVault } from "./LPVault";
+export type { OwnedToken } from "./OwnedToken";
 export type { PriceFeed } from "./PriceFeed";
 export type { PriceFeedInterface } from "./PriceFeedInterface";

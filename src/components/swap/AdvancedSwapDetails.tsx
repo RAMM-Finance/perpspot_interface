@@ -222,8 +222,6 @@ export function ValueLabel({
   hideValueDescription?: boolean
   responsive?: boolean
 }) {
-  // const theme = useTheme()
-
   return (
     <RowBetween>
       <RowFixed>

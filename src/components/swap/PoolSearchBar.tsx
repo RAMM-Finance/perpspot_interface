@@ -101,7 +101,7 @@ export default function PoolSearchBar() {
           </TraceEvent>
         )}
       >
-        Search Pools
+        Search (e.g. WETH/USDC)
       </Trans>
     </SearchBarContainer>
   )

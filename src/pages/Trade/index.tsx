@@ -34,6 +34,7 @@ import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
+import { BREAKPOINTS } from 'theme'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;
@@ -166,6 +167,12 @@ const MainWrapper = styled.article<{ pins: boolean }>`
     grid-template-columns: 1fr 0 360px;
     /* grid-column-gap: 0.75rem; */
   }
+
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0;
+  }
 `
 
 export function getIsValidSwapQuote(
@@ -219,6 +226,9 @@ const PositionsWrapper = styled.div`
     grid-column: 1 / 3;
      grid-area: 3 / 1 / auto / 2; 
   } */
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: none;
+  }
 `
 
 const LiquidityDistibutionWrapper = styled.div`

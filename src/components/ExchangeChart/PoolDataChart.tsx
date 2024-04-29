@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 
 import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
 import { defaultChartProps } from './constants'
@@ -20,6 +20,10 @@ const ChartContainer = styled.div`
   border-width: 1px;
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
+
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: none;
+  }
 `
 
 const ChartLoadingBar = styled(ChartLoader)`

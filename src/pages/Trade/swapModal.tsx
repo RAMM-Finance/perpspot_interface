@@ -41,7 +41,7 @@ import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/s
 import { useCurrentPool, useExpertModeManager, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
-import { LinkStyledButton, ThemedText } from 'theme'
+import { BREAKPOINTS, LinkStyledButton, ThemedText } from 'theme'
 import invariant from 'tiny-invariant'
 import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { currencyAmountToPreciseFloat, formatTransactionAmount } from 'utils/formatNumbers'
@@ -62,6 +62,10 @@ const Wrapper = styled.div`
   height: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    width: 70vw;
+    margin: auto;
+  }
 `
 
 function largerPercentValue(a?: Percent, b?: Percent) {

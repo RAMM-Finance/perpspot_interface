@@ -133,6 +133,11 @@ const MainWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
   gap: 0.7rem;
+
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: flex;
+    flex-wrap: wrap;
+  }
 `
 
 const PoolListHeader = styled.div`
@@ -389,17 +394,19 @@ function useFilteredKeys() {
 
   return useMemo(() => {
     if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId]) {
-      const str = poolFilterString.trim().toLowerCase()
       let list = [...poolList]
       if (sortMethod === PoolSortMethod.PRICE) {
         list = list.filter((pool) => {
           const id = getPoolId(pool.token0, pool.token1, pool.fee)
           return !!poolOHLCData[chainId][id]
         })
+
         if (sortAscending) {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
+
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
             const aPrice = poolOHLCData[chainId][aId]?.priceNow
             const bPrice = poolOHLCData[chainId][bId]?.priceNow
             return bPrice - aPrice
@@ -408,6 +415,7 @@ function useFilteredKeys() {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
             const aPrice = poolOHLCData[chainId][aId]?.priceNow
             const bPrice = poolOHLCData[chainId][bId]?.priceNow
             return aPrice - bPrice
@@ -418,6 +426,7 @@ function useFilteredKeys() {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
             const aDelta = poolOHLCData[chainId][aId]?.delta24h
             const bDelta = poolOHLCData[chainId][bId]?.delta24h
             return bDelta - aDelta
@@ -426,6 +435,7 @@ function useFilteredKeys() {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
             const aDelta = poolOHLCData[chainId][aId]?.delta24h
             const bDelta = poolOHLCData[chainId][bId]?.delta24h
             return aDelta - bDelta

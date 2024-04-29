@@ -16,12 +16,14 @@ export const PageWrapper = styled.div`
   margin-left: 0.125rem;
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-    padding-top: 48px;
+    /* padding-top: 48px; */
+    padding-top: 10px;
+    margin-top: 0;
   }
 
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
+  /* @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     padding-top: 20px;
-  }
+  } */
   margin-top: 0.4rem;
 `
 

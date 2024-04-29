@@ -2,13 +2,16 @@ import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { SupportedChainId } from 'constants/chains'
+import { useLimweth } from 'hooks/useContract'
 import { usePoolsData } from 'hooks/useLMTPools'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai/utils'
-import { ReactNode, useCallback, useMemo, useState, useEffect } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
-import { usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -20,11 +23,8 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-import { useLimweth } from 'hooks/useContract'
-import { SupportedChainId } from 'constants/chains'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { NumberType } from '@uniswap/conedison/format'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -95,19 +95,12 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
   </>
 )
 
-// function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
-//   return (
-//     <TokenDataContainer>
-//       <LoadingRows rowCount={rowCount} />
-//     </TokenDataContainer>
-//   )
-// }
 enum TokenSortMethod {
   PRICE = 'Price',
   TOTAL_VALUE_LOCKED = 'TVL',
   VOLUME = 'Volume',
   APR = 'Est APR',
-  DailyLMT = 'Daily LMT',
+  DAILY_LMT = 'Daily LMT',
   PRICE_CHANGE = '24h Change',
 }
 
@@ -144,7 +137,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
       liquidity between 90% and 110% of current price
     </Trans>
   ),
-  [TokenSortMethod.DailyLMT]: (
+  [TokenSortMethod.DAILY_LMT]: (
     <Trans>
       Daily LMT emitted per USD value provided.
     </Trans>
@@ -200,22 +193,214 @@ function PHeaderRow() {
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
       APR={<HeaderCell category={TokenSortMethod.APR} />}
-      UtilRate={<HeaderCell category={TokenSortMethod.DailyLMT} />}
+      UtilRate={<HeaderCell category={TokenSortMethod.DAILY_LMT} />}
       sparkLine={null}
     />
   )
 }
 
+function checkFilterString(pool: any, str: string[]): boolean {
+  return str.every((x: string) => {
+    x = x.trim().toLowerCase()
+    // const name0 = pool.name0.toLowerCase()
+    // const name1 = pool.name1.toLowerCase()
+    const symbol0 = pool.symbol0.toLowerCase()
+    const symbol1 = pool.symbol1.toLowerCase()
+    const fee = pool.fee.toString()
+    return fee.includes(x) || symbol0.includes(x) || symbol1.includes(x)
+  })
+}
+
+function useFilteredPairs() {
+  const { poolList } = usePoolKeyList() // useRawPoolKeyList()
+  const { poolList: aprList } = usePoolsAprUtilList()
+
+  // const pinnedPools = usePinnedPools()
+  const poolFilterString = useAtomValue(filterStringAtom)
+  const sortAscending = useAtomValue(sortAscendingAtom)
+  const sortMethod = useAtomValue(sortMethodAtom)
+  const poolOHLCData = useAppPoolOHLC()
+  const { result: poolTvlData } = usePoolsData()
+
+  const { chainId } = useWeb3React()
+
+  return useMemo(() => {
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId] && poolTvlData && aprList) {
+      let list = [...poolList]
+      if (sortMethod === TokenSortMethod.PRICE) {
+        list = list.filter((pool) => {
+          const id = getPoolId(pool.token0, pool.token1, pool.fee)
+          return !!poolOHLCData[chainId][id]
+        })
+        if (sortAscending) {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
+
+            const aPrice = poolOHLCData[chainId][aId]?.priceNow
+            const bPrice = poolOHLCData[chainId][bId]?.priceNow
+            return bPrice - aPrice
+          })
+        } else {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
+
+            const aPrice = poolOHLCData[chainId][aId]?.priceNow
+            const bPrice = poolOHLCData[chainId][bId]?.priceNow
+            return aPrice - bPrice
+          })
+        }
+      } else if (sortMethod === TokenSortMethod.PRICE_CHANGE) {
+        if (sortAscending) {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
+            const aDelta = poolOHLCData[chainId][aId]?.delta24h
+            const bDelta = poolOHLCData[chainId][bId]?.delta24h
+            return bDelta - aDelta
+          })
+        } else {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
+            const aDelta = poolOHLCData[chainId][aId]?.delta24h
+            const bDelta = poolOHLCData[chainId][bId]?.delta24h
+            return aDelta - bDelta
+          })
+        }
+      } else if (sortMethod === TokenSortMethod.TOTAL_VALUE_LOCKED) {
+        if (sortAscending) {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolTvlData[aId] || !poolTvlData[bId]) return 0
+            const aTvl = poolTvlData[aId]?.totalValueLocked
+            const bTvl = poolTvlData[bId]?.totalValueLocked
+            return bTvl - aTvl
+          })
+        } else {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolTvlData[aId] || !poolTvlData[bId]) return 0
+            const aTvl = poolTvlData[aId]?.totalValueLocked
+            const bTvl = poolTvlData[bId]?.totalValueLocked
+            return aTvl - bTvl
+          })
+        }
+      } else if (sortMethod === TokenSortMethod.DAILY_LMT) {
+        if (sortAscending) {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!aprList[aId] || !aprList[bId]) return 0
+            const aUtil = aprList[aId]?.utilTotal
+            const bUtil = aprList[bId]?.utilTotal
+            return bUtil - aUtil
+          })
+        } else {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!aprList[aId] || !aprList[bId]) return 0
+            const aUtil = aprList[aId]?.utilTotal
+            const bUtil = aprList[bId]?.utilTotal
+            return aUtil - bUtil
+          })
+        }
+      } else if (sortMethod === TokenSortMethod.APR) {
+        if (sortAscending) {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!aprList[aId] || !aprList[bId]) return 0
+            const aApr = aprList[aId]?.apr
+            const bApr = aprList[bId]?.apr
+            return bApr - aApr
+          })
+        } else {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!aprList[aId] || !aprList[bId]) return 0
+            const aApr = aprList[aId]?.apr
+            const bApr = aprList[bId]?.apr
+            return aApr - bApr
+          })
+        }
+      } else if (sortMethod === TokenSortMethod.VOLUME) {
+        if (sortAscending) {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolTvlData[aId] || !poolTvlData[bId]) return 0
+            const aVolume = poolTvlData[aId]?.volume
+            const bVolume = poolTvlData[bId]?.volume
+            return bVolume - aVolume
+          })
+        } else {
+          list.sort((a, b) => {
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
+            if (!poolTvlData[aId] || !poolTvlData[bId]) return 0
+            const aVolume = poolTvlData[aId]?.volume
+            const bVolume = poolTvlData[bId]?.volume
+            return aVolume - bVolume
+          })
+        }
+      }
+
+      if (poolFilterString && poolFilterString.trim().length > 0) {
+        const str = poolFilterString.trim().toLowerCase()
+
+        // if delimiter
+        if (str.split('/').length > 1 || str.split(',').length > 1) {
+          const delimiters = ['/', ',']
+          let maxLength = 0
+          let maxDelimiter = ''
+          delimiters.forEach((delimiter) => {
+            const length = str.split(delimiter).length
+
+            if (length > maxLength) {
+              maxLength = length
+              maxDelimiter = delimiter
+            }
+          })
+          let arr = str.split(maxDelimiter)
+
+          arr = arr.filter((x) => x.trim().length > 0 && x !== maxDelimiter)
+
+          return list.filter((pool) => {
+            return checkFilterString(pool, arr)
+          })
+        }
+
+        return list.filter((pool) => {
+          const symbol0 = pool.symbol0.toLowerCase()
+          const symbol1 = pool.symbol1.toLowerCase()
+          const fee = pool.fee.toString()
+          return fee.includes(str) || symbol0.includes(str) || symbol1.includes(str)
+        })
+      }
+      return list
+    }
+
+    return []
+  }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId, poolTvlData, aprList])
+}
+
 export default function TokenTable() {
   const { chainId } = useWeb3React()
-  const sortAscending = useAtom(sortAscendingAtom)
-  const sortMethod = useAtom(sortMethodAtom)
 
   const poolOHLCs = usePoolOHLCs()
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
-  const { poolList } = usePoolKeyList()
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
@@ -228,8 +413,9 @@ export default function TokenTable() {
     const getBalance = async (limWeth: any) => {
       const limWethBal = await limWeth?.tokenBalance()
       const decimals = await limWeth?.decimals()
-      const tokenBalance = parseFloat(limWethBal.toString()) / (10 ** decimals)
-      const price = (await getDecimalAndUsdValueData(chainId, "0x4200000000000000000000000000000000000006"))?.lastPriceUSD // BASE WETH PRICE
+      const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
+      const price = (await getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'))
+        ?.lastPriceUSD // BASE WETH PRICE
       setLimWethBal(price * tokenBalance)
     }
     if (chainId === SupportedChainId.BASE) {
@@ -243,7 +429,7 @@ export default function TokenTable() {
         return {
           tvl:
             Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-            Number(vaultBal) + 
+            Number(vaultBal) +
             Number(limWethBal || 0),
           volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
         }
@@ -260,63 +446,9 @@ export default function TokenTable() {
     }
   }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
-  const filterString = useAtomValue(filterStringAtom)
-  const filteredPools = useMemo(() => {
-    if (!poolList || !filterString) return poolList
-    return poolList.filter((pool) => {
-      return (
-        pool.token0.toLowerCase().includes(filterString.toLowerCase()) ||
-        pool.token1.toLowerCase().includes(filterString.toLowerCase()) ||
-        pool.symbol0.toLowerCase().includes(filterString.toLowerCase()) ||
-        pool.symbol1.toLowerCase().includes(filterString.toLowerCase()) ||
-        pool.name0.toLowerCase().includes(filterString.toLowerCase()) ||
-        pool.name1.toLowerCase().includes(filterString.toLowerCase())
-      )
-    })
-  }, [poolList, filterString])
+  const sortedPools = useFilteredPairs()
 
-  const sortedPools = useMemo(() => {
-    if (!poolTvlData || !filteredPools || filteredPools.length === 0 || !poolOHLCs || loading || !aprList) return []
-
-    return filteredPools.sort((a, b) => {
-      const aId = getPoolId(a.token0, a.token1, a.fee)
-      const bId = getPoolId(b.token0, b.token1, b.fee)
-      
-      if (sortMethod[0] === TokenSortMethod.PRICE) {
-        if (poolOHLCs[aId]?.priceNow === undefined || poolOHLCs[bId]?.priceNow === undefined) return 0
-        if (!sortAscending[0]) {
-          return poolOHLCs[aId].priceNow > poolOHLCs[bId].priceNow ? 1 : -1
-        } else {
-          return poolOHLCs[aId].priceNow > poolOHLCs[bId].priceNow ? -1 : 1
-        }
-      } else if (sortMethod[0] === TokenSortMethod.TOTAL_VALUE_LOCKED) {
-        if (poolTvlData[aId] === undefined || poolTvlData[bId] === undefined) return 0
-        return !sortAscending[0]
-          ? poolTvlData[aId].totalValueLocked - poolTvlData[bId].totalValueLocked
-          : poolTvlData[bId].totalValueLocked - poolTvlData[aId].totalValueLocked
-      } else if (sortMethod[0] === TokenSortMethod.VOLUME) {
-        if (poolTvlData[aId] === undefined || poolTvlData[bId] === undefined) return 0
-        return !sortAscending[0]
-          ? poolTvlData[aId].volume - poolTvlData[bId].volume
-          : poolTvlData[bId].volume - poolTvlData[aId].volume
-      } else if (sortMethod[0] === TokenSortMethod.APR) {
-        if (aprList[aId] === undefined || aprList[bId] === undefined) return 0
-        return !sortAscending[0] ? aprList[aId].apr - aprList[bId].apr : aprList[bId].apr - aprList[aId].apr
-      } else if (sortMethod[0] === TokenSortMethod.DailyLMT) {
-        if (aprList[aId] === undefined || aprList[bId] === undefined) return 0
-        return !sortAscending[0]
-          ? aprList[aId].utilTotal - aprList[bId].utilTotal
-          : aprList[bId].utilTotal - aprList[aId].utilTotal
-      } else if (sortMethod[0] === TokenSortMethod.PRICE_CHANGE) {
-        if (poolOHLCs[aId].delta24h === undefined || poolOHLCs[bId].delta24h === undefined) return 0
-        return !sortAscending[0]
-          ? poolOHLCs[aId].delta24h - poolOHLCs[bId].delta24h
-          : poolOHLCs[bId].delta24h - poolOHLCs[aId].delta24h
-      }
-      return 0
-    })
-  }, [poolTvlData, sortAscending, sortMethod, poolOHLCs, filteredPools, loading, aprList])
-
+  console.log("SORTED POOLS", sortedPools)
   // const dailyFeeAPRs = useDailyFeeAPR(sortedPools)
   // console.log("DAILY FEE APRS", JSON.stringify(dailyFeeAPRs))
   // console.log("POOL TVL DATA", JSON.stringify(poolTvlData))
@@ -415,19 +547,19 @@ const TVLInfoWrapper = styled.div`
   }
 `
 
-function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any, loading?: boolean }) {
+function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading ? '-' : (poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0')}
+          {loading ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading ? '-' : (poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0')}
+          {loading ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

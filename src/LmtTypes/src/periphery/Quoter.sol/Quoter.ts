@@ -143,11 +143,16 @@ export interface QuoterInterface extends utils.Interface {
   functions: {
     "getAllAprUtil(int24)": FunctionFragment;
     "getPoolKeys()": FunctionFragment;
+    "owner()": FunctionFragment;
     "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool))": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "getAllAprUtil" | "getPoolKeys" | "quoteExactInput"
+    nameOrSignatureOrTopic:
+      | "getAllAprUtil"
+      | "getPoolKeys"
+      | "owner"
+      | "quoteExactInput"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -158,6 +163,7 @@ export interface QuoterInterface extends utils.Interface {
     functionFragment: "getPoolKeys",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "quoteExactInput",
     values: [Quoter.QuoteExactInputParamsStruct]
@@ -171,6 +177,7 @@ export interface QuoterInterface extends utils.Interface {
     functionFragment: "getPoolKeys",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "quoteExactInput",
     data: BytesLike
@@ -215,6 +222,8 @@ export interface Quoter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Quoter.PoolInfoStructOutput[]]>;
 
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -230,6 +239,8 @@ export interface Quoter extends BaseContract {
     overrides?: CallOverrides
   ): Promise<Quoter.PoolInfoStructOutput[]>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
   quoteExactInput(
     params: Quoter.QuoteExactInputParamsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -244,6 +255,8 @@ export interface Quoter extends BaseContract {
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<Quoter.PoolInfoStructOutput[]>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
 
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
@@ -277,6 +290,8 @@ export interface Quoter extends BaseContract {
 
     getPoolKeys(overrides?: CallOverrides): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -290,6 +305,8 @@ export interface Quoter extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getPoolKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     quoteExactInput(
       params: Quoter.QuoteExactInputParamsStruct,

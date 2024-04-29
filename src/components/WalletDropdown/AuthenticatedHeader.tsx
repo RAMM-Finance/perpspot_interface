@@ -4,9 +4,9 @@ import { BrowserEvent, InterfaceElementName, InterfaceEventName, SharedEventName
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { ButtonEmphasis, ButtonSize, LoadingButtonSpinner, ThemeButton } from 'components/Button'
+import { ButtonEmphasis, ButtonSize, ThemeButton } from 'components/Button'
 import Column from 'components/Column'
-import { AutoRow } from 'components/Row'
+import Row from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import Tooltip from 'components/Tooltip'
@@ -141,6 +141,10 @@ const CopyText = styled(CopyHelper).attrs({
 const FadeInColumn = styled(Column)`
   ${portfolioFadeInAnimation}
 `
+const FadeInRow = styled(Row)`
+  ${portfolioFadeInAnimation}
+  gap: 25px;
+`
 
 const PortfolioDrawerContainer = styled(Column)`
   flex: 1;
@@ -261,28 +265,28 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
       </HeaderWrapper>
       <PortfolioDrawerContainer>
         {totalBalance !== undefined ? (
-          <FadeInColumn gap="xs">
-            <ThemedText.HeadlineLarge fontSize={20} fontWeight={500}>
+          <FadeInRow align="center">
+            <ThemedText.HeadlineLarge fontSize={22} fontWeight={500}>
               {formatNumber(totalBalance, NumberType.PortfolioBalance)}
             </ThemedText.HeadlineLarge>
-            <AutoRow marginBottom="20px">
+            <Row marginTop="5px" align="center">
               {absoluteChange !== 0 && percentChange && (
                 <>
-                  <PortfolioArrow change={absoluteChange as number} />
-                  <ThemedText.BodySecondary>
+                  <PortfolioArrow size="16" change={absoluteChange as number} />
+                  <ThemedText.BodySecondary fontSize={12}>
                     {`${formatNumber(Math.abs(absoluteChange as number), NumberType.PortfolioBalance)} (${formatDelta(
                       percentChange
                     )})`}
                   </ThemedText.BodySecondary>
                 </>
               )}
-            </AutoRow>
-          </FadeInColumn>
+            </Row>
+          </FadeInRow>
         ) : (
-          <Column gap="xs">
+          <Row gap="md">
             <LoadingBubble height="44px" width="170px" />
             <LoadingBubble height="16px" width="100px" margin="4px 0 20px 0" />
-          </Column>
+          </Row>
         )}
         {Boolean(!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) && (
           <FiatOnrampNotAvailableText marginTop="8px">

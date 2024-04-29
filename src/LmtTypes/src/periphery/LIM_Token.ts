@@ -58,6 +58,7 @@ export interface LIM_TokenInterface extends utils.Interface {
     "sellExternalToken(uint256,uint256,address)": FunctionFragment;
     "setStrategist(address)": FunctionFragment;
     "symbol()": FunctionFragment;
+    "t()": FunctionFragment;
     "tokenBalance()": FunctionFragment;
     "totalAssets()": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -99,6 +100,7 @@ export interface LIM_TokenInterface extends utils.Interface {
       | "sellExternalToken"
       | "setStrategist"
       | "symbol"
+      | "t"
       | "tokenBalance"
       | "totalAssets"
       | "totalSupply"
@@ -225,6 +227,7 @@ export interface LIM_TokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(functionFragment: "t", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "tokenBalance",
     values?: undefined
@@ -340,6 +343,7 @@ export interface LIM_TokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "t", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "tokenBalance",
     data: BytesLike
@@ -368,21 +372,25 @@ export interface LIM_TokenInterface extends utils.Interface {
     "AddedExternal(address,uint256)": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "Deposit(address,address,uint256,uint256)": EventFragment;
+    "DepositLimToken(address,address,uint256,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
-    "Repay(address,uint256,int256,uint256)": EventFragment;
+    "RepayLimToken(address,uint256,int256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "Use(address,uint256)": EventFragment;
+    "UseLimToken(address,uint256)": EventFragment;
     "Withdraw(address,address,address,uint256,uint256)": EventFragment;
+    "WithdrawLimToken(address,address,address,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AddedExternal"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DepositLimToken"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Repay"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RepayLimToken"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Use"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UseLimToken"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "WithdrawLimToken"): EventFragment;
 }
 
 export interface AddedExternalEventObject {
@@ -421,6 +429,19 @@ export type DepositEvent = TypedEvent<
 
 export type DepositEventFilter = TypedEventFilter<DepositEvent>;
 
+export interface DepositLimTokenEventObject {
+  caller: string;
+  receiver: string;
+  assets: BigNumber;
+  shares: BigNumber;
+}
+export type DepositLimTokenEvent = TypedEvent<
+  [string, string, BigNumber, BigNumber],
+  DepositLimTokenEventObject
+>;
+
+export type DepositLimTokenEventFilter = TypedEventFilter<DepositLimTokenEvent>;
+
 export interface InitializedEventObject {
   version: number;
 }
@@ -428,18 +449,18 @@ export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
-export interface RepayEventObject {
+export interface RepayLimTokenEventObject {
   caller: string;
   amount: BigNumber;
   PnL: BigNumber;
   exchangeRate: BigNumber;
 }
-export type RepayEvent = TypedEvent<
+export type RepayLimTokenEvent = TypedEvent<
   [string, BigNumber, BigNumber, BigNumber],
-  RepayEventObject
+  RepayLimTokenEventObject
 >;
 
-export type RepayEventFilter = TypedEventFilter<RepayEvent>;
+export type RepayLimTokenEventFilter = TypedEventFilter<RepayLimTokenEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -453,13 +474,16 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface UseEventObject {
+export interface UseLimTokenEventObject {
   caller: string;
   amount: BigNumber;
 }
-export type UseEvent = TypedEvent<[string, BigNumber], UseEventObject>;
+export type UseLimTokenEvent = TypedEvent<
+  [string, BigNumber],
+  UseLimTokenEventObject
+>;
 
-export type UseEventFilter = TypedEventFilter<UseEvent>;
+export type UseLimTokenEventFilter = TypedEventFilter<UseLimTokenEvent>;
 
 export interface WithdrawEventObject {
   sender: string;
@@ -474,6 +498,21 @@ export type WithdrawEvent = TypedEvent<
 >;
 
 export type WithdrawEventFilter = TypedEventFilter<WithdrawEvent>;
+
+export interface WithdrawLimTokenEventObject {
+  caller: string;
+  receiver: string;
+  owner: string;
+  assets: BigNumber;
+  shares: BigNumber;
+}
+export type WithdrawLimTokenEvent = TypedEvent<
+  [string, string, string, BigNumber, BigNumber],
+  WithdrawLimTokenEventObject
+>;
+
+export type WithdrawLimTokenEventFilter =
+  TypedEventFilter<WithdrawLimTokenEvent>;
 
 export interface LIM_Token extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -648,6 +687,10 @@ export interface LIM_Token extends BaseContract {
     ): Promise<ContractTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    t(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     tokenBalance(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -830,6 +873,10 @@ export interface LIM_Token extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
+  t(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   tokenBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
   totalAssets(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1011,6 +1058,8 @@ export interface LIM_Token extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
+    t(overrides?: CallOverrides): Promise<void>;
+
     tokenBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalAssets(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1079,21 +1128,34 @@ export interface LIM_Token extends BaseContract {
       shares?: null
     ): DepositEventFilter;
 
+    "DepositLimToken(address,address,uint256,uint256)"(
+      caller?: PromiseOrValue<string> | null,
+      receiver?: PromiseOrValue<string> | null,
+      assets?: null,
+      shares?: null
+    ): DepositLimTokenEventFilter;
+    DepositLimToken(
+      caller?: PromiseOrValue<string> | null,
+      receiver?: PromiseOrValue<string> | null,
+      assets?: null,
+      shares?: null
+    ): DepositLimTokenEventFilter;
+
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
 
-    "Repay(address,uint256,int256,uint256)"(
+    "RepayLimToken(address,uint256,int256,uint256)"(
       caller?: PromiseOrValue<string> | null,
       amount?: null,
       PnL?: null,
       exchangeRate?: null
-    ): RepayEventFilter;
-    Repay(
+    ): RepayLimTokenEventFilter;
+    RepayLimToken(
       caller?: PromiseOrValue<string> | null,
       amount?: null,
       PnL?: null,
       exchangeRate?: null
-    ): RepayEventFilter;
+    ): RepayLimTokenEventFilter;
 
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
@@ -1106,11 +1168,14 @@ export interface LIM_Token extends BaseContract {
       value?: null
     ): TransferEventFilter;
 
-    "Use(address,uint256)"(
+    "UseLimToken(address,uint256)"(
       caller?: PromiseOrValue<string> | null,
       amount?: null
-    ): UseEventFilter;
-    Use(caller?: PromiseOrValue<string> | null, amount?: null): UseEventFilter;
+    ): UseLimTokenEventFilter;
+    UseLimToken(
+      caller?: PromiseOrValue<string> | null,
+      amount?: null
+    ): UseLimTokenEventFilter;
 
     "Withdraw(address,address,address,uint256,uint256)"(
       sender?: PromiseOrValue<string> | null,
@@ -1126,6 +1191,21 @@ export interface LIM_Token extends BaseContract {
       assets?: null,
       shares?: null
     ): WithdrawEventFilter;
+
+    "WithdrawLimToken(address,address,address,uint256,uint256)"(
+      caller?: PromiseOrValue<string> | null,
+      receiver?: PromiseOrValue<string> | null,
+      owner?: PromiseOrValue<string> | null,
+      assets?: null,
+      shares?: null
+    ): WithdrawLimTokenEventFilter;
+    WithdrawLimToken(
+      caller?: PromiseOrValue<string> | null,
+      receiver?: PromiseOrValue<string> | null,
+      owner?: PromiseOrValue<string> | null,
+      assets?: null,
+      shares?: null
+    ): WithdrawLimTokenEventFilter;
   };
 
   estimateGas: {
@@ -1275,6 +1355,10 @@ export interface LIM_Token extends BaseContract {
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    t(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     tokenBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1457,6 +1541,10 @@ export interface LIM_Token extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    t(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     tokenBalance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

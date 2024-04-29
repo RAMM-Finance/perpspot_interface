@@ -42,7 +42,7 @@ const HeaderText = styled.div`
   align-items: center;
   justify-content: center;
   color: ${(props) => (props.color === 'blue' ? ({ theme }) => theme.accentAction : ({ theme }) => theme.textPrimary)};
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   padding: 0 8px;
 `
@@ -53,8 +53,8 @@ const IconWrapper = styled.div`
   justify-content: center;
   & > img,
   span {
-    height: 40px;
-    width: 40px;
+    height: 30px;
+    width: 30px;
   }
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
     align-items: flex-end;

@@ -98,12 +98,16 @@ export type { AggregatorV3Interface } from "./src/periphery/LPVault.sol/Aggregat
 export { AggregatorV3Interface__factory } from "./factories/src/periphery/LPVault.sol/AggregatorV3Interface__factory";
 export type { LPVault } from "./src/periphery/LPVault.sol/LPVault";
 export { LPVault__factory } from "./factories/src/periphery/LPVault.sol/LPVault__factory";
+export type { OwnedToken } from "./src/periphery/LPVault.sol/OwnedToken";
+export { OwnedToken__factory } from "./factories/src/periphery/LPVault.sol/OwnedToken__factory";
 export type { PriceFeed } from "./src/periphery/LPVault.sol/PriceFeed";
 export { PriceFeed__factory } from "./factories/src/periphery/LPVault.sol/PriceFeed__factory";
 export type { PriceFeedInterface } from "./src/periphery/LPVault.sol/PriceFeedInterface";
 export { PriceFeedInterface__factory } from "./factories/src/periphery/LPVault.sol/PriceFeedInterface__factory";
 export type { NonfungiblePositionManager } from "./src/periphery/NonfungiblePositionManager";
 export { NonfungiblePositionManager__factory } from "./factories/src/periphery/NonfungiblePositionManager__factory";
+export type { IV3Pool } from "./src/periphery/Quoter.sol/IV3Pool";
+export { IV3Pool__factory } from "./factories/src/periphery/Quoter.sol/IV3Pool__factory";
 export type { PeripheryImmutableState } from "./src/periphery/Quoter.sol/PeripheryImmutableState";
 export { PeripheryImmutableState__factory } from "./factories/src/periphery/Quoter.sol/PeripheryImmutableState__factory";
 export type { Quoter } from "./src/periphery/Quoter.sol/Quoter";
