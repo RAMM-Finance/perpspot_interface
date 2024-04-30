@@ -6,6 +6,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import bluePill from '../../assets/images/bluePill.jpg'
+import { TBRPData } from './BoxesContainr'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -17,6 +18,13 @@ const BluePillImg = styled.img`
   right: -58px;
   bottom: -10.5px;
   z-index: -999;
+`
+
+const ModalStatsBox = styled(Box)<{ isModal?: boolean }>`
+  background-color: ${({ theme }) => theme.backgroundScrolledSurface};
+  border-radius: 20px;
+  height: 100%;
+  padding: 1rem;
 `
 
 const StatsItem = ({
@@ -31,6 +39,7 @@ const StatsItem = ({
   shouldHide: boolean
   loading: boolean
   labelImg?: string
+  isModal?: boolean
 }) => {
   return (
     <Box
@@ -52,9 +61,41 @@ const StatsItem = ({
   )
 }
 
-const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; loading: boolean }) => {
+const ModalStatsItem = ({
+  children,
+  label,
+  shouldHide,
+  loading,
+  labelImg,
+}: {
+  children: ReactNode
+  label: string
+  shouldHide: boolean
+  loading: boolean
+  labelImg?: string
+}) => {
+  return (
+    <ModalStatsBox
+      position="relative"
+      display={shouldHide ? 'none' : 'flex'}
+      flexDirection="column"
+      alignItems="baseline"
+      gap="10"
+      height="min"
+    >
+      <ThemedText.SubHeader color="textSecondary">
+        {loading ? <LoadingBubble width="80px" /> : children}
+      </ThemedText.SubHeader>
+      <ThemedText.CellName color="stateLabel" fontSize="14px">
+        {label}
+        {!loading && labelImg && <BluePillImg src={labelImg} />}
+      </ThemedText.CellName>
+    </ModalStatsBox>
+  )
+}
+
+const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boolean }) => {
   // console.log('brpData', brpData)
-  // console.log('stats', stats)
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
       <StatsItem label="Total boxes" shouldHide={false} loading={loading}>
@@ -64,7 +105,7 @@ const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; 
         {brpData?.totalUnlockableBoxes}
       </StatsItem>
       <StatsItem label="Total LMT" shouldHide={false} loading={loading}>
-        {stats}
+        {brpData?.totalLMT}
       </StatsItem>
       <StatsItem label="LMT required per unlock" shouldHide={false} loading={loading}>
         {brpData?.lmtRequiredPerUnlock}
@@ -72,6 +113,23 @@ const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; 
       <StatsItem label="My NZT balance" shouldHide={false} loading={loading} labelImg={bluePill}>
         0
       </StatsItem>
+    </Row>
+  )
+}
+
+export const ModalItemStats = ({ loading }: { loading?: boolean }) => {
+  // console.log('brpData', brpData)
+  return (
+    <Row gap="24" marginBottom="28" marginTop="32">
+      <ModalStatsItem label=" Current LMT" shouldHide={false} loading={false}>
+        Current LMT
+      </ModalStatsItem>
+      <ModalStatsItem label="LMT needed for unlock" shouldHide={false} loading={false}>
+        LMT needed for unlock
+      </ModalStatsItem>
+      <ModalStatsItem label="NZT rewards range" shouldHide={false} loading={false} >
+        NZT rewards range
+      </ModalStatsItem>
     </Row>
   )
 }

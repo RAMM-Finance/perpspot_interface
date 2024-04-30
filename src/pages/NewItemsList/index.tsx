@@ -1,99 +1,54 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
+import { LightCard } from 'components/Card'
 import Column from 'components/Column'
+import FAQBox, { FaqWrapper } from 'components/FAQ'
+import Modal from 'components/Modal'
+import { ModalItemStats } from 'components/NewItems/InfoItemStats'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useBRP } from 'hooks/useContract'
-// import { getSortDropdownOptions } from 'nft/components/collection/CollectionNfts'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowUpRight } from 'react-feather'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
+import ItemImg from '../../assets/images/newItem.png'
 import banner from '../../components/Leaderboard/banner.png'
-import BoxesContainr, { TBRPData } from './BoxesContainr'
-import InfoDescriptionSection from './InfoDescription'
+import BoxesContainr, { TBRPData } from '../../components/NewItems/BoxesContainr'
+import InfoDescriptionSection from '../../components/NewItems/InfoDescription'
 
-// const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
-//   width: max-content;
-//   height: 44px;
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
-//     ${({ isFiltersExpanded }) => isFiltersExpanded && `display: none;`}
-//   }
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-//     display: none;
-//   }
-// `
-
-const FaqWrapper = styled.div`
-  margin: 50px auto;
-  width: 48%;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
+const StyledMediaImg = styled.img<{
+  // imageLoading: boolean
+  $aspectRatio?: string
+  $hidden?: boolean
+}>`
+  width: 40%;
+  height: 50%;
+  /* aspect-ratio: ${({ $aspectRatio }) => $aspectRatio}; */
+  aspect-ratio: 16/9;
+  transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} transform`};
+  will-change: transform;
+  object-fit: contain;
+  border-radius: 12px;
 `
 
-const FaqElement = styled.div`
+const ModalWrapper = styled.div`
   display: flex;
-  gap: 5px;
-  align-items: center;
-  :hover {
-    cursor: pointer;
-    opacity: 75%;
-  }
+  flex-direction: row;
+  width: 100%;
+  gap: 0.5rem;
+  // height: 100%;
+  padding: 2rem;
+  border-radius: 20px;
 `
-
-// const SweepButton = styled.div<{ toggled: boolean; disabled?: boolean }>`
-//   display: flex;
-//   gap: 8px;
-//   border: none;
-//   border-radius: 12px;
-//   padding: 12px 18px 12px 12px;
-//   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-//   color: ${({ toggled, disabled, theme }) => (toggled && !disabled ? theme.accentTextLightPrimary : theme.textPrimary)};
-//   background: ${({ theme, toggled, disabled }) =>
-//     !disabled && toggled
-//       ? 'radial-gradient(101.8% 4091.31% at 0% 0%, #4673FA 0%, #9646FA 100%)'
-//       : theme.backgroundInteractive};
-//   opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
-//   :hover {
-//     background-color: ${({ theme }) => theme.hoverState};
-//     transition: ${({
-//       theme: {
-//         transition: { duration, timing },
-//       },
-//     }) => `${duration.fast} background-color ${timing.in}`};
-//   }
-
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-//     padding: 12px 12px 12px 12px;
-//   }
-// `
-// const ActionsSubContainer = styled.div`
-//   display: flex;
-//   gap: 12px;
-//   flex: 1;
-//   min-width: 0px;
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-//     gap: 10px;
-//   }
-// `
-
 const CollectionContainer = styled(Column)`
   width: 100%;
   align-self: start;
   will-change: width;
 `
-
-// const CollectionAssetsContainer = styled.div<{ hideUnderneath: boolean }>`
-//   width: 100%;
-//   position: ${({ hideUnderneath }) => (hideUnderneath ? 'fixed' : 'static')};
-// `
 
 const CollectionDisplaySection = styled(Row)`
   width: 100%;
@@ -151,48 +106,81 @@ const CollectionDescriptionSection = styled(Column)`
   }
 `
 
-// const InfoImg = styled.img`
-//   /* position: absolute; */
-//   left: 45px;
-//   top: -110px;
-//   box-shadow: ${({ theme }) => theme.roundedImageShadow};
-//   height: 143px;
-//   vertical-align: top;
-//   width: 143px;
-//   border-style: solid;
-//   border-width: 3px;
-//   border-radius: 100%;
-//   border-color: ${({ theme }) => theme.white};
-//   /* background-color: #fff; */
-//   -webkit-tap-highlight-color: transparent;
-//   box-sizing: border-box;
+export const ModalActionButton = styled(ThemedText.BodySecondary)<{
+  isDisabled: boolean
+}>`
+  position: absolute;
+  width: 180px;
+  top: -15px;
+  right: 20px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  padding: 8px 0px;
+  color: ${({ theme, isDisabled }) => (isDisabled ? theme.textPrimary : theme.accentTextLightPrimary)};
+  background: ${({ theme, isDisabled }) => (isDisabled ? theme.backgroundInteractive : theme.accentAction)};
+  transition: ${({ theme }) =>
+    `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
+  will-change: transform;
+  border-radius: 8px;
+  justify-content: center;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  line-height: 16px;
+  cursor: ${({ isDisabled }) => (isDisabled ? 'default' : 'pointer')};
 
-  /* @media (max-width: 639px) {
-    border-width: 2px;
-    height: 100px;
-    top: -32px;
-    width: 100px;
-  } */
-// `
+  &:before {
+    background-size: 100%;
+    border-radius: inherit;
 
-// const FadeInColumn = styled(Column)`
-//   ${portfolioFadeInAnimation}
-// `
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    content: '';
+  }
+
+  &:hover:before {
+    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayHover};
+  }
+
+  &:active:before {
+    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayPressed};
+  }
+`
+
+const ModalInfoWrapper = styled(LightCard)`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  border: none;
+  border-radius: 0px;
+  width: 100%;
+  border-bottom: 3px solid ${({ theme }) => theme.searchOutline};
+  justify-content: flex-start;
+  background: ${({ theme }) => theme.backgroundSurface};
+  padding: 0.75rem;
+`
 
 const NewItemsListPage = () => {
   const { account } = useWeb3React()
-  const brp = useBRP()
+  const blockNumber = useBlockNumber()
 
+  const brp = useBRP()
   const [brpData, setBRPData] = useState<TBRPData>({
     totalBoxes: 0,
     totalUnlockableBoxes: 0,
     lmtRequiredPerUnlock: '0',
+    totalLMT: '0',
   })
-  const [totalLMT, setTotalLMT] = useState('0')
   const [loading, setLoading] = useState(true)
 
+  const [showModal, setShowModal] = useState(true)
+
   const [hiddenCards, setHiddenCards] = useState<number[]>([])
-  // const addPopup = useAddPopup()
   const addTransaction = useTransactionAdder()
 
   const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
@@ -219,16 +207,11 @@ const NewItemsListPage = () => {
       if (brp && account) {
         try {
           const response = await unlockBoxCallback()
-          await addTransaction(response, {
+          addTransaction(response, {
             type: TransactionType.UNLOCK_Box,
             inputCurrencyId: '',
             outputCurrencyId: '',
           })
-          // setBRPData((prevData) => ({
-          //   ...prevData,
-          //   totalBoxes: prevData.totalBoxes - 1,
-          //   totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
-          // }))
           setHiddenCards((prevState) => [...prevState, index])
           setLoading(false)
         } catch (error) {
@@ -241,10 +224,11 @@ const NewItemsListPage = () => {
   )
 
   useEffect(() => {
-    if (brp && account) {
+    if (brp && account && blockNumber) {
+      if (!brpData) setLoading(true)
+      console.log('blockNumber', blockNumber)
       const call = async () => {
         try {
-          setLoading(true)
           const totalBoxes = await brp.numBoxes(account)
           const totalUnlockableBoxes = await brp.claimableBoxes(account)
           const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
@@ -253,80 +237,96 @@ const NewItemsListPage = () => {
           const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
           const lastRecordedPoints = await brp.lastRecordedPoints(account)
 
-          const totalLMT = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
-          const totalLMTString = totalLMT.toString()
+          const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
+          const totalLMTString = totalLMTPoint.toString()
 
-          setTotalLMT(totalLMTString)
           // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
-          // console.log('total boxes', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
+          // console.log('blockNumber', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
           setBRPData({
             totalBoxes: totalBoxes.toNumber(),
             totalUnlockableBoxes: totalUnlockableBoxes[0]?.toNumber(),
             lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString(),
+            totalLMT: totalLMTString,
           })
           setHiddenCards([])
           // console.log('get Totalboxes', brpData, hiddenCards, totalBoxes)
           setLoading(false)
         } catch (error) {
+          setBRPData({
+            totalBoxes: 0,
+            totalUnlockableBoxes: 0,
+            lmtRequiredPerUnlock: '0',
+            totalLMT: '0',
+          })
+          setHiddenCards([])
           setLoading(false)
           console.log(error, 'get brp data error')
         }
       }
       call()
     }
-  }, [brp, account, handleUnlockBox, setHiddenCards])
+  }, [brp, account, handleUnlockBox, setHiddenCards, blockNumber])
+
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
 
   return (
-    <CollectionContainer>
-      {/* Banner, Info title description section */}
-      <BannerWrapper>
-        <Banner src={banner} />
-      </BannerWrapper>
-      <CollectionDescriptionSection>
-        <Row gap="16">
-          <InfoDescriptionSection
-            title="Use and Unlock "
-            description="Earn LMT and unlock treasure boxes"
-            stats={totalLMT}
+    <>
+      {/* <Modal
+        isOpen={showModal}
+        minHeight={55}
+        maxHeight={750}
+        maxWidth={1200}
+        $scrollOverlay={true}
+        onDismiss={() => handleCloseModal()}
+      >
+        <ModalWrapper>
+          <StyledMediaImg src={ItemImg} />
+          <ModalInfoWrapper>
+            <ModalActionButton isDisabled={false}>Unlock</ModalActionButton>
+            <ThemedText.LargeHeader color="textSecondary">TreasureBox</ThemedText.LargeHeader>
+            <ModalItemStats />
+          </ModalInfoWrapper>
+        </ModalWrapper>
+      </Modal> */}
+      <CollectionContainer>
+        {/* Banner, Info title description section */}
+        <BannerWrapper>
+          <Banner src={banner} />
+        </BannerWrapper>
+        <CollectionDescriptionSection>
+          <Row gap="16">
+            <InfoDescriptionSection
+              title="Use and Unlock "
+              description="Earn LMT and unlock treasure boxes"
+              brpData={brpData}
+              loading={loading}
+            />
+          </Row>
+        </CollectionDescriptionSection>
+        <CollectionDisplaySection>
+          {/* <InfiniteScroll
+            next={() => {console.log("")}}
+            hasMore={false}
+            loader={false}
+            dataLength={20}
+            style={{ overflow: 'unset', height: '100%' }}
+            > */}
+          <BoxesContainr
             brpData={brpData}
+            handleUnlockBox={handleUnlockBox}
             loading={loading}
+            hiddenCards={hiddenCards}
+            handleShowModal={setShowModal}
           />
-        </Row>
-      </CollectionDescriptionSection>
-      <CollectionDisplaySection>
-        {/* <InfiniteScroll
-          next={() => {console.log("")}}
-          hasMore={false}
-          loader={false}
-          dataLength={20}
-          style={{ overflow: 'unset', height: '100%' }}
-          > */}
-        <BoxesContainr
-          brpData={brpData}
-          handleUnlockBox={handleUnlockBox}
-          loading={loading}
-          hiddenCards={hiddenCards}
-        />
-        {/* </InfiniteScroll> */}
-      </CollectionDisplaySection>
-      <FaqWrapper>
-        <FaqElement>
-          <a
-            href="https://limitless.gitbook.io/limitless/intro/limitless-lp-token-llp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-              Earning with LLP
-            </ThemedText.BodySecondary>
-          </a>
-          <ArrowUpRight size="20" />
-        </FaqElement>{' '}
-        <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-          Read our LLP documentation to better understand how to earn.
-        </ThemedText.BodyPrimary>
-      </FaqWrapper>
-    </CollectionContainer>
+          {/* </InfiniteScroll> */}
+        </CollectionDisplaySection>
+        <FaqWrapper>
+          <FAQBox />
+        </FaqWrapper>
+      </CollectionContainer>
+    </>
   )
 }
 

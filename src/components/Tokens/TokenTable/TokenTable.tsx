@@ -23,8 +23,6 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { NumberType } from '@uniswap/conedison/format'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -137,11 +135,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
       liquidity between 90% and 110% of current price
     </Trans>
   ),
-  [TokenSortMethod.DAILY_LMT]: (
-    <Trans>
-      Daily LMT emitted per USD value provided.
-    </Trans>
-  ),
+  [TokenSortMethod.DAILY_LMT]: <Trans>Daily LMT emitted per USD value provided.</Trans>,
   [TokenSortMethod.PRICE_CHANGE]: <Trans>24H Change in Price</Trans>,
 }
 
@@ -187,7 +181,7 @@ function PHeaderRow() {
     <TokenRow
       header={true}
       listNumber=""
-      tokenInfo={<Trans>Pair</Trans>}
+      tokenInfo={<div style={{ marginLeft: '30px' }}>Pair</div>}
       price={<HeaderCell category={TokenSortMethod.PRICE} />}
       priceChange={<HeaderCell category={TokenSortMethod.PRICE_CHANGE} />}
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
@@ -202,8 +196,7 @@ function PHeaderRow() {
 function checkFilterString(pool: any, str: string[]): boolean {
   return str.every((x: string) => {
     x = x.trim().toLowerCase()
-    // const name0 = pool.name0.toLowerCase()
-    // const name1 = pool.name1.toLowerCase()
+
     const symbol0 = pool.symbol0.toLowerCase()
     const symbol1 = pool.symbol1.toLowerCase()
     const fee = pool.fee.toString()
@@ -212,7 +205,7 @@ function checkFilterString(pool: any, str: string[]): boolean {
 }
 
 function useFilteredPairs() {
-  const { poolList } = usePoolKeyList() // useRawPoolKeyList()
+  const { poolList } = usePoolKeyList()
   const { poolList: aprList } = usePoolsAprUtilList()
 
   // const pinnedPools = usePinnedPools()
@@ -462,9 +455,7 @@ export default function TokenTable() {
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
-          {!loading && poolTvlData && poolOHLCs && aprList
-          //  && dailyFeeAPRs 
-           ? (
+          {!loading && poolTvlData && poolOHLCs && aprList ? (
             sortedPools.map((pool, i: number) => {
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
               return (
@@ -479,9 +470,7 @@ export default function TokenTable() {
                   volume={poolTvlData[id]?.volume}
                   price={poolOHLCs[id]?.priceNow}
                   delta={poolOHLCs[id]?.delta24h}
-                  apr={(aprList[id]?.apr || 0)
-                    // + (dailyFeeAPRs ? dailyFeeAPRs[id]?.dailyFeeAPR || 0 : 0)
-                  }
+                  apr={aprList[id]?.apr || 0}
                   utilTotal={aprList[id]?.utilTotal}
                 />
               )

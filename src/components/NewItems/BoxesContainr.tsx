@@ -61,6 +61,7 @@ export type TBRPData = {
   totalBoxes: number
   totalUnlockableBoxes: number
   lmtRequiredPerUnlock: string
+  totalLMT: string
 }
 
 interface IBoxesContainerProps {
@@ -68,6 +69,7 @@ interface IBoxesContainerProps {
   handleUnlockBox: (index: number) => void
   loading: boolean
   hiddenCards: number[]
+  handleShowModal: (isShowModal: boolean) => void
 }
 
 interface BoxData {
@@ -77,27 +79,11 @@ interface BoxData {
   isLocked: boolean
 }
 
-const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxesContainerProps) => {
+const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards, handleShowModal }: IBoxesContainerProps) => {
   const { totalBoxes, totalUnlockableBoxes } = brpData
-  // const numTotalBoxes = Number(totalBoxes)
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4, ItemImg5, ItemImg6]
 
   const [itemData, setItemData] = useState<BoxData[]>([])
-  // Generate an array of booleans to represent whether each box is locked or not
-  // const lockedBoxes = Array(totalBoxes)
-  //   .fill(true)
-  //   .map((_, index) => index + 1 > totalUnlockableBoxes)
-
-  // const itemData = Array.from({ length: totalBoxes }, (_, index) => {
-  //   // const isLocked = index + 1 <= totalUnlockableBoxes;
-  //   const randomImgNumber = Math.floor(Math.random() * 6)
-  //   return {
-  //     id: `#${index + 1}`,
-  //     img: itemImages[randomImgNumber],
-  //     info: `Limitless test ${index + 1}`,
-  //     isLocked: lockedBoxes[index],
-  //   }
-  // })
 
   useEffect(() => {
     // Generate an array of booleans to represent whether each box is locked or not
@@ -130,8 +116,6 @@ const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxe
           <LoadingCardContainer />
           <LoadingCardContainer />
           <LoadingCardContainer />
-          <LoadingCardContainer />
-          <LoadingCardContainer />
         </InfiniteScrollWrapper>
       </BoxesDisplaySection>
     )
@@ -150,6 +134,7 @@ const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxe
             handleUnlockBox={handleUnlockBox}
             shouldHide={hiddenCards.includes(index)}
             index={index}
+            handleShowModal={handleShowModal}
           />
         ))}
       </InfiniteScrollWrapper>
