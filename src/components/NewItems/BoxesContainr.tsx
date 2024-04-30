@@ -69,6 +69,7 @@ interface IBoxesContainerProps {
   handleUnlockBox: (index: number) => void
   loading: boolean
   hiddenCards: number[]
+  handleShowModal: (isShowModal: boolean) => void
 }
 
 interface BoxData {
@@ -78,7 +79,7 @@ interface BoxData {
   isLocked: boolean
 }
 
-const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxesContainerProps) => {
+const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards, handleShowModal }: IBoxesContainerProps) => {
   const { totalBoxes, totalUnlockableBoxes } = brpData
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4, ItemImg5, ItemImg6]
 
@@ -133,6 +134,7 @@ const BoxesContainr = ({ brpData, handleUnlockBox, loading, hiddenCards }: IBoxe
             handleUnlockBox={handleUnlockBox}
             shouldHide={hiddenCards.includes(index)}
             index={index}
+            handleShowModal={handleShowModal}
           />
         ))}
       </InfiniteScrollWrapper>

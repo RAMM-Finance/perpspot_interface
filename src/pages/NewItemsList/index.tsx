@@ -1,68 +1,49 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
+import { LightCard } from 'components/Card'
 import Column from 'components/Column'
 import FAQBox, { FaqWrapper } from 'components/FAQ'
+import Modal from 'components/Modal'
+import { ModalItemStats } from 'components/NewItems/InfoItemStats'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
-// import { getSortDropdownOptions } from 'nft/components/collection/CollectionNfts'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
+import ItemImg from '../../assets/images/newItem.png'
 import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainr, { TBRPData } from '../../components/NewItems/BoxesContainr'
 import InfoDescriptionSection from '../../components/NewItems/InfoDescription'
 
-// const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
-//   width: max-content;
-//   height: 44px;
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
-//     ${({ isFiltersExpanded }) => isFiltersExpanded && `display: none;`}
-//   }
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-//     display: none;
-//   }
-// `
+const StyledMediaImg = styled.img<{
+  // imageLoading: boolean
+  $aspectRatio?: string
+  $hidden?: boolean
+}>`
+  width: 40%;
+  height: 50%;
+  /* aspect-ratio: ${({ $aspectRatio }) => $aspectRatio}; */
+  aspect-ratio: 16/9;
+  transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} transform`};
+  will-change: transform;
+  object-fit: contain;
+  border-radius: 12px;
+`
 
-// const SweepButton = styled.div<{ toggled: boolean; disabled?: boolean }>`
-//   display: flex;
-//   gap: 8px;
-//   border: none;
-//   border-radius: 12px;
-//   padding: 12px 18px 12px 12px;
-//   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-//   color: ${({ toggled, disabled, theme }) => (toggled && !disabled ? theme.accentTextLightPrimary : theme.textPrimary)};
-//   background: ${({ theme, toggled, disabled }) =>
-//     !disabled && toggled
-//       ? 'radial-gradient(101.8% 4091.31% at 0% 0%, #4673FA 0%, #9646FA 100%)'
-//       : theme.backgroundInteractive};
-//   opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
-//   :hover {
-//     background-color: ${({ theme }) => theme.hoverState};
-//     transition: ${({
-//       theme: {
-//         transition: { duration, timing },
-//       },
-//     }) => `${duration.fast} background-color ${timing.in}`};
-//   }
-
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-//     padding: 12px 12px 12px 12px;
-//   }
-// `
-// const ActionsSubContainer = styled.div`
-//   display: flex;
-//   gap: 12px;
-//   flex: 1;
-//   min-width: 0px;
-//   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-//     gap: 10px;
-//   }
-// `
-
+const ModalWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 0.5rem;
+  // height: 100%;
+  padding: 2rem;
+  border-radius: 20px;
+`
 const CollectionContainer = styled(Column)`
   width: 100%;
   align-self: start;
@@ -125,6 +106,65 @@ const CollectionDescriptionSection = styled(Column)`
   }
 `
 
+export const ModalActionButton = styled(ThemedText.BodySecondary)<{
+  isDisabled: boolean
+}>`
+  position: absolute;
+  width: 180px;
+  top: -15px;
+  right: 20px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  padding: 8px 0px;
+  color: ${({ theme, isDisabled }) => (isDisabled ? theme.textPrimary : theme.accentTextLightPrimary)};
+  background: ${({ theme, isDisabled }) => (isDisabled ? theme.backgroundInteractive : theme.accentAction)};
+  transition: ${({ theme }) =>
+    `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
+  will-change: transform;
+  border-radius: 8px;
+  justify-content: center;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  line-height: 16px;
+  cursor: ${({ isDisabled }) => (isDisabled ? 'default' : 'pointer')};
+
+  &:before {
+    background-size: 100%;
+    border-radius: inherit;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    content: '';
+  }
+
+  &:hover:before {
+    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayHover};
+  }
+
+  &:active:before {
+    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayPressed};
+  }
+`
+
+const ModalInfoWrapper = styled(LightCard)`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  border: none;
+  border-radius: 0px;
+  width: 100%;
+  border-bottom: 3px solid ${({ theme }) => theme.searchOutline};
+  justify-content: flex-start;
+  background: ${({ theme }) => theme.backgroundSurface};
+  padding: 0.75rem;
+`
+
 const NewItemsListPage = () => {
   const { account } = useWeb3React()
   const blockNumber = useBlockNumber()
@@ -137,6 +177,8 @@ const NewItemsListPage = () => {
     totalLMT: '0',
   })
   const [loading, setLoading] = useState(true)
+
+  const [showModal, setShowModal] = useState(true)
 
   const [hiddenCards, setHiddenCards] = useState<number[]>([])
   const addTransaction = useTransactionAdder()
@@ -225,42 +267,66 @@ const NewItemsListPage = () => {
     }
   }, [brp, account, handleUnlockBox, setHiddenCards, blockNumber])
 
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
+
   return (
-    <CollectionContainer>
-      {/* Banner, Info title description section */}
-      <BannerWrapper>
-        <Banner src={banner} />
-      </BannerWrapper>
-      <CollectionDescriptionSection>
-        <Row gap="16">
-          <InfoDescriptionSection
-            title="Use and Unlock "
-            description="Earn LMT and unlock treasure boxes"
+    <>
+      {/* <Modal
+        isOpen={showModal}
+        minHeight={55}
+        maxHeight={750}
+        maxWidth={1200}
+        $scrollOverlay={true}
+        onDismiss={() => handleCloseModal()}
+      >
+        <ModalWrapper>
+          <StyledMediaImg src={ItemImg} />
+          <ModalInfoWrapper>
+            <ModalActionButton isDisabled={false}>Unlock</ModalActionButton>
+            <ThemedText.LargeHeader color="textSecondary">TreasureBox</ThemedText.LargeHeader>
+            <ModalItemStats />
+          </ModalInfoWrapper>
+        </ModalWrapper>
+      </Modal> */}
+      <CollectionContainer>
+        {/* Banner, Info title description section */}
+        <BannerWrapper>
+          <Banner src={banner} />
+        </BannerWrapper>
+        <CollectionDescriptionSection>
+          <Row gap="16">
+            <InfoDescriptionSection
+              title="Use and Unlock "
+              description="Earn LMT and unlock treasure boxes"
+              brpData={brpData}
+              loading={loading}
+            />
+          </Row>
+        </CollectionDescriptionSection>
+        <CollectionDisplaySection>
+          {/* <InfiniteScroll
+            next={() => {console.log("")}}
+            hasMore={false}
+            loader={false}
+            dataLength={20}
+            style={{ overflow: 'unset', height: '100%' }}
+            > */}
+          <BoxesContainr
             brpData={brpData}
+            handleUnlockBox={handleUnlockBox}
             loading={loading}
+            hiddenCards={hiddenCards}
+            handleShowModal={setShowModal}
           />
-        </Row>
-      </CollectionDescriptionSection>
-      <CollectionDisplaySection>
-        {/* <InfiniteScroll
-          next={() => {console.log("")}}
-          hasMore={false}
-          loader={false}
-          dataLength={20}
-          style={{ overflow: 'unset', height: '100%' }}
-          > */}
-        <BoxesContainr
-          brpData={brpData}
-          handleUnlockBox={handleUnlockBox}
-          loading={loading}
-          hiddenCards={hiddenCards}
-        />
-        {/* </InfiniteScroll> */}
-      </CollectionDisplaySection>
-      <FaqWrapper>
-        <FAQBox />
-      </FaqWrapper>
-    </CollectionContainer>
+          {/* </InfiniteScroll> */}
+        </CollectionDisplaySection>
+        <FaqWrapper>
+          <FAQBox />
+        </FaqWrapper>
+      </CollectionContainer>
+    </>
   )
 }
 

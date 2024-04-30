@@ -103,7 +103,7 @@ const PrimaryInfoContainer = styled(ThemedText.BodyPrimary)`
 //   line-height: 24px;
 // `
 
-const StyledActionButton = styled(ThemedText.BodySecondary)<{
+export const StyledActionButton = styled(ThemedText.BodySecondary)<{
   isDisabled: boolean
 }>`
   position: absolute;
@@ -202,11 +202,12 @@ interface ICardContainerProps {
   handleUnlockBox: (index : number) => void
   shouldHide?: boolean
   index: number
+  handleShowModal: (isShowModal: boolean) => void
 }
 
-export const CardContainer = ({ img, info, isLocked, handleUnlockBox, shouldHide, index }: ICardContainerProps) => {
+export const CardContainer = ({ img, info, isLocked, handleUnlockBox, shouldHide, index, handleShowModal }: ICardContainerProps) => {
   return (
-    <StyledCardContainer isDisabled={isLocked} shouldHide={shouldHide}>
+    <StyledCardContainer isDisabled={isLocked} shouldHide={shouldHide} onClick={() => handleShowModal(true)}>
       <ItemImgContainer isDisabled={isLocked}>
         <StyledMediaContainer>
           <StyledMediaImg src={img} />
