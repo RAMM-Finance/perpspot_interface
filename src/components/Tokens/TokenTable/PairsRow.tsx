@@ -1,14 +1,23 @@
 import { Trans } from '@lingui/macro'
+import { Token } from '@uniswap/sdk-core'
+import { useWeb3React } from '@web3-react/core'
+import axios from 'axios'
+import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { SparklineMap } from 'graphql/data/TopTokens'
+import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
 import { computePoolAddress, usePool } from 'hooks/usePools'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai/utils'
-import { ForwardedRef, forwardRef, useState, useEffect, useMemo } from 'react'
+import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
+import { tryParseLmtTick } from 'state/mint/v3/utils'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
@@ -25,18 +34,6 @@ import {
 import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
-import { useWeb3React } from '@web3-react/core'
-import JSBI from 'jsbi'
-import { TickMath, nearestUsableTick } from '@uniswap/v3-sdk'
-import { tryParseLmtTick } from 'state/mint/v3/utils'
-import { getLiquidityTicks } from 'hooks/useBorrowedLiquidityRange'
-import axios from 'axios'
-import { SupportedChainId } from 'constants/chains'
-import { Token } from '@uniswap/sdk-core'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
-import { BigNumber as BN } from 'bignumber.js'
 
 const Cell = styled.div`
   display: flex;
@@ -117,7 +114,7 @@ const StyledTokenRow = styled.div<{
 const ClickableContent = styled.div<{ rate?: number }>`
   display: flex;
   text-decoration: none;
-  color: ${({ theme, rate }) => (!rate ? theme.textSecondary : rate > 0 ? '#10CC83' : '#FA3C58')};
+  color: ${({ theme, rate }) => (!rate ? theme.textSecondary : rate >= 0 ? '#10CC83' : '#FA3C58')};
   align-items: center;
   cursor: pointer;
 
@@ -188,6 +185,7 @@ const TvlCell = styled(DataCell)`
 `
 const NameCell = styled(Cell)`
   justify-content: flex-start;
+  margin-left: 8px;
   /* gap: 8px; */
 `
 const PriceCell = styled(DataCell)`
@@ -196,16 +194,6 @@ const PriceCell = styled(DataCell)`
   } */
   /* padding-right: 8px; */
 `
-/* const PercentChangeInfoCell = styled(Cell)`
-  display: none;
-
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    display: flex;
-    justify-content: flex-end;
-    color: ${({ theme }) => theme.textPrimary};
-    line-height: 16px;
-  }
-` */
 
 const PriceChangeCell = styled(DataCell)`
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -467,7 +455,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const token1 = useCurrency(token1Address)
 
   const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
-  
+
   // const poolOHLCDatas = useAppPoolOHLC()
   const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
 
@@ -490,65 +478,60 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   }, [poolOHLC])
 
   const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: number) => {
-    let url = "https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-"
+    let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
     if (chainId === SupportedChainId.BASE) {
-      url += "base"
+      url += 'base'
     } else {
-      url += "arbitrum"
+      url += 'arbitrum'
     }
 
-    let query = `{
+    const query = `{
       ticks(first: 1000, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
         liquidityGross
         liquidityNet
       }
     }`
-    // ticks(first: 1000, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
-    //   index
-    //   liquidityGross
-    //   prices
-    // }
 
     const { data } = await axios({
-      url: url,
-      method: "post",
+      url,
+      method: 'post',
       data: {
         query,
       },
-    });
+    })
     // console.log("TICKS DATA", data)
     return data.data.ticks
   }
 
   const getAvgTradingVolume = async (poolAddress: string) => {
     const days = 7
-    const timestamp = Math.floor(Date.now() / 1000) - (86400 * days)
+    const timestamp = Math.floor(Date.now() / 1000) - 86400 * days
 
-    let url = "https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-"
+    let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
     if (chainId === SupportedChainId.BASE) {
-      url += "base"
+      url += 'base'
     } else {
-      url += "arbitrum"
+      url += 'arbitrum'
     }
 
     const data = await axios({
-      url: url,
-      method: "post",
+      url,
+      method: 'post',
       data: {
-        query: Pool24hVolumeQuery(poolAddress, timestamp)
+        query: Pool24hVolumeQuery(poolAddress, timestamp),
       },
-    });
+    })
 
-    const volumes = data?.data?.data?.liquidityPool.dailySnapshots.map((ele: any) => Number(ele.dailyVolumeUSD) )
+    const volumes = data?.data?.data?.liquidityPool.dailySnapshots.map((ele: any) => Number(ele.dailyVolumeUSD))
 
-    const volume24h = volumes.reduce((acc: number, curr: number) => acc + curr, 0) / 7;
-    
+    const volume24h = volumes.reduce((acc: number, curr: number) => acc + curr, 0) / 7
+
     return volume24h
   }
 
   const getLiquidityFromTick = (poolTicks: any[]) => {
     let liquidity = new BN(0)
-    let liqNet = new BN(0)
+    const liqNet = new BN(0)
     // liquidity = poolTicks.reduce((acc, curr) => acc + new BN(curr.liquidityGross), 0)
     for (let i = 0; i < poolTicks.length; i++) {
       liquidity = liquidity.plus(new BN(poolTicks[i].liquidityGross))
@@ -560,55 +543,56 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   }
 
   const initPair = async (poolAddress: string, tickLower: number, tickUpper: number, token0: Token, token1: Token) => {
-    const [ poolTicks, volume24h ] = await Promise.all([
+    const [poolTicks, volume24h] = await Promise.all([
       getPoolTicks(poolAddress, tickLower, tickUpper),
-      getAvgTradingVolume(poolAddress)
+      getAvgTradingVolume(poolAddress),
     ])
 
-    return { poolTicks: poolTicks, volume24h: volume24h }
-
+    return { poolTicks, volume24h }
   }
 
-  const aprDataPreperation = async (fee: number, tickLower: number, tickUpper: number, poolAddress: string, token0: Token, token1: Token) => {
+  const aprDataPreperation = async (
+    fee: number,
+    tickLower: number,
+    tickUpper: number,
+    poolAddress: string,
+    token0: Token,
+    token1: Token
+  ) => {
     const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, token0, token1)
     const liquidityGross = getLiquidityFromTick(poolTicks)
 
     return {
       poolTicks,
       volume24h,
-      liquidityGross
+      liquidityGross,
     }
   }
 
-
   const getTokenAmountsFromDepositAmounts = (
-    p: number, 
-    pl: number, 
-    pu: number, 
-    token0PriceUSD: number, 
-    token1PriceUSD: number, 
+    p: number,
+    pl: number,
+    pu: number,
+    token0PriceUSD: number,
+    token1PriceUSD: number,
     depositAmountUSD: number
-  ): { deltaX: number, deltaY: number } => {
-    let deltaL = depositAmountUSD / ((Math.sqrt(p) - Math.sqrt(pl)) * token1PriceUSD + 
-    (1 / Math.sqrt(p) - 1 / Math.sqrt(pu)) * token0PriceUSD)
+  ): { deltaX: number; deltaY: number } => {
+    const deltaL =
+      depositAmountUSD /
+      ((Math.sqrt(p) - Math.sqrt(pl)) * token1PriceUSD + (1 / Math.sqrt(p) - 1 / Math.sqrt(pu)) * token0PriceUSD)
 
     let deltaY = deltaL * (Math.sqrt(p) - Math.sqrt(pl))
-    
-    if (deltaY * token1PriceUSD < 0)
-      deltaY = 0
-    if (deltaY * token1PriceUSD > depositAmountUSD)
-      deltaY = depositAmountUSD / token1PriceUSD
+
+    if (deltaY * token1PriceUSD < 0) deltaY = 0
+    if (deltaY * token1PriceUSD > depositAmountUSD) deltaY = depositAmountUSD / token1PriceUSD
 
     let deltaX = deltaL * (1 / Math.sqrt(p) - 1 / Math.sqrt(pu))
-    
-    if (deltaX * token0PriceUSD < 0)
-      deltaX = 0
-    if (deltaX * token0PriceUSD > depositAmountUSD)
-      deltaX = depositAmountUSD / token0PriceUSD
+
+    if (deltaX * token0PriceUSD < 0) deltaX = 0
+    if (deltaX * token0PriceUSD > depositAmountUSD) deltaX = depositAmountUSD / token0PriceUSD
 
     return { deltaX, deltaY }
   }
-
 
   const calcLiquidityX96 = (
     p: number,
@@ -620,38 +604,38 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     token1Decimals: number
   ): number => {
     // console.log("P, PL, PU, DELTAX, DELTAY, 0DEC, 1DEC", p, pl, pu, deltaX, deltaY, token0Decimals, token1Decimals)
-    const q96 = 2**96
+    const q96 = 2 ** 96
     const price_to_sqrtp = (p: number) => Math.sqrt(p) * q96
 
     const liquidity0 = (amount: number, pa: number, pb: number) => {
       if (pa > pb) {
-        let tmp = pa
+        const tmp = pa
         pa = pb
         pb = tmp
       }
-      return (amount * (pa * pb) / q96) / (pb - pa)
+      return (amount * (pa * pb)) / q96 / (pb - pa)
     }
 
     const liquidity1 = (amount: number, pa: number, pb: number) => {
       if (pa > pb) {
-        let tmp = pa
+        const tmp = pa
         pa = pb
         pb = tmp
       }
-      return amount * q96 / (pb - pa)
+      return (amount * q96) / (pb - pa)
     }
 
-    let decimal: number = 10 ** 18 // (token0Decimals - token1Decimals)
+    const decimal: number = 10 ** 18 // (token0Decimals - token1Decimals)
     // console.log("DECIMALLLL", decimal)
-    let amount_0: number = deltaX * decimal
-    let amount_1: number = deltaY * decimal
-    let sqrtp_low: number = price_to_sqrtp(pl)
-    let sqrtp_cur: number = price_to_sqrtp(p)
-    let sqrtp_upp: number = price_to_sqrtp(pu)
-    let liq0 = liquidity0(amount_0, sqrtp_cur, sqrtp_upp)
-    let liq1 = liquidity1(amount_1, sqrtp_cur, sqrtp_low)
+    const amount_0: number = deltaX * decimal
+    const amount_1: number = deltaY * decimal
+    const sqrtp_low: number = price_to_sqrtp(pl)
+    const sqrtp_cur: number = price_to_sqrtp(p)
+    const sqrtp_upp: number = price_to_sqrtp(pu)
+    const liq0 = liquidity0(amount_0, sqrtp_cur, sqrtp_upp)
+    const liq1 = liquidity1(amount_1, sqrtp_cur, sqrtp_low)
     // let liq = JSBI.BigInt(parseInt(Math.min(liq0, liq1).toString()))
-    let liq = Math.min(liq0, liq1)
+    const liq = Math.min(liq0, liq1)
     return liq
   }
 
@@ -661,71 +645,66 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     volume24h: number,
     feeTierPercentage: number
   ): number => {
-
-    const liquidityPercentage: number = liquidityDelta / (liquidityGross.toNumber() + liquidityDelta) //0.01 // 
+    const liquidityPercentage: number = liquidityDelta / (liquidityGross.toNumber() + liquidityDelta) //0.01 //
     return feeTierPercentage * volume24h * liquidityPercentage
   }
 
-  const feeAprEstimation = (
-    position: Position,
-    liquidityGross: BN,
-    volume24h: number
-    ): any => {
+  const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: number): any => {
+    const p: number = position.currentPrice
+    const pl: number = position.lower
+    const pu: number = position.upper
+    const { deltaX, deltaY } = getTokenAmountsFromDepositAmounts(
+      p,
+      pl,
+      pu,
+      position.token0PriceUSD,
+      position.token1PriceUSD,
+      position.amount
+    )
+    const liquidityDelta: number = calcLiquidityX96(
+      p,
+      pl,
+      pu,
+      deltaX,
+      deltaY,
+      position.token0Decimals,
+      position.token1Decimals
+    )
 
-      const p: number = position.currentPrice
-      const pl: number = position.lower
-      const pu: number = position.upper
-      const { deltaX, deltaY } = getTokenAmountsFromDepositAmounts(
-        p,
-        pl,
-        pu,
-        position.token0PriceUSD,
-        position.token1PriceUSD,
-        position.amount
-      )
-      const liquidityDelta: number = calcLiquidityX96(p, pl, pu, deltaX, deltaY, position.token0Decimals, position.token1Decimals)
+    const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
-      const feeTierPercentage: number = Number(position.fee) / 10000 / 100
+    let liqGross = liquidityGross
+    if (liquidityGross.eq(new BN(0))) {
+      liqGross = new BN(liquidityDelta * 100)
+    }
 
-      let liqGross = liquidityGross
-      if (liquidityGross.eq(new BN(0))) {
-        liqGross = new BN(liquidityDelta * 100)
-      }
-        
+    const estimatedFee: number =
+      p >= pl && p <= pu ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
 
-      const estimatedFee: number = (p >= pl && p <= pu) ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
-
-      return {
-        estimatedFee,
-        token0: { amount: deltaX, priceUSD: deltaX * position.token0PriceUSD },
-        token1: { amount: deltaY, priceUSD: deltaY * position.token1PriceUSD }
-      }
+    return {
+      estimatedFee,
+      token0: { amount: deltaX, priceUSD: deltaX * position.token0PriceUSD },
+      token1: { amount: deltaY, priceUSD: deltaY * position.token1PriceUSD },
+    }
   }
 
   const estimateAPR = (
-    position: Position, 
+    position: Position,
     poolTicks: any[],
-    liquidityGross: BN, 
+    liquidityGross: BN,
     volume24h: number,
     token0: string | undefined,
     token1: string | undefined
   ): any => {
-
     // if (poolTicks.length === 0) return
     // console.log("POSITION", position)
 
-      const est_result = feeAprEstimation(
-        position,
-        liquidityGross,
-        volume24h
-      )
+    const est_result = feeAprEstimation(position, liquidityGross, volume24h)
 
-      const fee_est = est_result.estimatedFee
-      const apy = (fee_est * 365 / position.amount) * 100
-      const dailyIncome = apy / 365
-      return { apy, dailyIncome }
-    
-  
+    const fee_est = est_result.estimatedFee
+    const apy = ((fee_est * 365) / position.amount) * 100
+    const dailyIncome = apy / 365
+    return { apy, dailyIncome }
   }
 
   const [estimatedAPR, setEstimatedAPR] = useState<number>(0)
@@ -734,13 +713,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     const fetchData = async () => {
       if (token0 && token1 && pool && tickSpacing) {
         // console.log("POOOOOL", pool)
-        const amount: number = 1000
-        const base: number = 1.0001
+        const amount = 1000
+        const base = 1.0001
         if (token0?.wrapped.address && token1?.wrapped.address) {
-
           const token0Res = await getDecimalAndUsdValueData(chainId, token0?.wrapped.address)
           const token1Res = await getDecimalAndUsdValueData(chainId, token1?.wrapped.address)
-          
+
           const token0PriceUSD: number = token0Res.lastPriceUSD
           const token1PriceUSD: number = token1Res.lastPriceUSD
 
@@ -755,7 +733,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           const lowerPrice = price * 0.8
           const upperPrice = price * 1.2
 
-
           const decimalDiff = token0Decimals - token1Decimals
           // const tickLower_f = Math.log(lowerPrice / 10 ** decimalDiff) / Math.log(base)
           // const tickUpper_f = Math.log(upperPrice / 10 ** decimalDiff) / Math.log(base)
@@ -765,61 +742,91 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           // const tickLower = nearestUsableTick(parseInt(tickLower_f), tickSpacing)
           // const tickUpper = nearestUsableTick(parseInt(tickUpper_f), tickSpacing)
 
-          const lowerTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
-          const upperTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
+          const lowerTick = tryParseLmtTick(
+            token0.wrapped,
+            token1.wrapped,
+            pool.fee,
+            lowerPrice.toString(),
+            tickSpacing
+          )
+          const upperTick = tryParseLmtTick(
+            token0.wrapped,
+            token1.wrapped,
+            pool.fee,
+            upperPrice.toString(),
+            tickSpacing
+          )
           // console.log("LLLLL TICKLOWER TICKUPPER", tickLower, tickUpper)
           // console.log("LOWERTICK1 UPPERTICK1", lowerTick, upperTick)
           // console.log(`PRICE FOR ${token0.symbol} / ${token1.symbol} IS ${price}`)//, AND PRICE2 IS ${price2}`)
           if (lowerTick && upperTick) {
             const position: Position = {
               currentPrice: price,
-              token0PriceUSD: token0PriceUSD,
-              token1PriceUSD: token1PriceUSD,
-              token0Decimals: token0Decimals,
-              token1Decimals: token1Decimals,
+              token0PriceUSD,
+              token1PriceUSD,
+              token0Decimals,
+              token1Decimals,
               lower: lowerPrice,
               upper: upperPrice,
-              amount: amount,
-              fee: parseInt(pool.fee.toString())
+              amount,
+              fee: parseInt(pool.fee.toString()),
             }
             // console.log("---------------------------------")
             // console.log("POSITION BEFORE ESTIMATION0, position")
-  
+
             const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
             if (v3CoreFactoryAddress && lowerTick && upperTick) {
               const poolAddress = computePoolAddress({
-                factoryAddress: v3CoreFactoryAddress, 
-                tokenA: token0.wrapped, 
-                tokenB: token1.wrapped, 
-                fee: pool.fee
+                factoryAddress: v3CoreFactoryAddress,
+                tokenA: token0.wrapped,
+                tokenB: token1.wrapped,
+                fee: pool.fee,
               })
               // const res = await _getPoolPositionsByPage(poolAddress, 0)
               // console.log("GET POOL POSITION", res)
-              const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(pool.fee, lowerTick, upperTick, poolAddress, token0.wrapped, token1.wrapped)
+              const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
+                pool.fee,
+                lowerTick,
+                upperTick,
+                poolAddress,
+                token0.wrapped,
+                token1.wrapped
+              )
               try {
-                const { apy, dailyIncome } = estimateAPR(position, poolTicks, liquidityGross, volume24h, token0.symbol, token1.symbol)
+                const { apy, dailyIncome } = estimateAPR(
+                  position,
+                  poolTicks,
+                  liquidityGross,
+                  volume24h,
+                  token0.symbol,
+                  token1.symbol
+                )
                 setEstimatedAPR(apy)
-            
               } catch (err) {
-                console.error(err, "POSITION" + position, "POOLTICKS" + poolTicks, "LIQUIDITY GROSS" + liquidityGross, "volume" + volume24h, token0.symbol, token1.symbol, "POOLADDRESS" + poolAddress)
-              }  
+                console.error(
+                  err,
+                  'POSITION' + position,
+                  'POOLTICKS' + poolTicks,
+                  'LIQUIDITY GROSS' + liquidityGross,
+                  'volume' + volume24h,
+                  token0.symbol,
+                  token1.symbol,
+                  'POOLADDRESS' + poolAddress
+                )
+              }
             }
           }
-          
-          
-
-
 
           // const upperTick1 = tryParseLmtTick(token)
 
           // const decimalDiff = token0Res.decimals - token1Res.decimals
 
           // let sqrtRatioX96 = JSBI.BigInt(pool?.sqrtRatioX96 || 0);
-          // let price = (sqrtRatioX96 ** 2)/2**192* (10**(token1Res.decimals*2)); 
+          // let price = (sqrtRatioX96 ** 2)/2**192* (10**(token1Res.decimals*2));
           // let price = JSBI.toNumber(JSBI.divide(JSBI.multiply(JSBI.exponentiate(sqrtRatioX96, JSBI.BigInt(2)), JSBI.BigInt(10**(token1Res.decimals*2))), JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(192))));
           // let price = JSBI.toNumber(JSBI.divide(JSBI.multiply(JSBI.exponentiate(sqrtRatioX96, JSBI.BigInt(2)), JSBI.BigInt(10**((token1Res.decimals || 0) * 2))), JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(192))));
-          
-          // let lower = (price > 0) ? price * 0.8 : 99999; // set the lower 
+
+          // let lower = (price > 0) ? price * 0.8 : 99999; // set the lower
           // let upper = (price > 0) ? price * 1.2 : -99999; // set the upper
           // const position = {
           //   entryPrice: price,
@@ -828,7 +835,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           //   amount
           // }
 
-          
           // if (TickMath.MIN_TICK > Math.log(lower/(10**decimalDiff)))
           //   console.log("LOWER !!!", TickMath.MIN_TICK, Math.log(lower/(10**decimalDiff)), Math.log(upper/(10**decimalDiff)))
           // if (TickMath.MAX_TICK < Math.log(upper/(10**decimalDiff)))
@@ -837,21 +843,18 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           // let tickLower_f = Math.log(lower/(10**decimalDiff)) / Math.log(base)
           // let tickUpper_f = Math.log(upper/(10**decimalDiff)) / Math.log(base)
 
-
-
           // console.log("TICKLOWER_F TICKUPPER_F TICKCURRENT", tickLower_f, tickUpper_f, pool.tickCurrent)
           // let tickLower = nearestUsableTick(Math.round(tickLower_f), tickSpacing)
           // let tickUpper = nearestUsableTick(Math.round(tickUpper_f), tickSpacing)
 
           // console.log("TICKLOWERFFF, TICKUPPERFFF, TICKSPACING", tickLower_f, tickUpper_f, tickSpacing)
           // console.log("TICKLOWER, TICKUPPER", tickLower, tickUpper)
-            // console.log("MINTICK", TickMath.MIN_TICK)
-            // console.log("MAXTICK", TickMath.MAX_TICK)
+          // console.log("MINTICK", TickMath.MIN_TICK)
+          // console.log("MAXTICK", TickMath.MAX_TICK)
         }
       }
     }
     fetchData()
-    
   }, [token0, token1, pool, tickSpacing])
 
   const filterString = useAtomValue(filterStringAtom)
@@ -911,12 +914,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           <>
-            <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>{apr !== undefined ? `${(apr + estimatedAPR)?.toPrecision(4)} %` : '-'}</ClickableRate>
+            <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
+              {apr !== undefined ? `${(apr + estimatedAPR)?.toPrecision(4)} %` : '-'}
+            </ClickableRate>
             {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span> */}
           </>
         }
         UtilRate={
-          <ClickableRate rate={utilTotal}>{utilTotal !== undefined ? `${utilTotal?.toFixed(4)} %` : '-'}</ClickableRate>
+          <ClickableRate rate={utilTotal ? utilTotal : 0}>
+            {utilTotal !== undefined ? `${utilTotal?.toFixed(4)} %` : '-'}
+          </ClickableRate>
         }
         first={tokenListIndex === 0}
         last={tokenListIndex === tokenListLength - 1}

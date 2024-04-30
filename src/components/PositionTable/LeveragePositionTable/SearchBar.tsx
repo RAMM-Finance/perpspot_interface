@@ -14,7 +14,7 @@ const ICON_SIZE = '20px'
 
 const SearchBarContainer = styled.div`
   display: flex;
-  width: fit-content;
+  width: 300px;
   /* margin: 0.25rem; */
 `
 const SearchInput = styled.input`
@@ -26,6 +26,7 @@ const SearchInput = styled.input`
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 0 0 0 1px;
   height: 100%;
+  width: 100%;
   font-size: 14px;
   padding-left: 40px;
   color: ${({ theme }) => theme.textSecondary};

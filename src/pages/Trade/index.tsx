@@ -26,6 +26,7 @@ import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
+import { BREAKPOINTS } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
@@ -34,7 +35,6 @@ import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
 import SwapTabContent from './swapModal'
 import TradeTabContent from './tradeModal'
-import { BREAKPOINTS } from 'theme'
 
 export const StyledNumericalInput = styled(NumericalInput)`
   width: 45px;

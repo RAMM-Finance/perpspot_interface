@@ -7,13 +7,14 @@ import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useAtomValue, useResetAtom } from 'jotai/utils'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useAppPoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
 import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
-import { filterStringAtom } from './state'
-import { HeaderRow, LoadedRow, LoadingRow } from './TokenRow'
+import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
+import { getPoolId, HeaderRow, LoadedRow, LoadingRow, positionEntryPrice } from './TokenRow'
 
 const GridContainer = styled.div`
   display: flex;
@@ -74,39 +75,6 @@ function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
   )
 }
 
-// function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
-//   const sortMethod = useAtomValue(sortMethodAtom)
-//   const sortAscending = useAtomValue(sortAscendingAtom)
-
-//   return useMemo(() => {
-//     if (!positions) return undefined
-//     let returnedPositions = positions
-//     switch (sortMethod) {
-//       case PositionSortMethod.REPAYTIME:
-//         returnedPositions = positions.sort((a, b) => b.repayTime - a.repayTime)
-//         break
-//       case PositionSortMethod.REMAINING:
-//         returnedPositions = positions.sort((a, b) => {
-//           const now = moment()
-//           const timeLeftB = moment.duration(moment.unix(Number(b.repayTime)).add(1, 'days').diff(now))
-
-//           const premiumB =
-//             b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber() < 0
-//               ? 0
-//               : b.premiumLeft.times(timeLeftB.asSeconds() / 86400).toNumber()
-
-//           const timeLeftA = moment.duration(moment.unix(Number(a.repayTime)).add(1, 'days').diff(now))
-//           const premiumA =
-//             a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber() < 0
-//               ? 0
-//               : a.premiumLeft.times(timeLeftA.asSeconds() / 86400).toNumber()
-//           return premiumB - premiumA
-//         })
-//     }
-//     return sortAscending ? returnedPositions : returnedPositions.reverse()
-//   }, [positions, sortMethod, sortAscending])
-// }
-
 function findCurrency(address: string | undefined, tokens: { [address: string]: Token } | undefined) {
   if (!address || !tokens) return undefined
   return tokens[address]
@@ -142,12 +110,83 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
   }, [positions, lowercaseFilterString, tokens])
 }
 
-function useSelectPositions(positions?: MarginPositionDetails[]) {
-  // const sortedPositions = useSortedPositions(positions)
+function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
+  const sortMethod = useAtomValue(sortMethodAtom)
+  const sortAscending = useAtomValue(sortAscendingAtom)
+  const poolPriceData = useAppPoolOHLC()
+  const { chainId } = useWeb3React()
+  return useMemo(() => {
+    if (!positions || !chainId) return undefined
+    if (sortMethod === PositionSortMethod.VALUE) {
+      if (sortAscending) {
+        return positions.sort((a, b) => b.totalPosition.toNumber() - a.totalPosition.toNumber())
+      } else {
+        return positions.sort((a, b) => a.totalPosition.toNumber() - b.totalPosition.toNumber())
+      }
+    } else if (sortMethod === PositionSortMethod.COLLATERAL) {
+      if (sortAscending) {
+        return positions.sort((a, b) => b.totalDebtInput.toNumber() - a.totalDebtInput.toNumber())
+      } else {
+        return positions.sort((a, b) => a.totalDebtInput.toNumber() - b.totalDebtInput.toNumber())
+      }
+    } else if (sortMethod === PositionSortMethod.PNL) {
+      if (sortAscending) {
+        return positions.sort((a, b) => {
+          const aEntry = positionEntryPrice(a)
+          const bEntry = positionEntryPrice(b)
+          const poolPriceDataA = poolPriceData[chainId][getPoolId(a.poolKey.token0, a.poolKey.token1, a.poolKey.fee)]
+          if (!poolPriceDataA) return 0
+          const { priceNow: aPriceNow, token0IsBase: aToken0IsBase } = poolPriceDataA
+          const poolPriceDataB = poolPriceData[chainId][getPoolId(b.poolKey.token0, b.poolKey.token1, b.poolKey.fee)]
+          if (!poolPriceDataB) return 0
+          const { priceNow: bPriceNow, token0IsBase: bToken0IsBase } = poolPriceDataB
 
+          const aToken0Price = aToken0IsBase ? aPriceNow : 1 / aPriceNow
+          const bToken0Price = bToken0IsBase ? bPriceNow : 1 / bPriceNow
+          const aPrice = a.isToken0 ? aToken0Price : 1 / aToken0Price
+          const bPrice = b.isToken0 ? bToken0Price : 1 / bToken0Price
+
+          const aPnl = a.totalPosition.toNumber() * (aPrice - aEntry.toNumber())
+          const bPnl = b.totalPosition.toNumber() * (bPrice - bEntry.toNumber())
+
+          return bPnl - aPnl
+        })
+      } else {
+        return positions.sort((a, b) => {
+          const aEntry = positionEntryPrice(a)
+          const bEntry = positionEntryPrice(b)
+          const poolPriceDataA = poolPriceData[chainId][getPoolId(a.poolKey.token0, a.poolKey.token1, a.poolKey.fee)]
+          if (!poolPriceDataA) return 0
+          const { priceNow: aPriceNow, token0IsBase: aToken0IsBase } = poolPriceDataA
+          const poolPriceDataB = poolPriceData[chainId][getPoolId(b.poolKey.token0, b.poolKey.token1, b.poolKey.fee)]
+          if (!poolPriceDataB) return 0
+          const { priceNow: bPriceNow, token0IsBase: bToken0IsBase } = poolPriceDataB
+          const aToken0Price = aToken0IsBase ? aPriceNow : 1 / aPriceNow
+          const bToken0Price = bToken0IsBase ? bPriceNow : 1 / bPriceNow
+          const aPrice = a.isToken0 ? aToken0Price : 1 / aToken0Price
+          const bPrice = b.isToken0 ? bToken0Price : 1 / bToken0Price
+
+          const aPnl = a.totalPosition.toNumber() * (aPrice - aEntry.toNumber())
+          const bPnl = b.totalPosition.toNumber() * (bPrice - bEntry.toNumber())
+
+          return aPnl - bPnl
+        })
+      }
+    } else if (sortMethod === PositionSortMethod.RATE) {
+      if (sortAscending) {
+        return positions.sort((a, b) => b.apr.toNumber() - a.apr.toNumber())
+      } else {
+        return positions.sort((a, b) => a.apr.toNumber() - b.apr.toNumber())
+      }
+    }
+    return positions
+  }, [sortMethod, sortAscending, positions, chainId, poolPriceData])
+}
+
+function useSelectPositions(positions?: MarginPositionDetails[]) {
   const filteredPositions = useFilteredPositions(positions)
-  return { filteredPositions }
-  // return { filteredPositions: positions }
+  const sortedPositions = useSortedPositions(filteredPositions)
+  return { sortedPositions }
 }
 
 export default function LeveragePositionsTable({
@@ -162,7 +201,7 @@ export default function LeveragePositionsTable({
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
   // console.log('----posiitons---------', positions, loading)
-  const { filteredPositions } = useSelectPositions(positions)
+  const { sortedPositions } = useSelectPositions(positions)
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
@@ -175,14 +214,14 @@ export default function LeveragePositionsTable({
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   }
 
-  if (!positions || !filteredPositions || filteredPositions?.length == 0) {
+  if (!positions || !sortedPositions || sortedPositions?.length == 0) {
     return <NoTokensState message={<Trans>No positions found</Trans>} />
   } else {
     return (
       <GridContainer>
         <HeaderRow />
         <TokenDataContainer>
-          {filteredPositions?.map((position) => (
+          {sortedPositions?.map((position) => (
             <LoadedRow
               key={
                 position.poolKey.token0 +

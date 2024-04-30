@@ -280,7 +280,7 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
     </Trans>
   ),
   [PositionSortMethod.COLLATERAL]: <Trans>Initial Margin Deposited. Your PnL is denominated in your margin.</Trans>,
-  [PositionSortMethod.REPAYTIME]: (
+  [PositionSortMethod.RATE]: (
     <Trans>
       Current borrow rate per hour, continuously paid by your deposit. This is variable, and will change based on the
       underlying asset's price and utilization rates.{' '}
@@ -297,11 +297,11 @@ const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
 }
 
 const SortingEnabled = {
-  [PositionSortMethod.VALUE]: false,
-  [PositionSortMethod.COLLATERAL]: false,
-  [PositionSortMethod.REPAYTIME]: true,
+  [PositionSortMethod.VALUE]: true,
+  [PositionSortMethod.COLLATERAL]: true,
+  [PositionSortMethod.RATE]: true,
   [PositionSortMethod.ENTRYPRICE]: false,
-  [PositionSortMethod.PNL]: false,
+  [PositionSortMethod.PNL]: true,
   [PositionSortMethod.REMAINING]: true,
   [PositionSortMethod.ACTIONS]: false,
 }
@@ -349,7 +349,7 @@ function PositionRow({
   positionInfo,
   value,
   collateral,
-  repaymentTime,
+  rate,
   PnL,
   entryPrice,
   positionKey,
@@ -363,7 +363,7 @@ function PositionRow({
   value: ReactNode
   actions: ReactNode
   collateral: ReactNode
-  repaymentTime: ReactNode
+  rate: ReactNode
   positionInfo: ReactNode
   positionKey?: TraderPositionKey
   // recentPremium: ReactNode
@@ -409,8 +409,8 @@ function PositionRow({
       <PriceCell data-testid="collateral-cell" sortable={header}>
         {collateral}
       </PriceCell>
-      <PriceCell data-testid="repaymentTime-cell" sortable={header}>
-        {repaymentTime}
+      <PriceCell data-testid="rate-cell" sortable={header}>
+        {rate}
       </PriceCell>
       <PriceCell data-testid="premium-cell" sortable={header}>
         <EditCell
@@ -464,7 +464,7 @@ export function HeaderRow() {
       PnL={<HeaderCell category={PositionSortMethod.PNL} />}
       entryPrice={<HeaderCell category={PositionSortMethod.ENTRYPRICE} />}
       remainingPremium={<HeaderCell category={PositionSortMethod.REMAINING} />}
-      repaymentTime={<HeaderCell category={PositionSortMethod.REPAYTIME} />}
+      rate={<HeaderCell category={PositionSortMethod.RATE} />}
       actions={<HeaderCell category={PositionSortMethod.ACTIONS} />}
     />
   )
@@ -490,7 +490,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
       }
       value={<MediumLoadingBubble />}
       collateral={<LoadingBubble />}
-      repaymentTime={<LoadingBubble />}
+      rate={<LoadingBubble />}
       PnL={<LoadingBubble />}
       entryPrice={<LoadingBubble />}
       remainingPremium={<LoadingBubble />}
@@ -517,7 +517,7 @@ export function getPoolId(tokenA: string, tokenB: string, fee: number) {
 }
 
 // input token per 1 output token.
-function positionEntryPrice(position: MarginPositionDetails): BN {
+export function positionEntryPrice(position: MarginPositionDetails): BN {
   const { marginInPosToken, totalDebtInput, totalPosition, margin } = position
 
   if (marginInPosToken) {
@@ -740,7 +740,7 @@ export const LoadedRow = memo(
                 </FlexStartRow>
               </MouseoverTooltip>
             }
-            repaymentTime={
+            rate={
               <MouseoverTooltip
                 text={
                   <Trans>

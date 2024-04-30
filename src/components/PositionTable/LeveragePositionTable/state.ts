@@ -5,17 +5,15 @@ import { useCallback } from 'react'
 export enum PositionSortMethod {
   VALUE = 'Net Value',
   COLLATERAL = 'Margin',
-  // RECENT_PREMIUM = 'Recent Premium',
-  REPAYTIME = 'Hourly Rate',
+  RATE = 'Hourly Rate',
   PNL = 'PnL',
   ENTRYPRICE = 'Entry/Current Price',
   REMAINING = 'Int. Left',
   ACTIONS = '',
-  // UNUSED_PREMIUM = 'Unused Premium'
 }
 
 export const filterStringAtom = atomWithReset<string>('')
-export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.REPAYTIME)
+export const sortMethodAtom = atom<PositionSortMethod>(PositionSortMethod.VALUE)
 export const sortAscendingAtom = atom<boolean>(false)
 
 /* keep track of sort category for token table */

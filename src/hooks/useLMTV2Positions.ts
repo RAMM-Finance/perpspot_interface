@@ -1,4 +1,3 @@
-import { Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -8,11 +7,9 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
 import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
-import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
-import { roundToBin } from 'utils/roundToBin'
 
 import { useDataProviderContract } from './useContract'
 import { useContractCallV2 } from './useContractCall'
@@ -87,7 +84,6 @@ export function useInstantaeneousRate(
   trader: string | undefined,
   positionIsToken0: boolean | undefined
 ): { loading: boolean; error: boolean; result: string | undefined } {
-  // console.log('contractcall2')
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !trader || positionIsToken0 == undefined) return []
     const params = [
@@ -131,95 +127,12 @@ export function useInstantaeneousRate(
   }, [callStates])
 }
 
-// BinData[] |
-export function useBulkBinData(pool: Pool | undefined): {
-  loading: boolean
-  error: DecodedError | undefined
-  result: BinData[] | undefined
-} {
-  const { tickDiscretization } = useTickDiscretization(pool?.token0.address, pool?.token1.address, pool?.fee)
-
-  const calldata = useMemo(() => {
-    if (!pool || !tickDiscretization) return undefined
-    const roundedCurrentTick = roundToBin(pool.tickCurrent, tickDiscretization, false)
-    const lookback = pool.fee == 500 ? 3000 : 7000
-    const params = [
-      {
-        token0: pool.token0.address,
-        token1: pool.token1.address,
-        fee: pool.fee,
-      },
-      roundedCurrentTick - lookback,
-      roundedCurrentTick + lookback,
-    ]
-    // console.log('params???', params)
-    return DataProviderSDK.INTERFACE.encodeFunctionData('getBinsDataInBulk', params)
-  }, [pool, tickDiscretization])
-
-  // const result = undefined as any
-  // const loading = true
-  // const error = undefined
-  // const syncing = false
-  const { result, loading, error, syncing } = useContractCallV2(
-    DATA_PROVIDER_ADDRESSES,
-    calldata,
-    ['queryBinData'],
-    false,
-    true,
-    (result) => DataProviderSDK.INTERFACE.decodeFunctionResult('getBinsDataInBulk', result)[0]
-  )
-
-  const token0Decimals = pool?.token0.decimals
-  const token1Decimals = pool?.token1.decimals
-
-  return useMemo(() => {
-    if (!result || result.length == 0 || !token0Decimals || !token1Decimals) {
-      return {
-        result: undefined,
-        loading,
-        error,
-        syncing,
-      }
-    } else {
-      const parsed = result
-      const processed: BinData[] = parsed.map((bin: any) => {
-        return {
-          price: new BN(bin[0].toString()).shiftedBy(-18),
-          token0Liquidity: new BN(bin[1].toString()).shiftedBy(-token0Decimals),
-          token1Liquidity: new BN(bin[2].toString()).shiftedBy(-token1Decimals),
-          token0Borrowed: new BN(bin[3].toString()).shiftedBy(-token0Decimals),
-          token1Borrowed: new BN(bin[4].toString()).shiftedBy(-token1Decimals),
-        }
-      })
-      return {
-        result: processed,
-        loading,
-        error,
-        syncing,
-      }
-    }
-  }, [result, loading, error, syncing, token0Decimals, token1Decimals])
-}
-
 // fetches all leveraged LMT positions for a given account UseLmtMarginPositionsResults
 export function useLeveragedLMTPositions(account: string | undefined): UseLmtMarginPositionsResults {
   const calldata = useMemo(() => {
     if (!account) return undefined
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
-  // const dataProvider = useDataProviderContract()
-  // useEffect(() => {
-  //   if (dataProvider && account) {
-  //     const call = async () => {
-  //       try {
-  //         const positions = await dataProvider.getActiveMarginPositions(account)
-  //       } catch (err) {
-  //         console.log('zeke:err', err)
-  //       }
-  //     }
-  //     call()
-  //   }
-  // }, [dataProvider, account])
 
   const { result, loading, error, syncing } = useContractCallV2(
     DATA_PROVIDER_ADDRESSES,
@@ -228,81 +141,112 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     true
   )
 
+  const dataProvider = useDataProviderContract()
+
+  const rateCalldatas: string[] = useMemo(() => {
+    if (!result || !account) return []
+    const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+    return parsed.map((position: any) => {
+      return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', [
+        {
+          token0: position.poolKey.token0,
+          token1: position.poolKey.token1,
+          fee: position.poolKey.fee,
+        },
+        account,
+        position.isToken0,
+      ])
+    })
+  }, [result, account])
+
+  const rateData = useSingleContractWithCallData(dataProvider, rateCalldatas, {
+    gasRequired: 10_000_000,
+  })
+
   return useMemo(() => {
-    if (!result) {
+    if (!result || !rateData || rateData.length === 0) {
       return {
         loading,
         syncing,
         error,
         positions: undefined,
       }
-    } else {
-      try {
-        const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
-        const positions: MarginPositionDetails[] = parsed.map((position: any) => {
-          const inputDecimals = position.isToken0
-            ? Number(position.token1Decimals.toString())
-            : Number(position.token0Decimals.toString())
-          const outputDecimals = position.isToken0
-            ? Number(position.token0Decimals.toString())
-            : Number(position.token1Decimals.toString())
+    }
 
-          return {
-            poolKey: {
-              token0: position.poolKey.token0,
-              token1: position.poolKey.token1,
-              fee: position.poolKey.fee,
-            },
-            isToken0: position.isToken0,
-            totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
-            totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
-            openTime: position.openTime,
-            repayTime: position.repayTime,
-            premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
-            totalPosition: convertToBN(position.totalPosition, outputDecimals),
-            margin: convertToBN(position.margin, position.marginInPosToken ? outputDecimals : inputDecimals),
-            premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
-            isBorrow: false,
-            premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
-              convertToBN(position.premiumOwed, inputDecimals)
-            ),
-            token0Decimals: Number(position.token0Decimals.toString()),
-            token1Decimals: Number(position.token1Decimals.toString()),
-            trader: account,
-            maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
-            borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
-              return {
-                tick: info.tick,
-                liquidity: new BN(info.liquidity.toString()),
-                premium: convertToBN(info.premium, inputDecimals),
-                feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
-                feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
-                lastGrowth: new BN(info.lastGrowth.toString()),
-              }
-            }),
-            marginInPosToken: position.marginInPosToken,
-          }
-        })
-
-        // Return the processed positions
-        return {
-          loading,
-          error,
-          positions, // assuming positions is processed from parsed data
-          syncing,
-        }
-      } catch (decodeError) {
-        // Handle the error from decoding
-        console.error('Error decoding result:', decodeError)
-        return {
-          loading,
-          syncing,
-          error: decodeError,
-          positions: undefined,
-        }
+    if (rateData.some((rate) => rate.error) || rateData.some((rate) => !rate.result)) {
+      return {
+        loading,
+        syncing,
+        error,
+        positions: undefined,
       }
     }
-  }, [result, loading, error, account, syncing])
+    try {
+      const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+      const positions: MarginPositionDetails[] = parsed.map((position: any, i: number) => {
+        const inputDecimals = position.isToken0
+          ? Number(position.token1Decimals.toString())
+          : Number(position.token0Decimals.toString())
+        const outputDecimals = position.isToken0
+          ? Number(position.token0Decimals.toString())
+          : Number(position.token1Decimals.toString())
+        const apr = rateData[i].result
+        return {
+          poolKey: {
+            token0: position.poolKey.token0,
+            token1: position.poolKey.token1,
+            fee: position.poolKey.fee,
+          },
+          isToken0: position.isToken0,
+          totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
+          totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
+          openTime: position.openTime,
+          repayTime: position.repayTime,
+          premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
+          totalPosition: convertToBN(position.totalPosition, outputDecimals),
+          margin: convertToBN(position.margin, position.marginInPosToken ? outputDecimals : inputDecimals),
+          premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
+          isBorrow: false,
+          premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
+            convertToBN(position.premiumOwed, inputDecimals)
+          ),
+          token0Decimals: Number(position.token0Decimals.toString()),
+          token1Decimals: Number(position.token1Decimals.toString()),
+          trader: account,
+          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
+          borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
+            return {
+              tick: info.tick,
+              liquidity: new BN(info.liquidity.toString()),
+              premium: convertToBN(info.premium, inputDecimals),
+              feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
+              feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
+              lastGrowth: new BN(info.lastGrowth.toString()),
+            }
+          }),
+          marginInPosToken: position.marginInPosToken,
+          apr: apr?.['0'] ? new BN(apr?.['0'].toString()).shiftedBy(-18) : new BN(0),
+        }
+      })
+
+      // Return the processed positions
+      return {
+        loading,
+        error,
+        positions, // assuming positions is processed from parsed data
+        syncing,
+      }
+    } catch (decodeError) {
+      // Handle the error from decoding
+      console.error('Error decoding result:', decodeError)
+      return {
+        loading,
+        syncing,
+        error: decodeError,
+        positions: undefined,
+      }
+    }
+  }, [result, loading, error, account, syncing, rateData])
 }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
@@ -396,6 +340,14 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
     ]
   }, [key, chainId])
 
+  const rate = useInstantaeneousRate(
+    key?.poolKey.token0,
+    key?.poolKey.token1,
+    key?.poolKey.fee,
+    key?.trader,
+    key?.isToken0
+  )
+
   const dataProvider = useDataProviderContract()
   const callStates = useSingleContractWithCallData(dataProvider, calldata, {
     gasRequired: 10_000_000,
@@ -410,7 +362,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
         syncing: false,
       }
     }
-    if (!key || !callStates[0] || !callStates[0].result) {
+    if (!key || !callStates[0] || !callStates[0].result || !rate.result) {
       return {
         loading: callStates[0]?.loading ?? false,
         error: callStates[0]?.error,
@@ -462,10 +414,11 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
             }
           }),
           marginInPosToken: position.marginInPosToken,
+          apr: new BN(rate.result.toString()).shiftedBy(-18),
         },
       }
     }
-  }, [callStates, key])
+  }, [callStates, key, rate])
 }
 
 export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): {
@@ -557,9 +510,7 @@ export interface BinData {
   token0Borrowed: BN
   token1Borrowed: BN
 }
-export interface BinDatas {
-  data: BinData[] | undefined
-}
+
 interface UseLmtMarginPositionsResults {
   loading: boolean
   error: any

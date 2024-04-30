@@ -85,7 +85,6 @@ export function useMaxLeverage(
     marginInPosToken,
   ])
 
-  // const { result, loading, error } = useContractCall(DATA_PROVIDER_ADDRESSES, calldata, false, 0)
   const dataProvider = useDataProviderContract()
   const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
     gasRequired: 10_000_000,
