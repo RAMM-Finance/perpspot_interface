@@ -31,11 +31,7 @@ const LabelText = styled.div<{ color: string }>`
   justify-content: flex-end;
 `
 
-export default function LockStatusBadge({
-  isLocked,
-}: {
-  isLocked: boolean | undefined
-}) {
+export default function LockStatusBadge({ isLocked }: { isLocked: boolean | undefined }) {
   const theme = useTheme()
   return (
     <BadgeWrapper>

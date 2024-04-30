@@ -1,20 +1,20 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
+import FAQBox, { FaqWrapper } from 'components/FAQ'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useBRP } from 'hooks/useContract'
+import useBlockNumber from 'lib/hooks/useBlockNumber'
 // import { getSortDropdownOptions } from 'nft/components/collection/CollectionNfts'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowUpRight } from 'react-feather'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
-import BoxesContainr, { TBRPData } from './BoxesContainr'
-import InfoDescriptionSection from './InfoDescription'
+import BoxesContainr, { TBRPData } from '../../components/NewItems/BoxesContainr'
+import InfoDescriptionSection from '../../components/NewItems/InfoDescription'
 
 // const SortDropdownContainer = styled.div<{ isFiltersExpanded: boolean }>`
 //   width: max-content;
@@ -26,27 +26,6 @@ import InfoDescriptionSection from './InfoDescription'
 //     display: none;
 //   }
 // `
-
-const FaqWrapper = styled.div`
-  margin: 50px auto;
-  width: 48%;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-`
-
-const FaqElement = styled.div`
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  :hover {
-    cursor: pointer;
-    opacity: 75%;
-  }
-`
 
 // const SweepButton = styled.div<{ toggled: boolean; disabled?: boolean }>`
 //   display: flex;
@@ -89,11 +68,6 @@ const CollectionContainer = styled(Column)`
   align-self: start;
   will-change: width;
 `
-
-// const CollectionAssetsContainer = styled.div<{ hideUnderneath: boolean }>`
-//   width: 100%;
-//   position: ${({ hideUnderneath }) => (hideUnderneath ? 'fixed' : 'static')};
-// `
 
 const CollectionDisplaySection = styled(Row)`
   width: 100%;
@@ -151,48 +125,20 @@ const CollectionDescriptionSection = styled(Column)`
   }
 `
 
-// const InfoImg = styled.img`
-//   /* position: absolute; */
-//   left: 45px;
-//   top: -110px;
-//   box-shadow: ${({ theme }) => theme.roundedImageShadow};
-//   height: 143px;
-//   vertical-align: top;
-//   width: 143px;
-//   border-style: solid;
-//   border-width: 3px;
-//   border-radius: 100%;
-//   border-color: ${({ theme }) => theme.white};
-//   /* background-color: #fff; */
-//   -webkit-tap-highlight-color: transparent;
-//   box-sizing: border-box;
-
-  /* @media (max-width: 639px) {
-    border-width: 2px;
-    height: 100px;
-    top: -32px;
-    width: 100px;
-  } */
-// `
-
-// const FadeInColumn = styled(Column)`
-//   ${portfolioFadeInAnimation}
-// `
-
 const NewItemsListPage = () => {
   const { account } = useWeb3React()
-  const brp = useBRP()
+  const blockNumber = useBlockNumber()
 
+  const brp = useBRP()
   const [brpData, setBRPData] = useState<TBRPData>({
     totalBoxes: 0,
     totalUnlockableBoxes: 0,
     lmtRequiredPerUnlock: '0',
+    totalLMT: '0',
   })
-  const [totalLMT, setTotalLMT] = useState('0')
   const [loading, setLoading] = useState(true)
 
   const [hiddenCards, setHiddenCards] = useState<number[]>([])
-  // const addPopup = useAddPopup()
   const addTransaction = useTransactionAdder()
 
   const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
@@ -219,16 +165,11 @@ const NewItemsListPage = () => {
       if (brp && account) {
         try {
           const response = await unlockBoxCallback()
-          await addTransaction(response, {
+          addTransaction(response, {
             type: TransactionType.UNLOCK_Box,
             inputCurrencyId: '',
             outputCurrencyId: '',
           })
-          // setBRPData((prevData) => ({
-          //   ...prevData,
-          //   totalBoxes: prevData.totalBoxes - 1,
-          //   totalUnlockableBoxes: prevData.totalUnlockableBoxes - 1,
-          // }))
           setHiddenCards((prevState) => [...prevState, index])
           setLoading(false)
         } catch (error) {
@@ -241,10 +182,11 @@ const NewItemsListPage = () => {
   )
 
   useEffect(() => {
-    if (brp && account) {
+    if (brp && account && blockNumber) {
+      if (!brpData) setLoading(true)
+      console.log('blockNumber', blockNumber)
       const call = async () => {
         try {
-          setLoading(true)
           const totalBoxes = await brp.numBoxes(account)
           const totalUnlockableBoxes = await brp.claimableBoxes(account)
           const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
@@ -253,28 +195,35 @@ const NewItemsListPage = () => {
           const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
           const lastRecordedPoints = await brp.lastRecordedPoints(account)
 
-          const totalLMT = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
-          const totalLMTString = totalLMT.toString()
+          const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
+          const totalLMTString = totalLMTPoint.toString()
 
-          setTotalLMT(totalLMTString)
           // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
-          // console.log('total boxes', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
+          // console.log('blockNumber', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
           setBRPData({
             totalBoxes: totalBoxes.toNumber(),
             totalUnlockableBoxes: totalUnlockableBoxes[0]?.toNumber(),
             lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString(),
+            totalLMT: totalLMTString,
           })
           setHiddenCards([])
           // console.log('get Totalboxes', brpData, hiddenCards, totalBoxes)
           setLoading(false)
         } catch (error) {
+          setBRPData({
+            totalBoxes: 0,
+            totalUnlockableBoxes: 0,
+            lmtRequiredPerUnlock: '0',
+            totalLMT: '0',
+          })
+          setHiddenCards([])
           setLoading(false)
           console.log(error, 'get brp data error')
         }
       }
       call()
     }
-  }, [brp, account, handleUnlockBox, setHiddenCards])
+  }, [brp, account, handleUnlockBox, setHiddenCards, blockNumber])
 
   return (
     <CollectionContainer>
@@ -287,7 +236,6 @@ const NewItemsListPage = () => {
           <InfoDescriptionSection
             title="Use and Unlock "
             description="Earn LMT and unlock treasure boxes"
-            stats={totalLMT}
             brpData={brpData}
             loading={loading}
           />
@@ -310,21 +258,7 @@ const NewItemsListPage = () => {
         {/* </InfiniteScroll> */}
       </CollectionDisplaySection>
       <FaqWrapper>
-        <FaqElement>
-          <a
-            href="https://limitless.gitbook.io/limitless/intro/limitless-lp-token-llp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-              Earning with LLP
-            </ThemedText.BodySecondary>
-          </a>
-          <ArrowUpRight size="20" />
-        </FaqElement>{' '}
-        <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-          Read our LLP documentation to better understand how to earn.
-        </ThemedText.BodyPrimary>
+        <FAQBox />
       </FaqWrapper>
     </CollectionContainer>
   )

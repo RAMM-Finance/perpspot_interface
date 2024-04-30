@@ -6,6 +6,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import bluePill from '../../assets/images/bluePill.jpg'
+import { TBRPData } from './BoxesContainr'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -52,9 +53,8 @@ const StatsItem = ({
   )
 }
 
-const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; loading: boolean }) => {
+const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boolean }) => {
   // console.log('brpData', brpData)
-  // console.log('stats', stats)
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
       <StatsItem label="Total boxes" shouldHide={false} loading={loading}>
@@ -64,7 +64,7 @@ const InfoItemStats = ({ stats, brpData, loading }: { stats: any; brpData: any; 
         {brpData?.totalUnlockableBoxes}
       </StatsItem>
       <StatsItem label="Total LMT" shouldHide={false} loading={loading}>
-        {stats}
+        {brpData?.totalLMT}
       </StatsItem>
       <StatsItem label="LMT required per unlock" shouldHide={false} loading={loading}>
         {brpData?.lmtRequiredPerUnlock}
