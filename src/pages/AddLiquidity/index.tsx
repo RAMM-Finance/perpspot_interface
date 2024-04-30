@@ -83,6 +83,8 @@ import {
   StyledInput,
   Wrapper,
 } from './styled'
+import { SupportedChainId } from 'constants/chains'
+import { getDecimalAndUsdValueData, UniswapQueryTokenInfo } from 'hooks/useUSDPrice'
 
 const PriceAndToggleWrapper = styled(RowBetween)`
   flex-wrap: wrap;
@@ -184,10 +186,80 @@ export default function AddLiquidity() {
     [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
 
-  const usdcValues = {
-    [Field.CURRENCY_A]: useStablecoinValue(parsedAmounts[Field.CURRENCY_A]),
-    [Field.CURRENCY_B]: useStablecoinValue(parsedAmounts[Field.CURRENCY_B]),
+  const [currencyAFiatState, setCurrencyAFiatState] = useState<{data: number | undefined, isLoading: boolean}>({data: undefined, isLoading: true})
+  const [currencyBFiatState, setCurrencyBFiatState] = useState<{data: number | undefined, isLoading: boolean}>({data: undefined, isLoading: true})
+
+  let currencyAFiat: { 
+    data: number | undefined
+    isLoading: boolean 
   }
+  let currencyBFiat: { 
+    data: number | undefined
+    isLoading: boolean
+  }
+
+  let usdcValues: {
+    CURRENCY_A: any
+    CURRENCY_B: any
+  }
+
+  let usdcValueCurrencyA: any = null
+  let usdcValueCurrencyB: any = null
+
+    usdcValues = {
+      [Field.CURRENCY_A]: useStablecoinValue(parsedAmounts[Field.CURRENCY_A]),
+      [Field.CURRENCY_B]: useStablecoinValue(parsedAmounts[Field.CURRENCY_B]),
+    }
+    
+    usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
+    usdcValueCurrencyB = usdcValues[Field.CURRENCY_B] 
+
+  useEffect(() => {
+    const fetchData = async (parsedAmountA: any, parsedAmountB: any, formattedAmountA: any, formattedAmountB: any) => {
+      
+      const queryResults: UniswapQueryTokenInfo[] = await Promise.all([
+        getDecimalAndUsdValueData(chainId, parsedAmountA?.currency?.address),
+        getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.address)
+      ])
+      setCurrencyAFiatState({
+        data: queryResults[0] ? parseFloat(queryResults[0].lastPriceUSD) * formattedAmountA : undefined,
+        isLoading: false
+      })
+      setCurrencyBFiatState({
+        data: queryResults[1] ? parseFloat(queryResults[1].lastPriceUSD) * formattedAmountB : undefined,
+        isLoading: false
+      })
+    }
+
+    if (chainId) {
+      if (chainId === SupportedChainId.ARBITRUM_ONE) {
+        const currencyAFiat = {
+          data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
+          isLoading: false,
+        }
+        const currencyBFiat = {
+          data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
+          isLoading: false,
+        }
+        setCurrencyAFiatState(currencyAFiat)
+        setCurrencyBFiatState(currencyBFiat)
+  
+      } else if (chainId === SupportedChainId.BASE) {
+        fetchData(parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B], formattedAmounts[Field.CURRENCY_A], formattedAmounts[Field.CURRENCY_B])
+      } else {
+        const currencyAFiat = {
+          data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
+          isLoading: false,
+        }
+        const currencyBFiat = {
+          data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
+          isLoading: false,
+        }
+        setCurrencyAFiatState(currencyAFiat)
+        setCurrencyBFiatState(currencyBFiat)
+      }
+    }    
+  }, [usdcValueCurrencyA, usdcValueCurrencyB, parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B], formattedAmounts[Field.CURRENCY_A], formattedAmounts[Field.CURRENCY_B], chainId])
 
   // get the max amounts user can add
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
@@ -551,23 +623,6 @@ export default function AddLiquidity() {
       </AutoColumn>
     )
 
-  const usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
-  const usdcValueCurrencyB = usdcValues[Field.CURRENCY_B]
-  const currencyAFiat = useMemo(
-    () => ({
-      data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
-      isLoading: false,
-    }),
-    [usdcValueCurrencyA]
-  )
-  const currencyBFiat = useMemo(
-    () => ({
-      data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
-      isLoading: false,
-    }),
-    [usdcValueCurrencyB]
-  )
-
   const onPoolSwitch = useCallback(() => {
     onFieldAInput('')
     onFieldBInput('')
@@ -583,19 +638,16 @@ export default function AddLiquidity() {
 
   const LmtPerDay: string = useMemo(() => {
     const LmtPerUsdPerDay = 1
-    console.log("CURRENCY A FIAT", currencyAFiat)
-    console.log("CURRENY B FIAT", currencyBFiat)
-    if (!currencyAFiat.isLoading && 
-        !currencyBFiat.isLoading && 
-        currencyAFiat.data !== undefined && 
-        currencyBFiat.data !== undefined) {
-        return ((currencyAFiat.data + currencyBFiat.data) * LmtPerUsdPerDay).toString()
+    
+    if (!currencyAFiatState.isLoading && 
+        !currencyBFiatState.isLoading && 
+        currencyAFiatState.data !== undefined && 
+        currencyBFiatState.data !== undefined) {
+        return ((currencyAFiatState.data + currencyBFiatState.data) * LmtPerUsdPerDay).toString()
       } else {
         return '-'
       }
-  }, [currencyAFiat, currencyBFiat])
-
-  console.log("LMTPERDAY", LmtPerDay)
+  }, [currencyAFiatState, currencyBFiatState])
 
   return (
     <>
@@ -674,7 +726,7 @@ export default function AddLiquidity() {
                       showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
                       currency={currencies[Field.CURRENCY_A] ?? null}
                       id="add-liquidity-input-tokena"
-                      fiatValue={currencyAFiat}
+                      fiatValue={currencyAFiatState}
                       showCommonBases
                       locked={depositADisabled}
                     />
@@ -686,7 +738,7 @@ export default function AddLiquidity() {
                         onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
                       }}
                       showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                      fiatValue={currencyBFiat}
+                      fiatValue={currencyBFiatState}
                       currency={currencies[Field.CURRENCY_B] ?? null}
                       id="add-liquidity-input-tokenb"
                       showCommonBases
@@ -1010,7 +1062,7 @@ export default function AddLiquidity() {
                             showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
                             currency={currencies[Field.CURRENCY_A] ?? null}
                             id="add-liquidity-input-tokena"
-                            fiatValue={currencyAFiat}
+                            fiatValue={currencyAFiatState}
                             showCommonBases
                             locked={depositADisabled}
                           />
@@ -1022,7 +1074,7 @@ export default function AddLiquidity() {
                               onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
                             }}
                             showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                            fiatValue={currencyBFiat}
+                            fiatValue={currencyBFiatState}
                             currency={currencies[Field.CURRENCY_B] ?? null}
                             id="add-liquidity-input-tokenb"
                             showCommonBases

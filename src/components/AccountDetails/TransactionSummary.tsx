@@ -285,7 +285,7 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
         tokenAmount = info.outputCurrencyAmountRaw
       }
       
-      const tPoint = (tokenInfoFromUniswap?.lastPriceUSD * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
+      const tPoint = (parseFloat(tokenInfoFromUniswap?.lastPriceUSD) * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
 
       const q = query(
         collection(firestore, 'swap-points'), 

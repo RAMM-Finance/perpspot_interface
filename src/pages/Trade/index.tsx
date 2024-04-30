@@ -281,7 +281,6 @@ export default function Trade({ className }: { className?: string }) {
   const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
 
   const chartSymbol = useMemo(() => {
-    // console.log("CHART SYMBOL POOLS DATA", pool, poolOHLC, chainId, currentPool)
     if (pool && poolOHLC && chainId && currentPool) {
       if (!poolOHLC) return null
       let poolAddress = computePoolAddress({

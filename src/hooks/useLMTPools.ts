@@ -189,8 +189,8 @@ export function usePoolsData(): {
 
       return {
         pool,
-        amount0: (token0InfoFromUniswap?.lastPriceUSD * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
-        amount1: (token1InfoFromUniswap?.lastPriceUSD * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
+        amount0: (parseFloat(token0InfoFromUniswap?.lastPriceUSD) * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
+        amount1: (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
 

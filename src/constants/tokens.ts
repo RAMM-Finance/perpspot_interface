@@ -64,6 +64,14 @@ export const ARB = new Token(
   'Arbitrum'
 )
 
+export const USDC_BASE = new Token(
+  SupportedChainId.BASE,
+  '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  6,
+  'USDC',
+  'USD//C'
+)
+
 export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } = {
   ...(WETH9 as Record<SupportedChainId, Token>),
   // [SupportedChainId.OPTIMISM]: new Token(

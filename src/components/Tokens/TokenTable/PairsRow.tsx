@@ -741,8 +741,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           const token0Res = await getDecimalAndUsdValueData(chainId, token0?.wrapped.address)
           const token1Res = await getDecimalAndUsdValueData(chainId, token1?.wrapped.address)
           
-          const token0PriceUSD: number = token0Res.lastPriceUSD
-          const token1PriceUSD: number = token1Res.lastPriceUSD
+          const token0PriceUSD: number = parseFloat(token0Res.lastPriceUSD)
+          const token1PriceUSD: number = parseFloat(token1Res.lastPriceUSD)
 
           const token0Decimals: number = token0Res.decimals
           const token1Decimals: number = token1Res.decimals

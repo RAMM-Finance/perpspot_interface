@@ -62,7 +62,15 @@ function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 
-export async function getDecimalAndUsdValueData(chainId: number | undefined, tokenId: string) {
+export interface UniswapQueryTokenInfo {
+  id: string
+  name: string
+  symbol: string
+  decimals: number
+  lastPriceUSD: string
+} 
+
+export async function getDecimalAndUsdValueData(chainId: number | undefined, tokenId: string): Promise<UniswapQueryTokenInfo> {
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network = 'arbitrum-one'
 
@@ -90,7 +98,8 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
     query: TokenDataFromUniswapQuery(tokenId),
   })
 
-  const token = res?.data?.data?.token
+  const token: UniswapQueryTokenInfo = res?.data?.data?.token
+  const token2 = res?.data?.data?.token
   if (!token || !token?.lastPriceUSD || token.lastPriceUSD === '0') {
     try {
       res = await axios.get(
@@ -112,9 +121,6 @@ export async function getDecimalAndUsdValueData(chainId: number | undefined, tok
   }
 
   return token
-  // if (network === 'arbitrum-one') {
-
-  // }
 }
 
 export function useUSDPriceBNV2(
@@ -192,7 +198,7 @@ export function useUSDPriceBNV2(
     if (!data || !currencyAmount) {
       return { data: undefined, isLoading: false }
     }
-    return { data: data * parseFloat(currencyAmount.toExact()), isLoading: false }
+    return { data: parseFloat(data) * parseFloat(currencyAmount.toExact()), isLoading: false }
   }, [data, currencyAmount])
 }
 

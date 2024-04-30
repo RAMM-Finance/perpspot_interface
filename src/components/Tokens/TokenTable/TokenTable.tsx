@@ -414,8 +414,8 @@ export default function TokenTable() {
       const limWethBal = await limWeth?.tokenBalance()
       const decimals = await limWeth?.decimals()
       const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
-      const price = (await getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'))
-        ?.lastPriceUSD // BASE WETH PRICE
+      const queryResult = await getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006')
+      const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
       setLimWethBal(price * tokenBalance)
     }
     if (chainId === SupportedChainId.BASE) {
