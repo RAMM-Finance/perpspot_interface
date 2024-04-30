@@ -6,12 +6,12 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useState } from 'react'
-import { ArrowUpRight } from 'react-feather'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
+import FAQBox from 'components/FAQ'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -80,16 +80,6 @@ const FaqWrapper = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-`
-
-const FaqElement = styled.div`
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  :hover {
-    cursor: pointer;
-    opacity: 75%;
-  }
 `
 
 const ErrorContainer = styled.div`
@@ -298,21 +288,7 @@ export default function LeaderboardPage() {
             <LeaderboardTable />
           </LeaderboardWrapper>
           <FaqWrapper>
-            <FaqElement>
-              <a
-                href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                  Earning LMT
-                </ThemedText.BodySecondary>
-              </a>
-              <ArrowUpRight size="20" />
-            </FaqElement>{' '}
-            <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-              Read our LMT documentation to better understand how to earn LMT.
-            </ThemedText.BodyPrimary>
+            <FAQBox/>
           </FaqWrapper>
         </Container>
       </PageWrapper>

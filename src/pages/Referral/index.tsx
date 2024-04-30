@@ -13,9 +13,9 @@ import { AddQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { ArrowUpRight } from 'react-feather'
 import { ExternalLink } from '../../theme'
 import { AutoColumn } from 'components/Column'
+import FAQBox from 'components/FAQ'
 
 
 
@@ -58,6 +58,7 @@ const ReferralsWrapper = styled.div`
 const FaqWrapper = styled.div`
   margin-top: 50px;
   width: 48%;
+  min-width: 280px;
   margin-right: auto;
   margin-left: auto;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
@@ -66,19 +67,8 @@ const FaqWrapper = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-  min-width: 280px;
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
     margin-top: 0;
-  }
-`
-
-const FaqElement = styled.div`
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  :hover {
-    cursor: pointer;
-    opacity: 75%;
   }
 `
 
@@ -206,21 +196,7 @@ export default function ReferralPage() {
             )}
           </ReferralsWrapper>
           <FaqWrapper>
-            <FaqElement>
-              <a
-                href="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/referrals"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                  Referral System
-                </ThemedText.BodySecondary>
-              </a>
-              <ArrowUpRight size="20" />
-            </FaqElement>{' '}
-            <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-              Read our Referral documentation to better understand how to earn more LMT and Rebates.
-            </ThemedText.BodyPrimary>
+            <FAQBox/>
           </FaqWrapper>
           {/* <AchievementsWrapper>
           <ThemedText.SubHeader>

@@ -6,6 +6,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import FAQBox from 'components/FAQ'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
@@ -27,7 +28,7 @@ import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Trade'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowUpRight, ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
+import { ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
 import { Info } from 'react-feather'
 import { useDerivedLmtMintInfo, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -1181,7 +1182,6 @@ export default function SimplePool() {
                   <ThemedText.BodySecondary fontSize={12}>
                     {`${(limwethBacking / 1e18).toFixed(4)}`}
                   </ThemedText.BodySecondary>
-
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1191,10 +1191,7 @@ export default function SimplePool() {
                   }}
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Daily LMT rewards: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    1 LMT per USD 
-                  </ThemedText.BodySecondary>
-
+                  <ThemedText.BodySecondary fontSize={12}>1 LMT per USD</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
@@ -1542,21 +1539,7 @@ export default function SimplePool() {
               //   })} */}
         <RowBetween>
           <FaqWrapper>
-            <FaqElement>
-              <a
-                href="https://limitless.gitbook.io/limitless/intro/limitless-lp-token-llp"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-                  Earning with LimWETH
-                </ThemedText.BodySecondary>
-              </a>
-              <ArrowUpRight size="20" />
-            </FaqElement>{' '}
-            <ThemedText.BodyPrimary fontSize={15} fontWeight={800}>
-              Read our LLP documentation to better understand how to earn.
-            </ThemedText.BodyPrimary>
+            <FAQBox />
           </FaqWrapper>
         </RowBetween>
       </AutoColumn>
@@ -1672,16 +1655,6 @@ const FaqWrapper = styled.div`
   padding: 20px;
   @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
     width: 100%;
-  }
-`
-
-const FaqElement = styled.div`
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  :hover {
-    cursor: pointer;
-    opacity: 75%;
   }
 `
 

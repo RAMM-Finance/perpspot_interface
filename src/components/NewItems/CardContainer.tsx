@@ -5,7 +5,7 @@ import { ReactNode } from 'react'
 import styled, { keyframes } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 
-import LockStatusBadge from './LockStatusBadge'
+import LockStatusBadge from '../Badge/LockStatusBadge'
 
 const CardFadeOut = keyframes`
     from {
