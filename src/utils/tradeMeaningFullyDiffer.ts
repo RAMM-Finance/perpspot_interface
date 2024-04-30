@@ -1,5 +1,6 @@
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
+import { DerivedLimitReducePositionInfo, DerivedReducePositionInfo } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { AddMarginTrade } from 'state/marginTrading/hooks'
 
 /**
@@ -24,5 +25,34 @@ export function marginTradeMeaningfullyDiffers(tradeA: AddMarginTrade, tradeB: A
     !tradeA.borrowAmount.eq(tradeB.borrowAmount) ||
     !tradeA.margin.eq(tradeB.margin) ||
     !tradeA.minimumOutput.eq(tradeB.minimumOutput)
+  )
+}
+
+export function reduceTradeMeaningfullyDiffers(
+  tradeA: DerivedReducePositionInfo,
+  tradeB: DerivedReducePositionInfo
+): boolean {
+  return (
+    tradeA.PnL !== tradeB.PnL ||
+    // tradeA.returnedAmount !== tradeB.returnedAmount ||
+    tradeA.profitFee !== tradeB.profitFee ||
+    // tradeA.reduceAmount !== tradeB.reduceAmount ||
+    tradeA.executionPrice !== tradeB.executionPrice
+    // tradeA.totalPosition !== tradeB.totalPosition
+    // tradeA.totalDebtInput !== tradeB.totalDebtInput ||
+    // tradeA.totalDebtOutput !== tradeB.totalDebtOutput
+  )
+}
+
+export function reduceLmtTradeMeaningfullyDiffers(
+  tradeA: DerivedLimitReducePositionInfo,
+  tradeB: DerivedLimitReducePositionInfo
+): boolean {
+  return (
+    // tradeA.margin !== tradeB.margin ||
+    // tradeA.startingDebtReduceAmount !== tradeB.startingDebtReduceAmount ||
+    // tradeA.minimumDebtReduceAmount !== tradeB.minimumDebtReduceAmount ||
+    !tradeA.newTotalPosition.eq(tradeB.newTotalPosition)||
+    !tradeA.estimatedPnL.eq(tradeB.estimatedPnL)
   )
 }

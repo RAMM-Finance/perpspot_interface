@@ -56,6 +56,7 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
+import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
 export interface DerivedReducePositionInfo {
   /** if marginInPosToken then PnL in output token, otherwise in input token */
@@ -243,12 +244,9 @@ export default function DecreasePositionContent({
       isAdd: false,
     }
   }, [positionKey])
-  // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  // const [lmtTradeState, setLmtTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  const [txnThresholdExceeded, setTxnThresholdExceeded] = useState(false)
 
   const { position: orderPosition, syncing: orderSyncing } = useMarginOrderPositionFromPositionId(orderKey)
-
+  
   const existingOrderBool = useMemo(() => {
     if (!orderPosition || !existingPosition) return undefined
     if (orderPosition.auctionStartTime > 0) {
@@ -266,11 +264,10 @@ export default function DecreasePositionContent({
   const [showSettings, setShowSettings] = useState(false)
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string | undefined>(undefined)
-
+  const [showAcceptChanges, setShowAcceptChanges] = useState(false)
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
-  // const [userSlippedTickTolerance] = useUserSlippedTickTolerance()
 
   const allowedSlippage = useMemo(() => {
     if (userSlippageTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
@@ -285,13 +282,10 @@ export default function DecreasePositionContent({
       (!positionKey.isToken0 && borrowLiquidityRange === BorrowedLiquidityRange.ABOVE_RANGE)
     ) {
       setCurrentState((prev) => ({ ...prev, isLimit: false, limitAvailable: false }))
-      setTxnThresholdExceeded(false)
     } else if (borrowLiquidityRange === BorrowedLiquidityRange.IN_RANGE) {
       setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
-      setTxnThresholdExceeded(false)
     } else {
       setCurrentState((prev) => ({ ...prev, limitAvailable: true }))
-      setTxnThresholdExceeded(true)
     }
   }, [borrowLiquidityRange, positionKey.isToken0])
 
@@ -314,7 +308,7 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
-
+  
   const {
     inputError: lmtInputError,
     txnInfo: lmtTxnInfo,
@@ -334,6 +328,21 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
+
+  useEffect(() => {
+    if (!currentState.isLimit && txnInfo && currentState.originalTrade) {
+      setShowAcceptChanges(false)
+      const tradeMeaningfullyDiffers = reduceTradeMeaningfullyDiffers(txnInfo, currentState.originalTrade);
+      // console.log('showAcceptChanges', tradeMeaningfullyDiffers);
+      setShowAcceptChanges(tradeMeaningfullyDiffers);
+    } else if (currentState.isLimit && lmtTxnInfo && currentState.originalLimitTrade) {
+      setShowAcceptChanges(false)
+      // console.log('showAcceptChanges', lmtTxnInfo, currentState.originalLimitTrade )
+      const tradeMeaningfullyDiffers = reduceLmtTradeMeaningfullyDiffers(lmtTxnInfo, currentState.originalLimitTrade)
+      // console.log('showAcceptChanges', tradeMeaningfullyDiffers)
+      setShowAcceptChanges(tradeMeaningfullyDiffers)
+    }
+  }, [txnInfo, currentState, lmtTxnInfo])
 
   const addTransaction = useTransactionAdder()
 
@@ -579,9 +588,9 @@ export default function DecreasePositionContent({
                 removePremium={closePosition}
                 allowedSlippage={allowedSlippage}
                 existingPosition={existingPosition}
-                showAcceptChanges={txnThresholdExceeded}
+                showAcceptChanges={showAcceptChanges}
                 onAcceptChanges={() => {
-                  setTxnThresholdExceeded(false)
+                  setShowAcceptChanges(false)
                 }}
               />
             ) : null
@@ -591,7 +600,7 @@ export default function DecreasePositionContent({
               errorMessage={currentState.errorMessage ? <Trans>{currentState.errorMessage}</Trans> : undefined}
               onConfirm={handleReducePosition}
               confirmText="Confirm Reduce Position"
-              disabledConfirm={!!inputError || !txnInfo || txnThresholdExceeded}
+              disabledConfirm={!!inputError || !txnInfo || showAcceptChanges }
             />
           }
           title="Confirm Reduce Position"
@@ -613,9 +622,9 @@ export default function DecreasePositionContent({
               <ConfirmLimitReducePositionHeader
                 txnInfo={lmtTxnInfo}
                 inputCurrency={inputCurrency ?? undefined}
-                showAcceptChanges={txnThresholdExceeded}
+                showAcceptChanges={showAcceptChanges}
                 onAcceptChanges={() => {
-                  setTxnThresholdExceeded(false)
+                  setShowAcceptChanges(false)
                 }}
                 outputCurrency={outputCurrency ?? undefined}
                 existingPosition={existingPosition}
@@ -627,7 +636,7 @@ export default function DecreasePositionContent({
               errorMessage={currentState.limitErrorMessage ? <Trans>{currentState.limitErrorMessage}</Trans> : null}
               onConfirm={handleReduceLimitPosition}
               confirmText="Confirm Reduce Limit Order"
-              disabledConfirm={!!lmtInputError || lmtTradeState !== DerivedInfoState.VALID || txnThresholdExceeded}
+              disabledConfirm={!!lmtInputError || lmtTradeState !== DerivedInfoState.VALID || showAcceptChanges}
             />
           }
           pendingText={<Trans>Submitting Limit Order ...</Trans>}
