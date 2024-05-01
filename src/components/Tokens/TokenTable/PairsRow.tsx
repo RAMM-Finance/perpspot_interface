@@ -34,6 +34,7 @@ import {
 import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
+import { nearestUsableTick } from '@uniswap/v3-sdk'
 
 const Cell = styled.div`
   display: flex;
@@ -457,11 +458,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
 
   // const poolOHLCDatas = useAppPoolOHLC()
+  
   const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
 
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
-
+  
   const poolId = getPoolId(tokenA, tokenB, fee)
 
   const handleCurrencySelect = useCallback(() => {
@@ -477,7 +479,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     return [undefined, undefined]
   }, [poolOHLC])
 
-  const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: number) => {
+  const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: number, page: number) => {
+
     let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
     if (chainId === SupportedChainId.BASE) {
       url += 'base'
@@ -486,7 +489,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
 
     const query = `{
-      ticks(first: 1000, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
+      ticks(first: 1000, skip: ${page * 1000}, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
         liquidityGross
         liquidityNet
       }
@@ -542,11 +545,15 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     return liquidity
   }
 
-  const initPair = async (poolAddress: string, tickLower: number, tickUpper: number, token0: Token, token1: Token) => {
-    const [poolTicks, volume24h] = await Promise.all([
-      getPoolTicks(poolAddress, tickLower, tickUpper),
+  const initPair = async (poolAddress: string, tickLower: number, tickUpper: number) => {
+    const [poolTicks0, poolTicks1, poolTicks2, volume24h] = await Promise.all([
+      getPoolTicks(poolAddress, tickLower, tickUpper, 0),
+      getPoolTicks(poolAddress, tickLower, tickUpper, 1),
+      getPoolTicks(poolAddress, tickLower, tickUpper, 2),
       getAvgTradingVolume(poolAddress),
     ])
+
+    const poolTicks = [...poolTicks0, ...poolTicks1, ...poolTicks2]
 
     return { poolTicks, volume24h }
   }
@@ -556,12 +563,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     tickLower: number,
     tickUpper: number,
     poolAddress: string,
-    token0: Token,
-    token1: Token
   ) => {
-    const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, token0, token1)
+    const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper)
     const liquidityGross = getLiquidityFromTick(poolTicks)
 
+    // console.log(`VOLUME 24h and LiqGross from  ${token0.symbol} / ${token1.symbol}`, volume24h, liquidityGross.toNumber())
+    // console.log("POOL ADDRESS", poolAddress)
+    // console.log("----------------------")
     return {
       poolTicks,
       volume24h,
@@ -649,7 +657,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     return feeTierPercentage * volume24h * liquidityPercentage
   }
 
-  const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: number): any => {
+  const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: number, token0: string | undefined, token1: string | undefined): any => {
     const p: number = position.currentPrice
     const pl: number = position.lower
     const pu: number = position.upper
@@ -670,13 +678,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       position.token0Decimals,
       position.token1Decimals
     )
+    if (token0 === "wBTC" && token1 === "WETH")
+      console.log(`LIQUIDITY ratio FOR ${token0} / ${token1}`, liquidityDelta, liquidityGross.toNumber(), liquidityDelta/(liquidityGross.toNumber()))
 
     const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
     let liqGross = liquidityGross
-    if (liquidityGross.eq(new BN(0))) {
-      liqGross = new BN(liquidityDelta * 100)
-    }
 
     const estimatedFee: number =
       p >= pl && p <= pu ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
@@ -699,11 +706,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     // if (poolTicks.length === 0) return
     // console.log("POSITION", position)
 
-    const est_result = feeAprEstimation(position, liquidityGross, volume24h)
+    const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
 
     const fee_est = est_result.estimatedFee
+    console.log("FEE_EST", fee_est)
     const apy = ((fee_est * 365) / position.amount) * 100
-    const dailyIncome = apy / 365
+    const dailyIncome = fee_est
+    
     return { apy, dailyIncome }
   }
 
@@ -715,7 +724,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         // console.log("POOOOOL", pool)
         const amount = 1000
         const base = 1.0001
-        if (token0?.wrapped.address && token1?.wrapped.address) {
+        if (token0?.wrapped.address && token1?.wrapped.address && poolOHLC) {
           const token0Res = await getDecimalAndUsdValueData(chainId, token0?.wrapped.address)
           const token1Res = await getDecimalAndUsdValueData(chainId, token1?.wrapped.address)
           
@@ -725,43 +734,40 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           const token0Decimals: number = token0Res.decimals
           const token1Decimals: number = token1Res.decimals
 
-          // const price = token0Res.lastPriceUSD / token1Res.lastPriceUSD
-          // const price2 = (JSBI.toNumber(pool.sqrtRatioX96) ** 2) / (2 ** 192) // (2 ** 192 * (10 ** (token1Decimals * 2))
           if (!price) return
-          // console.log("PRICE2", price2)
 
-          const lowerPrice = price * 0.8
-          const upperPrice = price * 1.2
+          let priceInverted = poolOHLC.token0IsBase ? price : (1 / price)
+          let lowerPrice = priceInverted * 0.7
+          let upperPrice = priceInverted * 1.3
+          if (lowerPrice > upperPrice) 
+            [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
 
           const decimalDiff = token0Decimals - token1Decimals
-          // const tickLower_f = Math.log(lowerPrice / 10 ** decimalDiff) / Math.log(base)
-          // const tickUpper_f = Math.log(upperPrice / 10 ** decimalDiff) / Math.log(base)
+          const tick_f = Math.log(lowerPrice / 10 ** decimalDiff) / Math.log(base)
+          const tick = nearestUsableTick(parseInt(tick_f.toString()), tickSpacing)
+          
 
-          // console.log("TICKLOWERRRFFFFF", tickLower_f)
-          // console.log("TICKUPPERRRFFFFF", tickUpper_f)
-          // const tickLower = nearestUsableTick(parseInt(tickLower_f), tickSpacing)
-          // const tickUpper = nearestUsableTick(parseInt(tickUpper_f), tickSpacing)
-
-          const lowerTick = tryParseLmtTick(
+          let lowerTick = tryParseLmtTick(
             token0.wrapped,
             token1.wrapped,
             pool.fee,
             lowerPrice.toString(),
             tickSpacing
           )
-          const upperTick = tryParseLmtTick(
+          let upperTick = tryParseLmtTick(
             token0.wrapped,
             token1.wrapped,
             pool.fee,
             upperPrice.toString(),
             tickSpacing
           )
-          // console.log("LLLLL TICKLOWER TICKUPPER", tickLower, tickUpper)
-          // console.log("LOWERTICK1 UPPERTICK1", lowerTick, upperTick)
-          // console.log(`PRICE FOR ${token0.symbol} / ${token1.symbol} IS ${price}`)//, AND PRICE2 IS ${price2}`)
+
           if (lowerTick && upperTick) {
+            if (lowerTick > upperTick)
+              [lowerTick, upperTick] = [upperTick, lowerTick]
+
             const position: Position = {
-              currentPrice: price,
+              currentPrice: priceInverted,
               token0PriceUSD,
               token1PriceUSD,
               token0Decimals,
@@ -771,26 +777,22 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               amount,
               fee: parseInt(pool.fee.toString()),
             }
-            // console.log("---------------------------------")
-            // console.log("POSITION BEFORE ESTIMATION0, position")
 
             const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
             if (v3CoreFactoryAddress && lowerTick && upperTick) {
+
               const poolAddress = computePoolAddress({
                 factoryAddress: v3CoreFactoryAddress,
                 tokenA: token0.wrapped,
                 tokenB: token1.wrapped,
                 fee: pool.fee,
               })
-              // const res = await _getPoolPositionsByPage(poolAddress, 0)
-              // console.log("GET POOL POSITION", res)
+
               const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
                 pool.fee,
                 lowerTick,
                 upperTick,
                 poolAddress,
-                token0.wrapped,
-                token1.wrapped
               )
               try {
                 const { apy, dailyIncome } = estimateAPR(
@@ -801,6 +803,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
                   token0.symbol,
                   token1.symbol
                 )
+                if (token0.symbol == "wBTC" && token1.symbol == "WETH")
+                  console.log(`APY, DAILY FEE AND POOL FEE OF ${token0.symbol} / ${token1.symbol}`, apy, dailyIncome, pool.fee)
                 setEstimatedAPR(apy)
               } catch (err) {
                 console.error(
@@ -855,7 +859,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       }
     }
     fetchData()
-  }, [token0, token1, pool, tickSpacing])
+  }, [token0, token1, pool, tickSpacing, poolOHLC])
 
   const filterString = useAtomValue(filterStringAtom)
 
@@ -915,9 +919,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         APR={
           <>
             <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
-              {apr !== undefined ? `${(apr + estimatedAPR)?.toPrecision(4)} %` : '-'}
+              {apr !== undefined ? 
+              `${(apr 
+                + estimatedAPR
+                )?.toPrecision(4)} %` : '-'}
             </ClickableRate>
-            {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ swap fees</span> */}
+            {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ {estimatedAPR}</span> */}
           </>
         }
         UtilRate={
