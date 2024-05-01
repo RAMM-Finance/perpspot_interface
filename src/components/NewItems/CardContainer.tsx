@@ -1,7 +1,7 @@
 import Column from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { Row } from 'nft/components/Flex'
-import { ReactNode } from 'react'
+import { TBoxData } from 'pages/NewItemsList'
 import styled, { keyframes } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 
@@ -96,13 +96,6 @@ const PrimaryInfoContainer = styled(ThemedText.BodyPrimary)`
   line-height: 20px;
 `
 
-// const SecondaryInfoContainer = styled(ThemedText.BodySecondary)`
-//   overflow: hidden;
-//   white-space: nowrap;
-//   text-overflow: ellipsis;
-//   line-height: 24px;
-// `
-
 export const StyledActionButton = styled(ThemedText.BodySecondary)<{
   isDisabled: boolean
 }>`
@@ -194,20 +187,41 @@ const StyledCardContainer = styled.div<{ isDisabled: boolean; shouldHide?: boole
 `
 
 interface ICardContainerProps {
-  id?: string
+  id: string
   img: string
-  info: string | ReactNode
+  info: string
   // secondInfo: string
   isLocked: boolean
-  handleUnlockBox: (index : number) => void
+  handleUnlockBox: (index: number) => void
   shouldHide?: boolean
   index: number
-  handleShowModal: (isShowModal: boolean) => void
+  handleShowModal: (modalData: TBoxData) => void
 }
 
-export const CardContainer = ({ img, info, isLocked, handleUnlockBox, shouldHide, index, handleShowModal }: ICardContainerProps) => {
+export const CardContainer = ({
+  id,
+  img,
+  info,
+  isLocked,
+  handleUnlockBox,
+  shouldHide,
+  index,
+  handleShowModal,
+}: ICardContainerProps) => {
   return (
-    <StyledCardContainer isDisabled={isLocked} shouldHide={shouldHide} onClick={() => handleShowModal(true)}>
+    <StyledCardContainer
+      isDisabled={isLocked}
+      shouldHide={shouldHide}
+      onClick={() =>
+        handleShowModal({
+          id,
+          img,
+          info,
+          isLocked,
+          index,
+        })
+      }
+    >
       <ItemImgContainer isDisabled={isLocked}>
         <StyledMediaContainer>
           <StyledMediaImg src={img} />
@@ -219,19 +233,23 @@ export const CardContainer = ({ img, info, isLocked, handleUnlockBox, shouldHide
             <Row gap="8" justifyContent="space-between">
               <StyledPrimaryDetails>
                 <PrimaryInfoContainer>{info} </PrimaryInfoContainer>
-                {/* <PrimaryInfoContainer>{id}</PrimaryInfoContainer> */}
               </StyledPrimaryDetails>
             </Row>
             <Row justifyContent="space-between">
               <Row whiteSpace="nowrap" overflow="hidden">
                 <LockStatusBadge isLocked={isLocked} />
-                {/* <SecondaryInfoContainer>{secondInfo}</SecondaryInfoContainer> */}
               </Row>
             </Row>
           </StyledInfoContainer>
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
-      <StyledActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleUnlockBox(index))}>
+      <StyledActionButton
+        isDisabled={isLocked}
+        onClick={(e) => {
+          e.stopPropagation()
+          isLocked ? undefined : handleUnlockBox(index)
+        }}
+      >
         {isLocked ? 'Locked' : 'Unlock'}
       </StyledActionButton>
     </StyledCardContainer>

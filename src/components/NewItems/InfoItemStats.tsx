@@ -1,24 +1,24 @@
 import { LoadingBubble } from 'components/Tokens/loading'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
+import { TBRPData } from 'pages/NewItemsList'
 import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import bluePill from '../../assets/images/bluePill.jpg'
-import { TBRPData } from './BoxesContainr'
+// import bluePill from '../../assets/images/bluePill.jpg'
 
-const BluePillImg = styled.img`
-  position: absolute;
-  width: 76px;
-  height: 37px;
-  background-color: transparent;
-  transform: scale(1.3);
-  opacity: 0.8;
-  right: -58px;
-  bottom: -10.5px;
-  z-index: -999;
-`
+// const BluePillImg = styled.img`
+//   position: absolute;
+//   width: 76px;
+//   height: 37px;
+//   background-color: transparent;
+//   transform: scale(1.3);
+//   opacity: 0.8;
+//   right: -58px;
+//   bottom: -10.5px;
+//   z-index: -999;
+// `
 
 const ModalStatsBox = styled(Box)<{ isModal?: boolean }>`
   background-color: ${({ theme }) => theme.backgroundScrolledSurface};
@@ -55,7 +55,7 @@ const StatsItem = ({
       </ThemedText.SubHeader>
       <ThemedText.CellName color="stateLabel" fontSize="14px">
         {label}
-        {!loading && labelImg && <BluePillImg src={labelImg} />}
+        {/* {!loading && labelImg && <BluePillImg src={labelImg} />} */}
       </ThemedText.CellName>
     </Box>
   )
@@ -66,7 +66,6 @@ const ModalStatsItem = ({
   label,
   shouldHide,
   loading,
-  labelImg,
 }: {
   children: ReactNode
   label: string
@@ -82,14 +81,14 @@ const ModalStatsItem = ({
       alignItems="baseline"
       gap="10"
       height="min"
+      width="full"
     >
       <ThemedText.SubHeader color="textSecondary">
         {loading ? <LoadingBubble width="80px" /> : children}
       </ThemedText.SubHeader>
-      <ThemedText.CellName color="stateLabel" fontSize="14px">
+      <ThemedText.BodySmall color="stateLabel" minWidth="90px">
         {label}
-        {!loading && labelImg && <BluePillImg src={labelImg} />}
-      </ThemedText.CellName>
+      </ThemedText.BodySmall>
     </ModalStatsBox>
   )
 }
@@ -110,25 +109,26 @@ const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boole
       <StatsItem label="LMT required per unlock" shouldHide={false} loading={loading}>
         {brpData?.lmtRequiredPerUnlock}
       </StatsItem>
-      <StatsItem label="My NZT balance" shouldHide={false} loading={loading} labelImg={bluePill}>
+      {/* <StatsItem label="My NZT balance" shouldHide={false} loading={loading} labelImg={bluePill}>
         0
-      </StatsItem>
+      </StatsItem> */}
     </Row>
   )
 }
 
-export const ModalItemStats = ({ loading }: { loading?: boolean }) => {
+export const ModalItemStats = ({ brpData, loading }: { brpData: TBRPData, loading?: boolean }) => {
   // console.log('brpData', brpData)
+  const { totalLMT, lmtRequiredPerUnlock, NZTRageHigh, NZTRageRow } = brpData
   return (
-    <Row gap="24" marginBottom="28" marginTop="32">
+    <Row gap="12" marginBottom="20" marginTop="24">
       <ModalStatsItem label=" Current LMT" shouldHide={false} loading={false}>
-        Current LMT
+        {totalLMT}
       </ModalStatsItem>
       <ModalStatsItem label="LMT needed for unlock" shouldHide={false} loading={false}>
-        LMT needed for unlock
+        {lmtRequiredPerUnlock}
       </ModalStatsItem>
-      <ModalStatsItem label="NZT rewards range" shouldHide={false} loading={false} >
-        NZT rewards range
+      <ModalStatsItem label="NZT rewards range" shouldHide={false} loading={false}>
+        {NZTRageRow} ~ {NZTRageHigh}
       </ModalStatsItem>
     </Row>
   )

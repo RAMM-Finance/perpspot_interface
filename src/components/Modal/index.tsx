@@ -33,6 +33,7 @@ type StyledDialogProps = {
   $scrollOverlay?: boolean
   $hideBorder?: boolean
   $maxWidth: number
+  $width?: number
 }
 
 const AnimatedDialogContent = animated(DialogContent)
@@ -45,7 +46,7 @@ const StyledDialogContent = styled(AnimatedDialogContent)<StyledDialogProps>`
     border: ${({ theme, $hideBorder }) => !$hideBorder && `1px solid ${theme.backgroundOutline}`};
     box-shadow: ${({ theme }) => theme.deepShadow};
     padding: 0px;
-    width: 50vw;
+    width: ${({ $width }) => ($width ? `${$width}vw` : '50vw')};
     overflow-y: auto;
     overflow-x: hidden;
     max-width: ${({ $maxWidth }) => $maxWidth}px;
@@ -124,6 +125,7 @@ interface ModalProps {
   children?: React.ReactNode
   $scrollOverlay?: boolean
   hideBorder?: boolean
+  width?: number
 }
 
 export default function Modal({
@@ -137,6 +139,7 @@ export default function Modal({
   onSwipe = onDismiss,
   $scrollOverlay,
   hideBorder = false,
+  width = 50,
 }: ModalProps) {
   const fadeTransition = useTransition(isOpen, {
     config: { duration: 200 },
@@ -182,6 +185,7 @@ export default function Modal({
                 $scrollOverlay={$scrollOverlay}
                 $hideBorder={hideBorder}
                 $maxWidth={maxWidth}
+                $width={width}
               >
                 {/* prevents the automatic focusing of inputs on mobile by the reach dialog */}
                 {!initialFocusRef && isMobile ? <div tabIndex={1} /> : null}
