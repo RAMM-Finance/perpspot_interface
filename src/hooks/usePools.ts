@@ -32,6 +32,7 @@ import { query } from 'firebase/firestore'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from './Tokens'
+import { tryParseLmtTick } from 'state/mint/v3/utils'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
@@ -149,14 +150,11 @@ export function usePools(
     )
   }, [chainId, poolTokens])
 
-  // console.log("POOL ADDRESSES", poolAddresses)
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
   const tickSpacings = useMultipleContractSingleData(poolAddresses, POOL_INTERFACE_FOR_TICKSPACING, 'tickSpacing')
 
   const filteredAddresses = poolAddresses.filter((item) => item !== '')
-  // console.log('poolManager', JSON.stringify(poolManager))
-  // console.log('filteredAddr', JSON.stringify(filteredAddresses))
   const poolParams = useSingleContractMultipleData(
     poolManager,
     'PoolParams',
@@ -341,112 +339,375 @@ export function computeLiquidityManagerAddress({
   )
 }
 
-// export function useDailyFeeAPR(pools: any): { [key: string]: { dailyFeeAPR: number } } | null {
+
+const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: number, page: number, chainId: number | undefined) => {
+  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  if (chainId === SupportedChainId.BASE) {
+    url += 'base'
+  } else {
+    url += 'arbitrum'
+  }
+
+  const query = `{
+    ticks(first: 1000, skip: ${page * 1000}, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
+      liquidityGross
+      index
+    }
+  }`
+
+  const { data } = await axios({
+    url,
+    method: 'post',
+    data: {
+      query,
+    },
+  })
   
-//   const { chainId } = useWeb3React()
-//   const [dailyFeeAPRs, setDailyFeeAPRs] = useState<{ [key: string]: { dailyFeeAPR: number } } | null>(null)
-//   const timestamp = Math.floor(Date.now() / 1000) - (86400 * 7)
+  return data.data.ticks
+}
 
-//   const token0 = useCurrency
+const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefined) => {
+  const days = 7
+  const timestamp = Math.floor(Date.now() / 1000) - 86400 * days
+  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  if (chainId === SupportedChainId.BASE) {
+    url += 'base'
+  } else {
+    url += 'arbitrum'
+  }
 
-//   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
-//   let network
+  const data = await axios({
+    url,
+    method: 'post',
+    data: {
+      query: Pool24hVolumeQuery(poolAddress, timestamp),
+    },
+  })
 
-//   if (chainId === SupportedChainId.ARBITRUM_ONE) {
-//     url += 'arbitrum'
-//     network = 'arbitrum-one'
-//   } else if (chainId === SupportedChainId.BASE) {
-//     url += 'base'
-//     network = 'base'
-//   } else {
-//     url += 'arbitrum'
-//     network = 'arbitrum-one'
-//   }
+  const volumes = data?.data?.data?.liquidityPool.dailySnapshots.map((ele: any) => Number(ele.dailyVolumeUSD))
 
-//   useEffect(() => {
-//     if (!pools || pools.length === 0) return;
-//     const fetchData = async (pools: any) => {
-//       // for (let i = 0; i < pools.length; i++) {
-//       //   const token00 = pools[i]?.token0
-//       //   const token11 = pools[i]?.token1
-//       //   let result = await axios.post(url, {
-//       //     query: Pool24hVolumeQuery(token00, token11, timestamp),
-//       //   })
-//       //   console.log(`RESLT ${i}!!!`, token00, token11, result)
-//       //   const dailySnapshots = result?.data?.data?.liquidityPoolDailySnapshots
-//       //   if (dailySnapshots) {
-//       //     const sum = dailySnapshots.reduce((acc: any, curr: any) => acc + Number(curr.dailyVolumeUSD), 0)
-//       //     console.log("SUM", sum)
-//       //   }
-//       // }
+  const volume24h = volumes.reduce((acc: number, curr: number) => acc + curr, 0) / 7
 
-//       const promises = pools.map((pool: any) => {
+  return volume24h
+}
+
+const getLiquidityFromTick = (poolTicks: any[]) => {
+  let liquidity = new BN(0)
+  
+  for (let i = 0; i < poolTicks.length; i++) {
+    liquidity = liquidity.plus(new BN(poolTicks[i].liquidityGross))
+  }
+
+  return liquidity
+}
+
+const initPair = async (poolAddress: string, tickLower: number, tickUpper: number, chainId: number | undefined) => {
+  const [poolTicks0, poolTicks1, poolTicks2, volume24h] = await Promise.all([
+    getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
+    getPoolTicks(poolAddress, tickLower, tickUpper, 1, chainId),
+    getPoolTicks(poolAddress, tickLower, tickUpper, 2, chainId),
+    getAvgTradingVolume(poolAddress, chainId),
+  ])
+
+  const poolTicks = [...poolTicks0, ...poolTicks1, ...poolTicks2]
+
+  return { poolTicks, volume24h }
+}
+
+const aprDataPreperation = async (
+  fee: number,
+  tickLower: number,
+  tickUpper: number,
+  poolAddress: string,
+  chainId: number | undefined
+) => {
+  const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId)
+  const liquidityGross = getLiquidityFromTick(poolTicks)
+
+  return {
+    poolTicks,
+    volume24h,
+    liquidityGross,
+  }
+}
+
+const getTokenAmountsFromDepositAmounts = (
+  p: number,
+  pl: number,
+  pu: number,
+  token0PriceUSD: number,
+  token1PriceUSD: number,
+  depositAmountUSD: number
+): { deltaX: number; deltaY: number } => {
+  const deltaL =
+    depositAmountUSD /
+    ((Math.sqrt(p) - Math.sqrt(pl)) * token1PriceUSD + (1 / Math.sqrt(p) - 1 / Math.sqrt(pu)) * token0PriceUSD)
+
+  let deltaY = deltaL * (Math.sqrt(p) - Math.sqrt(pl))
+
+  if (deltaY * token1PriceUSD < 0) deltaY = 0
+  if (deltaY * token1PriceUSD > depositAmountUSD) deltaY = depositAmountUSD / token1PriceUSD
+
+  let deltaX = deltaL * (1 / Math.sqrt(p) - 1 / Math.sqrt(pu))
+
+  if (deltaX * token0PriceUSD < 0) deltaX = 0
+  if (deltaX * token0PriceUSD > depositAmountUSD) deltaX = depositAmountUSD / token0PriceUSD
+
+  return { deltaX, deltaY }
+}
+
+const calcLiquidityX96 = (
+  p: number,
+  pl: number,
+  pu: number,
+  deltaX: number,
+  deltaY: number,
+  token0Decimals: number,
+  token1Decimals: number
+): number => {
+  
+  const q96 = 2 ** 96
+  const price_to_sqrtp = (p: number) => Math.sqrt(p) * q96
+
+  const liquidity0 = (amount: number, pa: number, pb: number) => {
+    if (pa > pb) {
+      const tmp = pa
+      pa = pb
+      pb = tmp
+    }
+    return (amount * (pa * pb)) / q96 / (pb - pa)
+  }
+
+  const liquidity1 = (amount: number, pa: number, pb: number) => {
+    if (pa > pb) {
+      const tmp = pa
+      pa = pb
+      pb = tmp
+    }
+    return (amount * q96) / (pb - pa)
+  }
+
+  const decimal0: number = 10 ** token0Decimals
+  const decimal1: number = 10 ** token1Decimals
+
+  const amount_0: number = deltaX * decimal0
+  const amount_1: number = deltaY * decimal1
+
+  const sqrtp_low: number = price_to_sqrtp(pl)
+  const sqrtp_cur: number = price_to_sqrtp(p)
+  const sqrtp_upp: number = price_to_sqrtp(pu)
+
+  const liq0 = liquidity0(amount_0, sqrtp_cur, sqrtp_upp)
+  const liq1 = liquidity1(amount_1, sqrtp_cur, sqrtp_low)
+  
+  const liq = Math.min(liq0, liq1)
+  return liq
+}
+
+const getEstimateFee = (
+  liquidityDelta: number,
+  liquidityGross: BN,
+  volume24h: number,
+  feeTierPercentage: number
+): number => {
+  const liquidityPercentage: number = liquidityDelta / (liquidityGross.toNumber() + liquidityDelta) //0.01 //
+  return feeTierPercentage * volume24h * liquidityPercentage
+}
+
+const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: number, token0: string | undefined, token1: string | undefined): any => {
+  const p: number = position.currentPrice
+  const pl: number = position.lower
+  const pu: number = position.upper
+  const { deltaX, deltaY } = getTokenAmountsFromDepositAmounts(
+    p,
+    pl,
+    pu,
+    position.token0PriceUSD,
+    position.token1PriceUSD,
+    position.amount
+  )
+  const liquidityDelta: number = calcLiquidityX96(
+    p,
+    pl,
+    pu,
+    deltaX,
+    deltaY,
+    position.token0Decimals,
+    position.token1Decimals
+  )
+
+  const feeTierPercentage: number = Number(position.fee) / 10000 / 100
+
+  let liqGross = liquidityGross
+
+  const estimatedFee: number =
+    p >= pl && p <= pu ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
+
+  return {
+    estimatedFee,
+    token0: { amount: deltaX, priceUSD: deltaX * position.token0PriceUSD },
+    token1: { amount: deltaY, priceUSD: deltaY * position.token1PriceUSD },
+  }
+}
+
+const estimateAPR = (
+  position: Position,
+  poolTicks: any[],
+  liquidityGross: BN,
+  volume24h: number,
+  token0: string | undefined,
+  token1: string | undefined
+): any => {
+
+  const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
+
+  const fee_est = est_result.estimatedFee
+  const apy = ((fee_est * 365) / position.amount) * 100
+  const dailyIncome = fee_est
+  
+  return { apy, dailyIncome }
+}
+
+interface Position {
+  currentPrice: number
+  token0PriceUSD: number
+  token1PriceUSD: number
+  token0Decimals: number
+  token1Decimals: number
+  lower: number
+  upper: number
+  amount: number
+  fee: number
+}
+
+export function useEstimatedAPR(
+  token0: Currency | null | undefined, 
+  token1: Currency | null | undefined, 
+  pool: Pool | null, 
+  tickSpacing: number | null, 
+  price: number | undefined,
+  amountUSD: number,
+  token0Range?: number,
+  token1Range?: number
+) {
+  const { chainId } = useWeb3React()
+
+  const [estimatedAPR, setEstimatedAPR] = useState<number>(0)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (token0 && token1 && pool && tickSpacing) {
         
-//         return axios.post(url, {
-//           query: Pool24hVolumeQuery(pool.token0, pool.token1, timestamp),
-//         }).then(async (res: any) => {
+        const amount = amountUSD
+        if (token0?.wrapped.address && token1?.wrapped.address) {
+          const [token0Res, token1Res] = await Promise.all([
+            getDecimalAndUsdValueData(chainId, token0?.wrapped.address), 
+            getDecimalAndUsdValueData(chainId, token1?.wrapped.address)
+          ])
+
+          const token0PriceUSD: number = parseFloat(token0Res.lastPriceUSD)
+          const token1PriceUSD: number = parseFloat(token1Res.lastPriceUSD)
+
+          const token0Decimals: number = token0Res.decimals
+          const token1Decimals: number = token1Res.decimals
+
+          if (!price) return
           
-//           const weeklySnapshots = res?.data?.data?.liquidityPoolDailySnapshots
+          let lowerPrice = price
+          let upperPrice = price
 
-//           if (weeklySnapshots) {
+          if (!token0Range || !token1Range) {
+            lowerPrice = lowerPrice * 0.7
+            upperPrice = upperPrice * 1.3
+          } else {
+            lowerPrice = lowerPrice * token0Range
+            upperPrice = upperPrice * token1Range
+          }
 
-//             // assuming that the user's liquidity share is 1% of total share
-            
-//             // let user24hSwapVolumeRate
-//             let liqShare = 0.01
+          // let lowerPrice = priceInverted * 0.7
+          // let upperPrice = priceInverted * 1.3
+          if (lowerPrice > upperPrice) 
+            [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
 
-//             // if (chainId === SupportedChainId.ARBITRUM_ONE) {
-//             //   liqShare = 0.000001
-//             // } else if (chainId === SupportedChainId.BASE) {
-//             //   liqShare = 0.000001
-//             // } else {
-//             //   liqShare = 0.000001
-//             // }
-//             // let user24hSwapVolume = swapVolume24h// * user24hSwapVolumeRate
-            
-            
-//             const [token0Data, token1Data] = await Promise.all([
-//               getDecimalAndUsdValueData(chainId, pool.token0),
-//               getDecimalAndUsdValueData(chainId, pool.token1)
-//             ]);
-            
-//             const token0Price = token0Data?.lastPriceUSD
-//             const token1Price = token1Data?.lastPriceUSD
+          let lowerTick = tryParseLmtTick(
+            token0.wrapped,
+            token1.wrapped,
+            pool.fee,
+            lowerPrice.toString(),
+            tickSpacing
+          )
+          let upperTick = tryParseLmtTick(
+            token0.wrapped,
+            token1.wrapped,
+            pool.fee,
+            upperPrice.toString(),
+            tickSpacing
+          )
 
-//             const token0Decimals = token0Data?.decimals
-//             const token1Decimals = token1Data?.decimals
+          if (lowerTick && upperTick) {
+            if (lowerTick > upperTick)
+              [lowerTick, upperTick] = [upperTick, lowerTick]
 
-//             const swapVolume24h = (weeklySnapshots.reduce((acc: any, curr: any) => acc + Number(curr.dailyVolumeUSD), 0)) / (7 * token1Price)
-           
-//             const estimatedDailyFee = swapVolume24h * (pool.fee / 10000) * liqShare
+            const position: Position = {
+              currentPrice: price,
+              token0PriceUSD,
+              token1PriceUSD,
+              token0Decimals,
+              token1Decimals,
+              lower: lowerPrice,
+              upper: upperPrice,
+              amount,
+              fee: parseInt(pool.fee.toString()),
+            }
 
-//             // WETH/USDC ARB/USDC
-//             const poolPrice = token0Price / token1Price
-            
-//             const dailyFeeAPR = (estimatedDailyFee / poolPrice) * 365 * 100
-//             const poolId = getPoolId(pool.token0, pool.token1, pool.fee)
-//             return { [poolId]: dailyFeeAPR }
-//           }
-//           return null
-//         }).catch(err => {
-//           console.error(err)
-//         })
-//       })
-//       const results = await Promise.all(promises)
+            const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
+            if (v3CoreFactoryAddress && lowerTick && upperTick) {
 
-//       const dailyFeeAPRsObj = results.reduce((acc, curr) => {
-//         const key = Object.keys(curr)[0]
-//         return { ...acc, [key] : {dailyFeeAPR: curr[key]}}
-//       }, {})
+              const poolAddress = computePoolAddress({
+                factoryAddress: v3CoreFactoryAddress,
+                tokenA: token0.wrapped,
+                tokenB: token1.wrapped,
+                fee: pool.fee,
+              })
 
-//       setDailyFeeAPRs(dailyFeeAPRsObj)
-//     }
-//     if (pools) {
-//       fetchData(pools)
-//     }
-//   }, [pools])
-//   if (dailyFeeAPRs) {
-//     return dailyFeeAPRs
-//   }
-//   return null
-// }
+              const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
+                pool.fee,
+                lowerTick,
+                upperTick,
+                poolAddress,
+                chainId
+              )
+              try {
+                const { apy, dailyIncome } = estimateAPR(
+                  position,
+                  poolTicks,
+                  liquidityGross,
+                  volume24h,
+                  token0.symbol,
+                  token1.symbol
+                )
+                setEstimatedAPR(apy)
+
+              } catch (err) {
+                console.error(
+                  err,
+                  'POSITION' + position,
+                  'POOLTICKS' + poolTicks,
+                  'LIQUIDITY GROSS' + liquidityGross,
+                  'volume' + volume24h,
+                  token0.symbol,
+                  token1.symbol,
+                  'POOLADDRESS' + poolAddress
+                )
+              }
+            }
+          }
+        }
+      }
+    }
+    fetchData()
+  }, [token0, token1, pool, tickSpacing, price, amountUSD, token0Range, token1Range])
+
+  if (estimatedAPR) return estimatedAPR
+  else return 0
+}

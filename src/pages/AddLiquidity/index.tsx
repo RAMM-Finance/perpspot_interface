@@ -85,6 +85,8 @@ import {
 } from './styled'
 import { SupportedChainId } from 'constants/chains'
 import { getDecimalAndUsdValueData, UniswapQueryTokenInfo } from 'hooks/useUSDPrice'
+import { useEstimatedAPR } from 'hooks/usePools'
+import { usePoolOHLC } from 'state/application/hooks'
 
 const PriceAndToggleWrapper = styled(RowBetween)`
   flex-wrap: wrap;
@@ -636,6 +638,20 @@ export default function AddLiquidity() {
     addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
   const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)
 
+  const poolOHLC = usePoolOHLC(currencyIdA, currencyIdB, pool?.fee)
+
+  
+  const estimatedAPR = useEstimatedAPR(
+    baseCurrency, 
+    quoteCurrency, 
+    pool ?? null, 
+    pool?.tickSpacing ?? null, 
+    invertPrice ? parseFloat(price?.invert()?.toSignificant(6) ?? '0') : parseFloat(price?.toSignificant(6) ?? '0'), 
+    (currencyAFiatState.data ?? 0) + (currencyBFiatState.data ?? 0),
+    invertPrice ? parseFloat(priceLower && price ? priceLower.divide(price).toSignificant(6) : '0') : parseFloat(priceUpper && price ? priceUpper.divide(price).invert().toSignificant(6) : '0'),
+    invertPrice ? parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0') : parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0')
+  )
+
   const LmtPerDay: string = useMemo(() => {
     const LmtPerUsdPerDay = 1
     
@@ -1093,8 +1109,9 @@ export default function AddLiquidity() {
                                 <ThemedText.BodySmall>Estimated APR:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
                                   <ThemedText.BodySmall>
-                                    {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
-                                      `${aprUtil?.apr ? ' + swap fees' : ''}`}
+                                  {/* {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
+                                      `${aprUtil?.apr ? ' + swap fees' : ''}`} */}
+                                  {aprUtil ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %` : ''}
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>

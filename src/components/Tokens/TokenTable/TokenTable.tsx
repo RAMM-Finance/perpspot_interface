@@ -131,8 +131,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   ),
   [TokenSortMethod.APR]: (
     <Trans>
-      Estimated APR is the expected APR, with the given volume and utilization rate, the return as an LP for providing
-      liquidity between 90% and 110% of current price
+      Estimated APR is the expected APR, based on the given trading volume and utilization rate, for providing liquidity between 70% and 130% of the current price, assuming a deposit of 1,000 USD.
     </Trans>
   ),
   [TokenSortMethod.DAILY_LMT]: <Trans>Daily LMT emitted per USD value provided.</Trans>,
