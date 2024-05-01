@@ -1,10 +1,8 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
-import { LightCard } from 'components/Card'
 import Column from 'components/Column'
 import FAQBox, { FaqWrapper } from 'components/FAQ'
-import Modal from 'components/Modal'
-import { ModalItemStats } from 'components/NewItems/InfoItemStats'
+import BoxModal from 'components/NewItems/BoxModal'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -13,37 +11,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 
 import ItemImg from '../../assets/images/newItem.png'
+import ItemImg2 from '../../assets/images/newItem2.webp'
+import ItemImg3 from '../../assets/images/newItem3.webp'
+import ItemImg4 from '../../assets/images/newItem4.webp'
+import ItemImg5 from '../../assets/images/newItem5.webp'
+import ItemImg6 from '../../assets/images/newItem6.webp'
 import banner from '../../components/Leaderboard/banner.png'
-import BoxesContainr, { TBRPData } from '../../components/NewItems/BoxesContainr'
+import BoxesContainr from '../../components/NewItems/BoxesContainr'
 import InfoDescriptionSection from '../../components/NewItems/InfoDescription'
 
-const StyledMediaImg = styled.img<{
-  // imageLoading: boolean
-  $aspectRatio?: string
-  $hidden?: boolean
-}>`
-  width: 40%;
-  height: 50%;
-  /* aspect-ratio: ${({ $aspectRatio }) => $aspectRatio}; */
-  aspect-ratio: 16/9;
-  transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} transform`};
-  will-change: transform;
-  object-fit: contain;
-  border-radius: 12px;
-`
-
-const ModalWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  gap: 0.5rem;
-  // height: 100%;
-  padding: 2rem;
-  border-radius: 20px;
-`
 const CollectionContainer = styled(Column)`
   width: 100%;
   align-self: start;
@@ -106,68 +84,27 @@ const CollectionDescriptionSection = styled(Column)`
   }
 `
 
-export const ModalActionButton = styled(ThemedText.BodySecondary)<{
-  isDisabled: boolean
-}>`
-  position: absolute;
-  width: 180px;
-  top: -15px;
-  right: 20px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  padding: 8px 0px;
-  color: ${({ theme, isDisabled }) => (isDisabled ? theme.textPrimary : theme.accentTextLightPrimary)};
-  background: ${({ theme, isDisabled }) => (isDisabled ? theme.backgroundInteractive : theme.accentAction)};
-  transition: ${({ theme }) =>
-    `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
-  will-change: transform;
-  border-radius: 8px;
-  justify-content: center;
-  font-weight: 600 !important;
-  font-size: 18px !important;
-  line-height: 16px;
-  cursor: ${({ isDisabled }) => (isDisabled ? 'default' : 'pointer')};
+export type TBoxData = {
+  id: string
+  img: string
+  info: string
+  isLocked: boolean
+  index: number
+}
 
-  &:before {
-    background-size: 100%;
-    border-radius: inherit;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 100%;
-    content: '';
-  }
-
-  &:hover:before {
-    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayHover};
-  }
-
-  &:active:before {
-    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayPressed};
-  }
-`
-
-const ModalInfoWrapper = styled(LightCard)`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  /* align-items: center; */
-  border: none;
-  border-radius: 0px;
-  width: 100%;
-  border-bottom: 3px solid ${({ theme }) => theme.searchOutline};
-  justify-content: flex-start;
-  background: ${({ theme }) => theme.backgroundSurface};
-  padding: 0.75rem;
-`
+export type TBRPData = {
+  totalBoxes: number
+  totalUnlockableBoxes: number
+  lmtRequiredPerUnlock: string
+  totalLMT: string
+  NZTRageRow: number
+  NZTRageHigh: number
+}
 
 const NewItemsListPage = () => {
   const { account } = useWeb3React()
   const blockNumber = useBlockNumber()
+  const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4, ItemImg5, ItemImg6]
 
   const brp = useBRP()
   const [brpData, setBRPData] = useState<TBRPData>({
@@ -175,10 +112,23 @@ const NewItemsListPage = () => {
     totalUnlockableBoxes: 0,
     lmtRequiredPerUnlock: '0',
     totalLMT: '0',
+    NZTRageRow: 0,
+    NZTRageHigh: 0,
   })
-  const [loading, setLoading] = useState(true)
 
-  const [showModal, setShowModal] = useState(true)
+  const [itemDatas, setItemDatas] = useState<TBoxData[]>([])
+
+  const [showModal, setShowModal] = useState(false)
+
+  const [curModalData, setCurModalData] = useState<TBoxData>({
+    id: '',
+    img: '',
+    info: '',
+    isLocked: false,
+    index: 0,
+  })
+
+  const [loading, setLoading] = useState(true)
 
   const [hiddenCards, setHiddenCards] = useState<number[]>([])
   const addTransaction = useTransactionAdder()
@@ -226,7 +176,7 @@ const NewItemsListPage = () => {
   useEffect(() => {
     if (brp && account && blockNumber) {
       if (!brpData) setLoading(true)
-      console.log('blockNumber', blockNumber)
+      // console.log('blockNumber', blockNumber)
       const call = async () => {
         try {
           const totalBoxes = await brp.numBoxes(account)
@@ -237,17 +187,40 @@ const NewItemsListPage = () => {
           const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
           const lastRecordedPoints = await brp.lastRecordedPoints(account)
 
-          const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
-          const totalLMTString = totalLMTPoint.toString()
+          const NZTRageRow = await brp.rangeLow()
+          const NZTRageHigh = await brp.rangeHigh()
 
+          const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
+          const totalLMTString = totalLMTPoint?.toString()
+
+          const numTotalBoxes = totalBoxes?.toNumber()
+          const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
+
+          const lockedBoxes = Array(numTotalBoxes)
+            .fill(true)
+            .map((_, index) => index + 1 > numtotalUnlockableBoxes)
+          const newData = Array.from({ length: numTotalBoxes }, (_, index) => {
+            // const isLocked = index + 1 <= totalUnlockableBoxes;
+            const randomImgNumber = Math.floor(Math.random() * 6)
+            return {
+              id: `#${index + 1}`,
+              img: itemImages[randomImgNumber],
+              info: `Limitless test ${index + 1}`,
+              isLocked: lockedBoxes[index],
+              index,
+            }
+          })
           // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
           // console.log('blockNumber', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
           setBRPData({
-            totalBoxes: totalBoxes.toNumber(),
-            totalUnlockableBoxes: totalUnlockableBoxes[0]?.toNumber(),
-            lmtRequiredPerUnlock: lmtRequiredPerUnlock.toString(),
+            totalBoxes: numTotalBoxes,
+            totalUnlockableBoxes: numtotalUnlockableBoxes,
+            lmtRequiredPerUnlock: lmtRequiredPerUnlock?.toString(),
             totalLMT: totalLMTString,
+            NZTRageHigh: NZTRageHigh?.toNumber(),
+            NZTRageRow: NZTRageRow?.toNumber(),
           })
+          setItemDatas(newData)
           setHiddenCards([])
           // console.log('get Totalboxes', brpData, hiddenCards, totalBoxes)
           setLoading(false)
@@ -257,6 +230,8 @@ const NewItemsListPage = () => {
             totalUnlockableBoxes: 0,
             lmtRequiredPerUnlock: '0',
             totalLMT: '0',
+            NZTRageRow: 0,
+            NZTRageHigh: 0,
           })
           setHiddenCards([])
           setLoading(false)
@@ -267,31 +242,33 @@ const NewItemsListPage = () => {
     }
   }, [brp, account, handleUnlockBox, setHiddenCards, blockNumber])
 
+  const handleShowModal = useCallback((modalData: TBoxData) => {
+    setShowModal(true)
+    setCurModalData(modalData)
+  }, [])
+
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
+    setCurModalData({
+      id: '',
+      img: '',
+      info: '',
+      isLocked: false,
+      index: 0,
+    })
   }, [])
+  console.log('itemDatas', itemDatas)
 
   return (
     <>
-      {/* <Modal
+      <BoxModal
         isOpen={showModal}
-        minHeight={55}
-        maxHeight={750}
-        maxWidth={1200}
-        $scrollOverlay={true}
-        onDismiss={() => handleCloseModal()}
-      >
-        <ModalWrapper>
-          <StyledMediaImg src={ItemImg} />
-          <ModalInfoWrapper>
-            <ModalActionButton isDisabled={false}>Unlock</ModalActionButton>
-            <ThemedText.LargeHeader color="textSecondary">TreasureBox</ThemedText.LargeHeader>
-            <ModalItemStats />
-          </ModalInfoWrapper>
-        </ModalWrapper>
-      </Modal> */}
+        hnadleColoseModal={handleCloseModal}
+        handleUnlockBox={handleUnlockBox}
+        modalData={curModalData}
+        brpData={brpData}
+      />
       <CollectionContainer>
-        {/* Banner, Info title description section */}
         <BannerWrapper>
           <Banner src={banner} />
         </BannerWrapper>
@@ -307,18 +284,18 @@ const NewItemsListPage = () => {
         </CollectionDescriptionSection>
         <CollectionDisplaySection>
           {/* <InfiniteScroll
-            next={() => {console.log("")}}
-            hasMore={false}
-            loader={false}
-            dataLength={20}
-            style={{ overflow: 'unset', height: '100%' }}
-            > */}
+          next={() => {console.log("")}}
+          hasMore={false}
+          loader={false}
+          dataLength={20}
+          style={{ overflow: 'unset', height: '100%' }}
+          > */}
           <BoxesContainr
-            brpData={brpData}
+            itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}
             loading={loading}
             hiddenCards={hiddenCards}
-            handleShowModal={setShowModal}
+            handleShowModal={handleShowModal}
           />
           {/* </InfiniteScroll> */}
         </CollectionDisplaySection>
