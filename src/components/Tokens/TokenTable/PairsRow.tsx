@@ -491,7 +491,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     const query = `{
       ticks(first: 1000, skip: ${page * 1000}, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
         liquidityGross
-        liquidityNet
+        index
       }
     }`
 
@@ -632,11 +632,20 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       }
       return (amount * q96) / (pb - pa)
     }
+    // let decimal
+    // if (token0Decimals !== token1Decimals)
+    //   decimal = token0Decimals - token1Decimals
+    // else {
+    //   decimal = token0Decimals
+    // }
 
-    const decimal: number = 10 ** 18 // (token0Decimals - token1Decimals)
+    // const decimal0: number = 10 ** decimal // (token0Decimals - token1Decimals) // 18
+    const decimal0: number = 10 ** token0Decimals
+    const decimal1: number = 10 ** token1Decimals
+    // const decimal: number = 10 ** 18
     // console.log("DECIMALLLL", decimal)
-    const amount_0: number = deltaX * decimal
-    const amount_1: number = deltaY * decimal
+    const amount_0: number = deltaX * decimal0
+    const amount_1: number = deltaY * decimal1
     const sqrtp_low: number = price_to_sqrtp(pl)
     const sqrtp_cur: number = price_to_sqrtp(p)
     const sqrtp_upp: number = price_to_sqrtp(pu)
@@ -678,8 +687,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       position.token0Decimals,
       position.token1Decimals
     )
-    if (token0 === "wBTC" && token1 === "WETH")
-      console.log(`LIQUIDITY ratio FOR ${token0} / ${token1}`, liquidityDelta, liquidityGross.toNumber(), liquidityDelta/(liquidityGross.toNumber()))
 
     const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
@@ -687,6 +694,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
     const estimatedFee: number =
       p >= pl && p <= pu ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
+
+
+      // if (token0 === "wBTC" && token1 === "WETH") {
+        // console.log(`LIQUIDITY ratio FOR ${token0} / ${token1}`, p, liquidityDelta, liquidityGross.toNumber(), liquidityDelta/(liquidityGross.toNumber()))
+
+        // console.log("feeTierPercentage", feeTierPercentage)
+        // console.log("estimatedFee", estimatedFee)
+
+      // }
+        
 
     return {
       estimatedFee,
@@ -709,7 +726,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
 
     const fee_est = est_result.estimatedFee
-    console.log("FEE_EST", fee_est)
+    // console.log("FEE_EST", fee_est)
     const apy = ((fee_est * 365) / position.amount) * 100
     const dailyIncome = fee_est
     
@@ -742,9 +759,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           if (lowerPrice > upperPrice) 
             [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
 
-          const decimalDiff = token0Decimals - token1Decimals
-          const tick_f = Math.log(lowerPrice / 10 ** decimalDiff) / Math.log(base)
-          const tick = nearestUsableTick(parseInt(tick_f.toString()), tickSpacing)
+          // const decimalDiff = token0Decimals - token1Decimals
+          // const tick_f = Math.log(lowerPrice / 10 ** decimalDiff) / Math.log(base)
+          // const tick = nearestUsableTick(parseInt(tick_f.toString()), tickSpacing)
           
 
           let lowerTick = tryParseLmtTick(
@@ -761,6 +778,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             upperPrice.toString(),
             tickSpacing
           )
+          
+          if (token0?.symbol == "wBTC" && token1?.symbol == "WETH") 
+            console.log("PRICE, LOWER, UPPER, LOWERTICK, UPPERTICK", priceInverted, lowerPrice, upperPrice, lowerTick, upperTick)
 
           if (lowerTick && upperTick) {
             if (lowerTick > upperTick)
@@ -803,8 +823,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
                   token0.symbol,
                   token1.symbol
                 )
-                if (token0.symbol == "wBTC" && token1.symbol == "WETH")
-                  console.log(`APY, DAILY FEE AND POOL FEE OF ${token0.symbol} / ${token1.symbol}`, apy, dailyIncome, pool.fee)
+                console.log("volume24h", volume24h)
+                if (volume24h <= 1000 && token0 && token1) {
+                  console.log(`${token0.symbol} - ${token1.symbol} swap volume less than 1000`)
+                }
+                  // console.log(`APY, DAILY FEE AND POOL FEE OF ${token0.symbol} / ${token1.symbol}`, apy, dailyIncome, pool.fee)
                 setEstimatedAPR(apy)
               } catch (err) {
                 console.error(
