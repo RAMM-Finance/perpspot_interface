@@ -648,15 +648,20 @@ export default function AddLiquidity() {
     addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
   const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)
   
+  const priceForEst = invertPrice ? parseFloat(price?.invert()?.toSignificant(6) ?? '0') : parseFloat(price?.toSignificant(6) ?? '0')
+  const amountUSD = (currencyAFiatState.data ?? 0) + (currencyBFiatState.data ?? 0)
+  const token0Range = invertPrice ? parseFloat(priceUpper && price ? priceUpper.divide(price).invert().toSignificant(6) : '0') : parseFloat(priceLower && price ? priceLower.divide(price).toSignificant(6) : '0')
+  const token1Range = invertPrice ? parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0') : parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0')
+
   const estimatedAPR = useEstimatedAPR(
     baseCurrency, 
     quoteCurrency, 
     pool ?? null, 
     pool?.tickSpacing ?? null, 
-    invertPrice ? parseFloat(price?.invert()?.toSignificant(6) ?? '0') : parseFloat(price?.toSignificant(6) ?? '0'), 
-    (currencyAFiatState.data ?? 0) + (currencyBFiatState.data ?? 0),
-    invertPrice ? parseFloat(priceLower && price ? priceLower.divide(price).toSignificant(6) : '0') : parseFloat(priceUpper && price ? priceUpper.divide(price).invert().toSignificant(6) : '0'),
-    invertPrice ? parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0') : parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0')
+    priceForEst,
+    amountUSD,
+    token0Range,
+    token1Range
   )
 
   const LmtPerDay: string = useMemo(() => {

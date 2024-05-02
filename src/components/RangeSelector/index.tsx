@@ -48,7 +48,7 @@ export default function RangeSelector({
       row-gap: 1rem;
     }
   `
-
+  
   return (
     <AutoColumn gap="md">
       <StepCounterWrapper>
