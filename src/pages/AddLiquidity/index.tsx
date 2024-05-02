@@ -129,12 +129,12 @@ export default function AddLiquidity() {
       : undefined
 
   const baseCurrency = useCurrency(currencyIdA)
+
   const currencyB = useCurrency(currencyIdB)
 
   // prevent an error if they input ETH/WETH
   const quoteCurrency =
     baseCurrency && currencyB && baseCurrency.wrapped.equals(currencyB.wrapped) ? undefined : currencyB
-
   // mint state
   const { independentField, typedValue, startPriceTypedValue } = useV3MintState()
 
@@ -261,7 +261,17 @@ export default function AddLiquidity() {
         setCurrencyBFiatState(currencyBFiat)
       }
     }    
-  }, [usdcValueCurrencyA, usdcValueCurrencyB, parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B], formattedAmounts[Field.CURRENCY_A], formattedAmounts[Field.CURRENCY_B], chainId])
+  }, [
+    usdcValueCurrencyA, 
+    usdcValueCurrencyB, 
+    setCurrencyAFiatState, 
+    setCurrencyBFiatState, 
+    parsedAmounts[Field.CURRENCY_A], 
+    parsedAmounts[Field.CURRENCY_B], 
+    formattedAmounts[Field.CURRENCY_A], 
+    formattedAmounts[Field.CURRENCY_B], 
+    chainId
+  ])
 
   // get the max amounts user can add
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
