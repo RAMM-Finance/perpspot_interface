@@ -77,8 +77,6 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
 
   const estimatedAPR = useEstimatedAPR(currency0, currency1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
-  console.log("ESTIMATED")
-  console.log("APR !!!", aprInfo[1].apr !== undefined ? (aprInfo[1].apr + estimatedAPR) : null)
   const setCurrentPool = useSetCurrentPool()
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
@@ -114,7 +112,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
           style={{ fontSize: '14px', cursor: 'default' }}
           rate={(aprInfo[1].apr ?? 0) + (estimatedAPR ?? 0)}
         >
-          {aprInfo[1].apr !== undefined ? `${(aprInfo[1].apr + estimatedAPR)?.toPrecision(4)}%` : '-'}
+          {aprInfo[1].apr !== undefined ? `${((aprInfo[1].apr + estimatedAPR) || 0)?.toFixed(4)}%` : '-'}
         </ClickableRate>
       </DataRow>
       <DataRow>
@@ -123,7 +121,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
           style={{ fontSize: '14px', cursor: 'default' }}
           rate={aprInfo[1].utilTotal ? aprInfo[1].utilTotal : 0}
         >
-          {aprInfo[1].utilTotal !== undefined ? `${aprInfo[1].utilTotal?.toPrecision(4)}%` : '-'}
+          {aprInfo[1].utilTotal !== undefined ? `${aprInfo[1].utilTotal?.toFixed(4)}%` : '-'}
         </ClickableRate>
       </DataRow>
       <ButtonRow>

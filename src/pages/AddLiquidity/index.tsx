@@ -46,7 +46,7 @@ import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import Row, { RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
-import { ZERO_PERCENT } from '../../constants/misc'
+import { LMT_PER_USD_PER_DAY, ZERO_PERCENT } from '../../constants/misc'
 import { useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
@@ -611,13 +611,12 @@ export default function AddLiquidity() {
   )
 
   const LmtPerDay: string = useMemo(() => {
-    const LmtPerUsdPerDay = 1
     
     if (!currencyAFiatState.isLoading && 
         !currencyBFiatState.isLoading && 
         currencyAFiatState.data !== undefined && 
         currencyBFiatState.data !== undefined) {
-        return ((currencyAFiatState.data + currencyBFiatState.data) * LmtPerUsdPerDay).toString()
+        return ((currencyAFiatState.data + currencyBFiatState.data) * LMT_PER_USD_PER_DAY).toString()
       } else {
         return '-'
       }

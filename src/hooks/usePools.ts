@@ -419,11 +419,15 @@ const aprDataPreperation = async (
   tickLower: number,
   tickUpper: number,
   poolAddress: string,
-  chainId: number | undefined
+  chainId: number | undefined,
+  token0: string | undefined,
+  token1: string | undefined
 ) => {
   const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId)
   const liquidityGross = getLiquidityFromTick(poolTicks)
-
+  // if (token1 === "INT") {
+  //   console.log("LIQ GROSS", liquidityGross.toNumber())
+  // }
   return {
     poolTicks,
     volume24h,
@@ -535,6 +539,9 @@ const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: num
     position.token0Decimals,
     position.token1Decimals
   )
+  // if (token1 === "INT") {
+  //   console.log("LIQ PERCENTAGE", liquidityDelta / (liquidityGross.toNumber() + liquidityDelta))
+  // }
 
   const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
@@ -624,8 +631,6 @@ export function useEstimatedAPR(
             upperPrice = upperPrice * token1Range
           }
 
-          // let lowerPrice = priceInverted * 0.7
-          // let upperPrice = priceInverted * 1.3
           if (lowerPrice > upperPrice) 
             [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
 
@@ -675,7 +680,9 @@ export function useEstimatedAPR(
                 lowerTick,
                 upperTick,
                 poolAddress,
-                chainId
+                chainId,
+                token0?.symbol,
+                token1?.symbol
               )
               try {
                 const { apy, dailyIncome } = estimateAPR(
@@ -686,6 +693,16 @@ export function useEstimatedAPR(
                   token0.symbol,
                   token1.symbol
                 )
+                // if (token1.symbol === "INT") {
+                //   console.log("INIT - WETH INFO")
+                //   console.log("poolAddress", poolAddress)
+                //   console.log("volume24h", volume24h)
+                //   console.log("liquidityGross", liquidityGross.toNumber())
+                //   console.log("poolTicks", poolTicks)
+                //   console.log("position", position)
+                //   console.log("TICKS LOWER UPPER", lowerTick, upperTick)
+                // }
+
                 setEstimatedAPR(apy)
 
               } catch (err) {
@@ -693,7 +710,7 @@ export function useEstimatedAPR(
                   err,
                   'POSITION' + position,
                   'POOLTICKS' + poolTicks,
-                  'LIQUIDITY GROSS' + liquidityGross,
+                  'LIQUIDITY GROSS' + liquidityGross.toNumber(),
                   'volume' + volume24h,
                   token0.symbol,
                   token1.symbol,

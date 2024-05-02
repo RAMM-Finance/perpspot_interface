@@ -26,6 +26,7 @@ import { Input as NumericalInput } from '../NumericalInput'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
+import { LMT_PER_USD_PER_DAY } from 'constants/misc'
 
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
@@ -244,9 +245,8 @@ export default function CurrencyInputPanel({
   const chainAllowed = isSupportedChain(chainId)
   
   const LmtPerDay = useMemo(() => {
-    const LmtPerUsdPerDay = 1
     if (!fiatValue?.isLoading && fiatValue?.data !== undefined)
-      return (fiatValue.data * LmtPerUsdPerDay).toString()
+      return (fiatValue.data * LMT_PER_USD_PER_DAY).toString()
     else
       return null
   }, [fiatValue])

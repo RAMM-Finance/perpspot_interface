@@ -77,7 +77,7 @@ function LoadingRow(props: { first?: boolean; last?: boolean }) {
       priceChange={<SmallLoadingBubble />}
       tvl={<SmallLoadingBubble />}
       volume={<SmallLoadingBubble />}
-      UtilRate={<LongLoadingBubble />}
+      dailyLMT={<LongLoadingBubble />}
       {...props}
     />
   )
@@ -186,7 +186,7 @@ function PHeaderRow() {
       tvl={<HeaderCell category={TokenSortMethod.TOTAL_VALUE_LOCKED} />}
       volume={<HeaderCell category={TokenSortMethod.VOLUME} />}
       APR={<HeaderCell category={TokenSortMethod.APR} />}
-      UtilRate={<HeaderCell category={TokenSortMethod.DAILY_LMT} />}
+      dailyLMT={<HeaderCell category={TokenSortMethod.DAILY_LMT} />}
       sparkLine={null}
     />
   )
@@ -470,7 +470,7 @@ export default function TokenTable() {
                   price={poolOHLCs[id]?.priceNow}
                   delta={poolOHLCs[id]?.delta24h}
                   apr={aprList[id]?.apr || 0}
-                  utilTotal={aprList[id]?.utilTotal}
+                  dailyLMT={aprList[id]?.utilTotal}
                 />
               )
             })

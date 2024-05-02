@@ -26,6 +26,7 @@ import {
 import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
+import { LMT_PER_USD_PER_DAY } from 'constants/misc'
 
 const Cell = styled.div`
   display: flex;
@@ -308,7 +309,7 @@ export function TokenRow({
   tvl,
   volume,
   APR,
-  UtilRate,
+  dailyLMT,
   sparkLine,
   currency0,
   currency1,
@@ -328,7 +329,7 @@ export function TokenRow({
   volume: ReactNode
   priceChange: ReactNode
   APR: ReactNode
-  UtilRate: ReactNode
+  dailyLMT: ReactNode
   currency0?: string
   currency1?: string
   last?: boolean
@@ -371,14 +372,14 @@ export function TokenRow({
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {APR}
       </VolumeCell>
+      <VolumeCell data-testid="volume-cell" sortable={header}>
+        {dailyLMT}
+      </VolumeCell>
       <TvlCell data-testid="tvl-cell" sortable={header}>
         {tvl}
       </TvlCell>
       <VolumeCell data-testid="volume-cell" sortable={header}>
         {volume}
-      </VolumeCell>
-      <VolumeCell data-testid="volume-cell" sortable={header}>
-        {UtilRate}
       </VolumeCell>
       {!header && loading ? (
         <ButtonCell data-testid="volume-cell" sortable={header}>
@@ -424,14 +425,12 @@ interface LoadedRowProps {
   price?: number
   delta?: number
   apr?: number
-  utilTotal?: number
+  dailyLMT?: number
 }
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, utilTotal } = props
-
-  const { chainId } = useWeb3React()
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, dailyLMT } = props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -473,7 +472,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
+  console.log("TOKEN 0 IS BASE ? ", token0?.symbol, token1?.symbol, poolOHLC?.token0IsBase)
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
+  console.log("UES EST ", token0, token1, priceInverted)
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
@@ -535,14 +536,16 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         APR={
           <>
             <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
-              {apr !== undefined ? `${(apr + estimatedAPR)?.toPrecision(4)} %` : '-'}
+              {apr !== undefined ? `${(apr + estimatedAPR)?.toFixed(4)} %` : '-'}
             </ClickableRate>
             {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ {estimatedAPR}</span> */}
           </>
         }
-        UtilRate={
-          <ClickableRate rate={utilTotal ? utilTotal : 0}>
-            {utilTotal !== undefined ? `${utilTotal?.toFixed(4)} %` : '-'}
+        dailyLMT={
+          <ClickableRate rate={LMT_PER_USD_PER_DAY}>
+             {/* rate={dailyLMT ? dailyLMT : 0}> */}
+            {/* {dailyLMT !== undefined ? `${dailyLMT?.toFixed(4)} ` : '-'} */}
+            {LMT_PER_USD_PER_DAY}
           </ClickableRate>
         }
         first={tokenListIndex === 0}
