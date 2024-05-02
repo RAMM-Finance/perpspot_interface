@@ -1,23 +1,15 @@
 import { Trans } from '@lingui/macro'
-import { Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import axios from 'axios'
-import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
 import { SparklineMap } from 'graphql/data/TopTokens'
-import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
-import { computePoolAddress, useEstimatedAPR, usePool } from 'hooks/usePools'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react'
+import { ForwardedRef, forwardRef, useMemo } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
-import { tryParseLmtTick } from 'state/mint/v3/utils'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
@@ -34,7 +26,6 @@ import {
 import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
-import { nearestUsableTick } from '@uniswap/v3-sdk'
 
 const Cell = styled.div`
   display: flex;
@@ -399,11 +390,12 @@ export function TokenRow({
             <ButtonPrimary
               style={{
                 padding: '.5rem',
-                width: 'fit-content',
-                fontSize: '0.7rem',
+                width: '80px',
+                fontSize: '1rem',
                 borderRadius: '10px',
-                height: '30px',
+                height: '40px',
                 lineHeight: '1',
+                fontWeight: '500',
               }}
               onClick={handleClick}
             >
@@ -458,12 +450,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
 
   // const poolOHLCDatas = useAppPoolOHLC()
-  
+
   const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
 
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
-  
+
   const poolId = getPoolId(tokenA, tokenB, fee)
 
   const handleCurrencySelect = useCallback(() => {
@@ -481,7 +473,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
-  let priceInverted = poolOHLC?.token0IsBase ? price : (price ? 1 / price : 0)
+  const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
@@ -543,10 +535,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         APR={
           <>
             <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
-              {apr !== undefined ? 
-              `${(apr 
-                + estimatedAPR
-                )?.toPrecision(4)} %` : '-'}
+              {apr !== undefined ? `${(apr + estimatedAPR)?.toPrecision(4)} %` : '-'}
             </ClickableRate>
             {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ {estimatedAPR}</span> */}
           </>

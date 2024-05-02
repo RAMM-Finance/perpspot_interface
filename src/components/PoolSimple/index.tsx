@@ -19,7 +19,6 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import { BigNumber } from 'ethers'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useLimweth, useVaultContract } from 'hooks/useContract'
@@ -42,6 +41,21 @@ import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { Field } from '../../state/mint/v3/actions'
+import {
+  useLimWethBalance,
+  useLimWethPrice,
+  useLimWethStaticDeposit,
+  useLimWethStaticRedeem,
+  useLimWethTokenBalance,
+  useLimWethTotalSupply,
+  useLimWethUtilizedBalance,
+  useLlpBalance,
+  useLlpPrice,
+  useMaxRedeemableInToken,
+  useVaultData,
+  useVaultStaticDepositAnyToken,
+  useVaultStaticRedeemAnyToken,
+} from './hooks'
 
 const AddLiquidityRow = styled(RowBetween)`
   gap: 10px;
@@ -70,7 +84,7 @@ export default function SimplePool() {
   const theme = useTheme()
   const [liqError, setLiqError] = useState<boolean>(false)
   const [buy, setBuy] = useState<boolean>(true)
-  const [value, setValue] = useState<number>(0)
+  // const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract()
   const limweth = useLimweth()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
@@ -78,10 +92,10 @@ export default function SimplePool() {
   const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
 
-  const [data, setData] = useState<any>()
-  const [mW, setMW] = useState<any>()
-  const [llpPrice, setLlpPrice] = useState<any>()
-  const [limWETHPrice, setLimWETHPrice] = useState<any>()
+  // const [data, setData] = useState<any>()
+  // const [mW, setMW] = useState<any>()
+  // const [llpPrice, setLlpPrice] = useState<any>()
+  // const [limWETHPrice, setLimWETHPrice] = useState<any>()
 
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -127,34 +141,15 @@ export default function SimplePool() {
 
   const existingPosition = undefined
 
-  const {
-    pool,
-    ticks,
-    dependentField,
-    price,
-    pricesAtTicks,
-    pricesAtLimit,
-    parsedAmounts,
-    currencyBalances,
-    position,
-    noLiquidity,
-    currencies,
-    errorMessage,
-    invalidPool,
-    invalidRange,
-    outOfRange,
-    depositADisabled,
-    depositBDisabled,
-    invertPrice,
-    ticksAtLimit,
-  } = useDerivedLmtMintInfo(
-    baseCurrency ?? undefined,
-    quoteCurrency ?? undefined,
-    feeAmount,
-    baseCurrency ?? undefined,
-    quoteCurrency ?? undefined,
-    existingPosition
-  )
+  const { dependentField, parsedAmounts, currencyBalances, noLiquidity, currencies, errorMessage } =
+    useDerivedLmtMintInfo(
+      baseCurrency ?? undefined,
+      quoteCurrency ?? undefined,
+      feeAmount,
+      baseCurrency ?? undefined,
+      quoteCurrency ?? undefined,
+      existingPosition
+    )
 
   const { independentField, typedValue } = useV3MintState()
 
@@ -214,7 +209,7 @@ export default function SimplePool() {
     } else {
       return Number(parsedAmounts[Field.CURRENCY_A]?.quotient.toString())
     }
-  }, [parsedAmounts, parsedAmounts[Field.CURRENCY_A]?.quotient.toString()])
+  }, [parsedAmounts])
 
   const handleCurrencySelect = useCallback(
     (currencyNew: Currency, currencyIdOther?: string): (string | undefined)[] => {
@@ -359,232 +354,130 @@ export default function SimplePool() {
       : LIM_WETH[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
-  //callStatic for llp deposit
+  const vaultStaticDepositDisabled =
+    !parsedAmounts?.[Field.CURRENCY_A] ||
+    !account ||
+    !vaultContract ||
+    !chainId ||
+    !provider ||
+    !buy ||
+    outputCurrency?.symbol !== 'LLP'
+  const {
+    result: vaultStaticDepositValue,
+    loading: vaultStaticDepositLoading,
+    error: vaultStaticDepositError,
+  } = useVaultStaticDepositAnyToken(
+    !vaultStaticDepositDisabled,
+    baseCurrency?.wrapped.address,
+    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
+    account
+  )
 
-  const cb = useCallback(async (): Promise<BigNumber> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
-      if (baseCurrency && amountIn && account)
-        response = await vaultContract?.callStatic.depositAnyToken(baseCurrency?.wrapped.address, amountIn, account)
-      return response as BigNumber
-    } catch (err) {
-      throw new Error('reff')
-    }
-  }, [account, chainId, vaultContract, provider, parsedAmounts, baseCurrency])
+  const limWethMintStaticDisabled =
+    !parsedAmounts?.[Field.CURRENCY_A] ||
+    !account ||
+    !vaultContract ||
+    !limweth ||
+    !chainId ||
+    !provider ||
+    !buy ||
+    outputCurrency?.symbol === 'LLP'
 
-  useEffect(() => {
-    if (
-      !parsedAmounts?.[Field.CURRENCY_A] ||
-      !account ||
-      !vaultContract ||
-      !chainId ||
-      !provider ||
-      !buy ||
-      outputCurrency?.symbol !== 'LLP'
-    ) {
-      return
-    }
-
-    cb()
-      .then((response) => {
-        console.log(response)
-        setLiqError(false)
-        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
-      })
-      .catch((error) => {
-        console.log(error)
-        setValue(0)
-      })
-  }, [
-    vaultContract,
-    parsedAmounts,
-    cb,
+  const {
+    result: limWethStaticDepositValue,
+    loading: limWethStaticDepositLoading,
+    error: limWethStaticDepositError,
+  } = useLimWethStaticDeposit(
+    !limWethMintStaticDisabled,
+    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
     account,
-    chainId,
-    provider,
-    buy,
-    outputCurrency?.symbol,
-    quoteCurrency?.decimals,
-  ])
+    quoteCurrency ?? undefined
+  )
 
-  //call static for limweth deposit
-
-  const limWethMintStaticCallback = useCallback(async (): Promise<BigNumber> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
-      if (amountIn && account) response = await limweth?.callStatic.deposit(amountIn, account)
-      return response as BigNumber
-    } catch (err) {
-      throw new Error('reff')
-    }
-  }, [account, chainId, limweth, provider, parsedAmounts, baseCurrency])
-
-  useEffect(() => {
-    if (
-      !parsedAmounts?.[Field.CURRENCY_A] ||
-      !account ||
-      !vaultContract ||
-      !limweth ||
-      !chainId ||
-      !provider ||
-      !buy ||
-      outputCurrency?.symbol === 'LLP'
-    ) {
-      return
-    }
-
-    setAttemptingTxn(true)
-    setLiqError(false)
-    limWethMintStaticCallback()
-      .then((response) => {
-        setLiqError(false)
-        console.log('limMint', response)
-        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
-      })
-      .catch((error) => {
-        console.log(error)
-        setValue(0)
-      })
-  }, [
-    limWethMintStaticCallback,
-    account,
-    limweth,
-    chainId,
-    provider,
-    parsedAmounts,
-    txHash,
-    attemptingTxn,
-    error,
-    addTransaction,
-    outputCurrency?.symbol,
-    buy,
-    vaultContract,
-    quoteCurrency?.decimals,
-  ])
-
+  const vaultStaticRedeemDisabled =
+    !parsedAmounts?.[Field.CURRENCY_A] ||
+    !account ||
+    !vaultContract ||
+    !chainId ||
+    !provider ||
+    buy ||
+    outputCurrency?.symbol !== 'LLP'
   // call llp static redeem
+  const {
+    result: vaultStaticRedeemValue,
+    loading: vaultStaticRedeemLoading,
+    error: vaultStaticRedeemError,
+  } = useVaultStaticRedeemAnyToken(
+    !vaultStaticRedeemDisabled,
+    quoteCurrency?.wrapped.address,
+    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
+    account
+  )
 
-  const cbredeem = useCallback(async (): Promise<BigNumber> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
-      if (quoteCurrency && amountIn && account)
-        response = await vaultContract?.callStatic.redeemToAnyToken(
-          quoteCurrency?.wrapped.address,
-          amountIn,
-          account,
-          account
-        )
-      return response as BigNumber
-    } catch (err) {
-      throw new Error(err.errorArgs)
-    }
-  }, [account, chainId, vaultContract, provider, parsedAmounts])
+  const limWethStaticWithdrawDisabled =
+    !parsedAmounts?.[Field.CURRENCY_A] ||
+    !account ||
+    !limweth ||
+    !chainId ||
+    !provider ||
+    buy ||
+    outputCurrency?.symbol === 'LLP' ||
+    !WETHPrice.data
 
-  useEffect(() => {
-    if (
-      !parsedAmounts?.[Field.CURRENCY_A] ||
-      !account ||
-      !vaultContract ||
-      !chainId ||
-      !provider ||
-      buy ||
-      outputCurrency?.symbol !== 'LLP'
-    ) {
-      return
-    }
-    setAttemptingTxn(true)
-
-    cbredeem()
-      .then((response) => {
-        console.log(response)
-        setLiqError(false)
-        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
-        setLiqError(false)
-      })
-      .catch((error) => {
-        console.log('referrr', error)
-        setValue(0)
-        if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
-      })
-  }, [
+  const {
+    result: limWethStaticWithdrawValue,
+    loading: limWethStaticWithdrawLoading,
+    error: limWethStaticWithdrawError,
+  } = useLimWethStaticRedeem(
+    !limWethStaticWithdrawDisabled,
+    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
     account,
-    vaultContract,
-    chainId,
-    provider,
-    parsedAmounts,
-    txHash,
-    attemptingTxn,
-    error,
-    buy,
-    cbredeem,
-    outputCurrency?.symbol,
-    quoteCurrency?.decimals,
+    quoteCurrency ?? undefined
+  )
+
+  const value = useMemo(() => {
+    if (!limWethStaticWithdrawDisabled) {
+      if (limWethStaticWithdrawValue !== undefined) {
+        return limWethStaticWithdrawValue
+      }
+    } else if (!vaultStaticRedeemDisabled) {
+      if (vaultStaticRedeemValue !== undefined) {
+        return vaultStaticRedeemValue
+      }
+    } else if (!limWethMintStaticDisabled) {
+      if (limWethStaticDepositValue !== undefined) {
+        return limWethStaticDepositValue
+      }
+    } else if (!vaultStaticDepositDisabled) {
+      if (vaultStaticDepositValue !== undefined) {
+        return vaultStaticDepositValue
+      }
+    }
+    return 0
+  }, [
+    limWethStaticWithdrawDisabled,
+    limWethStaticWithdrawValue,
+    vaultStaticRedeemDisabled,
+    vaultStaticRedeemValue,
+    limWethMintStaticDisabled,
+    limWethStaticDepositValue,
+    vaultStaticDepositDisabled,
+    vaultStaticDepositValue,
   ])
 
-  // limweth static redeem
-
-  const limWethStaticWithdrawCallback = useCallback(async (): Promise<BigNumber> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('redeeminput', amountIn, account)
-      if (amountIn && account) response = await limweth?.callStatic.redeem(amountIn, account, account)
-      return response as BigNumber
-    } catch (err) {
-      throw new Error('reff')
-    }
-  }, [account, chainId, limweth, provider, parsedAmounts, WETHPrice, limWETHPrice])
-
-  useEffect(() => {
-    if (
-      !parsedAmounts?.[Field.CURRENCY_A] ||
-      !account ||
-      !limweth ||
-      !chainId ||
-      !provider ||
-      buy ||
-      outputCurrency?.symbol === 'LLP' ||
-      !WETHPrice.data
-    ) {
-      return
+  const liquidityError = useMemo(() => {
+    if (!limWethStaticWithdrawDisabled) {
+      if (limWethStaticWithdrawError?.error.includes('EXCEEDS AVAILABLE LIQUIDITY')) {
+        return true
+      }
+    } else if (!vaultStaticRedeemDisabled) {
+      if (vaultStaticRedeemError?.error.includes('EXCEEDS AVAILABLE LIQUIDITY')) {
+        return true
+      }
     }
 
-    setAttemptingTxn(true)
-
-    limWethStaticWithdrawCallback()
-      .then((response) => {
-        console.log(response)
-        setLiqError(false)
-        setValue(Number(response) / Number(`1e${quoteCurrency?.decimals}`))
-      })
-      .catch((error) => {
-        console.log('hi', error)
-        setValue(0)
-        if (chainId === 8453) setLiqError(true)
-        if (error.toString().substring(7) === 'EXCEEDS AVAILABLE LIQUIDITY') setLiqError(true)
-      })
-  }, [
-    limWethStaticWithdrawCallback,
-    account,
-    limweth,
-    chainId,
-    provider,
-    parsedAmounts,
-    txHash,
-    attemptingTxn,
-    error,
-    addTransaction,
-    outputCurrency?.symbol,
-    quoteCurrency?.decimals,
-    buy,
-    WETHPrice,
-  ])
+    return false
+  }, [limWethStaticWithdrawDisabled, limWethStaticWithdrawError, vaultStaticRedeemDisabled, vaultStaticRedeemError])
 
   //limWETH deposit
 
@@ -598,7 +491,7 @@ export default function SimplePool() {
     } catch (err) {
       throw new Error('reff')
     }
-  }, [account, chainId, limweth, provider, parsedAmounts, baseCurrency])
+  }, [account, limweth, parsedAmounts, baseCurrency])
 
   const handleLimWethDeposit = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
@@ -633,13 +526,13 @@ export default function SimplePool() {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
-      console.log('redeeminput', amountIn, account)
+      console.log('zeke:4', amountIn, account)
       if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
     }
-  }, [account, chainId, limweth, provider, parsedAmounts])
+  }, [account, limweth, parsedAmounts])
 
   const handleLimWethRedeem = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
@@ -666,18 +559,7 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [
-    limWethWithdrawCallback,
-    account,
-    limweth,
-    chainId,
-    provider,
-    parsedAmounts,
-    txHash,
-    attemptingTxn,
-    error,
-    addTransaction,
-  ])
+  }, [limWethWithdrawCallback, account, limweth, chainId, provider, parsedAmounts, addTransaction])
 
   // llp deposit
 
@@ -692,7 +574,7 @@ export default function SimplePool() {
     } catch (err) {
       throw new Error('reff')
     }
-  }, [account, chainId, vaultContract, provider, parsedAmounts, baseCurrency])
+  }, [account, vaultContract, parsedAmounts, baseCurrency])
 
   const handleDeposit = useCallback(() => {
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
@@ -719,7 +601,7 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [callback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error, addTransaction])
+  }, [callback, account, vaultContract, chainId, provider, parsedAmounts, addTransaction])
 
   // llp redeem
 
@@ -734,10 +616,10 @@ export default function SimplePool() {
     } catch (err) {
       throw new Error('reff')
     }
-  }, [account, chainId, vaultContract, provider, parsedAmounts])
+  }, [account, quoteCurrency, vaultContract, parsedAmounts])
 
-  const [llpBalance, setLlpBalance] = useState<number>(0)
-  const [limWETHBalance, setlimWETHBalance] = useState<number>(0)
+  // const [llpBalance, setLlpBalance] = useState<number>(0)
+  // const [limWETHBalance, setlimWETHBalance] = useState<number>(0)
 
   const handleRedeem = useCallback(() => {
     console.log('?????', parsedAmounts?.[Field.CURRENCY_A], account, vaultContract, chainId, provider)
@@ -745,7 +627,6 @@ export default function SimplePool() {
       return
     }
     setAttemptingTxn(true)
-
     redeemCallback()
       .then((response) => {
         setAttemptingTxn(false)
@@ -764,158 +645,116 @@ export default function SimplePool() {
         setTxHash(undefined)
         setError(error.message)
       })
-  }, [redeemCallback, account, vaultContract, chainId, provider, parsedAmounts, txHash, attemptingTxn, error])
+  }, [redeemCallback, account, vaultContract, addTransaction, chainId, provider, parsedAmounts])
 
-  useEffect(() => {
-    if (!account || !provider || !vaultContract || !limweth) return
+  const llpBalance = useLlpBalance(account)
+  const limWETHBalance = useLimWethBalance(account)
+  // useEffect(() => {
+  //   if (!account || !provider || !vaultContract || !limweth) return
 
-    if (outputCurrency?.symbol === 'LLP') {
-      const call = async () => {
-        try {
-          const balance = await vaultContract.balanceOf(account)
-          console.log('balance', balance.toString())
-          setLlpBalance(() => Number(balance) / 1e18)
-        } catch (error) {
-          console.log('codebyowners err')
-        }
-      }
-      call()
+  //   if (outputCurrency?.symbol === 'LLP') {
+  //     const call = async () => {
+  //       try {
+  //         const balance = await vaultContract.balanceOf(account)
+  //         console.log('balance', balance.toString())
+  //         setLlpBalance(() => Number(balance) / 1e18)
+  //       } catch (error) {
+  //         console.log('codebyowners err')
+  //       }
+  //     }
+  //     call()
+  //   }
+  //   if (outputCurrency?.symbol !== 'LLP') {
+  //     const call2 = async () => {
+  //       try {
+  //         const balance = await limweth.balanceOf(account)
+  //         console.log('balance', balance.toString())
+  //         setlimWETHBalance(() => Number(balance) / 1e18)
+  //       } catch (error) {
+  //         console.log('codebyowners err')
+  //       }
+  //     }
+  //     call2()
+  //   }
+  // }, [account, provider, vaultContract, attemptingTxn, outputCurrency?.symbol, limweth])
+
+  const limwethSupply = useLimWethTotalSupply()
+  const limwethBacking = useLimWethTokenBalance()
+  const limwethUtilized = useLimWethUtilizedBalance()
+  const limwethMax = limwethBacking - limwethUtilized
+
+  const limWETHPrice = useLimWethPrice()
+  const llpPrice = useLlpPrice()
+  console.log('zeke:llpPrice', llpPrice)
+  const data = useVaultData()
+  const redeemableTokens = useMemo(() => {
+    if (!chainId) return undefined
+    if (chainId === SupportedChainId.ARBITRUM_ONE) {
+      return [
+        '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+        '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
+        '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+      ]
+    } else {
+      return ['0x4200000000000000000000000000000000000006']
     }
-    if (outputCurrency?.symbol !== 'LLP') {
-      const call2 = async () => {
-        try {
-          const balance = await limweth.balanceOf(account)
-          console.log('balance', balance.toString())
-          setlimWETHBalance(() => Number(balance) / 1e18)
-        } catch (error) {
-          console.log('codebyowners err')
-        }
-      }
-      call2()
-    }
-  }, [account, provider, vaultContract, attemptingTxn, outputCurrency?.symbol])
+  }, [chainId])
+  const mW = useMaxRedeemableInToken(redeemableTokens)
 
-  const [limwethSupply, setLimwethSupply] = useState<any>()
-  const [limwethBacking, setlimwethBacking] = useState<any>()
-  const [limwethUtilized, setlimwethUtilized] = useState<any>()
-  const [limwethMax, setlimwethMax] = useState<any>()
+  // useEffect(() => {
+  //   if (!provider || !limweth) return
+  //   const call = async () => {
+  //     try {
+  //       const price = await limweth.previewRedeem(`${1e18}`)
+  //       setLimWETHPrice(price)
 
-  useEffect(() => {
-    if (!provider || !limweth || !account) return
-
-    const call = async () => {
-      const supply = await limweth.totalSupply()
-      const backing = await limweth.tokenBalance()
-      const utilized = await limweth.utilizedBalance()
-
-      setLimwethSupply(supply)
-      setlimwethBacking(backing)
-      setlimwethUtilized(utilized)
-      setlimwethMax(backing.sub(utilized))
-    }
-    call()
-  }, [provider, limweth, account])
-
-  useEffect(() => {
-    if (!provider || !limweth) return
-
-    const call = async () => {
-      try {
-        const price = await limweth.previewRedeem(`${1e18}`)
-        setLimWETHPrice(price)
-
-        // rawdata[0] is total supply
-        // 1 is totalbacking
-        // 2 is utilization rate, i.e 0.5*1e18 is 50%
-        // 3 is each token balance in vault (pool column in table)
-        // 4 is each token weight, i.e 0.5*1e18 is 50%
-        // 5 is each token util, i.e 0.5*1e18 is 50%
-      } catch (error) {
-        console.log('codebyowners err')
-      }
-    }
-
-    call()
-  }, [provider, limweth, chainId])
-
-  useEffect(() => {
-    if (!provider || !vaultContract) return
-
-    const call = async () => {
-      try {
-        const rawData = await vaultContract.getData()
-        setData(rawData)
-
-        const maxWithdrawableWETH = await vaultContract.maxRedeemableInToken(
-          '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-        )
-        const maxWithdrawableWBTC = await vaultContract.maxRedeemableInToken(
-          '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
-        )
-        const maxWithdrawableUSDC = await vaultContract.maxRedeemableInToken(
-          '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-        )
-        setMW([maxWithdrawableWETH, maxWithdrawableWBTC, maxWithdrawableUSDC])
-
-        const price = await vaultContract.previewRedeem(`${1e18}`)
-        setLlpPrice(price)
-
-        // rawdata[0] is total supply
-        // 1 is totalbacking
-        // 2 is utilization rate, i.e 0.5*1e18 is 50%
-        // 3 is each token balance in vault (pool column in table)
-        // 4 is each token weight, i.e 0.5*1e18 is 50%
-        // 5 is each token util, i.e 0.5*1e18 is 50%
-      } catch (error) {
-        console.log('codebyowners err')
-      }
-    }
-
-    call()
-  }, [provider, vaultContract, chainId])
-
-  // BASE
-  // USDC - 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-  // WETH - 0x4200000000000000000000000000000000000006
-  // WBTC - 0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad
-
-  // Pool currently unavailable for price values
-
-  // const WETH_ARB = useCurrency('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-  // const WBTC_ARB = useCurrency('0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f')
-  // const USDC_ARB = useCurrency('0xaf88d065e77c8cC2239327C5EDb3A432268e5831')
-  // const WETH_BASE = useCurrency('0x4200000000000000000000000000000000000006')
-  // const WBTC_BASE = useCurrency('0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad')
-  // const USDC_BASE = useCurrency('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913')
-
-  // const WETH = useMemo(() => {
-  //   if(chainId === 8453){
-  //     return WETH_BASE
-  //   }
-  //   else{
-  //     return WETH_ARB
-  //   }
-  // }, [WETH_ARB, WETH_BASE, chainId])
-
-  // const WBTC = useMemo(() => {
-  //   if(chainId === 8453){
-  //     return WBTC_BASE
-  //   }
-  //   else{
-  //     return WBTC_ARB
+  //       // rawdata[0] is total supply
+  //       // 1 is totalbacking
+  //       // 2 is utilization rate, i.e 0.5*1e18 is 50%
+  //       // 3 is each token balance in vault (pool column in table)
+  //       // 4 is each token weight, i.e 0.5*1e18 is 50%
+  //       // 5 is each token util, i.e 0.5*1e18 is 50%
+  //     } catch (error) {
+  //       console.log('codebyowners err')
+  //     }
   //   }
 
-  // }, [WBTC_ARB, WBTC_BASE, chainId])
+  //   call()
+  // }, [provider, limweth, chainId])
 
-  // const USDC = useMemo(() => {
-  //   if(chainId === 8453){
-  //     return USDC_BASE
-  //   }
-  //   else{
-  //     return USDC_ARB
-  //   }
+  // useEffect(() => {
+  //   if (!provider || !vaultContract) return
 
-  // }, [USDC_ARB, USDC_BASE, chainId])
+  //   const call = async () => {
+  //     try {
+  //       const rawData = await vaultContract.getData()
+  //       setData(rawData)
+
+  //       const maxWithdrawableWETH = await vaultContract.maxRedeemableInToken(
+  //         '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  //       )
+  //       const maxWithdrawableWBTC = await vaultContract.maxRedeemableInToken(
+  //         '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
+  //       )
+  //       const maxWithdrawableUSDC = await vaultContract.maxRedeemableInToken(
+  //         '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  //       )
+  //       setMW([maxWithdrawableWETH, maxWithdrawableWBTC, maxWithdrawableUSDC])
+
+  //       const price = await vaultContract.previewRedeem(`${1e18}`)
+  //       setLlpPrice(price)
+  //       // rawdata[0] is total supply
+  //       // 1 is totalbacking
+  //       // 2 is utilization rate, i.e 0.5*1e18 is 50%
+  //       // 3 is each token balance in vault (pool column in table)
+  //       // 4 is each token weight, i.e 0.5*1e18 is 50%
+  //       // 5 is each token util, i.e 0.5*1e18 is 50%
+  //     } catch (error) {
+  //       console.log('codebyowners err')
+  //     }
+  //   }
+  //   call()
+  // }, [provider, vaultContract, chainId])
 
   const indexData = useMemo(() => {
     if (WETH && WETHPrice && chainId === 8453 && limwethUtilized && limwethBacking && limwethMax) {
@@ -928,7 +767,7 @@ export default function SimplePool() {
           backing: limwethBacking,
         },
       ]
-    } else if (data && mW && WETHPrice && WBTCPrice && chainId !== 8453) {
+    } else if (data && mW[0] && mW[1] && mW[2] && WETHPrice && WBTCPrice && chainId !== 8453) {
       return [
         {
           token: WETH,
@@ -1017,17 +856,7 @@ export default function SimplePool() {
     >
       <DropWrapper>
         <div style={{ display: 'flex', gap: '7px', flexDirection: 'column' }}>
-          <TokenWrapper
-            disabled={false}
-            // onClick={
-            //   () =>
-            //   setOutput(
-            //     chainId === 8453
-            //       ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
-            //       : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
-            //   )
-            // }
-          >
+          <TokenWrapper disabled={false}>
             <CurrencyLogo currency={chainId === 8453 ? limWETH : LLP} size="18" />
             <ThemedText.BodySmall>{chainId === 8453 ? 'limWETH' : 'LLP'}</ThemedText.BodySmall>
           </TokenWrapper>
@@ -1042,7 +871,6 @@ export default function SimplePool() {
       </DropWrapper>
     </NavDropdown>
   )
-  console.log('PRICE', limWETHPrice)
 
   return (
     <Wrapper>
@@ -1093,9 +921,7 @@ export default function SimplePool() {
               <>
                 <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
                   <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {llpPrice && (llpPrice / 1e18).toFixed(2)}
-                  </ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>{llpPrice && llpPrice.toFixed(2)}</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
@@ -1162,14 +988,12 @@ export default function SimplePool() {
                 <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
                   <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {`${limWETHPrice && (limWETHPrice / 1e18).toFixed(2)} limWETH/ETH`}
+                    {`${limWETHPrice && limWETHPrice.toFixed(2)} limWETH/ETH`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Total Supply (ETH):</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {`${(limwethSupply / 1e18).toFixed(4)}`}
-                  </ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1179,9 +1003,7 @@ export default function SimplePool() {
                   }}
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {`${(limwethBacking / 1e18).toFixed(4)}`}
-                  </ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1219,7 +1041,7 @@ export default function SimplePool() {
                   <ThemedText.BodyPrimary fontSize={12}>Maximum Withdrawable:</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
                     {indexData &&
-                      `${formatDollarAmount({ num: Number(indexData[0].maxWith) / Number(`1e${18}`), long: true })} ${
+                      `${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
                         indexData[0].token?.symbol
                       }`}
                   </ThemedText.BodySecondary>
@@ -1233,7 +1055,7 @@ export default function SimplePool() {
                 <Selector
                   onClick={() => {
                     setBuy(true)
-                    setValue(0)
+                    // setValue(0)
                   }}
                   active={buy}
                 >
@@ -1242,7 +1064,7 @@ export default function SimplePool() {
                 <Selector
                   onClick={() => {
                     setBuy(false)
-                    setValue(0)
+                    // setValue(0)
                   }}
                   active={!buy}
                 >
@@ -1273,7 +1095,7 @@ export default function SimplePool() {
                       data: inputValue && (inputValue / 1e18) * (limWETHPrice / 1e18) * WETHPrice.data,
                       isLoading: false,
                     }
-                  : { data: inputValue && (inputValue / 1e18) * (llpPrice / 1e18), isLoading: false }
+                  : { data: inputValue && (inputValue / 1e18) * llpPrice, isLoading: false }
               }
               onCurrencySelect={buy ? handleCurrencySelect : undefined}
               llpBalance={!buy && chainId == 8453 ? limWETHBalance : !buy && chainId !== 8452 ? llpBalance : 0}
@@ -1285,7 +1107,7 @@ export default function SimplePool() {
             <ArrowWrapper
               onClick={() => {
                 setBuy(!buy)
-                setValue(0)
+                // setValue(0)
               }}
               clickable={true}
             >
@@ -1302,7 +1124,7 @@ export default function SimplePool() {
                   : !value && chainId === 8453 && inputValue
                   ? (Number(inputValue) / 1e18).toString()
                   : currencyAFiat.data
-                  ? formatDollarAmount({ num: currencyAFiat.data / (llpPrice / 1e18), long: true })
+                  ? formatDollarAmount({ num: currencyAFiat.data / llpPrice, long: true })
                   : '0'
               }
               onUserInput={
@@ -1315,19 +1137,19 @@ export default function SimplePool() {
               showMaxButton={false}
               fiatValue={
                 buy && chainId !== 8453 && value
-                  ? { data: value * (llpPrice / 1e18), isLoading: false }
+                  ? { data: value * llpPrice, isLoading: false }
                   : buy && chainId === 8453 && WETHPrice.data && value
-                  ? { data: value * (limWETHPrice / 1e18) * WETHPrice.data, isLoading: false }
+                  ? { data: value * limWETHPrice * WETHPrice.data, isLoading: false }
                   : !buy && value
                   ? { data: value * activePrice, isLoading: false }
                   : !buy && chainId === 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * (limWETHPrice / 1e18) * WETHPrice.data, isLoading: false }
+                  ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
                   : !buy && chainId !== 8453 && !value && inputValue && WETHPrice.data
                   ? { data: (inputValue / 1e18) * activePrice, isLoading: false }
                   : buy && chainId === 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * (limWETHPrice / 1e18) * WETHPrice.data, isLoading: false }
+                  ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
                   : buy && chainId !== 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * (limWETHPrice / 1e18) * WETHPrice.data, isLoading: false }
+                  ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
                   : value
                   ? { data: value * activePrice, isLoading: false }
                   : { data: currencyAFiat.data, isLoading: false }
@@ -1344,19 +1166,16 @@ export default function SimplePool() {
                 buy && chainId === 8453 && WETHPrice.data
                   ? computeFiatValuePriceImpact(
                       inputValue && WETHPrice.data && (inputValue / 1e18) * WETHPrice?.data,
-                      value * (limWETHPrice / 1e18) * WETHPrice.data
+                      value * limWETHPrice * WETHPrice.data
                     )
                   : !buy && chainId === 8453 && WETHPrice.data
                   ? computeFiatValuePriceImpact(
-                      inputValue && (inputValue / 1e18) * (limWETHPrice / 1e18) * WETHPrice.data,
+                      inputValue && (inputValue / 1e18) * limWETHPrice * WETHPrice.data,
                       value * activePrice
                     )
                   : buy
-                  ? computeFiatValuePriceImpact(currencyAFiat.data, value * (llpPrice / 1e18))
-                  : computeFiatValuePriceImpact(
-                      inputValue && (inputValue / 1e18) * (llpPrice / 1e18),
-                      value * activePrice
-                    )
+                  ? computeFiatValuePriceImpact(currencyAFiat.data, value * llpPrice)
+                  : computeFiatValuePriceImpact(inputValue && (inputValue / 1e18) * llpPrice, value * activePrice)
               }
               llp={true}
             />
@@ -1494,49 +1313,6 @@ export default function SimplePool() {
             </>
           )}
         </AutoColumn>
-
-        {/* // : indexData &&
-              //   WETHPrice &&
-              //   outputCurrency?.symbol === 'limWETH' &&
-              //   indexData.map((tok: any) => {
-              //     return (
-              //       <LoadedCellWrapper isShort={true} key={tok.token.symbol}>
-              //         <LoadedCell style={{ paddingLeft: '20px' }}>
-              //           <CurrencyLogo currency={tok.token} size="20px" />
-              //           <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-              //             {tok.token.symbol}
-              //           </ThemedText.BodySmall>
-              //         </LoadedCell>
-              //         <LoadedCell>
-              //           <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-              //             {formatDollarAmount({ num: tok?.price, long: true })}
-              //           </ThemedText.BodySmall>
-              //         </LoadedCell>
-              //         <LoadedCell>
-              //           <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-              //             {tok.util
-              //               ? formatDollarAmount({
-              //                   num: Number(tok.util) / Number(`1e${18}`),
-              //                   long: true,
-              //                 })
-              //               : '-'}{' '}
-              //             {tok.token.symbol}
-              //           </ThemedText.BodySmall>
-              //         </LoadedCell>
-              //         <LoadedCell>
-              //           <ThemedText.BodySmall fontWeight={700} color="textSecondary">
-              //             {tok.maxWith
-              //               ? formatDollarAmount({
-              //                   num: Number(tok.maxWith) / Number(`1e${18}`),
-              //                   long: true,
-              //                 })
-              //               : '-'}{' '}
-              //             {tok.token.symbol}
-              //           </ThemedText.BodySmall>
-              //         </LoadedCell>
-              //       </LoadedCellWrapper>
-              //     )
-              //   })} */}
         <RowBetween>
           <FaqWrapper>
             <FAQBox />
@@ -1559,7 +1335,7 @@ const DetailsCard = styled.div`
   width: 57%;
   border-radius: 10px;
   padding: 20px;
-  height: 378px;
+  height: 400px;
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   gap: 10px;
   /* width: 100%; */

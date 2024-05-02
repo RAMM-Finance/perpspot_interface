@@ -22,7 +22,6 @@ import {
   setInputCurrency,
   updateHideClosedPositions,
   updateHideUniswapWalletBanner,
-  updatePinnedPools,
   updateUserClientSideRouter,
   updateUserDeadline,
   updateUserExpertMode,
@@ -279,7 +278,7 @@ export function useAddPinnedPool(): (poolKey: PoolKey) => void {
   const { chainId } = useWeb3React()
   return useCallback(
     (poolKey: PoolKey) => {
-      chainId && dispatch(updatePinnedPools({ add: true, poolKey, index: 0, chainId }))
+      // chainId && dispatch(updatePinnedPools({ add: true, poolKey, index: 0, chainId }))
     },
     [dispatch, chainId]
   )
@@ -290,7 +289,7 @@ export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
   const { chainId } = useWeb3React()
   return useCallback(
     (poolKey: PoolKey) => {
-      chainId && dispatch(updatePinnedPools({ add: false, poolKey, chainId }))
+      // chainId && dispatch(updatePinnedPools({ add: false, poolKey, chainId }))
     },
     [dispatch, chainId]
   )
@@ -299,11 +298,12 @@ export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
 export function usePinnedPools(): PoolKey[] {
   const { chainId } = useWeb3React()
   return useAppSelector((state) => {
-    if (chainId && state.user.pinnedKeys[chainId]) {
-      return state.user.pinnedKeys[chainId]
-    } else {
-      return []
-    }
+    return []
+    // if (chainId && state.user.pinnedKeys[chainId]) {
+    //   return state.user.pinnedKeys[chainId]
+    // } else {
+    //   return []
+    // }
   })
 }
 
