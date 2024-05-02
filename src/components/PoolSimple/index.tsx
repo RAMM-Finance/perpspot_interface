@@ -801,20 +801,22 @@ export default function SimplePool() {
   const [limwethMax, setlimwethMax] = useState<any>()
 
   useEffect(() => {
-    if (!provider || !limweth || !account) return
+    if (!provider || !limweth) return
 
     const call = async () => {
-      const supply = await limweth.totalSupply()
-      const backing = await limweth.tokenBalance()
-      const utilized = await limweth.utilizedBalance()
-
+      const [supply, backing, utilized] = await Promise.all([
+        limweth.totalSupply(), 
+        limweth.tokenBalance(),
+        limweth.utilizedBalance()
+      ])
+      
       setLimwethSupply(supply)
       setlimwethBacking(backing)
       setlimwethUtilized(utilized)
       setlimwethMax(backing.sub(utilized))
     }
     call()
-  }, [provider, limweth, account])
+  }, [provider, limweth])
 
   useEffect(() => {
     if (!provider || !limweth) return
@@ -1042,7 +1044,6 @@ export default function SimplePool() {
       </DropWrapper>
     </NavDropdown>
   )
-  console.log('PRICE', limWETHPrice)
 
   return (
     <Wrapper>
