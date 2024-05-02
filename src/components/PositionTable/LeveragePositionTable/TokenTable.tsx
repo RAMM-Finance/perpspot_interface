@@ -15,6 +15,7 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { getPoolId, HeaderRow, LoadedRow, LoadingRow, positionEntryPrice } from './TokenRow'
+import { position } from 'polished'
 
 const GridContainer = styled.div`
   display: flex;
@@ -92,6 +93,15 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
       returnPositions = returnPositions?.filter((position) => {
         const token0 = findCurrency(position?.poolKey.token0, tokens)
         const token1 = findCurrency(position?.poolKey.token1, tokens)
+
+        const token0Symbol = token0?.symbol ? token0?.symbol?.toLowerCase() : ""
+        const token1Symbol = token1?.symbol ? token1?.symbol?.toLowerCase() : ""
+
+        const pair = token0Symbol + token1Symbol
+
+        const pairString = lowercaseFilterString.replace(/\/|-| /g, "")
+        const pairIncludesFilterString = pair?.includes(pairString)
+
         const addressIncludesFilterString = position?.poolKey.token0?.toLowerCase().includes(lowercaseFilterString)
         const name0IncludesFilterString = token0?.name?.toLowerCase().includes(lowercaseFilterString)
         const symbol0IncludesFilterString = token0?.symbol?.toLowerCase().includes(lowercaseFilterString)
@@ -102,7 +112,8 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
           symbol0IncludesFilterString ||
           addressIncludesFilterString ||
           name1IncludesFilterString ||
-          symbol1IncludesFilterString
+          symbol1IncludesFilterString ||
+          pairIncludesFilterString
         )
       })
     }

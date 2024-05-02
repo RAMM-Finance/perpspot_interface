@@ -77,6 +77,8 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
 
   const estimatedAPR = useEstimatedAPR(currency0, currency1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
+  console.log("ESTIMATED")
+  console.log("APR !!!", aprInfo[1].apr !== undefined ? (aprInfo[1].apr + estimatedAPR) : null)
   const setCurrentPool = useSetCurrentPool()
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
