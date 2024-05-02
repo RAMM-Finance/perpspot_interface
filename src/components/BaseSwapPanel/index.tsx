@@ -202,6 +202,7 @@ interface CurrencyInputPanelProps {
   llpBalance?: number
   wethOnly?: boolean | false
   llp?: boolean | false
+  buy?: boolean
 }
 
 export default function CurrencyInputPanel({
@@ -228,6 +229,7 @@ export default function CurrencyInputPanel({
   llpBalance,
   wethOnly,
   llp,
+  buy,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -319,7 +321,7 @@ export default function CurrencyInputPanel({
             <RowBetween>
               <LoadingOpacityContainer $loading={loading}>
                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} llp={llp ? llp : false} />
-                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' ? 
+                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' && buy ? 
                 'LMT Per Day: ' + (LmtPerDay ? parseFloat(LmtPerDay).toFixed(2) : '-') 
                 : ''}
               </LoadingOpacityContainer>

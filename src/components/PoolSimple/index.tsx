@@ -1103,6 +1103,7 @@ export default function SimplePool() {
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Sell</ThemedText.BodyPrimary>
               }
               wethOnly={buy && outputCurrency?.symbol === 'limWETH'}
+              buy={buy}
             />
             <ArrowWrapper
               onClick={() => {
@@ -1178,6 +1179,7 @@ export default function SimplePool() {
                   : computeFiatValuePriceImpact(inputValue && (inputValue / 1e18) * llpPrice, value * activePrice)
               }
               llp={true}
+              buy={buy}
             />
             {!account ? (
               <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
