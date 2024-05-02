@@ -1,0 +1,143 @@
+import { useWeb3React } from '@web3-react/core'
+import { SmallButtonPrimary } from 'components/Button'
+import DoubleCurrencyLogo from 'components/DoubleLogo'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
+import { useCurrency } from 'hooks/Tokens'
+import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import React, { useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { usePoolOHLC } from 'state/application/hooks'
+import { useV3MintActionHandlers } from 'state/mint/v3/hooks'
+import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
+import styled from 'styled-components/macro'
+import { ThemedText } from 'theme'
+
+const PairWrapper = styled.div`
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  gap: 5px;
+`
+const DataRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+  gap: 3px;
+`
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 2px;
+`
+
+const PairButton = styled(SmallButtonPrimary)`
+  font-size: 10px;
+  width: 60px;
+  height: 25px;
+  border-radius: 5px;
+`
+
+interface AprObj {
+  apr: number
+  utilTotal: number | undefined
+}
+
+const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
+  const { chainId } = useWeb3React()
+  const navigate = useNavigate()
+
+  function destructurePoolId(poolId: string): [string, string, number] {
+    const destruct = poolId.split('-')
+    return [destruct[0], destruct[1], parseInt(destruct[2])]
+  }
+
+  const [token0, token1, fee] = destructurePoolId(aprInfo[0])
+
+  const token0Address = token0 && token1 ? (token0.toLowerCase() < token1.toLowerCase() ? token0 : token1) : null
+  const token1Address = token0 && token1 ? (token0.toLowerCase() < token1.toLowerCase() ? token1 : token0) : null
+
+  const currency0 = useCurrency(token0Address)
+  const currency1 = useCurrency(token1Address)
+  const depositAmountUSD = 1000
+
+  const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee ?? undefined)
+  const poolOHLC = usePoolOHLC(token0Address, token1Address, fee)
+
+  const [price, delta] = useMemo(() => {
+    if (poolOHLC) {
+      return [poolOHLC.priceNow, poolOHLC.delta24h]
+    }
+    return [undefined, undefined]
+  }, [poolOHLC])
+
+  const priceInverted = useMemo(() => {
+    if (!poolOHLC) return undefined
+    else return poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
+  }, [poolOHLC, price])
+
+  const estimatedAPR = useEstimatedAPR(currency0, currency1, pool, tickSpacing, priceInverted, depositAmountUSD)
+
+  const setCurrentPool = useSetCurrentPool()
+  const currentPool = useCurrentPool()
+  const poolId = currentPool?.poolId
+
+  const handlePoolSelect = useCallback(
+    (e: any) => {
+      if (fee && currency0 && currency1 && currency0.symbol && currency1.symbol && pool && chainId) {
+        const id = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
+        if (poolOHLC && poolId !== id && id) {
+          e.stopPropagation()
+          setCurrentPool(id, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, currency0.symbol, currency1.symbol)
+        }
+      }
+    },
+    [setCurrentPool, poolId, poolOHLC, pool, fee, currency0, currency1, chainId]
+  )
+
+  const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
+
+  const onPoolSwitch = useCallback(() => {
+    onFieldAInput('')
+    onFieldBInput('')
+    onLeftRangeInput('')
+    onRightRangeInput('')
+  }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+
+  return (
+    <PairWrapper>
+      <DoubleCurrencyLogo size={26} currency0={currency0} currency1={currency1} />
+      <DataRow>
+        <ThemedText.BodySmall>APR:</ThemedText.BodySmall>
+        <ClickableRate
+          style={{ fontSize: '14px', cursor: 'default' }}
+          rate={(aprInfo[1].apr ?? 0) + (estimatedAPR ?? 0)}
+        >
+          {aprInfo[1].apr !== undefined ? `${(aprInfo[1].apr + estimatedAPR)?.toPrecision(4)}%` : '-'}
+        </ClickableRate>
+      </DataRow>
+      <DataRow>
+        <ThemedText.BodySmall>LMT:</ThemedText.BodySmall>
+        <ClickableRate
+          style={{ fontSize: '14px', cursor: 'default' }}
+          rate={aprInfo[1].utilTotal ? aprInfo[1].utilTotal : 0}
+        >
+          {aprInfo[1].utilTotal !== undefined ? `${aprInfo[1].utilTotal?.toPrecision(4)}%` : '-'}
+        </ClickableRate>
+      </DataRow>
+      <ButtonRow>
+        <PairButton
+          onClick={() => {
+            onPoolSwitch()
+            navigate(`/add/${currency0?.wrapped.address}/${currency1?.wrapped.address}/${fee}`)
+          }}
+          style={{ width: '50px' }}
+        >
+          Deposit
+        </PairButton>
+        <PairButton onClick={handlePoolSelect}>Leverage</PairButton>
+      </ButtonRow>
+    </PairWrapper>
+  )
+}
+
+export default HighlightPair
