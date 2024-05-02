@@ -637,9 +637,6 @@ export default function AddLiquidity() {
   const ownsNFT =
     addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
   const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)
-
-  const poolOHLC = usePoolOHLC(currencyIdA, currencyIdB, pool?.fee)
-
   
   const estimatedAPR = useEstimatedAPR(
     baseCurrency, 
