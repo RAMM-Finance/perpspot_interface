@@ -3,7 +3,7 @@ import { TBoxData } from 'pages/NewItemsList'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { CardContainer, LoadingCardContainer } from './CardContainer'
+import { AddBoxCardContainer, CardContainer, LoadingCardContainer } from './CardContainer'
 
 const InfiniteScrollWrapperCss = css`
   margin: 0 16px;
@@ -54,12 +54,20 @@ const BoxesDisplaySection = styled(Row)`
 interface IBoxesContainerProps {
   itemDatas: TBoxData[]
   handleUnlockBox: (index: number) => void
+  handleAddBox: () => void
   loading: boolean
   hiddenCards: number[]
   handleShowModal: (modalData: TBoxData) => void
 }
 
-const BoxesContainr = ({ itemDatas, handleUnlockBox, loading, hiddenCards, handleShowModal }: IBoxesContainerProps) => {
+const BoxesContainer = ({
+  itemDatas,
+  handleUnlockBox,
+  handleAddBox,
+  loading,
+  hiddenCards,
+  handleShowModal,
+}: IBoxesContainerProps) => {
   // console.log('BoxesContainr', lockedBoxes, totalBoxes, totalUnlockableBoxes)
   if (loading) {
     return (
@@ -95,12 +103,15 @@ const BoxesContainr = ({ itemDatas, handleUnlockBox, loading, hiddenCards, handl
       </InfiniteScrollWrapper>
       {!itemDatas ||
         (itemDatas.length === 0 && (
-          <ThemedText.BodySecondary fontSize="18px" marginLeft="28%">
-            No Treasure Boxes
-          </ThemedText.BodySecondary>
+          <InfiniteScrollWrapper>
+            <AddBoxCardContainer handleAddBox={handleAddBox} />
+            <ThemedText.BodySecondary fontSize="18px" width="100%">
+              No Treasure Boxes
+            </ThemedText.BodySecondary>
+          </InfiniteScrollWrapper>
         ))}
     </BoxesDisplaySection>
   )
 }
 
-export default BoxesContainr
+export default BoxesContainer

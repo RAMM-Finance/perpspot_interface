@@ -1,75 +1,63 @@
 import Row from 'components/Row'
 import { Box } from 'nft/components/Box'
 import { Column } from 'nft/components/Flex'
-import { body } from 'nft/css/common.css'
 import { TBRPData } from 'pages/NewItemsList'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import InfoItemStats from './InfoItemStats'
-
 import bluePill from '../../assets/images/bluePill.jpg'
-
+import InfoItemStats from './InfoItemStats'
 
 const BluePillImg = styled.img`
   position: absolute;
-  width: 76px;
-  height: 37px;
+  width: 155px;
+  height: 68px;
   background-color: transparent;
   transform: scale(1.3);
   opacity: 0.8;
-  right: 0px;
-  /* bottom: -10.5px; */
+  right: 10px;
+  bottom: -24px;
   z-index: -999;
 `
 
-const DescriptionText = styled(ThemedText.CellName)<{ color?: string; fontSize?: number }>`
-  vertical-align: top;
-  text-overflow: ellipsis;
-  color: ${({ theme, color }) => (color ? color : theme.textTertiary)};
-  font-size: ${({ fontSize }) => (fontSize ? `${fontSize}px` : '16px')};
+const DescriptionText = styled(ThemedText.CellName)`
+  word-spacing: -0.5px;
 `
 
-const ToggleDescriptionText = ({
-  description,
-  color,
-  fontSize,
-}: {
-  description: string
-  color?: string
-  fontSize?: number
-}) => {
-  return (
-    <Box>
-      <DescriptionText className={body} color={color} fontSize={fontSize}>
-        {description}
-      </DescriptionText>
-    </Box>
-  )
-}
+const TitleDescriptionText = styled(ThemedText.HeadlineMedium)<{ spacing?: number }>`
+  word-spacing: ${({ spacing }) => spacing && `${spacing}px`};
+  white-space: nowrap;
+`
 
 export const InfoDescription = ({
   title,
   description,
   color,
   fontSize,
+  spacing,
 }: {
   title?: boolean
   description: string
   color?: string
   fontSize?: number
+  spacing?: number
 }) => {
   return (
-    <Box display="flex" justifyContent="center" position="relative" flexDirection="column" width="full">
+    <Box display="flex" justifyContent="center" position="relative" flexDirection="column">
       <Box>
         {title ? (
-          <Row>
-            <ThemedText.HeadlineMedium color={color ? color : 'textSecondary'} fontSize={fontSize}>
-              {description}
-            </ThemedText.HeadlineMedium>
-          </Row>
+          <TitleDescriptionText
+            color={color ? color : 'textSecondary'}
+            fontSize={fontSize}
+            fontWeight={600}
+            spacing={spacing}
+          >
+            {description}
+          </TitleDescriptionText>
         ) : (
-          <ToggleDescriptionText description={description} color={color} fontSize={fontSize} />
+          <DescriptionText color={color ? color : 'textTertiary'} fontSize={fontSize} marginTop="5px">
+            {description}
+          </DescriptionText>
         )}
       </Box>
     </Box>
@@ -88,9 +76,17 @@ const InfoDescriptionSection = ({
   loading: boolean
 }) => {
   return (
-    <Column marginTop="40" marginBottom="28" gap="18" marginX="24" position="relative">
-      <InfoDescription title={true} description={title} fontSize={20}/>
-      {/* <BluePillImg src={bluePill}/> */}
+    <Column marginTop="40" marginBottom="28" gap="18" marginX="24">
+      <Row alignItems="center">
+        <InfoDescription title={true} description={title} fontSize={20} />
+        <Column position="relative" gap="8" marginLeft="60">
+          <ThemedText.SubHeader color="textSecondary">0</ThemedText.SubHeader>
+          <ThemedText.CellName color="stateLabel" fontSize="14px" fontWeight={500} width="250px">
+            My NZT balance
+          </ThemedText.CellName>
+          <BluePillImg src={bluePill} />
+        </Column>
+      </Row>
       <InfoDescription description={description} />
       <InfoItemStats brpData={brpData} loading={loading} />
     </Column>

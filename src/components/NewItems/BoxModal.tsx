@@ -16,13 +16,13 @@ const ModalInfoWrapper = styled(LightCard)`
   border: none;
   border-radius: 0px;
   width: 100%;
-  border-bottom: 3px solid ${({ theme }) => theme.searchOutline};
+  /* border-bottom: 3px solid ${({ theme }) => theme.searchOutline}; */
   justify-content: flex-start;
   background: ${({ theme }) => theme.backgroundSurface};
   padding: 0.75rem;
 `
 
-const ModalActionButton = styled(ThemedText.BodySecondary)<{
+export const ModalActionButton = styled(ThemedText.BodySecondary)<{
   isDisabled: boolean
 }>`
   width: 45%;
@@ -65,7 +65,6 @@ const ModalActionButton = styled(ThemedText.BodySecondary)<{
 `
 
 const StyledMediaImg = styled.img<{
-  // imageLoading: boolean
   $aspectRatio?: string
   $hidden?: boolean
 }>`
@@ -86,7 +85,6 @@ const StyledMediaImg = styled.img<{
 const ModalWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  /* flex-wrap: wrap; */
   width: 100%;
   gap: 0.5rem;
   padding: 2rem;
@@ -118,7 +116,6 @@ interface IBoxModalProps {
 
 const BoxModal = ({ isOpen, hnadleColoseModal, modalData, handleUnlockBox, brpData }: IBoxModalProps) => {
   const { info, img, isLocked, index } = modalData
-  // console.log('brpData', brpData)
   return (
     <Modal
       isOpen={isOpen}
@@ -133,24 +130,20 @@ const BoxModal = ({ isOpen, hnadleColoseModal, modalData, handleUnlockBox, brpDa
         <ModalTopWrapper>
           <StyledMediaImg src={img} />
           <ModalDescriptWrapper marginTop={10}>
-            <Row justifyContent="space-between" gap="8" width="full" alignItems="flex-start">
-              <ThemedText.HeadlineMedium color="textSecondary">{info}</ThemedText.HeadlineMedium>
+            <Row justifyContent="space-between" gap="20" width="full" alignItems="flex-start">
+              <InfoDescription title={true} description={info} fontSize={28}/>
               <ModalActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleUnlockBox(index))}>
                 {isLocked ? 'Locked' : 'Unlock'}
               </ModalActionButton>
             </Row>
             <ModalDescriptWrapper gap="md">
-              <InfoDescription description="How to get this Box" />
-              <InfoDescription
-                description="Description Section will be updated" 
-                fontSize={12}
-                color="textPrimary"
-              />
+              <InfoDescription description="How to get this Box" spacing={-0.8}/>
+              <InfoDescription description="Description Section will be updated" fontSize={12} color="textPrimary" />
             </ModalDescriptWrapper>
           </ModalDescriptWrapper>
         </ModalTopWrapper>
         <ModalInfoWrapper>
-          <ModalItemStats brpData={brpData}/>
+          <ModalItemStats brpData={brpData} />
         </ModalInfoWrapper>
       </ModalWrapper>
     </Modal>

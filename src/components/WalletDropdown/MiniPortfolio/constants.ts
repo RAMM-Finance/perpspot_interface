@@ -222,6 +222,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Successfully unlocked box`,
     [TransactionStatus.Failed]: t`Unlock Box failed`,
   },
+  [TransactionType.ADD_Box]: {
+    [TransactionStatus.Pending]: t`Adding Box`,
+    [TransactionStatus.Confirmed]: t`Successfully added box`,
+    [TransactionStatus.Failed]: t`Failed to add box`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

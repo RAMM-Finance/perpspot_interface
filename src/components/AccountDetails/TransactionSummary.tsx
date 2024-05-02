@@ -433,5 +433,7 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Redeem limWETH Summary</Trans>
     case TransactionType.UNLOCK_Box:
       return <Trans>Unlock Treasure Box</Trans>
+    case TransactionType.ADD_Box:
+      return <Trans>Added Treasure Box</Trans>
   }
 }

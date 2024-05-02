@@ -12,14 +12,12 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 
-import ItemImg from '../../assets/images/newItem.png'
-import ItemImg2 from '../../assets/images/newItem2.webp'
-import ItemImg3 from '../../assets/images/newItem3.webp'
-import ItemImg4 from '../../assets/images/newItem4.webp'
-import ItemImg5 from '../../assets/images/newItem5.webp'
-import ItemImg6 from '../../assets/images/newItem6.webp'
+import ItemImg from '../../assets/images/newItem7.webp'
+import ItemImg2 from '../../assets/images/newItem8.webp'
+import ItemImg3 from '../../assets/images/newItem9.webp'
+import ItemImg4 from '../../assets/images/newItem10.webp'
 import banner from '../../components/Leaderboard/banner.png'
-import BoxesContainr from '../../components/NewItems/BoxesContainr'
+import BoxesContainer from '../../components/NewItems/BoxesContainer'
 import InfoDescriptionSection from '../../components/NewItems/InfoDescription'
 
 const CollectionContainer = styled(Column)`
@@ -104,9 +102,10 @@ export type TBRPData = {
 const NewItemsListPage = () => {
   const { account } = useWeb3React()
   const blockNumber = useBlockNumber()
-  const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4, ItemImg5, ItemImg6]
+  const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
 
   const brp = useBRP()
+
   const [brpData, setBRPData] = useState<TBRPData>({
     totalBoxes: 0,
     totalUnlockableBoxes: 0,
@@ -152,6 +151,25 @@ const NewItemsListPage = () => {
     }
   }, [brp, account])
 
+  const addBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
+    if (!brp || !account) {
+      throw new Error('BRP or account not available')
+    }
+
+    try {
+      const gasLimit = 1000000
+      const tx = await brp.addBox({
+        gasLimit,
+        from: account,
+      })
+
+      return tx as TransactionResponse
+    } catch (error) {
+      console.error(error, 'BRP instance is not available')
+      throw error
+    }
+  }, [brp, account])
+
   const handleUnlockBox = useCallback(
     async (index: number) => {
       if (brp && account) {
@@ -173,10 +191,28 @@ const NewItemsListPage = () => {
     [brp, account, unlockBoxCallback, addTransaction, setHiddenCards]
   )
 
+  const handleAddBox = useCallback(async () => {
+    if (brp && account) {
+      try {
+        setLoading(true)
+        const response = await addBoxCallback()
+        // console.log('addboxcallback', response)
+        addTransaction(response, {
+          type: TransactionType.ADD_Box,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        setLoading(false)
+      } catch (error) {
+        setLoading(false)
+        console.error(error, 'BRP instance is not available')
+      }
+    }
+  }, [brp, account, addBoxCallback, addTransaction])
+
   useEffect(() => {
     if (brp && account && blockNumber) {
       if (!brpData) setLoading(true)
-      // console.log('blockNumber', blockNumber)
       const call = async () => {
         try {
           const totalBoxes = await brp.numBoxes(account)
@@ -200,8 +236,7 @@ const NewItemsListPage = () => {
             .fill(true)
             .map((_, index) => index + 1 > numtotalUnlockableBoxes)
           const newData = Array.from({ length: numTotalBoxes }, (_, index) => {
-            // const isLocked = index + 1 <= totalUnlockableBoxes;
-            const randomImgNumber = Math.floor(Math.random() * 6)
+            const randomImgNumber = Math.floor(Math.random() * 4)
             return {
               id: `#${index + 1}`,
               img: itemImages[randomImgNumber],
@@ -257,7 +292,7 @@ const NewItemsListPage = () => {
       index: 0,
     })
   }, [])
-  console.log('itemDatas', itemDatas)
+  // console.log('itemDatas', itemDatas)
 
   return (
     <>
@@ -290,9 +325,10 @@ const NewItemsListPage = () => {
           dataLength={20}
           style={{ overflow: 'unset', height: '100%' }}
           > */}
-          <BoxesContainr
+          <BoxesContainer
             itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}
+            handleAddBox={handleAddBox}
             loading={loading}
             hiddenCards={hiddenCards}
             handleShowModal={handleShowModal}
