@@ -472,9 +472,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
-  console.log("TOKEN 0 IS BASE ? ", token0?.symbol, token1?.symbol, poolOHLC?.token0IsBase)
+  // console.log("TOKEN 0 IS BASE ? ", token0?.symbol, token1?.symbol, poolOHLC?.token0IsBase)
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
-  console.log("UES EST ", token0, token1, priceInverted)
+  // console.log("UES EST ", token0, token1, priceInverted)
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
