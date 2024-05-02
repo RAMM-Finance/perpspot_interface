@@ -7,11 +7,11 @@ import { Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
-import { isSupportedChain } from 'constants/chains'
+import { SupportedChainId, isSupportedChain } from 'constants/chains'
 import { DEFAULT_LOCALE } from 'constants/locales'
 import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { darken } from 'polished'
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Lock } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
@@ -240,6 +240,15 @@ export default function CurrencyInputPanel({
   }, [setModalOpen])
 
   const chainAllowed = isSupportedChain(chainId)
+  
+  const LmtPerDay = useMemo(() => {
+    const LmtPerUsdPerDay = 1
+    if (!fiatValue?.isLoading && fiatValue?.data !== undefined)
+      return (fiatValue.data * LmtPerUsdPerDay).toString()
+    else
+      return null
+  }, [fiatValue])
+
 
   return (
     <InputPanel id={id} hideInput={hideInput} {...rest}>
@@ -310,6 +319,9 @@ export default function CurrencyInputPanel({
             <RowBetween>
               <LoadingOpacityContainer $loading={loading}>
                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} llp={llp ? llp : false} />
+                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' ? 
+                'LMT Per Day: ' + (LmtPerDay ? parseFloat(LmtPerDay).toFixed(2) : '-') 
+                : ''}
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>
