@@ -118,7 +118,7 @@ const ClickableName = styled(ClickableContent)`
   gap: 8px;
   max-width: 100%;
 `
-const ClickableRate = styled(ClickableContent)`
+export const ClickableRate = styled(ClickableContent)`
   font-weight: 700;
 `
 

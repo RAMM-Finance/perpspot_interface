@@ -6,6 +6,7 @@ import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
+import Highlights from 'components/Highlights'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { SelectPool } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
@@ -390,6 +391,7 @@ export default function Trade({ className }: { className?: string }) {
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
+            <Highlights />
             {!isSwap && <TradeTabContent />}
             {isSwap && <SwapTabContent />}
           </SwapWrapper>
