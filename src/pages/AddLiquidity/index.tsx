@@ -191,31 +191,6 @@ export default function AddLiquidity() {
   const [currencyAFiatState, setCurrencyAFiatState] = useState<{data: number | undefined, isLoading: boolean}>({data: undefined, isLoading: true})
   const [currencyBFiatState, setCurrencyBFiatState] = useState<{data: number | undefined, isLoading: boolean}>({data: undefined, isLoading: true})
 
-  let currencyAFiat: { 
-    data: number | undefined
-    isLoading: boolean 
-  }
-  let currencyBFiat: { 
-    data: number | undefined
-    isLoading: boolean
-  }
-
-  let usdcValues: {
-    CURRENCY_A: any
-    CURRENCY_B: any
-  }
-
-  let usdcValueCurrencyA: any = null
-  let usdcValueCurrencyB: any = null
-
-    usdcValues = {
-      [Field.CURRENCY_A]: useStablecoinValue(parsedAmounts[Field.CURRENCY_A]),
-      [Field.CURRENCY_B]: useStablecoinValue(parsedAmounts[Field.CURRENCY_B]),
-    }
-    
-    usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
-    usdcValueCurrencyB = usdcValues[Field.CURRENCY_B] 
-
   useEffect(() => {
     const fetchData = async (parsedAmountA: any, parsedAmountB: any, formattedAmountA: any, formattedAmountB: any) => {
       
@@ -232,38 +207,9 @@ export default function AddLiquidity() {
         isLoading: false
       })
     }
-
-    if (chainId) {
-      if (chainId === SupportedChainId.ARBITRUM_ONE) {
-        const currencyAFiat = {
-          data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
-          isLoading: false,
-        }
-        const currencyBFiat = {
-          data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
-          isLoading: false,
-        }
-        setCurrencyAFiatState(currencyAFiat)
-        setCurrencyBFiatState(currencyBFiat)
-  
-      } else if (chainId === SupportedChainId.BASE) {
-        fetchData(parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B], formattedAmounts[Field.CURRENCY_A], formattedAmounts[Field.CURRENCY_B])
-      } else {
-        const currencyAFiat = {
-          data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
-          isLoading: false,
-        }
-        const currencyBFiat = {
-          data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toSignificant()) : undefined,
-          isLoading: false,
-        }
-        setCurrencyAFiatState(currencyAFiat)
-        setCurrencyBFiatState(currencyBFiat)
-      }
-    }    
+  fetchData(parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B], formattedAmounts[Field.CURRENCY_A], formattedAmounts[Field.CURRENCY_B])
+ 
   }, [
-    usdcValueCurrencyA, 
-    usdcValueCurrencyB, 
     setCurrencyAFiatState, 
     setCurrencyBFiatState, 
     parsedAmounts[Field.CURRENCY_A], 
