@@ -1,7 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { ConnectionType } from 'connection'
 import { SupportedLocale } from 'constants/locales'
-import { PoolKey } from 'types/lmtv2position'
 
 import { DEFAULT_DEADLINE_FROM_NOW, DEFAULT_LIMIT_DEADLINE_FROM_NOW } from '../../constants/misc'
 import { updateVersion } from '../global/actions'
@@ -40,6 +39,10 @@ export interface UserState {
   // deadline set by user in minutes, used in all txns
   userDeadline: number
 
+  favorites: {
+    [chainId: number]: string[]
+  }
+
   tokens: {
     [chainId: number]: {
       [address: string]: SerializedToken
@@ -50,9 +53,9 @@ export interface UserState {
       [key: string]: SerializedPair
     }
   }
-  pinnedKeys: {
-    [chainId: number]: PoolKey[]
-  }
+  // pinnedKeys: {
+  //   [chainId: number]: PoolKey[]
+  // }
   currentPoolKeys: {
     [chainId: number]: {
       poolId: string
@@ -88,7 +91,8 @@ export const initialState: UserState = {
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
-  pinnedKeys: {},
+  // pinnedKeys: {},
+  favorites: {},
   currentPoolKeys: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
@@ -124,34 +128,50 @@ const userSlice = createSlice({
         state.currentPoolKeys[action.payload.chainId].token0IsBase = action.payload.token0IsBase
       }
     },
-    updatePinnedPools(state, action) {
-      if (action.payload.add) {
-        if (!state.pinnedKeys[action.payload.chainId]) {
-          state.pinnedKeys[action.payload.chainId] = [action.payload.poolKey]
-        } else {
-          state.pinnedKeys[action.payload.chainId].push(action.payload.poolKey)
-        }
-      } else {
-        const id2 = `${action.payload.poolKey.token0.toLowerCase()}-${action.payload.poolKey.token1.toLowerCase()}-${
-          action.payload.poolKey.fee
-        }`
-        const index = state.pinnedKeys[action.payload.chainId].findIndex((i) => {
-          const { token0, token1, fee } = i
-          const id = `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
-          return id === id2
-        })
-        if (index >= 0) {
-          state.pinnedKeys[action.payload.chainId].splice(index, 1)
-        }
-      }
+    addPinnedPools(state, action) {
+      // const { chainId, token0, token1, fee } = action.payload
+      // const poolId = getPoolId(token0, token1, fee)
+      return state
+
+      // if (!state.favorites[chainId]) {
+
+      //   return {
+      //     ...state,
+      //     favorites: {
+      //       ...state.favorites,
+      //       [chainId]: [poolId],
+      //     },
+      //   }
+      // }
+
+      // if (state.favorites[chainId].includes(poolId)) {
+      //   return state // Pool already exists in favorites, no need to modify state
+      // }
+
+      // return {
+      //   ...state,
+      //   favorites: {
+      //     ...state.favorites,
+      //     [chainId]: [...state.favorites[chainId], poolId],
+      //   },
+      // }
     },
-    // invertCurrentPoolPrice(state, action) {
-    //   if (state.currentPoolKeys[action.payload.chainId]) {
-    //     state.currentPoolKeys[action.payload.chainId].invertPrice = action.payload.invertPrice
-    //   }
-    // },
-    setPinnedPools(state, action) {
-      state.pinnedKeys[action.payload.chainId] = action.payload.pinnedPools
+
+    removePinnedPools(state, action) {
+      return state
+      // const { chainId, token0, token1, fee } = action.payload
+      // const poolId = getPoolId(token0, token1, fee)
+      // if (!state.favorites[chainId]) {
+      //   return state // No pools to remove, return current state
+      // }
+      // const updatedPools = state.favorites[chainId].filter((id) => id !== poolId)
+      // return {
+      //   ...state,
+      //   favorites: {
+      //     ...state.favorites,
+      //     [chainId]: updatedPools,
+      //   },
+      // }
     },
     setInputCurrency(state, action) {
       if (state.currentPoolKeys[action.payload.chainId]) {
@@ -236,14 +256,14 @@ const userSlice = createSlice({
       }
 
       // remove on launch
-      state.currentPoolKeys = {}
+      // state.currentPoolKeys = {}
       if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object' || Object.keys(state.currentPoolKeys)) {
         state.currentPoolKeys = {}
       }
 
-      if (!state.pinnedKeys || typeof state.pinnedKeys !== 'object') {
-        state.pinnedKeys = {}
-      }
+      // if (!state.pinnedKeys || typeof state.pinnedKeys !== 'object') {
+      //   state.pinnedKeys = {}
+      // }
 
       if (!state.userSlippedTickTolerance) {
         state.userSlippedTickTolerance = 'auto'
@@ -284,8 +304,8 @@ export const {
   updateUserPremiumDepositPercent,
   updateUserSlippedTickTolerance,
   updateUserLimitDeadline,
-  updatePinnedPools,
-  setPinnedPools,
+  // updatePinnedPools,
+  // setPinnedPools,
   setCurrentPool,
   setInputCurrency,
   // invertCurrentPoolPrice,

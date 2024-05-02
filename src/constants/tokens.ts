@@ -1,8 +1,6 @@
 import { Ether, NativeCurrency, Token, WETH9 } from '@uniswap/sdk-core'
 import { SupportedChainId } from 'constants/chains'
 
-import { UNI_ADDRESS } from './addresses'
-
 export const NATIVE_CHAIN_ID = 'NATIVE'
 
 // When decimals are not specified for an ERC20 token
@@ -53,7 +51,7 @@ export const WBTC_ARBITRUM_ONE = new Token(
 
 export const UNI: { [chainId: number]: Token } = {
   // [SupportedChainId.MAINNET]: new Token(SupportedChainId.MAINNET, UNI_ADDRESS[1], 18, 'UNI', 'Uniswap'),
-  [SupportedChainId.GOERLI]: new Token(SupportedChainId.GOERLI, UNI_ADDRESS[5], 18, 'UNI', 'Uniswap'),
+  // [SupportedChainId.GOERLI]: new Token(SupportedChainId.GOERLI, UNI_ADDRESS[5], 18, 'UNI', 'Uniswap'),
 }
 
 export const ARB = new Token(
