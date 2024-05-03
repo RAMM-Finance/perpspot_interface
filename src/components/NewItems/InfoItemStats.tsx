@@ -11,11 +11,13 @@ const ModalStatsBox = styled(Box)<{ isModal?: boolean }>`
   border-radius: 20px;
   height: 100%;
   padding: 1rem;
+  /* min-height: 100px; */
 `
 
 const StateLabelText = styled(ThemedText.CellName)`
   letter-spacing: -0.2px;
   word-spacing: -1.3px;
+  white-space: nowrap;
 `;
 
 export const StatsItem = ({
@@ -29,7 +31,7 @@ export const StatsItem = ({
   labelImg?: string
 }) => {
   return (
-    <Box position="relative" flexDirection="column" alignItems="baseline" gap="6" height="min">
+    <Box flexDirection="column" alignItems="baseline" gap="6" height="min">
       <ThemedText.SubHeader color="textSecondary">
         {loading ? <LoadingBubble width="80px" /> : children}
       </ThemedText.SubHeader>
@@ -51,19 +53,18 @@ const ModalStatsItem = ({
   labelImg?: string
 }) => {
   return (
-    <ModalStatsBox position="relative" flexDirection="column" alignItems="baseline" gap="10" height="min" width="full">
-      <ThemedText.SubHeader color="textSecondary">
+    <ModalStatsBox display="flex" flexDirection="column" justifyContent="space-between" gap="10" width="full">
+      <ThemedText.MediumHeader color="textSecondary" fontWeight={600}>
         {loading ? <LoadingBubble width="80px" /> : children}
-      </ThemedText.SubHeader>
-      <ThemedText.BodySmall color="stateLabel" minWidth="90px">
+      </ThemedText.MediumHeader>
+      <StateLabelText color="stateLabel" minWidth="90px">
         {label}
-      </ThemedText.BodySmall>
+      </StateLabelText>
     </ModalStatsBox>
   )
 }
 
 const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boolean }) => {
-  // console.log('brpData', brpData)
   return (
     <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
       <StatsItem label="Total boxes" loading={loading}>
@@ -83,7 +84,6 @@ const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boole
 }
 
 export const ModalItemStats = ({ brpData, loading }: { brpData: TBRPData; loading?: boolean }) => {
-  // console.log('brpData', brpData)
   const { totalLMT, lmtRequiredPerUnlock, NZTRageHigh, NZTRageRow } = brpData
   return (
     <Row gap="12" marginBottom="20" marginTop="24">

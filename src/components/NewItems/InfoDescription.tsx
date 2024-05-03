@@ -87,7 +87,7 @@ const InfoDescriptionSection = ({
           <BluePillImg src={bluePill} />
         </Column>
       </Row>
-      <InfoDescription description={description} />
+      <InfoDescription description={description} fontSize={18}/>
       <InfoItemStats brpData={brpData} loading={loading} />
     </Column>
   )
