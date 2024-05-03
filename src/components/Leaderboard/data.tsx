@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { firestore } from '../../firebaseConfig'
 import { SupportedChainId } from 'constants/chains'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 
 interface AddPositionData {
   trader: string
@@ -293,16 +294,16 @@ export function usePointsData() {
         let DepositQuery
         let WithdrawQuery
         let registerQueryData
-        // if (chainId === SupportedChainId.BASE) {
-          // AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-          // ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
-          // AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
-          // CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
-          // DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
-          // DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
-          // WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
-          // registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
-        // } else {
+        if (chainId === SupportedChainId.BASE) {
+          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
+          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+          AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
+          CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
+          DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
+          DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
+          WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
+          registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
+        } else {
           AddQueryData = await client.query(AddQuery, {}).toPromise()
           ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
           AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
@@ -311,9 +312,9 @@ export function usePointsData() {
           DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
           WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
           registerQueryData = await client.query(RegisterQuery, {}).toPromise()
-        // }
+        }
         
-        console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
+        // console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
 
         const vaultDataByAddress: { [key: string]: any } = {}
         DepositQuery?.data?.deposits.forEach((entry: any) => {
@@ -458,45 +459,151 @@ export function usePointsData() {
     call()
   }, [account, referralContract])
 
-  // console.log('lpPositions',lpPositions, collectData )
+  const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
+  const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
+  const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      if (addData) {
+        const promises = addData.map(async (entry: any) => {
+          const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+          
+          const res = await getDecimalAndUsdValueData(chainId, token)
+          
+          const trader = entry.trader 
+          const amount = entry.addedAmount
+          const decimals = res.decimals 
+          const lastPriceUSD = res.lastPriceUSD
+  
+          return { 
+            token: token, 
+            trader: trader, 
+            amount: amount,
+            decimals: decimals,
+            lastPriceUSD: lastPriceUSD
+          }
+        })
+        const results = await Promise.all(promises)
+        setAddDataProcessed(results)
+      }
+    }
+    fetchData()
+  }, [addData, uniqueTokens])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (reduceData) {
+        const promises = reduceData.map(async (entry: any) => {
+          const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+          
+          const res = await getDecimalAndUsdValueData(chainId, token)
+          
+          const trader = entry.trader 
+          const amount = entry.reduceAmount
+          const decimals = res.decimals 
+          const lastPriceUSD = res.lastPriceUSD
+  
+          return { 
+            token: token, 
+            trader: trader, 
+            amount: amount,
+            decimals: decimals,
+            lastPriceUSD: lastPriceUSD
+          }
+        })
+        const results = await Promise.all(promises)
+        setReduceDataProcessed(results)
+      }
+    }
+    fetchData()
+  }, [reduceData, uniqueTokens])
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      if (lpPositions) {
+        const promises = lpPositions.map(async (entry: any) => {
+
+          const [res0, res1] = await Promise.all([
+            getDecimalAndUsdValueData(chainId, entry.token0),
+            getDecimalAndUsdValueData(chainId, entry.token1)
+          ])
+    
+          return {
+            ...entry,
+            token0PriceUSD: res0.lastPriceUSD,
+            token1PriceUSD: res1.lastPriceUSD,
+            token0Decimals: res0.decimals,
+            token1Decimals: res1.decimals,
+          }
+        })
+
+        const results = await Promise.all(promises)
+        setLpPositionsProcessed(results)
+      }
+    }
+    fetchData()
+  }, [lpPositions, collectData, decreaseLiqData])
 
   const PointsData = useMemo(() => {
-    const addDataProcessed = addData?.map((entry: any) => ({
-      token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-      trader: entry.trader,
-      amount: entry.addedAmount,
-    }))
-    const reduceDataProcessed = reduceData?.map((entry: any) => ({
-      token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-      trader: entry.trader,
-      amount: entry.reduceAmount,
-    }))
+    // const addDataProcessed = addData?.map((entry: any) => {
+    //   if (entry.trader.toLowerCase() === '0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748'.toLowerCase()) {
+    //     console.log("ENTRY IN ADDDATA MAPPING ADDED AMOUNTTTTTTTTTTTTTTTTTT", entry.addedAmount)
+    //     const processedEntry = {
+    //       token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+    //       trader: entry.trader,
+    //       amount: entry.addedAmount,
+    //     }
+    //     console.log("PROCESSED ENTRY", processedEntry)
+    //     return processedEntry
+    //   }
+    //   return {
+    //     token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+    //     trader: entry.trader,
+    //     amount: entry.addedAmount,
+    //   }
+    // })
+
+
+    // const reduceDataProcessed = reduceData?.map((entry: any) => ({
+    //   token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
+    //   trader: entry.trader,
+    //   amount: entry.reduceAmount,
+    // }))
 
     let tradeProcessedByTrader: { [key: string]: any } = {}
-    tradeProcessedByTrader = getPrevTradePoints(tradeProcessedByTrader)
+  
     addDataProcessed?.forEach((entry: any) => {
       const trader = ethers.utils.getAddress(entry.trader)
       if (!tradeProcessedByTrader[trader]) {
         tradeProcessedByTrader[trader] = []
       }
-      const newEntry = entry
-      newEntry.amount = (usdValue[entry.token] * entry.amount) / 10 ** tokenDecimal[entry.token]
+
+      const newEntry = {
+        token: entry.token,
+        trader: trader,
+        amount: (entry.lastPriceUSD * entry.amount) / 10 ** entry.decimals
+      }
       tradeProcessedByTrader[trader].push(newEntry)
     })
+
     reduceDataProcessed?.forEach((entry: any) => {
       const trader = ethers.utils.getAddress(entry.trader)
-
       if (!tradeProcessedByTrader[trader]) {
         tradeProcessedByTrader[trader] = []
       }
-      const newEntry = entry
-      newEntry.amount = (usdValue[entry.token] * entry.amount) / 10 ** tokenDecimal[entry.token]
 
+      const newEntry = {
+        token: entry.token,
+        trader: trader,
+        amount: (entry.lastPriceUSD * entry.amount) / 10 ** entry.decimals
+      }
       tradeProcessedByTrader[trader].push(newEntry)
     })
 
     const lpPositionsByUniqueLps: { [key: string]: any } = {}
-    lpPositions?.forEach((entry: any) => {
+
+    lpPositionsProcessed?.forEach((entry: any) => {
       const sameTokenIdCollects = collectData.filter((collect: any) => {
         if (collect.tokenId == entry.tokenId.toString()) {
           return true
@@ -528,6 +635,12 @@ export function usePointsData() {
 
       if (sameTokenIdCollects.length > 0 && lpAddress == '0x0000000000000000000000000000000000000000')
         lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
+      
+      // if (lpAddress.toLowerCase() === '0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748'.toLowerCase()) {
+      //   console.log("LP OF MINE! ", entry)
+      //   console.log("AMOUNT 0, 1 Collected", amount0Collected, amount1Collected)
+      // }
+
       if (!lpPositionsByUniqueLps[lpAddress]) {
         lpPositionsByUniqueLps[lpAddress] = []
       }
@@ -536,8 +649,9 @@ export function usePointsData() {
         token0: entry.token0,
         token1: entry.token1,
         tokenId: entry.tokenId.toString(),
-        amount0Collected: (usdValue[entry.token0] * amount0Collected) / 10 ** tokenDecimal[entry.token0],
-        amount1Collected: (usdValue[entry.token1] * amount1Collected) / 10 ** tokenDecimal[entry.token1],
+        
+        amount0Collected: (entry.token0PriceUSD * amount0Collected) / 10 ** entry.token0Decimals,
+        amount1Collected: (entry.token1PriceUSD * amount1Collected) / 10 ** entry.token1Decimals,
       })
     })
 
@@ -567,10 +681,10 @@ export function usePointsData() {
     account,
     uniqueLps,
     uniqueTokens,
-    addData,
+    addDataProcessed,
     reduceData,
     addLiqData,
-    lpPositions,
+    lpPositionsProcessed,
     decreaseLiqData,
     collectData,
     codeUsers,

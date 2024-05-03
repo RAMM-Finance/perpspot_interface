@@ -295,8 +295,11 @@ const Referrals = () => {
 
     const call = async () => {
       try {
+        console.log("CALLING CLAIMREWARDS")
         const result = await BRP.callStatic.claimRewards()
+        console.log("LAST CLAIMED POINTS")
         const lastClaimedPoints = await BRP.lastClaimedPoints(account)
+        console.log("LAST RECORDED POINTS")
         const lastRecordedPoints = await BRP.lastRecordedPoints(account)
         setSimulatedRewards(result.toString())
         setLastClaimedPoints(lastClaimedPoints.toString())
@@ -524,9 +527,11 @@ const Referrals = () => {
     if (!tradeProcessedByTrader[account]) return 0
     else {
       let totalAmount = 0
+      console.log("TRADE PROCESSED BY TRADER [ACC]", tradeProcessedByTrader[account])
       tradeProcessedByTrader[account].forEach((entry: any) => {
         totalAmount += entry.amount
       })
+      console.log("TOTAL AMOUNT", totalAmount)
       return totalAmount
     }
   }, [tradeProcessedByTrader, account])
@@ -539,7 +544,7 @@ const Referrals = () => {
   const accountCanRefer = useMemo(() => {
     return canRefer(account)
   }, [account])
-  
+
   return (
     <Wrapper>
       <FilterWrapper>
@@ -744,7 +749,7 @@ const Referrals = () => {
                     {refereeActivity &&
                       account &&
                       ((refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) /
-                        CollectMultipler) || 0}
+                        CollectMultipler).toFixed(10) || 0}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -827,7 +832,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${Math.round(tradingVolume)?.toString()}
+                    ${tradingVolume.toFixed(4)}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -835,7 +840,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Advanced LP Fee Collected</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${Math.round(Number(totalCollected))?.toString()}
+                    ${totalCollected.toFixed(4) !== '0.0000' ? totalCollected.toFixed(4) : ' < 0.0001'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
