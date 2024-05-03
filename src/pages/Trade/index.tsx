@@ -391,9 +391,9 @@ export default function Trade({ className }: { className?: string }) {
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
-            <Highlights />
             {!isSwap && <TradeTabContent />}
             {isSwap && <SwapTabContent />}
+            <Highlights />
           </SwapWrapper>
           <PositionsWrapper>
             <PostionsContainer

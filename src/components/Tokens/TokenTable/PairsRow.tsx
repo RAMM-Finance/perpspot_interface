@@ -1,11 +1,11 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { LMT_PER_USD_PER_DAY } from 'constants/misc'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { ForwardedRef, forwardRef, useMemo } from 'react'
+import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -16,7 +16,7 @@ import { ClickableStyle } from 'theme'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 
 import { useCurrency } from '../../../hooks/Tokens'
-import { ButtonPrimary } from '../../Button'
+import { SmallButtonPrimary } from '../../Button'
 import {
   LARGE_MEDIA_BREAKPOINT,
   MAX_WIDTH_MEDIA_BREAKPOINT,
@@ -26,7 +26,7 @@ import {
 import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
-import { LMT_PER_USD_PER_DAY } from 'constants/misc'
+import ZapModal from './ZapModal'
 
 const Cell = styled.div`
   display: flex;
@@ -265,6 +265,7 @@ const VolumeCell = styled(DataCell)`
 const ButtonCell = styled(DataCell)`
   /* padding-right: 8px; */
   display: flex;
+  gap: 10px;
   justify-content: end;
   @media only screen and (max-width: ${LARGE_MEDIA_BREAKPOINT}) {
     display: none;
@@ -315,6 +316,7 @@ export function TokenRow({
   currency1,
   fee,
   priceChange,
+  buttons,
   ...rest
 }: {
   first?: boolean
@@ -335,31 +337,8 @@ export function TokenRow({
   last?: boolean
   style?: CSSProperties
   fee?: number
+  buttons: ReactNode
 }) {
-  const navigate = useNavigate()
-  const setCurrentPool = useSetCurrentPool()
-  const token0 = useCurrency(currency0)
-  const token1 = useCurrency(currency1)
-  const currentPool = useCurrentPool()
-  const currentPoolId = currentPool?.poolId
-  const poolOHLC = usePoolOHLC(token0?.wrapped.address, token1?.wrapped.address, fee)
-
-  const handleClick = useCallback(
-    (e: any) => {
-      e.stopPropagation()
-      if (currency0 && currency1 && token0 && token1 && fee && token0.symbol && token1.symbol) {
-        const id = getPoolId(currency0, currency1, fee)
-        if (id && currentPoolId !== id && poolOHLC) {
-          setCurrentPool(id, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, token0.symbol, token1.symbol)
-          navigate('/add/' + currency0 + '/' + currency1 + '/' + `${fee}`, {
-            state: { currency0, currency1 },
-          })
-        }
-      }
-    },
-    [token0, token1, fee, currency0, currency1, currentPoolId, setCurrentPool, navigate, poolOHLC]
-  )
-
   const rowCells = (
     <>
       <NameCell data-testid="name-cell">{tokenInfo}</NameCell>
@@ -388,20 +367,7 @@ export function TokenRow({
       ) : (
         !header && (
           <ButtonCell data-testid="volume-cell" sortable={header}>
-            <ButtonPrimary
-              style={{
-                padding: '.5rem',
-                width: '80px',
-                fontSize: '1rem',
-                borderRadius: '10px',
-                height: '40px',
-                lineHeight: '1',
-                fontWeight: '500',
-              }}
-              onClick={handleClick}
-            >
-              <Trans>Provide</Trans>
-            </ButtonPrimary>
+            {buttons}
           </ButtonCell>
         )
       )}
@@ -491,6 +457,35 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
   }, [filterString, token0, token1])
 
+  const [showModal, setShowModal] = useState(false)
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
+
+  const handleProvide = useCallback(
+    (e: any) => {
+      e.stopPropagation()
+      if (token0Address && token1Address && token0 && token1 && fee && token0.symbol && token1.symbol) {
+        const id = getPoolId(token0Address, token1Address, fee)
+        if (id && currentPoolId !== id && poolOHLC) {
+          setCurrentPool(id, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, token0.symbol, token1.symbol)
+          navigate('/add/' + token0Address + '/' + token1Address + '/' + `${fee}`, {
+            state: { token0Address, token1Address },
+          })
+        }
+      }
+    },
+    [token0, token1, fee, currentPoolId, setCurrentPool, navigate, poolOHLC, token0Address, token1Address]
+  )
+
+  const handleZap = useCallback(
+    (e: any) => {
+      e.stopPropagation()
+      setShowModal(true)
+    },
+    [setShowModal]
+  )
+
   return filtered ? (
     <RowWrapper
       ref={ref}
@@ -502,6 +497,15 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       }}
       data-testid={`token-table-row-${currencyIda?.symbol}`}
     >
+      {' '}
+      <ZapModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        apr={apr !== undefined ? apr + estimatedAPR : undefined}
+        tvl={tvl}
+        token0={token0}
+        token1={token1}
+      />
       <TokenRow
         fee={pool?.fee}
         header={false}
@@ -543,7 +547,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         }
         dailyLMT={
           <ClickableRate rate={LMT_PER_USD_PER_DAY}>
-             {/* rate={dailyLMT ? dailyLMT : 0}> */}
+            {/* rate={dailyLMT ? dailyLMT : 0}> */}
             {/* {dailyLMT !== undefined ? `${dailyLMT?.toFixed(4)} ` : '-'} */}
             {LMT_PER_USD_PER_DAY}
           </ClickableRate>
@@ -554,6 +558,17 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         currency0={token0?.address}
         // @ts-ignore
         currency1={token1?.address}
+        buttons={
+          <>
+            {' '}
+            <SmallButtonPrimary onClick={handleProvide}>
+              <Trans>Provide</Trans>
+            </SmallButtonPrimary>
+            <SmallButtonPrimary onClick={handleZap}>
+              <Trans>Zap In</Trans>
+            </SmallButtonPrimary>
+          </>
+        }
       />
     </RowWrapper>
   ) : null

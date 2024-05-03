@@ -11,6 +11,7 @@ const Wrapper = styled.div`
   border-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
+  margin-top: 0.7rem;
   height: 150px;
   padding-top: 10px;
   padding-left: 5px;
