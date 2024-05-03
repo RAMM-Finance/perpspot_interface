@@ -22,7 +22,7 @@ const ModalInfoWrapper = styled(LightCard)`
   padding: 0.75rem;
 `
 
-export const ModalActionButton = styled(ThemedText.BodySecondary)<{
+const ModalActionButton = styled(ThemedText.BodySecondary)<{
   isDisabled: boolean
 }>`
   width: 45%;
@@ -77,8 +77,8 @@ const StyledMediaImg = styled.img<{
   object-fit: contain;
   border-radius: 12px;
 
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
-    width: 75%;
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+    width: 70%;
   }
 `
 
@@ -94,7 +94,7 @@ const ModalWrapper = styled.div`
 const ModalTopWrapper = styled.div`
   display: flex;
   gap: 2rem;
-  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
     flex-wrap: wrap;
   }
 `
@@ -136,9 +136,9 @@ const BoxModal = ({ isOpen, hnadleColoseModal, modalData, handleUnlockBox, brpDa
                 {isLocked ? 'Locked' : 'Unlock'}
               </ModalActionButton>
             </Row>
-            <ModalDescriptWrapper gap="md">
+            <ModalDescriptWrapper gap="md" marginTop={10}>
               <InfoDescription description="How to get this Box" spacing={-0.8}/>
-              <InfoDescription description="Description Section will be updated" fontSize={12} color="textPrimary" />
+              <InfoDescription description="Description Section will be updated" fontSize={14} color="textPrimary" />
             </ModalDescriptWrapper>
           </ModalDescriptWrapper>
         </ModalTopWrapper>

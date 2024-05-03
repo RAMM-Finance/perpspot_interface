@@ -144,50 +144,7 @@ const StyledActionButton = styled(ThemedText.BodySecondary)<{
   }
 `
 
-const AddBoxActionButton = styled(ThemedText.BodySecondary)`
-  position: absolute;
-  display: flex;
-  padding: 8px 0px;
-  left: 8px;
-  right: 8px;
-  bottom: 12px;
-  color: ${({ theme }) => theme.accentTextLightPrimary};
-  background: ${({ theme }) => theme.accentAction};
-  transition: ${({ theme }) =>
-    `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
-  will-change: transform;
-  border-radius: 8px;
-  justify-content: center;
-  font-weight: 600 !important;
-  line-height: 16px;
-  cursor: 'pointer';
 
-  @media screen and (max-width: ${BREAKPOINTS.sm}px) {
-    visibility: visible;
-    bottom: 8px;
-  }
-
-  &:before {
-    background-size: 100%;
-    border-radius: inherit;
-
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 100%;
-    content: '';
-  }
-
-  &:hover:before {
-    background-color: ${({ theme }) => theme.stateOverlayHover};
-  }
-
-  &:active:before {
-    background-color: ${({ theme }) => theme.stateOverlayPressed};
-  }
-`
 
 const StyledCardContainer = styled.div<{ isDisabled: boolean; shouldHide?: boolean }>`
   position: relative;
@@ -328,21 +285,6 @@ export const LoadingCardContainer = () => {
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
       <StyledActionButton isDisabled={true}>Loading...</StyledActionButton>
-    </StyledCardContainer>
-  )
-}
-
-export const AddBoxCardContainer = ({ handleAddBox }: { handleAddBox: () => void }) => {
-  return (
-    <StyledCardContainer isDisabled={true}>
-      <ItemImgContainer isDisabled={true}>
-        <StyledMediaContainer>
-          <LoadingBubble width="1500px" height="180px" />
-        </StyledMediaContainer>
-      </ItemImgContainer>
-      <StyledDetailsRelativeContainer>
-        <AddBoxActionButton onClick={() => handleAddBox()}>Add Box</AddBoxActionButton>
-      </StyledDetailsRelativeContainer>
     </StyledCardContainer>
   )
 }

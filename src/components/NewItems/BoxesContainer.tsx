@@ -1,9 +1,48 @@
-import { Row } from 'nft/components/Flex'
+import { Column, Row } from 'nft/components/Flex'
 import { TBoxData } from 'pages/NewItemsList'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import { AddBoxCardContainer, CardContainer, LoadingCardContainer } from './CardContainer'
+import { CardContainer, LoadingCardContainer } from './CardContainer'
+
+const AddBoxActionButton = styled(ThemedText.BodySecondary)`
+  display: flex;
+  padding: 8px 0px;
+  width: 40vh;
+  height: 35px;
+  color: ${({ theme }) => theme.accentTextLightPrimary};
+  background: ${({ theme }) => theme.accentAction};
+  transition: ${({ theme }) =>
+    `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
+  will-change: transform;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600 !important;
+  line-height: 16px;
+  cursor: 'pointer';
+
+  &:before {
+    background-size: 100%;
+    border-radius: inherit;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    content: '';
+  }
+
+  &:hover:before {
+    background-color: ${({ theme }) => theme.stateOverlayHover};
+  }
+
+  &:active:before {
+    background-color: ${({ theme }) => theme.stateOverlayPressed};
+  }
+`
 
 const InfiniteScrollWrapperCss = css`
   margin: 0 16px;
@@ -58,6 +97,7 @@ interface IBoxesContainerProps {
   loading: boolean
   hiddenCards: number[]
   handleShowModal: (modalData: TBoxData) => void
+  account?: string
 }
 
 const BoxesContainer = ({
@@ -67,8 +107,8 @@ const BoxesContainer = ({
   loading,
   hiddenCards,
   handleShowModal,
+  account,
 }: IBoxesContainerProps) => {
-  // console.log('BoxesContainr', lockedBoxes, totalBoxes, totalUnlockableBoxes)
   if (loading) {
     return (
       <BoxesDisplaySection>
@@ -103,12 +143,17 @@ const BoxesContainer = ({
       </InfiniteScrollWrapper>
       {!itemDatas ||
         (itemDatas.length === 0 && (
-          <InfiniteScrollWrapper>
-            <AddBoxCardContainer handleAddBox={handleAddBox} />
+          <Column gap="18">
+            {/* <AddBoxCardContainer handleAddBox={handleAddBox} /> */}
             <ThemedText.BodySecondary fontSize="18px" width="100%">
               No Treasure Boxes
             </ThemedText.BodySecondary>
-          </InfiniteScrollWrapper>
+            {account && (
+              <AddBoxActionButton fontSize="18px" onClick={() => handleAddBox()}>
+                Add Box
+              </AddBoxActionButton>
+            )}
+          </Column>
         ))}
     </BoxesDisplaySection>
   )

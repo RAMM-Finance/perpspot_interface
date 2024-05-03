@@ -212,9 +212,10 @@ const NewItemsListPage = () => {
 
   useEffect(() => {
     if (brp && account && blockNumber) {
-      if (!brpData) setLoading(true)
       const call = async () => {
         try {
+          const freeBoxUsed = await brp.freeBoxUsed(account)
+
           const totalBoxes = await brp.numBoxes(account)
           const totalUnlockableBoxes = await brp.claimableBoxes(account)
           const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
@@ -226,27 +227,30 @@ const NewItemsListPage = () => {
           const NZTRageRow = await brp.rangeLow()
           const NZTRageHigh = await brp.rangeHigh()
 
+          let numTotalBoxes = totalBoxes?.toNumber()
+          if (!freeBoxUsed && numTotalBoxes === 0) {
+            numTotalBoxes = 1
+          }
           const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
           const totalLMTString = totalLMTPoint?.toString()
 
-          const numTotalBoxes = totalBoxes?.toNumber()
           const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
 
           const lockedBoxes = Array(numTotalBoxes)
             .fill(true)
             .map((_, index) => index + 1 > numtotalUnlockableBoxes)
           const newData = Array.from({ length: numTotalBoxes }, (_, index) => {
-            const randomImgNumber = Math.floor(Math.random() * 4)
+            const imgNumber = index % itemImages.length
             return {
               id: `#${index + 1}`,
-              img: itemImages[randomImgNumber],
+              img: itemImages[imgNumber],
               info: `Limitless test ${index + 1}`,
               isLocked: lockedBoxes[index],
               index,
             }
           })
-          // console.log('total value call',  lastRecordedTradePoints.toString(), lastRecordedLpPoints.toString(), lastRecordedPoints.toString())
-          // console.log('blockNumber', totalBoxes.toNumber(), totalUnlockableBoxes[0].toNumber, lmtRequiredPerUnlock)
+          // console.log('blockNumber', numTotalBoxes, numtotalUnlockableBoxes, lmtRequiredPerUnlock, totalLMTString)
+          // console.log('blockNumber', numTotalBoxes, freeBoxUsed)
           setBRPData({
             totalBoxes: numTotalBoxes,
             totalUnlockableBoxes: numtotalUnlockableBoxes,
@@ -257,7 +261,6 @@ const NewItemsListPage = () => {
           })
           setItemDatas(newData)
           setHiddenCards([])
-          // console.log('get Totalboxes', brpData, hiddenCards, totalBoxes)
           setLoading(false)
         } catch (error) {
           setBRPData({
@@ -269,13 +272,14 @@ const NewItemsListPage = () => {
             NZTRageHigh: 0,
           })
           setHiddenCards([])
+          setItemDatas([])
           setLoading(false)
           console.log(error, 'get brp data error')
         }
       }
       call()
     }
-  }, [brp, account, handleUnlockBox, setHiddenCards, blockNumber])
+  }, [brp, account, blockNumber, handleUnlockBox, setHiddenCards])
 
   const handleShowModal = useCallback((modalData: TBoxData) => {
     setShowModal(true)
@@ -292,7 +296,7 @@ const NewItemsListPage = () => {
       index: 0,
     })
   }, [])
-  // console.log('itemDatas', itemDatas)
+  console.log('itemDatas', itemDatas)
 
   return (
     <>
@@ -332,6 +336,7 @@ const NewItemsListPage = () => {
             loading={loading}
             hiddenCards={hiddenCards}
             handleShowModal={handleShowModal}
+            account={account}
           />
           {/* </InfiniteScroll> */}
         </CollectionDisplaySection>
