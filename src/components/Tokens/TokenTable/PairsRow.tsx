@@ -549,7 +549,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <ClickableRate rate={LMT_PER_USD_PER_DAY}>
             {/* rate={dailyLMT ? dailyLMT : 0}> */}
             {/* {dailyLMT !== undefined ? `${dailyLMT?.toFixed(4)} ` : '-'} */}
-            {LMT_PER_USD_PER_DAY}
+            {LMT_PER_USD_PER_DAY + ' LMT/USD'}
           </ClickableRate>
         }
         first={tokenListIndex === 0}
