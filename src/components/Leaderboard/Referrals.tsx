@@ -513,12 +513,14 @@ const Referrals = () => {
   }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
   const totalCollected = useMemo(() => {
+    console.log("CHECK LP POSITIONS BY UNIQUE LPS", lpPositionsByUniqueLps)
     if (!account || !lpPositionsByUniqueLps) return 0
     let totalAmount = 0
     lpPositionsByUniqueLps?.[account]?.forEach((entry: any) => {
       totalAmount += entry.amount0Collected
       totalAmount += entry.amount1Collected
     })
+    console.log("TOTAL COLLECTED", totalAmount)
     return totalAmount
   }, [lpPositionsByUniqueLps, account])
 
@@ -749,7 +751,7 @@ const Referrals = () => {
                     {refereeActivity &&
                       account &&
                       ((refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) /
-                        CollectMultipler).toFixed(10) || 0}
+                        CollectMultipler) || 0}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
