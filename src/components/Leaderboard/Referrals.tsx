@@ -539,6 +539,7 @@ const Referrals = () => {
   const accountCanRefer = useMemo(() => {
     return canRefer(account)
   }, [account])
+  
   return (
     <Wrapper>
       <FilterWrapper>
@@ -717,7 +718,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account && refereeActivity[account]?.usersReferred}
+                    {refereeActivity && account && (refereeActivity[account]?.usersReferred || 0)}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -731,7 +732,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${refereeActivity && account && refereeActivity[account]?.tradeVolume}
+                    ${(refereeActivity && account && refereeActivity[account]?.tradeVolume) || 0}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -742,8 +743,8 @@ const Referrals = () => {
                     $
                     {refereeActivity &&
                       account &&
-                      (refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) /
-                        CollectMultipler}
+                      ((refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) /
+                        CollectMultipler) || 0}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -751,7 +752,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>limToken Deposits From Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${refereeActivity && account && refereeActivity[account]?.vaultDeposits}
+                    ${(refereeActivity && account && refereeActivity[account]?.vaultDeposits) || 0}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -759,7 +760,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Referral LMT Last Claim</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account && lastClaimedPoints}
+                    {refereeActivity && account && (lastClaimedPoints || 0)}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
