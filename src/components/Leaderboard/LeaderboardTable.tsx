@@ -89,7 +89,7 @@ export const addresses = [
 export default function LeaderboardTable() {
   const { chainId } = useWeb3React()
 
-  const tradePoints = usePointsData()
+  // const tradePoints = usePointsData()
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)
     const allUsersArrays = allUserObjects.map((point: any) => {
@@ -182,10 +182,10 @@ export default function LeaderboardTable() {
   //   return createUserDataObj(usersArr, tradePoints)
   // }, [usersArr, tradePoints, chainId])
 
-  const userData = useMemo(() => {
-    const extUsers = extractUsers(tradePoints)
-    return createUserDataObj(extUsers, tradePoints)
-  }, [tradePoints])
+  // const userData = useMemo(() => {
+  //   const extUsers = extractUsers(tradePoints)
+  //   return createUserDataObj(extUsers, tradePoints)
+  // }, [tradePoints])
 
   // console.log('userData', userData)
 

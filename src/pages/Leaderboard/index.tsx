@@ -222,29 +222,29 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<any>()
 
-  useEffect(() => {
-    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !AddQuery || loading || error) return
-    const call = async () => {
-      try {
-        setLoading(true)
-        let addQueryData
+  // useEffect(() => {
+  //   // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+  //   if (!client || !AddQuery || loading || error) return
+  //   const call = async () => {
+  //     try {
+  //       setLoading(true)
+  //       let addQueryData
         
-        if (chainId === SupportedChainId.ARBITRUM_ONE)
-          addQueryData = await client.query(AddQuery, {}).toPromise()
-        else if (chainId === SupportedChainId.BASE) 
-          addQueryData = await clientBase.query(AddQuery, {}).toPromise()
+  //       if (chainId === SupportedChainId.ARBITRUM_ONE)
+  //         addQueryData = await client.query(AddQuery, {}).toPromise()
+  //       else if (chainId === SupportedChainId.BASE) 
+  //         addQueryData = await clientBase.query(AddQuery, {}).toPromise()
 
-        setAddData(addQueryData)
-        setLoading(false)
-      } catch (error) {
-        console.log(error)
-        setError(error)
-        setLoading(false)
-      }
-    }
-    call()
-  }, [])
+  //       setAddData(addQueryData)
+  //       setLoading(false)
+  //     } catch (error) {
+  //       console.log(error)
+  //       setError(error)
+  //       setLoading(false)
+  //     }
+  //   }
+  //   call()
+  // }, [])
 
   return (
     <>

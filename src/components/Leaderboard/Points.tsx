@@ -45,7 +45,7 @@ const Value = styled.div`
 `
 
 export default function Points() {
-  const tradePoints = usePointsData()
+  // const tradePoints = usePointsData()
   const { account } = useWeb3React()
 
   function extractUsers(obj: any) {
@@ -130,13 +130,13 @@ export default function Points() {
     return sortedArrRanked
   }
 
-  const usersArr = useMemo(() => {
-    return extractUsers(tradePoints)
-  }, [tradePoints])
+  // const usersArr = useMemo(() => {
+  //   return extractUsers(tradePoints)
+  // }, [tradePoints])
 
-  const usersData = useMemo(() => {
-    return createUserDataObj(usersArr, tradePoints)
-  }, [usersArr])
+  // const usersData = useMemo(() => {
+  //   return createUserDataObj(usersArr, tradePoints)
+  // }, [usersArr])
 
   const prevData = useStoredData(addresses)
   const combinedData = prevData

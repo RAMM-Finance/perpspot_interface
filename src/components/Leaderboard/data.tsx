@@ -20,6 +20,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { firestore } from '../../firebaseConfig'
 import { SupportedChainId } from 'constants/chains'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import axios from 'axios'
 
 interface AddPositionData {
   trader: string
@@ -282,7 +283,19 @@ export function usePointsData() {
   })
 
   useEffect(() => {
-    if (!AddQuery || loading || error || !referralContract) return
+    if (!AddQuery || 
+      !ReduceQuery || 
+      !IncreaseLiquidityQuery || 
+      !CollectQuery || 
+      !DecreaseLiquidityQuery || 
+      !DepositVaultQuery ||
+      !WithdrawVaultQuery ||
+      !RegisterQuery || 
+      loading || 
+      error || 
+      !referralContract) 
+      return
+
     if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
     if (chainId === SupportedChainId.BASE && !clientBase) return
     const call = async () => {
@@ -290,43 +303,95 @@ export function usePointsData() {
       try {
         setLoading(true)
 
-        // let AddQueryData
-        // let ReduceQueryData
-        // let AddLiqQueryData
-        // let CollectQueryData
-        // let DecreaseLiquidityData
-        // let DepositQuery
-        // let WithdrawQuery
-        // let registerQueryData
-        
-        const queries = [
-          { query: AddQuery, result: 'AddQueryData' },
-          { query: ReduceQuery, result: 'ReduceQueryData' },
-          { query: IncreaseLiquidityQuery, result: 'AddLiqQueryData' },
-          { query: CollectQuery, result: 'CollectQueryData' },
-          { query: DecreaseLiquidityQuery, result: 'DecreaseLiquidityData' },
-          { query: DepositVaultQuery, result: 'DepositQuery' },
-          { query: WithdrawVaultQuery, result: 'WithdrawQuery' },
-          { query: RegisterQuery, result: 'registerQueryData' },
-        ];
-        
-        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client;
-        const promises: Promise<any>[] = queries.map(({ query }) => clientToUse.query(query, {}).toPromise());
-        
-        const results = await Promise.all(promises)
-        
-        console.log("PROMISE RESULTS", results)
 
-        let AddQueryData = results[0]
-        let ReduceQueryData = results[1]
-        let AddLiqQueryData = results[2]
-        let CollectQueryData = results[3]
-        let DecreaseLiquidityData = results[4]
-        let DepositQuery = results[5]
-        let WithdrawQuery = results[6]
-        let registerQueryData = results[7]
+        let AddQueryData
+        let ReduceQueryData
+        let AddLiqQueryData
+        let CollectQueryData
+        let DecreaseLiquidityData
+        let DepositQuery
+        let WithdrawQuery
+        let registerQueryData
+        if (chainId === SupportedChainId.BASE) {
+          console.log("1")
+          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
+          console.log("2")
+          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+          console.log("3")
+          AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
+          console.log("4")
+          CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
+          console.log("5")
+          DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
+          console.log("6")
+          DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
+          console.log("7")
+          WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
+          console.log("8")
+          registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
+          console.log("9")
+        } else {
+          let url = "https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph"
+          console.log("11")
+          AddQueryData = await client.query(AddQuery, {}).toPromise()
+          console.log(AddQueryData)
+          console.log("22")
+          
+          // const result1 = await axios.post(url, {
+          //   query: ReduceQuery
+          // })
+          // console.log("RESULT OF AXIOS TEST1", result1)
+          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
+          console.log(ReduceQueryData)
+          console.log("33")
 
-        console.log("ADD QUERY DATA", AddQueryData)
+
+          AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
+          console.log(AddLiqQueryData)
+          const result = await axios.post(url, {
+            query: IncreaseLiquidityQuery
+          })
+          console.log("RESULT OF AXIOS TEST", result)
+          console.log("44")
+          CollectQueryData = await client.query(CollectQuery, {}).toPromise()
+          console.log("55")
+          DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
+          console.log("66")
+          DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
+          console.log("77")
+          WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
+          console.log("88")
+          registerQueryData = await client.query(RegisterQuery, {}).toPromise()
+        }
+
+        // const queries = [
+        //   { query: AddQuery, result: 'AddQueryData' },
+        //   { query: ReduceQuery, result: 'ReduceQueryData' },
+        //   { query: IncreaseLiquidityQuery, result: 'AddLiqQueryData' },
+        //   { query: CollectQuery, result: 'CollectQueryData' },
+        //   { query: DecreaseLiquidityQuery, result: 'DecreaseLiquidityData' },
+        //   { query: DepositVaultQuery, result: 'DepositQuery' },
+        //   { query: WithdrawVaultQuery, result: 'WithdrawQuery' },
+        //   { query: RegisterQuery, result: 'registerQueryData' },
+        // ];
+        
+        // const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client;
+        // const promises: Promise<any>[] = queries.map(({ query }) => clientToUse.query(query, {}).toPromise());
+        
+        // const results = await Promise.all(promises)
+        
+        // console.log("PROMISE RESULTS", results)
+
+        // let AddQueryData = results[0]
+        // let ReduceQueryData = results[1]
+        // let AddLiqQueryData = results[2]
+        // let CollectQueryData = results[3]
+        // let DecreaseLiquidityData = results[4]
+        // let DepositQuery = results[5]
+        // let WithdrawQuery = results[6]
+        // let registerQueryData = results[7]
+
+        // console.log("ADD QUERY DATA", AddQueryData)
         
         // console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
 
@@ -769,7 +834,7 @@ export function usePointsData() {
     return result
   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  console.log('collectData', tradeProcessedByTrader, lpPositionsByUniqueLps, refereeActivity)
+  // console.log('collectData', tradeProcessedByTrader, lpPositionsByUniqueLps, refereeActivity)
   return useMemo(() => {
     return {
       tradeProcessedByTrader,
