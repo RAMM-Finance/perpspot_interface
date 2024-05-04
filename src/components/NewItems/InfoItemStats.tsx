@@ -31,11 +31,11 @@ export const StatsItem = ({
   labelImg?: string
 }) => {
   return (
-    <Box flexDirection="column" alignItems="baseline" gap="6" height="min">
+    <Box flexDirection="column" alignItems="baseline" height="min">
       <ThemedText.SubHeader color="textSecondary">
         {loading ? <LoadingBubble width="80px" /> : children}
       </ThemedText.SubHeader>
-      <StateLabelText color="stateLabel" fontSize="14px">
+      <StateLabelText color="stateLabel" fontSize="14px" marginTop="7px">
         {label}
       </StateLabelText>
     </Box>
@@ -57,7 +57,7 @@ const ModalStatsItem = ({
       <ThemedText.MediumHeader color="textSecondary" fontWeight={600}>
         {loading ? <LoadingBubble width="80px" /> : children}
       </ThemedText.MediumHeader>
-      <StateLabelText color="stateLabel" minWidth="90px">
+      <StateLabelText color="stateLabel" minWidth="90px" fontSize="14px">
         {label}
       </StateLabelText>
     </ModalStatsBox>
