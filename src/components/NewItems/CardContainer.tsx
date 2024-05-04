@@ -144,8 +144,6 @@ const StyledActionButton = styled(ThemedText.BodySecondary)<{
   }
 `
 
-
-
 const StyledCardContainer = styled.div<{ isDisabled: boolean; shouldHide?: boolean }>`
   position: relative;
   border-radius: 12px;
@@ -192,9 +190,9 @@ interface ICardContainerProps {
   id: string
   img: string
   info: string
-  // secondInfo: string
   isLocked: boolean
-  handleUnlockBox: (index: number) => void
+  handleAddBox: (index: number) => void
+  // handleUnlockBox: (index: number) => void
   shouldHide?: boolean
   index: number
   handleShowModal: (modalData: TBoxData) => void
@@ -205,11 +203,12 @@ export const CardContainer = ({
   img,
   info,
   isLocked,
-  handleUnlockBox,
+  handleAddBox,
   shouldHide,
   index,
   handleShowModal,
 }: ICardContainerProps) => {
+  // console.log(shouldHide,'index')
   return (
     <StyledCardContainer
       isDisabled={isLocked}
@@ -249,10 +248,10 @@ export const CardContainer = ({
         isDisabled={isLocked}
         onClick={(e) => {
           e.stopPropagation()
-          isLocked ? undefined : handleUnlockBox(index)
+          isLocked ? undefined : handleAddBox(index)
         }}
       >
-        {isLocked ? 'Locked' : 'Unlock'}
+        {isLocked ? 'Insufficient LMT' : 'Add box'}
       </StyledActionButton>
     </StyledCardContainer>
   )

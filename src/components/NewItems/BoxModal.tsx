@@ -110,12 +110,21 @@ interface IBoxModalProps {
   brpData: TBRPData
   modalData: TBoxData
   isOpen: boolean
-  hnadleColoseModal: () => void
-  handleUnlockBox: (index: number) => void
+  handleCloseModal: () => void
+  // handleUnlockBox: (index: number) => void
+  handleAddBox: (index: number) => void
 }
 
-const BoxModal = ({ isOpen, hnadleColoseModal, modalData, handleUnlockBox, brpData }: IBoxModalProps) => {
+const BoxModal = ({ isOpen, handleCloseModal, modalData, handleAddBox, brpData }: IBoxModalProps) => {
   const { info, img, isLocked, index } = modalData
+  console.log('index', index)
+  // const handleModalAction = useCallback(
+  //   (index: number) => {
+  //     handleUnlockBox(index)
+  //     handleCloseModal()
+  //   },
+  //   [handleUnlockBox, handleCloseModal]
+  // )
   return (
     <Modal
       isOpen={isOpen}
@@ -124,20 +133,20 @@ const BoxModal = ({ isOpen, hnadleColoseModal, modalData, handleUnlockBox, brpDa
       maxWidth={1200}
       width={68}
       $scrollOverlay={true}
-      onDismiss={() => hnadleColoseModal()}
+      onDismiss={() => handleCloseModal()}
     >
       <ModalWrapper>
         <ModalTopWrapper>
           <StyledMediaImg src={img} />
           <ModalDescriptWrapper marginTop={10}>
             <Row justifyContent="space-between" gap="20" width="full" alignItems="flex-start">
-              <InfoDescription title={true} description={info} fontSize={28}/>
-              <ModalActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleUnlockBox(index))}>
-                {isLocked ? 'Locked' : 'Unlock'}
+              <InfoDescription title={true} description={info} fontSize={28} />
+              <ModalActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleAddBox(index))}>
+                {isLocked ? 'Locked' : 'Add box'}
               </ModalActionButton>
             </Row>
             <ModalDescriptWrapper gap="md" marginTop={10}>
-              <InfoDescription description="How to get this Box" spacing={-0.8}/>
+              <InfoDescription description="How to get this Box" spacing={-0.8} />
               <InfoDescription description="Description Section will be updated" fontSize={14} color="textPrimary" />
             </ModalDescriptWrapper>
           </ModalDescriptWrapper>

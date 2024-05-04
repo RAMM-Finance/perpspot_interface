@@ -92,8 +92,8 @@ const BoxesDisplaySection = styled(Row)`
 
 interface IBoxesContainerProps {
   itemDatas: TBoxData[]
-  handleUnlockBox: (index: number) => void
-  handleAddBox: () => void
+  // handleUnlockBox: (index: number) => void
+  handleAddBox: (index?: number) => void
   loading: boolean
   hiddenCards: number[]
   handleShowModal: (modalData: TBoxData) => void
@@ -102,7 +102,7 @@ interface IBoxesContainerProps {
 
 const BoxesContainer = ({
   itemDatas,
-  handleUnlockBox,
+  // handleUnlockBox,
   handleAddBox,
   loading,
   hiddenCards,
@@ -134,27 +134,26 @@ const BoxesContainer = ({
             img={img}
             info={info}
             isLocked={isLocked}
-            handleUnlockBox={handleUnlockBox}
+            // handleUnlockBox={handleUnlockBox}
+            handleAddBox={handleAddBox}
             shouldHide={hiddenCards.includes(index)}
             index={index}
             handleShowModal={handleShowModal}
           />
         ))}
       </InfiniteScrollWrapper>
-      {!itemDatas ||
-        (itemDatas.length === 0 && (
-          <Column gap="18">
-            {/* <AddBoxCardContainer handleAddBox={handleAddBox} /> */}
-            <ThemedText.BodySecondary fontSize="18px" width="100%">
-              No Treasure Boxes
-            </ThemedText.BodySecondary>
-            {account && (
+      {!itemDatas || !account
+        ? null
+        : itemDatas.length === 0 && (
+            <Column gap="18">
+              <ThemedText.BodySecondary fontSize="18px" width="100%">
+                No Treasure Boxes
+              </ThemedText.BodySecondary>
               <AddBoxActionButton fontSize="18px" onClick={() => handleAddBox()}>
                 Add Box
               </AddBoxActionButton>
-            )}
-          </Column>
-        ))}
+            </Column>
+          )}
     </BoxesDisplaySection>
   )
 }

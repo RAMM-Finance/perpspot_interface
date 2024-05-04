@@ -1,6 +1,5 @@
-import Row from 'components/Row'
 import { Box } from 'nft/components/Box'
-import { Column } from 'nft/components/Flex'
+import { Column, Row } from 'nft/components/Flex'
 import { TBRPData } from 'pages/NewItemsList'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -11,11 +10,11 @@ import InfoItemStats from './InfoItemStats'
 const BluePillImg = styled.img`
   position: absolute;
   width: 155px;
-  height: 68px;
+  height: 65px;
   background-color: transparent;
   transform: scale(1.3);
   opacity: 0.8;
-  right: 10px;
+  right: -130px;
   bottom: -24px;
   z-index: -999;
 `
@@ -76,18 +75,18 @@ const InfoDescriptionSection = ({
   loading: boolean
 }) => {
   return (
-    <Column marginTop="40" marginBottom="28" gap="18" marginX="24">
+    <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
       <Row alignItems="center">
         <InfoDescription title={true} description={title} fontSize={20} />
-        <Column position="relative" gap="8" marginLeft="60">
-          <ThemedText.SubHeader color="textSecondary">0</ThemedText.SubHeader>
-          <ThemedText.CellName color="stateLabel" fontSize="14px" fontWeight={500} width="250px">
+        <Row position="relative" gap="8" marginLeft="32" alignItems="center" marginTop="8">
+          <ThemedText.CellName fontSize="14px" fontWeight={600} width="min">
             My NZT balance
           </ThemedText.CellName>
+          <ThemedText.SubHeader color="textSecondary">0</ThemedText.SubHeader>
           <BluePillImg src={bluePill} />
-        </Column>
+        </Row>
       </Row>
-      <InfoDescription description={description} fontSize={18}/>
+      <InfoDescription description={description} fontSize={18} />
       <InfoItemStats brpData={brpData} loading={loading} />
     </Column>
   )
