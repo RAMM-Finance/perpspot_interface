@@ -187,7 +187,7 @@ export default function LeaderboardTable() {
     return createUserDataObj(extUsers, tradePoints)
   }, [tradePoints])
 
-  console.log('userData', userData)
+  // console.log('userData', userData)
 
   function LeaderboardHeader() {
     return (

@@ -144,7 +144,7 @@ const useMaxData = (account: any, referralContract: any) => {
     const getMaxCode = async () => {
       try {
         const result = await referralContract.getMaxValues()
-        console.log('getting maxxxxx', result)
+        // console.log('getting maxxxxx', result)
         setMaxNumber(result[1])
       } catch (error) {
         console.log('max errr', error)
@@ -213,8 +213,12 @@ const Referrals = () => {
   const { account, chainId, provider } = useWeb3React()
 
   const BRP = useBRP()
-  console.log('createReferralCode', createReferralCode)
-  console.log('referralCode', referralCode)
+  // console.log('createReferralCode', createReferralCode)
+  // console.log('referralCode', referralCode)
+
+  // console.log("REFERRALS PAGE")
+  // console.log("TRADEPROCESSSEDBYtRADEr", tradeProcessedByTrader)
+  // console.log("LPPOSITIONS ", lpPositionsByUniqueLps)
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -295,11 +299,11 @@ const Referrals = () => {
 
     const call = async () => {
       try {
-        console.log("CALLING CLAIMREWARDS")
+        // console.log("CALLING CLAIMREWARDS")
         const result = await BRP.callStatic.claimRewards()
-        console.log("LAST CLAIMED POINTS")
+        // console.log("LAST CLAIMED POINTS")
         const lastClaimedPoints = await BRP.lastClaimedPoints(account)
-        console.log("LAST RECORDED POINTS")
+        // console.log("LAST RECORDED POINTS")
         const lastRecordedPoints = await BRP.lastRecordedPoints(account)
         setSimulatedRewards(result.toString())
         setLastClaimedPoints(lastClaimedPoints.toString())
@@ -311,7 +315,7 @@ const Referrals = () => {
     call()
   })
 
-  console.log('simulatedRewards', BRP, simulatedRewards)
+  // console.log('simulatedRewards', BRP, simulatedRewards)
 
   const referralContract = useReferralContract()
   const [activeCodes, setActiveCodes] = useState<string>()
@@ -348,9 +352,9 @@ const Referrals = () => {
 
     const call = async () => {
       try {
-        console.log('code', code, referral ? refGen : ref)
+        // console.log('code', code, referral ? refGen : ref)
         const result = await referralContract.codeOwners(code)
-        console.log('ownerownerowner', result)
+        // console.log('ownerownerowner', result)
         setCodeExists(result != '0x0000000000000000000000000000000000000000' && result != account)
       } catch (error) {
         console.log('codeowner err', error)
@@ -370,7 +374,7 @@ const Referrals = () => {
   const refCodesExist = useCheckCodes(account, referralContract, refGens)
   const maxCodeUsage = useMaxData(account, referralContract)
 
-  console.log('txHashes', txHash, txResponse)
+  // console.log('txHashes', txHash, txResponse)
 
   const [codeUsing, setCodeUsing] = useState(false)
 
@@ -448,7 +452,7 @@ const Referrals = () => {
   const useCodeCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       const bytes32 = ethers.utils.formatBytes32String(ref.toString())
-      console.log('?wtfwtwfwfwefewfwfew',bytes32, ref.toString() )
+      // console.log('?wtfwtwfwfwefewfwfew',bytes32, ref.toString() )
       // const bytes32 = defaultAbiCoder.encode(['string'], [ref.toString()]).toString()
       const response = await referralContract?.setReferralCodeByUser(bytes32)
       return response as TransactionResponse
@@ -513,14 +517,14 @@ const Referrals = () => {
   }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
   const totalCollected = useMemo(() => {
-    console.log("CHECK LP POSITIONS BY UNIQUE LPS", lpPositionsByUniqueLps)
+    // console.log("CHECK LP POSITIONS BY UNIQUE LPS", lpPositionsByUniqueLps)
     if (!account || !lpPositionsByUniqueLps) return 0
     let totalAmount = 0
     lpPositionsByUniqueLps?.[account]?.forEach((entry: any) => {
       totalAmount += entry.amount0Collected
       totalAmount += entry.amount1Collected
     })
-    console.log("TOTAL COLLECTED", totalAmount)
+    // console.log("TOTAL COLLECTED", totalAmount)
     return totalAmount
   }, [lpPositionsByUniqueLps, account])
 
@@ -529,11 +533,11 @@ const Referrals = () => {
     if (!tradeProcessedByTrader[account]) return 0
     else {
       let totalAmount = 0
-      console.log("TRADE PROCESSED BY TRADER [ACC]", tradeProcessedByTrader[account])
+      // console.log("TRADE PROCESSED BY TRADER [ACC]", tradeProcessedByTrader[account])
       tradeProcessedByTrader[account].forEach((entry: any) => {
         totalAmount += entry.amount
       })
-      console.log("TOTAL AMOUNT", totalAmount)
+      // console.log("TOTAL AMOUNT", totalAmount)
       return totalAmount
     }
   }, [tradeProcessedByTrader, account])
@@ -542,7 +546,7 @@ const Referrals = () => {
     return `${window.location.href.substring(0, window.location.href.length - 11)}/#join/${activeCodes}`
   }, [activeCodes])
 
-  console.log('maxcode', maxCodeUsage)
+  // console.log('maxcode', maxCodeUsage)
   const accountCanRefer = useMemo(() => {
     return canRefer(account)
   }, [account])
@@ -725,7 +729,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account && (refereeActivity[account]?.usersReferred || 0)}
+                    {refereeActivity && account ? (refereeActivity[account]?.usersReferred || 0) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -739,7 +743,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${(refereeActivity && account && refereeActivity[account]?.tradeVolume) || 0}
+                  {refereeActivity && account ? '$' + (refereeActivity[account]?.tradeVolume || 0) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -747,11 +751,9 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Fees earned by Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    $
-                    {refereeActivity &&
-                      account &&
-                      ((refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) /
-                        CollectMultipler) || 0}
+                    {refereeActivity && account && CollectMultipler ? 
+                    '$' + ((refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) / CollectMultipler)?.toFixed(10) || 0 : 
+                    '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -759,7 +761,9 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>limToken Deposits From Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${(refereeActivity && account && refereeActivity[account]?.vaultDeposits) || 0}
+                    {refereeActivity && account ?
+                    '$' + refereeActivity[account]?.vaultDeposits || 0 : 
+                    '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -767,7 +771,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Referral LMT Last Claim</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account && (lastClaimedPoints || 0)}
+                    {refereeActivity && account ? (lastClaimedPoints || 0) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -827,14 +831,14 @@ const Referrals = () => {
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Active Referral Code</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>{referralCode?.toString()}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>{referralCode ? referralCode?.toString() : '-'}</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${tradingVolume.toFixed(4)}
+                    ${tradingVolume ? tradingVolume?.toFixed(4) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -842,7 +846,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Advanced LP Fee Collected</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
-                    ${totalCollected.toFixed(4) !== '0.0000' ? totalCollected.toFixed(4) : ' < 0.0001'}
+                  ${totalCollected ? (totalCollected.toFixed(4) !== '0.0000' ? totalCollected.toFixed(4) : ' < 0.0001') : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>

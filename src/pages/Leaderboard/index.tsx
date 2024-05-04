@@ -3,7 +3,7 @@ import Footer from 'components/Footer'
 import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
@@ -12,6 +12,7 @@ import { ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
 import FAQBox from 'components/FAQ'
+import { SupportedChainId } from 'constants/chains'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -227,12 +228,17 @@ export default function LeaderboardPage() {
     const call = async () => {
       try {
         setLoading(true)
-
-        const addQueryData = await client.query(AddQuery, {}).toPromise()
+        let addQueryData
+        
+        if (chainId === SupportedChainId.ARBITRUM_ONE)
+          addQueryData = await client.query(AddQuery, {}).toPromise()
+        else if (chainId === SupportedChainId.BASE) 
+          addQueryData = await clientBase.query(AddQuery, {}).toPromise()
 
         setAddData(addQueryData)
         setLoading(false)
       } catch (error) {
+        console.log(error)
         setError(error)
         setLoading(false)
       }

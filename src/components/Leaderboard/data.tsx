@@ -282,37 +282,51 @@ export function usePointsData() {
   })
 
   useEffect(() => {
-    if (!client || !AddQuery || loading || error || !referralContract) return
+    if (!AddQuery || loading || error || !referralContract) return
+    if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
+    if (chainId === SupportedChainId.BASE && !clientBase) return
     const call = async () => {
+      console.log("CALL!!!!!!!!!!!!!!!!!")
       try {
         setLoading(true)
-        let AddQueryData
-        let ReduceQueryData
-        let AddLiqQueryData
-        let CollectQueryData
-        let DecreaseLiquidityData
-        let DepositQuery
-        let WithdrawQuery
-        let registerQueryData
-        if (chainId === SupportedChainId.BASE) {
-          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
-          AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
-          CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
-          DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
-          DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
-          WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
-          registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
-        } else {
-          AddQueryData = await client.query(AddQuery, {}).toPromise()
-          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-          AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
-          CollectQueryData = await client.query(CollectQuery, {}).toPromise()
-          DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
-          DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
-          WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
-          registerQueryData = await client.query(RegisterQuery, {}).toPromise()
-        }
+
+        // let AddQueryData
+        // let ReduceQueryData
+        // let AddLiqQueryData
+        // let CollectQueryData
+        // let DecreaseLiquidityData
+        // let DepositQuery
+        // let WithdrawQuery
+        // let registerQueryData
+        
+        const queries = [
+          { query: AddQuery, result: 'AddQueryData' },
+          { query: ReduceQuery, result: 'ReduceQueryData' },
+          { query: IncreaseLiquidityQuery, result: 'AddLiqQueryData' },
+          { query: CollectQuery, result: 'CollectQueryData' },
+          { query: DecreaseLiquidityQuery, result: 'DecreaseLiquidityData' },
+          { query: DepositVaultQuery, result: 'DepositQuery' },
+          { query: WithdrawVaultQuery, result: 'WithdrawQuery' },
+          { query: RegisterQuery, result: 'registerQueryData' },
+        ];
+        
+        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client;
+        const promises: Promise<any>[] = queries.map(({ query }) => clientToUse.query(query, {}).toPromise());
+        
+        const results = await Promise.all(promises)
+        
+        console.log("PROMISE RESULTS", results)
+
+        let AddQueryData = results[0]
+        let ReduceQueryData = results[1]
+        let AddLiqQueryData = results[2]
+        let CollectQueryData = results[3]
+        let DecreaseLiquidityData = results[4]
+        let DepositQuery = results[5]
+        let WithdrawQuery = results[6]
+        let registerQueryData = results[7]
+
+        console.log("ADD QUERY DATA", AddQueryData)
         
         // console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
 
@@ -452,12 +466,13 @@ export function usePointsData() {
         setCollectData(CollectQueryData.data.collects)
         setLoading(false)
       } catch (error) {
+        console.error(error)
         setError(error)
         setLoading(false)
       }
     }
     call()
-  }, [account, referralContract])
+  }, [account, referralContract, chainId])
 
   const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
   const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
@@ -469,20 +484,27 @@ export function usePointsData() {
         const promises = addData.map(async (entry: any) => {
           const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
           
-          const res = await getDecimalAndUsdValueData(chainId, token)
+          const resPromise = getDecimalAndUsdValueData(chainId, token)
           
           const trader = entry.trader 
           const amount = entry.addedAmount
-          const decimals = res.decimals 
-          const lastPriceUSD = res.lastPriceUSD
+          // const decimals = res.decimals 
+          // const lastPriceUSD = res.lastPriceUSD
   
-          return { 
+          // return { 
+          //   token: token, 
+          //   trader: trader, 
+          //   amount: amount,
+          //   decimals: decimals,
+          //   lastPriceUSD: lastPriceUSD
+          // }
+
+          return resPromise.then(res => ({
             token: token, 
             trader: trader, 
             amount: amount,
-            decimals: decimals,
-            lastPriceUSD: lastPriceUSD
-          }
+            res: res
+          }));
         })
         const results = await Promise.all(promises)
         setAddDataProcessed(results)
@@ -497,20 +519,27 @@ export function usePointsData() {
         const promises = reduceData.map(async (entry: any) => {
           const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
           
-          const res = await getDecimalAndUsdValueData(chainId, token)
+          const resPromise = getDecimalAndUsdValueData(chainId, token)
           
           const trader = entry.trader 
           const amount = entry.reduceAmount
-          const decimals = res.decimals 
-          const lastPriceUSD = res.lastPriceUSD
+          // const decimals = res.decimals
+          // const lastPriceUSD = res.lastPriceUSD
   
-          return { 
+          // return { 
+          //   token: token, 
+          //   trader: trader, 
+          //   amount: amount,
+          //   res: res
+            // decimals: decimals,
+            // lastPriceUSD: lastPriceUSD
+          // }
+          return resPromise.then(res => ({
             token: token, 
             trader: trader, 
             amount: amount,
-            decimals: decimals,
-            lastPriceUSD: lastPriceUSD
-          }
+            res: res
+          }));
         })
         const results = await Promise.all(promises)
         setReduceDataProcessed(results)
@@ -543,7 +572,7 @@ export function usePointsData() {
       }
     }
     fetchData()
-  }, [lpPositions, collectData, decreaseLiqData])
+  }, [lpPositions])
 
   const PointsData = useMemo(() => {
     // const addDataProcessed = addData?.map((entry: any) => {
@@ -682,9 +711,9 @@ export function usePointsData() {
     uniqueLps,
     uniqueTokens,
     addDataProcessed,
-    reduceData,
-    addLiqData,
+    reduceDataProcessed,
     lpPositionsProcessed,
+    addLiqData,
     decreaseLiqData,
     collectData,
     codeUsers,
