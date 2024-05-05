@@ -111,20 +111,13 @@ interface IBoxModalProps {
   modalData: TBoxData
   isOpen: boolean
   handleCloseModal: () => void
-  // handleUnlockBox: (index: number) => void
-  handleAddBox: (index: number) => void
+  handleUnlockBox: (index: number) => void
+  // handleAddBox: () => void
 }
 
-const BoxModal = ({ isOpen, handleCloseModal, modalData, handleAddBox, brpData }: IBoxModalProps) => {
-  const { info, img, isLocked, index } = modalData
-  console.log('index', index)
-  // const handleModalAction = useCallback(
-  //   (index: number) => {
-  //     handleUnlockBox(index)
-  //     handleCloseModal()
-  //   },
-  //   [handleUnlockBox, handleCloseModal]
-  // )
+const BoxModal = ({ isOpen, handleCloseModal, modalData, handleUnlockBox, brpData }: IBoxModalProps) => {
+  const { info, img, isLocked, isInsufficient, index } = modalData
+
   return (
     <Modal
       isOpen={isOpen}
@@ -141,8 +134,11 @@ const BoxModal = ({ isOpen, handleCloseModal, modalData, handleAddBox, brpData }
           <ModalDescriptWrapper marginTop={10}>
             <Row justifyContent="space-between" gap="20" width="full" alignItems="flex-start">
               <InfoDescription title={true} description={info} fontSize={28} />
-              <ModalActionButton isDisabled={isLocked} onClick={() => (isLocked ? undefined : handleAddBox(index))}>
-                {isLocked ? 'Locked' : 'Add box'}
+              <ModalActionButton
+                isDisabled={isLocked || isInsufficient}
+                onClick={() => (isLocked || isInsufficient ? undefined : handleUnlockBox(index))}
+              >
+                {isInsufficient ? 'Insufficient LMT' : isLocked ? 'Locked' : 'Unlock'}
               </ModalActionButton>
             </Row>
             <ModalDescriptWrapper gap="md" marginTop={10}>

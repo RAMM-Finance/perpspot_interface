@@ -8,6 +8,7 @@ import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
@@ -87,6 +88,7 @@ export type TBoxData = {
   img: string
   info: string
   isLocked: boolean
+  isInsufficient: boolean
   index: number
 }
 
@@ -97,7 +99,6 @@ export type TBRPData = {
   totalLMT: string
   NZTRageRow: number
   NZTRageHigh: number
-  // isPointPerAdd: boolean
 }
 
 const NewItemsListPage = () => {
@@ -105,6 +106,7 @@ const NewItemsListPage = () => {
   const blockNumber = useBlockNumber()
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
 
+  const { search } = useLocation()
   const brp = useBRP()
 
   const [brpData, setBRPData] = useState<TBRPData>({
@@ -125,6 +127,7 @@ const NewItemsListPage = () => {
     img: '',
     info: '',
     isLocked: false,
+    isInsufficient: false,
     index: 0,
   })
 
@@ -133,24 +136,24 @@ const NewItemsListPage = () => {
   const [hiddenCards, setHiddenCards] = useState<number[]>([])
   const addTransaction = useTransactionAdder()
 
-  // const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
-  //   if (!brp || !account) {
-  //     throw new Error('BRP or account not available')
-  //   }
+  const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
+    if (!brp || !account) {
+      throw new Error('BRP or account not available')
+    }
 
-  //   try {
-  //     const gasLimit = 1000000
-  //     const tx = await brp.unlockBox({
-  //       gasLimit,
-  //       from: account,
-  //     })
+    try {
+      const gasLimit = 1000000
+      const tx = await brp.unlockBox({
+        gasLimit,
+        from: account,
+      })
 
-  //     return tx as TransactionResponse
-  //   } catch (error) {
-  //     console.error(error, 'BRP instance is not available')
-  //     throw error
-  //   }
-  // }, [brp, account])
+      return tx as TransactionResponse
+    } catch (error) {
+      console.error(error, 'BRP instance is not available')
+      throw error
+    }
+  }, [brp, account])
 
   const addBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
     if (!brp || !account) {
@@ -171,27 +174,38 @@ const NewItemsListPage = () => {
     }
   }, [brp, account])
 
-  const handleAddBox = useCallback(
+  const handleUnlockBox = useCallback(
     async (index?: number) => {
-      if (brp && account) {
-        try {
-          const response = await addBoxCallback()
-          addTransaction(response, {
-            type: TransactionType.ADD_Box,
-            inputCurrencyId: '',
-            outputCurrencyId: '',
-          })
-          if (index !== undefined && index > -1) setHiddenCards((prevState) => [...prevState, index])
-        } catch (error) {
-          console.error(error, 'BRP instance is not available')
-        }
+      try {
+        const response = await unlockBoxCallback()
+        addTransaction(response, {
+          type: TransactionType.UNLOCK_Box,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+        if (index !== undefined && index > -1) setHiddenCards((prevState) => [...prevState, index])
+      } catch (error) {
+        console.error(error, 'BRP instance is not available')
       }
     },
-    [brp, account, addBoxCallback, addTransaction]
+    [addTransaction, unlockBoxCallback]
   )
 
+  const handleAddBox = useCallback(async () => {
+    try {
+      const response = await addBoxCallback()
+      addTransaction(response, {
+        type: TransactionType.ADD_Box,
+        inputCurrencyId: '',
+        outputCurrencyId: '',
+      })
+    } catch (error) {
+      console.error(error, 'BRP instance is not available')
+    }
+  }, [addBoxCallback, addTransaction])
+
   useEffect(() => {
-    if (brp && account && blockNumber) {
+    if (brp && account && blockNumber && search) {
       const call = async () => {
         try {
           const freeBoxUsed = await brp.freeBoxUsed(account)
@@ -217,21 +231,22 @@ const NewItemsListPage = () => {
           const totalLMTString = totalLMTPoint?.toString()
 
           const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
-          const isPointPerAdd = pointPerAdd?.toNumber() > totalLMTPoint.toNumber()
-          // const lockedBoxes = Array(numTotalBoxes)
-          //   .fill(true)
-          //   .map((_, index) => index + 1 > numtotalUnlockableBoxes)
+          const isInsufficient = pointPerAdd?.toNumber() > totalLMTPoint.toNumber()
+          const lockedBoxes = Array(numTotalBoxes)
+            .fill(true)
+            .map((_, index) => index + 1 > numtotalUnlockableBoxes)
           const newData = Array.from({ length: numTotalBoxes }, (_, index) => {
             const imgNumber = index % itemImages.length
             return {
               id: `#${index + 1}`,
               img: itemImages[imgNumber],
               info: `Limitless test ${index + 1}`,
-              isLocked: isPointPerAdd,
+              isLocked: lockedBoxes[index],
+              isInsufficient,
               index,
             }
           })
-          // console.log('itemDatas', pointPerAdd.toNumber(), totalLMTPoint.toNumber(), isPointPerAdd)
+          // console.log('itemDatas', pointPerAdd.toNumber(), numtotalUnlockableBoxes, lockedBoxes)
           setBRPData({
             totalBoxes: numTotalBoxes,
             totalUnlockableBoxes: numtotalUnlockableBoxes,
@@ -244,14 +259,6 @@ const NewItemsListPage = () => {
           setHiddenCards([])
           setLoading(false)
         } catch (error) {
-          // setBRPData({
-          //   totalBoxes: 0,
-          //   totalUnlockableBoxes: 0,
-          //   lmtRequiredPerUnlock: '0',
-          //   totalLMT: '0',
-          //   NZTRageRow: 0,
-          //   NZTRageHigh: 0,
-          // })
           setHiddenCards([])
           // setItemDatas([])
           setLoading(false)
@@ -260,7 +267,7 @@ const NewItemsListPage = () => {
       }
       call()
     }
-  }, [brp, account, blockNumber])
+  }, [brp, account, blockNumber, search])
 
   const handleShowModal = useCallback((modalData: TBoxData) => {
     setShowModal(true)
@@ -274,6 +281,7 @@ const NewItemsListPage = () => {
       img: '',
       info: '',
       isLocked: false,
+      isInsufficient: false,
       index: 0,
     })
   }, [])
@@ -284,8 +292,8 @@ const NewItemsListPage = () => {
       <BoxModal
         isOpen={showModal}
         handleCloseModal={handleCloseModal}
-        // handleUnlockBox={handleUnlockBox}
-        handleAddBox={handleAddBox}
+        handleUnlockBox={handleUnlockBox}
+        // handleAddBox={handleAddBox}
         modalData={curModalData}
         brpData={brpData}
       />
@@ -306,7 +314,7 @@ const NewItemsListPage = () => {
         <CollectionDisplaySection>
           <BoxesContainer
             itemDatas={itemDatas}
-            // handleUnlockBox={handleUnlockBox}
+            handleUnlockBox={handleUnlockBox}
             handleAddBox={handleAddBox}
             loading={loading}
             hiddenCards={hiddenCards}
