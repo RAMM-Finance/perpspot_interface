@@ -10,9 +10,10 @@ import { PoolStatsSection, StatsSkeleton } from 'components/ExchangeChart/PoolSt
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import ZapModal from 'components/Tokens/TokenTable/ZapModal'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
 import { Row } from 'nft/components/Flex'
 import { darken } from 'polished'
@@ -20,11 +21,10 @@ import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
-import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC } from 'state/application/hooks'
+import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC, usePoolsAprUtilList } from 'state/application/hooks'
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import { useV3MintActionHandlers } from 'state/mint/v3/hooks'
 import {
   useAddPinnedPool,
   useCurrentPool,
@@ -214,12 +214,13 @@ const PoolSelectLoading = styled(SelectLoadingBar)`
 
 const EarnButton = styled(SmallButtonPrimary)`
   border-radius: 8px;
-  width: 50px;
+  width: 60px;
   padding: 6px;
   background-color: ${({ theme }) => darken(0.1, theme.accentActive)};
   &:hover {
     background-color: ${({ theme }) => darken(0.2, theme.accentActive)};
   }
+  wrap: no-wrap;
 `
 
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
@@ -494,9 +495,12 @@ export function SelectPool() {
   const currentPool = useCurrentPool()
 
   const poolKey = currentPool?.poolKey
+  const poolId = currentPool?.poolId
   const { result: poolData } = usePoolsData()
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
+
+  const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
@@ -545,14 +549,47 @@ export function SelectPool() {
   //   [currentPool, handleInvert]
   // )
 
-  const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
+  // const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
 
-  const onPoolSwitch = useCallback(() => {
-    onFieldAInput('')
-    onFieldBInput('')
-    onLeftRangeInput('')
-    onRightRangeInput('')
-  }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+  // const onPoolSwitch = useCallback(() => {
+  //   onFieldAInput('')
+  //   onFieldBInput('')
+  //   onLeftRangeInput('')
+  //   onRightRangeInput('')
+  // }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
+
+  const [showModal, setShowModal] = useState(false)
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
+
+  const handleZap = useCallback(
+    (e: any) => {
+      e.stopPropagation()
+      setShowModal(true)
+    },
+    [setShowModal]
+  )
+
+  const { poolList: aprPoolList } = usePoolsAprUtilList()
+  const apr = useMemo(() => {
+    if (!aprPoolList || !poolId) return undefined
+    else {
+      return aprPoolList[poolId].apr
+    }
+  }, [aprPoolList, poolId])
+
+  const [price, delta] = useMemo(() => {
+    if (poolOHLC) {
+      return [poolOHLC.priceNow, poolOHLC.delta24h]
+    }
+    return [undefined, undefined]
+  }, [poolOHLC])
+
+  const depositAmountUSD = 1000
+  const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
+
+  const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
   if (!chainId || unsupportedChain(chainId)) {
     return (
@@ -587,6 +624,15 @@ export function SelectPool() {
 
   return (
     <MainWrapper>
+      <ZapModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        apr={apr !== undefined ? apr + estimatedAPR : undefined}
+        tvl={(poolData && poolId && poolData[poolId]?.totalValueLocked) || undefined}
+        token0={token0}
+        token1={token1}
+        poolKey={poolKey}
+      />
       <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
         {baseQuoteSymbol ? (
           <>
@@ -619,14 +665,7 @@ export function SelectPool() {
           <PoolSelectLoading />
         )}
       </SelectPoolWrapper>
-      <EarnButton
-        onClick={() => {
-          onPoolSwitch()
-          navigate(`/add/${token0?.wrapped.address}/${token1?.wrapped.address}/${poolKey?.fee}`)
-        }}
-      >
-        Earn
-      </EarnButton>
+      <EarnButton onClick={handleZap}>Zap In</EarnButton>
       <PoolStatsSection
         poolData={poolData}
         chainId={chainId}
