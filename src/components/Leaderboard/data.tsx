@@ -282,6 +282,8 @@ export function usePointsData() {
     }
   })
 
+  const [shouldRetry, setShouldRetry] = useState(false)
+
   useEffect(() => {
     if (!AddQuery || 
       !ReduceQuery || 
@@ -299,11 +301,8 @@ export function usePointsData() {
     if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
     if (chainId === SupportedChainId.BASE && !clientBase) return
     const call = async () => {
-      console.log("CALL!!!!!!!!!!!!!!!!!")
       try {
         setLoading(true)
-
-
         let AddQueryData
         let ReduceQueryData
         let AddLiqQueryData
@@ -313,55 +312,47 @@ export function usePointsData() {
         let WithdrawQuery
         let registerQueryData
         if (chainId === SupportedChainId.BASE) {
-          console.log("1")
-          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-          console.log("2")
-          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
-          console.log("3")
-          AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
-          console.log("4")
-          CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
-          console.log("5")
-          DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
-          console.log("6")
-          DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
-          console.log("7")
-          WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
-          console.log("8")
-          registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
-          console.log("9")
+          const results = await Promise.all([
+            clientBase.query(AddQuery, {}).toPromise(),
+            clientBase.query(ReduceQuery, {}).toPromise(),
+            clientBase.query(IncreaseLiquidityQuery, {}).toPromise(),
+            clientBase.query(CollectQuery, {}).toPromise(),
+            clientBase.query(DecreaseLiquidityQuery, {}).toPromise(),
+            clientBase.query(DepositVaultQuery, {}).toPromise(),
+            clientBase.query(WithdrawVaultQuery, {}).toPromise(),
+            clientBase.query(RegisterQuery, {}).toPromise()
+          ])
+
+          AddQueryData = results[0]
+          ReduceQueryData = results[1]
+          AddLiqQueryData = results[2]
+          CollectQueryData = results[3]
+          DecreaseLiquidityData = results[4]
+          DepositQuery = results[5]
+          WithdrawQuery = results[6]
+          registerQueryData = results[7]
+
+
         } else {
-          let url = "https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph"
-          console.log("11")
-          AddQueryData = await client.query(AddQuery, {}).toPromise()
-          console.log(AddQueryData)
-          console.log("22")
-          
-          // const result1 = await axios.post(url, {
-          //   query: ReduceQuery
-          // })
-          // console.log("RESULT OF AXIOS TEST1", result1)
-          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-          console.log(ReduceQueryData)
-          console.log("33")
+          const results = await Promise.all([
+            client.query(AddQuery, {}).toPromise(),
+            client.query(ReduceQuery, {}).toPromise(),
+            client.query(IncreaseLiquidityQuery, {}).toPromise(),
+            client.query(CollectQuery, {}).toPromise(),
+            client.query(DecreaseLiquidityQuery, {}).toPromise(),
+            client.query(DepositVaultQuery, {}).toPromise(),
+            client.query(WithdrawVaultQuery, {}).toPromise(),
+            client.query(RegisterQuery, {}).toPromise()
+          ])
 
-
-          AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
-          console.log(AddLiqQueryData)
-          const result = await axios.post(url, {
-            query: IncreaseLiquidityQuery
-          })
-          console.log("RESULT OF AXIOS TEST", result)
-          console.log("44")
-          CollectQueryData = await client.query(CollectQuery, {}).toPromise()
-          console.log("55")
-          DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
-          console.log("66")
-          DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
-          console.log("77")
-          WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
-          console.log("88")
-          registerQueryData = await client.query(RegisterQuery, {}).toPromise()
+          AddQueryData = results[0]
+          ReduceQueryData = results[1]
+          AddLiqQueryData = results[2]
+          CollectQueryData = results[3]
+          DecreaseLiquidityData = results[4]
+          DepositQuery = results[5]
+          WithdrawQuery = results[6]
+          registerQueryData = results[7]
         }
 
         // const queries = [
@@ -534,10 +525,12 @@ export function usePointsData() {
         console.error(error)
         setError(error)
         setLoading(false)
+        console.log("SHOULD RETRY")
+        setShouldRetry(true)
       }
     }
     call()
-  }, [account, referralContract, chainId])
+  }, [account, referralContract, chainId, shouldRetry])
 
   const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
   const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
@@ -545,7 +538,9 @@ export function usePointsData() {
   
   useEffect(() => {
     const fetchData = async () => {
+      console.log("ADD DATA IN USEEFFECT", addData)
       if (addData) {
+        console.log("ADD EXISTS")
         const promises = addData.map(async (entry: any) => {
           const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
           
@@ -576,9 +571,10 @@ export function usePointsData() {
       }
     }
     fetchData()
-  }, [addData, uniqueTokens])
+  }, [addData, uniqueTokens, chainId])
 
   useEffect(() => {
+    
     const fetchData = async () => {
       if (reduceData) {
         const promises = reduceData.map(async (entry: any) => {
@@ -588,17 +584,7 @@ export function usePointsData() {
           
           const trader = entry.trader 
           const amount = entry.reduceAmount
-          // const decimals = res.decimals
-          // const lastPriceUSD = res.lastPriceUSD
-  
-          // return { 
-          //   token: token, 
-          //   trader: trader, 
-          //   amount: amount,
-          //   res: res
-            // decimals: decimals,
-            // lastPriceUSD: lastPriceUSD
-          // }
+
           return resPromise.then(res => ({
             token: token, 
             trader: trader, 
@@ -611,11 +597,11 @@ export function usePointsData() {
       }
     }
     fetchData()
-  }, [reduceData, uniqueTokens])
+  }, [reduceData, uniqueTokens, chainId])
   
   useEffect(() => {
     const fetchData = async () => {
-      if (lpPositions) {
+      if (lpPositions && lpPositions.length > 0) {
         const promises = lpPositions.map(async (entry: any) => {
 
           const [res0, res1] = await Promise.all([
@@ -637,7 +623,7 @@ export function usePointsData() {
       }
     }
     fetchData()
-  }, [lpPositions])
+  }, [lpPositions, chainId])
 
   const PointsData = useMemo(() => {
     // const addDataProcessed = addData?.map((entry: any) => {
@@ -698,6 +684,7 @@ export function usePointsData() {
     const lpPositionsByUniqueLps: { [key: string]: any } = {}
 
     lpPositionsProcessed?.forEach((entry: any) => {
+      // lpPositions?.forEach((entry: any) => {
       const sameTokenIdCollects = collectData.filter((collect: any) => {
         if (collect.tokenId == entry.tokenId.toString()) {
           return true
@@ -743,6 +730,8 @@ export function usePointsData() {
         token0: entry.token0,
         token1: entry.token1,
         tokenId: entry.tokenId.toString(),
+        // amount0Collected: (usdValue[entry.token0] * amount0Collected) / 10 ** tokenDecimal[entry.token0],
+        // amount1Collected: (usdValue[entry.token1] * amount1Collected) / 10 ** tokenDecimal[entry.token1],
         
         amount0Collected: (entry.token0PriceUSD * amount0Collected) / 10 ** entry.token0Decimals,
         amount1Collected: (entry.token1PriceUSD * amount1Collected) / 10 ** entry.token1Decimals,
@@ -777,6 +766,7 @@ export function usePointsData() {
     uniqueTokens,
     addDataProcessed,
     reduceDataProcessed,
+    // lpPositions,
     lpPositionsProcessed,
     addLiqData,
     decreaseLiqData,

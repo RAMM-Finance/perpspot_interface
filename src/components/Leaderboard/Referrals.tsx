@@ -195,6 +195,7 @@ const useCheckCodes = (account: any, referralContract: any, refGens: any) => {
 
 const Referrals = () => {
   const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
+  // console.log("REFEREE, TRADE, LP", refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps)
   const theme = useTheme()
   const [showModal, setShowModal] = useState(false)
   const blockNumber = useBlockNumber()
@@ -223,6 +224,7 @@ const Referrals = () => {
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
   }, [])
+
   const acceptedCreate = createReferralCode != null && createReferralCode != undefined
   // const acceptedCreate = useMemo(() => {
   //   if (createReferralCode) {
@@ -321,11 +323,14 @@ const Referrals = () => {
   const [activeCodes, setActiveCodes] = useState<string>()
 
   useEffect(() => {
+    
     if (!account || !referralContract) return
 
     const call = async () => {
       try {
+        // console.log("IN USEEFFECT ACCOUNT AND REFERRAL COTNRACT", account, referralContract)
         const result = await referralContract.codesByOwners(account, 0)
+        // console.log("RESULT OF CODES BY OWNERS", result)
         const decoded = decodeResult(result)
         setActiveCodes(decoded.toString())
         setCreateReferralCode(() => decoded.toString())
@@ -550,6 +555,8 @@ const Referrals = () => {
   const accountCanRefer = useMemo(() => {
     return canRefer(account)
   }, [account])
+
+  // console.log("REFERAL AND ACCPETEED CREATE", referral, acceptedCreate)
 
   return (
     <Wrapper>
