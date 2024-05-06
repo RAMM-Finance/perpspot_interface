@@ -240,8 +240,6 @@ export function LmtSettingsTab({
 
   const node = useRef<HTMLDivElement | null>(null)
 
-  const theme = useTheme()
-
   const [expertMode, toggleExpertMode] = useExpertModeManager()
 
   // show confirmation view before turning on

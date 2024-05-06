@@ -141,20 +141,28 @@ export declare namespace Quoter {
 
 export interface QuoterInterface extends utils.Interface {
   functions: {
+    "addIsSlot6(address)": FunctionFragment;
     "getAllAprUtil(int24)": FunctionFragment;
     "getPoolKeys()": FunctionFragment;
+    "isSlot6(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool))": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "addIsSlot6"
       | "getAllAprUtil"
       | "getPoolKeys"
+      | "isSlot6"
       | "owner"
       | "quoteExactInput"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "addIsSlot6",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(
     functionFragment: "getAllAprUtil",
     values: [PromiseOrValue<BigNumberish>]
@@ -163,12 +171,17 @@ export interface QuoterInterface extends utils.Interface {
     functionFragment: "getPoolKeys",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "isSlot6",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "quoteExactInput",
     values: [Quoter.QuoteExactInputParamsStruct]
   ): string;
 
+  decodeFunctionResult(functionFragment: "addIsSlot6", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getAllAprUtil",
     data: BytesLike
@@ -177,6 +190,7 @@ export interface QuoterInterface extends utils.Interface {
     functionFragment: "getPoolKeys",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isSlot6", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "quoteExactInput",
@@ -213,6 +227,11 @@ export interface Quoter extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    addIsSlot6(
+      pool: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     getAllAprUtil(
       tickDiff: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -222,6 +241,11 @@ export interface Quoter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Quoter.PoolInfoStructOutput[]]>;
 
+    isSlot6(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     quoteExactInput(
@@ -229,6 +253,11 @@ export interface Quoter extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  addIsSlot6(
+    pool: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   getAllAprUtil(
     tickDiff: PromiseOrValue<BigNumberish>,
@@ -239,6 +268,11 @@ export interface Quoter extends BaseContract {
     overrides?: CallOverrides
   ): Promise<Quoter.PoolInfoStructOutput[]>;
 
+  isSlot6(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   quoteExactInput(
@@ -247,6 +281,11 @@ export interface Quoter extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    addIsSlot6(
+      pool: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     getAllAprUtil(
       tickDiff: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -255,6 +294,11 @@ export interface Quoter extends BaseContract {
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<Quoter.PoolInfoStructOutput[]>;
+
+    isSlot6(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -283,12 +327,22 @@ export interface Quoter extends BaseContract {
   filters: {};
 
   estimateGas: {
+    addIsSlot6(
+      pool: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     getAllAprUtil(
       tickDiff: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getPoolKeys(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isSlot6(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -299,12 +353,22 @@ export interface Quoter extends BaseContract {
   };
 
   populateTransaction: {
+    addIsSlot6(
+      pool: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     getAllAprUtil(
       tickDiff: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPoolKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isSlot6(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

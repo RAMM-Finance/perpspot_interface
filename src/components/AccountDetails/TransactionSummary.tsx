@@ -277,18 +277,18 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
       let tokenInfoFromUniswap
       let tokenAmount
       if (info.tradeType === TradeType.EXACT_INPUT) {
-        
         tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.inputCurrencyId)
         tokenAmount = info.inputCurrencyAmountRaw
       } else {
         tokenInfoFromUniswap = await getDecimalAndUsdValueData(chainId, info.outputCurrencyId)
         tokenAmount = info.outputCurrencyAmountRaw
       }
-      
-      const tPoint = (parseFloat(tokenInfoFromUniswap?.lastPriceUSD) * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
+
+      const tPoint =
+        (parseFloat(tokenInfoFromUniswap?.lastPriceUSD) * Number(tokenAmount)) / 10 ** tokenInfoFromUniswap.decimals
 
       const q = query(
-        collection(firestore, 'swap-points'), 
+        collection(firestore, 'swap-points'),
         where('account', '==', account),
         where('chainId', '==', chainId)
       )
@@ -298,9 +298,9 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
 
       if (!data || data.length === 0) {
         await addDoc(collection(firestore, 'swap-points'), {
-          chainId: chainId,
-          account: account,
-          amount: tPoint
+          chainId,
+          account,
+          amount: tPoint,
         })
       } else {
         const docRef = doc(firestore, 'swap-points', querySnapshot.docs[0].id)
@@ -435,5 +435,7 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Unlock Treasure Box</Trans>
     case TransactionType.ADD_Box:
       return <Trans>Added Treasure Box</Trans>
+    case TransactionType.ZAP_AND_MINT:
+      return <Trans>Zap and Mint</Trans>
   }
 }

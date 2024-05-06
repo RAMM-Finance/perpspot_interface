@@ -13,6 +13,7 @@ import { usePoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ClickableStyle } from 'theme'
+import { PoolKey } from 'types/lmtv2position'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 
 import { useCurrency } from '../../../hooks/Tokens'
@@ -382,6 +383,7 @@ interface LoadedRowProps {
   tokenListLength: number
   tokenA: string
   tokenB: string
+  poolKey: PoolKey
   //token: NonNullable<TopToken>
   sparklineMap?: SparklineMap
   sortRank?: number
@@ -396,7 +398,7 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, dailyLMT } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, dailyLMT, poolKey } = props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -498,14 +500,17 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       data-testid={`token-table-row-${currencyIda?.symbol}`}
     >
       {' '}
-      <ZapModal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        apr={apr !== undefined ? apr + estimatedAPR : undefined}
-        tvl={tvl}
-        token0={token0}
-        token1={token1}
-      />
+      {showModal && (
+        <ZapModal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          apr={apr !== undefined ? apr + estimatedAPR : undefined}
+          tvl={tvl}
+          token0={token0}
+          token1={token1}
+          poolKey={poolKey}
+        />
+      )}
       <TokenRow
         fee={pool?.fee}
         header={false}

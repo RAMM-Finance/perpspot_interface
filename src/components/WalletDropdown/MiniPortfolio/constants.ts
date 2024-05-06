@@ -227,6 +227,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Successfully added box`,
     [TransactionStatus.Failed]: t`Failed to add box`,
   },
+  [TransactionType.ZAP_AND_MINT]: {
+    [TransactionStatus.Pending]: t`Zapping`,
+    [TransactionStatus.Confirmed]: t`Successfully zapped`,
+    [TransactionStatus.Failed]: t`Zap and Mint failed`,
+  },
 }
 
 const AlternateTransactionTitleTable: { [key in TransactionType]?: { [state in TransactionStatus]: string } } = {

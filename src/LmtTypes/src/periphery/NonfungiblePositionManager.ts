@@ -27,6 +27,18 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
+export type PoolKeyStruct = {
+  token0: PromiseOrValue<string>;
+  token1: PromiseOrValue<string>;
+  fee: PromiseOrValue<BigNumberish>;
+};
+
+export type PoolKeyStructOutput = [string, string, number] & {
+  token0: string;
+  token1: string;
+  fee: number;
+};
+
 export declare namespace NonfungiblePositionManager {
   export type CollectParamsStruct = {
     tokenId: PromiseOrValue<BigNumberish>;
@@ -136,6 +148,31 @@ export declare namespace NonfungiblePositionManager {
     recipient: string;
     deadline: BigNumber;
   };
+
+  export type ZapReturnVarsStruct = {
+    tokenId: PromiseOrValue<BigNumberish>;
+    amount1In: PromiseOrValue<BigNumberish>;
+    amount0In: PromiseOrValue<BigNumberish>;
+    liquidity: PromiseOrValue<BigNumberish>;
+    token0Out: PromiseOrValue<BigNumberish>;
+    token1Out: PromiseOrValue<BigNumberish>;
+  };
+
+  export type ZapReturnVarsStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    tokenId: BigNumber;
+    amount1In: BigNumber;
+    amount0In: BigNumber;
+    liquidity: BigNumber;
+    token0Out: BigNumber;
+    token1Out: BigNumber;
+  };
 }
 
 export interface NonfungiblePositionManagerInterface extends utils.Interface {
@@ -165,6 +202,8 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
+    "uniswapV3SwapCallback(int256,int256,bytes)": FunctionFragment;
+    "zapAndMint((address,address,uint24),address,uint256,int24,int24,int24)": FunctionFragment;
   };
 
   getFunction(
@@ -194,6 +233,8 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
       | "tokenURI"
       | "totalSupply"
       | "transferFrom"
+      | "uniswapV3SwapCallback"
+      | "zapAndMint"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -303,6 +344,25 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>
     ]
   ): string;
+  encodeFunctionData(
+    functionFragment: "uniswapV3SwapCallback",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "zapAndMint",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -368,6 +428,11 @@ export interface NonfungiblePositionManagerInterface extends utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "uniswapV3SwapCallback",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "zapAndMint", data: BytesLike): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
@@ -656,6 +721,23 @@ export interface NonfungiblePositionManager extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    uniswapV3SwapCallback(
+      amount0Delta: PromiseOrValue<BigNumberish>,
+      amount1Delta: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    zapAndMint(
+      key: PoolKeyStruct,
+      tokenProvided: PromiseOrValue<string>,
+      tokenAmount: PromiseOrValue<BigNumberish>,
+      lower: PromiseOrValue<BigNumberish>,
+      upper: PromiseOrValue<BigNumberish>,
+      maxSlippage: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   approve(
@@ -813,6 +895,23 @@ export interface NonfungiblePositionManager extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  uniswapV3SwapCallback(
+    amount0Delta: PromiseOrValue<BigNumberish>,
+    amount1Delta: PromiseOrValue<BigNumberish>,
+    data: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  zapAndMint(
+    key: PoolKeyStruct,
+    tokenProvided: PromiseOrValue<string>,
+    tokenAmount: PromiseOrValue<BigNumberish>,
+    lower: PromiseOrValue<BigNumberish>,
+    upper: PromiseOrValue<BigNumberish>,
+    maxSlippage: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -994,6 +1093,23 @@ export interface NonfungiblePositionManager extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    uniswapV3SwapCallback(
+      amount0Delta: PromiseOrValue<BigNumberish>,
+      amount1Delta: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    zapAndMint(
+      key: PoolKeyStruct,
+      tokenProvided: PromiseOrValue<string>,
+      tokenAmount: PromiseOrValue<BigNumberish>,
+      lower: PromiseOrValue<BigNumberish>,
+      upper: PromiseOrValue<BigNumberish>,
+      maxSlippage: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<NonfungiblePositionManager.ZapReturnVarsStructOutput>;
   };
 
   filters: {
@@ -1200,6 +1316,23 @@ export interface NonfungiblePositionManager extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    uniswapV3SwapCallback(
+      amount0Delta: PromiseOrValue<BigNumberish>,
+      amount1Delta: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    zapAndMint(
+      key: PoolKeyStruct,
+      tokenProvided: PromiseOrValue<string>,
+      tokenAmount: PromiseOrValue<BigNumberish>,
+      lower: PromiseOrValue<BigNumberish>,
+      upper: PromiseOrValue<BigNumberish>,
+      maxSlippage: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1327,6 +1460,23 @@ export interface NonfungiblePositionManager extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    uniswapV3SwapCallback(
+      amount0Delta: PromiseOrValue<BigNumberish>,
+      amount1Delta: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    zapAndMint(
+      key: PoolKeyStruct,
+      tokenProvided: PromiseOrValue<string>,
+      tokenAmount: PromiseOrValue<BigNumberish>,
+      lower: PromiseOrValue<BigNumberish>,
+      upper: PromiseOrValue<BigNumberish>,
+      maxSlippage: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
