@@ -191,8 +191,9 @@ interface ICardContainerProps {
   img: string
   info: string
   isLocked: boolean
-  handleAddBox: (index: number) => void
-  // handleUnlockBox: (index: number) => void
+  isInsufficient: boolean
+  // handleAddBox: () => void
+  handleUnlockBox: (index: number) => void
   shouldHide?: boolean
   index: number
   handleShowModal: (modalData: TBoxData) => void
@@ -203,7 +204,9 @@ export const CardContainer = ({
   img,
   info,
   isLocked,
-  handleAddBox,
+  isInsufficient,
+  // handleAddBox,
+  handleUnlockBox,
   shouldHide,
   index,
   handleShowModal,
@@ -219,6 +222,7 @@ export const CardContainer = ({
           img,
           info,
           isLocked,
+          isInsufficient,
           index,
         })
       }
@@ -248,10 +252,10 @@ export const CardContainer = ({
         isDisabled={isLocked}
         onClick={(e) => {
           e.stopPropagation()
-          isLocked ? undefined : handleAddBox(index)
+          isLocked || isInsufficient ? undefined : handleUnlockBox(index)
         }}
       >
-        {isLocked ? 'Insufficient LMT' : 'Add box'}
+        {isInsufficient ? 'Insufficient LMT' : isLocked ? 'Locked' : 'Unlock'}
       </StyledActionButton>
     </StyledCardContainer>
   )

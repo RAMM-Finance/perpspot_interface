@@ -92,8 +92,8 @@ const BoxesDisplaySection = styled(Row)`
 
 interface IBoxesContainerProps {
   itemDatas: TBoxData[]
-  // handleUnlockBox: (index: number) => void
-  handleAddBox: (index?: number) => void
+  handleUnlockBox: (index: number) => void
+  handleAddBox: () => void
   loading: boolean
   hiddenCards: number[]
   handleShowModal: (modalData: TBoxData) => void
@@ -102,7 +102,7 @@ interface IBoxesContainerProps {
 
 const BoxesContainer = ({
   itemDatas,
-  // handleUnlockBox,
+  handleUnlockBox,
   handleAddBox,
   loading,
   hiddenCards,
@@ -127,15 +127,16 @@ const BoxesContainer = ({
   return (
     <BoxesDisplaySection>
       <InfiniteScrollWrapper>
-        {itemDatas.map(({ id, img, info, isLocked, index }) => (
+        {itemDatas.map(({ id, img, info, isLocked, index, isInsufficient }) => (
           <CardContainer
             id={id}
             key={id}
             img={img}
             info={info}
             isLocked={isLocked}
-            // handleUnlockBox={handleUnlockBox}
-            handleAddBox={handleAddBox}
+            isInsufficient={isInsufficient}
+            handleUnlockBox={handleUnlockBox}
+            // handleAddBox={handleAddBox}
             shouldHide={hiddenCards.includes(index)}
             index={index}
             handleShowModal={handleShowModal}

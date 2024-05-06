@@ -282,6 +282,8 @@ export function usePointsData() {
     }
   })
 
+  const [shouldRetry, setShouldRetry] = useState(false)
+
   useEffect(() => {
     if (!AddQuery || 
       !ReduceQuery || 
@@ -299,11 +301,8 @@ export function usePointsData() {
     if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
     if (chainId === SupportedChainId.BASE && !clientBase) return
     const call = async () => {
-      console.log("CALL!!!!!!!!!!!!!!!!!")
       try {
         setLoading(true)
-
-
         let AddQueryData
         let ReduceQueryData
         let AddLiqQueryData
@@ -313,87 +312,48 @@ export function usePointsData() {
         let WithdrawQuery
         let registerQueryData
         if (chainId === SupportedChainId.BASE) {
-          console.log("1")
-          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-          console.log("2")
-          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
-          console.log("3")
-          AddLiqQueryData = await clientBase.query(IncreaseLiquidityQuery, {}).toPromise()
-          console.log("4")
-          CollectQueryData = await clientBase.query(CollectQuery, {}).toPromise()
-          console.log("5")
-          DecreaseLiquidityData = await clientBase.query(DecreaseLiquidityQuery, {}).toPromise()
-          console.log("6")
-          DepositQuery = await clientBase.query(DepositVaultQuery, {}).toPromise()
-          console.log("7")
-          WithdrawQuery = await clientBase.query(WithdrawVaultQuery, {}).toPromise()
-          console.log("8")
-          registerQueryData = await clientBase.query(RegisterQuery, {}).toPromise()
-          console.log("9")
+          const results = await Promise.all([
+            clientBase.query(AddQuery, {}).toPromise(),
+            clientBase.query(ReduceQuery, {}).toPromise(),
+            clientBase.query(IncreaseLiquidityQuery, {}).toPromise(),
+            clientBase.query(CollectQuery, {}).toPromise(),
+            clientBase.query(DecreaseLiquidityQuery, {}).toPromise(),
+            clientBase.query(DepositVaultQuery, {}).toPromise(),
+            clientBase.query(WithdrawVaultQuery, {}).toPromise(),
+            clientBase.query(RegisterQuery, {}).toPromise()
+          ])
+
+          AddQueryData = results[0]
+          ReduceQueryData = results[1]
+          AddLiqQueryData = results[2]
+          CollectQueryData = results[3]
+          DecreaseLiquidityData = results[4]
+          DepositQuery = results[5]
+          WithdrawQuery = results[6]
+          registerQueryData = results[7]
+
+
         } else {
-          let url = "https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph"
-          console.log("11")
-          AddQueryData = await client.query(AddQuery, {}).toPromise()
-          console.log(AddQueryData)
-          console.log("22")
-          
-          // const result1 = await axios.post(url, {
-          //   query: ReduceQuery
-          // })
-          // console.log("RESULT OF AXIOS TEST1", result1)
-          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-          console.log(ReduceQueryData)
-          console.log("33")
+          const results = await Promise.all([
+            client.query(AddQuery, {}).toPromise(),
+            client.query(ReduceQuery, {}).toPromise(),
+            client.query(IncreaseLiquidityQuery, {}).toPromise(),
+            client.query(CollectQuery, {}).toPromise(),
+            client.query(DecreaseLiquidityQuery, {}).toPromise(),
+            client.query(DepositVaultQuery, {}).toPromise(),
+            client.query(WithdrawVaultQuery, {}).toPromise(),
+            client.query(RegisterQuery, {}).toPromise()
+          ])
 
-
-          AddLiqQueryData = await client.query(IncreaseLiquidityQuery, {}).toPromise()
-          console.log(AddLiqQueryData)
-          const result = await axios.post(url, {
-            query: IncreaseLiquidityQuery
-          })
-          console.log("RESULT OF AXIOS TEST", result)
-          console.log("44")
-          CollectQueryData = await client.query(CollectQuery, {}).toPromise()
-          console.log("55")
-          DecreaseLiquidityData = await client.query(DecreaseLiquidityQuery, {}).toPromise()
-          console.log("66")
-          DepositQuery = await client.query(DepositVaultQuery, {}).toPromise()
-          console.log("77")
-          WithdrawQuery = await client.query(WithdrawVaultQuery, {}).toPromise()
-          console.log("88")
-          registerQueryData = await client.query(RegisterQuery, {}).toPromise()
+          AddQueryData = results[0]
+          ReduceQueryData = results[1]
+          AddLiqQueryData = results[2]
+          CollectQueryData = results[3]
+          DecreaseLiquidityData = results[4]
+          DepositQuery = results[5]
+          WithdrawQuery = results[6]
+          registerQueryData = results[7]
         }
-
-        // const queries = [
-        //   { query: AddQuery, result: 'AddQueryData' },
-        //   { query: ReduceQuery, result: 'ReduceQueryData' },
-        //   { query: IncreaseLiquidityQuery, result: 'AddLiqQueryData' },
-        //   { query: CollectQuery, result: 'CollectQueryData' },
-        //   { query: DecreaseLiquidityQuery, result: 'DecreaseLiquidityData' },
-        //   { query: DepositVaultQuery, result: 'DepositQuery' },
-        //   { query: WithdrawVaultQuery, result: 'WithdrawQuery' },
-        //   { query: RegisterQuery, result: 'registerQueryData' },
-        // ];
-        
-        // const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client;
-        // const promises: Promise<any>[] = queries.map(({ query }) => clientToUse.query(query, {}).toPromise());
-        
-        // const results = await Promise.all(promises)
-        
-        // console.log("PROMISE RESULTS", results)
-
-        // let AddQueryData = results[0]
-        // let ReduceQueryData = results[1]
-        // let AddLiqQueryData = results[2]
-        // let CollectQueryData = results[3]
-        // let DecreaseLiquidityData = results[4]
-        // let DepositQuery = results[5]
-        // let WithdrawQuery = results[6]
-        // let registerQueryData = results[7]
-
-        // console.log("ADD QUERY DATA", AddQueryData)
-        
-        // console.log('DepositQuery', DepositQuery?.data?.deposits, WithdrawQuery?.data?.withdraws)
 
         const vaultDataByAddress: { [key: string]: any } = {}
         DepositQuery?.data?.deposits.forEach((entry: any) => {
@@ -406,6 +366,7 @@ export function usePointsData() {
             shares: entry.shares,
             type: 'deposit',
           }
+          console.log("newEntry", newEntry)
           vaultDataByAddress[lp].push(newEntry)
         })
         const i = 0
@@ -433,6 +394,8 @@ export function usePointsData() {
           }
         })
         setVaultByAddress(vaultDataByAddress)
+
+        console.log("VAULT DATA BY ADDR", vaultDataByAddress)
 
         const uniqueTokenIds = new Set<string>()
         const uniqueTraders = new Set<string>()
@@ -534,10 +497,12 @@ export function usePointsData() {
         console.error(error)
         setError(error)
         setLoading(false)
+        console.log("SHOULD RETRY")
+        setShouldRetry(true)
       }
     }
     call()
-  }, [account, referralContract, chainId])
+  }, [account, referralContract, chainId, shouldRetry])
 
   const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
   const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
@@ -553,32 +518,23 @@ export function usePointsData() {
           
           const trader = entry.trader 
           const amount = entry.addedAmount
-          // const decimals = res.decimals 
-          // const lastPriceUSD = res.lastPriceUSD
-  
-          // return { 
-          //   token: token, 
-          //   trader: trader, 
-          //   amount: amount,
-          //   decimals: decimals,
-          //   lastPriceUSD: lastPriceUSD
-          // }
-
           return resPromise.then(res => ({
             token: token, 
             trader: trader, 
             amount: amount,
-            res: res
-          }));
+            lastPriceUSD: res.lastPriceUSD,
+            decimals: res.decimals
+          }))
         })
         const results = await Promise.all(promises)
         setAddDataProcessed(results)
       }
     }
     fetchData()
-  }, [addData, uniqueTokens])
+  }, [addData, uniqueTokens, chainId])
 
   useEffect(() => {
+    
     const fetchData = async () => {
       if (reduceData) {
         const promises = reduceData.map(async (entry: any) => {
@@ -588,34 +544,25 @@ export function usePointsData() {
           
           const trader = entry.trader 
           const amount = entry.reduceAmount
-          // const decimals = res.decimals
-          // const lastPriceUSD = res.lastPriceUSD
-  
-          // return { 
-          //   token: token, 
-          //   trader: trader, 
-          //   amount: amount,
-          //   res: res
-            // decimals: decimals,
-            // lastPriceUSD: lastPriceUSD
-          // }
+
           return resPromise.then(res => ({
             token: token, 
             trader: trader, 
             amount: amount,
-            res: res
-          }));
+            lastPriceUSD: res.lastPriceUSD,
+            decimals: res.decimals
+          }))
         })
         const results = await Promise.all(promises)
         setReduceDataProcessed(results)
       }
     }
     fetchData()
-  }, [reduceData, uniqueTokens])
+  }, [reduceData, uniqueTokens, chainId])
   
   useEffect(() => {
     const fetchData = async () => {
-      if (lpPositions) {
+      if (lpPositions && lpPositions.length > 0) {
         const promises = lpPositions.map(async (entry: any) => {
 
           const [res0, res1] = await Promise.all([
@@ -637,33 +584,9 @@ export function usePointsData() {
       }
     }
     fetchData()
-  }, [lpPositions])
+  }, [lpPositions, chainId])
 
   const PointsData = useMemo(() => {
-    // const addDataProcessed = addData?.map((entry: any) => {
-    //   if (entry.trader.toLowerCase() === '0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748'.toLowerCase()) {
-    //     console.log("ENTRY IN ADDDATA MAPPING ADDED AMOUNTTTTTTTTTTTTTTTTTT", entry.addedAmount)
-    //     const processedEntry = {
-    //       token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-    //       trader: entry.trader,
-    //       amount: entry.addedAmount,
-    //     }
-    //     console.log("PROCESSED ENTRY", processedEntry)
-    //     return processedEntry
-    //   }
-    //   return {
-    //     token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-    //     trader: entry.trader,
-    //     amount: entry.addedAmount,
-    //   }
-    // })
-
-
-    // const reduceDataProcessed = reduceData?.map((entry: any) => ({
-    //   token: entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1],
-    //   trader: entry.trader,
-    //   amount: entry.reduceAmount,
-    // }))
 
     let tradeProcessedByTrader: { [key: string]: any } = {}
   
@@ -730,11 +653,6 @@ export function usePointsData() {
       if (sameTokenIdCollects.length > 0 && lpAddress == '0x0000000000000000000000000000000000000000')
         lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
       
-      // if (lpAddress.toLowerCase() === '0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748'.toLowerCase()) {
-      //   console.log("LP OF MINE! ", entry)
-      //   console.log("AMOUNT 0, 1 Collected", amount0Collected, amount1Collected)
-      // }
-
       if (!lpPositionsByUniqueLps[lpAddress]) {
         lpPositionsByUniqueLps[lpAddress] = []
       }

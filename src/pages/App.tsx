@@ -246,8 +246,8 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
-                  <Route path="new" element={<NewItemsListPage />} />
-                  <Route path="new/?/activity" element={<NewItemsListPage />} />
+                  <Route path="loot" element={<NewItemsListPage />} />
+                  <Route path="loot/?/activity" element={<NewItemsListPage />} />
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
                   {/* <Route path="pool/v2" element={<PoolV2 />} /> */}

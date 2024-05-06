@@ -565,11 +565,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         currency1={token1?.address}
         buttons={
           <>
-            {' '}
             <SmallButtonPrimary onClick={handleProvide}>
               <Trans>Provide</Trans>
             </SmallButtonPrimary>
-            <SmallButtonPrimary onClick={handleZap}>
+            <SmallButtonPrimary style={{ whiteSpace: 'nowrap' }} onClick={handleZap}>
               <Trans>Zap In</Trans>
             </SmallButtonPrimary>
           </>

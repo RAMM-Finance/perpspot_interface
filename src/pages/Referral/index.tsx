@@ -3,9 +3,8 @@ import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
+import LMTFAQ from 'components/FAQ/LMTFAQ'
 import Footer from 'components/Footer'
-import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
-import Points from 'components/Leaderboard/Points'
 import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { client } from 'graphql/limitlessGraph/limitlessClients'
@@ -13,11 +12,6 @@ import { AddQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { ExternalLink } from '../../theme'
-import { AutoColumn } from 'components/Column'
-import FAQBox from 'components/FAQ'
-
-
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -141,36 +135,35 @@ export default function ReferralPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
-  const [leaderboard, setLeaderboard] = useState<boolean>(true)
+  // const [leaderboard, setLeaderboard] = useState<boolean>(true)
 
-  const [addData, setAddData] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
+  // const [addData, setAddData] = useState<any>()
+  // const [loading, setLoading] = useState(false)
+  // const [error, setError] = useState<any>()
 
-  useEffect(() => {
-    // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-    if (!client || !AddQuery || loading || error) return
-    const call = async () => {
-      try {
-        setLoading(true)
+  // useEffect(() => {
+  //   // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
+  //   if (!client || !AddQuery || loading || error) return
+  //   const call = async () => {
+  //     try {
+  //       setLoading(true)
 
-        const addQueryData = await client.query(AddQuery, {}).toPromise()
+  //       const addQueryData = await client.query(AddQuery, {}).toPromise()
 
-        setAddData(addQueryData)
-        setLoading(false)
-      } catch (error) {
-        setError(error)
-        setLoading(false)
-      }
-    }
-    call()
-  }, [])
+  //       setAddData(addQueryData)
+  //       setLoading(false)
+  //     } catch (error) {
+  //       setError(error)
+  //       setLoading(false)
+  //     }
+  //   }
+  //   call()
+  // }, [])
 
   return (
     <>
       <PageWrapper>
-        <PointsWrapper>
-        </PointsWrapper>
+        <PointsWrapper></PointsWrapper>
         <Container>
           <ReferralsWrapper>
             {showConnectAWallet ? (
@@ -182,7 +175,7 @@ export default function ReferralPage() {
                   element={InterfaceElementName.CONNECT_WALLET_BUTTON}
                 >
                   <ButtonPrimary
-                    style={{ padding: '8px 8px', borderRadius: '10px', width: '115px'}}
+                    style={{ padding: '8px 8px', borderRadius: '10px', width: '115px' }}
                     onClick={toggleWalletDrawer}
                   >
                     <Trans>
@@ -196,7 +189,7 @@ export default function ReferralPage() {
             )}
           </ReferralsWrapper>
           <FaqWrapper>
-            <FAQBox/>
+            <LMTFAQ />
           </FaqWrapper>
           {/* <AchievementsWrapper>
           <ThemedText.SubHeader>
