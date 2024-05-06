@@ -107,7 +107,7 @@ const NewItemsListPage = () => {
   const blockNumber = useBlockNumber()
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
 
-  const { search } = useLocation()
+  // const { search, pathname} = useLocation()
   const brp = useBRP()
 
   const [brpData, setBRPData] = useState<TBRPData>({
@@ -206,69 +206,68 @@ const NewItemsListPage = () => {
   }, [addBoxCallback, addTransaction])
 
   useEffect(() => {
-    if (brp && account && blockNumber && search) {
-      const call = async () => {
-        try {
-          const freeBoxUsed = await brp.freeBoxUsed(account)
+    if (!brp || !account || !blockNumber) return setLoading(false)
+    const call = async () => {
+      try {
+        const freeBoxUsed = await brp.freeBoxUsed(account)
 
-          const totalBoxes = await brp.numBoxes(account)
-          const totalUnlockableBoxes = await brp.claimableBoxes(account)
-          const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
+        const totalBoxes = await brp.numBoxes(account)
+        const totalUnlockableBoxes = await brp.claimableBoxes(account)
+        const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
 
-          const lastRecordedTradePoints = await brp.lastRecordedTradePoints(account)
-          const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
-          const lastRecordedPoints = await brp.lastRecordedPoints(account)
+        const lastRecordedTradePoints = await brp.lastRecordedTradePoints(account)
+        const lastRecordedLpPoints = await brp.lastRecordedLpPoints(account)
+        const lastRecordedPoints = await brp.lastRecordedPoints(account)
 
-          const NZTRageRow = await brp.rangeLow()
-          const NZTRageHigh = await brp.rangeHigh()
+        const NZTRageRow = await brp.rangeLow()
+        const NZTRageHigh = await brp.rangeHigh()
 
-          const pointPerAdd = await brp.pointPerAdd()
+        const pointPerAdd = await brp.pointPerAdd()
 
-          let numTotalBoxes = totalBoxes?.toNumber()
-          if (!freeBoxUsed && numTotalBoxes === 0) {
-            numTotalBoxes = 0
-          }
-          const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
-          const totalLMTString = totalLMTPoint?.toString()
-
-          const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
-          const isInsufficient = pointPerAdd?.toNumber() > totalLMTPoint.toNumber()
-          const lockedBoxes = Array(numTotalBoxes)
-            .fill(true)
-            .map((_, index) => index + 1 > numtotalUnlockableBoxes)
-          const newData = Array.from({ length: numTotalBoxes }, (_, index) => {
-            const imgNumber = index % itemImages.length
-            return {
-              id: `#${index + 1}`,
-              img: itemImages[imgNumber],
-              info: `Limitless test ${index + 1}`,
-              isLocked: lockedBoxes[index],
-              isInsufficient,
-              index,
-            }
-          })
-          // console.log('itemDatas', pointPerAdd.toNumber(), numtotalUnlockableBoxes, lockedBoxes)
-          setBRPData({
-            totalBoxes: numTotalBoxes,
-            totalUnlockableBoxes: numtotalUnlockableBoxes,
-            lmtRequiredPerUnlock: lmtRequiredPerUnlock?.toString(),
-            totalLMT: totalLMTString,
-            NZTRageHigh: NZTRageHigh?.toNumber(),
-            NZTRageRow: NZTRageRow?.toNumber(),
-          })
-          setItemDatas(newData)
-          setHiddenCards([])
-          setLoading(false)
-        } catch (error) {
-          setHiddenCards([])
-          // setItemDatas([])
-          setLoading(false)
-          console.log(error, 'get brp data error')
+        let numTotalBoxes = totalBoxes?.toNumber()
+        if (!freeBoxUsed && numTotalBoxes === 0) {
+          numTotalBoxes = 0
         }
+        const totalLMTPoint = lastRecordedTradePoints.add(lastRecordedLpPoints).add(lastRecordedPoints)
+        const totalLMTString = totalLMTPoint?.toString()
+
+        const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
+        const isInsufficient = pointPerAdd?.toNumber() > totalLMTPoint.toNumber()
+        const lockedBoxes = Array(numTotalBoxes)
+          .fill(true)
+          .map((_, index) => index + 1 > numtotalUnlockableBoxes)
+        const newData = Array.from({ length: numTotalBoxes }, (_, index) => {
+          const imgNumber = index % itemImages.length
+          return {
+            id: `#${index + 1}`,
+            img: itemImages[imgNumber],
+            info: `Limitless test ${index + 1}`,
+            isLocked: lockedBoxes[index],
+            isInsufficient,
+            index,
+          }
+        })
+        // console.log('itemDatas', pointPerAdd.toNumber(), numtotalUnlockableBoxes, lockedBoxes)
+        setBRPData({
+          totalBoxes: numTotalBoxes,
+          totalUnlockableBoxes: numtotalUnlockableBoxes,
+          lmtRequiredPerUnlock: lmtRequiredPerUnlock?.toString(),
+          totalLMT: totalLMTString,
+          NZTRageHigh: NZTRageHigh?.toNumber(),
+          NZTRageRow: NZTRageRow?.toNumber(),
+        })
+        setItemDatas(newData)
+        setHiddenCards([])
+        setLoading(false)
+      } catch (error) {
+        setHiddenCards([])
+        // setItemDatas([])
+        setLoading(false)
+        console.log(error, 'get brp data error')
       }
-      call()
     }
-  }, [brp, account, blockNumber, search])
+      call()
+  }, [brp, account, blockNumber])
 
   const handleShowModal = useCallback((modalData: TBoxData) => {
     setShowModal(true)
