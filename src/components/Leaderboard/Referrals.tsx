@@ -4,7 +4,7 @@ import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
 import { ethers } from 'ethers'
-import { useBRP, useReferralContract } from 'hooks/useContract'
+import { useBRP, useLimweth, useReferralContract } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { InputSection } from 'pages/Trade'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -17,6 +17,7 @@ import { CopyToClipboard, ThemedText } from 'theme'
 
 import { CollectMultipler, usePointsData } from './data'
 import TierBar from './TierBar'
+import { useLimWethBalance } from 'components/PoolSimple/hooks'
 
 const Wrapper = styled.div`
   display: flex;
@@ -214,6 +215,29 @@ const Referrals = () => {
   const { account, chainId, provider } = useWeb3React()
 
   const BRP = useBRP()
+
+  const limweth = useLimweth()
+
+  const [limwethBalance, setLimwethBalance] = useState<number>()
+
+  useEffect(() => {
+    if (!account || !limweth) return 
+    
+    const call = async () => {
+      const balance = (await limweth.balanceOf(account)).toNumber()
+      const decimals = await limweth.decimals()
+      const limwethBal = balance / (10 ** decimals)
+      console.log("BALANCE", balance)
+      console.log("DECIMALS", decimals)
+      console.log("LIMWETH BAL", limwethBal)
+      setLimwethBalance(limwethBal)
+    }
+
+    call()
+  }, [account, limweth])
+  
+  const limwethDeposits = useLimWethBalance(account)
+
   // console.log('createReferralCode', createReferralCode)
   // console.log('referralCode', referralCode)
 
@@ -292,24 +316,24 @@ const Referrals = () => {
     }
   }
 
-  const [simulatedRewards, setSimulatedRewards] = useState<string>()
+  // const [simulatedRewards, setSimulatedRewards] = useState<string>()
   const [lastClaimedPoints, setLastClaimedPoints] = useState<string>()
-  const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
+  // const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
+
 
   useEffect(() => {
     if (!account || !BRP) return
 
     const call = async () => {
       try {
-        // console.log("CALLING CLAIMREWARDS")
-        const result = await BRP.callStatic.claimRewards()
-        // console.log("LAST CLAIMED POINTS")
         const lastClaimedPoints = await BRP.lastClaimedPoints(account)
-        // console.log("LAST RECORDED POINTS")
-        const lastRecordedPoints = await BRP.lastRecordedPoints(account)
-        setSimulatedRewards(result.toString())
+        // console.log("LAST CLAIMED POINTS", lastClaimedPoints)
+        // const lastRecordedPoints = await BRP.lastRecordedPoints(account)
+        // console.log("CALLING CLAIMREWARDS")
+        // const result = await BRP.callStatic.claimRewards()
+        // setSimulatedRewards(result.toString())
         setLastClaimedPoints(lastClaimedPoints.toString())
-        setLastRecordedPoints(lastRecordedPoints.toString())
+        // setLastRecordedPoints(lastRecordedPoints.toString())
       } catch (error) {
         console.log('claimsimerr', error)
       }
@@ -750,7 +774,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                  {refereeActivity && account ? '$' + (refereeActivity[account]?.tradeVolume || 0) : '-'}
+                  {refereeActivity && account ? '$' + (refereeActivity[account]?.tradeVolume.toFixed(6) || 0) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -846,6 +870,15 @@ const Referrals = () => {
                   <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
                     ${tradingVolume ? tradingVolume?.toFixed(4) : '-'}
+                  </ThemedText.BodySecondary>
+                </CardWrapper>
+              </StyledCard>
+              <StyledCard>
+                <CardWrapper>
+                  <ThemedText.BodyPrimary>LimWeth Deposits</ThemedText.BodyPrimary>
+                  <ThemedText.BodySecondary fontSize={16}>
+                  {limwethBalance ? limwethBalance?.toFixed(6) !== '0.000000' ? limwethBalance.toFixed(6) : ' < .000001' + ' LimWeth' : '-'} 
+                    {/* ${limwethDeposits ? limwethDeposits?.toFixed(8) : '-'} */}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>

@@ -366,6 +366,7 @@ export function usePointsData() {
             shares: entry.shares,
             type: 'deposit',
           }
+          console.log("newEntry", newEntry)
           vaultDataByAddress[lp].push(newEntry)
         })
         const i = 0
@@ -393,6 +394,8 @@ export function usePointsData() {
           }
         })
         setVaultByAddress(vaultDataByAddress)
+
+        console.log("VAULT DATA BY ADDR", vaultDataByAddress)
 
         const uniqueTokenIds = new Set<string>()
         const uniqueTraders = new Set<string>()
@@ -519,8 +522,9 @@ export function usePointsData() {
             token: token, 
             trader: trader, 
             amount: amount,
-            res: res
-          }));
+            lastPriceUSD: res.lastPriceUSD,
+            decimals: res.decimals
+          }))
         })
         const results = await Promise.all(promises)
         setAddDataProcessed(results)
@@ -545,8 +549,9 @@ export function usePointsData() {
             token: token, 
             trader: trader, 
             amount: amount,
-            res: res
-          }));
+            lastPriceUSD: res.lastPriceUSD,
+            decimals: res.decimals
+          }))
         })
         const results = await Promise.all(promises)
         setReduceDataProcessed(results)
