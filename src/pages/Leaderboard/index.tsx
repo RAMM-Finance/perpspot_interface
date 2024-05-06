@@ -1,18 +1,15 @@
 import { useWeb3React } from '@web3-react/core'
+import LMTFAQ from 'components/FAQ/LMTFAQ'
 import Footer from 'components/Footer'
 import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery } from 'graphql/limitlessGraph/queries'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
-import FAQBox from 'components/FAQ'
-import { SupportedChainId } from 'constants/chains'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -229,10 +226,10 @@ export default function LeaderboardPage() {
   //     try {
   //       setLoading(true)
   //       let addQueryData
-        
+
   //       if (chainId === SupportedChainId.ARBITRUM_ONE)
   //         addQueryData = await client.query(AddQuery, {}).toPromise()
-  //       else if (chainId === SupportedChainId.BASE) 
+  //       else if (chainId === SupportedChainId.BASE)
   //         addQueryData = await clientBase.query(AddQuery, {}).toPromise()
 
   //       setAddData(addQueryData)
@@ -294,7 +291,7 @@ export default function LeaderboardPage() {
             <LeaderboardTable />
           </LeaderboardWrapper>
           <FaqWrapper>
-            <FAQBox/>
+            <LMTFAQ />
           </FaqWrapper>
         </Container>
       </PageWrapper>

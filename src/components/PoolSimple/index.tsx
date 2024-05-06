@@ -7,6 +7,7 @@ import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import FAQBox from 'components/FAQ'
+import Highlights from 'components/Highlights'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { NavDropdown } from 'components/NavBar/NavDropdown'
@@ -1315,12 +1316,13 @@ export default function SimplePool() {
             </>
           )}
         </AutoColumn>
-        <RowBetween>
-          <FaqWrapper>
-            <FAQBox />
-          </FaqWrapper>
-        </RowBetween>
       </AutoColumn>
+      <RowBetween>
+        <FaqWrapper style={{ paddingTop: '10px', width: '500px', height: '140px', gap: '25px' }}>
+          <FAQBox />
+        </FaqWrapper>
+        <Highlights />
+      </RowBetween>
     </Wrapper>
   )
 }
@@ -1441,7 +1443,7 @@ const CurrencyWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 15px;
   border-radius: 10px;
-  height: fit-content;
+  height: 400px;
   display: flex;
   flex-direction: column;
   gap: 5px;

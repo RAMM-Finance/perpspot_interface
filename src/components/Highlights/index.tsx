@@ -9,20 +9,19 @@ const Wrapper = styled.div`
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px;
   border-radius: 10px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  margin-bottom: 0.7rem;
-  margin-top: 0.7rem;
+  margin-top: 2rem;
   height: 150px;
   padding-top: 10px;
-  padding-left: 5px;
+  padding-left: 10px;
   overflow-y: scroll;
+  width: 475px;
   ::-webkit-scrollbar {
     display: none;
   }
 `
 const GroupWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 105px);
+  grid-template-columns: repeat(3, 140px);
   gap: 15px;
   padding-top: 15px;
 `
@@ -34,9 +33,9 @@ const Highlights = () => {
   return (
     <>
       <Wrapper>
-        <ThemedText.SubHeaderSmall color="primary" fontWeight={800}>
+        <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
           APR & LMT Highlights
-        </ThemedText.SubHeaderSmall>
+        </ThemedText.BodySecondary>
         <GroupWrapper>
           {arr?.map((pool) => (
             <HighlightPair key={pool[0]} aprInfo={pool} />
