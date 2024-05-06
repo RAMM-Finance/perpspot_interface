@@ -1,7 +1,8 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
-import FAQBox, { FaqWrapper } from 'components/FAQ'
+import { FaqWrapper } from 'components/FAQ'
+import LootFAQ from 'components/FAQ/LootFAQ'
 import BoxModal from 'components/NewItems/BoxModal'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useBRP } from 'hooks/useContract'
@@ -323,7 +324,7 @@ const NewItemsListPage = () => {
           />
         </CollectionDisplaySection>
         <FaqWrapper>
-          <FAQBox />
+          <LootFAQ />
         </FaqWrapper>
       </CollectionContainer>
     </>

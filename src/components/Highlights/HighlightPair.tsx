@@ -3,12 +3,13 @@ import { SmallButtonPrimary } from 'components/Button'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
+import ZapModal from 'components/Tokens/TokenTable/ZapModal'
 import { useCurrency } from 'hooks/Tokens'
+import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
-import { useV3MintActionHandlers } from 'state/mint/v3/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -83,6 +84,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
 
   const handlePoolSelect = useCallback(
     (e: any) => {
+      navigate('/trade/')
       if (fee && currency0 && currency1 && currency0.symbol && currency1.symbol && pool && chainId) {
         const id = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
         if (poolOHLC && poolId !== id && id) {
@@ -91,20 +93,32 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
         }
       }
     },
-    [setCurrentPool, poolId, poolOHLC, pool, fee, currency0, currency1, chainId]
+    [setCurrentPool, poolId, poolOHLC, pool, fee, currency0, currency1, chainId, navigate]
   )
 
-  const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
+  const [showModal, setShowModal] = useState(false)
+  const handleCloseModal = useCallback(() => {
+    setShowModal(false)
+  }, [])
 
-  const onPoolSwitch = useCallback(() => {
-    onFieldAInput('')
-    onFieldBInput('')
-    onLeftRangeInput('')
-    onRightRangeInput('')
-  }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
-
+  const handleZap = useCallback(
+    (e: any) => {
+      e.stopPropagation()
+      setShowModal(true)
+    },
+    [setShowModal]
+  )
+  const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   return (
     <PairWrapper>
+      <ZapModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        apr={aprInfo[1].apr !== undefined ? aprInfo[1].apr + estimatedAPR : undefined}
+        tvl={(poolTvlData && poolId && poolTvlData[poolId]?.totalValueLocked) || undefined}
+        token0={currency0}
+        token1={currency1}
+      />
       <DoubleCurrencyLogo size={26} currency0={currency0} currency1={currency1} />
       <DataRow>
         <ThemedText.BodySmall>APR:</ThemedText.BodySmall>
@@ -112,7 +126,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
           style={{ fontSize: '14px', cursor: 'default' }}
           rate={(aprInfo[1].apr ?? 0) + (estimatedAPR ?? 0)}
         >
-          {aprInfo[1].apr !== undefined ? `${((aprInfo[1].apr + estimatedAPR) || 0)?.toFixed(4)}%` : '-'}
+          {aprInfo[1].apr !== undefined ? `${(aprInfo[1].apr + estimatedAPR || 0)?.toFixed(4)}%` : '-'}
         </ClickableRate>
       </DataRow>
       <DataRow>
@@ -125,13 +139,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
         </ClickableRate>
       </DataRow>
       <ButtonRow>
-        <PairButton
-          onClick={() => {
-            onPoolSwitch()
-            navigate(`/add/${currency0?.wrapped.address}/${currency1?.wrapped.address}/${fee}`)
-          }}
-          style={{ width: '50px' }}
-        >
+        <PairButton onClick={handleZap} style={{ width: '50px' }}>
           Deposit
         </PairButton>
         <PairButton onClick={handlePoolSelect}>Leverage</PairButton>
