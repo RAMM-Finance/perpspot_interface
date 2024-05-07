@@ -174,7 +174,18 @@ const useDerivedZapInfo = (
       upperTick === undefined
     )
       return undefined
-
+    console.log('zeke:calldata', [
+      {
+        token0: poolKey.token0,
+        token1: poolKey.token1,
+        fee: poolKey.fee,
+      },
+      inputIsToken0 ? poolKey.token0 : poolKey.token1,
+      parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+      lowerTick,
+      upperTick,
+      maxSlippageTick,
+    ])
     return NonfungiblePositionManager.INTERFACE.encodeFunctionData('zapAndMint', [
       {
         token0: poolKey.token0,
@@ -218,10 +229,11 @@ const useDerivedZapInfo = (
   }, [loading, error, result])
 
   const txnInfo: ZapTxnInfo | undefined = useMemo(() => {
-    if (!result || !token0 || !token1 || !poolKey || !parsedAmount) return undefined
+    if (!result || !token0 || !token1 || !poolKey || !parsedAmount || !result[0].amount0In || !result[0].amount1In)
+      return undefined
     return {
-      token0Out: new BN(result[0].token0Out.toString()).shiftedBy(-token0.decimals),
-      token1Out: new BN(result[0].token0Out.toString()).shiftedBy(-token1.decimals),
+      token0Out: new BN(result[0].amount0In.toString()).shiftedBy(-token0.decimals),
+      token1Out: new BN(result[0].amount1In.toString()).shiftedBy(-token1.decimals),
       liquidity: new BN(result[0].liquidity.toString()),
       poolKey,
       inputIsToken0,
@@ -394,6 +406,7 @@ const ZapModal = (props: ZapModalProps) => {
             fiatValue={inputAmountFiat}
             id="1"
             currency={inputCurrency}
+            otherCurrency={inputIsToken0 ? token1 : token0}
             onInputTokenChange={(currency: Currency) => {
               if (currency.wrapped.address.toLowerCase() === token0?.wrapped.address.toLowerCase()) {
                 setInputIsToken0(true)
