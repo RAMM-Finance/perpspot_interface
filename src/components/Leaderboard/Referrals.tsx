@@ -310,13 +310,30 @@ const Referrals = () => {
 
   const referralContract = useReferralContract()
 
-  const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<string>()
+  const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
   useEffect(() => {
     const call = async () => {
       try {
+        console.log("account", account, referralContract, BRP)
         if (!account || !referralContract || !BRP) return
         const referees = await referralContract?.getReferees(account)
+        // console.log("referees", referees)
+        // console.log("CAINID", chainId)
+
+        // const str = "0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748"
+        // const users = await BRP.getUsers()
+        // console.log("USERS", users)
+        // await Promise.all(users.map(async (user) => {
+        //   const [tradePoints, lpPoints, points] = await Promise.all([
+        //     BRP.lastRecordedTradePoints(user),
+        //     BRP.lastRecordedLpPoints(user),
+        //     BRP.lastRecordedPoints(user)
+        //   ])
+        //   console.log("TRADEPOINTS LPPOINTS POINTS of USERSSSSSSSSSSSS", user, tradePoints.toNumber(), lpPoints.toNumber(), points.toNumber())
+        // }))
+        
+        // const referees = ['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0', '0x9e60aa0c7B3bAE800f725C20088330cDB05D7487']
 
         const refereesPoints = await Promise.all(referees.map(async (referee) => {
           const [tradePoints, lpPoints, points] = await Promise.all([
@@ -324,22 +341,24 @@ const Referrals = () => {
             BRP.lastRecordedLpPoints(referee),
             BRP.lastRecordedPoints(referee)
           ])
+          console.log("TRADEPOINTS LPPOINTS POINTS", tradePoints, lpPoints, points)
           const totalPoints = tradePoints.toNumber() + lpPoints.toNumber() + points.toNumber()
           console.log("TOTAL POINTS", totalPoints)
           return {
             totalPoints
           }
         }))
+        console.log("refereesPoinits", refereesPoints)
 
         const limwethDeposits = refereesPoints.reduce((acc, curr) => acc + curr.totalPoints, 0)
-        setRefereesLimwethDeposit(limwethDeposits.toString())
+        setRefereesLimwethDeposit(limwethDeposits)
       } catch (err) {
         console.error("referralContract.getReferees ERROR", err)
       }
       
     }
     call()
-  }, [account, referralContract])
+  }, [account, referralContract, BRP, chainId])
 
   useEffect(() => {
     if (!account || !BRP) return
@@ -803,12 +822,9 @@ const Referrals = () => {
                   <ThemedText.SubHeader fontSize={15}>LimWeth Deposits From Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                   {refereesLimwethDeposit 
-                    ? parseFloat(refereesLimwethDeposit) === 0 
-                      ? '0' 
-                      : parseFloat(refereesLimwethDeposit) < 0.000001 
-                        ? '< 0.000001' 
-                        : parseFloat(refereesLimwethDeposit).toFixed(6) 
-                    : '-'}
+                    ? refereesLimwethDeposit 
+                    : refereesLimwethDeposit === 0 
+                    ? '0' : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
