@@ -23,7 +23,6 @@ const ModalInfoWrapper = styled(LightCard)`
   padding: 0.75rem;
 `
 
-
 const ModalActionButton = styled(ThemedText.BodySecondary)<{
   isDisabled: boolean
 }>`
@@ -115,12 +114,19 @@ interface IBoxModalProps {
   isOpen: boolean
   handleCloseModal: () => void
   handleUnlockBox: (index: number) => void
-  isInsufficient: boolean,
+  isInsufficient: boolean
 
   // handleAddBox: () => void
 }
 
-const BoxModal = ({ isOpen, handleCloseModal, modalData, handleUnlockBox, brpData, isInsufficient }: IBoxModalProps) => {
+const BoxModal = ({
+  isOpen,
+  handleCloseModal,
+  modalData,
+  handleUnlockBox,
+  brpData,
+  isInsufficient,
+}: IBoxModalProps) => {
   const { info, img, isLocked, index } = modalData
 
   return (
@@ -153,11 +159,6 @@ const BoxModal = ({ isOpen, handleCloseModal, modalData, handleUnlockBox, brpDat
                 fontSize={14}
                 color="textPrimary"
               />
-              {/* <InfoDescription
-                description={`Need '${brpData?.pointPerAdd}' LMT to unlock this box`}
-                fontSize={14}
-                color="accentWarning"
-              /> */}
             </ModalDescriptWrapper>
           </ModalDescriptWrapper>
         </ModalTopWrapper>
