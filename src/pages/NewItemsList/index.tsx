@@ -225,6 +225,7 @@ const NewItemsListPage = () => {
         const NZTRageHigh = await brp.rangeHigh()
 
         const pointPerAdd = await brp.pointPerAdd()
+        const poinstUsedForNewBoxes = await brp.pointsUsedForNewBoxes(account)
 
         let numTotalBoxes = totalBoxes?.toNumber()
         if (!freeBoxUsed && numTotalBoxes === 0) {
@@ -235,7 +236,10 @@ const NewItemsListPage = () => {
 
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
         const numPointPerAdd = pointPerAdd?.toNumber()
-        const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber()
+        const isInsufficient =
+          numPointPerAdd > totalLMTPoint.toNumber() || poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
+        // const isPoinstUsedForNewBoxes= poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
+        // console.log('pointUsedForNewBoxes', poinstUsedForNewBoxes?.toNumber(), numPointPerAdd, isInsufficient)
         const lockedBoxes = Array(numTotalBoxes)
           .fill(true)
           .map((_, index) => index + 1 > numtotalUnlockableBoxes)
@@ -244,12 +248,11 @@ const NewItemsListPage = () => {
           return {
             id: `#${index + 1}`,
             img: itemImages[imgNumber],
-            info: `Limitless test ${index + 1}`,
+            info: `Box ${index + 1}`,
             isLocked: lockedBoxes[index],
             index,
           }
         })
-        // console.log(' ', pointPerAdd.toNumber(), totalLMTPoint.toNumber(), isInsufficient)
         setBRPData({
           totalBoxes: numTotalBoxes,
           totalUnlockableBoxes: numtotalUnlockableBoxes,

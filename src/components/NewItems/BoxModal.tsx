@@ -115,7 +115,6 @@ interface IBoxModalProps {
   handleCloseModal: () => void
   handleUnlockBox: (index: number) => void
   isInsufficient: boolean
-
   // handleAddBox: () => void
 }
 

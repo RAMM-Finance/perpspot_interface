@@ -111,7 +111,7 @@ const BoxesContainer = ({
   hiddenCards,
   handleShowModal,
   account,
-  isInsufficient
+  isInsufficient,
 }: IBoxesContainerProps) => {
   if (loading) {
     return (
@@ -154,7 +154,11 @@ const BoxesContainer = ({
               <ThemedText.BodySecondary fontSize="18px" width="100%">
                 No Treasure Boxes
               </ThemedText.BodySecondary>
-              <AddBoxActionButton isDisabled={isInsufficient} fontSize="18px" onClick={() => handleAddBox()}>
+              <AddBoxActionButton
+                isDisabled={isInsufficient}
+                fontSize="18px"
+                onClick={() => (isInsufficient ? undefined : handleAddBox())}
+              >
                 {isInsufficient ? 'Insufficient LMT' : 'Add Box'}
               </AddBoxActionButton>
             </Column>
