@@ -89,6 +89,9 @@ interface ZapTxnInfo {
   poolKey: PoolKey
   inputAmount: BN
   inputIsToken0: boolean
+  lowerDelta: number
+  upperDelta: number
+  maxSlippageTick: number
 }
 
 interface DerivedZapInfo {
@@ -143,6 +146,7 @@ const useDerivedZapInfo = (
   }, [parsedAmount, relevantTokenBalances, inputIsToken0, token0, token1, account])
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
+
   const allowedSlippage = useMemo(() => {
     if (userSlippageTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
     else return userSlippageTolerance
@@ -174,18 +178,18 @@ const useDerivedZapInfo = (
       upperTick === undefined
     )
       return undefined
-    console.log('zeke:calldata', [
-      {
-        token0: poolKey.token0,
-        token1: poolKey.token1,
-        fee: poolKey.fee,
-      },
-      inputIsToken0 ? poolKey.token0 : poolKey.token1,
-      parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
-      lowerTick,
-      upperTick,
-      maxSlippageTick,
-    ])
+    // console.log('zeke:calldata', [
+    //   {
+    //     token0: poolKey.token0,
+    //     token1: poolKey.token1,
+    //     fee: poolKey.fee,
+    //   },
+    //   inputIsToken0 ? poolKey.token0 : poolKey.token1,
+    //   parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+    //   lowerTick,
+    //   upperTick,
+    //   maxSlippageTick,
+    // ])
     return NonfungiblePositionManager.INTERFACE.encodeFunctionData('zapAndMint', [
       {
         token0: poolKey.token0,
@@ -238,8 +242,11 @@ const useDerivedZapInfo = (
       poolKey,
       inputIsToken0,
       inputAmount: parsedAmount,
+      lowerDelta: lowerTick,
+      upperDelta: upperTick,
+      maxSlippageTick,
     }
-  }, [result, token0, token1, inputIsToken0, poolKey, parsedAmount])
+  }, [result, token0, token1, inputIsToken0, poolKey, parsedAmount, lowerTick, upperTick, maxSlippageTick])
 
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
@@ -280,9 +287,9 @@ const useZapCallback = (
         txnInfo.poolKey,
         txnInfo.inputIsToken0 ? txnInfo.poolKey.token0 : txnInfo.poolKey.token1,
         txnInfo.inputAmount.shiftedBy(txnInfo.inputIsToken0 ? token0.decimals : token1.decimals).toFixed(0),
-        txnInfo.liquidity.toString(),
-        txnInfo.token0Out.toString(),
-        txnInfo.token1Out.toString(),
+        txnInfo.lowerDelta,
+        txnInfo.upperDelta,
+        txnInfo.maxSlippageTick,
       ])
 
       const tx = {
