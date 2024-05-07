@@ -444,7 +444,10 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  console.log("SORTED POOLS", sortedPools)
+  const adminFilteredPools = useMemo(() => {
+    const symbolsToRemove = ['INT']
+    return sortedPools.filter(pool => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1))
+  }, [sortedPools])
 
   // const dailyFeeAPRs = useDailyFeeAPR(sortedPools)
   // console.log("DAILY FEE APRS", JSON.stringify(dailyFeeAPRs))
@@ -461,7 +464,7 @@ export default function TokenTable() {
         <PHeaderRow />
         <TokenDataContainer>
           {!loading && poolTvlData && poolOHLCs && aprList ? (
-            sortedPools.map((pool, i: number) => {
+            adminFilteredPools.map((pool, i: number) => {
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
               return (
                 <PLoadedRow
