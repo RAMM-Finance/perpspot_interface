@@ -235,15 +235,6 @@ const Referrals = () => {
 
     call()
   }, [account, limweth])
-  
-  const limwethDeposits = useLimWethBalance(account)
-
-  // console.log('createReferralCode', createReferralCode)
-  // console.log('referralCode', referralCode)
-
-  // console.log("REFERRALS PAGE")
-  // console.log("TRADEPROCESSSEDBYtRADEr", tradeProcessedByTrader)
-  // console.log("LPPOSITIONS ", lpPositionsByUniqueLps)
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -320,6 +311,39 @@ const Referrals = () => {
   const [lastClaimedPoints, setLastClaimedPoints] = useState<string>()
   // const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
 
+  const referralContract = useReferralContract()
+
+  const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<string>()
+
+  useEffect(() => {
+    const call = async () => {
+      try {
+        if (!account || !referralContract || !BRP) return
+        const referees = await referralContract?.getReferees(account)
+        console.log("REFEREES,", referees)
+        // setReferees(referees)
+
+        const refereesPoints = await Promise.all(referees.map(async (referee) => {
+          const [tradePoints, lpPoints, points] = await Promise.all([
+            BRP.lastRecordedTradePoints(referee),
+            BRP.lastRecordedLpPoints(referee),
+            BRP.lastRecordedPoints(referee)
+          ])
+          const totalPoints = tradePoints.toNumber() + lpPoints.toNumber() + points.toNumber()
+          return {
+            totalPoints
+          }
+        }))
+
+        const limwethDeposits = refereesPoints.reduce((acc, curr) => acc + curr.totalPoints, 0)
+        setRefereesLimwethDeposit(limwethDeposits.toString())
+      } catch (err) {
+        console.error("referralContract.getReferees ERROR", err)
+      }
+      
+    }
+    call()
+  }, [account, referralContract])
 
   useEffect(() => {
     if (!account || !BRP) return
@@ -327,23 +351,21 @@ const Referrals = () => {
     const call = async () => {
       try {
         const lastClaimedPoints = await BRP.lastClaimedPoints(account)
-        // console.log("LAST CLAIMED POINTS", lastClaimedPoints)
-        // const lastRecordedPoints = await BRP.lastRecordedPoints(account)
-        // console.log("CALLING CLAIMREWARDS")
-        // const result = await BRP.callStatic.claimRewards()
-        // setSimulatedRewards(result.toString())
         setLastClaimedPoints(lastClaimedPoints.toString())
-        // setLastRecordedPoints(lastRecordedPoints.toString())
+        
       } catch (error) {
         console.log('claimsimerr', error)
       }
     }
     call()
-  })
+  }, [account, BRP])
+
+
+
 
   // console.log('simulatedRewards', BRP, simulatedRewards)
 
-  const referralContract = useReferralContract()
+
   const [activeCodes, setActiveCodes] = useState<string>()
 
   useEffect(() => {
@@ -790,11 +812,15 @@ const Referrals = () => {
               </StyledCard>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>limToken Deposits From Referees</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>LimWeth Deposits From Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account ?
-                    '$' + refereeActivity[account]?.vaultDeposits || 0 : 
-                    '-'}
+                  {refereesLimwethDeposit 
+                    ? parseFloat(refereesLimwethDeposit) === 0 
+                      ? '0' 
+                      : parseFloat(refereesLimwethDeposit) < 0.000001 
+                        ? '< 0.000001' 
+                        : parseFloat(refereesLimwethDeposit).toFixed(6) 
+                    : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
