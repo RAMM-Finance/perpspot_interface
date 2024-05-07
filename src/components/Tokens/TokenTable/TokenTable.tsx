@@ -475,6 +475,11 @@ export default function TokenTable() {
                   delta={poolOHLCs[id]?.delta24h}
                   apr={aprList[id]?.apr || 0}
                   dailyLMT={aprList[id]?.utilTotal}
+                  poolKey={{
+                    token0: pool.token0,
+                    token1: pool.token1,
+                    fee: pool.fee,
+                  }}
                 />
               )
             })

@@ -9,10 +9,11 @@ import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { AlertTriangle } from 'react-feather'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import styled from 'styled-components/macro'
+import styled, { useTheme } from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 import ItemImg from '../../assets/images/newItem7.webp'
 import ItemImg2 from '../../assets/images/newItem8.webp'
@@ -28,11 +29,10 @@ const CollectionContainer = styled(Column)`
   will-change: width;
 `
 
-const CollectionDisplaySection = styled(Row)`
+const CollectionDisplaySection = styled(Column)`
   width: 100%;
   padding: 1rem;
   align-items: flex-start;
-  position: relative;
 `
 
 const BannerWrapper = styled.div`
@@ -89,7 +89,7 @@ export type TBoxData = {
   img: string
   info: string
   isLocked: boolean
-  isInsufficient: boolean
+  // isInsufficient: boolean
   index: number
 }
 
@@ -100,6 +100,7 @@ export type TBRPData = {
   totalLMT: string
   NZTRageRow: number
   NZTRageHigh: number
+  pointPerAdd: number
 }
 
 const NewItemsListPage = () => {
@@ -110,6 +111,8 @@ const NewItemsListPage = () => {
   // const { search, pathname} = useLocation()
   const brp = useBRP()
 
+  const theme = useTheme()
+
   const [brpData, setBRPData] = useState<TBRPData>({
     totalBoxes: 0,
     totalUnlockableBoxes: 0,
@@ -117,18 +120,20 @@ const NewItemsListPage = () => {
     totalLMT: '0',
     NZTRageRow: 0,
     NZTRageHigh: 0,
+    pointPerAdd: 0,
   })
 
   const [itemDatas, setItemDatas] = useState<TBoxData[]>([])
 
   const [showModal, setShowModal] = useState(false)
+  const [isInsufficient, setIsInsufficient] = useState(false)
 
   const [curModalData, setCurModalData] = useState<TBoxData>({
     id: '',
     img: '',
     info: '',
     isLocked: false,
-    isInsufficient: false,
+    // isInsufficient: false,
     index: 0,
   })
 
@@ -232,7 +237,8 @@ const NewItemsListPage = () => {
         const totalLMTString = totalLMTPoint?.toString()
 
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
-        const isInsufficient = pointPerAdd?.toNumber() > totalLMTPoint.toNumber()
+        const numPointPerAdd = pointPerAdd?.toNumber()
+        const isInsufficient = numPointPerAdd < totalLMTPoint.toNumber()
         const lockedBoxes = Array(numTotalBoxes)
           .fill(true)
           .map((_, index) => index + 1 > numtotalUnlockableBoxes)
@@ -243,11 +249,10 @@ const NewItemsListPage = () => {
             img: itemImages[imgNumber],
             info: `Limitless test ${index + 1}`,
             isLocked: lockedBoxes[index],
-            isInsufficient,
             index,
           }
         })
-        // console.log('itemDatas', pointPerAdd.toNumber(), numtotalUnlockableBoxes, lockedBoxes)
+        // console.log(' ', pointPerAdd.toNumber(), totalLMTPoint.toNumber(), isInsufficient)
         setBRPData({
           totalBoxes: numTotalBoxes,
           totalUnlockableBoxes: numtotalUnlockableBoxes,
@@ -255,7 +260,9 @@ const NewItemsListPage = () => {
           totalLMT: totalLMTString,
           NZTRageHigh: NZTRageHigh?.toNumber(),
           NZTRageRow: NZTRageRow?.toNumber(),
+          pointPerAdd: numPointPerAdd,
         })
+        setIsInsufficient(isInsufficient)
         setItemDatas(newData)
         setHiddenCards([])
         setLoading(false)
@@ -266,7 +273,7 @@ const NewItemsListPage = () => {
         console.log(error, 'get brp data error')
       }
     }
-      call()
+    call()
   }, [brp, account, blockNumber])
 
   const handleShowModal = useCallback((modalData: TBoxData) => {
@@ -281,7 +288,7 @@ const NewItemsListPage = () => {
       img: '',
       info: '',
       isLocked: false,
-      isInsufficient: false,
+      // isInsufficient: false,
       index: 0,
     })
   }, [])
@@ -293,6 +300,7 @@ const NewItemsListPage = () => {
         isOpen={showModal}
         handleCloseModal={handleCloseModal}
         handleUnlockBox={handleUnlockBox}
+        isInsufficient={isInsufficient}
         // handleAddBox={handleAddBox}
         modalData={curModalData}
         brpData={brpData}
@@ -312,6 +320,14 @@ const NewItemsListPage = () => {
           </Row>
         </CollectionDescriptionSection>
         <CollectionDisplaySection>
+          {isInsufficient && (
+            <Row marginLeft="48" gap="8">
+              <AlertTriangle size={18} color={theme.accentWarning} />
+              <ThemedText.BodyPrimary color="accentWarning"> 
+                Need &apos;{brpData?.pointPerAdd}&apos; LMT to unlock this box
+              </ThemedText.BodyPrimary>
+            </Row>
+          )}
           <BoxesContainer
             itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}
@@ -320,6 +336,7 @@ const NewItemsListPage = () => {
             hiddenCards={hiddenCards}
             handleShowModal={handleShowModal}
             account={account}
+            isInsufficient={isInsufficient}
           />
         </CollectionDisplaySection>
         <FaqWrapper>

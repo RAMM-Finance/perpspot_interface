@@ -134,6 +134,7 @@ export default function SwapTabHeader({
       isSwap,
     ]
   )
+
   return (
     <div
       style={{

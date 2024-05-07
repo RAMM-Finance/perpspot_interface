@@ -46,6 +46,7 @@ import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
+import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
 import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from '../ConfirmModalHeaders'
 import { BaseFooter } from '../DepositPremiumContent'
@@ -56,7 +57,6 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
-import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
 export interface DerivedReducePositionInfo {
   /** if marginInPosToken then PnL in output token, otherwise in input token */
@@ -180,13 +180,6 @@ const BelowRangeLimitReduceNote = () => {
   )
 }
 
-const PriceSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-`
-
 export default function DecreasePositionContent({
   positionKey,
   onPositionChange,
@@ -246,7 +239,7 @@ export default function DecreasePositionContent({
   }, [positionKey])
 
   const { position: orderPosition, syncing: orderSyncing } = useMarginOrderPositionFromPositionId(orderKey)
-  
+
   const existingOrderBool = useMemo(() => {
     if (!orderPosition || !existingPosition) return undefined
     if (orderPosition.auctionStartTime > 0) {
@@ -308,7 +301,7 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
-  
+
   const {
     inputError: lmtInputError,
     txnInfo: lmtTxnInfo,
@@ -332,9 +325,9 @@ export default function DecreasePositionContent({
   useEffect(() => {
     if (!currentState.isLimit && txnInfo && currentState.originalTrade) {
       setShowAcceptChanges(false)
-      const tradeMeaningfullyDiffers = reduceTradeMeaningfullyDiffers(txnInfo, currentState.originalTrade);
+      const tradeMeaningfullyDiffers = reduceTradeMeaningfullyDiffers(txnInfo, currentState.originalTrade)
       // console.log('showAcceptChanges', tradeMeaningfullyDiffers);
-      setShowAcceptChanges(tradeMeaningfullyDiffers);
+      setShowAcceptChanges(tradeMeaningfullyDiffers)
     } else if (currentState.isLimit && lmtTxnInfo && currentState.originalLimitTrade) {
       setShowAcceptChanges(false)
       // console.log('showAcceptChanges', lmtTxnInfo, currentState.originalLimitTrade )
@@ -600,7 +593,7 @@ export default function DecreasePositionContent({
               errorMessage={currentState.errorMessage ? <Trans>{currentState.errorMessage}</Trans> : undefined}
               onConfirm={handleReducePosition}
               confirmText="Confirm Reduce Position"
-              disabledConfirm={!!inputError || !txnInfo || showAcceptChanges }
+              disabledConfirm={!!inputError || !txnInfo || showAcceptChanges}
             />
           }
           title="Confirm Reduce Position"
@@ -911,9 +904,6 @@ export default function DecreasePositionContent({
   )
 }
 
-const Underlined = styled.div`
-  text-decoration: ${({ theme }) => `underline dashed ${theme.textTertiary}`};
-`
 export function getSlippedTicks(
   pool: Pool,
   slippedTickTolerance: Percent

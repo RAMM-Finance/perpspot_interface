@@ -1098,7 +1098,7 @@ export default function SimplePool() {
                     }
                   : { data: inputValue && (inputValue / 1e18) * llpPrice, isLoading: false }
               }
-              onCurrencySelect={buy ? handleCurrencySelect : undefined}
+              onCurrencySelect={buy && chainId !== 8453 ? handleCurrencySelect : undefined}
               llpBalance={!buy && chainId == 8453 ? limWETHBalance : !buy && chainId !== 8452 ? llpBalance : 0}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Sell</ThemedText.BodyPrimary>
@@ -1158,7 +1158,7 @@ export default function SimplePool() {
               }
               currency={currencies[Field.CURRENCY_B] ?? null}
               id="add-liquidity-input-tokenb"
-              onCurrencySelect={!buy ? handleCurrencySelect : undefined}
+              onCurrencySelect={!buy && chainId !== 8453 ? handleCurrencySelect : undefined}
               llpBalance={buy && chainId == 8453 ? limWETHBalance : buy && chainId !== 8453 ? llpBalance : 0}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Buy</ThemedText.BodyPrimary>

@@ -222,7 +222,7 @@ export const CardContainer = ({
           img,
           info,
           isLocked,
-          isInsufficient,
+          // isInsufficient,
           index,
         })
       }
@@ -249,7 +249,7 @@ export const CardContainer = ({
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
       <StyledActionButton
-        isDisabled={isLocked}
+        isDisabled={isLocked || isInsufficient}
         onClick={(e) => {
           e.stopPropagation()
           isLocked || isInsufficient ? undefined : handleUnlockBox(index)

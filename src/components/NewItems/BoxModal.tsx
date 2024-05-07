@@ -8,6 +8,7 @@ import { ThemedText } from 'theme'
 
 import { InfoDescription } from './InfoDescription'
 import { ModalItemStats } from './InfoItemStats'
+import ModalHowto from './ModalHowto'
 
 const ModalInfoWrapper = styled(LightCard)`
   position: relative;
@@ -16,11 +17,12 @@ const ModalInfoWrapper = styled(LightCard)`
   border: none;
   border-radius: 0px;
   width: 100%;
-  /* border-bottom: 3px solid ${({ theme }) => theme.searchOutline}; */
+  border-bottom: 3px solid ${({ theme }) => theme.searchOutline};
   justify-content: flex-start;
   background: ${({ theme }) => theme.backgroundSurface};
   padding: 0.75rem;
 `
+
 
 const ModalActionButton = styled(ThemedText.BodySecondary)<{
   isDisabled: boolean
@@ -37,6 +39,7 @@ const ModalActionButton = styled(ThemedText.BodySecondary)<{
   will-change: transform;
   border-radius: 8px;
   justify-content: center;
+  white-space: nowrap;
   font-weight: 600 !important;
   font-size: 18px !important;
   line-height: 16px;
@@ -112,11 +115,13 @@ interface IBoxModalProps {
   isOpen: boolean
   handleCloseModal: () => void
   handleUnlockBox: (index: number) => void
+  isInsufficient: boolean,
+
   // handleAddBox: () => void
 }
 
-const BoxModal = ({ isOpen, handleCloseModal, modalData, handleUnlockBox, brpData }: IBoxModalProps) => {
-  const { info, img, isLocked, isInsufficient, index } = modalData
+const BoxModal = ({ isOpen, handleCloseModal, modalData, handleUnlockBox, brpData, isInsufficient }: IBoxModalProps) => {
+  const { info, img, isLocked, index } = modalData
 
   return (
     <Modal
@@ -143,13 +148,23 @@ const BoxModal = ({ isOpen, handleCloseModal, modalData, handleUnlockBox, brpDat
             </Row>
             <ModalDescriptWrapper gap="md" marginTop={10}>
               <InfoDescription description="How to get this Box" spacing={-0.8} />
-              <InfoDescription description="Description Section will be updated" fontSize={14} color="textPrimary" />
+              <InfoDescription
+                description={`LMT needed for unlock ${brpData?.lmtRequiredPerUnlock} loot this box`}
+                fontSize={14}
+                color="textPrimary"
+              />
+              {/* <InfoDescription
+                description={`Need '${brpData?.pointPerAdd}' LMT to unlock this box`}
+                fontSize={14}
+                color="accentWarning"
+              /> */}
             </ModalDescriptWrapper>
           </ModalDescriptWrapper>
         </ModalTopWrapper>
         <ModalInfoWrapper>
           <ModalItemStats brpData={brpData} />
         </ModalInfoWrapper>
+        <ModalHowto />
       </ModalWrapper>
     </Modal>
   )
