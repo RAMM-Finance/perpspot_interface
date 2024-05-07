@@ -238,7 +238,7 @@ const NewItemsListPage = () => {
 
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
         const numPointPerAdd = pointPerAdd?.toNumber()
-        const isInsufficient = numPointPerAdd < totalLMTPoint.toNumber()
+        const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber()
         const lockedBoxes = Array(numTotalBoxes)
           .fill(true)
           .map((_, index) => index + 1 > numtotalUnlockableBoxes)
@@ -301,7 +301,6 @@ const NewItemsListPage = () => {
         handleCloseModal={handleCloseModal}
         handleUnlockBox={handleUnlockBox}
         isInsufficient={isInsufficient}
-        // handleAddBox={handleAddBox}
         modalData={curModalData}
         brpData={brpData}
       />
@@ -323,7 +322,7 @@ const NewItemsListPage = () => {
           {isInsufficient && (
             <Row marginLeft="48" gap="8">
               <AlertTriangle size={18} color={theme.accentWarning} />
-              <ThemedText.BodyPrimary color="accentWarning"> 
+              <ThemedText.BodyPrimary color="accentWarning">
                 Need &apos;{brpData?.pointPerAdd}&apos; LMT to unlock this box
               </ThemedText.BodyPrimary>
             </Row>
