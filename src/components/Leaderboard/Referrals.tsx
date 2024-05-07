@@ -227,9 +227,6 @@ const Referrals = () => {
       const balance = (await limweth.balanceOf(account)).toNumber()
       const decimals = await limweth.decimals()
       const limwethBal = balance / (10 ** decimals)
-      console.log("BALANCE", balance)
-      console.log("DECIMALS", decimals)
-      console.log("LIMWETH BAL", limwethBal)
       setLimwethBalance(limwethBal)
     }
 
@@ -320,8 +317,6 @@ const Referrals = () => {
       try {
         if (!account || !referralContract || !BRP) return
         const referees = await referralContract?.getReferees(account)
-        console.log("REFEREES,", referees)
-        // setReferees(referees)
 
         const refereesPoints = await Promise.all(referees.map(async (referee) => {
           const [tradePoints, lpPoints, points] = await Promise.all([
@@ -330,6 +325,7 @@ const Referrals = () => {
             BRP.lastRecordedPoints(referee)
           ])
           const totalPoints = tradePoints.toNumber() + lpPoints.toNumber() + points.toNumber()
+          console.log("TOTAL POINTS", totalPoints)
           return {
             totalPoints
           }
@@ -374,9 +370,7 @@ const Referrals = () => {
 
     const call = async () => {
       try {
-        // console.log("IN USEEFFECT ACCOUNT AND REFERRAL COTNRACT", account, referralContract)
         const result = await referralContract.codesByOwners(account, 0)
-        // console.log("RESULT OF CODES BY OWNERS", result)
         const decoded = decodeResult(result)
         setActiveCodes(decoded.toString())
         setCreateReferralCode(() => decoded.toString())
@@ -568,14 +562,12 @@ const Referrals = () => {
   }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
   const totalCollected = useMemo(() => {
-    // console.log("CHECK LP POSITIONS BY UNIQUE LPS", lpPositionsByUniqueLps)
     if (!account || !lpPositionsByUniqueLps) return 0
     let totalAmount = 0
     lpPositionsByUniqueLps?.[account]?.forEach((entry: any) => {
       totalAmount += entry.amount0Collected
       totalAmount += entry.amount1Collected
     })
-    // console.log("TOTAL COLLECTED", totalAmount)
     return totalAmount
   }, [lpPositionsByUniqueLps, account])
 
@@ -584,11 +576,9 @@ const Referrals = () => {
     if (!tradeProcessedByTrader[account]) return 0
     else {
       let totalAmount = 0
-      // console.log("TRADE PROCESSED BY TRADER [ACC]", tradeProcessedByTrader[account])
       tradeProcessedByTrader[account].forEach((entry: any) => {
         totalAmount += entry.amount
       })
-      // console.log("TOTAL AMOUNT", totalAmount)
       return totalAmount
     }
   }, [tradeProcessedByTrader, account])
@@ -601,8 +591,6 @@ const Referrals = () => {
   const accountCanRefer = useMemo(() => {
     return canRefer(account)
   }, [account])
-
-  // console.log("REFERAL AND ACCPETEED CREATE", referral, acceptedCreate)
 
   return (
     <Wrapper>
