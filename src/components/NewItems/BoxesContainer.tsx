@@ -5,13 +5,15 @@ import { ThemedText } from 'theme'
 
 import { CardContainer, LoadingCardContainer } from './CardContainer'
 
-const AddBoxActionButton = styled(ThemedText.BodySecondary)`
+const AddBoxActionButton = styled(ThemedText.BodySecondary)<{
+  isDisabled: boolean
+}>`
   display: flex;
   padding: 8px 0px;
   width: 40vh;
   height: 35px;
-  color: ${({ theme }) => theme.accentTextLightPrimary};
-  background: ${({ theme }) => theme.accentAction};
+  color: ${({ theme, isDisabled }) => (isDisabled ? theme.textPrimary : theme.accentTextLightPrimary)};
+  background: ${({ theme, isDisabled }) => (isDisabled ? theme.backgroundInteractive : theme.accentAction)};
   transition: ${({ theme }) =>
     `${theme.transition.duration.medium} ${theme.transition.timing.ease} bottom, ${theme.transition.duration.medium} ${theme.transition.timing.ease} visibility`};
   will-change: transform;
@@ -20,7 +22,7 @@ const AddBoxActionButton = styled(ThemedText.BodySecondary)`
   justify-content: center;
   font-weight: 600 !important;
   line-height: 16px;
-  cursor: 'pointer';
+  cursor: ${({ isDisabled }) => (isDisabled ? 'default' : 'pointer')};
 
   &:before {
     background-size: 100%;
@@ -36,11 +38,11 @@ const AddBoxActionButton = styled(ThemedText.BodySecondary)`
   }
 
   &:hover:before {
-    background-color: ${({ theme }) => theme.stateOverlayHover};
+    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayHover};
   }
 
   &:active:before {
-    background-color: ${({ theme }) => theme.stateOverlayPressed};
+    background-color: ${({ theme, isDisabled }) => !isDisabled && theme.stateOverlayPressed};
   }
 `
 
@@ -98,6 +100,7 @@ interface IBoxesContainerProps {
   hiddenCards: number[]
   handleShowModal: (modalData: TBoxData) => void
   account?: string
+  isInsufficient: boolean
 }
 
 const BoxesContainer = ({
@@ -108,6 +111,7 @@ const BoxesContainer = ({
   hiddenCards,
   handleShowModal,
   account,
+  isInsufficient
 }: IBoxesContainerProps) => {
   if (loading) {
     return (
@@ -127,7 +131,7 @@ const BoxesContainer = ({
   return (
     <BoxesDisplaySection>
       <InfiniteScrollWrapper>
-        {itemDatas.map(({ id, img, info, isLocked, index, isInsufficient }) => (
+        {itemDatas.map(({ id, img, info, isLocked, index }) => (
           <CardContainer
             id={id}
             key={id}
@@ -150,8 +154,8 @@ const BoxesContainer = ({
               <ThemedText.BodySecondary fontSize="18px" width="100%">
                 No Treasure Boxes
               </ThemedText.BodySecondary>
-              <AddBoxActionButton fontSize="18px" onClick={() => handleAddBox()}>
-                Add Box
+              <AddBoxActionButton isDisabled={isInsufficient} fontSize="18px" onClick={() => handleAddBox()}>
+                {isInsufficient ? 'Insufficient LMT' : 'Add Box'}
               </AddBoxActionButton>
             </Column>
           )}
