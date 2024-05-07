@@ -71,7 +71,7 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
   const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
   const poolList = useMemo(() => {
     if (result) {
-      return result[0].map((pool: any) => {
+      result[0].map((pool: any) => {
         return {
           token0: pool.token0,
           token1: pool.token1,
@@ -85,6 +85,13 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
           decimals1: pool.decimals1,
         }
       })
+      
+      const symbolsToRemove = ['INT'] // remove pools with these symbols
+      
+      const filteredResult = result[0].filter((pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1))  
+      
+      return filteredResult
+    
     } else {
       return undefined
     }
