@@ -7,7 +7,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { SelectPool } from 'components/swap/PoolSelect'
+import SelectPool from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import TradeNavigation from 'components/swap/TradeNavigation'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
@@ -18,7 +18,7 @@ import { useCurrency } from 'hooks/Tokens'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
@@ -257,7 +257,7 @@ const PinWrapper = styled.div`
 `
 
 export default function Trade({ className }: { className?: string }) {
-  const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
+  // const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
   const { account, chainId } = useWeb3React()
   const { isSwap } = useMarginTradingState()

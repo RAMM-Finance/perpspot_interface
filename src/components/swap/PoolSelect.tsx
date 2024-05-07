@@ -20,7 +20,6 @@ import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
-import { useNavigate } from 'react-router-dom'
 import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC, usePoolsAprUtilList } from 'state/application/hooks'
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
@@ -483,14 +482,14 @@ function useFilteredKeys() {
   }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
 }
 
-const ReverseIconContainer = styled.div`
-  display: flex;
-  margin-right: 5px;
-`
+// const ReverseIconContainer = styled.div`
+//   display: flex;
+//   margin-right: 5px;
+// `
 
-export function SelectPool() {
+function SelectPool() {
   const { chainId } = useWeb3React()
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   const currentPool = useCurrentPool()
 
@@ -590,7 +589,7 @@ export function SelectPool() {
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
-
+  // console.log('poolselect', poolData, currentPool, aprPoolList, estimatedAPR, filteredKeys, poolOHLC )
   if (!chainId || unsupportedChain(chainId)) {
     return (
       <MainWrapper>
@@ -702,6 +701,8 @@ export function SelectPool() {
     </MainWrapper>
   )
 }
+
+export default React.memo(SelectPool)
 
 const formatBN = (n: BN) => {
   if (n.lt(0.0001)) {

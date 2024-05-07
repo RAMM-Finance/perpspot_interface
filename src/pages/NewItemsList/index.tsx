@@ -89,7 +89,6 @@ export type TBoxData = {
   img: string
   info: string
   isLocked: boolean
-  // isInsufficient: boolean
   index: number
 }
 
@@ -108,7 +107,6 @@ const NewItemsListPage = () => {
   const blockNumber = useBlockNumber()
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
 
-  // const { search, pathname} = useLocation()
   const brp = useBRP()
 
   const theme = useTheme()
@@ -133,7 +131,6 @@ const NewItemsListPage = () => {
     img: '',
     info: '',
     isLocked: false,
-    // isInsufficient: false,
     index: 0,
   })
 
