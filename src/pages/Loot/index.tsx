@@ -3,25 +3,24 @@ import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
-import BoxModal from 'components/NewItems/BoxModal'
+import BoxModal from 'components/Loot/BoxModal'
+import PointWarning from 'components/Loot/PointWarning'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { Row } from 'nft/components/Flex'
 import { useCallback, useEffect, useState } from 'react'
-import { AlertTriangle } from 'react-feather'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
-import styled, { useTheme } from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import styled from 'styled-components/macro'
 
 import ItemImg from '../../assets/images/newItem7.webp'
 import ItemImg2 from '../../assets/images/newItem8.webp'
 import ItemImg3 from '../../assets/images/newItem9.webp'
 import ItemImg4 from '../../assets/images/newItem10.webp'
 import banner from '../../components/Leaderboard/banner.png'
-import BoxesContainer from '../../components/NewItems/BoxesContainer'
-import InfoDescriptionSection from '../../components/NewItems/InfoDescription'
+import BoxesContainer from '../../components/Loot/BoxesContainer'
+import InfoDescriptionSection from '../../components/Loot/InfoDescription'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -100,16 +99,15 @@ export type TBRPData = {
   NZTRageRow: number
   NZTRageHigh: number
   pointPerAdd: number
+  pointForNewBoxes: number
 }
 
-const NewItemsListPage = () => {
+const LootPage = () => {
   const { account } = useWeb3React()
   const blockNumber = useBlockNumber()
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
 
   const brp = useBRP()
-
-  const theme = useTheme()
 
   const [brpData, setBRPData] = useState<TBRPData>({
     totalBoxes: 0,
@@ -119,6 +117,7 @@ const NewItemsListPage = () => {
     NZTRageRow: 0,
     NZTRageHigh: 0,
     pointPerAdd: 0,
+    pointForNewBoxes: 0,
   })
 
   const [itemDatas, setItemDatas] = useState<TBoxData[]>([])
@@ -236,10 +235,10 @@ const NewItemsListPage = () => {
 
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
         const numPointPerAdd = pointPerAdd?.toNumber()
-        const isInsufficient =
-          numPointPerAdd > totalLMTPoint.toNumber() || poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
+        const numPoinstUsedForNewBoxes = poinstUsedForNewBoxes?.toNumber()
+        const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber() || numPoinstUsedForNewBoxes <= numPointPerAdd
         // const isPoinstUsedForNewBoxes= poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
-        // console.log('pointUsedForNewBoxes', poinstUsedForNewBoxes?.toNumber(), numPointPerAdd, isInsufficient)
+        console.log('pointUsedForNewBoxes', numPoinstUsedForNewBoxes, numPointPerAdd, isInsufficient)
         const lockedBoxes = Array(numTotalBoxes)
           .fill(true)
           .map((_, index) => index + 1 > numtotalUnlockableBoxes)
@@ -261,6 +260,7 @@ const NewItemsListPage = () => {
           NZTRageHigh: NZTRageHigh?.toNumber(),
           NZTRageRow: NZTRageRow?.toNumber(),
           pointPerAdd: numPointPerAdd,
+          pointForNewBoxes: numPoinstUsedForNewBoxes,
         })
         setIsInsufficient(isInsufficient)
         setItemDatas(newData)
@@ -319,14 +319,7 @@ const NewItemsListPage = () => {
           </Row>
         </CollectionDescriptionSection>
         <CollectionDisplaySection>
-          {isInsufficient && (
-            <Row marginLeft="48" gap="8">
-              <AlertTriangle size={18} color={theme.accentWarning} />
-              <ThemedText.BodyPrimary color="accentWarning">
-                Need &apos;{brpData?.pointPerAdd}&apos; LMT to unlock this box
-              </ThemedText.BodyPrimary>
-            </Row>
-          )}
+          {isInsufficient && <PointWarning point={brpData?.pointPerAdd} />}
           <BoxesContainer
             itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}
@@ -346,4 +339,4 @@ const NewItemsListPage = () => {
   )
 }
 
-export default NewItemsListPage
+export default LootPage

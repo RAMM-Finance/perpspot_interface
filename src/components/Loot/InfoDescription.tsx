@@ -1,6 +1,6 @@
 import { Box } from 'nft/components/Box'
 import { Column, Row } from 'nft/components/Flex'
-import { TBRPData } from 'pages/NewItemsList'
+import { TBRPData } from 'pages/Loot'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 

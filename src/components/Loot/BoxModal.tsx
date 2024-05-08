@@ -2,7 +2,7 @@ import { LightCard } from 'components/Card'
 import Column from 'components/Column'
 import Modal from 'components/Modal'
 import { Row } from 'nft/components/Flex'
-import { TBoxData, TBRPData } from 'pages/NewItemsList'
+import { TBoxData, TBRPData } from 'pages/Loot'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 

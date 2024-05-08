@@ -1,7 +1,7 @@
 import Column from 'components/Column'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { Row } from 'nft/components/Flex'
-import { TBoxData } from 'pages/NewItemsList'
+import { TBoxData } from 'pages/Loot'
 import styled, { keyframes } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 

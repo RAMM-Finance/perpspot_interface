@@ -1,5 +1,5 @@
 import { Column, Row } from 'nft/components/Flex'
-import { TBoxData } from 'pages/NewItemsList'
+import { TBoxData } from 'pages/Loot'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
