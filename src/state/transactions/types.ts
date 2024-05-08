@@ -60,6 +60,7 @@ export enum TransactionType {
   REDEEM_limWETH,
   UNLOCK_Box,
   ADD_Box,
+  CLAIM_BOXES,
   ZAP_AND_MINT,
 }
 
@@ -309,6 +310,12 @@ export interface AddBoxInfo {
   outputCurrencyId: string
 }
 
+export interface ClaimBoxesInfo {
+  type: TransactionType.CLAIM_BOXES,
+  inputCurrencyId: string
+  outputCurrencyId: string
+}
+
 export interface ZapAndMintInfo {
   type: TransactionType.ZAP_AND_MINT
   inputCurrencyId: string
@@ -350,6 +357,7 @@ export type TransactionInfo =
   | RedeemlimWETHInfo
   | UnlockBoxInfo
   | AddBoxInfo
+  | ClaimBoxesInfo
   | ZapAndMintInfo
 
 export interface TransactionDetails {

@@ -227,6 +227,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Successfully added box`,
     [TransactionStatus.Failed]: t`Failed to add box`,
   },
+  [TransactionType.CLAIM_BOXES]: {
+    [TransactionStatus.Pending]: t`Claiming Boxes`,
+    [TransactionStatus.Confirmed]: t`Successfuly claimed boxes`,
+    [TransactionStatus.Failed]: t`Failed to claim boxes`,
+  },
   [TransactionType.ZAP_AND_MINT]: {
     [TransactionStatus.Pending]: t`Zapping`,
     [TransactionStatus.Confirmed]: t`Successfully zapped`,

@@ -22,6 +22,9 @@ import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainer from '../../components/Loot/BoxesContainer'
 import InfoDescriptionSection from '../../components/Loot/InfoDescription'
 
+import { firestore } from '../../firebaseConfig'
+import { doc, getDoc } from 'firebase/firestore'
+
 const CollectionContainer = styled(Column)`
   width: 100%;
   align-self: start;
@@ -176,6 +179,24 @@ const LootPage = () => {
     }
   }, [brp, account])
 
+  const claimBoxesCallback = useCallback(async (passcode: number): Promise<TransactionResponse> => {
+    if (!brp || !account) {
+      throw new Error('BRP or account not available')
+    }
+
+    try {
+      const gasLimit = 1000000
+      const tx = await brp.claimBoxes(passcode, {
+        from: account,
+      });
+
+      return tx as TransactionResponse
+    } catch (error) {
+      console.error(error, 'BRP instance is not available')
+      throw error
+    }
+  }, [brp, account])
+
   const handleUnlockBox = useCallback(
     async (index?: number) => {
       try {
@@ -205,6 +226,41 @@ const LootPage = () => {
       console.error(error, 'BRP instance is not available')
     }
   }, [addBoxCallback, addTransaction])
+
+  const handleClaimBoxes = useCallback(async (passcode: number | null) => {
+    if (passcode === null) return
+    try {
+      const res = await claimBoxesCallback(passcode)
+      addTransaction(res, {
+        type: TransactionType.CLAIM_BOXES,
+        inputCurrencyId: '',
+        outputCurrencyId: '',
+      })
+    } catch (error) {
+      console.error('BRP.claimBoxes failed', error)
+    }
+  }, [claimBoxesCallback, addTransaction])
+
+  const [isInConcatenatedAddresses, setIsInConcatenatedAddresses] = useState<boolean>(false)
+  const [passcode, setPasscode] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!account) return
+    const call = async () => {
+      const docRef = doc(firestore, 'concatenated_addresses', account)
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        setIsInConcatenatedAddresses(true)
+        const code = docSnap.data().Passcode
+        setPasscode(code)
+      } else {
+        setIsInConcatenatedAddresses(false)
+      }
+    }
+    call()
+  }, [account])
+
+  const [isClaimed, setIsClaimed] = useState<boolean>(false)
 
   useEffect(() => {
     if (!brp || !account || !blockNumber) return setLoading(false)
@@ -236,6 +292,15 @@ const LootPage = () => {
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
         const numPointPerAdd = pointPerAdd?.toNumber()
         const numPoinstUsedForNewBoxes = poinstUsedForNewBoxes?.toNumber()
+
+        const isClaimed: boolean = await brp.claimed(account)
+        
+
+        // if (docSnap.exists())
+
+
+        // const isInConcatenatedAddresses: boolean = await 
+
         const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber() || numPoinstUsedForNewBoxes <= numPointPerAdd
         // const isPoinstUsedForNewBoxes= poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
         console.log('pointUsedForNewBoxes', numPoinstUsedForNewBoxes, numPointPerAdd, isInsufficient)
@@ -252,6 +317,7 @@ const LootPage = () => {
             index,
           }
         })
+        setIsClaimed(isClaimed)
         setBRPData({
           totalBoxes: numTotalBoxes,
           totalUnlockableBoxes: numtotalUnlockableBoxes,
@@ -324,11 +390,15 @@ const LootPage = () => {
             itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}
             handleAddBox={handleAddBox}
+            handleClaimBoxes={handleClaimBoxes}
+            passcode={passcode}
             loading={loading}
             hiddenCards={hiddenCards}
             handleShowModal={handleShowModal}
             account={account}
             isInsufficient={isInsufficient}
+            isInConcatenatedAddresses={isInConcatenatedAddresses}
+            isClaimed={isClaimed}
           />
         </CollectionDisplaySection>
         <FaqWrapper>

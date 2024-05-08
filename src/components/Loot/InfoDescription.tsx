@@ -6,6 +6,8 @@ import { ThemedText } from 'theme'
 
 import bluePill from '../../assets/images/bluePill.jpg'
 import InfoItemStats from './InfoItemStats'
+import { ButtonPrimary } from 'components/Button'
+import { Trans } from '@lingui/macro'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -88,6 +90,14 @@ const InfoDescriptionSection = ({
       </Row>
       <InfoDescription description={description} fontSize={18} />
       <InfoItemStats brpData={brpData} loading={loading} />
+      <ButtonPrimary
+        style={{ padding: '8px 8px', borderRadius: '10px', width: '120px' }}
+        onClick={() => {}}
+      >
+        <Trans>
+          <ThemedText.BodyPrimary fontWeight={800}>Claim boxes</ThemedText.BodyPrimary>{' '}
+        </Trans>
+      </ButtonPrimary>
     </Column>
   )
 }

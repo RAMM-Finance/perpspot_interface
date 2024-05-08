@@ -96,22 +96,30 @@ interface IBoxesContainerProps {
   itemDatas: TBoxData[]
   handleUnlockBox: (index: number) => void
   handleAddBox: () => void
+  handleClaimBoxes: (passcode: number| null) => void
+  passcode: number | null
   loading: boolean
   hiddenCards: number[]
   handleShowModal: (modalData: TBoxData) => void
   account?: string
   isInsufficient: boolean
+  isInConcatenatedAddresses: boolean
+  isClaimed: boolean
 }
 
 const BoxesContainer = ({
   itemDatas,
   handleUnlockBox,
   handleAddBox,
+  handleClaimBoxes,
+  passcode,
   loading,
   hiddenCards,
   handleShowModal,
   account,
   isInsufficient,
+  isInConcatenatedAddresses,
+  isClaimed
 }: IBoxesContainerProps) => {
   if (loading) {
     return (
@@ -157,9 +165,21 @@ const BoxesContainer = ({
               <AddBoxActionButton
                 isDisabled={isInsufficient}
                 fontSize="18px"
-                onClick={() => (isInsufficient ? undefined : handleAddBox())}
+                onClick={() => {
+                  // if (isInsuff) return
+                  if (isInsufficient) return
+                  if (isInConcatenatedAddresses && !isClaimed) {
+                    handleClaimBoxes(passcode)
+                  } else {
+                    handleAddBox()
+                  }
+                }}
               >
-                {isInsufficient ? 'Insufficient LMT' : 'Add Box'}
+                {isInsufficient
+                ? 'Insufficient LMT'
+                : isInConcatenatedAddresses && !isClaimed
+                ? 'Claim Boxes'
+                : 'Add Box'}
               </AddBoxActionButton>
             </Column>
           )}

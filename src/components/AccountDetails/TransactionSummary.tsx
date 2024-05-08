@@ -435,6 +435,8 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
       return <Trans>Unlock Treasure Box</Trans>
     case TransactionType.ADD_Box:
       return <Trans>Added Treasure Box</Trans>
+    case TransactionType.CLAIM_BOXES:
+      return <Trans>Claimed Treasure Boxes</Trans>
     case TransactionType.ZAP_AND_MINT:
       return <Trans>Zap and Mint</Trans>
   }
