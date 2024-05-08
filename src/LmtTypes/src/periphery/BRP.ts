@@ -35,6 +35,7 @@ export interface BRPInterface extends utils.Interface {
     "claimBoxes(uint256)": FunctionFragment;
     "claimRewards()": FunctionFragment;
     "claimableBoxes(address)": FunctionFragment;
+    "claimed(address)": FunctionFragment;
     "freeBoxUsed(address)": FunctionFragment;
     "getBlock()": FunctionFragment;
     "getData(address[])": FunctionFragment;
@@ -82,6 +83,7 @@ export interface BRPInterface extends utils.Interface {
       | "claimBoxes"
       | "claimRewards"
       | "claimableBoxes"
+      | "claimed"
       | "freeBoxUsed"
       | "getBlock"
       | "getData"
@@ -150,6 +152,10 @@ export interface BRPInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "claimableBoxes",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimed",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -311,6 +317,7 @@ export interface BRPInterface extends utils.Interface {
     functionFragment: "claimableBoxes",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "claimed", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "freeBoxUsed",
     data: BytesLike
@@ -550,6 +557,11 @@ export interface BRP extends BaseContract {
       }
     >;
 
+    claimed(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     freeBoxUsed(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -760,6 +772,11 @@ export interface BRP extends BaseContract {
     }
   >;
 
+  claimed(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   freeBoxUsed(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -965,6 +982,11 @@ export interface BRP extends BaseContract {
         totalPoints: BigNumber;
       }
     >;
+
+    claimed(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     freeBoxUsed(
       arg0: PromiseOrValue<string>,
@@ -1207,6 +1229,11 @@ export interface BRP extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    claimed(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     freeBoxUsed(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1410,6 +1437,11 @@ export interface BRP extends BaseContract {
 
     claimableBoxes(
       who: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    claimed(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
