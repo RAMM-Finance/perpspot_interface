@@ -36,7 +36,7 @@ import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
 import LeaderboardPage from './Leaderboard'
 import MigrateV2 from './MigrateV2'
-import NewItemsListPage from './NewItemsList'
+import LootPage from './Loot'
 import NotFound from './NotFound'
 import Pool from './Pool'
 import { PositionPage } from './Pool/PositionPage'
@@ -246,8 +246,8 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
-                  <Route path="loot" element={<NewItemsListPage />} />
-                  <Route path="loot/?/activity" element={<NewItemsListPage />} />
+                  <Route path="loot" element={<LootPage />} />
+                  <Route path="loot/?/activity" element={<LootPage />} />
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
                   {/* <Route path="pool/v2" element={<PoolV2 />} /> */}

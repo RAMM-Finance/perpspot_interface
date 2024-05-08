@@ -1,7 +1,7 @@
 import { LoadingBubble } from 'components/Tokens/loading'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
-import { TBRPData } from 'pages/NewItemsList'
+import { TBRPData } from 'pages/Loot'
 import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -11,7 +11,6 @@ const ModalStatsBox = styled(Box)<{ isModal?: boolean }>`
   border-radius: 20px;
   height: 100%;
   padding: 1rem;
-  /* min-height: 100px; */
 `
 
 const StateLabelText = styled(ThemedText.CellName)`
@@ -19,6 +18,10 @@ const StateLabelText = styled(ThemedText.CellName)`
   word-spacing: -1.3px;
   white-space: nowrap;
 `;
+
+const ModalStateText = styled(ThemedText.MediumHeader)`
+  white-space: nowrap;
+`
 
 export const StatsItem = ({
   children,
@@ -54,9 +57,9 @@ const ModalStatsItem = ({
 }) => {
   return (
     <ModalStatsBox display="flex" flexDirection="column" justifyContent="space-between" gap="10" width="full">
-      <ThemedText.MediumHeader color="textSecondary" fontWeight={600}>
+      <ModalStateText color="textSecondary" fontWeight={600}>
         {loading ? <LoadingBubble width="80px" /> : children}
-      </ThemedText.MediumHeader>
+      </ModalStateText>
       <StateLabelText color="stateLabel" minWidth="90px" fontSize="14px">
         {label}
       </StateLabelText>
@@ -79,12 +82,15 @@ const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boole
       <StatsItem label="LMT required per unlock" loading={loading}>
         {brpData?.lmtRequiredPerUnlock}
       </StatsItem>
+      <StatsItem label="points used" loading={loading}>
+        {brpData?.pointForNewBoxes}
+      </StatsItem>
     </Row>
   )
 }
 
 export const ModalItemStats = ({ brpData, loading }: { brpData: TBRPData; loading?: boolean }) => {
-  const { totalLMT, lmtRequiredPerUnlock, NZTRageHigh, NZTRageRow } = brpData
+  const { totalLMT, lmtRequiredPerUnlock, NZTRageHigh, NZTRageRow, pointForNewBoxes } = brpData
   return (
     <Row gap="12" marginBottom="20" marginTop="24">
       <ModalStatsItem label=" Current LMT" loading={false}>
@@ -95,6 +101,9 @@ export const ModalItemStats = ({ brpData, loading }: { brpData: TBRPData; loadin
       </ModalStatsItem>
       <ModalStatsItem label="NZT rewards range" loading={false}>
         {NZTRageRow} ~ {NZTRageHigh}
+      </ModalStatsItem>
+      <ModalStatsItem label="points used" loading={false}>
+        {pointForNewBoxes}
       </ModalStatsItem>
     </Row>
   )

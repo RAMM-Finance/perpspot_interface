@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import modalBG from '../About/images/AboutModalBG2.png'
+import modalBG from '../About/images/AboutModalBG3.png'
 
 export default function AboutModal() {
   const [focusedIdx, setFocusedIdx] = useState(0)
