@@ -32,6 +32,7 @@ export interface BRPInterface extends utils.Interface {
     "addAllPoint(address,uint256,uint256,uint256)": FunctionFragment;
     "addAllPoints(address[],uint256[],uint256[],uint256[])": FunctionFragment;
     "addBox()": FunctionFragment;
+    "claimBoxes(uint256)": FunctionFragment;
     "claimRewards()": FunctionFragment;
     "claimableBoxes(address)": FunctionFragment;
     "freeBoxUsed(address)": FunctionFragment;
@@ -58,6 +59,7 @@ export interface BRPInterface extends utils.Interface {
     "rewardToken()": FunctionFragment;
     "setNumBoxes(address,uint256)": FunctionFragment;
     "setNumBoxesBulk(address[],uint256)": FunctionFragment;
+    "setPasscode(uint256)": FunctionFragment;
     "setPointPerAdd(uint256)": FunctionFragment;
     "setPointPerUnlocks(uint256)": FunctionFragment;
     "setRandomRange(uint256,uint256)": FunctionFragment;
@@ -77,6 +79,7 @@ export interface BRPInterface extends utils.Interface {
       | "addAllPoint"
       | "addAllPoints"
       | "addBox"
+      | "claimBoxes"
       | "claimRewards"
       | "claimableBoxes"
       | "freeBoxUsed"
@@ -103,6 +106,7 @@ export interface BRPInterface extends utils.Interface {
       | "rewardToken"
       | "setNumBoxes"
       | "setNumBoxesBulk"
+      | "setPasscode"
       | "setPointPerAdd"
       | "setPointPerUnlocks"
       | "setRandomRange"
@@ -136,6 +140,10 @@ export interface BRPInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "addBox", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "claimBoxes",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "claimRewards",
     values?: undefined
@@ -226,6 +234,10 @@ export interface BRPInterface extends utils.Interface {
     values: [PromiseOrValue<string>[], PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "setPasscode",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setPointPerAdd",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -290,6 +302,7 @@ export interface BRPInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addBox", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "claimBoxes", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "claimRewards",
     data: BytesLike
@@ -362,6 +375,10 @@ export interface BRPInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setNumBoxesBulk",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPasscode",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -514,6 +531,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    claimBoxes(
+      passcode_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     claimRewards(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -626,6 +648,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setPasscode(
+      passcode_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setPointPerAdd(
       pointPerAdd_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -711,6 +738,11 @@ export interface BRP extends BaseContract {
   ): Promise<ContractTransaction>;
 
   addBox(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  claimBoxes(
+    passcode_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -826,6 +858,11 @@ export interface BRP extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  setPasscode(
+    passcode_: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   setPointPerAdd(
     pointPerAdd_: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -911,6 +948,11 @@ export interface BRP extends BaseContract {
     ): Promise<void>;
 
     addBox(overrides?: CallOverrides): Promise<void>;
+
+    claimBoxes(
+      passcode_: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     claimRewards(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1019,6 +1061,11 @@ export interface BRP extends BaseContract {
     setNumBoxesBulk(
       who: PromiseOrValue<string>[],
       boxes: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPasscode(
+      passcode_: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1146,6 +1193,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    claimBoxes(
+      passcode_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     claimRewards(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -1253,6 +1305,11 @@ export interface BRP extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    setPasscode(
+      passcode_: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     setPointPerAdd(
       pointPerAdd_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1339,6 +1396,11 @@ export interface BRP extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     addBox(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    claimBoxes(
+      passcode_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1446,6 +1508,11 @@ export interface BRP extends BaseContract {
     setNumBoxesBulk(
       who: PromiseOrValue<string>[],
       boxes: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setPasscode(
+      passcode_: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
