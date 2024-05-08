@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
-import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -659,7 +659,7 @@ export function ZapTokenPanel({
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
 
   return (
-    <>
+    <div>
       <ZapInputPanel id={id} hideInput={hideInput} {...rest}>
         {locked && (
           <FixedContainer>
@@ -806,6 +806,159 @@ export function ZapTokenPanel({
           </TokenItem>
         </StyledDropdown>
       )}
-    </>
+    </div>
+  )
+}
+
+export function ZapOutputTokenPanel({
+  value,
+  onUserInput,
+  onMax,
+  showMaxButton,
+  currency,
+  otherCurrency,
+  hideBalance = false,
+  hideInput = false,
+  fiatValue,
+  priceImpact,
+  id,
+  renderBalance,
+  disabled = false,
+  locked = false,
+  loading = false,
+  onInputTokenChange,
+  ...rest
+}: ZapTokenPanelProps) {
+  const { chainId } = useWeb3React()
+
+  const chainAllowed = isSupportedChain(chainId)
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+  const handleClick = (event: any) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  return (
+    <div>
+      <ZapInputPanel id={id} hideInput={hideInput} {...rest}>
+        {locked && (
+          <FixedContainer>
+            <AutoColumn gap="sm" justify="center">
+              <Lock />
+              <ThemedText.DeprecatedLabel fontSize="12px" textAlign="center" padding="0 12px">
+                <Trans>The market price is outside your specified price range. Single-asset deposit only.</Trans>
+              </ThemedText.DeprecatedLabel>
+            </AutoColumn>
+          </FixedContainer>
+        )}
+        <Container hideInput={hideInput}>
+          <InputRow>
+            {!hideInput && (
+              <StyledNumericalInput
+                className="token-amount-input"
+                value={`${value} ${
+                  fiatValue?.data ? `(${formatNumber(fiatValue.data, NumberType.FiatTokenPrice)})` : ''
+                }`}
+                onUserInput={onUserInput}
+                disabled={!chainAllowed || disabled}
+                $loading={loading}
+                label="label"
+                fontSize="13px"
+              />
+            )}
+            {onInputTokenChange ? (
+              <CurrencySelect
+                disabled={!chainAllowed}
+                visible={currency !== undefined}
+                selected={!!currency}
+                hideInput={hideInput}
+                className="open-currency-select-button"
+                onClick={handleClick}
+              >
+                <RowFixed>
+                  <CurrencyLogo currency={currency} size="15px" />
+                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : currency?.symbol) || <Trans>Select token</Trans>}
+                  </StyledTokenName>
+                  {open ? <ChevronUp style={{ width: '15px' }} /> : <ChevronDown style={{ width: '15px' }} />}
+                </RowFixed>
+              </CurrencySelect>
+            ) : (
+              <CurrencySelect
+                disabled={!chainAllowed}
+                visible={currency !== undefined}
+                selected={!!currency}
+                hideInput={hideInput}
+                className="open-currency-select-button"
+                onClick={() => {}}
+              >
+                <RowFixed>
+                  <CurrencyLogo currency={currency} size="15px" />
+                  <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
+                    {(currency && currency.symbol && currency.symbol.length > 20
+                      ? currency.symbol.slice(0, 4) +
+                        '...' +
+                        currency.symbol.slice(currency.symbol.length - 5, currency.symbol.length)
+                      : currency?.symbol) || <Trans>Select token</Trans>}
+                  </StyledTokenName>
+                </RowFixed>
+              </CurrencySelect>
+            )}
+          </InputRow>
+          {/* {Boolean(!hideInput) && (
+            <FiatRow>
+              <RowBetween>
+                <LoadingOpacityContainer $loading={loading}>
+                  <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} />
+                </LoadingOpacityContainer>
+              </RowBetween>
+            </FiatRow>
+          )} */}
+        </Container>
+      </ZapInputPanel>
+      {onInputTokenChange && (
+        <StyledDropdown
+          slotProps={{ paper: { sx: { paddingX: '5px', backgroundColor: '#141a2a' } } }}
+          MenuListProps={{
+            sx: {
+              color: 'white',
+            },
+          }}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+        >
+          <TokenItem
+            onClick={() => {
+              otherCurrency && onInputTokenChange(otherCurrency)
+              handleClose()
+            }}
+          >
+            <RowFixed>
+              <CurrencyLogo currency={otherCurrency} size="15px" />
+              <StyledTokenName
+                className="token-symbol-container"
+                active={Boolean(otherCurrency && otherCurrency.symbol)}
+              >
+                {otherCurrency && otherCurrency.symbol && otherCurrency.symbol.length > 20
+                  ? otherCurrency.symbol.slice(0, 4) +
+                    '...' +
+                    otherCurrency.symbol.slice(otherCurrency.symbol.length - 5, otherCurrency.symbol.length)
+                  : otherCurrency?.symbol}
+              </StyledTokenName>
+            </RowFixed>
+          </TokenItem>
+        </StyledDropdown>
+      )}
+    </div>
   )
 }

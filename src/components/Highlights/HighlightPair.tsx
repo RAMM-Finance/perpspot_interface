@@ -3,7 +3,7 @@ import { SmallButtonPrimary } from 'components/Button'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
-import ZapModal from 'components/Tokens/TokenTable/ZapModal'
+import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -111,15 +111,21 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   return (
     <PairWrapper>
-      {showModal && <ZapModal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        apr={aprInfo[1].apr !== undefined ? aprInfo[1].apr + estimatedAPR : undefined}
-        tvl={(poolTvlData && poolId && poolTvlData[poolId]?.totalValueLocked) || undefined}
-        token0={currency0}
-        token1={currency1}
-        poolKey={currency0 && currency1 && fee ? { token0: currency0.wrapped.address, token1: currency1.wrapped.address, fee } : undefined}
-      />}
+      {showModal && (
+        <ZapModal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          apr={aprInfo[1].apr !== undefined ? aprInfo[1].apr + estimatedAPR : undefined}
+          tvl={(poolTvlData && poolId && poolTvlData[poolId]?.totalValueLocked) || undefined}
+          token0={currency0}
+          token1={currency1}
+          poolKey={
+            currency0 && currency1 && fee
+              ? { token0: currency0.wrapped.address, token1: currency1.wrapped.address, fee }
+              : undefined
+          }
+        />
+      )}
       <DoubleCurrencyLogo size={26} currency0={currency0} currency1={currency1} />
       <DataRow>
         <ThemedText.BodySmall>APR:</ThemedText.BodySmall>

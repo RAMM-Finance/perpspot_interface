@@ -27,7 +27,7 @@ import {
 import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
-import ZapModal from './ZapModal'
+import ZapModal from './ZapModal/ZapModal'
 
 const Cell = styled.div`
   display: flex;

@@ -10,7 +10,7 @@ import { PoolStatsSection, StatsSkeleton } from 'components/ExchangeChart/PoolSt
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import ZapModal from 'components/Tokens/TokenTable/ZapModal'
+import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'

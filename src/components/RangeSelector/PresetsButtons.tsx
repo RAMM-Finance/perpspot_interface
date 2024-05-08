@@ -15,7 +15,7 @@ const Button = styled(ButtonOutlined).attrs(() => ({
 `
 
 interface PresetsButtonsProps {
-  btnName: string,
+  btnName: string
   onSetRecommendedRange: () => void
   isRecommended?: boolean
 }
@@ -28,14 +28,13 @@ export function PresetsButtons({ btnName, onSetRecommendedRange, isRecommended }
           <ThemedText.DeprecatedBody fontSize={12}>
             <Trans>{btnName}</Trans>
           </ThemedText.DeprecatedBody>
-          {isRecommended ?
+          {isRecommended ? (
             <>
               <ThemedText.DeprecatedBody fontSize={12}>
                 <Trans>(Recommended)</Trans>
               </ThemedText.DeprecatedBody>
             </>
-            : null
-          }
+          ) : null}
         </div>
       </Button>
     </AutoRow>

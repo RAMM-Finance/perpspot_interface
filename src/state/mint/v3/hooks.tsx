@@ -709,30 +709,9 @@ export function useDerivedLmtMintInfo(
     [tickDiscretization]
   )
 
-  // console.log('rightRangeTypedValue', invertPrice, leftRangeTypedValue, rightRangeTypedValue)
   // parse typed range values and determine closest ticks
   // lower should always be a smaller tick
   const ticks = useMemo(() => {
-    // console.log('zeke:ticks changed', rightRangeTypedValue, leftRangeTypedValue, {
-    //   [Bound.LOWER]:
-    //     typeof existingPosition?.tickLower === 'number'
-    //       ? existingPosition.tickLower
-    //       : (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
-    //         (!invertPrice && typeof leftRangeTypedValue === 'boolean')
-    //       ? tickSpaceLimits[Bound.LOWER]
-    //       : invertPrice
-    //       ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization, true)
-    //       : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization, true),
-    //   [Bound.UPPER]:
-    //     typeof existingPosition?.tickUpper === 'number'
-    //       ? existingPosition.tickUpper
-    //       : (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
-    //         (invertPrice && typeof leftRangeTypedValue === 'boolean')
-    //       ? tickSpaceLimits[Bound.UPPER]
-    //       : invertPrice
-    //       ? tryParseLmtTick(token1, token0, feeAmount, leftRangeTypedValue.toString(), tickDiscretization)
-    //       : tryParseLmtTick(token0, token1, feeAmount, rightRangeTypedValue.toString(), tickDiscretization),
-    // })
     return {
       [Bound.LOWER]:
         typeof existingPosition?.tickLower === 'number'

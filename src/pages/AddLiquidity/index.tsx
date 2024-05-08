@@ -18,7 +18,9 @@ import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
+import { useEstimatedAPR } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
+import { getDecimalAndUsdValueData, UniswapQueryTokenInfo } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -52,7 +54,6 @@ import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallbac
 import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
 import { useDerivedPositionInfo } from '../../hooks/useDerivedPositionInfo'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
-import { useStablecoinValue } from '../../hooks/useStablecoinPrice'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
 import { useLmtLpPositionFromTokenId } from '../../hooks/useV3Positions'
 import { Bound, Field } from '../../state/mint/v3/actions'
@@ -83,10 +84,6 @@ import {
   StyledInput,
   Wrapper,
 } from './styled'
-import { SupportedChainId } from 'constants/chains'
-import { getDecimalAndUsdValueData, UniswapQueryTokenInfo } from 'hooks/useUSDPrice'
-import { useEstimatedAPR } from 'hooks/usePools'
-import { usePoolOHLC } from 'state/application/hooks'
 
 const PriceAndToggleWrapper = styled(RowBetween)`
   flex-wrap: wrap;
@@ -188,35 +185,44 @@ export default function AddLiquidity() {
     [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
 
-  const [currencyAFiatState, setCurrencyAFiatState] = useState<{data: number | undefined, isLoading: boolean}>({data: undefined, isLoading: true})
-  const [currencyBFiatState, setCurrencyBFiatState] = useState<{data: number | undefined, isLoading: boolean}>({data: undefined, isLoading: true})
+  const [currencyAFiatState, setCurrencyAFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
+    data: undefined,
+    isLoading: true,
+  })
+  const [currencyBFiatState, setCurrencyBFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
+    data: undefined,
+    isLoading: true,
+  })
 
   useEffect(() => {
     const fetchData = async (parsedAmountA: any, parsedAmountB: any, formattedAmountA: any, formattedAmountB: any) => {
-      
       const queryResults: UniswapQueryTokenInfo[] = await Promise.all([
         getDecimalAndUsdValueData(chainId, parsedAmountA?.currency?.address),
-        getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.address)
+        getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.address),
       ])
       setCurrencyAFiatState({
         data: queryResults[0] ? parseFloat(queryResults[0].lastPriceUSD) * formattedAmountA : undefined,
-        isLoading: false
+        isLoading: false,
       })
       setCurrencyBFiatState({
         data: queryResults[1] ? parseFloat(queryResults[1].lastPriceUSD) * formattedAmountB : undefined,
-        isLoading: false
+        isLoading: false,
       })
     }
-  fetchData(parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B], formattedAmounts[Field.CURRENCY_A], formattedAmounts[Field.CURRENCY_B])
- 
+    fetchData(
+      parsedAmounts[Field.CURRENCY_A],
+      parsedAmounts[Field.CURRENCY_B],
+      formattedAmounts[Field.CURRENCY_A],
+      formattedAmounts[Field.CURRENCY_B]
+    )
   }, [
-    setCurrencyAFiatState, 
-    setCurrencyBFiatState, 
-    parsedAmounts[Field.CURRENCY_A], 
-    parsedAmounts[Field.CURRENCY_B], 
-    formattedAmounts[Field.CURRENCY_A], 
-    formattedAmounts[Field.CURRENCY_B], 
-    chainId
+    setCurrencyAFiatState,
+    setCurrencyBFiatState,
+    parsedAmounts[Field.CURRENCY_A],
+    parsedAmounts[Field.CURRENCY_B],
+    formattedAmounts[Field.CURRENCY_A],
+    formattedAmounts[Field.CURRENCY_B],
+    chainId,
   ])
 
   // get the max amounts user can add
@@ -407,6 +413,7 @@ export default function AddLiquidity() {
       }
     }
   }, [clearAll, chainId, baseCurrency, currencyIdA, selectPair])
+
   // get value and prices at ticks
   const { [Bound.LOWER]: tickLower, [Bound.UPPER]: tickUpper } = ticks
   const { [Bound.LOWER]: priceLower, [Bound.UPPER]: priceUpper } = pricesAtTicks
@@ -593,17 +600,23 @@ export default function AddLiquidity() {
   const ownsNFT =
     addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
   const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)
-  
-  const priceForEst = invertPrice ? parseFloat(price?.invert()?.toSignificant(6) ?? '0') : parseFloat(price?.toSignificant(6) ?? '0')
+
+  const priceForEst = invertPrice
+    ? parseFloat(price?.invert()?.toSignificant(6) ?? '0')
+    : parseFloat(price?.toSignificant(6) ?? '0')
   const amountUSD = (currencyAFiatState.data ?? 0) + (currencyBFiatState.data ?? 0)
-  const token0Range = invertPrice ? parseFloat(priceUpper && price ? priceUpper.divide(price).invert().toSignificant(6) : '0') : parseFloat(priceLower && price ? priceLower.divide(price).toSignificant(6) : '0')
-  const token1Range = invertPrice ? parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0') : parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0')
+  const token0Range = invertPrice
+    ? parseFloat(priceUpper && price ? priceUpper.divide(price).invert().toSignificant(6) : '0')
+    : parseFloat(priceLower && price ? priceLower.divide(price).toSignificant(6) : '0')
+  const token1Range = invertPrice
+    ? parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0')
+    : parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0')
 
   const estimatedAPR = useEstimatedAPR(
-    baseCurrency, 
-    quoteCurrency, 
-    pool ?? null, 
-    pool?.tickSpacing ?? null, 
+    baseCurrency,
+    quoteCurrency,
+    pool ?? null,
+    pool?.tickSpacing ?? null,
     priceForEst,
     amountUSD,
     token0Range,
@@ -611,15 +624,16 @@ export default function AddLiquidity() {
   )
 
   const LmtPerDay: string = useMemo(() => {
-    
-    if (!currencyAFiatState.isLoading && 
-        !currencyBFiatState.isLoading && 
-        currencyAFiatState.data !== undefined && 
-        currencyBFiatState.data !== undefined) {
-        return ((currencyAFiatState.data + currencyBFiatState.data) * LMT_PER_USD_PER_DAY).toString()
-      } else {
-        return '-'
-      }
+    if (
+      !currencyAFiatState.isLoading &&
+      !currencyBFiatState.isLoading &&
+      currencyAFiatState.data !== undefined &&
+      currencyBFiatState.data !== undefined
+    ) {
+      return ((currencyAFiatState.data + currencyBFiatState.data) * LMT_PER_USD_PER_DAY).toString()
+    } else {
+      return '-'
+    }
   }, [currencyAFiatState, currencyBFiatState])
 
   return (
@@ -1066,9 +1080,11 @@ export default function AddLiquidity() {
                                 <ThemedText.BodySmall>Estimated APR:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
                                   <ThemedText.BodySmall>
-                                  {/* {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
+                                    {/* {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
                                       `${aprUtil?.apr ? ' + swap fees' : ''}`} */}
-                                  {aprUtil ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %` : ''}
+                                    {aprUtil
+                                      ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
+                                      : ''}
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
@@ -1083,9 +1099,9 @@ export default function AddLiquidity() {
                               <RowBetween>
                                 <ThemedText.BodySmall>LMT Per Day:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={80} height="14px">
-                                <ThemedText.BodySmall>
-                                  {LmtPerDay !== '-' ? parseFloat(LmtPerDay).toFixed(6) : LmtPerDay}
-                                </ThemedText.BodySmall>
+                                  <ThemedText.BodySmall>
+                                    {LmtPerDay !== '-' ? parseFloat(LmtPerDay).toFixed(6) : LmtPerDay}
+                                  </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
                             </OutlineCard>
