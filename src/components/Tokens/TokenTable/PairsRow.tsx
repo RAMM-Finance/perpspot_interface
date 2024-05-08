@@ -467,17 +467,22 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const handleProvide = useCallback(
     (e: any) => {
       e.stopPropagation()
-      if (token0Address && token1Address && token0 && token1 && fee && token0.symbol && token1.symbol) {
-        const id = getPoolId(token0Address, token1Address, fee)
-        if (id && currentPoolId !== id && poolOHLC) {
-          setCurrentPool(id, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, token0.symbol, token1.symbol)
-          navigate('/add/' + token0Address + '/' + token1Address + '/' + `${fee}`, {
-            state: { token0Address, token1Address },
-          })
-        }
+      if (token0Address && token1Address && fee) {
+        navigate('/add/' + token0Address + '/' + token1Address + '/' + `${fee}`, {
+          state: { token0Address, token1Address },
+        })
       }
+      // if (token0Address && token1Address && token0 && token1 && fee && token0.symbol && token1.symbol) {
+      //   const id = getPoolId(token0Address, token1Address, fee)
+      //   if (id && currentPoolId !== id && poolOHLC) {
+      //     setCurrentPool(id, !poolOHLC.token0IsBase, poolOHLC.token0IsBase, token0.symbol, token1.symbol)
+      //     navigate('/add/' + token0Address + '/' + token1Address + '/' + `${fee}`, {
+      //       state: { token0Address, token1Address },
+      //     })
+      //   }
+      // }
     },
-    [token0, token1, fee, currentPoolId, setCurrentPool, navigate, poolOHLC, token0Address, token1Address]
+    [fee, navigate, token0Address, token1Address]
   )
 
   const handleZap = useCallback(
