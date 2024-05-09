@@ -23,7 +23,7 @@ import BoxesContainer from '../../components/Loot/BoxesContainer'
 import InfoDescriptionSection from '../../components/Loot/InfoDescription'
 
 import { firestore } from '../../firebaseConfig'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -141,6 +141,8 @@ const LootPage = () => {
   const [hiddenCards, setHiddenCards] = useState<number[]>([])
   const addTransaction = useTransactionAdder()
 
+  const [isFirstBoxUnlocked, setIsFirstBoxUnlocked] = useState<boolean>(true)
+
   const unlockBoxCallback = useCallback(async (): Promise<TransactionResponse> => {
     if (!brp || !account) {
       throw new Error('BRP or account not available')
@@ -206,6 +208,16 @@ const LootPage = () => {
           inputCurrencyId: '',
           outputCurrencyId: '',
         })
+
+        if (account) {
+          const docRefFirstBox = doc(firestore, 'firstbox-checker', account);
+          await setDoc(docRefFirstBox, {
+            account: account,
+            isFirstBoxUnlocked: true
+          });
+          setIsFirstBoxUnlocked(true)
+        }
+        
         if (index !== undefined && index > -1) setHiddenCards((prevState) => [...prevState, index])
       } catch (error) {
         console.error(error, 'BRP instance is not available')
@@ -244,12 +256,14 @@ const LootPage = () => {
   const [isInConcatenatedAddresses, setIsInConcatenatedAddresses] = useState<boolean>(false)
   const [passcode, setPasscode] = useState<number | null>(null)
 
+
   useEffect(() => {
     if (!account) return
     const call = async () => {
       const docRef = doc(firestore, 'concatenated_addresses', account)
-      const docSnap = await getDoc(docRef)
 
+      const docSnap = await getDoc(docRef)
+      console.log("IS this account VALID?", account, docSnap.exists())
       // const docRef1 = doc(firestore, 'concatenated_addresses', '0x817A10B23332573e1D1f1D04Aa24aCe7e72318ba')
       // const docSnap1 = await getDoc(docRef1)
 
@@ -265,9 +279,24 @@ const LootPage = () => {
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
         const code = docSnap.data().Passcode
+        console.log("DATA", docSnap.data())
         setPasscode(code)
       } else {
         setIsInConcatenatedAddresses(false)
+      }
+
+      const docRefFirstBox = doc(firestore, 'firstbox-checker', account)
+      const docSnapFirstBox = await getDoc(docRefFirstBox)
+      if (docSnapFirstBox.exists()) {
+        const isUnlocked = docSnapFirstBox.data().isFirstBoxUnlocked
+        console.log("IS FIRST BOX UNLOCKED", isUnlocked)
+        setIsFirstBoxUnlocked(isUnlocked)
+      } else {
+        await setDoc(docRefFirstBox, {
+          account: account,
+          isFirstBoxUnlocked: false
+        })
+        setIsFirstBoxUnlocked(false)
       }
     }
     call()
@@ -282,6 +311,7 @@ const LootPage = () => {
         const freeBoxUsed = await brp.freeBoxUsed(account)
 
         const totalBoxes = await brp.numBoxes(account)
+
         const totalUnlockableBoxes = await brp.claimableBoxes(account)
         const lmtRequiredPerUnlock = await brp.pointPerUnlocks()
 
@@ -406,6 +436,7 @@ const LootPage = () => {
             isInsufficient={isInsufficient}
             isInConcatenatedAddresses={isInConcatenatedAddresses}
             isClaimed={isClaimed}
+            isFirstBoxUnlocked={isFirstBoxUnlocked}
           />
         </CollectionDisplaySection>
         <FaqWrapper>

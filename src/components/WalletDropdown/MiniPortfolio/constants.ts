@@ -162,11 +162,11 @@ const TransactionTitleTable: { [key in TransactionType]: { [state in Transaction
     [TransactionStatus.Confirmed]: t`Added Limit Order`,
     [TransactionStatus.Failed]: t`Add Limit Order failed`,
   },
-  [TransactionType.CANCEL_LIMIT_ORDER]: {
-    [TransactionStatus.Pending]: t`Removing Limit Order`,
-    [TransactionStatus.Confirmed]: t`Removed Limit Order`,
-    [TransactionStatus.Failed]: t`Remove Limit Order failed`,
-  },
+  // [TransactionType.CANCEL_LIMIT_ORDER]: {
+  //   [TransactionStatus.Pending]: t`Removing Limit Order`,
+  //   [TransactionStatus.Confirmed]: t`Removed Limit Order`,
+  //   [TransactionStatus.Failed]: t`Remove Limit Order failed`,
+  // },
   [TransactionType.PREMIUM_DEPOSIT]: {
     [TransactionStatus.Pending]: t`Depositing Premium`,
     [TransactionStatus.Confirmed]: t`Deposited Premium`,

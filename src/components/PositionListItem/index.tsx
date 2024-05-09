@@ -131,6 +131,7 @@ interface PositionListItemProps {
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {
+  price?: Price<Token, Token>
   priceLower?: Price<Token, Token>
   priceUpper?: Price<Token, Token>
   quote?: Token
@@ -166,8 +167,11 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
   // }
 
   // if both prices are below 1, invert
+
+  console.log("IS INVERTED???", position.token0PriceUpper.lessThan(1)) // AERO/ETH?
   if (position.token0PriceUpper.lessThan(1)) {
     return {
+      price: position.pool.token0Price.invert(),
       priceLower: position.token0PriceUpper.invert(),
       priceUpper: position.token0PriceLower.invert(),
       quote: token0,
@@ -177,6 +181,7 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 
   // otherwise, just return the default
   return {
+    price: position.pool.token0Price,
     priceLower: position.token0PriceLower,
     priceUpper: position.token0PriceUpper,
     quote: token1,
@@ -192,7 +197,8 @@ export default function PositionListItem({
   liquidity,
   tickLower,
   tickUpper,
-}: PositionListItemProps) {
+}: PositionListItemProps) { 
+  const [priceValue, setPrice] = useState<Price<Token, Token> | undefined>() 
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false)
@@ -215,9 +221,9 @@ export default function PositionListItem({
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
-  const { depositAmount } = useMemo(() => {
+  const { 
+    depositAmount } = useMemo(() => {
     if (position) {
-      console.log("POSITION", position)
       
       const amount0 = position.amount0
       const amount1 = position.amount1
@@ -227,7 +233,12 @@ export default function PositionListItem({
       const deposit0 = parseFloat(amount0.multiply(token0Price).toFixed(amount0.currency.decimals))
       const deposit1 = parseFloat(amount1.multiply(token1Price).toFixed(amount1.currency.decimals))
       
-      console.log("DEPOSITS", deposit0, deposit1)
+      const price0 = token0Price.toSignificant(10)
+      const price1 = token1Price.toSignificant(10)
+
+      // console.log("DEPOSITS", deposit0, deposit1)
+      // console.log("PRICE OF", position.pool.token0.symbol, price0)
+      // console.log("PRICE OF", position.pool.token1.symbol, price1)
 
       return {
         depositAmount: deposit0 + deposit1 
@@ -238,10 +249,10 @@ export default function PositionListItem({
         depositAmount: null
       }
   
-  }, [position])
+  }, [position, isInverted])
 
   // prices
-  const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
+  const { price, priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
 
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
@@ -264,7 +275,8 @@ export default function PositionListItem({
   )
 
   useEffect(() => {
-    if (priceLower && priceUpper) {
+    if (priceLower && priceUpper && price) {
+      setPrice(price)
       setPriceLower(priceLower)
       setPriceUpper(priceUpper)
     }
@@ -275,25 +287,39 @@ export default function PositionListItem({
   }
 
   function handleInvertClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    event.stopPropagation();
-    event.preventDefault();
+    event.stopPropagation()
+    event.preventDefault()
 
     if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert();
-      const invertedPriceUpper = priceLower.invert();
-
+      const invertedPriceLower = priceUpper.invert()
+      const invertedPriceUpper = priceLower.invert()
+      const invertedPrice = price?.invert()
       if (!isInverted) {
-        setPriceLower(invertedPriceLower);
-        setPriceUpper(invertedPriceUpper);
+        setPrice(invertedPrice)
+        setPriceLower(invertedPriceLower)
+        setPriceUpper(invertedPriceUpper)
       } else {
-        setPriceLower(priceLower);
-        setPriceUpper(priceUpper);
+        setPrice(price)
+        setPriceLower(priceLower)
+        setPriceUpper(priceUpper)
       }
-      setIsInverted(!isInverted);
+      setIsInverted(!isInverted)
     }
   }
 
-  console.log("TOKEN0, TOKEN1, POOL, tickSpacing, price, depositAmountUSD", currencyBase, currencyQuote, pool, tickSpacing, depositAmount)
+  console.log("IS INVERTED? ", isInverted, isInverted ? priceLowerValue?.invert().toSignificant(10) : priceLowerValue?.toSignificant(10))
+
+  console.log("TOKEN0:", currencyBase);
+  console.log("TOKEN1:", currencyQuote);
+  console.log("POOL:", pool);
+  console.log("tickSpacing:", tickSpacing);
+  console.log("price:", priceValue ? priceValue.toSignificant(10) : 0);
+  console.log("depositAmountUSD:", depositAmount);
+  console.log("lowerPrice:", priceLowerValue ? priceLowerValue.toSignificant(10) : 0);
+  console.log("upperPrice:", priceUpperValue ? priceUpperValue.toSignificant(10) : 0);
+  console.log("lowerRange:", priceLowerValue ? (priceLowerValue.divide(priceValue?.asFraction || 1).toSignificant(10)) : 0);
+  console.log("upperRange:", priceUpperValue ? (priceUpperValue.divide(priceValue?.asFraction || 1).toSignificant(10)) : 0);
+  // useEstimatedAPR()
   // useEstimatedAPR()
 
   // const priceLowerValue = priceLower?.toSignificant(10);
@@ -314,9 +340,9 @@ export default function PositionListItem({
               <Trans>Min: </Trans>
             </ExtentsText>
             <Trans>
-              <span>{priceLowerValue?.toSignificant(10)}</span>
-              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per{' '}
-              <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol ?? ''} />
+              <span>{priceLowerValue?.toSignificant(10)}</span>{' '}
+              <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} /> per{' '}
+              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol ?? ''} />
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
@@ -333,9 +359,9 @@ export default function PositionListItem({
               <Trans>Max: </Trans>
             </ExtentsText>
             <Trans>
-              <span>{priceUpperValue?.toSignificant(10)}</span>
-              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} /> per{' '}
-              <HoverInlineText maxCharacters={10} text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} />
+              <span>{priceUpperValue?.toSignificant(10)}</span>{' '}
+              <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} /> per{' '}
+              <HoverInlineText maxCharacters={10} text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} />
             </Trans>
           </RangeText>
         </RangeLineItem>
@@ -348,7 +374,7 @@ export default function PositionListItem({
             <HideSmall>Estimated APR:</HideSmall>
             <RangeText>
               <Trans>
-                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + '+ swap fees'}</span>
+                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + ' + swap fees'}</span>
               </Trans>
             </RangeText>
           </RangeLineItem>

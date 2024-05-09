@@ -105,6 +105,7 @@ interface IBoxesContainerProps {
   isInsufficient: boolean
   isInConcatenatedAddresses: boolean
   isClaimed: boolean
+  isFirstBoxUnlocked: boolean
 }
 
 const BoxesContainer = ({
@@ -119,7 +120,8 @@ const BoxesContainer = ({
   account,
   isInsufficient,
   isInConcatenatedAddresses,
-  isClaimed
+  isClaimed,
+  isFirstBoxUnlocked
 }: IBoxesContainerProps) => {
   if (loading) {
     return (
@@ -136,7 +138,6 @@ const BoxesContainer = ({
     )
   }
 
-  const isInsuff = false
   return (
     <BoxesDisplaySection>
       <InfiniteScrollWrapper>
@@ -148,6 +149,7 @@ const BoxesContainer = ({
             info={info}
             isLocked={isLocked}
             isInsufficient={isInsufficient && !(isInConcatenatedAddresses && !isClaimed)}
+            isFirstBoxUnlocked={isFirstBoxUnlocked}
             handleUnlockBox={handleUnlockBox}
             // handleAddBox={handleAddBox}
             shouldHide={hiddenCards.includes(index)}

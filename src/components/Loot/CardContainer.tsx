@@ -192,6 +192,7 @@ interface ICardContainerProps {
   info: string
   isLocked: boolean
   isInsufficient: boolean
+  isFirstBoxUnlocked: boolean
   // handleAddBox: () => void
   handleUnlockBox: (index: number) => void
   shouldHide?: boolean
@@ -205,6 +206,7 @@ export const CardContainer = ({
   info,
   isLocked,
   isInsufficient,
+  isFirstBoxUnlocked,
   // handleAddBox,
   handleUnlockBox,
   shouldHide,
@@ -249,13 +251,18 @@ export const CardContainer = ({
         </StyledDetailsContainer>
       </StyledDetailsRelativeContainer>
       <StyledActionButton
-        isDisabled={isLocked || isInsufficient}
+        isDisabled={!isFirstBoxUnlocked && index === 0 ? false : (isLocked || isInsufficient)}
         onClick={(e) => {
           e.stopPropagation()
-          isLocked || isInsufficient ? undefined : handleUnlockBox(index)
+          if (!isFirstBoxUnlocked)
+            handleUnlockBox(index)  
+          else {
+            isLocked || isInsufficient ? undefined : handleUnlockBox(index)
+          }
         }}
       >
-        {isLocked ? 'Locked' : isInsufficient ? 'Insufficient LMT' : 'Unlock'}
+        {!isFirstBoxUnlocked && index === 0 ? 'Unlock' : isLocked ? 'Locked' : isInsufficient ? 'Insufficient LMT' : 'Unlock'}
+        {/* {isLocked ? 'Locked' : isInsufficient ? 'Insufficient LMT' : 'Unlock'} */}
       </StyledActionButton>
     </StyledCardContainer>
   )
