@@ -305,7 +305,7 @@ export const LiquidityRangeSelector = ({
   inverted: boolean
 }) => {
   const tickAtLimit = useIsTickAtLimit(poolKey?.fee, tickLower, tickUpper)
-
+  // console.log('LiquidityRangeSelector', tickLower,tickUpper, inverted, tickAtLimit, priceLower, priceUpper )
   return (
     <BorrowLiquidityWrapper>
       <AutoColumn gap="md">

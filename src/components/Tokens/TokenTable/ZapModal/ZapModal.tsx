@@ -332,9 +332,9 @@ const useDerivedZapInfo = (
       inputError = inputError ?? <ThemedText.BodyPrimary fontWeight={500}>Enter a margin amount</ThemedText.BodyPrimary>
     }
 
-    if (lowerTick === undefined || upperTick === undefined) {
-      inputError = inputError ?? <ThemedText.BodyPrimary fontWeight={500}>Select a Range</ThemedText.BodyPrimary>
-    }
+    // if (lowerTick === undefined || upperTick === undefined) {
+    //   inputError = inputError ?? <ThemedText.BodyPrimary fontWeight={500}>Select a Range</ThemedText.BodyPrimary>
+    // }
 
     const inputBalance = inputIsToken0 ? relevantTokenBalances[0] : relevantTokenBalances[1]
     if (inputBalance && parsedAmount && token0 && token1) {
@@ -346,7 +346,7 @@ const useDerivedZapInfo = (
       }
     }
     return inputError
-  }, [parsedAmount, relevantTokenBalances, inputIsToken0, token0, token1, account, lowerTick, upperTick])
+  }, [parsedAmount, relevantTokenBalances, inputIsToken0, token0, token1, account])
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
 
@@ -573,9 +573,6 @@ const useZapCallback = (
 
 const MainWrapper = styled.div`
   display: flex;
-  /* flex-direction: row; */
-  /* justify-content: space-around; */
-  /* width: 900px; */
   height: 500px;
 `
 
@@ -595,6 +592,8 @@ const ZapModal = (props: ZapModalProps) => {
   const [showDetails, setShowDetails] = useState(false)
   const [leftRangeTypedValue, setLeftRangeTypedValue] = useState<string | boolean>('')
   const [rightRangeTypedValue, setRightRangeTypedValue] = useState<string | boolean>('')
+  const [isInitialRender, setIsInitialRender] = useState(false)
+
   const baseCurrency = baseIsToken0 ? token0 : token1
   const quoteCurrency = baseIsToken0 ? token1 : token0
 
@@ -718,12 +717,9 @@ const ZapModal = (props: ZapModalProps) => {
         console.error(error)
         onClose()
       })
-    // onClose()
   }, [callback, token0, token1, addTransaction, onClose])
 
-  useEffect(() => {
-    handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
-  }, [])
+ 
 
   const inputAmountFiat = useUSDPriceBNV2(parsedAmount, inputCurrency)
   const token0OutputFiat = useUSDPriceBNV2(txnInfo?.token0Out, token0 ?? undefined)
@@ -734,6 +730,14 @@ const ZapModal = (props: ZapModalProps) => {
   const inputNotApproved = inputApprovalState !== ApprovalState.APPROVED
   const invalidTrade = tradeState === ZapDerivedInfoState.INVALID
   const loadingTrade = tradeState === ZapDerivedInfoState.LOADING
+
+  useEffect(() => {
+    if(inputAmount && !isInitialRender ) {
+      handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
+      setIsInitialRender(true)
+      // console.log('useEffect', inputAmount,)
+    }
+  }, [inputAmount])
 
   return (
     <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={460} $scrollOverlay={true} onDismiss={onClose}>
@@ -841,7 +845,7 @@ const ZapModal = (props: ZapModalProps) => {
             <RowFixed style={{ position: 'relative' }}>
               <Info size={14} />
               <ThemedText.BodySecondary fontSize={14} fontWeight={500} marginLeft="5px">
-                Trade Details{' '}
+                Range Details{' '}
               </ThemedText.BodySecondary>
             </RowFixed>
             <RowFixed>
