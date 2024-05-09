@@ -126,7 +126,7 @@ const LootPage = () => {
   const [itemDatas, setItemDatas] = useState<TBoxData[]>([])
 
   const [showModal, setShowModal] = useState(false)
-  const [isInsufficient, setIsInsufficient] = useState(false)
+  const [isInsufficient, setIsInsufficient] = useState(true)
 
   const [curModalData, setCurModalData] = useState<TBoxData>({
     id: '',
@@ -295,13 +295,7 @@ const LootPage = () => {
         const numPoinstUsedForNewBoxes = poinstUsedForNewBoxes?.toNumber()
 
         const isClaimed: boolean = await brp.claimed(account)
-        
-
-        // if (docSnap.exists())
-
-
-        // const isInConcatenatedAddresses: boolean = await 
-
+    
         const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber() || numPoinstUsedForNewBoxes <= numPointPerAdd
         // const isPoinstUsedForNewBoxes= poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
         console.log('pointUsedForNewBoxes', numPoinstUsedForNewBoxes, numPointPerAdd, isInsufficient)
@@ -386,7 +380,7 @@ const LootPage = () => {
           </Row>
         </CollectionDescriptionSection>
         <CollectionDisplaySection>
-          {isInsufficient && <PointWarning point={brpData?.pointPerAdd} />}
+          <PointWarning isInsufficient={isInsufficient} point={brpData?.pointPerAdd} />
           <BoxesContainer
             itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}

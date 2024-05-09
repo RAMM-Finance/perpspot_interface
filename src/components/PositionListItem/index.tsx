@@ -11,7 +11,8 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -203,7 +204,7 @@ export default function PositionListItem({
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
-  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
+  const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const position = useMemo(() => {
     if (pool && tickLower && tickUpper) {
@@ -213,6 +214,21 @@ export default function PositionListItem({
   }, [liquidity, pool, tickLower, tickUpper])
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
+
+  useEffect(() => {
+    const call = async () => {
+      if (position) {
+        console.log("POSITION", position)
+        console.log("AMOUNT 0 and 1", position.amount0.toFixed(18), position.amount1.toFixed(18))
+        console.log("TOKEN 0 PRICE", position.pool.token0Price.toFixed(6))
+        console.log("TOKEN 1 PRICE", position.pool.token1Price.toFixed(6))
+        // const deposit0 = position.amount0 * position.pool.token0Price
+        // const deposit1 = position.amount1 * position.pool.token1Price
+        
+      }
+    }
+    call()
+  }, [position])
 
   // prices
   const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
@@ -266,6 +282,9 @@ export default function PositionListItem({
       setIsInverted(!isInverted);
     }
   }
+
+  console.log("TOKEN0, TOKEN1, POOL, tickSpacing, price, depositAmountUSD", currencyBase, currencyQuote, pool, tickSpacing)
+  // useEstimatedAPR()
 
   // const priceLowerValue = priceLower?.toSignificant(10);
   // const priceUpperValue  = priceUpper?.toSignificant(10);
