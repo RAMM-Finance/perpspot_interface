@@ -215,19 +215,25 @@ export default function PositionListItem({
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
-  useEffect(() => {
-    const call = async () => {
-      if (position) {
-        console.log("POSITION", position)
-        console.log("AMOUNT 0 and 1", position.amount0.toFixed(18), position.amount1.toFixed(18))
-        console.log("TOKEN 0 PRICE", position.pool.token0Price.toFixed(6))
-        console.log("TOKEN 1 PRICE", position.pool.token1Price.toFixed(6))
-        // const deposit0 = position.amount0 * position.pool.token0Price
-        // const deposit1 = position.amount1 * position.pool.token1Price
-        
-      }
-    }
-    call()
+  const depositAmount = useMemo(() => {
+    if (position) {
+      console.log("POSITION", position)
+      
+      const amount0 = position.amount0
+      const amount1 = position.amount1
+      const token0Price = position.pool.token0Price
+      const token1Price = position.pool.token1Price
+      
+      const deposit0 = amount0.multiply(token0Price)
+      const deposit1 = amount1.multiply(token1Price)
+      
+      const depositAmount = deposit0
+      console.log("DEPOSITS", deposit0.toFixed(18) + deposit1.toFixed(18))
+      return null
+
+    } else 
+      return null
+  
   }, [position])
 
   // prices
