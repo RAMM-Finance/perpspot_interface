@@ -3,11 +3,11 @@ import { AlertTriangle } from 'react-feather'
 import { useTheme } from 'styled-components'
 import { ThemedText } from 'theme'
 
-const PointWarning = ({isInsufficient, point} : {isInsufficient: boolean, point: number}) => {
+const PointWarning = ({isInsufficient, isInConcatenatedAddresses, isClaimed, point} : {isInsufficient: boolean, isInConcatenatedAddresses: boolean, isClaimed: boolean, point: number}) => {
   const theme = useTheme()
 
   return (
-    isInsufficient ? (
+    isInsufficient && !(isInConcatenatedAddresses && !isClaimed) ? (
     <Row marginLeft="48" gap="8">
       <AlertTriangle size={18} color={theme.accentWarning} />
       <ThemedText.BodyPrimary color="accentWarning">

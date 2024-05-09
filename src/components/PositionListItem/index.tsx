@@ -215,7 +215,7 @@ export default function PositionListItem({
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
-  const depositAmount = useMemo(() => {
+  const { depositAmount } = useMemo(() => {
     if (position) {
       console.log("POSITION", position)
       
@@ -224,15 +224,19 @@ export default function PositionListItem({
       const token0Price = position.pool.token0Price
       const token1Price = position.pool.token1Price
       
-      const deposit0 = amount0.multiply(token0Price)
-      const deposit1 = amount1.multiply(token1Price)
+      const deposit0 = parseFloat(amount0.multiply(token0Price).toFixed(amount0.currency.decimals))
+      const deposit1 = parseFloat(amount1.multiply(token1Price).toFixed(amount1.currency.decimals))
       
-      const depositAmount = deposit0
-      console.log("DEPOSITS", deposit0.toFixed(18) + deposit1.toFixed(18))
-      return null
+      console.log("DEPOSITS", deposit0, deposit1)
+
+      return {
+        depositAmount: deposit0 + deposit1 
+      }
 
     } else 
-      return null
+      return {
+        depositAmount: null
+      }
   
   }, [position])
 
@@ -289,7 +293,7 @@ export default function PositionListItem({
     }
   }
 
-  console.log("TOKEN0, TOKEN1, POOL, tickSpacing, price, depositAmountUSD", currencyBase, currencyQuote, pool, tickSpacing)
+  console.log("TOKEN0, TOKEN1, POOL, tickSpacing, price, depositAmountUSD", currencyBase, currencyQuote, pool, tickSpacing, depositAmount)
   // useEstimatedAPR()
 
   // const priceLowerValue = priceLower?.toSignificant(10);

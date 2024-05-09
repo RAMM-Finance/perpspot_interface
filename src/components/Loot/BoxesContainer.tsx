@@ -164,10 +164,9 @@ const BoxesContainer = ({
                 No Treasure Boxes
               </ThemedText.BodySecondary>
               <AddBoxActionButton
-                isDisabled={isInsufficient  && !(isInConcatenatedAddresses && !isClaimed)}
+                isDisabled={isInsufficient && !(isInConcatenatedAddresses && !isClaimed)}
                 fontSize="18px"
                 onClick={() => {
-                  // if (isInsuff) return
                   if (isInsufficient && !(isInConcatenatedAddresses && !isClaimed)) return
                   if (isInConcatenatedAddresses && !isClaimed) {
                     handleClaimBoxes(passcode)
