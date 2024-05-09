@@ -255,7 +255,7 @@ export const CardContainer = ({
           isLocked || isInsufficient ? undefined : handleUnlockBox(index)
         }}
       >
-        {isInsufficient ? 'Insufficient LMT' : isLocked ? 'Locked' : 'Unlock'}
+        {isLocked ? 'Locked' : isInsufficient ? 'Insufficient LMT' : 'Unlock'}
       </StyledActionButton>
     </StyledCardContainer>
   )
