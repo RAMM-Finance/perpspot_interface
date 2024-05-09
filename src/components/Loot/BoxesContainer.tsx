@@ -136,6 +136,7 @@ const BoxesContainer = ({
     )
   }
 
+  const isInsuff = false
   return (
     <BoxesDisplaySection>
       <InfiniteScrollWrapper>
@@ -146,7 +147,7 @@ const BoxesContainer = ({
             img={img}
             info={info}
             isLocked={isLocked}
-            isInsufficient={isInsufficient}
+            isInsufficient={isInsuff}
             handleUnlockBox={handleUnlockBox}
             // handleAddBox={handleAddBox}
             shouldHide={hiddenCards.includes(index)}
@@ -163,11 +164,11 @@ const BoxesContainer = ({
                 No Treasure Boxes
               </ThemedText.BodySecondary>
               <AddBoxActionButton
-                isDisabled={isInsufficient}
+                isDisabled={isInsuff}
                 fontSize="18px"
                 onClick={() => {
                   // if (isInsuff) return
-                  if (isInsufficient) return
+                  if (isInsuff) return
                   if (isInConcatenatedAddresses && !isClaimed) {
                     handleClaimBoxes(passcode)
                   } else {
@@ -175,7 +176,7 @@ const BoxesContainer = ({
                   }
                 }}
               >
-                {isInsufficient
+                {isInsuff
                 ? 'Insufficient LMT'
                 : isInConcatenatedAddresses && !isClaimed
                 ? 'Claim Boxes'

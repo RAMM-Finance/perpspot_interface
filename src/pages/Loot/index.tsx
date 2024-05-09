@@ -250,6 +250,7 @@ const LootPage = () => {
       const docRef = doc(firestore, 'concatenated_addresses', account)
       const docSnap = await getDoc(docRef)
       if (docSnap.exists()) {
+        console.log("DOC EXISTS", docSnap.data())
         setIsInConcatenatedAddresses(true)
         const code = docSnap.data().Passcode
         setPasscode(code)
