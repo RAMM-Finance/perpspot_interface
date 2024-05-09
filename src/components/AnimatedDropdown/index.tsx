@@ -32,3 +32,31 @@ export default function AnimatedDropdown({ open, children }: React.PropsWithChil
     </animated.div>
   )
 }
+
+export const AnimatedDropSide = ({ open, children }: React.PropsWithChildren<{ open: boolean }>) => {
+  // const { ref, width, height } = useResizeObserver()
+
+  const props = useSpring({
+    width: open ? 380 ?? 0 : 0,
+    config: {
+      mass: 1.2,
+      tension: 300,
+      friction: 30,
+      clamp: true,
+      velocity: 0.01,
+    },
+  })
+
+  return (
+    <animated.div
+      style={{
+        ...props,
+        overflow: 'hidden',
+        height: '100%',
+        willChange: 'width',
+      }}
+    >
+      <div>{children}</div>
+    </animated.div>
+  )
+}

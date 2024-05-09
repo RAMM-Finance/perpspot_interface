@@ -5,14 +5,16 @@ import { Currency, Percent, Price, Token } from '@uniswap/sdk-core'
 import { nearestUsableTick, Pool, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
+import { AnimatedDropSide } from 'components/AnimatedDropdown'
 import { ZapOutputTokenPanel, ZapTokenPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { BaseButton, SmallButtonPrimary } from 'components/Button'
+import Column from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
 import { LmtModal } from 'components/Modal'
 import RateToggle from 'components/RateToggle'
-import Row, { RowBetween } from 'components/Row'
+import Row, { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { ArrowWrapper } from 'components/swap/styleds'
 import { MouseoverTooltip } from 'components/Tooltip'
@@ -28,15 +30,15 @@ import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowContainer } from 'pages/Trade'
 import { darken } from 'polished'
-import React, { ReactNode, useCallback, useMemo, useState } from 'react'
-import { ChevronDown, Info } from 'react-feather'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronDown, ChevronRight, Info } from 'react-feather'
 import { BnToCurrencyAmount, parseBN } from 'state/marginTrading/hooks'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import { tryParseLmtTick } from 'state/mint/v3/utils'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageTolerance } from 'state/user/hooks'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -47,10 +49,11 @@ import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
 const Wrapper = styled.div`
-  padding: 15px;
+  padding: 20px;
   margin: 10px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 `
 const Header = styled.div`
   padding-top: 15px;
@@ -94,7 +97,6 @@ const InputWrapper2 = styled.div`
   justify-content: center;
   width: 100%;
 `
-
 // const Button = styled(ButtonOutlined).attrs(() => ({
 //   padding: '8px',
 //   minHeight: '60px',
@@ -104,12 +106,17 @@ const InputWrapper2 = styled.div`
 //   flex: 1;
 //   border-color: ${({ theme }) => theme.backgroundInteractive};
 // `
+const RotatingArrow = styled(ChevronRight)<{ open?: boolean }>`
+  transform: ${({ open }) => (open ? 'rotate(180deg)' : 'none')};
+  transition: transform 0.1s linear;
+`
 
-// const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>`
-//   padding: 0;
-//   align-items: center;
-//   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
-// `
+const StyledHeaderRow = styled(RowBetween)<{ open: boolean }>`
+  padding: 0;
+  align-items: center;
+  margin-bottom: 4px;
+  cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
+`
 
 interface ZapModalProps {
   isOpen: boolean
@@ -165,12 +172,13 @@ const PresentButton = styled(BaseButton)<{ active: boolean }>`
   border-radius: 8px;
   padding: 6px;
   background-color: ${({ theme, active }) =>
-    active ? darken(0.1, theme.accentActive) : darken(0.4, theme.accentActive)};
+    active ? darken(0.1, theme.accentActive) : darken(0.4, theme.accentActiveSoft)};
   &:hover {
     background-color: ${({ theme }) => darken(0.1, theme.accentActive)};
   }
-  font-size: 12px;
-  wrap: no-wrap;
+  font-size: 14px;
+  height: ${({ active }) => active && '60px'};
+  min-height: 50px;
 `
 
 interface PresetsButtonsProps {
@@ -190,17 +198,19 @@ function PresetsButtons({ btnName, onSetRecommendedRange, active }: PresetsButto
   )
 }
 
-const LiquiditySelectorWrapper = styled.div`
-  // width: 50%;
-  width: fit-content;
-  padding: 15px;
+const LiquiditySelectorWrapper = styled(Column)<{ open?: boolean }>`
+  padding: 20px;
+  padding-left: 0;
   margin-top: 25px;
+  gap: 35px;
+  opacity: ${(props) => (props.open ? '1' : '0')};
+  transition: opacity 0.13s ease-in-out;
 `
 
-const PriceAndToggleWrapper = styled(RowBetween)`
+const PriceAndToggleWrapper = styled(Column)`
   flex-wrap: wrap;
-  row-gap: 1rem;
-  margin-bottom: 1rem;
+  /* row-gap: 0.8rem; */
+  /* margin-bottom: 1rem; */
 `
 
 enum Bound {
@@ -315,22 +325,24 @@ const useDerivedZapInfo = (
     let inputError: ReactNode | undefined
 
     if (!account) {
-      inputError = <Trans>Connect Wallet</Trans>
+      inputError = <ThemedText.BodyPrimary fontWeight={500}>Connect Wallet</ThemedText.BodyPrimary>
     }
 
     if (!parsedAmount || parsedAmount.isZero()) {
-      inputError = inputError ?? <Trans>Enter a margin amount</Trans>
+      inputError = inputError ?? <ThemedText.BodyPrimary fontWeight={500}>Enter a margin amount</ThemedText.BodyPrimary>
     }
 
     if (lowerTick === undefined || upperTick === undefined) {
-      inputError = inputError ?? <Trans>Select a Range</Trans>
+      inputError = inputError ?? <ThemedText.BodyPrimary fontWeight={500}>Select a Range</ThemedText.BodyPrimary>
     }
 
     const inputBalance = inputIsToken0 ? relevantTokenBalances[0] : relevantTokenBalances[1]
     if (inputBalance && parsedAmount && token0 && token1) {
       const parsedCurrencyAmount = BnToCurrencyAmount(parsedAmount, inputIsToken0 ? token0 : token1)
       if (parsedCurrencyAmount.greaterThan(inputBalance)) {
-        inputError = inputError ?? <Trans>Insufficient {inputBalance.currency.symbol}</Trans>
+        inputError = inputError ?? (
+          <ThemedText.BodyPrimary fontWeight={500}>Insufficient {inputBalance.currency.symbol}</ThemedText.BodyPrimary>
+        )
       }
     }
     return inputError
@@ -561,9 +573,10 @@ const useZapCallback = (
 
 const MainWrapper = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  width: 900px;
+  /* flex-direction: row; */
+  /* justify-content: space-around; */
+  /* width: 900px; */
+  height: 500px;
 `
 
 enum RANGE {
@@ -579,10 +592,19 @@ const ZapModal = (props: ZapModalProps) => {
   const [inputAmount, setInputAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [baseIsToken0, setBaseIsToken0] = useState(true)
+  const [showDetails, setShowDetails] = useState(false)
   const [leftRangeTypedValue, setLeftRangeTypedValue] = useState<string | boolean>('')
   const [rightRangeTypedValue, setRightRangeTypedValue] = useState<string | boolean>('')
   const baseCurrency = baseIsToken0 ? token0 : token1
   const quoteCurrency = baseIsToken0 ? token1 : token0
+
+  const theme = useTheme()
+  const rangeValues = {
+    [RANGE.SMALL]: { min: 0.9, max: 1.1 },
+    [RANGE.MEDIUM]: { min: 0.8, max: 1.2 },
+    [RANGE.LARGE]: { min: 0.7, max: 1.3 },
+    [RANGE.AUTO]: { min: 0, max: 0 },
+  }
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee)
   const token0Price = useMemo(() => {
@@ -616,7 +638,7 @@ const ZapModal = (props: ZapModalProps) => {
     LMT_NFT_POSITION_MANAGER[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
-  const [range, setRange] = useState<RANGE>()
+  const [range, setRange] = useState<RANGE>(RANGE.LARGE)
 
   const {
     txnInfo,
@@ -698,6 +720,10 @@ const ZapModal = (props: ZapModalProps) => {
       })
     // onClose()
   }, [callback, token0, token1, addTransaction, onClose])
+
+  useEffect(() => {
+    handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
+  }, [])
 
   const inputAmountFiat = useUSDPriceBNV2(parsedAmount, inputCurrency)
   const token0OutputFiat = useUSDPriceBNV2(txnInfo?.token0Out, token0 ?? undefined)
@@ -811,132 +837,171 @@ const ZapModal = (props: ZapModalProps) => {
               />
             </InputWrapper2>
           </DetailsWrapper>
+          <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} open={showDetails}>
+            <RowFixed style={{ position: 'relative' }}>
+              <Info size={14} />
+              <ThemedText.BodySecondary fontSize={14} fontWeight={500} marginLeft="5px">
+                Trade Details{' '}
+              </ThemedText.BodySecondary>
+            </RowFixed>
+            <RowFixed>
+              <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
+            </RowFixed>
+          </StyledHeaderRow>
           {!account ? (
-            <SmallButtonPrimary>Connect Wallet</SmallButtonPrimary>
+            <SmallButtonPrimary padding="16px">
+              <ThemedText.BodyPrimary fontWeight={500}>Connect Wallet</ThemedText.BodyPrimary>
+            </SmallButtonPrimary>
           ) : !userError && inputNotApproved ? (
-            <SmallButtonPrimary onClick={approveInputCurrency} disabled={inputApprovalState === ApprovalState.PENDING}>
+            <SmallButtonPrimary
+              onClick={approveInputCurrency}
+              disabled={inputApprovalState === ApprovalState.PENDING}
+              padding="16px"
+            >
               {inputApprovalState === ApprovalState.PENDING ? (
                 <>
                   <Loader size="20px" />
-                  <Trans>Approval pending</Trans>
+                  <ThemedText.BodyPrimary fontWeight={500}>Approval pending</ThemedText.BodyPrimary>
                 </>
               ) : (
                 <>
                   <MouseoverTooltip
                     text={
-                      <Trans>
+                      <ThemedText.BodyPrimary fontWeight={500}>
                         Permission is required for Limitless to use each token.{' '}
                         {inputCurrency ? `Allowance of ${inputAmount} ${inputCurrency?.symbol} required.` : null}
-                      </Trans>
+                      </ThemedText.BodyPrimary>
                     }
                   >
                     <RowBetween>
-                      <Info size={20} /> <Trans> Approve use of {inputCurrency?.symbol}</Trans>
+                      <Info size={20} />{' '}
+                      <ThemedText.BodyPrimary fontWeight={500}>
+                        {' '}
+                        Approve use of {inputCurrency?.symbol}
+                      </ThemedText.BodyPrimary>
                     </RowBetween>
                   </MouseoverTooltip>
                 </>
               )}
             </SmallButtonPrimary>
           ) : (
-            <SmallButtonPrimary onClick={handleZap} disabled={invalidTrade || !txnInfo}>
+            <SmallButtonPrimary onClick={handleZap} disabled={invalidTrade || !txnInfo} padding="16px">
               {userError ? (
                 userError
               ) : contractError ? (
                 contractError
               ) : invalidTrade ? (
-                <Trans>Invalid Trade</Trans>
+                <ThemedText.BodyPrimary fontWeight={500}>Invalid Trade</ThemedText.BodyPrimary>
               ) : loadingTrade ? (
                 <>
                   <Loader size="20px" />
-                  <Trans>Finding Best Price ...</Trans>
+                  <ThemedText.BodyPrimary fontWeight={500}>Finding Best Price ...</ThemedText.BodyPrimary>
                 </>
               ) : (
-                <Trans>Execute</Trans>
+                <ThemedText.BodyPrimary fontWeight={500}>Execute</ThemedText.BodyPrimary>
               )}
             </SmallButtonPrimary>
           )}
         </Wrapper>
-        <LiquiditySelectorWrapper>
-          <RowBetween>
-            <ThemedText.BodySecondary>
-              <Trans>Select Price Range</Trans>
-            </ThemedText.BodySecondary>
-          </RowBetween>
-          <PriceAndToggleWrapper>
-            {token0Price && token0 && token1 && !noLiquidity && (
-              <Trans>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'start',
-                    alignItems: 'end',
-                    gap: '5px',
-                  }}
-                >
-                  <ThemedText.DeprecatedMain fontWeight={500} textAlign="start" fontSize={12} color="text">
-                    Current Price:
-                  </ThemedText.DeprecatedMain>
-                  <ThemedText.DeprecatedBody fontWeight={500} textAlign="start" fontSize={14} color="textSecondary">
-                    <HoverInlineText
-                      maxCharacters={20}
-                      text={
-                        baseIsToken0
-                          ? formatBNToString(token0Price, NumberType.FiatTokenPrice, true)
-                          : formatBNToString(new BN(1).div(token0Price), NumberType.FiatTokenPrice, true)
-                      }
-                    />
-                  </ThemedText.DeprecatedBody>
-                  <ThemedText.DeprecatedBody textAlign="start" color="textSecondary" fontSize={11}>
-                    {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                  </ThemedText.DeprecatedBody>
-                </div>
-              </Trans>
-            )}
-            {baseCurrency && quoteCurrency ? (
-              <RateToggle
-                currencyA={baseCurrency}
-                currencyB={quoteCurrency}
-                handleRateToggle={() => {
-                  setBaseIsToken0(!baseIsToken0)
-                  setLeftRangeTypedValue((invertPrice ? lowerPrice : upperPrice?.invert())?.toSignificant(6) ?? '')
-                  setRightRangeTypedValue((invertPrice ? upperPrice : lowerPrice?.invert())?.toSignificant(6) ?? '')
-                }}
-              />
-            ) : null}
-          </PriceAndToggleWrapper>
-          <RowBetween>
+        <AnimatedDropSide open={showDetails}>
+          <LiquiditySelectorWrapper open={showDetails}>
             {!noLiquidity && (
-              <>
-                <PresetsButtons
-                  btnName="-10% ~ +10% narrow"
-                  onSetRecommendedRange={() => handleSetRecommendedRange(0.9, 1.1, RANGE.SMALL)}
-                  active={range === RANGE.SMALL}
-                />
-                <PresetsButtons
-                  btnName="-20% ~ +20% middle"
-                  onSetRecommendedRange={() => handleSetRecommendedRange(0.8, 1.2, RANGE.MEDIUM)}
-                  active={range === RANGE.MEDIUM}
-                />
-                <PresetsButtons
-                  btnName="-30% ~ +30% wide"
-                  onSetRecommendedRange={() => handleSetRecommendedRange(0.7, 1.3, RANGE.LARGE)}
-                  active={range === RANGE.LARGE}
-                />
-              </>
+              <Column gap="sm">
+                <PriceAndToggleWrapper>
+                  {baseCurrency && quoteCurrency ? (
+                    <RateToggle
+                      currencyA={baseCurrency}
+                      currencyB={quoteCurrency}
+                      handleRateToggle={() => {
+                        setBaseIsToken0(!baseIsToken0)
+                        setLeftRangeTypedValue(
+                          (invertPrice ? lowerPrice : upperPrice?.invert())?.toSignificant(6) ?? ''
+                        )
+                        setRightRangeTypedValue(
+                          (invertPrice ? upperPrice : lowerPrice?.invert())?.toSignificant(6) ?? ''
+                        )
+                      }}
+                    />
+                  ) : null}
+                  <ThemedText.BodySecondary marginTop="12px" marginBottom="8px">
+                    <Trans>Select Price Range</Trans>
+                  </ThemedText.BodySecondary>
+                  {token0Price && token0 && token1 && !noLiquidity && (
+                    <Trans>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'start',
+                          alignItems: 'end',
+                          gap: '5px',
+                        }}
+                      >
+                        <ThemedText.DeprecatedMain fontWeight={500} textAlign="start" fontSize={14} color="text">
+                          Current Price:
+                        </ThemedText.DeprecatedMain>
+                        <ThemedText.DeprecatedBody
+                          fontWeight={500}
+                          textAlign="start"
+                          fontSize={14}
+                          color="textSecondary"
+                        >
+                          <HoverInlineText
+                            maxCharacters={20}
+                            text={
+                              baseIsToken0
+                                ? formatBNToString(token0Price, NumberType.FiatTokenPrice, true)
+                                : formatBNToString(new BN(1).div(token0Price), NumberType.FiatTokenPrice, true)
+                            }
+                          />
+                        </ThemedText.DeprecatedBody>
+                        <ThemedText.DeprecatedBody textAlign="start" color="textSecondary" fontSize={11}>
+                          {quoteCurrency?.symbol} per {baseCurrency?.symbol}
+                        </ThemedText.DeprecatedBody>
+                      </div>
+                    </Trans>
+                  )}
+                </PriceAndToggleWrapper>
+                <Row gap="15px" marginTop="15px">
+                  <PresetsButtons
+                    btnName="-10% ~ +10% narrow"
+                    onSetRecommendedRange={() =>
+                      handleSetRecommendedRange(rangeValues[RANGE.SMALL].min, rangeValues[RANGE.SMALL].max, RANGE.SMALL)
+                    }
+                    active={range === RANGE.SMALL}
+                  />
+                  <PresetsButtons
+                    btnName="-20% ~ +20% middle"
+                    onSetRecommendedRange={() =>
+                      handleSetRecommendedRange(
+                        rangeValues[RANGE.MEDIUM].min,
+                        rangeValues[RANGE.MEDIUM].max,
+                        RANGE.MEDIUM
+                      )
+                    }
+                    active={range === RANGE.MEDIUM}
+                  />
+                  <PresetsButtons
+                    btnName="-30% ~ +30% wide"
+                    onSetRecommendedRange={() =>
+                      handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
+                    }
+                    active={range === RANGE.LARGE}
+                  />
+                </Row>
+              </Column>
             )}
-          </RowBetween>
-          <LiquidityRangeSelector
-            pool={pool}
-            tickLower={lowerTick}
-            tickUpper={upperTick}
-            baseCurrency={baseCurrency ?? undefined}
-            quoteCurrency={quoteCurrency ?? undefined}
-            poolKey={poolKey}
-            priceLower={lowerPrice}
-            priceUpper={upperPrice}
-            inverted={invertPrice}
-          />
-          {/* <LiquidityChartRangeInput
+            <LiquidityRangeSelector
+              pool={pool}
+              tickLower={lowerTick}
+              tickUpper={upperTick}
+              baseCurrency={baseCurrency ?? undefined}
+              quoteCurrency={quoteCurrency ?? undefined}
+              poolKey={poolKey}
+              priceLower={lowerPrice}
+              priceUpper={upperPrice}
+              inverted={invertPrice}
+            />
+            {/* <LiquidityChartRangeInput
             currencyA={baseCurrency ?? undefined}
             currencyB={quoteCurrency ?? undefined}
             feeAmount={poolKey?.fee}
@@ -950,7 +1015,8 @@ const ZapModal = (props: ZapModalProps) => {
             onRightRangeInput={setRightRangeTypedValue}
             interactive={true}
           /> */}
-        </LiquiditySelectorWrapper>
+          </LiquiditySelectorWrapper>
+        </AnimatedDropSide>
       </MainWrapper>
     </LmtModal>
   )

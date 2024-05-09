@@ -272,7 +272,7 @@ function CurrentPriceCard({
 const BorrowLiquidityWrapper = styled(LightCard)`
   border: 0;
   width: 100%;
-  // padding-top: 2rem;
+  padding: 0;
   border-radius: 0px;
   border-bottom-right-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -312,7 +312,7 @@ export const LiquidityRangeSelector = ({
         <AutoColumn gap="md">
           <RowBetween>
             <Label display="flex" style={{ marginRight: '12px' }}>
-              <Trans>Liquidity Range</Trans>
+              <ThemedText.BodySecondary fontSize={18} fontWeight={600}>Liquidity Range</ThemedText.BodySecondary>
             </Label>
           </RowBetween>
           {/* <RowFixed>
