@@ -16,7 +16,7 @@ import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
 import { useState } from 'react'
 import { AlertTriangle, Inbox } from 'react-feather'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
@@ -232,9 +232,12 @@ function WrongNetworkCard() {
 export default function Pool() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isAdvanced = location.pathname.substring(0, 15) === '/pools/advanced'
   const [advanced, setAdvanced] = useState<any>(() => {
     const localData = localStorage.getItem('data')
-    return localData ? !!localData : false
+    return isAdvanced ? true : localData ? !!localData : false
   })
 
   const theme = useTheme()
@@ -271,6 +274,7 @@ export default function Pool() {
                 onClick={() => {
                   setAdvanced(false)
                   localStorage.removeItem('data')
+                  navigate('/pools')
                 }}
                 active={!advanced}
               >

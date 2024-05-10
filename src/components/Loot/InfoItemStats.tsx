@@ -83,14 +83,14 @@ const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boole
         {brpData?.lmtRequiredPerUnlock}
       </StatsItem>
       <StatsItem label="points used" loading={loading}>
-        {brpData?.pointForNewBoxes}
+        {brpData?.pointForUnlocks}
       </StatsItem>
     </Row>
   )
 }
 
 export const ModalItemStats = ({ brpData, loading }: { brpData: TBRPData; loading?: boolean }) => {
-  const { totalLMT, lmtRequiredPerUnlock, NZTRageHigh, NZTRageRow, pointForNewBoxes } = brpData
+  const { totalLMT, lmtRequiredPerUnlock, NZTRageHigh, NZTRageRow, pointForUnlocks } = brpData
   return (
     <Row gap="12" marginBottom="20" marginTop="24">
       <ModalStatsItem label=" Current LMT" loading={false}>
@@ -103,7 +103,7 @@ export const ModalItemStats = ({ brpData, loading }: { brpData: TBRPData; loadin
         {NZTRageRow} ~ {NZTRageHigh}
       </ModalStatsItem>
       <ModalStatsItem label="points used" loading={false}>
-        {pointForNewBoxes}
+        {pointForUnlocks}
       </ModalStatsItem>
     </Row>
   )

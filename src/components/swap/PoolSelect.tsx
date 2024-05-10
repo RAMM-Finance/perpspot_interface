@@ -105,7 +105,7 @@ const SelectPoolWrapper = styled.button`
   width: max-content;
 `
 
-const ChevronIcon = styled(ChevronDown)<{ $rotated: boolean }>`
+export const ChevronIcon = styled(ChevronDown)<{ $rotated: boolean }>`
   @media screen and (max-width: ${BREAKPOINTS.md}px) {
     rotate: 180deg;
   }
