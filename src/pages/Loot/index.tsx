@@ -102,7 +102,7 @@ export type TBRPData = {
   NZTRageRow: number
   NZTRageHigh: number
   pointPerAdd: number
-  pointForNewBoxes: number
+  pointForUnlocks: number
 }
 
 const LootPage = () => {
@@ -120,7 +120,7 @@ const LootPage = () => {
     NZTRageRow: 0,
     NZTRageHigh: 0,
     pointPerAdd: 0,
-    pointForNewBoxes: 0,
+    pointForUnlocks: 0,
   })
 
   const [itemDatas, setItemDatas] = useState<TBoxData[]>([])
@@ -323,6 +323,7 @@ const LootPage = () => {
         const NZTRageHigh = await brp.rangeHigh()
 
         const pointPerAdd = await brp.pointPerAdd()
+        const pointsUsedForUnlocks = await brp.pointsUsedForUnlocks(account)
         const poinstUsedForNewBoxes = await brp.pointsUsedForNewBoxes(account)
 
         let numTotalBoxes = totalBoxes?.toNumber()
@@ -335,12 +336,14 @@ const LootPage = () => {
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
         const numPointPerAdd = pointPerAdd?.toNumber()
         const numPoinstUsedForNewBoxes = poinstUsedForNewBoxes?.toNumber()
+        const numPointsUsedForUnlocks = pointsUsedForUnlocks?.toNumber()
+        console.log('poinstUsedForNewBoxes', numPointsUsedForUnlocks, pointsUsedForUnlocks)
 
         const isClaimed: boolean = await brp.claimed(account)
     
-        const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber() || numPoinstUsedForNewBoxes <= numPointPerAdd
+        const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber() || numPoinstUsedForNewBoxes < numPointPerAdd
         // const isPoinstUsedForNewBoxes= poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
-        console.log('pointUsedForNewBoxes', numPoinstUsedForNewBoxes, numPointPerAdd, isInsufficient)
+        // console.log('poinstUsedForNewBoxes', numPoinstUsedForNewBoxes, numPointPerAdd, isInsufficient)
         const lockedBoxes = Array(numTotalBoxes)
           .fill(true)
           .map((_, index) => index + 1 > numtotalUnlockableBoxes)
@@ -363,10 +366,10 @@ const LootPage = () => {
           NZTRageHigh: NZTRageHigh?.toNumber(),
           NZTRageRow: NZTRageRow?.toNumber(),
           pointPerAdd: numPointPerAdd,
-          pointForNewBoxes: numPoinstUsedForNewBoxes,
+          pointForUnlocks: numPointsUsedForUnlocks,
         })
         setIsInsufficient(isInsufficient)
-        setItemDatas(newData)
+        // setItemDatas(newData)
         setHiddenCards([])
         setLoading(false)
       } catch (error) {
@@ -422,7 +425,7 @@ const LootPage = () => {
           </Row>
         </CollectionDescriptionSection>
         <CollectionDisplaySection>
-          <PointWarning isInsufficient={isInsufficient} isInConcatenatedAddresses={isInConcatenatedAddresses} isClaimed={isClaimed} point={brpData?.pointPerAdd} />
+          <PointWarning isInsufficient={isInsufficient} isInConcatenatedAddresses={isInConcatenatedAddresses} isClaimed={isClaimed} point={brpData?.pointPerAdd} isNoBoxes={itemDatas.length < 1} />
           <BoxesContainer
             itemDatas={itemDatas}
             handleUnlockBox={handleUnlockBox}
