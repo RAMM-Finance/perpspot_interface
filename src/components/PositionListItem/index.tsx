@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { Price, Token } from '@uniswap/sdk-core'
+import { Fraction, Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -20,6 +20,7 @@ import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
+import { useWeb3React } from '@web3-react/core'
 
 const LinkRow = styled(Link)`
   align-items: center;
@@ -131,7 +132,7 @@ interface PositionListItemProps {
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {
-  price?: Price<Token, Token>
+  // price?: Price<Token, Token>
   priceLower?: Price<Token, Token>
   priceUpper?: Price<Token, Token>
   quote?: Token
@@ -171,7 +172,7 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
   console.log("IS INVERTED???", position.token0PriceUpper.lessThan(1)) // AERO/ETH?
   if (position.token0PriceUpper.lessThan(1)) {
     return {
-      price: position.pool.token0Price.invert(),
+      // price: position.pool.token0Price.invert(),
       priceLower: position.token0PriceUpper.invert(),
       priceUpper: position.token0PriceLower.invert(),
       quote: token0,
@@ -181,7 +182,7 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 
   // otherwise, just return the default
   return {
-    price: position.pool.token0Price,
+    // price: position.pool.token0Price,
     priceLower: position.token0PriceLower,
     priceUpper: position.token0PriceUpper,
     quote: token1,
@@ -198,7 +199,7 @@ export default function PositionListItem({
   tickLower,
   tickUpper,
 }: PositionListItemProps) { 
-  const [priceValue, setPrice] = useState<Price<Token, Token> | undefined>() 
+  const [priceValue, setPrice] = useState<number | undefined>() 
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false)
@@ -212,6 +213,9 @@ export default function PositionListItem({
   // construct Position from details returned
   const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
+  const { chainId } = useWeb3React()
+  
+
   const position = useMemo(() => {
     if (pool && tickLower && tickUpper) {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
@@ -221,8 +225,7 @@ export default function PositionListItem({
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
-  const { 
-    depositAmount } = useMemo(() => {
+  const { depositAmount } = useMemo(() => {
     if (position) {
       
       const amount0 = position.amount0
@@ -232,13 +235,6 @@ export default function PositionListItem({
       
       const deposit0 = parseFloat(amount0.multiply(token0Price).toFixed(amount0.currency.decimals))
       const deposit1 = parseFloat(amount1.multiply(token1Price).toFixed(amount1.currency.decimals))
-      
-      const price0 = token0Price.toSignificant(10)
-      const price1 = token1Price.toSignificant(10)
-
-      // console.log("DEPOSITS", deposit0, deposit1)
-      // console.log("PRICE OF", position.pool.token0.symbol, price0)
-      // console.log("PRICE OF", position.pool.token1.symbol, price1)
 
       return {
         depositAmount: deposit0 + deposit1 
@@ -252,10 +248,29 @@ export default function PositionListItem({
   }, [position, isInverted])
 
   // prices
-  const { price, priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
+  const { 
+    priceLower, 
+    priceUpper, 
+    quote, 
+    base } = getPriceOrderingFromPositionForUI(position)
 
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
+
+  useEffect(() => {
+    const call = async () => {
+      if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
+        const currencyBasePriceUSD = Number((await getDecimalAndUsdValueData(chainId, currencyBase.wrapped.address)).lastPriceUSD)
+        const currencyQuotePriceUSD = Number((await getDecimalAndUsdValueData(chainId, currencyQuote.wrapped.address)).lastPriceUSD)
+        console.log("CURRENCY BASE PRICE USD", currencyBasePriceUSD)
+        console.log("CURRENCY QUOTE PRICE USD", currencyQuotePriceUSD)
+        const price = currencyBasePriceUSD / currencyQuotePriceUSD
+        // console.log("PRICE", currencyBasePriceUSD / currencyQuotePriceUSD)
+        setPrice(price)
+      }
+    }
+    call()
+  }, [currencyBase, currencyQuote, chainId])
 
   // check if price is within range
   const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false
@@ -275,12 +290,24 @@ export default function PositionListItem({
   )
 
   useEffect(() => {
-    if (priceLower && priceUpper && price) {
-      setPrice(price)
-      setPriceLower(priceLower)
-      setPriceUpper(priceUpper)
+    if (priceLower && priceUpper) {
+
+      console.log("POSIITON CALLED")
+      console.log("POSIITON CALLeD: isInverted", isInverted)
+      const invertedPriceLower = priceUpper.invert()
+      const invertedPriceUpper = priceLower.invert()
+      console.log("POSIITON pricelower", priceLower.toSignificant(10))
+      if (isInverted) {
+        setPriceLower(invertedPriceLower)
+        setPriceUpper(invertedPriceUpper)
+      } else {
+        setPriceLower(priceLower)
+        setPriceUpper(priceUpper)
+      }
+      // setPrice(price)
+      
     }
-  }, [position])
+  }, [position, isInverted])
 
   if (shouldHidePosition) {
     return null
@@ -293,13 +320,14 @@ export default function PositionListItem({
     if (priceLower && priceUpper) {
       const invertedPriceLower = priceUpper.invert()
       const invertedPriceUpper = priceLower.invert()
-      const invertedPrice = price?.invert()
+      console.log("INVERTED PRICE LOWER", invertedPriceLower.toSignificant(10))
+      // const invertedPrice = price?.invert()
       if (!isInverted) {
-        setPrice(invertedPrice)
+        // setPrice(invertedPrice)
         setPriceLower(invertedPriceLower)
         setPriceUpper(invertedPriceUpper)
       } else {
-        setPrice(price)
+        // setPrice(price)
         setPriceLower(priceLower)
         setPriceUpper(priceUpper)
       }
@@ -309,16 +337,18 @@ export default function PositionListItem({
 
   console.log("IS INVERTED? ", isInverted, isInverted ? priceLowerValue?.invert().toSignificant(10) : priceLowerValue?.toSignificant(10))
 
-  console.log("TOKEN0:", currencyBase);
-  console.log("TOKEN1:", currencyQuote);
-  console.log("POOL:", pool);
-  console.log("tickSpacing:", tickSpacing);
-  console.log("price:", priceValue ? priceValue.toSignificant(10) : 0);
-  console.log("depositAmountUSD:", depositAmount);
-  console.log("lowerPrice:", priceLowerValue ? priceLowerValue.toSignificant(10) : 0);
-  console.log("upperPrice:", priceUpperValue ? priceUpperValue.toSignificant(10) : 0);
-  console.log("lowerRange:", priceLowerValue ? (priceLowerValue.divide(priceValue?.asFraction || 1).toSignificant(10)) : 0);
-  console.log("upperRange:", priceUpperValue ? (priceUpperValue.divide(priceValue?.asFraction || 1).toSignificant(10)) : 0);
+  console.log("TOKEN0:", currencyBase)
+  console.log("TOKEN1:", currencyQuote)
+  console.log("POOL:", pool)
+  console.log("tickSpacing:", tickSpacing)
+  // console.log("price:", priceValue ? priceValue.toSignificant(10) : 0);
+  console.log("depositAmountUSD:", depositAmount)
+  console.log("lowerPrice:", priceLowerValue ? priceLowerValue.toSignificant(10) : 0)
+  console.log("upperPrice:", priceUpperValue ? priceUpperValue.toSignificant(10) : 0)
+  console.log("PRICEVALUE", priceValue)
+
+  console.log("lowerRange:", (priceLowerValue && priceValue) ? Number(priceLowerValue.toSignificant(10)) / (priceValue) : 0)
+  console.log("upperRange:", (priceUpperValue && priceValue) ? Number(priceUpperValue.toSignificant(10)) / (priceValue) : 0)
   // useEstimatedAPR()
   // useEstimatedAPR()
 

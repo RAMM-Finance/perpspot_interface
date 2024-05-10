@@ -3,6 +3,7 @@ import { useWeb3React } from '@web3-react/core'
 import AboutModal from 'components/About/AboutModal'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
+import { ChevronIcon } from 'components/swap/PoolSelect'
 import NewBadge from 'components/WalletModal/NewBadge'
 import Web3Status from 'components/Web3Status'
 import { SupportedChainId } from 'constants/chains'
@@ -14,12 +15,14 @@ import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
 import { ReactNode, useCallback, useState } from 'react'
 import { NavLink, NavLinkProps, useLocation } from 'react-router-dom'
-import styled from 'styled-components/macro'
+import styled, { keyframes } from 'styled-components/macro'
+import { ThemedText } from 'theme'
 
 import { ReactComponent as LogoText } from '../../assets/svg/full_logo_black.svg'
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 // import { Bag } from './Bag'
 import { ChainSelector } from './ChainSelector'
+import { NavDropdown } from './NavDropdown'
 import * as styles from './style.css'
 
 const Nav = styled.nav`
@@ -34,6 +37,22 @@ const Nav = styled.nav`
   position: initial;
 `
 
+const fadeIn = keyframes`
+  from { opacity: .25 }
+  to { opacity: 1 }
+`
+
+const StyledMenu = styled(NavDropdown)`
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.navbarBackground};
+  position: absolute;
+  margin-top: 60px;
+  padding: 5px;
+  width: 200px;
+  margin-left: -15px;
+  animation: ${fadeIn} 0.5s;
+`
+
 interface MenuItemProps {
   href: string
   id?: NavLinkProps['id']
@@ -42,9 +61,46 @@ interface MenuItemProps {
   dataTestId?: string
   margin?: string
   external?: boolean
+  font?: boolean
 }
 
-const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external }: MenuItemProps) => {
+const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, font }: MenuItemProps) => {
+  return (
+    <NavLink
+      target={external ? '_blank' : ''}
+      rel={external ? 'noopener noreferrer' : ''}
+      to={href}
+      className={isActive ? styles.activeMenuItem : styles.menuItem}
+      id={id}
+      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px' }}
+      data-testid={dataTestId}
+    >
+      {children}
+    </NavLink>
+  )
+}
+
+const MenuItemDropDown = ({ href, dataTestId, id, isActive, children, margin, external }: MenuItemProps) => {
+  const { pathname } = useLocation()
+
+  const [isDropdownVisible, setDropdownVisible] = useState(false)
+
+  const handleMouseEnter = () => {
+    setDropdownVisible(true)
+  }
+
+  const handleMouseLeave = () => {
+    setDropdownVisible(false)
+  }
+
+  const dropdown = (
+    <StyledMenu>
+      <MenuItem font={true} href="/pools/advanced" isActive={pathname.startsWith('/pools/advanced')}>
+        My LP Positions
+      </MenuItem>
+    </StyledMenu>
+  )
+
   return (
     <NavLink
       target={external ? '_blank' : ''}
@@ -54,8 +110,12 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external }
       id={id}
       style={{ textDecoration: 'none', marginRight: '4px', fontSize: '16px' }}
       data-testid={dataTestId}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {children}
+      {isDropdownVisible && dropdown}
+      <ChevronIcon $rotated={isDropdownVisible} />
     </NavLink>
   )
 }
@@ -94,9 +154,9 @@ export const PageTabs = () => {
         <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
           <Trans>Swap</Trans>
         </MenuItem>
-        <MenuItem href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
+        <MenuItemDropDown href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
           <Trans>Earn</Trans>
-        </MenuItem>
+        </MenuItemDropDown>
         {connectedChainId == SupportedChainId.BERA_ARTIO ? (
           <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
             <Trans>Faucets</Trans>
@@ -108,11 +168,11 @@ export const PageTabs = () => {
         <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
           <Trans>Referral</Trans>
         </MenuItem>
-        <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
-          <Trans>Docs</Trans>
-        </MenuItem>
         <MenuItem href="/loot" isActive={pathname.startsWith('/loot')}>
           <Trans>Loot</Trans>
+        </MenuItem>
+        <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
+          <Trans>Docs</Trans>
         </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
@@ -138,6 +198,8 @@ const Navbar = () => {
     setShowModal(false)
   }, [])
 
+  console.log('hght')
+
   return (
     <>
       <Nav>
@@ -162,10 +224,14 @@ const Navbar = () => {
               <SmallButtonPrimary
                 onClick={() => setShowModal(!showModal)}
                 className={styles.blueButton}
-                style={{ display: ' flex', gap: '5px', background: '#0ecc83', color: '#0a0f19' }}
+                style={{ display: ' flex', gap: '5px', background: '#0ecc83', color: '#0a0f19', maxHeight: '35px' }}
               >
                 <Logo fill="#0a0f19" width="12px" />
-                <Trans> What is Limitless?</Trans>
+                <Trans>
+                  <ThemedText.BodySmall fontWeight={900} color="#0a0f19">
+                    What is Limitless?
+                  </ThemedText.BodySmall>
+                </Trans>
               </SmallButtonPrimary>
               {!isNftPage && (
                 <Box display={{ sm: 'none', lg: 'flex' }}>
