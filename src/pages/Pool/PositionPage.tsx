@@ -439,23 +439,27 @@ export function PositionPage() {
     tickUpper
   )
 
-  // const price = pool?.token0Price
-  // const priceLower = formatTickPrice({
-  //   price: priceLower,
-  //   atLimit: tickAtLimit,
-  //   direction: Bound.LOWER,
-  //   numberType: NumberType.TokenTx,
-  // })
-  // const priceUpper = formatTickPrice({
-  //   price: priceUpper,
-  //   atLimit: tickAtLimit,
-  //   direction: Bound.UPPER,
-  //   numberType: NumberType.TokenTx,
-  // })
-  // useEstimatedAPR()
-  // const estimatedAPR = useEstimatedAPR(
+  const { depositAmount } = useMemo(() => {
+    if (position) {
+      
+      const amount0 = position.amount0
+      const amount1 = position.amount1
+      const token0Price = position.pool.token0Price
+      const token1Price = position.pool.token1Price
+      
+      const deposit0 = parseFloat(amount0.multiply(token0Price).toFixed(amount0.currency.decimals))
+      const deposit1 = parseFloat(amount1.multiply(token1Price).toFixed(amount1.currency.decimals))
 
-  // )
+      return {
+        depositAmount: deposit0 + deposit1 
+      }
+
+    } else 
+      return {
+        depositAmount: null
+      }
+  
+  }, [position])
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
@@ -515,6 +519,13 @@ export function PositionPage() {
         )
       : undefined
   }, [inverted, pool, priceLower, priceUpper])
+
+  
+  const price = pool?.token0Price
+  
+  console.log("PRICE LOWER UPPER", price?.toSignificant(10), priceLower?.toSignificant(10), priceUpper?.toSignificant(10))
+  console.log("DEPOSIT AMOUNT", depositAmount)
+  // const estimatedAPR = useEstimatedAPR(currencyBase, currencyQuote, pool, pool?.tickSpacing, price, )
 
   // fees
   // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)

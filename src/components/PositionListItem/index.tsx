@@ -244,7 +244,7 @@ export default function PositionListItem({
         depositAmount: null
       }
   
-  }, [position, isInverted])
+  }, [position])
 
   // prices
   const { 
@@ -408,7 +408,7 @@ export default function PositionListItem({
       ) : (
         <Loader />
       )}
-      {priceLower && priceUpper ? (
+      {priceLower && priceUpper && data?.apr.plus(estimatedAPR).gt(0) ? (
         <>
           <RangeLineItem>
             <HideSmall>Estimated APR:</HideSmall>
@@ -416,13 +416,13 @@ export default function PositionListItem({
               <Trans>
                 <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
                 {/* {aprUtil
-                                      ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
-                                      : ''} */}
+                    ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
+                      : ''} */}
               </Trans>
             </RangeText>
           </RangeLineItem>
         </>
-      ) : (
+      ) : priceLower && priceUpper ? null : (
         <Loader />
       )}
       <RangeBadge removed={removed} inRange={!outOfRange} />
