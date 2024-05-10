@@ -4,17 +4,20 @@ import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
 import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
-import { abi as IUniswapV3PoolABI } from '../abis_v2/UniswapV3Pool.json'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
 import { utils } from 'ethers'
+import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useState } from 'react'
+import { tryParseLmtTick } from 'state/mint/v3/utils'
 
+import { abi as IUniswapV3PoolABI } from '../abis_v2/UniswapV3Pool.json'
 import {
   BORROW_INIT_CODE_HASH,
   LEVERAGE_INIT_CODE_HASH,
@@ -24,15 +27,7 @@ import {
 } from '../constants/addresses'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useLmtPoolManagerContract } from './useContract'
-import axios from 'axios'
-import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
-import { supportedChainId } from 'utils/supportedChainId'
-import { Nullish } from '@uniswap/conedison/types'
-import { query } from 'firebase/firestore'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { useCurrency } from './Tokens'
-import { tryParseLmtTick } from 'state/mint/v3/utils'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
@@ -188,13 +183,15 @@ export function usePools(
 
       const { result: poolParam, loading: addedPoolLoading, valid: addedPoolValid } = poolParams[index]
       // console.log('conditions', tokens, slot0Valid, liquidityValid, addedPoolValid)
-      if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid || !tickSpacingValid) return [PoolState.INVALID, null, null]
+      if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid || !tickSpacingValid)
+        return [PoolState.INVALID, null, null]
       // console.log('poolParam', poolParam)
       if (!poolParam) return [PoolState.NOT_ADDED, null, null]
       // console.log('2')
       if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null, null]
 
-      if (slot0Loading || liquidityLoading || tickSpacingLoading || addedPoolLoading) return [PoolState.LOADING, null, null]
+      if (slot0Loading || liquidityLoading || tickSpacingLoading || addedPoolLoading)
+        return [PoolState.LOADING, null, null]
       // console.log('4')
 
       if (!slot0 || !liquidity || !tickSpacing) return [PoolState.NOT_EXISTS, null, null]
@@ -339,8 +336,13 @@ export function computeLiquidityManagerAddress({
   )
 }
 
-
-const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: number, page: number, chainId: number | undefined) => {
+const getPoolTicks = async (
+  poolAddress: string,
+  tickLower: number,
+  tickUpper: number,
+  page: number,
+  chainId: number | undefined
+) => {
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   if (chainId === SupportedChainId.BASE) {
     url += 'base'
@@ -349,7 +351,9 @@ const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: n
   }
 
   const query = `{
-    ticks(first: 1000, skip: ${page * 1000}, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
+    ticks(first: 1000, skip: ${
+      page * 1000
+    }, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
       liquidityGross
       index
     }
@@ -362,7 +366,7 @@ const getPoolTicks = async (poolAddress: string, tickLower: number, tickUpper: n
       query,
     },
   })
-  
+
   return data.data.ticks
 }
 
@@ -393,7 +397,7 @@ const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefi
 
 const getLiquidityFromTick = (poolTicks: any[]) => {
   let liquidity = new BN(0)
-  
+
   for (let i = 0; i < poolTicks.length; i++) {
     liquidity = liquidity.plus(new BN(poolTicks[i].liquidityGross))
   }
@@ -469,7 +473,6 @@ const calcLiquidityX96 = (
   token0Decimals: number,
   token1Decimals: number
 ): number => {
-  
   const q96 = 2 ** 96
   const price_to_sqrtp = (p: number) => Math.sqrt(p) * q96
 
@@ -503,7 +506,7 @@ const calcLiquidityX96 = (
 
   const liq0 = liquidity0(amount_0, sqrtp_cur, sqrtp_upp)
   const liq1 = liquidity1(amount_1, sqrtp_cur, sqrtp_low)
-  
+
   const liq = Math.min(liq0, liq1)
   return liq
 }
@@ -518,7 +521,13 @@ const getEstimateFee = (
   return feeTierPercentage * volume24h * liquidityPercentage
 }
 
-const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: number, token0: string | undefined, token1: string | undefined): any => {
+const feeAprEstimation = (
+  position: Position,
+  liquidityGross: BN,
+  volume24h: number,
+  token0: string | undefined,
+  token1: string | undefined
+): any => {
   const p: number = position.currentPrice
   const pl: number = position.lower
   const pu: number = position.upper
@@ -545,7 +554,7 @@ const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: num
 
   const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
-  let liqGross = liquidityGross
+  const liqGross = liquidityGross
 
   const estimatedFee: number =
     p >= pl && p <= pu ? getEstimateFee(liquidityDelta, liqGross, volume24h, feeTierPercentage) : 0
@@ -565,13 +574,12 @@ const estimateAPR = (
   token0: string | undefined,
   token1: string | undefined
 ): any => {
-
   const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
 
   const fee_est = est_result.estimatedFee
   const apy = ((fee_est * 365) / position.amount) * 100
   const dailyIncome = fee_est
-  
+
   return { apy, dailyIncome }
 }
 
@@ -588,10 +596,10 @@ interface Position {
 }
 
 export function useEstimatedAPR(
-  token0: Currency | null | undefined, 
-  token1: Currency | null | undefined, 
-  pool: Pool | null, 
-  tickSpacing: number | null, 
+  token0: Currency | null | undefined,
+  token1: Currency | null | undefined,
+  pool: Pool | null,
+  tickSpacing: number | null,
   price: number | undefined,
   amountUSD: number,
   token0Range?: number,
@@ -604,12 +612,11 @@ export function useEstimatedAPR(
   useEffect(() => {
     const fetchData = async () => {
       if (token0 && token1 && pool && tickSpacing) {
-        
         const amount = amountUSD
         if (token0?.wrapped.address && token1?.wrapped.address) {
           const [token0Res, token1Res] = await Promise.all([
-            getDecimalAndUsdValueData(chainId, token0?.wrapped.address), 
-            getDecimalAndUsdValueData(chainId, token1?.wrapped.address)
+            getDecimalAndUsdValueData(chainId, token0?.wrapped.address),
+            getDecimalAndUsdValueData(chainId, token1?.wrapped.address),
           ])
 
           const token0PriceUSD: number = parseFloat(token0Res.lastPriceUSD)
@@ -619,7 +626,7 @@ export function useEstimatedAPR(
           const token1Decimals: number = token1Res.decimals
 
           if (!price) return
-          
+
           let lowerPrice = price
           let upperPrice = price
 
@@ -631,27 +638,13 @@ export function useEstimatedAPR(
             upperPrice = upperPrice * token1Range
           }
 
-          if (lowerPrice > upperPrice) 
-            [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
+          if (lowerPrice > upperPrice) [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
 
-          let lowerTick = tryParseLmtTick(
-            token0.wrapped,
-            token1.wrapped,
-            pool.fee,
-            lowerPrice.toString(),
-            tickSpacing
-          )
-          let upperTick = tryParseLmtTick(
-            token0.wrapped,
-            token1.wrapped,
-            pool.fee,
-            upperPrice.toString(),
-            tickSpacing
-          )
+          let lowerTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
+          let upperTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
 
           if (lowerTick && upperTick) {
-            if (lowerTick > upperTick)
-              [lowerTick, upperTick] = [upperTick, lowerTick]
+            if (lowerTick > upperTick) [lowerTick, upperTick] = [upperTick, lowerTick]
 
             const position: Position = {
               currentPrice: price,
@@ -667,7 +660,6 @@ export function useEstimatedAPR(
 
             const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
             if (v3CoreFactoryAddress && lowerTick && upperTick) {
-
               const poolAddress = computePoolAddress({
                 factoryAddress: v3CoreFactoryAddress,
                 tokenA: token0.wrapped,
@@ -693,18 +685,7 @@ export function useEstimatedAPR(
                   token0.symbol,
                   token1.symbol
                 )
-                // if (token1.symbol === "INT") {
-                //   console.log("INIT - WETH INFO")
-                //   console.log("poolAddress", poolAddress)
-                //   console.log("volume24h", volume24h)
-                //   console.log("liquidityGross", liquidityGross.toNumber())
-                //   console.log("poolTicks", poolTicks)
-                //   console.log("position", position)
-                //   console.log("TICKS LOWER UPPER", lowerTick, upperTick)
-                // }
-
                 setEstimatedAPR(apy)
-
               } catch (err) {
                 console.error(
                   err,

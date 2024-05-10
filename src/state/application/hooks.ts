@@ -85,13 +85,14 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
           decimals1: pool.decimals1,
         }
       })
-      
+
       const symbolsToRemove = ['INT'] // remove pools with these symbols
-      
-      const filteredResult = result[0].filter((pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1))  
-      
+
+      const filteredResult = result[0].filter(
+        (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
+      )
+
       return filteredResult
-    
     } else {
       return undefined
     }
