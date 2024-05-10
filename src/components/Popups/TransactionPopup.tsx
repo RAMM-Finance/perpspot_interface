@@ -32,7 +32,7 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
   if (!activity) return null
 
   const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
-
+  // console.log('TransactionPopupContent activity: ', activity)
   return (
     <PortfolioRow
       isPopUp={true}
@@ -50,7 +50,7 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
           <PopupAlertTriangle />
         )
       }
-      title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
+      title={<ThemedText.SubHeader fontWeight={500} >{activity.title}</ThemedText.SubHeader>}
       descriptor={
         typeof activity.descriptor === 'string' ? (
           <Descriptor color="textSecondary">
@@ -63,38 +63,6 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
       }
       onClick={() => window.open(explorerUrl, '_blank')}
     />
-  )
-}
-
-export function UnlockBoxPopupContent({ txn, removeThisPopup }: { txn: string; removeThisPopup: () => void }) {
-  // const success = tx.receipt?.status === 1
-  const { chainId } = useWeb3React()
-
-  const theme = useTheme()
-
-  // const tokens = useCombinedActiveList()
-
-  if (!chainId || !txn) return null
-
-  // const activity = parseLocalActivity(txn, chainId, tokens)
-  // const { ENSName } = useENSName(activity?.otherAccount)
-  const explorerUrl = getExplorerLink(chainId, txn, ExplorerDataType.TRANSACTION)
-  // console.log('UnlockBoxPopupContent', explorerUrl, chainId, tokens )
-  return (
-    <Popup>
-      <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
-      <PortfolioRow
-        isPopUp={true}
-        left={<></>}
-        title={<ThemedText.SubHeader fontWeight={500}>Unlock Treasure Box</ThemedText.SubHeader>}
-        descriptor={
-          <ThemedText.BodySmall fontWeight={500} marginTop="0.5rem" color="textSecondary">
-            Successfully unlocked the treasure box
-          </ThemedText.BodySmall>
-        }
-        onClick={() => window.open(explorerUrl, '_blank')}
-      />
-    </Popup>
   )
 }
 
@@ -143,7 +111,7 @@ export default function TransactionPopup({ hash, removeThisPopup }: { hash: stri
   const tx = useTransaction(hash)
   const theme = useTheme()
   if (!chainId || !tx) return null
-
+  
   switch (tx.info.type) {
     default:
       return (

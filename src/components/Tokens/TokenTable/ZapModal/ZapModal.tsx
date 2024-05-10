@@ -592,7 +592,7 @@ const ZapModal = (props: ZapModalProps) => {
   const [showDetails, setShowDetails] = useState(false)
   const [leftRangeTypedValue, setLeftRangeTypedValue] = useState<string | boolean>('')
   const [rightRangeTypedValue, setRightRangeTypedValue] = useState<string | boolean>('')
-  const [isInitialRender, setIsInitialRender] = useState(false)
+  const [isInitialRender, setIsInitialRender] = useState(true)
 
   const baseCurrency = baseIsToken0 ? token0 : token1
   const quoteCurrency = baseIsToken0 ? token1 : token0
@@ -699,27 +699,7 @@ const ZapModal = (props: ZapModalProps) => {
   )
 
   const addTransaction = useTransactionAdder()
-  const handleZap = useCallback(() => {
-    if (!callback) return
 
-    callback()
-      .then((response) => {
-        addTransaction(response, {
-          type: TransactionType.ZAP_AND_MINT,
-          inputCurrencyId: token0?.wrapped.address ?? '',
-          outputCurrencyId: token1?.wrapped.address ?? '',
-        })
-        setLeftRangeTypedValue('')
-        setRightRangeTypedValue('')
-        onClose()
-      })
-      .catch((error) => {
-        console.error(error)
-        onClose()
-      })
-  }, [callback, token0, token1, addTransaction, onClose])
-
- 
 
   const inputAmountFiat = useUSDPriceBNV2(parsedAmount, inputCurrency)
   const token0OutputFiat = useUSDPriceBNV2(txnInfo?.token0Out, token0 ?? undefined)
@@ -731,14 +711,39 @@ const ZapModal = (props: ZapModalProps) => {
   const invalidTrade = tradeState === ZapDerivedInfoState.INVALID
   const loadingTrade = tradeState === ZapDerivedInfoState.LOADING
 
+  const handleZap = useCallback(() => {
+    if (!callback) return
+
+    callback()
+      .then((response) => {
+        addTransaction(response, {
+          type: TransactionType.ZAP_AND_MINT,
+          inputCurrencyId: token0?.wrapped.address ?? '',
+          outputCurrencyId: token1?.wrapped.address ?? '',
+          mintAmount: formatBNToString(txnInfo?.token0Out, NumberType.SwapTradeAmount),
+          returnAmount: formatBNToString(txnInfo?.token0Remainder, NumberType.SwapTradeAmount)
+        })
+        setLeftRangeTypedValue('')
+        setRightRangeTypedValue('')
+        onClose()
+        setIsInitialRender(true)
+      })
+      .catch((error) => {
+        console.error(error)
+        onClose()
+        setIsInitialRender(true)
+      })
+  }, [callback, token0, token1, addTransaction, onClose])
+
   useEffect(() => {
-    if(inputAmount && !isInitialRender ) {
+    if(inputAmount && isInitialRender ) {
       handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
-      setIsInitialRender(true)
+      setIsInitialRender(false)
       // console.log('useEffect', inputAmount,)
     }
   }, [inputAmount])
-
+  // console.log('zapmodal wethMint: ',formatBNToString(txnInfo?.token0Out, NumberType.SwapTradeAmount), 
+  // 'wethOut: ', formatBNToString(txnInfo?.token0Remainder, NumberType.SwapTradeAmount))
   return (
     <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={460} $scrollOverlay={true} onDismiss={onClose}>
       <MainWrapper>

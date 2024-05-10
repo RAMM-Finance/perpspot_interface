@@ -320,6 +320,8 @@ export interface ZapAndMintInfo {
   type: TransactionType.ZAP_AND_MINT
   inputCurrencyId: string
   outputCurrencyId: string
+  mintAmount: string
+  returnAmount: string
 }
 
 export type TransactionInfo =
