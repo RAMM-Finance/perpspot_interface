@@ -337,7 +337,7 @@ const LootPage = () => {
         const numPointPerAdd = pointPerAdd?.toNumber()
         const numPoinstUsedForNewBoxes = poinstUsedForNewBoxes?.toNumber()
         const numPointsUsedForUnlocks = pointsUsedForUnlocks?.toNumber()
-        console.log('poinstUsedForNewBoxes', numPointsUsedForUnlocks, pointsUsedForUnlocks)
+        // console.log('poinstUsedForNewBoxes', numPointsUsedForUnlocks, pointsUsedForUnlocks)
 
         const isClaimed: boolean = await brp.claimed(account)
     
@@ -369,7 +369,7 @@ const LootPage = () => {
           pointForUnlocks: numPointsUsedForUnlocks,
         })
         setIsInsufficient(isInsufficient)
-        // setItemDatas(newData)
+        setItemDatas(newData)
         setHiddenCards([])
         setLoading(false)
       } catch (error) {
@@ -394,11 +394,9 @@ const LootPage = () => {
       img: '',
       info: '',
       isLocked: false,
-      // isInsufficient: false,
       index: 0,
     })
   }, [])
-  // console.log('itemDatas', brpData, itemDatas, account)
 
   return (
     <>
