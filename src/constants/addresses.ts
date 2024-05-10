@@ -144,6 +144,10 @@ export const BRP_ADDRESS: AddressMap = {
   [SupportedChainId.BASE]: '0x31EA2dD90Bd140d565726531f402D461E25A5f60',
 }
 
+export const NZT: AddressMap = {
+  [SupportedChainId.BASE]: '0x71dbf0bfc49d9c7088d160ec3b8bb0979556ea96'
+}
+
 //meme add 0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96
 
 // celo v3 addresses

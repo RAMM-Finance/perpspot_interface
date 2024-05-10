@@ -8,6 +8,12 @@ import bluePill from '../../assets/images/bluePill.jpg'
 import InfoItemStats from './InfoItemStats'
 import { ButtonPrimary } from 'components/Button'
 import { Trans } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
+import { NZT } from 'constants/addresses'
+import { useTokenContract } from 'hooks/useContract'
+import { SupportedChainId } from 'constants/chains'
+import { useEffect, useState } from 'react'
+import { BigNumber } from 'ethers'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -76,6 +82,27 @@ const InfoDescriptionSection = ({
   brpData: TBRPData
   loading: boolean
 }) => {
+  
+  const { account } = useWeb3React()
+  const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
+  
+  const [nztBalance, setNztBalance] = useState<string>('-')
+  
+  useEffect(() => {
+    const call = async () => {
+      if (account && nztContract) {
+
+        const balance = await nztContract.balanceOf(account)
+        const decimals = await nztContract.decimals()
+        const divisor = BigNumber.from(10).pow(decimals)
+
+        const nztBal = balance.div(divisor).toNumber().toString()
+        setNztBalance(nztBal)
+      }
+    }
+    call()
+  }, [account])
+
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
       <Row alignItems="center">
@@ -84,7 +111,7 @@ const InfoDescriptionSection = ({
           <ThemedText.CellName fontSize="14px" fontWeight={600} width="min">
             My NZT balance
           </ThemedText.CellName>
-          <ThemedText.SubHeader color="textSecondary">0</ThemedText.SubHeader>
+          <ThemedText.SubHeader color="textSecondary">{nztBalance}</ThemedText.SubHeader>
           <BluePillImg src={bluePill} />
         </Row>
       </Row>
