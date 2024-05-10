@@ -260,6 +260,7 @@ export default function App() {
                   <Route path="pools/v2" element={<PoolV2 />} /> */}
                   <Route path="pools" element={<Pool />} />
                   <Route path="pools/advanced" element={<Pool />} />
+                  <Route path="pools/simple" element={<Pool />} />
                   <Route path="pools/:tokenId" element={<PositionPage />} />
                   <Route path="referral" element={<ReferralPage />} />
                   <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
