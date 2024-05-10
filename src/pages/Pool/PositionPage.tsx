@@ -25,7 +25,7 @@ import { useToken } from 'hooks/Tokens'
 import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { PoolState, usePool } from 'hooks/usePools'
+import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import { useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
@@ -438,6 +438,24 @@ export function PositionPage() {
     tickLower,
     tickUpper
   )
+
+  // const price = pool?.token0Price
+  // const priceLower = formatTickPrice({
+  //   price: priceLower,
+  //   atLimit: tickAtLimit,
+  //   direction: Bound.LOWER,
+  //   numberType: NumberType.TokenTx,
+  // })
+  // const priceUpper = formatTickPrice({
+  //   price: priceUpper,
+  //   atLimit: tickAtLimit,
+  //   direction: Bound.UPPER,
+  //   numberType: NumberType.TokenTx,
+  // })
+  // useEstimatedAPR()
+  // const estimatedAPR = useEstimatedAPR(
+
+  // )
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {

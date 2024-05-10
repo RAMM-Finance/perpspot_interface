@@ -445,6 +445,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // console.log("UES EST ", token0, token1, priceInverted)
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
+  
+  if (token0?.symbol === "BRETT" || token1?.symbol === "BRETT")
+    console.log("HEREEEE EST", token0?.symbol, token1?.symbol, pool, tickSpacing, priceInverted, depositAmountUSD, estimatedAPR)
 
   const filterString = useAtomValue(filterStringAtom)
 

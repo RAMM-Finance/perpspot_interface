@@ -596,7 +596,7 @@ export function useEstimatedAPR(
   amountUSD: number,
   token0Range?: number,
   token1Range?: number
-) {
+): number {
   const { chainId } = useWeb3React()
 
   const [estimatedAPR, setEstimatedAPR] = useState<number>(0)

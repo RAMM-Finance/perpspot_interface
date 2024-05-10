@@ -612,6 +612,17 @@ export default function AddLiquidity() {
     ? parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0')
     : parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0')
 
+    console.log("------------")
+
+  console.log("BASE CURRENCY", baseCurrency)
+  console.log("QUOTE", quoteCurrency)
+  console.log("POOL", pool)
+  console.log("TS", pool?.tickSpacing)
+  console.log("PRICE FOR EST", priceForEst)
+  console.log("AMOUNT USD ", amountUSD)
+  console.log("TOKen 0 range", token0Range)
+  console.log("Tokne 1 range", token1Range)
+
   const estimatedAPR = useEstimatedAPR(
     baseCurrency,
     quoteCurrency,
@@ -622,6 +633,9 @@ export default function AddLiquidity() {
     token0Range,
     token1Range
   )
+
+  console.log("ESTIMATED APR", estimatedAPR)
+  console.log("------------")
 
   const LmtPerDay: string = useMemo(() => {
     if (

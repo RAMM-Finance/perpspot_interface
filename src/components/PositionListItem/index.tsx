@@ -169,7 +169,6 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 
   // if both prices are below 1, invert
 
-  console.log("IS INVERTED???", position.token0PriceUpper.lessThan(1)) // AERO/ETH?
   if (position.token0PriceUpper.lessThan(1)) {
     return {
       // price: position.pool.token0Price.invert(),
@@ -291,12 +290,10 @@ export default function PositionListItem({
 
   useEffect(() => {
     if (priceLower && priceUpper) {
-
-      console.log("POSIITON CALLED")
-      console.log("POSIITON CALLeD: isInverted", isInverted)
+      
       const invertedPriceLower = priceUpper.invert()
       const invertedPriceUpper = priceLower.invert()
-      console.log("POSIITON pricelower", priceLower.toSignificant(10))
+      
       if (isInverted) {
         setPriceLower(invertedPriceLower)
         setPriceUpper(invertedPriceUpper)
@@ -304,7 +301,6 @@ export default function PositionListItem({
         setPriceLower(priceLower)
         setPriceUpper(priceUpper)
       }
-      // setPrice(price)
       
     }
   }, [position, isInverted])
@@ -321,7 +317,7 @@ export default function PositionListItem({
       const invertedPriceLower = priceUpper.invert()
       const invertedPriceUpper = priceLower.invert()
       console.log("INVERTED PRICE LOWER", invertedPriceLower.toSignificant(10))
-      // const invertedPrice = price?.invert()
+
       if (!isInverted) {
         // setPrice(invertedPrice)
         setPriceLower(invertedPriceLower)
@@ -335,21 +331,35 @@ export default function PositionListItem({
     }
   }
 
-  console.log("IS INVERTED? ", isInverted, isInverted ? priceLowerValue?.invert().toSignificant(10) : priceLowerValue?.toSignificant(10))
 
-  console.log("TOKEN0:", currencyBase)
-  console.log("TOKEN1:", currencyQuote)
-  console.log("POOL:", pool)
-  console.log("tickSpacing:", tickSpacing)
-  // console.log("price:", priceValue ? priceValue.toSignificant(10) : 0);
-  console.log("depositAmountUSD:", depositAmount)
-  console.log("lowerPrice:", priceLowerValue ? priceLowerValue.toSignificant(10) : 0)
-  console.log("upperPrice:", priceUpperValue ? priceUpperValue.toSignificant(10) : 0)
-  console.log("PRICEVALUE", priceValue)
+  const estimatedAPR = useEstimatedAPR(
+    currencyBase, 
+    currencyQuote, 
+    pool, 
+    tickSpacing, 
+    priceValue,
+    depositAmount ?? 0, 
+    (priceLower && priceValue) ? (Number(priceLower.toSignificant(10)) / (priceValue)) : 0,
+    (priceUpper && priceValue) ? (Number(priceUpper.toSignificant(10)) / (priceValue)) : 0
+  )
 
-  console.log("lowerRange:", (priceLowerValue && priceValue) ? Number(priceLowerValue.toSignificant(10)) / (priceValue) : 0)
-  console.log("upperRange:", (priceUpperValue && priceValue) ? Number(priceUpperValue.toSignificant(10)) / (priceValue) : 0)
-  // useEstimatedAPR()
+  if (currencyBase && currencyQuote && (currencyBase.symbol === 'BRETT' || currencyQuote.symbol === 'BRETT')) {
+    console.log("TOKEN0:", currencyBase)
+    console.log("TOKEN1:", currencyQuote)
+    console.log("POOL:", pool)
+    console.log("tickSpacing:", tickSpacing)
+    // console.log("price:", priceValue ? priceValue.toSignificant(10) : 0);
+    console.log("depositAmountUSD:", depositAmount)
+    console.log("lowerPrice:", priceLower ? priceLower.toSignificant(10) : 0)
+    console.log("upperPrice:", priceUpper ? priceUpper.toSignificant(10) : 0)
+    console.log("PRICEVALUE", priceValue)
+  
+    console.log("lowerRange:", (priceLower && priceValue) ? Number(priceLower.toSignificant(10)) / (priceValue) : 0)
+    console.log("upperRange:", (priceUpper && priceValue) ? Number(priceUpper.toSignificant(10)) / (priceValue) : 0)
+    
+    console.log("EST APR !!!", currencyBase.symbol, currencyQuote.symbol, estimatedAPR)
+
+  }
   // useEstimatedAPR()
 
   // const priceLowerValue = priceLower?.toSignificant(10);
@@ -404,7 +414,10 @@ export default function PositionListItem({
             <HideSmall>Estimated APR:</HideSmall>
             <RangeText>
               <Trans>
-                <span>{formatBNToString(data?.apr, NumberType.TokenNonTx) + '%' + ' + swap fees'}</span>
+                <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
+                {/* {aprUtil
+                                      ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
+                                      : ''} */}
               </Trans>
             </RangeText>
           </RangeLineItem>

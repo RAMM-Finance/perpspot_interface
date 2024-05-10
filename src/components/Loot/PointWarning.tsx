@@ -32,7 +32,6 @@ const PointWarning = ({isInsufficient, isInConcatenatedAddresses, isClaimed, poi
     </Row>
     ) : (
       <Row marginLeft="48" gap="8">
-      {/* <AlertTriangle size={18} color={theme.accentSuccess} /> */}
       <ThemedText.BodyPrimary color="accentSuccess">
         Congrats! You are eligible for 20 boxes
       </ThemedText.BodyPrimary>

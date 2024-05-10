@@ -165,24 +165,26 @@ const BoxesContainer = ({
               <ThemedText.BodySecondary fontSize="18px" width="100%">
                 No Treasure Boxes
               </ThemedText.BodySecondary>
-              <AddBoxActionButton
-                isDisabled={isInsufficient && !(isInConcatenatedAddresses && !isClaimed)}
-                fontSize="18px"
-                onClick={() => {
-                  if (isInsufficient && !(isInConcatenatedAddresses && !isClaimed)) return
-                  if (isInConcatenatedAddresses && !isClaimed) {
-                    handleClaimBoxes(passcode)
-                  } else {
-                    handleAddBox()
-                  }
-                }}
-              >
-                {isInsufficient  && !(isInConcatenatedAddresses && !isClaimed)
-                ? 'Insufficient LMT'
-                : isInConcatenatedAddresses && !isClaimed
-                ? 'Claim Boxes'
-                : 'Add Box'}
-              </AddBoxActionButton>
+              {isInConcatenatedAddresses && (
+                <AddBoxActionButton
+                  isDisabled={isInsufficient && !(isInConcatenatedAddresses && !isClaimed)}
+                  fontSize="18px"
+                  onClick={() => {
+                    if (isInsufficient && !(isInConcatenatedAddresses && !isClaimed)) return
+                    if (isInConcatenatedAddresses && !isClaimed) {
+                      handleClaimBoxes(passcode)
+                    } else {
+                      handleAddBox()
+                    }
+                  }}
+                >
+                  {isInsufficient && !(isInConcatenatedAddresses && !isClaimed)
+                  ? 'Insufficient LMT'
+                  : isInConcatenatedAddresses && !isClaimed
+                  ? 'Claim Boxes'
+                  : 'Add Box'}
+                </AddBoxActionButton>
+              )}
             </Column>
           )}
     </BoxesDisplaySection>
