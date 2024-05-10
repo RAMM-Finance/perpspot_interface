@@ -68,9 +68,12 @@ export interface UniswapQueryTokenInfo {
   symbol: string
   decimals: number
   lastPriceUSD: string
-} 
+}
 
-export async function getDecimalAndUsdValueData(chainId: number | undefined, tokenId: string): Promise<UniswapQueryTokenInfo> {
+export async function getDecimalAndUsdValueData(
+  chainId: number | undefined,
+  tokenId: string
+): Promise<UniswapQueryTokenInfo> {
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network = 'arbitrum-one'
 

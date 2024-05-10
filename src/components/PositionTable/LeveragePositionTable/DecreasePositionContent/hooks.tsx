@@ -124,8 +124,7 @@ export function useDerivedReducePositionInfo(
       : position.token0Decimals
 
     const PnL = new BN(result.PnL.toString()).shiftedBy(-marginDecimals)
-    // .times(position.margin.times(new BN(reducePercent).shiftedBy(-18)))
-    // console.log('pnl hereeree',position,inputCurrency, outputCurrency, result.PnL.toString())
+
     let PnLWithPremium = null
     if (closePosition) {
       if (position.marginInPosToken) {

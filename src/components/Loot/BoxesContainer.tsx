@@ -151,7 +151,6 @@ const BoxesContainer = ({
             isInsufficient={isInsufficient && !(isInConcatenatedAddresses && !isClaimed)}
             isFirstBoxUnlocked={isFirstBoxUnlocked}
             handleUnlockBox={handleUnlockBox}
-            // handleAddBox={handleAddBox}
             shouldHide={hiddenCards.includes(index)}
             index={index}
             handleShowModal={handleShowModal}

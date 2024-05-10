@@ -1,16 +1,16 @@
 import { Trans } from '@lingui/macro'
-import { Trace, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName, InterfacePageName } from '@uniswap/analytics-events'
+import { Trace } from '@uniswap/analytics'
+import { InterfacePageName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import { ButtonGray, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
+import ConnectWallet from 'components/ConnectWallet'
 import Footer from 'components/Footer'
 import { Menu } from 'components/Menu'
 import SimplePool from 'components/PoolSimple'
 import PositionList from 'components/PositionList'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
-import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { isSupportedChain } from 'constants/chains'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useMemo } from 'react'
@@ -231,7 +231,8 @@ function WrongNetworkCard() {
 
 export default function Pool() {
   const { account, chainId } = useWeb3React()
-  const toggleWalletDrawer = useToggleWalletDrawer()
+
+  // const toggleWalletDrawer = useToggleWalletDrawer()
   const location = useLocation()
   const navigate = useNavigate()
   const isAdvanced = location.pathname.substring(0, 15) === '/pools/advanced'
@@ -351,21 +352,7 @@ export default function Pool() {
                           <Trans>Show closed positions</Trans>
                         </ButtonText>
                       )} */}
-                      {showConnectAWallet && (
-                        <TraceEvent
-                          events={[BrowserEvent.onClick]}
-                          name={InterfaceEventName.CONNECT_WALLET_BUTTON_CLICKED}
-                          properties={{ received_swap_quote: false }}
-                          element={InterfaceElementName.CONNECT_WALLET_BUTTON}
-                        >
-                          <ButtonPrimary
-                            style={{ marginTop: '2em', marginBottom: '2em', padding: '8px 16px' }}
-                            onClick={toggleWalletDrawer}
-                          >
-                            <Trans>Connect a wallet</Trans>
-                          </ButtonPrimary>
-                        </TraceEvent>
-                      )}
+                      {showConnectAWallet && <ConnectWallet />}
                     </ErrorContainer>
                   </MainContentWrapper>
                 )}

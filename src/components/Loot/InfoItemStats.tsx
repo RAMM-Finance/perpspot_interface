@@ -69,7 +69,7 @@ const ModalStatsItem = ({
 
 const InfoItemStats = ({ brpData, loading }: { brpData: TBRPData; loading: boolean }) => {
   return (
-    <Row gap={{ sm: '24', md: '36', lg: '48', xl: '60' }} marginBottom="28" marginTop="32">
+    <Row gap={{ sm: '24', lg: '36', xl: '40' }} marginBottom="28" marginTop="32" flexWrap="wrap">
       <StatsItem label="Total boxes" loading={loading}>
         {brpData?.totalBoxes}
       </StatsItem>
