@@ -24,6 +24,7 @@ import InfoDescriptionSection from '../../components/Loot/InfoDescription'
 
 import { firestore } from '../../firebaseConfig'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
+import ConnectWallet from 'components/ConnectWallet'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -101,13 +102,13 @@ export type TBRPData = {
   totalLMT: string
   NZTRageRow: number
   NZTRageHigh: number
-  pointPerAdd: number
   pointForUnlocks: number
 }
 
 const LootPage = () => {
   const { account } = useWeb3React()
   const blockNumber = useBlockNumber()
+
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
 
   const brp = useBRP()
@@ -119,7 +120,6 @@ const LootPage = () => {
     totalLMT: '0',
     NZTRageRow: 0,
     NZTRageHigh: 0,
-    pointPerAdd: 0,
     pointForUnlocks: 0,
   })
 
@@ -322,9 +322,7 @@ const LootPage = () => {
         const NZTRageRow = await brp.rangeLow()
         const NZTRageHigh = await brp.rangeHigh()
 
-        const pointPerAdd = await brp.pointPerAdd()
         const pointsUsedForUnlocks = await brp.pointsUsedForUnlocks(account)
-        const poinstUsedForNewBoxes = await brp.pointsUsedForNewBoxes(account)
 
         let numTotalBoxes = totalBoxes?.toNumber()
         if (!freeBoxUsed && numTotalBoxes === 0) {
@@ -334,16 +332,13 @@ const LootPage = () => {
         const totalLMTString = totalLMTPoint?.toString()
 
         const numtotalUnlockableBoxes = totalUnlockableBoxes[0]?.toNumber()
-        const numPointPerAdd = pointPerAdd?.toNumber()
-        const numPoinstUsedForNewBoxes = poinstUsedForNewBoxes?.toNumber()
         const numPointsUsedForUnlocks = pointsUsedForUnlocks?.toNumber()
         // console.log('poinstUsedForNewBoxes', numPointsUsedForUnlocks, pointsUsedForUnlocks)
 
         const isClaimed: boolean = await brp.claimed(account)
-    
-        const isInsufficient = numPointPerAdd > totalLMTPoint.toNumber() || numPoinstUsedForNewBoxes < numPointPerAdd
-        // const isPoinstUsedForNewBoxes= poinstUsedForNewBoxes?.toNumber() > numPointPerAdd
-        // console.log('poinstUsedForNewBoxes', numPoinstUsedForNewBoxes, numPointPerAdd, isInsufficient)
+
+        const isInsufficient = numPointsUsedForUnlocks > totalLMTPoint.toNumber()
+
         const lockedBoxes = Array(numTotalBoxes)
           .fill(true)
           .map((_, index) => index + 1 > numtotalUnlockableBoxes)
@@ -365,7 +360,6 @@ const LootPage = () => {
           totalLMT: totalLMTString,
           NZTRageHigh: NZTRageHigh?.toNumber(),
           NZTRageRow: NZTRageRow?.toNumber(),
-          pointPerAdd: numPointPerAdd,
           pointForUnlocks: numPointsUsedForUnlocks,
         })
         setIsInsufficient(isInsufficient)
@@ -398,6 +392,8 @@ const LootPage = () => {
     })
   }, [])
 
+  const showConnectAWallet = Boolean(!account)
+
   return (
     <>
       <BoxModal
@@ -422,24 +418,30 @@ const LootPage = () => {
             />
           </Row>
         </CollectionDescriptionSection>
-        <CollectionDisplaySection>
-          <PointWarning isInsufficient={isInsufficient} isInConcatenatedAddresses={isInConcatenatedAddresses} isClaimed={isClaimed} point={brpData?.pointPerAdd} isNoBoxes={itemDatas.length < 1} />
-          <BoxesContainer
-            itemDatas={itemDatas}
-            handleUnlockBox={handleUnlockBox}
-            handleAddBox={handleAddBox}
-            handleClaimBoxes={handleClaimBoxes}
-            passcode={passcode}
-            loading={loading}
-            hiddenCards={hiddenCards}
-            handleShowModal={handleShowModal}
-            account={account}
-            isInsufficient={isInsufficient}
-            isInConcatenatedAddresses={isInConcatenatedAddresses}
-            isClaimed={isClaimed}
-            isFirstBoxUnlocked={isFirstBoxUnlocked}
-          />
-        </CollectionDisplaySection>
+        {showConnectAWallet ?
+          <Row margin="auto">
+            <ConnectWallet/>
+          </Row>
+          : 
+          <CollectionDisplaySection>
+            <PointWarning isInsufficient={isInsufficient} isInConcatenatedAddresses={isInConcatenatedAddresses} isClaimed={isClaimed} point={brpData?.pointForUnlocks} isNoBoxes={itemDatas.length < 1} />
+            <BoxesContainer
+              itemDatas={itemDatas}
+              handleUnlockBox={handleUnlockBox}
+              handleAddBox={handleAddBox}
+              handleClaimBoxes={handleClaimBoxes}
+              passcode={passcode}
+              loading={loading}
+              hiddenCards={hiddenCards}
+              handleShowModal={handleShowModal}
+              account={account}
+              isInsufficient={isInsufficient}
+              isInConcatenatedAddresses={isInConcatenatedAddresses}
+              isClaimed={isClaimed}
+              isFirstBoxUnlocked={isFirstBoxUnlocked}
+            />
+          </CollectionDisplaySection>
+          }
         <FaqWrapper>
           <LootFAQ />
         </FaqWrapper>

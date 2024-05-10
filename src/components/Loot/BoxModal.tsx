@@ -115,7 +115,6 @@ interface IBoxModalProps {
   handleCloseModal: () => void
   handleUnlockBox: (index: number) => void
   isInsufficient: boolean
-  // handleAddBox: () => void
 }
 
 const BoxModal = ({
@@ -148,7 +147,7 @@ const BoxModal = ({
                 isDisabled={isLocked || isInsufficient}
                 onClick={() => (isLocked || isInsufficient ? undefined : handleUnlockBox(index))}
               >
-                {isInsufficient ? 'Insufficient LMT' : isLocked ? 'Locked' : 'Unlock'}
+                {isLocked ? 'Locked' : isInsufficient ? 'Insufficient LMT' : 'Unlock'}
               </ModalActionButton>
             </Row>
             <ModalDescriptWrapper gap="md" marginTop={10}>
