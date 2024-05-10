@@ -32,7 +32,7 @@ import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMaxLiquidityToWithdraw } from 'state/burn/v3/hooks'
 import { Bound } from 'state/mint/v3/actions'
@@ -52,6 +52,7 @@ import { TransactionType } from '../../state/transactions/types'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 
 const getTokenLink = (chainId: any, address: string) => {
   if (isGqlSupportedChain(chainId)) {
@@ -439,16 +440,32 @@ export function PositionPage() {
     tickUpper
   )
 
+  const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
+  const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
+
+
+  useEffect(() => {
+    const call = async () => {
+      if (position) {
+        const token0 = position.pool.token0.address
+        const token1 = position.pool.token1.address
+        const token0Price = Number((await getDecimalAndUsdValueData(chainId, token0)).lastPriceUSD)
+        const token1Price = Number((await getDecimalAndUsdValueData(chainId, token1)).lastPriceUSD)
+        setToken0PriceUSD(token0Price)
+        setToken1PriceUSD(token1Price)
+      }
+    }
+    call()
+  }, [position])
+
   const { depositAmount } = useMemo(() => {
-    if (position) {
-      
+    if (position && token0PriceUSD && token1PriceUSD) {
+      // position.pool.token0.
       const amount0 = position.amount0
       const amount1 = position.amount1
-      const token0Price = position.pool.token0Price
-      const token1Price = position.pool.token1Price
       
-      const deposit0 = parseFloat(amount0.multiply(token0Price).toFixed(amount0.currency.decimals))
-      const deposit1 = parseFloat(amount1.multiply(token1Price).toFixed(amount1.currency.decimals))
+      const deposit0 = Number(amount0.toSignificant(10)) * token0PriceUSD
+      const deposit1 = Number(amount1.toSignificant(10)) * token1PriceUSD
 
       return {
         depositAmount: deposit0 + deposit1 
@@ -459,7 +476,7 @@ export function PositionPage() {
         depositAmount: null
       }
   
-  }, [position])
+  }, [position, token0PriceUSD, token1PriceUSD])
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
