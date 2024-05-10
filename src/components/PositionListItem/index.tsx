@@ -276,10 +276,8 @@ export default function PositionListItem({
       if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
         const currencyBasePriceUSD = Number((await getDecimalAndUsdValueData(chainId, currencyBase.wrapped.address)).lastPriceUSD)
         const currencyQuotePriceUSD = Number((await getDecimalAndUsdValueData(chainId, currencyQuote.wrapped.address)).lastPriceUSD)
-        console.log("CURRENCY BASE PRICE USD", currencyBasePriceUSD)
-        console.log("CURRENCY QUOTE PRICE USD", currencyQuotePriceUSD)
+        
         const price = currencyBasePriceUSD / currencyQuotePriceUSD
-        // console.log("PRICE", currencyBasePriceUSD / currencyQuotePriceUSD)
         setPrice(price)
       }
     }
@@ -331,8 +329,7 @@ export default function PositionListItem({
     if (priceLower && priceUpper) {
       const invertedPriceLower = priceUpper.invert()
       const invertedPriceUpper = priceLower.invert()
-      console.log("INVERTED PRICE LOWER", invertedPriceLower.toSignificant(10))
-
+      
       if (!isInverted) {
         // setPrice(invertedPrice)
         setPriceLower(invertedPriceLower)
@@ -358,27 +355,7 @@ export default function PositionListItem({
     (priceUpper && priceValue) ? (Number(priceUpper.toSignificant(10)) / (priceValue)) : 0
   )
 
-  if (currencyBase && currencyQuote && (currencyBase.symbol === 'BRETT' || currencyQuote.symbol === 'BRETT')) {
-    console.log("TOKEN0:", currencyBase)
-    console.log("TOKEN1:", currencyQuote)
-    console.log("POOL:", pool)
-    console.log("tickSpacing:", tickSpacing)
-    // console.log("price:", priceValue ? priceValue.toSignificant(10) : 0);
-    console.log("depositAmountUSD:", depositAmount)
-    console.log("lowerPrice:", priceLower ? priceLower.toSignificant(10) : 0)
-    console.log("upperPrice:", priceUpper ? priceUpper.toSignificant(10) : 0)
-    console.log("PRICEVALUE", priceValue)
   
-    console.log("lowerRange:", (priceLower && priceValue) ? Number(priceLower.toSignificant(10)) / (priceValue) : 0)
-    console.log("upperRange:", (priceUpper && priceValue) ? Number(priceUpper.toSignificant(10)) / (priceValue) : 0)
-    
-    console.log("EST APR !!!", currencyBase.symbol, currencyQuote.symbol, estimatedAPR)
-
-  }
-  // useEstimatedAPR()
-
-  // const priceLowerValue = priceLower?.toSignificant(10);
-  // const priceUpperValue  = priceUpper?.toSignificant(10);
   return (
     <LinkRow to={positionSummaryLink}>
       {/* <RowBetween> */}
@@ -430,9 +407,6 @@ export default function PositionListItem({
             <RangeText>
               <Trans>
                 <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
-                {/* {aprUtil
-                    ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
-                      : ''} */}
               </Trans>
             </RangeText>
           </RangeLineItem>

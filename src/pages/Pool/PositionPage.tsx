@@ -424,7 +424,7 @@ export function PositionPage() {
   const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
 
   // construct Position from details returned
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const [poolState, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
   const position = useMemo(() => {
     if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
@@ -460,7 +460,7 @@ export function PositionPage() {
 
   const { depositAmount } = useMemo(() => {
     if (position && token0PriceUSD && token1PriceUSD) {
-      // position.pool.token0.
+
       const amount0 = position.amount0
       const amount1 = position.amount1
       
@@ -540,9 +540,27 @@ export function PositionPage() {
   
   const price = pool?.token0Price
   
-  console.log("PRICE LOWER UPPER", price?.toSignificant(10), priceLower?.toSignificant(10), priceUpper?.toSignificant(10))
-  console.log("DEPOSIT AMOUNT", depositAmount)
-  // const estimatedAPR = useEstimatedAPR(currencyBase, currencyQuote, pool, pool?.tickSpacing, price, )
+  const estimatedAPR = useEstimatedAPR(
+    currencyBase, 
+    currencyQuote, 
+    pool, 
+    tickSpacing, 
+    Number(price?.toSignificant(10)), 
+    depositAmount || 0, 
+    (priceLower && price) ? (Number(priceLower.toSignificant(10)) / Number(price.toSignificant(10))) : 0,
+    (priceUpper && price) ? (Number(priceUpper.toSignificant(10)) / Number(price.toSignificant(10))) : 0
+  )
+
+  // const estimatedAPR = useEstimatedAPR(
+  //   currencyBase, 
+  //   currencyQuote, 
+  //   pool, 
+  //   pool?.tickSpacing, 
+  //   price, 
+  //   depositAmount, 
+  //   (priceLower && price) ? (Number(priceLower.toSignificant(10)) / (price)) : 0,
+  //   (priceUpper && price) ? (Number(priceUpper.toSignificant(10)) / (price)) : 0)
+  // )
 
   // fees
   // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
@@ -1175,13 +1193,15 @@ export function PositionPage() {
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
+                      {ratesData && ratesData.apr.plus(estimatedAPR).gt(0) ? 
                       <Label>
                         <ThemedText.DeprecatedLargeHeader color={theme.accentSuccess} fontSize="12px" fontWeight={500}>
                           <Trans>
-                            Interest only APR (variable) : {ratesData ? formatBNToString(ratesData?.apr) + '%' : '-'}
+                            Interest only APR (variable) : {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
                           </Trans>
                         </ThemedText.DeprecatedLargeHeader>
-                      </Label>
+                      </Label> : null
+                      }
                       {false && showCollectAsWeth && (
                         <AutoColumn gap="md">
                           <RowBetween>
