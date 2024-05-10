@@ -4,6 +4,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
+import { LMT_PER_USD_PER_DAY } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -138,11 +139,8 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
       </DataRow>
       <DataRow>
         <ThemedText.BodySmall>LMT:</ThemedText.BodySmall>
-        <ClickableRate
-          style={{ fontSize: '14px', cursor: 'default' }}
-          rate={aprInfo[1].utilTotal ? aprInfo[1].utilTotal : 0}
-        >
-          {aprInfo[1].utilTotal !== undefined ? `${aprInfo[1].utilTotal?.toFixed(4)}%` : '-'}
+        <ClickableRate style={{ fontSize: '14px', cursor: 'default' }} rate={LMT_PER_USD_PER_DAY}>
+          {LMT_PER_USD_PER_DAY ?? '-'}
         </ClickableRate>
       </DataRow>
       <ButtonRow>
