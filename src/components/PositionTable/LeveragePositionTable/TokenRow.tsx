@@ -388,12 +388,14 @@ function PositionRow({
 
   const rowCells = (
     <>
-      <LeveragePositionModal
-        positionKey={positionKey}
-        selectedTab={selectedTab}
-        isOpen={showModal}
-        onClose={handleCloseModal}
-      />
+      {showModal && (
+        <LeveragePositionModal
+          positionKey={positionKey}
+          selectedTab={selectedTab}
+          isOpen={showModal}
+          onClose={handleCloseModal}
+        />
+      )}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
@@ -440,7 +442,7 @@ function PositionRow({
     <StyledTokenRow
       onClick={() => {
         setShowModal(!showModal)
-        setSelectedTab(TradeModalActiveTab.WITHDRAW_PREMIUM)
+        setSelectedTab(TradeModalActiveTab.DECREASE_POSITION)
       }}
       {...rest}
     >
@@ -572,15 +574,16 @@ export const LoadedRow = memo(
     const poolId = currentPool?.poolId
     const handlePoolSelect = useCallback(
       (e: any) => {
+        e.stopPropagation()
         if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
-            e.stopPropagation()
+            console.log('zeke:handle2')
             setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
           }
         }
       },
-      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey.poolKey.fee, token0, token1, chainId]
+      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey, token0, token1, chainId]
     )
 
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
@@ -877,7 +880,7 @@ export const LoadedRow = memo(
                 style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
                 onClick={handlePoolSelect}
               >
-                <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
+                <ThemedText.BodySmall> Set Current Pair</ThemedText.BodySmall>
               </SmallButtonPrimary>
             }
           />

@@ -56,13 +56,11 @@ export function usePoolsData(): {
         let ProvidedQueryData
         let WithdrawnQueryData
         if (chainId === SupportedChainId.BASE) {
-          console.log('zeke:base')
           AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
           ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
           ProvidedQueryData = await clientBase.query(LiquidityProvidedQuery, {}).toPromise()
           WithdrawnQueryData = await clientBase.query(LiquidityWithdrawnQuery, {}).toPromise()
         } else {
-          console.log('zeke:arb')
           AddQueryData = await client.query(AddQuery, {}).toPromise()
           ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
           ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
@@ -75,11 +73,10 @@ export function usePoolsData(): {
             pools.add(pool)
           }
         })
-        // console.log('zeke:2')
+
         const uniqueTokens_ = new Map<string, any>()
         await Promise.all(
           Array.from(pools).map(async (pool: any) => {
-            // console.log('zeke:2.1', pool)
             const token = await dataProvider.getPoolkeys(pool)
             if (token) {
               const poolAdress = ethers.utils.getAddress(pool)
@@ -96,7 +93,7 @@ export function usePoolsData(): {
             } else return null
           })
         )
-        // console.log('zeke:3')
+
         return {
           uniquePools: Array.from(pools),
           uniqueTokens: uniqueTokens_,
@@ -115,6 +112,7 @@ export function usePoolsData(): {
       refetchOnMount: false,
       staleTime: 60 * 1000,
       keepPreviousData: true,
+      enabled: queryKey.length > 0,
     }
   )
 
@@ -189,8 +187,10 @@ export function usePoolsData(): {
 
       return {
         pool,
-        amount0: (parseFloat(token0InfoFromUniswap?.lastPriceUSD) * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
-        amount1: (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
+        amount0:
+          (parseFloat(token0InfoFromUniswap?.lastPriceUSD) * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
+        amount1:
+          (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
 

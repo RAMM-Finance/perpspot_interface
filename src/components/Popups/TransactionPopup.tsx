@@ -50,7 +50,7 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
           <PopupAlertTriangle />
         )
       }
-      title={<ThemedText.SubHeader fontWeight={500} >{activity.title}</ThemedText.SubHeader>}
+      title={<ThemedText.SubHeader fontWeight={500}>{activity.title}</ThemedText.SubHeader>}
       descriptor={
         typeof activity.descriptor === 'string' ? (
           <Descriptor color="textSecondary">
@@ -105,13 +105,19 @@ const StatusPopup = styled.div`
   padding-right: 35px;
 `
 
-export default function TransactionPopup({ hash, removeThisPopup }: { hash: string; removeThisPopup: () => void }) {
+export default function TransactionPopup({
+  hash,
+  removeThisPopup,
+}: {
+  hash: string
+  removeThisPopup: (e: any) => void
+}) {
   const { chainId } = useWeb3React()
 
   const tx = useTransaction(hash)
   const theme = useTheme()
   if (!chainId || !tx) return null
-  
+
   switch (tx.info.type) {
     default:
       return (

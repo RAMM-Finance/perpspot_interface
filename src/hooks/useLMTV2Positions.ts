@@ -134,18 +134,62 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
 
-  const { result, loading, error, syncing } = useContractCallV2(
-    DATA_PROVIDER_ADDRESSES,
-    calldata,
-    ['getActiveMarginPositions'],
-    true
-  )
+  // const { result, loading, error, syncing } = useContractCallV2(
+  //   DATA_PROVIDER_ADDRESSES,
+  //   calldata,
+  //   ['getActiveMarginPositions'],
+  //   true,
+  //   true,
+  //   (data) => data,
+  //   {
+  //     keepPreviousData: true,
+  //     refetchInterval: 3500,
+  //     refetchOnReconnect: true,
+  //     refetchOnWindowFocus: false,
+  //     retry: false,
+  //     staleTime: Infinity,
+  //   }
+  // )
 
   const dataProvider = useDataProviderContract()
+  const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
+    gasRequired: 15_000_000,
+  })
+
+  const result = useMemo(() => {
+    if (callStates.length > 0 && callStates[0].result) {
+      if (callStates[0].result[0]) {
+        return callStates[0].result[0]
+      }
+    }
+    return undefined
+  }, [callStates])
+
+  const loading = useMemo(() => {
+    if (callStates.length > 0 && callStates[0]) {
+      return callStates[0].loading
+    }
+    return false
+  }, [callStates])
+
+  const syncing = useMemo(() => {
+    if (callStates.length > 0 && callStates[0]) {
+      return callStates[0].syncing
+    }
+    return false
+  }, [callStates])
+
+  const error = useMemo(() => {
+    if (callStates.length > 0 && callStates[0]) {
+      return callStates[0].error
+    }
+    return false
+  }, [callStates])
 
   const rateCalldatas: string[] = useMemo(() => {
     if (!result || !account) return []
-    const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+    // const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+    const parsed = result
     return parsed.map((position: any) => {
       return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', [
         {
@@ -182,7 +226,8 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
       }
     }
     try {
-      const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+      // const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
+      const parsed = result
       const positions: MarginPositionDetails[] = parsed.map((position: any, i: number) => {
         const inputDecimals = position.isToken0
           ? Number(position.token1Decimals.toString())

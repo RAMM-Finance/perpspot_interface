@@ -46,13 +46,19 @@ export default function PopupItem({
 }) {
   const removePopup = useRemovePopup()
   removeAfterMs = 10000
-  const removeThisPopup = useCallback(() => removePopup(popKey), [popKey, removePopup])
+  const removeThisPopup = useCallback(
+    (e: any) => {
+      e && e?.stopPropagation()
+      removePopup(popKey)
+    },
+    [popKey, removePopup]
+  )
 
   useEffect(() => {
     if (removeAfterMs === null) return undefined
 
     const timeout = setTimeout(() => {
-      removeThisPopup()
+      removeThisPopup(null)
     }, removeAfterMs)
 
     return () => {

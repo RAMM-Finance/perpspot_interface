@@ -186,6 +186,7 @@ export default function DecreasePositionContent({
   positionData,
   inputCurrency,
   outputCurrency,
+  onClose,
 }: {
   positionKey: TraderPositionKey
   onPositionChange: (newPosition: AlteredPositionProperties) => void
@@ -195,6 +196,7 @@ export default function DecreasePositionContent({
   }
   inputCurrency?: Currency
   outputCurrency?: Currency
+  onClose: () => void
 }) {
   const { position: existingPosition } = positionData
   // state inputs, derived, handlers for trade confirmation
@@ -373,11 +375,12 @@ export default function DecreasePositionContent({
     setCurrentState((prev) => ({ ...prev, attemptingTxn: true }))
 
     callback()
-      .then((response) => {
+      .then(({ response, closePosition }) => {
         // setAttemptingTxn(false)
         setCurrentState((prev) => ({ ...prev, attemptingTxn: false, txHash: response?.hash, errorMessage: undefined }))
         // setTxHash(response?.hash)
         // setErrorMessage(undefined)
+
         addTransaction(response, {
           type: TransactionType.REDUCE_LEVERAGE,
           reduceAmount: Number(reduceAmount),
@@ -386,6 +389,9 @@ export default function DecreasePositionContent({
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
         })
+        if (closePosition) {
+          onClose()
+        }
       })
       .catch((error) => {
         console.error(error)
@@ -395,7 +401,7 @@ export default function DecreasePositionContent({
           attemptingTxn: false,
         }))
       })
-  }, [callback, txnInfo, inputCurrency, outputCurrency, reduceAmount, addTransaction])
+  }, [callback, txnInfo, inputCurrency, outputCurrency, reduceAmount, addTransaction, onClose])
 
   const handleReduceLimitPosition = useCallback(() => {
     if (!limitCallback || !inputCurrency || !outputCurrency) {
