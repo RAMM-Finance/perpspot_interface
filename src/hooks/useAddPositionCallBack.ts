@@ -59,6 +59,7 @@ export function useAddPositionCallback(
         margin,
         premiumInPosToken,
         premiumSwapRoute,
+        allowedSlippage,
       } = trade
 
       const positionKey: TraderPositionKey = {
@@ -87,6 +88,7 @@ export function useAddPositionCallback(
       }
 
       let minPremiumOutput: string | undefined
+      const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       if (premiumInPosToken) {
         const output = await getOutputQuote(
           BnToCurrencyAmount(premium, outputCurrency),
@@ -95,8 +97,10 @@ export function useAddPositionCallback(
           chainId
         )
         if (!output) throw new Error('Quoter Error')
-        minPremiumOutput = new BN(Math.ceil(Number(output.toString()) / 2)).toFixed(0)
-        // minPremiumOutput = String(Math.ceil(Number(output.toString()) / 2))
+        // const output = await getOutputQuote(additionalPremium, premiumSwapRoute, provider, chainId)
+        // if (!output) throw new Error('Quoter Error')
+        const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
+        minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
       }
 
       const outputDecimals = outputCurrency.decimals
@@ -106,7 +110,7 @@ export function useAddPositionCallback(
       const currentPrice = trade.inputIsToken0
         ? new BN(pool.token0Price.toFixed(18))
         : new BN(pool.token1Price.toFixed(18))
-      const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
+
       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
       // console.log(
       //   'addPosition:callback',
