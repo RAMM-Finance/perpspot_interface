@@ -700,7 +700,6 @@ const ZapModal = (props: ZapModalProps) => {
 
   const addTransaction = useTransactionAdder()
 
-
   const inputAmountFiat = useUSDPriceBNV2(parsedAmount, inputCurrency)
   const token0OutputFiat = useUSDPriceBNV2(txnInfo?.token0Out, token0 ?? undefined)
   const token1OutputFiat = useUSDPriceBNV2(txnInfo?.token1Out, token1 ?? undefined)
@@ -721,10 +720,14 @@ const ZapModal = (props: ZapModalProps) => {
           inputCurrencyId: token0?.wrapped.address ?? '',
           outputCurrencyId: token1?.wrapped.address ?? '',
           mintAmount: formatBNToString(txnInfo?.token0Out, NumberType.SwapTradeAmount),
-          returnAmount: formatBNToString(txnInfo?.token0Remainder, NumberType.SwapTradeAmount)
+          returnAmount: formatBNToString(txnInfo?.token0Remainder, NumberType.SwapTradeAmount),
         })
         setLeftRangeTypedValue('')
         setRightRangeTypedValue('')
+        setInputAmount('')
+        setShowSettings(false)
+        setInputAmount('')
+        setBaseIsToken0(true)
         onClose()
         setIsInitialRender(true)
       })
@@ -733,16 +736,16 @@ const ZapModal = (props: ZapModalProps) => {
         onClose()
         setIsInitialRender(true)
       })
-  }, [callback, token0, token1, addTransaction, onClose])
+  }, [callback, token0, token1, addTransaction, onClose, txnInfo])
 
   useEffect(() => {
-    if(inputAmount && isInitialRender ) {
+    if (inputAmount && isInitialRender) {
       handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
       setIsInitialRender(false)
       // console.log('useEffect', inputAmount,)
     }
   }, [inputAmount])
-  // console.log('zapmodal wethMint: ',formatBNToString(txnInfo?.token0Out, NumberType.SwapTradeAmount), 
+  // console.log('zapmodal wethMint: ',formatBNToString(txnInfo?.token0Out, NumberType.SwapTradeAmount),
   // 'wethOut: ', formatBNToString(txnInfo?.token0Remainder, NumberType.SwapTradeAmount))
   return (
     <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={460} $scrollOverlay={true} onDismiss={onClose}>
@@ -907,7 +910,9 @@ const ZapModal = (props: ZapModalProps) => {
                   <ThemedText.BodyPrimary fontWeight={500}>Finding Best Price ...</ThemedText.BodyPrimary>
                 </>
               ) : (
-                <ThemedText.BodyPrimary fontWeight={500}>Execute</ThemedText.BodyPrimary>
+                <MouseoverTooltip text="Limitless charges no fees for zapping. Fees are only paid for swaps in dexes + slippage">
+                  <ThemedText.BodyPrimary fontWeight={500}>Execute</ThemedText.BodyPrimary>
+                </MouseoverTooltip>
               )}
             </SmallButtonPrimary>
           )}
