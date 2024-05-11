@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro'
 import Menu from '@mui/material/Menu'
+import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -15,6 +16,7 @@ import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
+import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { Row } from 'nft/components/Flex'
 import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
@@ -317,7 +319,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
-        {poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}
+        {poolOHLCData?.priceNow ? formatBNToString(new BN(poolOHLCData.priceNow), NumberType.FiatGasPrice, true) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
     </RowWrapper>
@@ -705,7 +707,9 @@ function SelectPool() {
 export default React.memo(SelectPool)
 
 const formatBN = (n: BN) => {
-  if (n.lt(0.0001)) {
+  if (n.lt(0.000001)) {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 9, minimumFractionDigits: 6 }).format(n.toNumber())
+  } else if (n.lt(0.0001)) {
     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 7, minimumFractionDigits: 5 }).format(n.toNumber())
   } else if (n.lt(1)) {
     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6, minimumFractionDigits: 3 }).format(n.toNumber())

@@ -136,7 +136,13 @@ export const defaultChartProps = {
       }
       return {
         format: (price: any, signPositive: any) => {
-          if (price < 0.0001) {
+          if (price < 0.0000001) {
+            return new Intl.NumberFormat('en-US', {
+              notation: 'scientific',
+              minimumSignificantDigits: 3,
+              maximumSignificantDigits: 4,
+            }).format(price)
+          } else if (price < 0.0001) {
             return new Intl.NumberFormat('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 9,

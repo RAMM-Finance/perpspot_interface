@@ -95,7 +95,8 @@ export function useAddPositionCallback(
           chainId
         )
         if (!output) throw new Error('Quoter Error')
-        minPremiumOutput = String(Math.ceil(Number(output.toString()) / 2))
+        minPremiumOutput = new BN(Math.ceil(Number(output.toString()) / 2)).toFixed(0)
+        // minPremiumOutput = String(Math.ceil(Number(output.toString()) / 2))
       }
 
       const outputDecimals = outputCurrency.decimals
@@ -107,25 +108,25 @@ export function useAddPositionCallback(
         : new BN(pool.token1Price.toFixed(18))
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-      console.log(
-        'addPosition:callback',
-        {
-          positionKey,
-          margin: trade.margin.rawAmount(),
-          borrowAmount: trade.borrowAmount.rawAmount(),
-          minimumOutput: marginInPosToken ? '0' : minimumOutput.shiftedBy(outputDecimals).toFixed(0),
-          deadline: deadline.toString(),
-          simulatedOutput: amountOut.toFixed(0),
-          executionOption: 1,
-          depositPremium: premium.rawAmount(),
-          slippedTickMin,
-          slippedTickMax,
-          marginInPosToken,
-          premiumInPosToken,
-          minPremiumOutput,
-        },
-        trade
-      )
+      // console.log(
+      //   'addPosition:callback',
+      //   {
+      //     positionKey,
+      //     margin: trade.margin.rawAmount(),
+      //     borrowAmount: trade.borrowAmount.rawAmount(),
+      //     minimumOutput: marginInPosToken ? '0' : minimumOutput.shiftedBy(outputDecimals).toFixed(0),
+      //     deadline: deadline.toString(),
+      //     simulatedOutput: amountOut.toFixed(0),
+      //     executionOption: 1,
+      //     depositPremium: premium.rawAmount(),
+      //     slippedTickMin,
+      //     slippedTickMax,
+      //     marginInPosToken,
+      //     premiumInPosToken,
+      //     minPremiumOutput,
+      //   },
+      //   trade
+      // )
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
         margin: trade.margin.rawAmount(),

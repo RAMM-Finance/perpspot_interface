@@ -52,22 +52,25 @@ export function formatBNToString(
 ): string {
   if (n === undefined) return placeholder
   if (n.isNaN()) return placeholder
-  // if (isPrice) {
-  //   if (n.lt(0.0001)) {
-  //     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 7, minimumFractionDigits: 5 }).format(n.toNumber())
-  //   } else if (n.lt(1)) {
-  //     return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6, minimumFractionDigits: 3 }).format(n.toNumber())
-  //   } else {
-  //     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(n.toNumber())
-  //   }
-  // }
   if (isPrice) {
     if (liqNumber) {
       return formatNumberOrString(n?.toNumber() / Number(`1e${liqNumber}`), type)
         .split('$')
         .join('')
     } else {
-      return formatNumberOrString(n?.toNumber(), type).split('$').join('')
+      if (n.lt(0.0000001)) {
+        return new Intl.NumberFormat('en-US', {
+          notation: 'scientific',
+          minimumSignificantDigits: 3,
+          maximumSignificantDigits: 4,
+        }).format(n.toNumber())
+      } else if (n.lt(1)) {
+        return new Intl.NumberFormat('en-US', { maximumFractionDigits: 6, minimumFractionDigits: 3 }).format(
+          n.toNumber()
+        )
+      } else {
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(n.toNumber())
+      }
     }
   }
   if (liqNumber) {
