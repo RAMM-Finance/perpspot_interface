@@ -28,7 +28,7 @@ const GroupWrapper = styled.div`
 
 const Highlights = () => {
   const { poolList } = usePoolsAprUtilList()
-  const arr = poolList && Object.entries(poolList).slice(0, 3)
+  const arr = poolList && Object.entries(poolList)
 
   return (
     <>

@@ -5,7 +5,7 @@ import { ThemedText } from 'theme'
 
 import affiliate from './affiliate-marketing.png'
 import coin from './coin.png'
-import { CollectMultipler, referralDivisor, usePointsData, useStoredData } from './data'
+import { CollectMultipler, referralDivisor, useStoredData } from './data'
 import { addresses } from './LeaderboardTable'
 import star from './star_616489.png'
 
@@ -147,10 +147,17 @@ export default function Points() {
 
   // }, [prevData, usersData])
 
-  const userData = useMemo(() => {
+  const rankedCombinedData = useMemo(() => {
     if (!combinedData) return
-    return combinedData.find((user: any) => user.trader === account)
+    return combinedData.map((user: any, element: number) => {
+      return { ...user, rank: element + 1 }
+    })
   }, [combinedData])
+
+  const userData = useMemo(() => {
+    if (!rankedCombinedData) return
+    return rankedCombinedData.find((user: any) => user.trader === account)
+  }, [rankedCombinedData, account])
 
   return (
     <Wrapper>
