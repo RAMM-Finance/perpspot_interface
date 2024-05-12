@@ -21,11 +21,13 @@ import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useLimweth, useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
 import { useContractCallV2 } from 'hooks/useContractCall'
 import { usePool } from 'hooks/usePools'
+import { getDecimalAndUsdValueData, UniswapQueryTokenInfo } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useEffect, useRef } from 'react'
+import { useQuery } from 'react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
@@ -52,6 +54,67 @@ import { tryParseLmtTick, tryParseTick } from './utils'
 
 export function useV3MintState(): AppState['mintV3'] {
   return useAppSelector((state) => state.mintV3)
+}
+
+export function useCurrencyFiatValues(
+  parsedAmountA?: CurrencyAmount<Currency>,
+  parsedAmountB?: CurrencyAmount<Currency>,
+  formattedAmountA?: string,
+  formattedAmountB?: string
+): { data: number | undefined; isLoading: boolean }[] {
+  const queryKey = useMemo(() => {
+    if (!parsedAmountA || !parsedAmountB || !formattedAmountA || !formattedAmountB) return []
+    return ['addLiquidty:currencyFiatValue']
+  }, [parsedAmountA, parsedAmountB, formattedAmountA, formattedAmountB])
+  const { chainId } = useWeb3React()
+  const callback = useCallback(async () => {
+    if (!parsedAmountA || !parsedAmountB || !formattedAmountA || !formattedAmountB || !chainId)
+      throw new Error('missing arguments')
+    const queryResults: UniswapQueryTokenInfo[] = await Promise.all([
+      getDecimalAndUsdValueData(chainId, parsedAmountA.currency?.wrapped.address),
+      getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.wrapped.address),
+    ])
+
+    if (!queryResults[0] || !queryResults[1]) throw new Error('missing data')
+    return [
+      parseFloat(queryResults[0].lastPriceUSD) * parseFloat(formattedAmountA),
+      parseFloat(queryResults[1].lastPriceUSD) * parseFloat(formattedAmountB),
+    ]
+  }, [parsedAmountA, parsedAmountB, formattedAmountA, formattedAmountB, chainId])
+
+  const { data, isLoading, error } = useQuery({
+    queryKey,
+    queryFn: callback,
+    enabled: queryKey.length > 0,
+    keepPreviousData: true,
+    refetchInterval: 20 * 1000,
+    staleTime: Infinity,
+  })
+  return useMemo(() => {
+    if (error || !data || !data[0] || !data[1]) {
+      return [
+        {
+          isLoading,
+          data: undefined,
+        },
+        {
+          isLoading,
+          data: undefined,
+        },
+      ]
+    }
+
+    return [
+      {
+        isLoading,
+        data: data[0],
+      },
+      {
+        isLoading,
+        data: data[1],
+      },
+    ]
+  }, [data, isLoading, error])
 }
 
 const DEFAULT_ADD_IN_RANGE_SLIPPAGE_TOLERANCE = new Percent(50, 10_000)

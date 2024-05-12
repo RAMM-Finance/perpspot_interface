@@ -20,7 +20,6 @@ import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
-import { getDecimalAndUsdValueData, UniswapQueryTokenInfo } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -28,6 +27,7 @@ import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Text } from 'rebass'
 import {
+  useCurrencyFiatValues,
   useDerivedLmtMintInfo,
   useRangeHopCallbacks,
   useV3MintActionHandlers,
@@ -132,6 +132,7 @@ export default function AddLiquidity() {
   // prevent an error if they input ETH/WETH
   const quoteCurrency =
     baseCurrency && currencyB && baseCurrency.wrapped.equals(currencyB.wrapped) ? undefined : currencyB
+
   // mint state
   const { independentField, typedValue, startPriceTypedValue } = useV3MintState()
 
@@ -169,6 +170,7 @@ export default function AddLiquidity() {
     useV3MintActionHandlers(noLiquidity)
 
   const isValid = !errorMessage && !invalidRange && !contractErrorMessage
+  console.log('zeke:isValid', errorMessage, invalidRange, contractErrorMessage)
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
@@ -185,45 +187,56 @@ export default function AddLiquidity() {
     [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
 
-  const [currencyAFiatState, setCurrencyAFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
-    data: undefined,
-    isLoading: true,
-  })
-  const [currencyBFiatState, setCurrencyBFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
-    data: undefined,
-    isLoading: true,
-  })
-
-  useEffect(() => {
-    const fetchData = async (parsedAmountA: any, parsedAmountB: any, formattedAmountA: any, formattedAmountB: any) => {
-      const queryResults: UniswapQueryTokenInfo[] = await Promise.all([
-        getDecimalAndUsdValueData(chainId, parsedAmountA?.currency?.address),
-        getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.address),
-      ])
-      setCurrencyAFiatState({
-        data: queryResults[0] ? parseFloat(queryResults[0].lastPriceUSD) * formattedAmountA : undefined,
-        isLoading: false,
-      })
-      setCurrencyBFiatState({
-        data: queryResults[1] ? parseFloat(queryResults[1].lastPriceUSD) * formattedAmountB : undefined,
-        isLoading: false,
-      })
-    }
-    fetchData(
-      parsedAmounts[Field.CURRENCY_A],
-      parsedAmounts[Field.CURRENCY_B],
-      formattedAmounts[Field.CURRENCY_A],
-      formattedAmounts[Field.CURRENCY_B]
-    )
-  }, [
-    setCurrencyAFiatState,
-    setCurrencyBFiatState,
+  const currencyFiatStates: { data: number | undefined; isLoading: boolean }[] = useCurrencyFiatValues(
     parsedAmounts[Field.CURRENCY_A],
     parsedAmounts[Field.CURRENCY_B],
     formattedAmounts[Field.CURRENCY_A],
-    formattedAmounts[Field.CURRENCY_B],
-    chainId,
-  ])
+    formattedAmounts[Field.CURRENCY_B]
+  )
+  console.log('zeke:currencyFiatState', currencyFiatStates[0], currencyFiatStates[1])
+  const currencyAFiatState = currencyFiatStates[0]
+  const currencyBFiatState = currencyFiatStates[1]
+
+  // const [currencyAFiatState, setCurrencyAFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
+  //   data: undefined,
+  //   isLoading: true,
+  // })
+  // const [currencyBFiatState, setCurrencyBFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
+  //   data: undefined,
+  //   isLoading: true,
+  // })
+
+  // useEffect(() => {
+  //   const fetchData = async (parsedAmountA: any, parsedAmountB: any, formattedAmountA: any, formattedAmountB: any) => {
+  //     const queryResults: UniswapQueryTokenInfo[] = await Promise.all([
+  //       getDecimalAndUsdValueData(chainId, parsedAmountA?.currency?.address),
+  //       getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.address),
+  //     ])
+  //     setCurrencyAFiatState({
+  //       data: queryResults[0] ? parseFloat(queryResults[0].lastPriceUSD) * formattedAmountA : undefined,
+  //       isLoading: false,
+  //     })
+  //     setCurrencyBFiatState({
+  //       data: queryResults[1] ? parseFloat(queryResults[1].lastPriceUSD) * formattedAmountB : undefined,
+  //       isLoading: false,
+  //     })
+  //   }
+  //   fetchData(
+  //     parsedAmounts[Field.CURRENCY_A],
+  //     parsedAmounts[Field.CURRENCY_B],
+  //     formattedAmounts[Field.CURRENCY_A],
+  //     formattedAmounts[Field.CURRENCY_B]
+  //   )
+  // }, [
+  //   setCurrencyAFiatState,
+  //   setCurrencyBFiatState,
+  //   parsedAmounts[Field.CURRENCY_A],
+  //   parsedAmounts[Field.CURRENCY_B],
+  //   formattedAmounts[Field.CURRENCY_A],
+  //   formattedAmounts[Field.CURRENCY_B],
+  //   chainId,
+  //   formattedAmounts,
+  // ])
 
   // get the max amounts user can add
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
