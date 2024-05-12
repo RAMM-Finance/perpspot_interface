@@ -57,6 +57,7 @@ import {
   useVaultStaticDepositAnyToken,
   useVaultStaticRedeemAnyToken,
 } from './hooks'
+import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 
 const AddLiquidityRow = styled(RowBetween)`
   gap: 10px;
@@ -1014,7 +1015,7 @@ export default function SimplePool() {
                   }}
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Daily LMT rewards: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>1 LMT per USD</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>{LMT_PER_USD_PER_DAY_LIMWETH} LMT per USD</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>

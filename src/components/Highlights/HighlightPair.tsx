@@ -4,7 +4,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
-import { LMT_PER_USD_PER_DAY } from 'constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -139,9 +139,22 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
       </DataRow>
       <DataRow>
         <ThemedText.BodySmall>LMT:</ThemedText.BodySmall>
-        <ClickableRate style={{ fontSize: '14px', cursor: 'default' }} rate={LMT_PER_USD_PER_DAY}>
+          <ClickableRate rate={
+              (currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
+              (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
+                ? LMT_PER_USD_PER_DAY_USDC
+                : LMT_PER_USD_PER_DAY
+            }>
+            {
+              (currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
+              (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
+                ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+                : `${LMT_PER_USD_PER_DAY} LMT/USD`
+            }
+          </ClickableRate>
+        {/* <ClickableRate style={{ fontSize: '14px', cursor: 'default' }} rate={LMT_PER_USD_PER_DAY}>
           {LMT_PER_USD_PER_DAY ?? '-'}
-        </ClickableRate>
+        </ClickableRate> */}
       </DataRow>
       <ButtonRow>
         <PairButton onClick={handleZap} style={{ width: '50px' }}>

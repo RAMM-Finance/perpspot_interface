@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { LMT_PER_USD_PER_DAY } from 'constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
@@ -550,10 +550,18 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           </>
         }
         dailyLMT={
-          <ClickableRate rate={LMT_PER_USD_PER_DAY}>
-            {/* rate={dailyLMT ? dailyLMT : 0}> */}
-            {/* {dailyLMT !== undefined ? `${dailyLMT?.toFixed(4)} ` : '-'} */}
-            {LMT_PER_USD_PER_DAY + ' LMT/USD'}
+          <ClickableRate rate={              
+          (token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
+          (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
+            ? LMT_PER_USD_PER_DAY_USDC
+            : LMT_PER_USD_PER_DAY
+            }>
+            {
+              (token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
+              (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
+                ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+                : `${LMT_PER_USD_PER_DAY} LMT/USD`
+            }
           </ClickableRate>
         }
         first={tokenListIndex === 0}

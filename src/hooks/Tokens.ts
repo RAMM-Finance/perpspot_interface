@@ -79,7 +79,8 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
       const activeTokens = { ...tokensFromPool, ...defaultTokens }
 
       return activeTokens
-    } else return {}
+    } else 
+      return {}
   }, [chainId, tokenList, additionalTokens])
 }
 
