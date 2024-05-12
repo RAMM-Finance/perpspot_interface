@@ -86,7 +86,7 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
         }
       })
 
-      const symbolsToRemove = ['INT'] // remove pools with these symbols
+      const symbolsToRemove = ['INT', 'BONKE'] // remove pools with these symbols
 
       const filteredResult = result[0].filter(
         (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
