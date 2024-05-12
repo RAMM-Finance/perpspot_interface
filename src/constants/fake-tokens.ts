@@ -34,23 +34,23 @@ export const WETH_BERA = new Token(80085, lweth, 18, 'WETH', 'Limitless WETH')
 
 export const TokensArbitrum: { [address: string]: Token } = {
   [WETH_ARBITRUM.address]: WETH_ARBITRUM,
-  [WBTC_ARBITRUM.address]: WBTC_ARBITRUM,
-  [USDC_ARBITRUM.address]: USDC_ARBITRUM,
-  [ARB_ARBITRUM.address]: ARB_ARBITRUM,
-  [UNI_ARBITRUM.address]: UNI_ARBITRUM,
-  [SUSHI_ARBITRUM.address]: SUSHI_ARBITRUM,
-  [RNDT_ARBITRUM.address]: RNDT_ARBITRUM,
-  [XPET_ARBITRUM.address]: XPET_ARBITRUM,
-  [CRV_ARBITRUM.address]: CRV_ARBITRUM,
-  [STG_ARBITRUM.address]: STG_ARBITRUM,
-  [XAI_ARBITRUM.address]: XAI_ARBITRUM,
-  [MAGIC_ARBITRUM.address]: MAGIC_ARBITRUM,
-  [DAI_ARBITRUM.address]: DAI_ARBITRUM,
-  [LDO_ARBITRUM.address]: LDO_ARBITRUM,
-  [GNS_ARBITRUM.address]: GNS_ARBITRUM,
-  [PENDLE_ARBITRUM.address]: PENDLE_ARBITRUM,
-  [LINK_ARBITRUM.address]: LINK_ARBITRUM,
-  [GMX_ARBITRUM.address]: GMX_ARBITRUM,
+  // [WBTC_ARBITRUM.address]: WBTC_ARBITRUM,
+  // [USDC_ARBITRUM.address]: USDC_ARBITRUM,
+  // [ARB_ARBITRUM.address]: ARB_ARBITRUM,
+  // [UNI_ARBITRUM.address]: UNI_ARBITRUM,
+  // [SUSHI_ARBITRUM.address]: SUSHI_ARBITRUM,
+  // [RNDT_ARBITRUM.address]: RNDT_ARBITRUM,
+  // [XPET_ARBITRUM.address]: XPET_ARBITRUM,
+  // [CRV_ARBITRUM.address]: CRV_ARBITRUM,
+  // [STG_ARBITRUM.address]: STG_ARBITRUM,
+  // [XAI_ARBITRUM.address]: XAI_ARBITRUM,
+  // [MAGIC_ARBITRUM.address]: MAGIC_ARBITRUM,
+  // [DAI_ARBITRUM.address]: DAI_ARBITRUM,
+  // [LDO_ARBITRUM.address]: LDO_ARBITRUM,
+  // [GNS_ARBITRUM.address]: GNS_ARBITRUM,
+  // [PENDLE_ARBITRUM.address]: PENDLE_ARBITRUM,
+  // [LINK_ARBITRUM.address]: LINK_ARBITRUM,
+  // [GMX_ARBITRUM.address]: GMX_ARBITRUM,
 }
 
 export function getNativeAddress(chainId: number): string {
@@ -63,7 +63,7 @@ export function getNativeAddress(chainId: number): string {
 }
 
 export const TokensArtio: { [address: string]: Token } = {
-  [USDC_BERA.address]: USDC_BERA,
+  // [USDC_BERA.address]: USDC_BERA,
   [WETH_BERA.address]: WETH_BERA,
 }
 
@@ -77,6 +77,10 @@ const TOSHI_BASE = new Token(8453, '0xAC1Bd2486aAf3B5C0fc3Fd868558b082a531B2B4',
 const DEGEN_BASE = new Token(8453, '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', 18, 'DEGEN', 'Degen')
 const BRETT_BASE = new Token(8453, '0x532f27101965dd16442E59d40670FaF5eBB142E4', 18, 'BRETT', 'Brett')
 const AERO_BASE = new Token(8453, '0x940181a94A35A4569E4529A3CDfB74e38FD98631', 18, 'AERO', 'Aerodrome')
+const OKAYEG_BASE = new Token(8453, '0xdb6e0e5094A25a052aB6845a9f1e486B9A9B3DdE', 18, 'OKAYEG', 'Okayeg')
+const BSHIB_BASE = new Token(8453, '0xfEA9DcDc9E23a9068bF557AD5b186675C61d33eA', 18, 'BSHIB', 'Based Shiba Inu')
+// const SPEC_BASE = new Token(8453, '')
+
 
 const ARBITRUM_STABLES: string[] = [USDC_ARBITRUM.address]
 const BASE_STABLES: string[] = [USDC_BASE.address]
@@ -92,8 +96,8 @@ export function getStables(chainId: number): string[] {
 
 export const TokensLinea: { [address: string]: Token } = {
   [WETH_LINEA.address]: WETH_LINEA,
-  [USDC_LINEA.address]: USDC_LINEA,
-  [WBTC_LINEA.address]: WBTC_LINEA,
+  // [USDC_LINEA.address]: USDC_LINEA,
+  // [WBTC_LINEA.address]: WBTC_LINEA,
 }
 
 const LINEA_TO_ARBITRUM: { [address: string]: string } = {
@@ -104,11 +108,13 @@ const LINEA_TO_ARBITRUM: { [address: string]: string } = {
 
 const TokensBase: { [address: string]: Token } = {
   [WETH_BASE.address]: WETH_BASE,
-  [USDC_BASE.address]: USDC_BASE,
-  [TOSHI_BASE.address]: TOSHI_BASE,
-  [DEGEN_BASE.address]: DEGEN_BASE,
-  [BRETT_BASE.address]: BRETT_BASE,
-  [AERO_BASE.address]: AERO_BASE,
+  // [USDC_BASE.address]: USDC_BASE,
+  // [TOSHI_BASE.address]: TOSHI_BASE,
+  // [DEGEN_BASE.address]: DEGEN_BASE,
+  // [BRETT_BASE.address]: BRETT_BASE,
+  // [AERO_BASE.address]: AERO_BASE,
+  // [OKAYEG_BASE.address]: OKAYEG_BASE,
+  // [BSHIB_BASE.address]: BSHIB_BASE,
 }
 
 const BERA_TO_ARBITRUM: { [address: string]: string } = {

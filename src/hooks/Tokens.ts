@@ -13,6 +13,8 @@ import { useAllLists, useCombinedTokenMapFromUrls } from '../state/lists/hooks'
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens, useUserAddedTokensOnChain } from '../state/user/hooks'
 import { TokenAddressMap, useUnsupportedTokenList } from './../state/lists/hooks'
+import { usePoolKeyList } from 'state/application/hooks'
+import { tokensToChainTokenMap } from 'lib/hooks/useTokenList/utils'
 
 // reduce token map into standard address <-> Token mapping, optionally include user added tokens
 function useTokensFromMap(tokenMap: TokenAddressMap): { [address: string]: Token } {
@@ -38,7 +40,12 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   // const tokensFromMap = useTokensFromMap(defaultListTokens)
 
   const { chainId } = useWeb3React()
+
+  const tokenList = usePoolKeyList()
+
+
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
+
   // const userAddedTokens = useUserAddedTokens()
 
   // return useMemo(() => {
@@ -57,8 +64,23 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   //   )
   // }, [additionalTokens])
   return useMemo(() => {
-    return additionalTokens
-  }, [additionalTokens])
+    let tokensFromPool
+    if (!tokenList.loading && chainId) {
+      tokensFromPool = tokenList.poolList?.reduce((acc, pool) => {
+        let token
+        if (pool.symbol1 !== 'WETH')
+          token = new Token(chainId, pool.token1, pool.decimals1, pool.symbol1, pool.name1)
+        else 
+          token = new Token(chainId, pool.token0, pool.decimals0, pool.symbol0, pool.name0)
+        return { ...acc, [pool.token1]: token }
+      }, {})
+      const defaultTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
+  
+      const activeTokens = { ...tokensFromPool, ...defaultTokens }
+
+      return activeTokens
+    } else return {}
+  }, [chainId, tokenList, additionalTokens])
 }
 
 type BridgeInfo = Record<
