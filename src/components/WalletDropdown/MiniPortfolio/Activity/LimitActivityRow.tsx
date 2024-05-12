@@ -43,6 +43,9 @@ const StyledTimestamp = styled.span`
   font-size: 12px;
   padding-top: 1px;
 `
+
+
+
 function processDescriptor(descriptor: string, title?: string) {
   const modifiedDescriptor = descriptor
     .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
@@ -69,7 +72,7 @@ function processDescriptor(descriptor: string, title?: string) {
     const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
     if (pnlMatch) {
-      pnlNumber = parseFloat(pnlMatch[1])
+      pnlNumber = parseFloat(pnlMatch[1]).toFixed(7)
       marginToken = pnlMatch[2]
     }
     price = price.slice(0, price.indexOf('Pnl')).trim()
@@ -139,7 +142,7 @@ export function ActivityRow({
                 {(typeof pnlNumber !== 'undefined') ? (
                   <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                     <ActivityPrice>
-                      <DeltaText delta={pnlNumber}>{`Pnl: ${pnlNumber} `}</DeltaText>
+                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${pnlNumber} `}</DeltaText>
                       {marginToken}
                     </ActivityPrice>
                   {ENSName ?? otherAccount}

@@ -15,7 +15,7 @@ const PointWarning = ({isInsufficient, isInConcatenatedAddresses, isClaimed, poi
   const theme = useTheme()
 
   return (
-    isNoBoxes ? 
+    (isNoBoxes && !isInConcatenatedAddresses) ? 
     <Row marginLeft="48" gap="8">
       <AlertTriangle size={18} color={theme.accentWarning} />
       <ThemedText.BodyPrimary color="accentWarning">
