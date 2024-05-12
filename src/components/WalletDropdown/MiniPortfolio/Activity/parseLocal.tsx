@@ -5,6 +5,7 @@ import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
+import { nativeOnChain } from 'constants/tokens'
 import { TransactionPartsFragment, TransactionStatus } from 'graphql/data/__generated__/types-and-hooks'
 import { formatSymbol } from 'lib/utils/formatSymbol'
 import { useMemo } from 'react'
@@ -30,11 +31,11 @@ import {
   TransactionDetails,
   TransactionType,
   WrapTransactionInfo,
+  ZapAndMintInfo,
 } from 'state/transactions/types'
 
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
-import { nativeOnChain } from 'constants/tokens'
 
 export function getCurrency(
   currencyId: string,
@@ -224,7 +225,6 @@ function parseReduceLeverage(
   chainId: SupportedChainId,
   tokens: TokenAddressMap
 ): Partial<Activity> {
-  
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
   const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
@@ -307,6 +307,18 @@ function parseMigrateCreateV3(
   return { descriptor, currencies: [baseCurrency, quoteCurrency] }
 }
 
+function parseZapOrder(info: ZapAndMintInfo, chainId: SupportedChainId, tokens: TokenAddressMap): Partial<Activity> {
+  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+  // console.log('parseZapOrder', tokenIn?.symbol)
+  const descriptor = <Descriptor marginTop="5px" color="textSecondary">Minted Amount: {info.mintAmount} {tokenIn?.symbol}, <br/> Returned Amount: {info.returnAmount} {tokenIn?.symbol}</Descriptor>
+
+  return {
+    descriptor,
+    currencies: [tokenIn, tokenOut],
+  }
+}
+
 export function parseLocalActivity(
   details: TransactionDetails,
   chainId: SupportedChainId,
@@ -368,6 +380,8 @@ export function parseLocalActivity(
     additionalFields = parseReduceLimitOrder(info, chainId, tokens)
   } else if (info.type === TransactionType.CANCEL_LIMIT_ORDER) {
     additionalFields = parseCancelLimitOrder(info, chainId, tokens)
+  } else if (info.type === TransactionType.ZAP_AND_MINT) {
+    additionalFields = parseZapOrder(info, chainId, tokens)
   }
 
   return { ...defaultFields, ...additionalFields }

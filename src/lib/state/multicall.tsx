@@ -20,7 +20,7 @@ function getBlocksPerFetchForChainId(chainId: number | undefined): number {
     case SupportedChainId.LINEA:
       return 30
     case SupportedChainId.BASE:
-      return 15
+      return 1
     default:
       return 1
   }

@@ -44,9 +44,10 @@ const fadeIn = keyframes`
 
 const StyledMenu = styled(NavDropdown)`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
   background-color: ${({ theme }) => theme.navbarBackground};
   position: absolute;
-  margin-top: 60px;
+  margin-top: 100px;
   padding: 5px;
   width: 200px;
   margin-left: -15px;
@@ -97,6 +98,9 @@ const MenuItemDropDown = ({ href, dataTestId, id, isActive, children, margin, ex
     <StyledMenu>
       <MenuItem font={true} href="/pools/advanced" isActive={pathname.startsWith('/pools/advanced')}>
         My LP Positions
+      </MenuItem>
+      <MenuItem font={true} href="/pools/simple" isActive={pathname.startsWith('/pools/simple')}>
+        Earn LimWeth
       </MenuItem>
     </StyledMenu>
   )

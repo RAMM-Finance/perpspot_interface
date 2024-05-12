@@ -59,7 +59,7 @@ const StyledTokenRow = styled.div<{
   font-size: 12px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1fr 1fr 0.9fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 0.8fr;
   line-height: 24px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -88,8 +88,8 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: 1400px) {
-    /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 80px; */
-    grid-template-columns: 100px 110px 110px 100px 125px 145px 110px 80px;
+    /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
+    grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -388,12 +388,14 @@ function PositionRow({
 
   const rowCells = (
     <>
-      <LeveragePositionModal
-        positionKey={positionKey}
-        selectedTab={selectedTab}
-        isOpen={showModal}
-        onClose={handleCloseModal}
-      />
+      {showModal && (
+        <LeveragePositionModal
+          positionKey={positionKey}
+          selectedTab={selectedTab}
+          isOpen={showModal}
+          onClose={handleCloseModal}
+        />
+      )}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
       <PriceCell data-testid="value-cell" sortable={header}>
         <EditCell
@@ -440,7 +442,7 @@ function PositionRow({
     <StyledTokenRow
       onClick={() => {
         setShowModal(!showModal)
-        setSelectedTab(TradeModalActiveTab.WITHDRAW_PREMIUM)
+        setSelectedTab(TradeModalActiveTab.DECREASE_POSITION)
       }}
       {...rest}
     >
@@ -572,15 +574,16 @@ export const LoadedRow = memo(
     const poolId = currentPool?.poolId
     const handlePoolSelect = useCallback(
       (e: any) => {
+        e.stopPropagation()
         if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
-            e.stopPropagation()
+            console.log('zeke:handle2')
             setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
           }
         }
       },
-      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey.poolKey.fee, token0, token1, chainId]
+      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey, token0, token1, chainId]
     )
 
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
@@ -672,11 +675,8 @@ export const LoadedRow = memo(
               <ClickableContent>
                 <RowBetween>
                   <PositionInfo>
-                    <GreenText>
-                      x{`${Math.round(leverageFactor * 1000) / 1000} ${outputCurrency?.symbol}`}
-                      <br />
-                      {`/${inputCurrency?.symbol}`}
-                    </GreenText>
+                    <GreenText>x{`${Math.round(leverageFactor * 1000) / 1000} `}</GreenText>
+                    <GreenText>{`${outputCurrency?.symbol}/${inputCurrency?.symbol}`}</GreenText>
                   </PositionInfo>
                 </RowBetween>
               </ClickableContent>
@@ -700,12 +700,13 @@ export const LoadedRow = memo(
                 }
               >
                 <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                  <AutoColumn gap="2px">
-                    <RowFixed style={{ flexWrap: 'wrap' }}>
+                  <AutoColumn gap="5px">
+                    <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
                       <CurrencyLogo currency={outputCurrency} size="10px" />
                       {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
-                      <div>{` ${outputCurrency?.symbol}`}</div>
                     </RowFixed>
+
+                    <div>{` ${outputCurrency?.symbol}`}</div>
                   </AutoColumn>
                 </FlexStartRow>
               </MouseoverTooltip>
@@ -730,12 +731,12 @@ export const LoadedRow = memo(
                 }
               >
                 <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                  <AutoColumn gap="2px">
-                    <RowFixed style={{ flexWrap: 'wrap' }}>
+                  <AutoColumn gap="5px">
+                    <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
                       <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
                       {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
-                      <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
                     </RowFixed>
+                    <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
                   </AutoColumn>
                 </FlexStartRow>
               </MouseoverTooltip>
@@ -877,7 +878,7 @@ export const LoadedRow = memo(
                 style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
                 onClick={handlePoolSelect}
               >
-                <ThemedText.BodySmall> Go to Pair</ThemedText.BodySmall>
+                <ThemedText.BodySmall> Set Current Pair</ThemedText.BodySmall>
               </SmallButtonPrimary>
             }
           />

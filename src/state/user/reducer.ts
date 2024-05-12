@@ -257,7 +257,7 @@ const userSlice = createSlice({
 
       // remove on launch
       // state.currentPoolKeys = {}
-      if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object' || Object.keys(state.currentPoolKeys)) {
+      if (!state.currentPoolKeys || typeof state.currentPoolKeys !== 'object') {
         state.currentPoolKeys = {}
       }
 

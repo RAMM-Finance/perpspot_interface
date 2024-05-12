@@ -30,7 +30,7 @@ export function useReducePositionCallback(
 
   const deadline = useTransactionDeadline()
 
-  const callback = useCallback(async (): Promise<TransactionResponse> => {
+  const callback = useCallback(async (): Promise<{ response: TransactionResponse; closePosition: boolean }> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
@@ -87,7 +87,7 @@ export function useReducePositionCallback(
         .then((response) => {
           return response
         })
-      return response
+      return { response, closePosition }
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
     }

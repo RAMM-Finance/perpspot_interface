@@ -199,7 +199,7 @@ export default function useGeckoDatafeed() {
             ticker: baseSymbol + '/' + quoteSymbol,
             session: '24x7',
             minmov: 1,
-            pricescale: 1000000,
+            pricescale: 10000000000,
             timezone: 'Etc/UTC',
             has_intraday: true,
             has_daily: true,

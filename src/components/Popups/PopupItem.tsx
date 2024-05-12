@@ -1,13 +1,11 @@
-import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import { useCallback, useEffect } from 'react'
 import { X } from 'react-feather'
-import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { useRemovePopup } from '../../state/application/hooks'
 import { PopupContent } from '../../state/application/reducer'
 import FailedNetworkSwitchPopup from './FailedNetworkSwitchPopup'
-import TransactionPopup, { UnlockBoxPopupContent } from './TransactionPopup'
+import TransactionPopup from './TransactionPopup'
 
 const StyledClose = styled(X)`
   position: absolute;
@@ -48,12 +46,19 @@ export default function PopupItem({
 }) {
   const removePopup = useRemovePopup()
   removeAfterMs = 10000
-  const removeThisPopup = useCallback(() => removePopup(popKey), [popKey, removePopup])
+  const removeThisPopup = useCallback(
+    (e: any) => {
+      e && e?.stopPropagation()
+      removePopup(popKey)
+    },
+    [popKey, removePopup]
+  )
+
   useEffect(() => {
     if (removeAfterMs === null) return undefined
 
     const timeout = setTimeout(() => {
-      removeThisPopup()
+      removeThisPopup(null)
     }, removeAfterMs)
 
     return () => {
@@ -64,13 +69,10 @@ export default function PopupItem({
   const theme = useTheme()
 
   let popupContent
-  let transactionType: TransactionType
+  // let transactionType: TransactionType
   if ('txn' in content) {
-    if (content.isUnlockBox) {
-      popupContent = <UnlockBoxPopupContent txn={content.txn.hash} removeThisPopup={removeThisPopup}/>
-    } else {
-      popupContent = TransactionPopup({ hash: content.txn.hash, removeThisPopup })
-    }
+    popupContent = TransactionPopup({ hash: content.txn.hash, removeThisPopup })
+
     return <>{popupContent}</>
   } else if ('failedSwitchNetwork' in content) {
     popupContent = <FailedNetworkSwitchPopup chainId={content.failedSwitchNetwork} />

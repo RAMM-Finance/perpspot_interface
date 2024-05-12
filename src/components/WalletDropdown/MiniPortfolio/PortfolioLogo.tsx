@@ -85,14 +85,7 @@ const L2LogoContainer = styled.div<{ $backgroundColor?: string }>`
 /**
  * Renders an image by prioritizing a list of sources, and then eventually a fallback triangle alert
  */
-export function PortfolioLogo({
-  chainId,
-  accountAddress,
-  currencies,
-  images,
-  size = '30px',
-  style,
-}: MultiLogoProps) {
+export function PortfolioLogo({ chainId, accountAddress, currencies, images, size = '30px', style }: MultiLogoProps) {
   const { squareLogoUrl, logoUrl } = getChainInfo(chainId)
   const chainLogo = squareLogoUrl ?? logoUrl
   const { avatar, loading } = useENSAvatar(accountAddress, false)
@@ -100,8 +93,16 @@ export function PortfolioLogo({
   const currency0 = currencies?.[0]
   const currency1 = currencies?.[1]
 
-  const [src, nextSrc] = useTokenLogoSource(currency0?.isNative ? null : currency0?.wrapped.address, chainId, currency0?.isNative)
-  const [src2, nextSrc2] = useTokenLogoSource(currency1?.isNative ? null : currency1?.wrapped.address, chainId, currency1?.isNative)
+  const [src, nextSrc] = useTokenLogoSource(
+    currency0?.isNative ? null : currency0?.wrapped.address,
+    chainId,
+    currency0?.isNative
+  )
+  const [src2, nextSrc2] = useTokenLogoSource(
+    currency1?.isNative ? null : currency1?.wrapped.address,
+    chainId,
+    currency1?.isNative
+  )
 
   let component
   if (accountAddress) {

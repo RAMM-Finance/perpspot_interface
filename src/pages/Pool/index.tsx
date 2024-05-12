@@ -13,7 +13,7 @@ import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { isSupportedChain } from 'constants/chains'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useState } from 'react'
 import { AlertTriangle, Inbox } from 'react-feather'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -236,10 +236,17 @@ export default function Pool() {
   const location = useLocation()
   const navigate = useNavigate()
   const isAdvanced = location.pathname.substring(0, 15) === '/pools/advanced'
+  const isSimple = location.pathname.substring(0, 15) === '/pools/simple'
   const [advanced, setAdvanced] = useState<any>(() => {
     const localData = localStorage.getItem('data')
-    return isAdvanced ? true : localData ? !!localData : false
+    return localData ? !!localData : false
   })
+
+  useEffect(() => {
+    if (isAdvanced) setAdvanced(true)
+    if (isSimple) setAdvanced(false)
+    return
+  }, [isAdvanced, isSimple, navigate])
 
   const theme = useTheme()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
@@ -275,7 +282,7 @@ export default function Pool() {
                 onClick={() => {
                   setAdvanced(false)
                   localStorage.removeItem('data')
-                  navigate('/pools')
+                  navigate('/pools/simple')
                 }}
                 active={!advanced}
               >
@@ -285,6 +292,7 @@ export default function Pool() {
                 onClick={() => {
                   localStorage.setItem('data', 'advanced')
                   setAdvanced(true)
+                  navigate('/pools/advanced')
                 }}
                 active={advanced}
               >

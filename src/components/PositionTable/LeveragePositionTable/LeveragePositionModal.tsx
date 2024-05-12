@@ -163,6 +163,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
   const handleTxnInfo = (txnInfo: DerivedDepositPremiumInfo | undefined | null) => {
     setAlteredPremium(txnInfo?.newDepositAmount)
   }
+
   const displayedContent = useMemo(() => {
     if (!positionKey) return null
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
@@ -172,6 +173,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
         inputCurrency={inputCurrency ?? undefined}
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
+        onClose={onClose}
       />
     ) : activeTab === TradeModalActiveTab.DEPOSIT_PREMIUM ? (
       <DepositPremiumContent
@@ -197,9 +199,10 @@ export function LeveragePositionModal(props: TradeModalProps) {
         inputCurrency={inputCurrency ?? undefined}
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
+        onClose={onClose}
       />
     )
-  }, [positionKey, activeTab, inputCurrency, outputCurrency, existingPosition, positionLoading])
+  }, [positionKey, activeTab, inputCurrency, outputCurrency, existingPosition, positionLoading, onClose])
 
   const positionExists = useMemo(() => {
     if (!positionLoading && existingPosition?.openTime === 0) {
@@ -210,7 +213,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
   }, [existingPosition, positionLoading])
 
   if (!positionExists) {
-    return <PositionMissing />
+    return null
   }
 
   return positionKey ? (
