@@ -22,7 +22,6 @@ import {
 } from 'components/modalFooters/common'
 import Row from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
-import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import Toggle from 'components/Toggle'
 import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
@@ -33,7 +32,6 @@ import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DynamicSection } from 'pages/Trade/tradeModal'
-import { Filter, FilterWrapper, Selector, StyledSelectorText } from 'pages/Trade/tradeModal'
 import { darken } from 'polished'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
@@ -644,7 +642,8 @@ export default function DecreasePositionContent({
           errorMessage={currentState.limitErrorMessage ? <Trans>{currentState.limitErrorMessage}</Trans> : undefined}
         />
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/*Temporarily Removing Limit Func */}
+      {/* <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '100px', alignItems: 'center' }}>
           {currentState.limitAvailable ? (
             <FilterWrapper>
@@ -672,7 +671,7 @@ export default function DecreasePositionContent({
           allowedSlippage={allowedSlippage}
           isLimitOrder={currentState.isLimit}
         />
-      </div>
+      </div> */}
       <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
           <DynamicSection gap="md" disabled={false}>

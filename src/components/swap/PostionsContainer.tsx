@@ -78,15 +78,15 @@ export function PostionsContainer({
           <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
             Leverage Positions
           </TabNavItem>
-          <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+          {/* <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
             Orders
-          </TabNavItem>
+          </TabNavItem> */}
           {/*<TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             History
           </TabNavItem>*/}
-          <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable}>
+          {/* <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable}>
             Unclaimed Interests
-          </TabNavItem>
+          </TabNavItem> */}
           <TabNavItem id={4} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             Activities
           </TabNavItem>
