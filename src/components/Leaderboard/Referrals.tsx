@@ -707,7 +707,7 @@ const Referrals = () => {
               Enter Referral Code
             </ThemedText.BodySecondary>
             <ThemedText.BodyPrimary style={{ paddingBottom: '15px' }}>
-              Enter a referral code to benefit from fee discounts.
+              Use referral code to get 2x more LMT 
             </ThemedText.BodyPrimary>
             <Input
               placeholder=" Enter referral code"
@@ -912,19 +912,18 @@ const Referrals = () => {
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-              <StyledCard>
+              {/* <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Advanced LP Fee Collected</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
                   ${totalCollected ? (totalCollected.toFixed(4) !== '0.0000' ? totalCollected.toFixed(4) : ' < 0.0001') : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
-
+              </StyledCard> */}
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>My LMT Multiplier</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>1.00</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>2.00</ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
             </ReferralAcceptContainer>

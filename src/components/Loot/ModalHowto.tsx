@@ -18,6 +18,7 @@ enum Option {
   Trade = 'trade',
   Earn = 'earn',
   Pairs = 'pairs',
+  Referral = 'referral'
 }
 
 const ModalHowto = () => {
@@ -30,6 +31,8 @@ const ModalHowto = () => {
       navigate('/pools')
     } else if (option === 'pairs') {
       navigate('/tokens/base')
+    } else if (option === 'referral') {
+      navigate('/referral')
     }
   }
   return (
@@ -48,6 +51,11 @@ const ModalHowto = () => {
       <FaqElement onClick={() => handleOptionClick(Option.Pairs)}>
         <InfoDescription description="Option3 - " fontSize={16} spacing={-0.8} />
         <InfoDescription description="Provide LP directly to pools" fontSize={14} spacing={-0.8} color="textPrimary" />
+        <ArrowUpRight size="16" />
+      </FaqElement>
+      <FaqElement onClick={() => handleOptionClick(Option.Referral)}>
+        <InfoDescription description="Option4 - " fontSize={16} spacing={-0.8} />
+        <InfoDescription description="Referral others" fontSize={14} spacing={-0.8} color="textPrimary" />
         <ArrowUpRight size="16" />
       </FaqElement>
     </ModalHowToWrapper>

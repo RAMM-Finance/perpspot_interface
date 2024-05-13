@@ -20,12 +20,12 @@ const LMTFAQ = () => {
       </FaqElement>{' '}
       <FaqElement>
         <a
-          href="https://limitless.gitbook.io/limitless/incentives-and-tokenomics/usdnzt"
+          href="https://limitless.gitbook.io/limitless/incentives-and-tokenomics/referrals"
           target="_blank"
           rel="noopener noreferrer"
         >
           <ThemedText.BodySecondary fontSize={15} fontWeight={800}>
-            Learn more about $NZT tokens 
+            Learn more about referral system
           </ThemedText.BodySecondary>
         </a>
         <ArrowUpRight size="20" />
