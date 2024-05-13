@@ -913,9 +913,9 @@ export default function SimplePool() {
               {isOpen && <>{dropdown}</>}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ThemedText.BodyPrimary fontSize={14}>14D APR:</ThemedText.BodyPrimary>
+                <ThemedText.BodyPrimary fontSize={14}>Estimated APR:</ThemedText.BodyPrimary>
                 <ThemedText.BodySecondary fontSize={13} style={{ color: theme.accentSuccess }}>
-                  24.6%
+                  20~110% 
                 </ThemedText.BodySecondary>
               </div>
             </RowStart>
@@ -1025,10 +1025,6 @@ export default function SimplePool() {
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>14D Impermanent Loss </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
