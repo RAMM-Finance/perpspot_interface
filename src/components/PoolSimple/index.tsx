@@ -650,6 +650,7 @@ export default function SimplePool() {
   }, [redeemCallback, account, vaultContract, addTransaction, chainId, provider, parsedAmounts])
 
   const llpBalance = useLlpBalance(account)
+
   const limWETHBalance = useLimWethBalance(account)
   // useEffect(() => {
   //   if (!account || !provider || !vaultContract || !limweth) return
@@ -687,7 +688,6 @@ export default function SimplePool() {
 
   const limWETHPrice = useLimWethPrice()
   const llpPrice = useLlpPrice()
-  console.log('zeke:llpPrice', llpPrice)
   const data = useVaultData()
   const redeemableTokens = useMemo(() => {
     if (!chainId) return undefined

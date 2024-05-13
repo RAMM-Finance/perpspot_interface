@@ -3,6 +3,7 @@
 /* eslint-disable */
 export * as lpManagerSol from "./LPManager.sol";
 export * as lpVaultSol from "./LPVault.sol";
+export * as nonFungiblePositionManagerV2Sol from "./NonFungiblePositionManagerV2.sol";
 export * as quoterSol from "./Quoter.sol";
 export * as registrySol from "./Registry.sol";
 export { Arbitrageur__factory } from "./Arbitrageur__factory";

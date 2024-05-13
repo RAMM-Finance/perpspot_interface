@@ -168,12 +168,12 @@ export const useLlpBalance = (account?: string): number => {
   const vaultContact = useVaultContract()
 
   const { result, error, loading } = useSingleCallResult(vaultContact, 'balanceOf', [account])
-
+  // console.log('zeke:llpBalance', result)
   return useMemo(() => {
     if (!result || loading || !account || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading, account])
 }
@@ -187,7 +187,7 @@ export const useLimWethBalance = (account?: string): number => {
     if (!result || loading || !account || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading, account])
 }
@@ -201,7 +201,7 @@ export const useLimWethTotalSupply = (): number => {
     if (!result || loading || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading])
 }
@@ -215,7 +215,7 @@ export const useLimWethTokenBalance = (): number => {
     if (!result || loading || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading])
 }
@@ -224,12 +224,11 @@ export const useLimWethUtilizedBalance = (): number => {
   const limWethContract = useLimweth()
 
   const { result, error, loading } = useSingleCallResult(limWethContract, 'utilizedBalance')
-
   return useMemo(() => {
     if (!result || loading || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading])
 }
@@ -245,7 +244,7 @@ export const useLimWethPrice = (): number => {
     if (!result || loading || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading])
 }
@@ -261,7 +260,7 @@ export const useLlpPrice = (): number => {
     if (!result || loading || error) {
       return 0
     } else {
-      return new BN(result.toString()).shiftedBy(-18).toNumber()
+      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
     }
   }, [result, error, loading])
 }
@@ -297,7 +296,6 @@ export const useVaultData = () => {
   const vaultContract = useVaultContract()
 
   const { result, error, loading } = useSingleCallResult(vaultContract, 'getData')
-
   return useMemo(() => {
     if (!result || loading || error) {
       return undefined

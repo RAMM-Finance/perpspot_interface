@@ -105,8 +105,6 @@ export const PoolSelector = ({
 
   const { poolList } = usePoolKeyList()
 
-  // const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
-
   const dropdown = (
     <NavDropdown
       ref={modalRef}

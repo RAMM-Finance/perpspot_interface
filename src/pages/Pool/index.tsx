@@ -12,6 +12,7 @@ import PositionList from 'components/PositionList'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { isSupportedChain } from 'constants/chains'
+import { useRebalanceCallback } from 'hooks/useRebalanceCallback'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { useEffect, useMemo } from 'react'
 import { useState } from 'react'
@@ -266,6 +267,8 @@ export default function Pool() {
     [closedPositions, openPositions, userHideClosedPositions]
   )
 
+  const rebalance = useRebalanceCallback()
+
   if (!isSupportedChain(chainId)) {
     return <WrongNetworkCard />
   }
@@ -298,6 +301,16 @@ export default function Pool() {
               >
                 <StyledSelectorText active={advanced}>Advanced</StyledSelectorText>
               </Selector>
+              {account?.toLowerCase() === '0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'.toLowerCase() && (
+                <Selector
+                  onClick={() => {
+                    rebalance()
+                  }}
+                  active={advanced}
+                >
+                  <StyledSelectorText active={false}>Rebalance</StyledSelectorText>
+                </Selector>
+              )}
             </Filter>
           </FilterWrapper>
           <AutoColumn gap="lg" justify="center">

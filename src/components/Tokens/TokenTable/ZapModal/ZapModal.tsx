@@ -734,7 +734,6 @@ const ZapModal = (props: ZapModalProps) => {
       })
       .catch((error) => {
         console.error(error)
-        onClose()
         setIsInitialRender(true)
       })
   }, [callback, token0, token1, addTransaction, onClose, txnInfo])
@@ -868,7 +867,7 @@ const ZapModal = (props: ZapModalProps) => {
               <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>
-          <RowFixed style={{ marginBottom: '5px' }}>
+          <RowFixed style={{ marginBottom: '10px' }}>
             <ThemedText.BodySecondary fontSize={11} fontWeight={500} marginLeft="5px">
               Limitless charges no fees for zapping. Fees are only paid for swaps in dexes + slippage
             </ThemedText.BodySecondary>

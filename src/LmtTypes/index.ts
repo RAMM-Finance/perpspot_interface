@@ -54,6 +54,8 @@ export type { ERC20 } from "./src/ERC20.sol/ERC20";
 export { ERC20__factory } from "./factories/src/ERC20.sol/ERC20__factory";
 export type { TestToken } from "./src/ERC20.sol/TestToken";
 export { TestToken__factory } from "./factories/src/ERC20.sol/TestToken__factory";
+export type { Token } from "./src/ERC20.sol/Token";
+export { Token__factory } from "./factories/src/ERC20.sol/Token__factory";
 export type { Executioner } from "./src/Executioner";
 export { Executioner__factory } from "./factories/src/Executioner__factory";
 export type { Facility } from "./src/Facility";
@@ -106,6 +108,8 @@ export type { PriceFeedInterface } from "./src/periphery/LPVault.sol/PriceFeedIn
 export { PriceFeedInterface__factory } from "./factories/src/periphery/LPVault.sol/PriceFeedInterface__factory";
 export type { NonfungiblePositionManager } from "./src/periphery/NonfungiblePositionManager";
 export { NonfungiblePositionManager__factory } from "./factories/src/periphery/NonfungiblePositionManager__factory";
+export type { NonfungiblePositionManagerV2 } from "./src/periphery/NonFungiblePositionManagerV2.sol/NonfungiblePositionManagerV2";
+export { NonfungiblePositionManagerV2__factory } from "./factories/src/periphery/NonFungiblePositionManagerV2.sol/NonfungiblePositionManagerV2__factory";
 export type { IV3Pool } from "./src/periphery/Quoter.sol/IV3Pool";
 export { IV3Pool__factory } from "./factories/src/periphery/Quoter.sol/IV3Pool__factory";
 export type { PeripheryImmutableState } from "./src/periphery/Quoter.sol/PeripheryImmutableState";

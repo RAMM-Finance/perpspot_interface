@@ -34,7 +34,7 @@ export const CHAIN_TO_NETWORK_ID: { [chainId: number]: string } = {
   [SupportedChainId.BASE]: 'base',
 }
 
-const getPoolAddress = (tokenA: string, tokenB: string, fee: number, factoryAddress: string) => {
+export const getPoolAddress = (tokenA: string, tokenB: string, fee: number, factoryAddress: string) => {
   const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
   const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
   return getCreate2Address(

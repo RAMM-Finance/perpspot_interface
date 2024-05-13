@@ -94,6 +94,7 @@ export declare namespace LPManager {
 export interface LPManagerInterface extends utils.Interface {
   functions: {
     "addLiquidityToPositions()": FunctionFragment;
+    "approve(address,address)": FunctionFragment;
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getPosition(uint256)": FunctionFragment;
     "getTokenIdsFromKey((address,address,uint24))": FunctionFragment;
@@ -112,6 +113,7 @@ export interface LPManagerInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "addLiquidityToPositions"
+      | "approve"
       | "getMaxWithdrawable"
       | "getPosition"
       | "getTokenIdsFromKey"
@@ -130,6 +132,10 @@ export interface LPManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "addLiquidityToPositions",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approve",
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "getMaxWithdrawable",
@@ -204,6 +210,7 @@ export interface LPManagerInterface extends utils.Interface {
     functionFragment: "addLiquidityToPositions",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getMaxWithdrawable",
     data: BytesLike
@@ -346,6 +353,12 @@ export interface LPManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    approve(
+      token: PromiseOrValue<string>,
+      who: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -429,6 +442,12 @@ export interface LPManager extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  approve(
+    token: PromiseOrValue<string>,
+    who: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   getMaxWithdrawable(
     key: PoolKeyStruct,
     tickLower: PromiseOrValue<BigNumberish>,
@@ -509,6 +528,12 @@ export interface LPManager extends BaseContract {
 
   callStatic: {
     addLiquidityToPositions(overrides?: CallOverrides): Promise<void>;
+
+    approve(
+      token: PromiseOrValue<string>,
+      who: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getMaxWithdrawable(
       key: PoolKeyStruct,
@@ -652,6 +677,12 @@ export interface LPManager extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    approve(
+      token: PromiseOrValue<string>,
+      who: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -733,6 +764,12 @@ export interface LPManager extends BaseContract {
 
   populateTransaction: {
     addLiquidityToPositions(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    approve(
+      token: PromiseOrValue<string>,
+      who: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -311,7 +311,7 @@ export interface AddBoxInfo {
 }
 
 export interface ClaimBoxesInfo {
-  type: TransactionType.CLAIM_BOXES,
+  type: TransactionType.CLAIM_BOXES
   inputCurrencyId: string
   outputCurrencyId: string
 }

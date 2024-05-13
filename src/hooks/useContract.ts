@@ -24,6 +24,7 @@ import {
   DATA_PROVIDER_ADDRESSES,
   ENS_REGISTRAR_ADDRESSES,
   LIM_WETH,
+  LMT_LP_MANAGER2,
   LMT_MARGIN_FACILITY,
   LMT_NFT_POSITION_MANAGER,
   LMT_POOL_MANAGER,
@@ -46,6 +47,7 @@ import { V3Migrator } from 'types/v3/V3Migrator'
 import { abi as BRP_ABI } from '../abis_v2/BRP.json'
 import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
 import { abi as LIM_TokenABI } from '../abis_v2/LIM_Token.json'
+import { abi as LP_MANAGER2_ABI } from '../abis_v2/LPManager2.json'
 import { abi as VaultAbi } from '../abis_v2/LPVault.json'
 import { abi as MarginFacilityAbi } from '../abis_v2/MarginFacility.json'
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
@@ -58,6 +60,7 @@ import {
   BRP,
   DataProvider,
   LIM_Token,
+  LPManager2,
   LPVault,
   MarginFacility,
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
@@ -104,9 +107,14 @@ const usdValueData: PricesMap = {
   '0x6694340fc020c5E6B96567843da2df01b2CE1eb6': 0.6, // stg
 }
 
-export const dailyLMT = new Proxy<any>({}, {
-  get: (target, address: string) => {address in target? target[address] : 1}
-})
+export const dailyLMT = new Proxy<any>(
+  {},
+  {
+    get: (target, address: string) => {
+      address in target ? target[address] : 1
+    },
+  }
+)
 
 export const usdValue = new Proxy<PricesMap>(usdValueData, {
   get: (target, address: string) => (address in target ? target[address] : 0),
@@ -193,6 +201,10 @@ export function useContract<T extends Contract = Contract>(
       return null
     }
   }, [addressOrAddressMap, ABI, provider, chainId, withSignerIfPossible, account]) as T
+}
+
+export function useLpManager2(withSignerIfPossible?: boolean) {
+  return useContract<LPManager2>(LMT_LP_MANAGER2, LP_MANAGER2_ABI, withSignerIfPossible)
 }
 
 export function useV2MigratorContract() {

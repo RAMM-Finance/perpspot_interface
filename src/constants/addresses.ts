@@ -145,7 +145,7 @@ export const BRP_ADDRESS: AddressMap = {
 }
 
 export const NZT: AddressMap = {
-  [SupportedChainId.BASE]: '0x71dbf0bfc49d9c7088d160ec3b8bb0979556ea96'
+  [SupportedChainId.BASE]: '0x71dbf0bfc49d9c7088d160ec3b8bb0979556ea96',
 }
 
 //meme add 0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96
@@ -281,6 +281,10 @@ export const NONFUNGIBLE_POSITION_MANAGER_ADDRESSES: AddressMap = {
 
   [SupportedChainId.LINEA]: LINEA_NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
   [SupportedChainId.BASE]: BASE_NONFUNGIBLE_POSITION_MANAGER_ADDRESSES,
+}
+
+export const LMT_LP_MANAGER2: AddressMap = {
+  [SupportedChainId.BASE]: '0x958b6F9CfB46C476BB89E40d3978D8c9827EA68F',
 }
 
 export const ENS_REGISTRAR_ADDRESSES: AddressMap = {

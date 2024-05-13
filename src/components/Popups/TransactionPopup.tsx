@@ -4,11 +4,13 @@ import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Acti
 import { PortfolioLogo } from 'components/WalletDropdown/MiniPortfolio/PortfolioLogo'
 import PortfolioRow from 'components/WalletDropdown/MiniPortfolio/PortfolioRow'
 import useENSName from 'hooks/useENSName'
+import { useMemo } from 'react'
 import { X } from 'react-feather'
+import { useNavigate } from 'react-router-dom'
 import { useActivePopups } from 'state/application/hooks'
 import { useCombinedActiveList } from 'state/lists/hooks'
 import { useTransaction } from 'state/transactions/hooks'
-import { TransactionDetails } from 'state/transactions/types'
+import { TransactionDetails, TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
@@ -22,17 +24,35 @@ export const Descriptor = styled(ThemedText.BodySmall)`
   text-overflow: ellipsis;
 `
 
-function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chainId: number }) {
+function TransactionPopupContent({
+  tx,
+  chainId,
+  removeThisPopup,
+}: {
+  tx: TransactionDetails
+  chainId: number
+  removeThisPopup: (e: any) => void
+}) {
   const success = tx.receipt?.status === 1
   const tokens = useCombinedActiveList()
 
   const activity = parseLocalActivity(tx, chainId, tokens)
   const { ENSName } = useENSName(activity?.otherAccount)
 
+  const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
+  const navigate = useNavigate()
+  const redirect = useMemo(() => {
+    if (tx.info.type === TransactionType.ZAP_AND_MINT) {
+      return () => {
+        navigate('/pools/advanced')
+        removeThisPopup(null)
+      }
+    }
+    return undefined
+  }, [tx, navigate, removeThisPopup])
+
   if (!activity) return null
 
-  const explorerUrl = getExplorerLink(chainId, tx.hash, ExplorerDataType.TRANSACTION)
-  // console.log('TransactionPopupContent activity: ', activity)
   return (
     <PortfolioRow
       isPopUp={true}
@@ -61,7 +81,7 @@ function TransactionPopupContent({ tx, chainId }: { tx: TransactionDetails; chai
           activity.descriptor
         )
       }
-      onClick={() => window.open(explorerUrl, '_blank')}
+      onClick={() => (redirect ? redirect() : window.open(explorerUrl, '_blank'))}
     />
   )
 }
@@ -123,7 +143,7 @@ export default function TransactionPopup({
       return (
         <Popup>
           <StyledClose color={theme.textSecondary} onClick={removeThisPopup} />
-          <TransactionPopupContent tx={tx} chainId={chainId} />
+          <TransactionPopupContent tx={tx} chainId={chainId} removeThisPopup={removeThisPopup} />
         </Popup>
       )
   }

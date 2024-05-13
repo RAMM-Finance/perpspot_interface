@@ -5,6 +5,8 @@ import type * as lpManagerSol from "./LPManager.sol";
 export type { lpManagerSol };
 import type * as lpVaultSol from "./LPVault.sol";
 export type { lpVaultSol };
+import type * as nonFungiblePositionManagerV2Sol from "./NonFungiblePositionManagerV2.sol";
+export type { nonFungiblePositionManagerV2Sol };
 import type * as quoterSol from "./Quoter.sol";
 export type { quoterSol };
 import type * as registrySol from "./Registry.sol";

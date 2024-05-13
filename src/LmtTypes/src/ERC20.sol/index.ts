@@ -3,3 +3,4 @@
 /* eslint-disable */
 export type { ERC20 } from "./ERC20";
 export type { TestToken } from "./TestToken";
+export type { Token } from "./Token";
