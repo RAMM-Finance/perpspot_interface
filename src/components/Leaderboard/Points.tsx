@@ -149,9 +149,11 @@ export default function Points() {
 
   const rankedCombinedData = useMemo(() => {
     if (!combinedData) return
-    return combinedData.map((user: any, element: number) => {
-      return { ...user, rank: element + 1 }
-    })
+    return combinedData
+      .sort((a: any, b: any) => a.totalPoints - b.totalPoints)
+      .map((user: any, element: number) => {
+        return { ...user, rank: element + 1 }
+      })
   }, [combinedData])
 
   const userData = useMemo(() => {
