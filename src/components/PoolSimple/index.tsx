@@ -884,10 +884,7 @@ export default function SimplePool() {
             </ThemedText.DeprecatedMediumHeader>
             {chainId === 8453 ? (
               <>
-                <ThemedText.BodyPrimary flexWrap="wrap">
-                  By minting limWETH you will gain index exposure to ETH, while earning fees from uniswap + premiums and
-                  points from Limitless
-                </ThemedText.BodyPrimary>
+
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <ArrowRight size={15} />
                   <ThemedText.BodyPrimary fontSize={13} flexWrap="wrap">
