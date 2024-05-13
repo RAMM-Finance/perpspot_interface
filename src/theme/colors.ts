@@ -100,7 +100,7 @@ export const colors = {
   purple700: '#210f2e',
   midGray: '#2a2f34',
   steelblueGray: '#747f8b',
-  softSkyBlue: '#869EFF29', //border 
+  softSkyBlue: '#869EFF29', //border
 }
 export const limitlessColors = {
   darkPurple: '#201426ff',
@@ -135,7 +135,7 @@ const commonTheme = {
 
   brandedGradient: colors.networkBsc,
   promotionalGradient: colors.networkBsc,
-  
+
   tableBorder: colors.softSkyBlue,
   // trade Button
   inactiveColor: colors.steelblueGray,
@@ -148,14 +148,13 @@ const commonTheme = {
   longBtnBackground: colors.green800,
   shortBtnBackground: colors.red900,
   swapBtnBackground: colors.blue900,
-  
+
   roundedImageShadow: 'rgba(245, 245, 245, 0.1) 0px 4px 12px',
 
   hoverState: opacify(24, colors.blue200),
   hoverDefault: opacify(8, colors.gray300),
 
   stateLabel: opacify(30, colors.gray200),
-
 }
 
 export const darkTheme = {
@@ -199,7 +198,7 @@ export const darkTheme = {
 
   deepShadow: '12px 16px 24px rgba(0, 0, 0, 0.24), 12px 8px 12px rgba(0, 0, 0, 0.24), 4px 4px 8px rgba(0, 0, 0, 0.32);',
   shallowShadow: '4px 4px 10px rgba(0, 0, 0, 0.24), 2px 2px 4px rgba(0, 0, 0, 0.12), 1px 2px 2px rgba(0, 0, 0, 0.12);',
-  
+
   roundedImageShadow: 'rgba(245, 245, 245, 0.1) 0px 4px 12px',
 
   networkDefaultShadow: `0px 40px 120px ${opacify(16, colors.blue400)}`,
@@ -233,7 +232,7 @@ export const lightTheme = {
   accentActive: '#3783fd',
   accentSuccess: colors.green200,
   accentWarning: colors.gold200,
-  accentFailure: colors.red300,
+  accentFailure: '#e81a1a', //colors.red500,
   accentCritical: colors.red300,
   popup: '#414755',
   accentActionSoft: opacify(24, colors.blue400),
@@ -241,7 +240,7 @@ export const lightTheme = {
   accentSuccessSoft: opacify(24, colors.green400),
   accentWarningSoft: opacify(24, colors.gold200),
   accentFailureSoft: opacify(12, colors.red300),
-  
+
   accentTextDarkPrimary: opacify(80, colors.gray900),
   accentTextDarkSecondary: opacify(60, colors.gray900),
   accentTextDarkTertiary: opacify(24, colors.gray900),
