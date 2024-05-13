@@ -133,7 +133,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.APR]: (
     <Trans>
       Estimated APR is the expected APR, based on the given trading volume and utilization rate, for providing liquidity
-      between 70% and 130% of the current price, assuming a deposit of 1,000 USD. Basic Fee Formula (L = liquidity):
+      between 80% and 120% of the current price, assuming a deposit of 1,000 USD. Basic Fee Formula (L = liquidity):
       (L_you / L_others) * (24h_swap_volume * pool_fee_rate)
     </Trans>
   ),
