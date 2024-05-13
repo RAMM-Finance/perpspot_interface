@@ -136,8 +136,6 @@ export const useRebalanceCallback = () => {
         const tickOuter = Math.round(strike[0] / tickDiscretization)
         const tickInner = Math.round(strike[1] / tickDiscretization)
 
-        console.log('zeke:1', tickOuter, tickInner, tickDiscretization, strike)
-
         let rebalanceReturn
         try {
           rebalanceReturn = await lpmanager2.rebalanceAroundCurrentPrice(
