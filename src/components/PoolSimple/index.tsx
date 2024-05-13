@@ -19,6 +19,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
@@ -57,7 +58,6 @@ import {
   useVaultStaticDepositAnyToken,
   useVaultStaticRedeemAnyToken,
 } from './hooks'
-import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 
 const AddLiquidityRow = styled(RowBetween)`
   gap: 10px;
@@ -994,7 +994,7 @@ export default function SimplePool() {
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Total Supply (ETH):</ThemedText.BodyPrimary>
+                  <ThemedText.BodyPrimary fontSize={12}>Total Supply (limWETH):</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween
@@ -1015,7 +1015,9 @@ export default function SimplePool() {
                   }}
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Daily LMT rewards: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>{LMT_PER_USD_PER_DAY_LIMWETH} LMT per USD</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {LMT_PER_USD_PER_DAY_LIMWETH} LMT per USD
+                  </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
@@ -1078,11 +1080,7 @@ export default function SimplePool() {
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
               onMax={() => {
-                !buy && chainId !== 8453
-                  ? onFieldAInput(llpBalance.toString())
-                  : !buy && chainId === 8453
-                  ? onFieldAInput(limWETHBalance.toString())
-                  : onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+                onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
               }}
               showMaxButton={true}
               currency={currencies[Field.CURRENCY_A] ?? null}
@@ -1094,7 +1092,7 @@ export default function SimplePool() {
                   ? { data: inputValue && WETHPrice.data && (inputValue / 1e18) * WETHPrice?.data, isLoading: false }
                   : !buy && chainId === 8453 && WETHPrice.data
                   ? {
-                      data: inputValue && (inputValue / 1e18) * (limWETHPrice / 1e18) * WETHPrice.data,
+                      data: inputValue && (inputValue / 1e18) * limWETHPrice * WETHPrice.data,
                       isLoading: false,
                     }
                   : { data: inputValue && (inputValue / 1e18) * llpPrice, isLoading: false }
@@ -1146,11 +1144,11 @@ export default function SimplePool() {
                   : !buy && value
                   ? { data: value * activePrice, isLoading: false }
                   : !buy && chainId === 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
+                  ? { data: (inputValue / 1e18) * WETHPrice.data, isLoading: false }
                   : !buy && chainId !== 8453 && !value && inputValue && WETHPrice.data
                   ? { data: (inputValue / 1e18) * activePrice, isLoading: false }
                   : buy && chainId === 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
+                  ? { data: (inputValue / 1e18) * WETHPrice.data, isLoading: false }
                   : buy && chainId !== 8453 && !value && inputValue && WETHPrice.data
                   ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
                   : value

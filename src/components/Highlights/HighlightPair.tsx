@@ -139,19 +139,20 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
       </DataRow>
       <DataRow>
         <ThemedText.BodySmall>LMT:</ThemedText.BodySmall>
-          <ClickableRate rate={
-              (currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
-              (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
-                ? LMT_PER_USD_PER_DAY_USDC
-                : LMT_PER_USD_PER_DAY
-            }>
-            {
-              (currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
-              (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
-                ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
-                : `${LMT_PER_USD_PER_DAY} LMT/USD`
-            }
-          </ClickableRate>
+        <ClickableRate
+          style={{ fontSize: '14px', cursor: 'default' }}
+          rate={
+            (currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
+            (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
+              ? LMT_PER_USD_PER_DAY_USDC
+              : LMT_PER_USD_PER_DAY
+          }
+        >
+          {(currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
+          (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
+            ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+            : `${LMT_PER_USD_PER_DAY} LMT/USD`}
+        </ClickableRate>
         {/* <ClickableRate style={{ fontSize: '14px', cursor: 'default' }} rate={LMT_PER_USD_PER_DAY}>
           {LMT_PER_USD_PER_DAY ?? '-'}
         </ClickableRate> */}

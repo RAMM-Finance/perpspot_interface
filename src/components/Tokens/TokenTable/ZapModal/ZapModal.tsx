@@ -26,7 +26,7 @@ import { useContractCallV2 } from 'hooks/useContractCall'
 import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
-import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
+import useCurrencyBalance, { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowContainer } from 'pages/Trade'
 import { darken } from 'polished'
@@ -45,6 +45,7 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
@@ -747,6 +748,10 @@ const ZapModal = (props: ZapModalProps) => {
   }, [inputAmount])
   // console.log('zapmodal wethMint: ',formatBNToString(txnInfo?.token0Out, NumberType.SwapTradeAmount),
   // 'wethOut: ', formatBNToString(txnInfo?.token0Remainder, NumberType.SwapTradeAmount))
+
+  const maxInputCurrency = useCurrencyBalance(account ?? undefined, inputCurrency ?? undefined)
+  const maxInputBalnace = maxAmountSpend(maxInputCurrency ?? undefined)
+
   return (
     <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={460} $scrollOverlay={true} onDismiss={onClose}>
       <MainWrapper>
@@ -773,6 +778,9 @@ const ZapModal = (props: ZapModalProps) => {
             <ZapTokenPanel
               value={inputAmount}
               onUserInput={(val: string) => setInputAmount(val)}
+              onMax={() => {
+                setInputAmount(maxInputBalnace?.toExact() ?? '')
+              }}
               showMaxButton={true}
               fiatValue={inputAmountFiat}
               id="1"
@@ -793,7 +801,7 @@ const ZapModal = (props: ZapModalProps) => {
             </ArrowContainer>
           </ArrowWrapper>
           <DetailsWrapper>
-            <ThemedText.BodySecondary>Minted Amounts</ThemedText.BodySecondary>
+            <ThemedText.BodySecondary style={{ marginBottom: '5px' }}>Minted Amounts</ThemedText.BodySecondary>
             <InputWrapper2>
               <ZapOutputTokenPanel
                 value={txnInfo?.token0Out ? formatBNToString(txnInfo.token0Out, NumberType.SwapTradeAmount) : '-'}
@@ -818,7 +826,7 @@ const ZapModal = (props: ZapModalProps) => {
                 hideBalance={true}
               />
             </InputWrapper2>
-            <ThemedText.BodySecondary>Returned Amount</ThemedText.BodySecondary>
+            <ThemedText.BodySecondary style={{ marginBottom: '5px' }}>Returned Amount</ThemedText.BodySecondary>
             <InputWrapper2>
               {/* <ValueLabel /> */}
               <ZapOutputTokenPanel
@@ -860,6 +868,11 @@ const ZapModal = (props: ZapModalProps) => {
               <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>
+          <RowFixed style={{ marginBottom: '5px' }}>
+            <ThemedText.BodySecondary fontSize={11} fontWeight={500} marginLeft="5px">
+              Limitless charges no fees for zapping. Fees are only paid for swaps in dexes + slippage
+            </ThemedText.BodySecondary>
+          </RowFixed>
           {!account ? (
             <SmallButtonPrimary padding="16px">
               <ThemedText.BodyPrimary fontWeight={500}>Connect Wallet</ThemedText.BodyPrimary>
