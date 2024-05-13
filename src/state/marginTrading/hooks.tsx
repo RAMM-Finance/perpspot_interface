@@ -273,6 +273,13 @@ export function useDerivedAddPositionInfo(
     account ?? undefined,
     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
   )
+  // console.log(
+  //   'zeke:',
+  //   inputCurrency?.symbol,
+  //   outputCurrency?.symbol,
+  //   relevantTokenBalances[0]?.toExact(),
+  //   relevantTokenBalances[1]?.toExact()
+  // )
 
   const currencyBalances = useMemo(
     () => ({
@@ -420,14 +427,18 @@ export function useDerivedAddPositionInfo(
     // compare input balance to max input based on version
     const balanceIn = currencyBalances[Field.INPUT]
     const balanceOut = currencyBalances[Field.OUTPUT]
+    // zeke:inputError 215.091874 0.014646871827232164 0 0.25056
+
     if (balanceIn && tradeApprovalInfo) {
       const amountIn = tradeApprovalInfo.inputApprovalAmount
-      if (balanceIn.lessThan(amountIn)) {
+      if (Number(balanceIn.toExact()) < Number(amountIn.toExact())) {
         inputError = inputError ?? <Trans>Insufficient {balanceIn.currency.symbol}</Trans>
       }
-    } else if (balanceOut && tradeApprovalInfo) {
+    }
+
+    if (balanceOut && tradeApprovalInfo) {
       const amountOut = tradeApprovalInfo.outputApprovalAmount
-      if (balanceOut.lessThan(amountOut)) {
+      if (Number(balanceOut.toExact()) < Number(amountOut.toExact())) {
         inputError = inputError ?? <Trans>Insufficient {balanceOut.currency.symbol}</Trans>
       }
     }
