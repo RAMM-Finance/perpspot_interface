@@ -28,10 +28,6 @@ const LeaderboardWrapper = styled.div`
   width: 100%;
   margin-right: 0.125rem;
   margin-top: 0.125rem;
-  overflow-y: scroll;
-  ::-webkit-scrollbar {
-    display: none;
-  }
 `
 // Achievements
 const AchievementsWrapper = styled.div`

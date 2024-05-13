@@ -100,7 +100,7 @@ const MenuItemDropDown = ({ href, dataTestId, id, isActive, children, margin, ex
         My LP Positions
       </MenuItem>
       <MenuItem font={true} href="/pools/simple" isActive={pathname.startsWith('/pools/simple')}>
-        Earn LimWeth
+        Simple LP
       </MenuItem>
     </StyledMenu>
   )
