@@ -196,6 +196,8 @@ interface DerivedAddPositionResult {
   existingLimitPosition?: MarginLimitOrder
   maxLeverage?: BN
   userHasSpecifiedInputOutput: boolean
+  parsedMargin?: BN
+  marginInPosToken: boolean
 }
 
 export function useDerivedAddPositionInfo(
@@ -516,6 +518,8 @@ export function useDerivedAddPositionInfo(
       userPremiumPercent: rawUserPremiumPercent,
       maxLeverage,
       userHasSpecifiedInputOutput,
+      parsedMargin,
+      marginInPosToken,
     }),
     [
       currencies,
@@ -531,6 +535,8 @@ export function useDerivedAddPositionInfo(
       rawUserPremiumPercent,
       maxLeverage,
       userHasSpecifiedInputOutput,
+      parsedMargin,
+      marginInPosToken,
     ]
   )
 }

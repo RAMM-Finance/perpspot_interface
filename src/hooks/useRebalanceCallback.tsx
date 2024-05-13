@@ -26,12 +26,11 @@ const strikes: PricesMap = {
   // aero
   '0x3d5d143381916280ff91407febeb52f2b60f33cf': [4500, 3500, 100000000000000000, 1000],
 
-  // okayeg 
-  '0x58342c302dd4df0531f60dd3c0eabb0c95ac08cb': [4500,3500, 100000000000000000, 1000], 
+  // okayeg
+  '0x58342c302dd4df0531f60dd3c0eabb0c95ac08cb': [4500, 3500, 100000000000000000, 1000],
 
-  // spec 
+  // spec
   '0x8055e6de251e414e8393b20adab096afb3cf8399': [4500, 3500, 200000000000000000, 1000],
-
 }
 
 const Strikes = new Proxy<PricesMap>(strikes, {
@@ -156,7 +155,7 @@ export const useRebalanceCallback = () => {
             strike[2].toString(),
             strike[3].toString(),
             {
-              gasLimit: 50000000,
+              gasLimit: 10_000_000,
             }
           )
         } catch (err) {
