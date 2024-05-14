@@ -391,7 +391,9 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //   return processedHistory
   // }, [history])
 
-  const [historyToShow, setHistoryToShow] = useState<any[]>([])
+  const [historyToShow, setHistoryToShow] = useState<any[] | null>(null)
+
+  console.log("historyToShow", historyToShow)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -443,7 +445,8 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //   return createGroups(allActivities)
   // }, [data?.portfolios, localMap])
 
-  if (!data && loading) return <LoadingTokenTable />
+  if ((!data && loading) || !historyToShow) 
+    return <LoadingTokenTable />
   else {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (
