@@ -649,10 +649,10 @@ function SelectPool() {
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
                     <Row gap="6">
-                      <ThemedText.HeadlineSmall fontSize={20}>
+                      <ThemedText.HeadlineSmall fontSize={20} color="accentTextGray" fontWeight={500} fontFamily="NLKT">
                         {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
                       </ThemedText.HeadlineSmall>
-                      <ThemedText.BodySmall fontSize="14px">
+                      <ThemedText.BodySmall fontSize="14px" color="accentTextGray">
                         ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
                       </ThemedText.BodySmall>
                     </Row>

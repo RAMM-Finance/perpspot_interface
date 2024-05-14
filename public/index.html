@@ -49,6 +49,14 @@
           Explicitly load Inter var from public/ so it does not block LCP's critical path.
         */
     @font-face {
+      font-family: 'WantedSans';
+      src: url('fonts/WantedSans-Regular.ttf') format('truetype');
+    }   
+    @font-face {
+      font-family: 'NLKT';
+      src: url('fonts/NLKT.ttf') format('truetype');
+    }   
+    @font-face {
       font-family: 'Parkinson Amboy Black';
       src: url('fonts/Parkinson - Amboy-Black.otf') format('opentype');
     }
@@ -65,7 +73,7 @@
 
     @supports (font-variation-settings: normal) {
       * {
-        font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace,sans-serif;
+        font-family: WantedSans,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace,sans-serif;
       }
     }
 

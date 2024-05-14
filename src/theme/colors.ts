@@ -101,6 +101,8 @@ export const colors = {
   midGray: '#2a2f34',
   steelblueGray: '#747f8b',
   softSkyBlue: '#869EFF29', //border
+  vividBlue: '#3665FF',
+  softLavender: '#E5E9FF',
 }
 export const limitlessColors = {
   darkPurple: '#201426ff',
@@ -154,6 +156,8 @@ const commonTheme = {
   hoverState: opacify(24, colors.blue200),
   hoverDefault: opacify(8, colors.gray300),
 
+  accentTextBlue: colors.vividBlue,
+  accentTextGray: colors.softLavender,
   stateLabel: opacify(30, colors.gray200),
 }
 
@@ -169,7 +173,8 @@ export const darkTheme = {
   backgroundOutline: opacify(16, colors.blue300),
   backgroundScrim: opacify(72, colors.gray900),
   backgroundScrolledSurface: opacify(72, colors.gray900),
-  textPrimary: colors.gray200,
+  // textPrimary: colors.gray200,
+  textPrimary: colors.softLavender,
   textSecondary: colors.gray50,
   textTertiary: colors.gray500,
   accentAction: opacify(24, colors.blue400),

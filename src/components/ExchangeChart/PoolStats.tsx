@@ -105,7 +105,7 @@ export function PoolStatsSection({
         dataCy="current-price"
         value={currentPrice}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentActive">
             <Trans>Price</Trans>
           </ThemedText.BodySmall>
         }
@@ -116,7 +116,7 @@ export function PoolStatsSection({
         value={delta24h}
         delta={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentActive">
             <Trans>24h Change</Trans>
           </ThemedText.BodySmall>
         }
@@ -127,7 +127,7 @@ export function PoolStatsSection({
         value={low24h}
         // baseQuoteSymbol={baseQuoteSymbol}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentActive">
             <Trans>24h low</Trans>
           </ThemedText.BodySmall>
         }
@@ -137,7 +137,7 @@ export function PoolStatsSection({
         dataCy="24h-high"
         value={high24h}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentActive">
             <Trans>24h high</Trans>
           </ThemedText.BodySmall>
         }
@@ -148,7 +148,7 @@ export function PoolStatsSection({
         value={tvl}
         dollar={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentActive">
             <Trans>TVL</Trans>
           </ThemedText.BodySmall>
         }
@@ -159,7 +159,7 @@ export function PoolStatsSection({
         value={volume}
         dollar={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentActive">
             <Trans>Total Volume</Trans>
           </ThemedText.BodySmall>
         }
@@ -289,7 +289,7 @@ function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <ThemedText.BodySmall color="textSecondary">
+          <ThemedText.BodySmall color="accentTextGray">
             {formatDollar({ num: Number(value), digits: 0 })} {baseQuoteSymbol}
           </ThemedText.BodySmall>
         </StatPrice>
@@ -310,7 +310,7 @@ function Stat({
           </StatPrice>
         ) : (
           <StatPrice>
-            <ThemedText.BodySmall color="textSecondary">{_value}</ThemedText.BodySmall>
+            <ThemedText.BodySmall color="accentTextGray">{_value}</ThemedText.BodySmall>
           </StatPrice>
         )}
       </StatWrapper>

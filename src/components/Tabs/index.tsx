@@ -17,7 +17,7 @@ const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean 
   // border-radius: 10px;
   // border-top-left-radius: ${({ first }) => (first ? '8px' : '0')};
   // border-top-right-radius: ${({ last }) => (last ? '8px' : '0')};
-  color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.textTertiary)};
+  color: ${({ theme, isActive }) => (isActive ? theme.textSecondary : theme.inactiveColor)};
   font-size: 14px;
   font-weight: 500;
 

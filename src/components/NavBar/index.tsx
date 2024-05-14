@@ -63,9 +63,10 @@ interface MenuItemProps {
   margin?: string
   external?: boolean
   font?: boolean
+  noBorder?: boolean
 }
 
-const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, font }: MenuItemProps) => {
+const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, font, noBorder }: MenuItemProps) => {
   return (
     <NavLink
       target={external ? '_blank' : ''}
@@ -73,7 +74,7 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, 
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px' }}
+      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px', borderWidth: noBorder ? '0px' : '2px' }}
       data-testid={dataTestId}
     >
       {children}
@@ -96,10 +97,10 @@ const MenuItemDropDown = ({ href, dataTestId, id, isActive, children, margin, ex
 
   const dropdown = (
     <StyledMenu>
-      <MenuItem font={true} href="/pools/advanced" isActive={pathname.startsWith('/pools/advanced')}>
+      <MenuItem font={true} href="/pools/advanced" isActive={pathname.startsWith('/pools/advanced')} noBorder={true}>
         My LP Positions
       </MenuItem>
-      <MenuItem font={true} href="/pools/simple" isActive={pathname.startsWith('/pools/simple')}>
+      <MenuItem font={true} href="/pools/simple" isActive={pathname.startsWith('/pools/simple')} noBorder={true}>
         Simple LP
       </MenuItem>
     </StyledMenu>
@@ -150,33 +151,34 @@ export const PageTabs = () => {
           </NavLink>
         </LogoSection>
         <MenuItem href="/trade" isActive={pathname.startsWith('/trade')}>
-          <Trans>Trade</Trans>
+          {/* <Trans>Trade</Trans> */}
+          <ThemedText.BodySecondary>Trade</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
-          <Trans>Pairs</Trans>
+          <ThemedText.BodySecondary>Pairs</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
-          <Trans>Swap</Trans>
+          <ThemedText.BodySecondary>Swap</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItemDropDown href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
-          <Trans>Earn</Trans>
+          <ThemedText.BodySecondary>Earn</ThemedText.BodySecondary>
         </MenuItemDropDown>
         {connectedChainId == SupportedChainId.BERA_ARTIO ? (
           <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
-            <Trans>Faucets</Trans>
+            <ThemedText.BodySecondary>Faucets</ThemedText.BodySecondary>
           </MenuItem>
         ) : null}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
-          <Trans>LMT</Trans>
+          <ThemedText.BodySecondary>LMT</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
-          <Trans>Referral</Trans>
+          <ThemedText.BodySecondary>Referral</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href="/loot" isActive={pathname.startsWith('/loot')}>
-          <Trans>Loot</Trans>
+          <ThemedText.BodySecondary>Loot</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
-          <Trans>Docs</Trans>
+          <ThemedText.BodySecondary>Docs</ThemedText.BodySecondary>
         </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
@@ -202,7 +204,7 @@ const Navbar = () => {
     setShowModal(false)
   }, [])
 
-  console.log('hght')
+  // console.log('hght')
 
   return (
     <>
