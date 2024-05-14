@@ -649,7 +649,7 @@ function SelectPool() {
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
                     <Row gap="6">
-                      <ThemedText.HeadlineSmall fontSize={20} color="accentTextGray" fontWeight={500} fontFamily="NLKT">
+                      <ThemedText.HeadlineSmall fontSize={20} color="accentTextGray" fontWeight={500} fontFamily="Nlkt">
                         {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
                       </ThemedText.HeadlineSmall>
                       <ThemedText.BodySmall fontSize="14px" color="accentTextGray">

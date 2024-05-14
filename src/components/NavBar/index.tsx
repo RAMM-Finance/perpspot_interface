@@ -74,7 +74,12 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, 
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px', borderWidth: noBorder ? '0px' : '2px' }}
+      style={{
+        textDecoration: 'none',
+        marginRight: '4px',
+        fontSize: font ? '14px' : '16px',
+        borderWidth: noBorder ? '0px' : '2px',
+      }}
       data-testid={dataTestId}
     >
       {children}
