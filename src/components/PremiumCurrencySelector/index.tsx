@@ -62,7 +62,7 @@ export function PremiumCurrencySelector({
   return (
     <Wrapper>
       <ActiveWrapper>
-        <ThemedText.LabelSmall fontSize={13} color="primary" fontWeight="500">
+        <ThemedText.LabelSmall fontSize={13} color="primary">
           {/* {`Pay ${premium ? premium.toNumber().toFixed(5) : ''} interest with`} */}
           Pay interest with
         </ThemedText.LabelSmall>

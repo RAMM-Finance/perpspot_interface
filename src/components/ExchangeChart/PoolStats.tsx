@@ -289,7 +289,7 @@ function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <ThemedText.BodySmall color="accentTextGray">
+          <ThemedText.BodySmall>
             {formatDollar({ num: Number(value), digits: 0 })} {baseQuoteSymbol}
           </ThemedText.BodySmall>
         </StatPrice>
@@ -310,7 +310,7 @@ function Stat({
           </StatPrice>
         ) : (
           <StatPrice>
-            <ThemedText.BodySmall color="accentTextGray">{_value}</ThemedText.BodySmall>
+            <ThemedText.BodySmall>{_value}</ThemedText.BodySmall>
           </StatPrice>
         )}
       </StatWrapper>

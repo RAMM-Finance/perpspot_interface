@@ -63,7 +63,6 @@ interface MenuItemProps {
   margin?: string
   external?: boolean
   font?: boolean
-  // noBorder?: boolean
 }
 
 const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, font }: MenuItemProps) => {
@@ -78,7 +77,6 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, 
         textDecoration: 'none',
         marginRight: '4px',
         fontSize: font ? '14px' : '16px',
-        // borderWidth: noBorder ? '0px' : '2px',
       }}
       data-testid={dataTestId}
     >

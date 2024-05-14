@@ -102,13 +102,13 @@ export const menuItem = style([
   {
     fontSize: '1em',
     ':hover': {
-      // color: 'white',
-      color: '#3665FF',
+      color: 'white',
+      // color: '#3665FF',
       background: 'accentActiveSoft',
       fontWeight: 'bold',
       transform: 'scale(1.1,1.1)',
-      borderBottom: '2px solid #3665FF', 
-      borderRadius: '0px',
+      // borderBottom: '2px solid #3665FF', 
+      // borderRadius: '0px',
     },
   },
 ])
