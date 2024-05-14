@@ -96,7 +96,7 @@ export abstract class MarginFacilitySDK {
 
   public static addPositionParameters(param: AddPositionOptions) {
     const calldatas: string[] = []
-    
+
     if (param.depositPremium) {
       if (param.premiumInPosToken) {
         calldatas.push(

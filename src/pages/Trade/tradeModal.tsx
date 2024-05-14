@@ -735,7 +735,7 @@ const TradeTabContent = () => {
                   {Number(formattedMargin) > 1
                     ? Number(formattedMargin).toFixed(2)
                     : Number(formattedMargin).toFixed(6)}{' '}
-                  {inputCurrency?.symbol}
+                  {marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
                 </ThemedText.BodySmall>
                 <ThemedText.BodySmall>+</ThemedText.BodySmall>
                 <ThemedText.BodySmall>
