@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Button } from '@mui/material'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceSectionName } from '@uniswap/analytics-events'
-import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -200,6 +200,11 @@ const ApprovalInfoSection = styled.div`
   width: 100%;
 `
 
+const PremiumWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+`
+
 const TradeTabContent = () => {
   // const theme = useTheme()
   const { account, chainId } = useWeb3React()
@@ -302,6 +307,7 @@ const TradeTabContent = () => {
     userPremiumPercent,
     maxLeverage,
     userHasSpecifiedInputOutput,
+    parsedMargin,
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
@@ -366,12 +372,31 @@ const TradeTabContent = () => {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  // console.log("FIAT VALUE TRADE MARGIN: ", trade?.margin, marginInPosToken, outputCurrency, inputCurrency)
   const fiatValueTradeMargin = useUSDPriceBNV2(
-    trade?.margin,
-    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) ||
-      undefined
+    parsedMargin,
+    marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
   )
+  // const fiatValueTradePremium = useUSDPriceBN(
+  //   trade?.premium,
+  //   trade?.premiumInPosToken
+  //     ? outputCurrency === null
+  //       ? undefined
+  //       : outputCurrency
+  //     : inputCurrency === null
+  //     ? undefined
+  //     : inputCurrency
+  // )
+
+  // const fiatValuePayment = useMemo(() => {
+  //   return {
+  //     data:
+  //       fiatValueTradeMargin.data && fiatValueTradePremium.data
+  //         ? fiatValueTradeMargin.data + fiatValueTradePremium.data
+  //         : undefined,
+  //     isLoading: fiatValueTradeMargin.isLoading || fiatValueTradePremium.isLoading,
+  //   }
+  // }, [fiatValueTradeMargin, fiatValueTradePremium])
+
   // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
@@ -702,6 +727,30 @@ const TradeTabContent = () => {
               onMarginTokenChange={handleSetMarginInPosToken}
             />
           </Trace>
+          {tradeApprovalInfo && (
+            <>
+              <PremiumWrapper>
+                <ThemedText.BodySmall color="textSecondary">Total:</ThemedText.BodySmall>
+                <ThemedText.BodySmall>
+                  {Number(formattedMargin) > 1
+                    ? Number(formattedMargin).toFixed(2)
+                    : Number(formattedMargin).toFixed(6)}{' '}
+                  {inputCurrency?.symbol}
+                </ThemedText.BodySmall>
+                <ThemedText.BodySmall>+</ThemedText.BodySmall>
+                <ThemedText.BodySmall>
+                  {Number(formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)) > 1
+                    ? Number(
+                        formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)
+                      ).toFixed(2)
+                    : Number(
+                        formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)
+                      ).toFixed(6)}{' '}
+                  {premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+                </ThemedText.BodySmall>
+              </PremiumWrapper>
+            </>
+          )}
         </InputSection>
         <OutputSwapSection showDetailsDropdown={false}>
           <InputHeader>

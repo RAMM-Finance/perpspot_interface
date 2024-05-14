@@ -6,7 +6,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 
-import { CollectMultipler, referralDivisor, usePointsData, useStoredData } from './data'
+import { CollectMultipler, referralDivisor, useStoredData } from './data'
 interface Leader {
   rank: number
   tradePoint: number
@@ -238,9 +238,9 @@ export default function LeaderboardTable() {
     if (!prevData || !chainId) {
       setLoading(true)
       return undefined
-    // } else if (prevData && chainId !== 8453) {
-    //   setLoading(false)
-    //   return prevData
+      // } else if (prevData && chainId !== 8453) {
+      //   setLoading(false)
+      //   return prevData
     } else {
       setLoading(false)
       return prevData
@@ -283,45 +283,46 @@ export default function LeaderboardTable() {
   return (
     <>
       <LeaderboardHeader />
-
-      {loading ? (
-        <LoadingRow />
-      ) : (
-        combinedData?.map((user: any) => {
-          return (
-            <LoadedCellWrapper key={user.trader}>
-              <LoadedCell>
-                <ThemedText.BodySecondary>{user.rank}</ThemedText.BodySecondary>
-              </LoadedCell>
-              <LoadedCell>
-                <MouseoverTooltip text={user.trader}>
-                  <ThemedText.BodySecondary>{user.trader && formatWallet(user.trader)}</ThemedText.BodySecondary>
-                </MouseoverTooltip>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodySecondary>
-                  {formatDollar({ num: user.tPoints, dollarSign: false })}
-                </ThemedText.BodySecondary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodySecondary>
-                  {formatDollar({ num: user.lpPoints, dollarSign: false })}
-                </ThemedText.BodySecondary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodySecondary>
-                  {formatDollar({ num: user.rPoints, dollarSign: false })}
-                </ThemedText.BodySecondary>
-              </LoadedCell>
-              <LoadedCell>
-                <ThemedText.BodySecondary>
-                  {formatDollar({ num: user.totalPoints, dollarSign: false })}
-                </ThemedText.BodySecondary>
-              </LoadedCell>
-            </LoadedCellWrapper>
-          )
-        })
-      )}
+      <LoadedRows>
+        {loading ? (
+          <LoadingRow />
+        ) : (
+          combinedData?.map((user: any) => {
+            return (
+              <LoadedCellWrapper key={user.trader}>
+                <LoadedCell>
+                  <ThemedText.BodySecondary>{user.rank}</ThemedText.BodySecondary>
+                </LoadedCell>
+                <LoadedCell>
+                  <MouseoverTooltip text={user.trader}>
+                    <ThemedText.BodySecondary>{user.trader && formatWallet(user.trader)}</ThemedText.BodySecondary>
+                  </MouseoverTooltip>
+                </LoadedCell>
+                <LoadedCell>
+                  <ThemedText.BodySecondary>
+                    {formatDollar({ num: user.tPoints, dollarSign: false })}
+                  </ThemedText.BodySecondary>
+                </LoadedCell>
+                <LoadedCell>
+                  <ThemedText.BodySecondary>
+                    {formatDollar({ num: user.lpPoints, dollarSign: false })}
+                  </ThemedText.BodySecondary>
+                </LoadedCell>
+                <LoadedCell>
+                  <ThemedText.BodySecondary>
+                    {formatDollar({ num: user.rPoints, dollarSign: false })}
+                  </ThemedText.BodySecondary>
+                </LoadedCell>
+                <LoadedCell>
+                  <ThemedText.BodySecondary>
+                    {formatDollar({ num: user.totalPoints, dollarSign: false })}
+                  </ThemedText.BodySecondary>
+                </LoadedCell>
+              </LoadedCellWrapper>
+            )
+          })
+        )}
+      </LoadedRows>
     </>
   )
 }
@@ -399,8 +400,19 @@ const LoadedCellWrapper = styled.div`
   justify-content: center;
 `
 
+const LoadedRows = styled.div`
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  max-height: 400px;
+`
+
 const HeaderCell = styled.div``
 const HeaderCellWrapper = styled.div`
+  position: sticky;
+  overflow-y: hidden;
+  overflow-x: hidden;
   display: grid;
   grid-template-columns: 0.75fr 3fr 3fr 3fr 3fr 3fr;
   border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};

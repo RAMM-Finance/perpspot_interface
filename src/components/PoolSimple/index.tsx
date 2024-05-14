@@ -29,7 +29,7 @@ import { useStablecoinValue } from 'hooks/useStablecoinPrice'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Trade'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
+import { ArrowRight, ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
 import { Info } from 'react-feather'
 import { useDerivedLmtMintInfo, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -650,6 +650,7 @@ export default function SimplePool() {
   }, [redeemCallback, account, vaultContract, addTransaction, chainId, provider, parsedAmounts])
 
   const llpBalance = useLlpBalance(account)
+
   const limWETHBalance = useLimWethBalance(account)
   // useEffect(() => {
   //   if (!account || !provider || !vaultContract || !limweth) return
@@ -687,7 +688,6 @@ export default function SimplePool() {
 
   const limWETHPrice = useLimWethPrice()
   const llpPrice = useLlpPrice()
-  console.log('zeke:llpPrice', llpPrice)
   const data = useVaultData()
   const redeemableTokens = useMemo(() => {
     if (!chainId) return undefined
@@ -878,15 +878,20 @@ export default function SimplePool() {
     <Wrapper>
       <AutoColumn>
         <RowStart style={{ marginBottom: '20px' }}>
-          <AutoColumn gap="5px">
+          <AutoColumn gap="10px">
             <ThemedText.DeprecatedMediumHeader color="textSecondary">
               Buy / Sell {chainId === 8453 ? 'limWETH' : 'LLP'}
             </ThemedText.DeprecatedMediumHeader>
             {chainId === 8453 ? (
-              <ThemedText.BodyPrimary flexWrap="wrap">
-                By minting limWETH you will gain index exposure to ETH, while earning fees from uniswap+premiums and
-                points from Limitless.
-              </ThemedText.BodyPrimary>
+              <>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <ArrowRight size={15} />
+                  <ThemedText.BodyPrimary fontSize={13} flexWrap="wrap">
+                    limWETH allows LPs to earn from Limitless pools without active management
+                  </ThemedText.BodyPrimary>
+                </div>
+              </>
             ) : (
               <ThemedText.BodyPrimary flexWrap="wrap">
                 By minting LLP you will gain index exposure to BTC, ETH, and USDC while earning fees from
@@ -913,9 +918,9 @@ export default function SimplePool() {
               {isOpen && <>{dropdown}</>}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ThemedText.BodyPrimary fontSize={14}>14D APR:</ThemedText.BodyPrimary>
+                <ThemedText.BodyPrimary fontSize={14}>Estimated APR:</ThemedText.BodyPrimary>
                 <ThemedText.BodySecondary fontSize={13} style={{ color: theme.accentSuccess }}>
-                  24.6%
+                  20~110%
                 </ThemedText.BodySecondary>
               </div>
             </RowStart>
@@ -1025,10 +1030,6 @@ export default function SimplePool() {
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>14D Impermanent Loss </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>

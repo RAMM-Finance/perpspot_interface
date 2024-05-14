@@ -7,6 +7,7 @@ import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import { BigNumber as BN } from 'bignumber.js'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { PoolSelector } from 'components/addLiquidity/PoolSelector'
 import { sendEvent } from 'components/analytics'
@@ -20,6 +21,7 @@ import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -27,7 +29,6 @@ import { AlertTriangle } from 'react-feather'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Text } from 'rebass'
 import {
-  useCurrencyFiatValues,
   useDerivedLmtMintInfo,
   useRangeHopCallbacks,
   useV3MintActionHandlers,
@@ -170,7 +171,6 @@ export default function AddLiquidity() {
     useV3MintActionHandlers(noLiquidity)
 
   const isValid = !errorMessage && !invalidRange && !contractErrorMessage
-  console.log('zeke:isValid', errorMessage, invalidRange, contractErrorMessage)
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
@@ -187,15 +187,26 @@ export default function AddLiquidity() {
     [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
 
-  const currencyFiatStates: { data: number | undefined; isLoading: boolean }[] = useCurrencyFiatValues(
-    parsedAmounts[Field.CURRENCY_A],
-    parsedAmounts[Field.CURRENCY_B],
-    formattedAmounts[Field.CURRENCY_A],
-    formattedAmounts[Field.CURRENCY_B]
-  )
-  console.log('zeke:currencyFiatState', currencyFiatStates[0], currencyFiatStates[1])
-  const currencyAFiatState = currencyFiatStates[0]
-  const currencyBFiatState = currencyFiatStates[1]
+  // const currencyFiatStates: { data: number | undefined; isLoading: boolean }[] = useCurrencyFiatValues(
+  //   parsedAmounts[Field.CURRENCY_A],
+  //   parsedAmounts[Field.CURRENCY_B],
+  //   formattedAmounts[Field.CURRENCY_A],
+  //   formattedAmounts[Field.CURRENCY_B]
+  // )
+  const [bnA, bnB] = useMemo(() => {
+    const [amountA, amountB] = [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
+    return [
+      amountA?.toExact() ? new BN(amountA.toExact()) : undefined,
+      amountB?.toExact() ? new BN(amountB.toExact()) : undefined,
+    ]
+  }, [parsedAmounts])
+  const currencyAFiatState = useUSDPriceBNV2(bnA, currencies[Field.CURRENCY_A])
+  const currencyBFiatState = useUSDPriceBNV2(bnB, currencies[Field.CURRENCY_B])
+
+  console.log('zeke:currencyAFiatState', currencyAFiatState)
+  // console.log('zeke:currencyFiatState', currencyFiatStates[0], currencyFiatStates[1])
+  // const currencyAFiatState = currencyFiatStates[0]
+  // const currencyBFiatState = currencyFiatStates[1]
 
   // const [currencyAFiatState, setCurrencyAFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
   //   data: undefined,
@@ -644,16 +655,12 @@ export default function AddLiquidity() {
       currencyBFiatState.data !== undefined
     ) {
       return (
-        (
-          (currencyAFiatState.data + currencyBFiatState.data) *
-          (
-            (baseCurrency?.symbol === 'USDC' && quoteCurrency?.symbol === 'WETH') ||
-            (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'USDC')
-              ? LMT_PER_USD_PER_DAY_USDC
-              : LMT_PER_USD_PER_DAY
-          )
-        ).toString()
-      );
+        (currencyAFiatState.data + currencyBFiatState.data) *
+        ((baseCurrency?.symbol === 'USDC' && quoteCurrency?.symbol === 'WETH') ||
+        (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'USDC')
+          ? LMT_PER_USD_PER_DAY_USDC
+          : LMT_PER_USD_PER_DAY)
+      ).toString()
     } else {
       return '-'
     }

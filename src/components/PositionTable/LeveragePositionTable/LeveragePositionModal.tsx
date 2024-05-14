@@ -285,12 +285,27 @@ const LoadingDisplayedContent = styled(LoadingBubble)`
   width: 100%;
   height: 100%;
 `
+
+const RedText = styled.span`
+  color: ${({ theme }) => theme.accentFailure};
+  letter-spacing: -0.8px;
+  word-spacing: -1px;
+  font-size: 11px;
+`
 function formatHours(hours: number) {
   const totalMinutes = hours * 60
   const days = Math.floor(hours / 24)
   const remainingHours = Math.floor(hours % 24)
   const minutes = Math.round(totalMinutes % 60)
   return `${days}d ${remainingHours}h ${minutes}m`
+}
+
+function checkPositionHealth(timeToClose: number) {
+  if (timeToClose && timeToClose < 6) {
+    return <RedText>Dangerous, need to deposit interest soon to avoid force closure</RedText>
+  } else {
+    return <GreenText>Healthy</GreenText>
+  }
 }
 
 function MarginPositionInfo({
@@ -354,6 +369,7 @@ function MarginPositionInfo({
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
 
   // console.log('Interest',alteredPosition.premiumLeft, alteredPremium )
+  console.log('lifetime', estimatedTimeToClose, estimatedTimeToCloseForAlt)
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -408,7 +424,9 @@ function MarginPositionInfo({
           <AutoColumn>
             <TextWithLoadingPlaceholder syncing={false} width={65}>
               <ValueWrapper margin={false}>
-                <GreenText>HEALTHY</GreenText>
+                {estimatedTimeToCloseForAlt !== undefined
+                  ? checkPositionHealth(estimatedTimeToCloseForAlt)
+                  : estimatedTimeToClose !== undefined && checkPositionHealth(estimatedTimeToClose)}
                 {/* toggle between red and green once health status is available */}
               </ValueWrapper>
             </TextWithLoadingPlaceholder>
@@ -609,6 +627,7 @@ const ValueWrapper = styled(TextWrapper)`
   font-size: 12px;
   color: ${({ theme }) => theme.textSecondary};
   align-items: left;
+  text-align: right;
 `
 
 function PositionValueLabel({

@@ -16,8 +16,8 @@ import { useTheme } from 'styled-components/macro'
 import { CopyToClipboard, ThemedText } from 'theme'
 
 import { CollectMultipler, usePointsData } from './data'
+import { useLastClaimedPoints, useRefereeLimwethDeposit } from './hooks'
 import TierBar from './TierBar'
-import { useLimWethBalance } from 'components/PoolSimple/hooks'
 
 const Wrapper = styled.div`
   display: flex;
@@ -221,12 +221,12 @@ const Referrals = () => {
   const [limwethBalance, setLimwethBalance] = useState<number>()
 
   useEffect(() => {
-    if (!account || !limweth) return 
-    
+    if (!account || !limweth) return
+
     const call = async () => {
       const balance = (await limweth.balanceOf(account)).toNumber()
       const decimals = await limweth.decimals()
-      const limwethBal = balance / (10 ** decimals)
+      const limwethBal = balance / 10 ** decimals
       setLimwethBalance(limwethBal)
     }
 
@@ -305,86 +305,86 @@ const Referrals = () => {
   }
 
   // const [simulatedRewards, setSimulatedRewards] = useState<string>()
-  const [lastClaimedPoints, setLastClaimedPoints] = useState<string>()
+  // const [lastClaimedPoints, setLastClaimedPoints] = useState<string>()
+  const lastClaimedPoints = useLastClaimedPoints()
+  // console.log('zeke:', lastClaimedPoints, lastClaimedPoints2)
   // const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
 
   const referralContract = useReferralContract()
 
-  const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
+  // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
-  useEffect(() => {
-    const call = async () => {
-      try {
-        console.log("account", account, referralContract, BRP)
-        if (!account || !referralContract || !BRP) return
-        const referees = await referralContract?.getReferees(account)
-        // console.log("referees", referees)
-        // console.log("CAINID", chainId)
+  const refereesLimwethDeposit = useRefereeLimwethDeposit()
+  // console.log('zeke:', refereesLimwethDeposit, refereesLimwethDeposit2)
 
-        // const str = "0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748"
-        // const users = await BRP.getUsers()
-        // console.log("USERS", users)
-        // await Promise.all(users.map(async (user) => {
-        //   const [tradePoints, lpPoints, points] = await Promise.all([
-        //     BRP.lastRecordedTradePoints(user),
-        //     BRP.lastRecordedLpPoints(user),
-        //     BRP.lastRecordedPoints(user)
-        //   ])
-        //   console.log("TRADEPOINTS LPPOINTS POINTS of USERSSSSSSSSSSSS", user, tradePoints.toNumber(), lpPoints.toNumber(), points.toNumber())
-        // }))
-        
-        // const referees = ['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0', '0x9e60aa0c7B3bAE800f725C20088330cDB05D7487']
+  // useEffect(() => {
+  //   const call = async () => {
+  //     try {
+  //       console.log('account', account, referralContract, BRP)
+  //       if (!account || !referralContract || !BRP) return
+  //       const referees = await referralContract?.getReferees(account)
+  //       // console.log("referees", referees)
+  //       // console.log("CAINID", chainId)
 
-        const refereesPoints = await Promise.all(referees.map(async (referee) => {
-          const [tradePoints, lpPoints, points] = await Promise.all([
-            BRP.lastRecordedTradePoints(referee),
-            BRP.lastRecordedLpPoints(referee),
-            BRP.lastRecordedPoints(referee)
-          ])
-          console.log("TRADEPOINTS LPPOINTS POINTS", tradePoints, lpPoints, points)
-          const totalPoints = tradePoints.toNumber() + lpPoints.toNumber() + points.toNumber()
-          console.log("TOTAL POINTS", totalPoints)
-          return {
-            totalPoints
-          }
-        }))
-        console.log("refereesPoinits", refereesPoints)
+  //       // const str = "0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748"
+  //       // const users = await BRP.getUsers()
+  //       // console.log("USERS", users)
+  //       // await Promise.all(users.map(async (user) => {
+  //       //   const [tradePoints, lpPoints, points] = await Promise.all([
+  //       //     BRP.lastRecordedTradePoints(user),
+  //       //     BRP.lastRecordedLpPoints(user),
+  //       //     BRP.lastRecordedPoints(user)
+  //       //   ])
+  //       //   console.log("TRADEPOINTS LPPOINTS POINTS of USERSSSSSSSSSSSS", user, tradePoints.toNumber(), lpPoints.toNumber(), points.toNumber())
+  //       // }))
 
-        const limwethDeposits = refereesPoints.reduce((acc, curr) => acc + curr.totalPoints, 0)
-        setRefereesLimwethDeposit(limwethDeposits)
-      } catch (err) {
-        console.error("referralContract.getReferees ERROR", err)
-      }
-      
-    }
-    call()
-  }, [account, referralContract, BRP, chainId])
+  //       // const referees = ['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0', '0x9e60aa0c7B3bAE800f725C20088330cDB05D7487']
 
-  useEffect(() => {
-    if (!account || !BRP) return
+  //       const refereesPoints = await Promise.all(
+  //         referees.map(async (referee) => {
+  //           const [tradePoints, lpPoints, points] = await Promise.all([
+  //             BRP.lastRecordedTradePoints(referee),
+  //             BRP.lastRecordedLpPoints(referee),
+  //             BRP.lastRecordedPoints(referee),
+  //           ])
+  //           console.log('TRADEPOINTS LPPOINTS POINTS', tradePoints, lpPoints, points)
+  //           const totalPoints = tradePoints.toNumber() + lpPoints.toNumber() + points.toNumber()
+  //           console.log('TOTAL POINTS', totalPoints)
+  //           return {
+  //             totalPoints,
+  //           }
+  //         })
+  //       )
+  //       console.log('refereesPoinits', refereesPoints)
 
-    const call = async () => {
-      try {
-        const lastClaimedPoints = await BRP.lastClaimedPoints(account)
-        setLastClaimedPoints(lastClaimedPoints.toString())
-        
-      } catch (error) {
-        console.log('claimsimerr', error)
-      }
-    }
-    call()
-  }, [account, BRP])
+  //       const limwethDeposits = refereesPoints.reduce((acc, curr) => acc + curr.totalPoints, 0)
+  //       setRefereesLimwethDeposit(limwethDeposits)
+  //     } catch (err) {
+  //       console.error('referralContract.getReferees ERROR', err)
+  //     }
+  //   }
+  //   call()
+  // }, [account, referralContract, BRP, chainId])
 
+  // useEffect(() => {
+  //   if (!account || !BRP) return
 
-
+  //   const call = async () => {
+  //     try {
+  //       const lastClaimedPoints = await BRP.lastClaimedPoints(account)
+  //       setLastClaimedPoints(lastClaimedPoints.toString())
+  //     } catch (error) {
+  //       console.log('claimsimerr', error)
+  //     }
+  //   }
+  //   call()
+  // }, [account, BRP])
 
   // console.log('simulatedRewards', BRP, simulatedRewards)
-
 
   const [activeCodes, setActiveCodes] = useState<string>()
 
   useEffect(() => {
-    
     if (!account || !referralContract) return
 
     const call = async () => {
@@ -684,8 +684,8 @@ const Referrals = () => {
 
             {/*codeExists && <SmallButtonPrimary>Code taken</SmallButtonPrimary>*/}
             {codesNonZero ? (
-              //codeUsing 
-              true? (
+              //codeUsing
+              true ? (
                 <SmallButtonPrimary disabled={refCodesExist?.[0]} onClick={handleCreateReferral}>
                   Generate Code
                 </SmallButtonPrimary>
@@ -789,7 +789,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account ? (refereeActivity[account]?.usersReferred || 0) : '-'}
+                    {refereeActivity && account ? refereeActivity[account]?.usersReferred || 0 : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -803,7 +803,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                  {refereeActivity && account ? '$' + (refereeActivity[account]?.tradeVolume.toFixed(6) || 0) : '-'}
+                    {refereeActivity && account ? '$' + (refereeActivity[account]?.tradeVolume.toFixed(6) || 0) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -811,9 +811,13 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Fees earned by Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account && CollectMultipler ? 
-                    '$' + ((refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) / CollectMultipler)?.toFixed(10) || 0 : 
-                    '-'}
+                    {refereeActivity && account && CollectMultipler
+                      ? '$' +
+                          (
+                            (refereeActivity[account]?.lpAmount - refereeActivity[account]?.timeWeightedDeposits) /
+                            CollectMultipler
+                          )?.toFixed(10) || 0
+                      : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -821,10 +825,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>LimWeth Deposits From Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                  {refereesLimwethDeposit 
-                    ? refereesLimwethDeposit 
-                    : refereesLimwethDeposit === 0 
-                    ? '0' : '-'}
+                    {refereesLimwethDeposit ? refereesLimwethDeposit : refereesLimwethDeposit === 0 ? '0' : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -832,7 +833,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Referral LMT Last Claim</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account ? (lastClaimedPoints || 0) : '-'}
+                    {refereeActivity && account ? lastClaimedPoints || 0 : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -892,7 +893,9 @@ const Referrals = () => {
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Active Referral Code</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={16}>{referralCode ? referralCode?.toString() : '-'}</ThemedText.BodySecondary>
+                  <ThemedText.BodySecondary fontSize={16}>
+                    {referralCode ? referralCode?.toString() : '-'}
+                  </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
               <StyledCard>
@@ -907,7 +910,11 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.BodyPrimary>LimWeth Deposits</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
-                  {limwethBalance ? limwethBalance?.toFixed(6) !== '0.000000' ? limwethBalance.toFixed(6) : ' < .000001' + ' LimWeth' : '-'} 
+                    {limwethBalance
+                      ? limwethBalance?.toFixed(6) !== '0.000000'
+                        ? limwethBalance.toFixed(6)
+                        : ' < .000001' + ' LimWeth'
+                      : '-'}
                     {/* ${limwethDeposits ? limwethDeposits?.toFixed(8) : '-'} */}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
@@ -916,7 +923,12 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Advanced LP Fee Collected</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
-                  ${totalCollected ? (totalCollected.toFixed(4) !== '0.0000' ? totalCollected.toFixed(4) : ' < 0.0001') : '-'}
+                    $
+                    {totalCollected
+                      ? totalCollected.toFixed(4) !== '0.0000'
+                        ? totalCollected.toFixed(4)
+                        : ' < 0.0001'
+                      : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard> */}

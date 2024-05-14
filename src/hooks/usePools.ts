@@ -631,8 +631,8 @@ export function useEstimatedAPR(
           let upperPrice = price
 
           if (!token0Range || !token1Range) {
-            lowerPrice = lowerPrice * 0.7
-            upperPrice = upperPrice * 1.3
+            lowerPrice = lowerPrice * 0.8
+            upperPrice = upperPrice * 1.2
           } else {
             lowerPrice = lowerPrice * token0Range
             upperPrice = upperPrice * token1Range

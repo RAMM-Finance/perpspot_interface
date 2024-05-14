@@ -17,7 +17,7 @@ const STABLECOIN_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Token> } = {
   // [SupportedChainId.POLYGON]: CurrencyAmount.fromRawAmount(USDC_POLYGON, 10_000e6),
   // [SupportedChainId.CELO]: CurrencyAmount.fromRawAmount(CUSD_CELO, 10_000e18),
   // [SupportedChainId.BNB]: CurrencyAmount.fromRawAmount(USDT_BSC, 100e18),
-  [SupportedChainId.BASE]: CurrencyAmount.fromRawAmount(USDC_BASE, 10_000e6)
+  [SupportedChainId.BASE]: CurrencyAmount.fromRawAmount(USDC_BASE, 10_000e6),
 }
 
 /**
@@ -47,7 +47,7 @@ export default function useStablecoinPrice(currency?: Currency): Price<Currency,
 
     return undefined
   }, [currency, stablecoin, trade])
-  
+
   const lastPrice = useRef(price)
   if (
     !price ||

@@ -75,10 +75,10 @@ export function useCurrencyFiatValues(
       getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.wrapped.address),
     ])
 
-    if (!queryResults[0] || !queryResults[1]) throw new Error('missing data')
+    // if (!queryResults[0] || !queryResults[1]) throw new Error('missing data')
     return [
-      parseFloat(queryResults[0].lastPriceUSD) * parseFloat(formattedAmountA),
-      parseFloat(queryResults[1].lastPriceUSD) * parseFloat(formattedAmountB),
+      queryResults[0] ? parseFloat(queryResults[0].lastPriceUSD) * parseFloat(formattedAmountA) : undefined,
+      queryResults[1] ? parseFloat(queryResults[1].lastPriceUSD) * parseFloat(formattedAmountB) : undefined,
     ]
   }, [parsedAmountA, parsedAmountB, formattedAmountA, formattedAmountB, chainId])
 

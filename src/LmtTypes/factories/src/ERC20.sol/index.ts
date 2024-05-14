@@ -3,3 +3,4 @@
 /* eslint-disable */
 export { ERC20__factory } from "./ERC20__factory";
 export { TestToken__factory } from "./TestToken__factory";
+export { Token__factory } from "./Token__factory";
