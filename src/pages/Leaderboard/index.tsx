@@ -32,7 +32,7 @@ const LeaderboardWrapper = styled.div`
 // Achievements
 const AchievementsWrapper = styled.div`
   width: 100%;
-  height: 250px;
+  height: 200px;
 `
 const AchievementsBoxWrapper = styled.div`
   display: flex;
@@ -64,7 +64,7 @@ const ReferralsWrapper = styled.div`
 `
 
 const FaqWrapper = styled.div`
-  margin-top: 50px;
+  margin-top: 30px;
   margin-right: auto;
   margin-left: auto;
   width: 48%;
@@ -89,7 +89,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  height: 82vh;
+  /* height: 82vh; */
   width: 92.5%;
   align-items: start;
   padding-left: 7.5%;
@@ -246,6 +246,9 @@ export default function LeaderboardPage() {
         <BannerWrapper>
           <BannerTextWrapper>
             <BannerText>LMT Season 1</BannerText>
+            <ThemedText.BodySecondary marginTop="6px" fontSize={22} fontWeight={600}>
+              Points are updated everyday
+            </ThemedText.BodySecondary>
             <BannerBtnWrapper>
               <NavLink to="/referral">
                 <BannerBtn>Join Points Program</BannerBtn>
@@ -254,6 +257,7 @@ export default function LeaderboardPage() {
                 <BannerBtn>Find out more</BannerBtn>
               </NavLink>
             </BannerBtnWrapper>
+ 
           </BannerTextWrapper>
         </BannerWrapper>
         <PointsWrapper>

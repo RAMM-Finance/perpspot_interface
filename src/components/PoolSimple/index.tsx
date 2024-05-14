@@ -995,7 +995,7 @@ export default function SimplePool() {
                 <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
                   <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={12}>
-                    {`${limWETHPrice && limWETHPrice.toFixed(2)} limWETH/ETH`}
+                    {`${limWETHPrice && limWETHPrice.toFixed(4)} limWETH/ETH`}
                   </ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
