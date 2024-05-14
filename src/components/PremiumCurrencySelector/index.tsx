@@ -63,7 +63,8 @@ export function PremiumCurrencySelector({
     <Wrapper>
       <ActiveWrapper>
         <ThemedText.LabelSmall fontSize={13} color="primary">
-          {`Pay ${premium ? premium.toNumber().toFixed(5) : ''} interest with`}
+          {/* {`Pay ${premium ? premium.toNumber().toFixed(5) : ''} interest with`} */}
+          Pay interest with
         </ThemedText.LabelSmall>
         <StyledRowFixed onClick={handleClick}>
           <CurrencyLogo currency={currency} size="15px" />
@@ -90,10 +91,12 @@ export function PremiumCurrencySelector({
         anchorEl={anchorEl}
         onClose={handleClose}
       >
-        <TokenItem onClick={() => {
-          onPremiumCurrencyToggle()
-          handleClose()
-          }}>
+        <TokenItem
+          onClick={() => {
+            onPremiumCurrencyToggle()
+            handleClose()
+          }}
+        >
           <RowFixed>
             <CurrencyLogo currency={otherCurrency} size="15px" />
             <StyledTokenName className="token-symbol-container" active={Boolean(otherCurrency && otherCurrency.symbol)}>
