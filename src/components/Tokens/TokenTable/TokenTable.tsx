@@ -419,6 +419,10 @@ export default function TokenTable() {
     }
   }, [chainId, limWeth])
 
+
+  console.log("vaultBal", vaultBal)
+  console.log("limwethBal", limWethBal)
+
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {

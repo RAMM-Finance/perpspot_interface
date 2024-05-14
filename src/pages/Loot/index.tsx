@@ -263,18 +263,6 @@ const LootPage = () => {
       const docRef = doc(firestore, 'concatenated_addresses', account)
 
       const docSnap = await getDoc(docRef)
-      console.log("IS this account VALID?", account, docSnap.exists())
-      // const docRef1 = doc(firestore, 'concatenated_addresses', '0x817A10B23332573e1D1f1D04Aa24aCe7e72318ba')
-      // const docSnap1 = await getDoc(docRef1)
-
-      // const docRef2 = doc(firestore, 'concatenated_addresses', '0x2E6FFc4E321e3cD0f299661feCE9dC0Bc23B3403')
-      // const docSnap2 = await getDoc(docRef2)
-
-      // const docRef3 = doc(firestore, 'concatenated_addresses', '0x64dA461ECbAa3FEC3625F21b74a8c74394d501c9')
-      // const docSnap3 = await getDoc(docRef3)
-
-      // const docRef4 = doc(firestore, 'concatenated_addresses', '0x034cA3706D5894e135c045F9b6b91Fa7a6C1aa4d')
-      // const docSnap4 = await getDoc(docRef4)
 
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
@@ -289,7 +277,6 @@ const LootPage = () => {
       const docSnapFirstBox = await getDoc(docRefFirstBox)
       if (docSnapFirstBox.exists()) {
         const isUnlocked = docSnapFirstBox.data().isFirstBoxUnlocked
-        console.log("IS FIRST BOX UNLOCKED", isUnlocked)
         setIsFirstBoxUnlocked(isUnlocked)
       } else {
         await setDoc(docRefFirstBox, {

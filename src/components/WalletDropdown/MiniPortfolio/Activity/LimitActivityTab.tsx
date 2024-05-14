@@ -253,7 +253,8 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     else
       return (
         'Force Closed ' +
-        getFixedDecimal(entry.forcedClosedAmount, token1Decimal) +
+        getFixedDecimal(entry.forcedClosedAmount, token1Decimal) + 
+        ' ' +
         token1Name +
         ' from ' +
         token0Name +
@@ -270,7 +271,16 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       ? Number(entry.PnL) / 10 ** token1Decimal
       : Number(entry.PnL) / 10 ** token0Decimal
   
-    const marginToken = (entry.marginInPosToken && entry.positionIsToken0) ? token0Name : token1Name
+    // const marginToken = (entry.marginInPosToken && entry.positionIsToken0) ? token0Name : token1Name
+
+    const marginToken = entry.marginInPosToken
+      ? entry.positionIsToken0
+        ? token0Name
+        : token1Name
+      : entry.positionIsToken0
+        ? token1Name
+        : token0Name
+
     if (entry.positionIsToken0)
       return (
         'Reduced ' +
@@ -381,7 +391,9 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //   return processedHistory
   // }, [history])
 
-  const [historyToShow, setHistoryToShow] = useState<any[]>([])
+  const [historyToShow, setHistoryToShow] = useState<any[] | null>(null)
+
+  console.log("historyToShow", historyToShow)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -403,9 +415,10 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
             isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
           })
         })
-        const promiseRes = await Promise.all(promises)
-        console.log('TEST = processedHistory ', processedHistory)
-        setHistoryToShow(processedHistory)
+        await Promise.all(promises)
+        const sortedHistory = [...processedHistory].sort((hist, hist2) => hist2.timestamp - hist.timestamp)
+        // console.log("SORTED HISTORY", sortedHistory)
+        setHistoryToShow(sortedHistory)
         return Promise.resolve()
       } catch(err) {
         console.error('failed to call getDescriptor')
@@ -432,7 +445,8 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //   return createGroups(allActivities)
   // }, [data?.portfolios, localMap])
 
-  if (!data && loading) return <LoadingTokenTable />
+  if ((!data && loading) || !historyToShow) 
+    return <LoadingTokenTable />
   else {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (

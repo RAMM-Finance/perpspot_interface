@@ -405,7 +405,7 @@ const LoadedRows = styled.div`
   ::-webkit-scrollbar {
     display: none;
   }
-  max-height: 400px;
+  max-height: 500px;
 `
 
 const HeaderCell = styled.div``

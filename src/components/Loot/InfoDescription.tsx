@@ -12,8 +12,9 @@ import { useWeb3React } from '@web3-react/core'
 import { NZT } from 'constants/addresses'
 import { useTokenContract } from 'hooks/useContract'
 import { SupportedChainId } from 'constants/chains'
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { BigNumber } from 'ethers'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -83,25 +84,22 @@ const InfoDescriptionSection = ({
   loading: boolean
 }) => {
   
-  const { account } = useWeb3React()
+  const { account, chainId } = useWeb3React()
   const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
-  
-  const [nztBalance, setNztBalance] = useState<string>('-')
-  
-  useEffect(() => {
-    const call = async () => {
-      if (account && nztContract) {
+  const { result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
+    account ?? undefined,
+  ])
 
-        const balance = await nztContract.balanceOf(account)
-        const decimals = await nztContract.decimals()
-        const divisor = BigNumber.from(10).pow(decimals)
+  const nztBalance: string = useMemo(() => {
 
-        const nztBal = balance.div(divisor).toNumber().toString()
-        setNztBalance(nztBal)
-      }
+    if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading) {
+      const divisor = BigNumber.from(10).pow(18)
+      const bal = result?.balance?.div(divisor).toString()
+      return bal
+    } else {
+      return '-'
     }
-    call()
-  }, [account])
+  }, [result, isLoading, account, chainId])
 
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
