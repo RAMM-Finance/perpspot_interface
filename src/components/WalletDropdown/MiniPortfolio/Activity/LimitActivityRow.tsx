@@ -54,7 +54,8 @@ function processDescriptor(descriptor: string, title?: string) {
     })
     .trim()
   const priceIndex = modifiedDescriptor.indexOf('Price')
-  const actionDescription = modifiedDescriptor.slice(0, priceIndex)
+
+  const actionDescription = priceIndex !== -1 ? modifiedDescriptor.slice(0, priceIndex) : modifiedDescriptor
   let price = priceIndex !== -1 ? modifiedDescriptor.slice(priceIndex) : ''
   
   let priceNumber = 0
@@ -99,6 +100,10 @@ export function ActivityRow({
     if (!actionDescription) return ['-', '-']
     return actionDescription.split(',')
   }, [actionDescription])
+  console.log("descriptor", descriptor)
+  console.log("actionDescription", actionDescription)
+  console.log("action", action)
+  console.log("pair", pair)
 
   return (
     <TraceEvent
@@ -129,10 +134,17 @@ export function ActivityRow({
                 <StyledTimestamp>{timeSince}</StyledTimestamp>
               </ActivityTitle>
               <RowBetween gap="20px">
-                <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
-                  {pair}
-                </ThemedText.SubHeaderSmall>
-                |
+              {pair ? 
+                (
+                  <>
+                    <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
+                      {pair}
+                    </ThemedText.SubHeaderSmall>
+                    |
+                  </>
+                ) : 
+                null
+              }
                 <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                   {action}
                   <MouseoverTooltip text="View on block explorer">
