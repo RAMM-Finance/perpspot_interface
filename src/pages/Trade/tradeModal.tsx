@@ -730,14 +730,22 @@ const TradeTabContent = () => {
           {tradeApprovalInfo && (
             <>
               <PremiumWrapper>
-                <ThemedText.BodySmall color="textSecondary">Total Input:</ThemedText.BodySmall>
+                <ThemedText.BodySmall color="textSecondary">Total:</ThemedText.BodySmall>
                 <ThemedText.BodySmall>
-                  {formattedMargin} {inputCurrency?.symbol} +
+                  {Number(formattedMargin) > 1
+                    ? Number(formattedMargin).toFixed(2)
+                    : Number(formattedMargin).toFixed(6)}{' '}
+                  {inputCurrency?.symbol}
                 </ThemedText.BodySmall>
+                <ThemedText.BodySmall>+</ThemedText.BodySmall>
                 <ThemedText.BodySmall>
-                  {Number(
-                    formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)
-                  ).toFixed(7)}{' '}
+                  {Number(formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)) > 1
+                    ? Number(
+                        formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)
+                      ).toFixed(2)
+                    : Number(
+                        formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)
+                      ).toFixed(6)}{' '}
                   {premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
                 </ThemedText.BodySmall>
               </PremiumWrapper>
