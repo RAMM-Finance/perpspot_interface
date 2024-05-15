@@ -105,7 +105,7 @@ export function PoolStatsSection({
         dataCy="current-price"
         value={currentPrice}
         title={
-          <ThemedText.BodySmall color="accentActive">
+          <ThemedText.BodySmall>
             <Trans>Price</Trans>
           </ThemedText.BodySmall>
         }
@@ -116,7 +116,7 @@ export function PoolStatsSection({
         value={delta24h}
         delta={true}
         title={
-          <ThemedText.BodySmall color="accentActive">
+          <ThemedText.BodySmall>
             <Trans>24h Change</Trans>
           </ThemedText.BodySmall>
         }
@@ -127,7 +127,7 @@ export function PoolStatsSection({
         value={low24h}
         // baseQuoteSymbol={baseQuoteSymbol}
         title={
-          <ThemedText.BodySmall color="accentActive">
+          <ThemedText.BodySmall>
             <Trans>24h low</Trans>
           </ThemedText.BodySmall>
         }
@@ -137,7 +137,7 @@ export function PoolStatsSection({
         dataCy="24h-high"
         value={high24h}
         title={
-          <ThemedText.BodySmall color="accentActive">
+          <ThemedText.BodySmall>
             <Trans>24h high</Trans>
           </ThemedText.BodySmall>
         }
@@ -148,7 +148,7 @@ export function PoolStatsSection({
         value={tvl}
         dollar={true}
         title={
-          <ThemedText.BodySmall color="accentActive">
+          <ThemedText.BodySmall>
             <Trans>TVL</Trans>
           </ThemedText.BodySmall>
         }
@@ -159,7 +159,7 @@ export function PoolStatsSection({
         value={volume}
         dollar={true}
         title={
-          <ThemedText.BodySmall color="accentActive">
+          <ThemedText.BodySmall>
             <Trans>Total Volume</Trans>
           </ThemedText.BodySmall>
         }
@@ -174,7 +174,7 @@ const StatSkeleton = ({ title }: { title: ReactNode }) => {
     <StatWrapper>
       <div>{title}</div>
       <StatPrice>
-        <ThemedText.BodySmall color="textSecondary">-</ThemedText.BodySmall>
+        <ThemedText.BodySmall>-</ThemedText.BodySmall>
       </StatPrice>
     </StatWrapper>
   )
