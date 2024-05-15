@@ -1,5 +1,6 @@
 import { animated, useSpring } from 'react-spring'
 import useResizeObserver from 'use-resize-observer'
+import styled from 'styled-components/macro'
 
 /**
  * @param open conditional to show content or hide
@@ -34,7 +35,6 @@ export default function AnimatedDropdown({ open, children }: React.PropsWithChil
 }
 
 export const AnimatedDropSide = ({ open, children }: React.PropsWithChildren<{ open: boolean }>) => {
-  // const { ref, width, height } = useResizeObserver()
 
   const props = useSpring({
     width: open ? 380 ?? 0 : 0,
@@ -48,15 +48,22 @@ export const AnimatedDropSide = ({ open, children }: React.PropsWithChildren<{ o
   })
 
   return (
-    <animated.div
+    <AnimatedDropSideBox
       style={{
         ...props,
-        overflow: 'hidden',
-        height: '100%',
-        willChange: 'width',
       }}
     >
       <div>{children}</div>
-    </animated.div>
+    </AnimatedDropSideBox>
   )
 }
+
+// The box is hidden when the screen is smaller than 760px
+const AnimatedDropSideBox = styled(animated.div)`
+  overflow: 'hidden';
+  height: '100%';
+  will-change: 'width';
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
+    display: none;
+  }
+`

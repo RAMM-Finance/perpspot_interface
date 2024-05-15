@@ -5,7 +5,7 @@ import { Currency, Percent, Price, Token } from '@uniswap/sdk-core'
 import { nearestUsableTick, Pool, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { AnimatedDropSide } from 'components/AnimatedDropdown'
+import AnimatedDropdown, { AnimatedDropSide } from 'components/AnimatedDropdown'
 import { ZapOutputTokenPanel, ZapTokenPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { BaseButton, SmallButtonPrimary } from 'components/Button'
 import Column from 'components/Column'
@@ -48,6 +48,7 @@ import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
+import PriceAndToggle from './PriceAndToggle'
 
 const Wrapper = styled.div`
   padding: 20px;
@@ -110,6 +111,18 @@ const InputWrapper2 = styled.div`
 const RotatingArrow = styled(ChevronRight)<{ open?: boolean }>`
   transform: ${({ open }) => (open ? 'rotate(180deg)' : 'none')};
   transition: transform 0.1s linear;
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
+    display: none;
+  }
+`
+
+const MobileRotatingArrow = styled(ChevronDown)<{ open?: boolean }>`
+  display: none;
+  transform: ${({ open }) => (open ? 'rotate(180deg)' : 'none')};
+  transition: transform 0.1s linear;
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
+    display: block;
+  }
 `
 
 const StyledHeaderRow = styled(RowBetween)<{ open: boolean }>`
@@ -189,7 +202,7 @@ interface PresetsButtonsProps {
   active: boolean
 }
 
-function PresetsButtons({ btnName, onSetRecommendedRange, active }: PresetsButtonsProps) {
+export function PresetsButtons({ btnName, onSetRecommendedRange, active }: PresetsButtonsProps) {
   return (
     <Row width="120px">
       <PresentButton onClick={onSetRecommendedRange} active={active}>
@@ -206,6 +219,9 @@ const LiquiditySelectorWrapper = styled(Column)<{ open?: boolean }>`
   gap: 35px;
   opacity: ${(props) => (props.open ? '1' : '0')};
   transition: opacity 0.13s ease-in-out;
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
+    display: none;
+  } 
 `
 
 const PriceAndToggleWrapper = styled(Column)`
@@ -575,6 +591,9 @@ const useZapCallback = (
 const MainWrapper = styled.div`
   display: flex;
   height: 500px;
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
+    height: 100%;
+  }
 `
 
 enum RANGE {
@@ -865,6 +884,7 @@ const ZapModal = (props: ZapModalProps) => {
             </RowFixed>
             <RowFixed>
               <RotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
+              <MobileRotatingArrow stroke={theme.textTertiary} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>
           <RowFixed style={{ marginBottom: '10px' }}>
@@ -872,6 +892,27 @@ const ZapModal = (props: ZapModalProps) => {
               Limitless charges no fees for zapping. Fees are only paid for swaps in dexes + slippage
             </ThemedText.BodySecondary>
           </RowFixed>
+          {!noLiquidity && (
+            <AnimatedDropdown open={showDetails}>
+              <PriceAndToggle
+                baseCurrency={baseCurrency}
+                quoteCurrency={quoteCurrency}
+                baseIsToken0={baseIsToken0}
+                token0Price={token0Price}
+                token0={token0}
+                token1={token1}
+                noLiquidity={noLiquidity}
+                invertPrice={invertPrice}
+                lowerPrice={lowerPrice}
+                upperPrice={upperPrice}
+                range={range}
+                setBaseIsToken0={setBaseIsToken0}
+                setLeftRangeTypedValue={setLeftRangeTypedValue}
+                setRightRangeTypedValue={setRightRangeTypedValue}
+                handleSetRecommendedRange={handleSetRecommendedRange}
+              />
+            </AnimatedDropdown>
+          )}
           {!account ? (
             <SmallButtonPrimary padding="16px">
               <ThemedText.BodyPrimary fontWeight={500}>Connect Wallet</ThemedText.BodyPrimary>
