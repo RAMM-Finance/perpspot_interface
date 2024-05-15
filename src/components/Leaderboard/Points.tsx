@@ -46,7 +46,7 @@ const Value = styled.div`
 
 export default function Points() {
   // const tradePoints = usePointsData()
-  const { account } = useWeb3React()
+  const { account, chainId } = useWeb3React()
 
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)
@@ -139,27 +139,32 @@ export default function Points() {
   // }, [usersArr])
 
   const prevData = useStoredData(addresses)
-  const combinedData = prevData
-  // const combinedData = useMemo(()=>{
-  //   if(!prevData || !usersData) return
 
-  //   return combineAndSumData(prevData, usersData);
-
-  // }, [prevData, usersData])
-
-  const rankedCombinedData = useMemo(() => {
-    if (!combinedData) return
-    return combinedData
-      .sort((a: any, b: any) => a.totalPoints - b.totalPoints)
-      .map((user: any, element: number) => {
-        return { ...user, rank: element + 1 }
-      })
-  }, [combinedData])
+  const combinedData = useMemo(() => {
+    if (!prevData || !chainId) {
+      return undefined
+      // } else if (prevData && chainId !== 8453) {
+      //   setLoading(false)
+      //   return prevData
+    } else {
+      return prevData
+        .filter((obj: any, index: any) => {
+          return index === prevData.findIndex((o: any) => obj.trader === o.trader)
+        })
+        .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
+        .map((user: any, index: number) => {
+          return {
+            ...user,
+            rank: index + 1,
+          }
+        })
+    }
+  }, [prevData, chainId])
 
   const userData = useMemo(() => {
-    if (!rankedCombinedData) return
-    return rankedCombinedData.find((user: any) => user.trader === account)
-  }, [rankedCombinedData, account])
+    if (!combinedData) return
+    return combinedData.find((user: any) => user.trader === account)
+  }, [combinedData, account])
 
   return (
     <Wrapper>
