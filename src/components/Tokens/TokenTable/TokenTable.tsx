@@ -418,11 +418,7 @@ export default function TokenTable() {
       getBalance(limWeth)
     }
   }, [chainId, limWeth])
-
-
-  console.log("vaultBal", vaultBal)
-  console.log("limwethBal", limWethBal)
-
+  
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
@@ -448,9 +444,6 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  // const dailyFeeAPRs = useDailyFeeAPR(sortedPools)
-  // console.log("DAILY FEE APRS", JSON.stringify(dailyFeeAPRs))
-  // console.log("POOL TVL DATA", JSON.stringify(poolTvlData))
   /* loading and error state */
   return (
     <>
@@ -553,13 +546,13 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
+          {loading || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
+          {loading || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>
