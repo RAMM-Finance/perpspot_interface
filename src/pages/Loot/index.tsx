@@ -1,11 +1,13 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
+import ConnectWallet from 'components/ConnectWallet'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
 import BoxModal from 'components/Loot/BoxModal'
 import PointWarning from 'components/Loot/PointWarning'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { Row } from 'nft/components/Flex'
@@ -21,10 +23,7 @@ import ItemImg4 from '../../assets/images/newItem10.webp'
 import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainer from '../../components/Loot/BoxesContainer'
 import InfoDescriptionSection from '../../components/Loot/InfoDescription'
-
 import { firestore } from '../../firebaseConfig'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import ConnectWallet from 'components/ConnectWallet'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -106,7 +105,7 @@ export type TBRPData = {
 }
 
 const LootPage = () => {
-  const { account } = useWeb3React()
+  const { account, chainId } = useWeb3React()
   const blockNumber = useBlockNumber()
 
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
@@ -181,23 +180,26 @@ const LootPage = () => {
     }
   }, [brp, account])
 
-  const claimBoxesCallback = useCallback(async (passcode: number): Promise<TransactionResponse> => {
-    if (!brp || !account) {
-      throw new Error('BRP or account not available')
-    }
+  const claimBoxesCallback = useCallback(
+    async (passcode: number): Promise<TransactionResponse> => {
+      if (!brp || !account) {
+        throw new Error('BRP or account not available')
+      }
 
-    try {
-      const gasLimit = 1000000
-      const tx = await brp.claimBoxes(passcode, {
-        from: account,
-      });
+      try {
+        const gasLimit = 1000000
+        const tx = await brp.claimBoxes(passcode, {
+          from: account,
+        })
 
-      return tx as TransactionResponse
-    } catch (error) {
-      console.error(error, 'BRP instance is not available')
-      throw error
-    }
-  }, [brp, account])
+        return tx as TransactionResponse
+      } catch (error) {
+        console.error(error, 'BRP instance is not available')
+        throw error
+      }
+    },
+    [brp, account]
+  )
 
   const handleUnlockBox = useCallback(
     async (index?: number) => {
@@ -210,14 +212,14 @@ const LootPage = () => {
         })
 
         if (account) {
-          const docRefFirstBox = doc(firestore, 'firstbox-checker', account);
+          const docRefFirstBox = doc(firestore, 'firstbox-checker', account)
           await setDoc(docRefFirstBox, {
-            account: account,
-            isFirstBoxUnlocked: true
-          });
+            account,
+            isFirstBoxUnlocked: true,
+          })
           setIsFirstBoxUnlocked(true)
         }
-        
+
         if (index !== undefined && index > -1) setHiddenCards((prevState) => [...prevState, index])
       } catch (error) {
         console.error(error, 'BRP instance is not available')
@@ -239,23 +241,25 @@ const LootPage = () => {
     }
   }, [addBoxCallback, addTransaction])
 
-  const handleClaimBoxes = useCallback(async (passcode: number | null) => {
-    if (passcode === null) return
-    try {
-      const res = await claimBoxesCallback(passcode)
-      addTransaction(res, {
-        type: TransactionType.CLAIM_BOXES,
-        inputCurrencyId: '',
-        outputCurrencyId: '',
-      })
-    } catch (error) {
-      console.error('BRP.claimBoxes failed', error)
-    }
-  }, [claimBoxesCallback, addTransaction])
+  const handleClaimBoxes = useCallback(
+    async (passcode: number | null) => {
+      if (passcode === null) return
+      try {
+        const res = await claimBoxesCallback(passcode)
+        addTransaction(res, {
+          type: TransactionType.CLAIM_BOXES,
+          inputCurrencyId: '',
+          outputCurrencyId: '',
+        })
+      } catch (error) {
+        console.error('BRP.claimBoxes failed', error)
+      }
+    },
+    [claimBoxesCallback, addTransaction]
+  )
 
   const [isInConcatenatedAddresses, setIsInConcatenatedAddresses] = useState<boolean>(false)
   const [passcode, setPasscode] = useState<number | null>(null)
-
 
   useEffect(() => {
     if (!account) return
@@ -266,12 +270,12 @@ const LootPage = () => {
       const docSnap = await getDoc(docRef)
       // const docSnap2 = await getDoc(docRef2)
 
-      console.log("CHECK USER", docSnap.exists())
+      console.log('CHECK USER', docSnap.exists())
 
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
         const code = docSnap.data().Passcode
-        console.log("DATA", docSnap.data())
+        console.log('DATA', docSnap.data())
         setPasscode(code)
       } else {
         setIsInConcatenatedAddresses(false)
@@ -284,8 +288,8 @@ const LootPage = () => {
         setIsFirstBoxUnlocked(isUnlocked)
       } else {
         await setDoc(docRefFirstBox, {
-          account: account,
-          isFirstBoxUnlocked: false
+          account,
+          isFirstBoxUnlocked: false,
         })
         setIsFirstBoxUnlocked(false)
       }
@@ -383,6 +387,7 @@ const LootPage = () => {
     })
   }, [])
 
+
   const showConnectAWallet = Boolean(!account)
 
   return (
@@ -409,13 +414,19 @@ const LootPage = () => {
             />
           </Row>
         </CollectionDescriptionSection>
-        {showConnectAWallet ?
+        {showConnectAWallet ? (
           <Row margin="auto">
-            <ConnectWallet/>
+            <ConnectWallet />
           </Row>
-          : 
+        ) : (
           <CollectionDisplaySection>
-            <PointWarning isInsufficient={isInsufficient} isInConcatenatedAddresses={isInConcatenatedAddresses} isClaimed={isClaimed} point={brpData?.pointForUnlocks} isNoBoxes={itemDatas.length < 1} />
+            <PointWarning
+              isInsufficient={isInsufficient}
+              isInConcatenatedAddresses={isInConcatenatedAddresses}
+              isClaimed={isClaimed}
+              point={brpData?.pointForUnlocks}
+              isNoBoxes={itemDatas.length < 1}
+            />
             <BoxesContainer
               itemDatas={itemDatas}
               handleUnlockBox={handleUnlockBox}
@@ -432,7 +443,7 @@ const LootPage = () => {
               isFirstBoxUnlocked={isFirstBoxUnlocked}
             />
           </CollectionDisplaySection>
-          }
+        )}
         <FaqWrapper>
           <LootFAQ />
         </FaqWrapper>

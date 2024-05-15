@@ -12,9 +12,10 @@ import { useWeb3React } from '@web3-react/core'
 import { NZT } from 'constants/addresses'
 import { useTokenContract } from 'hooks/useContract'
 import { SupportedChainId } from 'constants/chains'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 import { useSingleCallResult } from 'lib/hooks/multicall'
+import { PercentSlider } from 'components/Slider/MUISlider'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -83,15 +84,27 @@ const InfoDescriptionSection = ({
   brpData: TBRPData
   loading: boolean
 }) => {
-  
   const { account, chainId } = useWeb3React()
   const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
   const { result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
     account ?? undefined,
   ])
 
-  const nztBalance: string = useMemo(() => {
+  const [nztPercentage, setNztPercentage] = useState('')
 
+  useMemo(() => {
+    if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading) {
+      const divisor = BigNumber.from(10).pow(18)
+      const balance = result?.balance?.div(divisor)
+      const baseAmount = BigNumber.from(6942000000)
+      const percentage = baseAmount.sub(balance).div(1000000000)
+      setNztPercentage(percentage.toString())
+    } else {
+      setNztPercentage('-')
+    }
+  }, [result, isLoading, account, chainId])
+
+  const nztBalance: string = useMemo(() => {
     if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading) {
       const divisor = BigNumber.from(10).pow(18)
       const bal = result?.balance?.div(divisor).toString()
@@ -100,6 +113,15 @@ const InfoDescriptionSection = ({
       return '-'
     }
   }, [result, isLoading, account, chainId])
+
+  const handleNztSlideChange = (value: number) => {
+    const strValue = String(value)
+    setNztPercentage(strValue)
+  }
+
+  const handleNztInputChange = (value: string) => {
+    setNztPercentage(value)
+  }
 
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
@@ -113,6 +135,15 @@ const InfoDescriptionSection = ({
           <BluePillImg src={bluePill} />
         </Row>
       </Row>
+        <Row>
+          <ThemedText.BodySmall marginBottom="3px">NZT claimed</ThemedText.BodySmall>
+          <PercentSlider
+            initialValue={nztPercentage}
+            onSlideChange={handleNztSlideChange}
+            onInputChange={handleNztInputChange}
+            width={300}
+          />
+        </Row>
       <InfoDescription description={description} fontSize={18} />
       <InfoItemStats brpData={brpData} loading={loading} />
     </Column>

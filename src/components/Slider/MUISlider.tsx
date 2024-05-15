@@ -17,6 +17,7 @@ interface DiscreteSliderInputMarksProps {
   initialValue: string
   onSlideChange: (val: number) => void
   onInputChange: (val: string) => void
+  width?: number
 }
 
 export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLeverage }: DiscreteSliderMarksProps) {
@@ -115,7 +116,7 @@ const percentMarks = [
   },
 ]
 
-export function PercentSlider({ initialValue, onSlideChange, onInputChange }: DiscreteSliderInputMarksProps) {
+export function PercentSlider({ initialValue, onSlideChange, onInputChange, width }: DiscreteSliderInputMarksProps) {
   const handleSlideChange = (event: Event, newValue: number | number[]) => {
     onSlideChange(newValue as number)
   }
@@ -128,7 +129,7 @@ export function PercentSlider({ initialValue, onSlideChange, onInputChange }: Di
   const theme = useTheme()
 
   return (
-    <Box sx={{ width: 365 }}>
+    <Box sx={{ width: width ? width : 365 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid item></Grid>
         <Grid item xs>
