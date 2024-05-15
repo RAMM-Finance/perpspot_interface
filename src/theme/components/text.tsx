@@ -131,4 +131,7 @@ export const ThemedText = {
   DeprecatedError({ error, ...props }: { error: boolean } & TextProps) {
     return <TextWrapper fontWeight={500} color={error ? 'accentFailure' : 'textSecondary'} {...props} />
   },
+  StatLabel(props: TextProps) {
+    return <TextWrapper fontWeight={400} fontSize={12} color="textSubtle" {...props} />
+  },
 }
