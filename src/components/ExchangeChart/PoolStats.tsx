@@ -17,6 +17,7 @@ import { ReactNode, useMemo } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { colors } from 'theme/colors'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
 
@@ -105,9 +106,9 @@ export function PoolStatsSection({
         dataCy="current-price"
         value={currentPrice}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>Price</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
         loading={loading}
       />
@@ -116,9 +117,9 @@ export function PoolStatsSection({
         value={delta24h}
         delta={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>24h Change</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
         loading={loading}
       />
@@ -127,9 +128,9 @@ export function PoolStatsSection({
         value={low24h}
         // baseQuoteSymbol={baseQuoteSymbol}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>24h low</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
         loading={loading}
       />
@@ -137,9 +138,9 @@ export function PoolStatsSection({
         dataCy="24h-high"
         value={high24h}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>24h high</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
         loading={loading}
       />
@@ -148,9 +149,9 @@ export function PoolStatsSection({
         value={tvl}
         dollar={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>TVL</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
         loading={loading}
       />
@@ -159,9 +160,9 @@ export function PoolStatsSection({
         value={volume}
         dollar={true}
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>Total Volume</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
         loading={loading}
       />
@@ -185,44 +186,44 @@ export const StatsSkeleton = () => {
     <StatsWrapper>
       <StatSkeleton
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.BodySmall  color="textGrayPrimary">
             <Trans>Price</Trans>
           </ThemedText.BodySmall>
         }
       />
       <StatSkeleton
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>24h Change</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
       />
       <StatSkeleton
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>24h low</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
       />
       <StatSkeleton
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>24h high</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
       />
       <StatSkeleton
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>TVL</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
       />
       <StatSkeleton
         title={
-          <ThemedText.BodySmall>
+          <ThemedText.StatLabel>
             <Trans>Total Volume</Trans>
-          </ThemedText.BodySmall>
+          </ThemedText.StatLabel>
         }
       />
     </StatsWrapper>

@@ -150,33 +150,33 @@ export const PageTabs = () => {
           </NavLink>
         </LogoSection>
         <MenuItem href="/trade" isActive={pathname.startsWith('/trade')}>
-          <Trans>Trade</Trans>
+          <ThemedText.BodySecondary>Trade</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
-          <Trans>Pairs</Trans>
+          <ThemedText.BodySecondary>Pairs</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
-          <Trans>Swap</Trans>
+          <ThemedText.BodySecondary>Swap</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItemDropDown href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
-          <Trans>Earn</Trans>
+          <ThemedText.BodySecondary>Earn</ThemedText.BodySecondary>
         </MenuItemDropDown>
         {connectedChainId == SupportedChainId.BERA_ARTIO ? (
           <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
-            <Trans>Faucets</Trans>
+            <ThemedText.BodySecondary>Faucets</ThemedText.BodySecondary>
           </MenuItem>
         ) : null}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
-          <Trans>LMT</Trans>
+          <ThemedText.BodySecondary>LMT</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
-          <Trans>Referral</Trans>
+          <ThemedText.BodySecondary>Referral</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem href="/loot" isActive={pathname.startsWith('/loot')}>
-          <Trans>Loot</Trans>
+          <ThemedText.BodySecondary>Loot</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
-          <Trans>Docs</Trans>
+          <ThemedText.BodySecondary>Docs</ThemedText.BodySecondary>
         </MenuItem>
       </Tabs>
       <Box display={{ sm: 'flex', lg: 'none', xxl: 'flex' }} width="full"></Box>
