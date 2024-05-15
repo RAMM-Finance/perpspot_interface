@@ -322,6 +322,7 @@ export function AdvancedMarginTradeDetails({
     </div>
   )
 
+
   return (
     <StyledCard>
       <AutoColumn gap="sm">
@@ -350,9 +351,9 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="The amount you borrow from Limitless"
           label="Borrow Amount"
-          value={formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}
+          value={trade?.marginInPosToken ? formatBNToString(trade?.borrowAmount.times(new BN(trade?.executionPrice.toFixed(18))), NumberType.SwapTradeAmount) : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={trade ? inputCurrency?.symbol : ''}
+          symbolAppend={trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
         />
         <ValueLabel
           description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.

@@ -10,7 +10,7 @@ import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hoo
 import { InterfaceTrade } from 'state/routing/types'
 import { MarginPositionDetails } from 'types/lmtv2position'
 import { marginTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
-
+import { BigNumber as BN } from 'bignumber.js'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
@@ -228,12 +228,12 @@ export function AddMarginPositionConfirmModal({
     ) : null
   }, [allowedSlippage, onConfirm, trade, txHash, tradeErrorMessage])
 
-
-  console.log("TRADE.MARGIN", trade?.margin)
   // text to show while loading
   const pendingText = (
     <Trans>
-      Borrowing {formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)} {trade ? inputCurrency?.symbol : ''} and
+      Borrowing {trade?.marginInPosToken ? 
+            formatBNToString(trade?.borrowAmount.times(new BN(trade?.executionPrice.toFixed(18))), NumberType.SwapTradeAmount) 
+            : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)} {trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol} and
       Receiving {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
       {trade?.expectedAddedOutput?.tokenSymbol}
     </Trans>
