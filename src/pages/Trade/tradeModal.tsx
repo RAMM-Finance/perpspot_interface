@@ -275,6 +275,7 @@ const TradeTabContent = () => {
     premiumInPosToken,
   } = useMarginTradingState()
 
+
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
@@ -315,6 +316,7 @@ const TradeTabContent = () => {
     inputCurrency?.wrapped.address,
     outputCurrency?.wrapped.address
   )
+
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
