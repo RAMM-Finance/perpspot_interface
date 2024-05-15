@@ -13,6 +13,7 @@ import { useQuery } from 'react-query'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
+import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -124,6 +125,14 @@ export function usePoolsData(): {
 
   const slot0s = [] as any
 
+  
+  const providedPools = data && data.providedData ? data.providedData.map((item: any) => item.pool) : []
+
+  const uniquePools = data?.uniquePools ? data.uniquePools : []
+  // const withdrawnPools = data && data.withdrawnData ? data.withdrawnData.map((item: any) => item.pool) : []
+  const providedSlot0s = useMultipleContractSingleData(providedPools, POOL_STATE_INTERFACE, 'slot0')
+  // const withdrawnSlot0s = useMultipleContractSingeldata(withdrawnPools, POOL_STATE_INTERFACE, 'slot0')
+
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
 
@@ -131,20 +140,47 @@ export function usePoolsData(): {
 
     if (chainId !== useQueryChainId) return undefined
 
-    const slot0ByPool: { [key: string]: any } = {}
+    console.log("uniquePools", uniquePools)
+
     const slot0ByPoolAddress: { [key: string]: any } = {}
-    uniquePools?.forEach((pool: any, index: any) => {
-      const slot0 = slot0s[index]
-      if (slot0 && uniqueTokens.get(pool)) {
-        const poolAdress = ethers.utils.getAddress(pool)
-        if (!slot0ByPoolAddress[poolAdress]) {
-          slot0ByPoolAddress[poolAdress] = slot0.result
+
+    providedPools?.forEach((pool: any, index: any) => {
+      const slot0 = providedSlot0s[index]
+      // console.log("Slot0", slot0)
+      // console.log("get", uniqueTokens.get(pool))
+      if (slot0) {
+        const poolAddress = ethers.utils.getAddress(pool)
+        if (!slot0ByPoolAddress[poolAddress]) {
+          slot0ByPoolAddress[poolAddress] = slot0.result
         }
       }
     })
 
+    console.log("SLOT 0 BY POOOL ADDRESSSSS", slot0ByPoolAddress)
+
+
+    // const slot0ByPool: { [key: string]: any } = {}
+    // const slot0ByPoolAddress: { [key: string]: any } = {}
+    // uniquePools?.forEach((pool: any, index: any) => {
+    //   const slot0 = slot0s[index]
+    //   if (slot0 && uniqueTokens.get(pool)) {
+    //     const poolAdress = ethers.utils.getAddress(pool)
+    //     if (!slot0ByPoolAddress[poolAdress]) {
+    //       slot0ByPoolAddress[poolAdress] = slot0.result
+    //     }
+    //   }
+    // })
+
+    // console.log("LMT poolsLEngth", providedPools.length)
+    // console.log("LMT POOLS slot0ssss", providedSlot0s)
+
     const processLiqEntry = (entry: any) => {
+      // console.log("ENTRY", entry)
+      
       const pool = ethers.utils.getAddress(entry.pool)
+      // console.log("SLOT0", slot0ByPoolAddress, pool)
+      // console.log("SLOT BY PoOL", slot0ByPoolAddress[pool])
+      // console.log("TICKLOWER TICK TICKLOWER", entry.tickLower, slot0ByPoolAddress[pool]?.[0].tick, entry.tickUpper)
       let curTick = slot0ByPoolAddress[pool]?.[0].tick
       if (!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
       let amount0

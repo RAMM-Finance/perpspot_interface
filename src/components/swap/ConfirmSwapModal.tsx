@@ -228,10 +228,12 @@ export function AddMarginPositionConfirmModal({
     ) : null
   }, [allowedSlippage, onConfirm, trade, txHash, tradeErrorMessage])
 
+
+  console.log("TRADE.MARGIN", trade?.margin)
   // text to show while loading
   const pendingText = (
     <Trans>
-      Borrowing {formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)} {trade?.margin?.tokenSymbol} and
+      Borrowing {formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)} {trade ? inputCurrency?.symbol : ''} and
       Receiving {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
       {trade?.expectedAddedOutput?.tokenSymbol}
     </Trans>

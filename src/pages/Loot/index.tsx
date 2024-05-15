@@ -260,9 +260,13 @@ const LootPage = () => {
   useEffect(() => {
     if (!account) return
     const call = async () => {
-      const docRef = doc(firestore, 'concatenated_addresses', account)
+      const docRef = doc(firestore, 'concatenated_addresses_v2', account.toLowerCase())
 
+      // const docRef2 = doc(firestore, 'concatenated_addresses_v2', '0x6e1Ae94810de8D10B4Edb6Bdd1bc6255BcC4eBd7'.toLowerCase())
       const docSnap = await getDoc(docRef)
+      // const docSnap2 = await getDoc(docRef2)
+
+      console.log("CHECK USER", docSnap.exists())
 
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
