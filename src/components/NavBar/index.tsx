@@ -175,6 +175,9 @@ export const PageTabs = () => {
         <MenuItem href="/loot" isActive={pathname.startsWith('/loot')}>
           <ThemedText.BodySecondary>Loot</ThemedText.BodySecondary>
         </MenuItem>
+        <MenuItem href="/launch" isActive={pathname.startsWith('/launch')}>
+          <ThemedText.BodySecondary>Launch</ThemedText.BodySecondary>
+        </MenuItem>
         <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
           <ThemedText.BodySecondary>Docs</ThemedText.BodySecondary>
         </MenuItem>

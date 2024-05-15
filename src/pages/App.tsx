@@ -34,6 +34,7 @@ import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
+import { Launch } from './Launch'
 import LeaderboardPage from './Leaderboard'
 import LootPage from './Loot'
 import MigrateV2 from './MigrateV2'
@@ -238,6 +239,7 @@ export default function App() {
                   <Route path="leaderboard" element={<LeaderboardPage />} />
                   <Route path="loot" element={<LootPage />} />
                   <Route path="loot/?/activity" element={<LootPage />} />
+                  <Route path="launch" element={<Launch />} />
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
                   {/* <Route path="pool/v2" element={<PoolV2 />} /> */}
