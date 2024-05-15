@@ -125,13 +125,12 @@ export function usePoolsData(): {
 
   const slot0s = [] as any
 
+  const uPools = data?.uniquePools ? data.uniquePools : []
   
-  const providedPools = data && data.providedData ? data.providedData.map((item: any) => item.pool) : []
-
-  const uniquePools = data?.uniquePools ? data.uniquePools : []
-  // const withdrawnPools = data && data.withdrawnData ? data.withdrawnData.map((item: any) => item.pool) : []
-  const providedSlot0s = useMultipleContractSingleData(providedPools, POOL_STATE_INTERFACE, 'slot0')
-  // const withdrawnSlot0s = useMultipleContractSingeldata(withdrawnPools, POOL_STATE_INTERFACE, 'slot0')
+  // console.log("uniquePools", uPools)
+  const providedSlot0s = useMultipleContractSingleData(uPools, POOL_STATE_INTERFACE, 'slot0')
+  
+  console.log("providedSlot0s", providedSlot0s)
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
@@ -140,11 +139,9 @@ export function usePoolsData(): {
 
     if (chainId !== useQueryChainId) return undefined
 
-    console.log("uniquePools", uniquePools)
-
     const slot0ByPoolAddress: { [key: string]: any } = {}
 
-    providedPools?.forEach((pool: any, index: any) => {
+    uniquePools?.forEach((pool: any, index: any) => {
       const slot0 = providedSlot0s[index]
       // console.log("Slot0", slot0)
       // console.log("get", uniqueTokens.get(pool))
@@ -181,8 +178,10 @@ export function usePoolsData(): {
       // console.log("SLOT0", slot0ByPoolAddress, pool)
       // console.log("SLOT BY PoOL", slot0ByPoolAddress[pool])
       // console.log("TICKLOWER TICK TICKLOWER", entry.tickLower, slot0ByPoolAddress[pool]?.[0].tick, entry.tickUpper)
-      let curTick = slot0ByPoolAddress[pool]?.[0].tick
-      if (!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
+      let curTick = slot0ByPoolAddress[pool]?.tick
+      // console.log("slot0By", slot0ByPoolAddress[pool])
+      // console.log("CURTICK", curTick)
+      // if (!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
       let amount0
       let amount1
       if (curTick < entry.tickLower) {
