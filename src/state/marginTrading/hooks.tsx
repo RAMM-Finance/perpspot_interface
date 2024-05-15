@@ -168,6 +168,9 @@ export interface AddMarginTrade {
   swapFee: TokenBN
   marginInPosToken: boolean
   premiumSwapRoute: Route<Currency, Currency>
+  feePercent: BN
+  marginInOutput: BN
+  marginInInput: BN
 }
 
 export interface MarginTradeApprovalInfo {
@@ -867,6 +870,7 @@ export interface AddLimitTrade {
   outputCurrencyId: string
   additionalPremium: BN
   limitPrice: BN
+  feePercent: BN
   deadline: string
   duration: number
   formattedLimitPrice: Price<Currency, Currency>
@@ -987,6 +991,7 @@ const useSimulateAddLimitOrder = (
         limitPrice.shiftedBy(18).toFixed(0),
         new BN(1).shiftedBy(18).toFixed(0)
       ),
+      feePercent,
     }
 
     return {
@@ -1231,6 +1236,9 @@ const useSimulateMarginTrade = (
       const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
       if (!output) throw new Error('Quoter Error')
       amountOut = new BN(output.toString())
+
+      console.log('zeke:simulated', amountOut.toFixed(0))
+
       amountOut = amountOut.plus(marginInOutput.shiftedBy(outputCurrency.decimals))
     } else {
       swapInput = marginInInput.plus(borrowAmount).times(new BN(1).minus(feePercent))
@@ -1238,6 +1246,8 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       amountOut = new BN(output.toString())
     }
+
+    // console.log('zeke:simulated', amountOut.toFixed(0))
 
     const { slippedTickMax, slippedTickMin } = getSlippedTicks(pool, allowedSlippage)
 
@@ -1359,6 +1369,9 @@ const useSimulateMarginTrade = (
       marginInPosToken,
       premiumInPosToken,
       premiumSwapRoute,
+      feePercent,
+      marginInInput,
+      marginInOutput,
     }
 
     return result
@@ -1395,7 +1408,8 @@ const useSimulateMarginTrade = (
       !borrowAmount ||
       !additionalPremium ||
       !marginInInput ||
-      !marginInOutput
+      !marginInOutput ||
+      !feePercent
     ) {
       throw new Error('missing params')
     }
@@ -1462,6 +1476,9 @@ const useSimulateMarginTrade = (
       marginInPosToken,
       premiumSwapRoute: swapRoute,
       premiumInPosToken,
+      marginInInput,
+      marginInOutput,
+      feePercent,
     }
 
     return result
@@ -1477,6 +1494,7 @@ const useSimulateMarginTrade = (
     quoter,
     marginInPosToken,
     premiumInPosToken,
+    feePercent,
   ])
 
   const noAccountQueryKey = useMemo(() => {
