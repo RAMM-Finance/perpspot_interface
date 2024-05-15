@@ -51,15 +51,18 @@ export function useAddPositionCallback(
 
       const {
         pool,
-        swapInput,
         swapRoute,
         premium,
         inputIsToken0,
         marginInPosToken,
         margin,
+        feePercent,
         premiumInPosToken,
         premiumSwapRoute,
         allowedSlippage,
+        borrowAmount,
+        marginInOutput,
+        marginInInput,
       } = trade
 
       const positionKey: TraderPositionKey = {
@@ -73,19 +76,34 @@ export function useAddPositionCallback(
         trader: account,
       }
 
-      const swapOutput = await getOutputQuote(
-        BnToCurrencyAmount(swapInput, inputCurrency),
-        swapRoute,
-        provider,
-        chainId
-      )
-
-      if (!swapOutput) throw new Error('unable to get trade output')
-
-      let amountOut: BN = new BN(swapOutput.toString())
+      // amount of input (minus fees) swapped for position token.
+      let swapInput: BN
+      // simulatedOutput in contracts
+      let amountOut: BN
       if (marginInPosToken) {
-        amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
+        swapInput = borrowAmount.times(new BN(1).minus(feePercent))
+        // console.log('zeke:callback:swapInput', swapInput.toFixed(0))
+        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+        if (!output) throw new Error('Quoter Error')
+        amountOut = new BN(output.toString())
+        amountOut = amountOut.plus(marginInOutput.shiftedBy(outputCurrency.decimals))
+      } else {
+        swapInput = marginInInput.plus(borrowAmount).times(new BN(1).minus(feePercent))
+        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+        if (!output) throw new Error('Quoter Error')
+        amountOut = new BN(output.toString())
       }
+      // 2442588784069760304
+      // 3399642087168558543582
+
+      // if (!swapOutput) throw new Error('unable to get trade output')
+
+      // let amountOut: BN = new BN(swapOutput.toString())
+      // if (marginInPosToken) {
+      //   amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
+      // }
+
+      // console.log('zeke:callback', amountOut.toFixed(0))
 
       let minPremiumOutput: string | undefined
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
@@ -112,25 +130,7 @@ export function useAddPositionCallback(
         : new BN(pool.token1Price.toFixed(18))
 
       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-      // console.log(
-      //   'addPosition:callback',
-      //   {
-      //     positionKey,
-      //     margin: trade.margin.rawAmount(),
-      //     borrowAmount: trade.borrowAmount.rawAmount(),
-      //     minimumOutput: marginInPosToken ? '0' : minimumOutput.shiftedBy(outputDecimals).toFixed(0),
-      //     deadline: deadline.toString(),
-      //     simulatedOutput: amountOut.toFixed(0),
-      //     executionOption: 1,
-      //     depositPremium: premium.rawAmount(),
-      //     slippedTickMin,
-      //     slippedTickMax,
-      //     marginInPosToken,
-      //     premiumInPosToken,
-      //     minPremiumOutput,
-      //   },
-      //   trade
-      // )
+
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
         margin: trade.margin.rawAmount(),

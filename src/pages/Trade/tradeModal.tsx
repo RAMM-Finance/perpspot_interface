@@ -502,8 +502,7 @@ const TradeTabContent = () => {
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
-    ((existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency : inputCurrency) ||
-      undefined,
+    inputCurrency || undefined,
     outputCurrency || undefined,
     allowedSlippage
   )
