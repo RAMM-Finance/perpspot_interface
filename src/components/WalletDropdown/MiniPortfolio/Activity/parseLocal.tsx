@@ -95,9 +95,7 @@ function parseAddLeverage(
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`Deposited ${paidAmount} ${formatSymbol(tokenIn?.symbol)}, Received ${addedPosition} ${formatSymbol(
-        tokenOut?.symbol
-      )}`}
+      {`Deposited ${paidAmount} ${formatSymbol(info.marginInPosToken ? tokenOut?.symbol : tokenIn?.symbol)}, Received ${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
     </Descriptor>
   )
 
@@ -231,7 +229,7 @@ function parseReduceLeverage(
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
 
-  const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${tokenIn?.symbol}`
+  const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${info.marginInPosToken ? tokenOut?.symbol : tokenIn?.symbol}`
 
   return {
     descriptor,

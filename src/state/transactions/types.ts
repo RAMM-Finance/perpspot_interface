@@ -210,6 +210,7 @@ export interface ReduceLeveragePositionTransactionInfo {
   reduceAmount: number
   inputCurrencyId: string
   outputCurrencyId: string
+  marginInPosToken: boolean
   pnl: number
   timestamp: string
 }
@@ -269,6 +270,7 @@ export interface PremiumWithdrawTransactionInfo {
 export interface AddLeverageTransactionInfo {
   type: TransactionType.ADD_LEVERAGE
   margin: string
+  marginInPosToken: boolean
   inputCurrencyId: string
   outputCurrencyId: string
   expectedAddedPosition: string

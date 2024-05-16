@@ -188,6 +188,7 @@ export function useAddPositionCallback(
         addTransaction(response, {
           type: TransactionType.ADD_LEVERAGE,
           margin: formatBNToString(trade.margin, NumberType.SwapTradeAmount),
+          marginInPosToken: trade.marginInPosToken,
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
           expectedAddedPosition: formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount),

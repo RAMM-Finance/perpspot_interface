@@ -355,6 +355,7 @@ function PositionRow({
   positionKey,
   remainingPremium,
   actions,
+  marginInPosToken,
   ...rest
 }: {
   first?: boolean
@@ -371,6 +372,7 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
+  marginInPosToken: boolean
   last?: boolean
   style?: CSSProperties
 }) {
@@ -390,6 +392,7 @@ function PositionRow({
     <>
       {showModal && (
         <LeveragePositionModal
+          marginInPosToken={marginInPosToken}
           positionKey={positionKey}
           selectedTab={selectedTab}
           isOpen={showModal}
@@ -461,6 +464,7 @@ export function HeaderRow() {
           <ThemedText.TableText>Position</ThemedText.TableText>
         </Box>
       }
+      marginInPosToken={false}
       value={<HeaderCell category={PositionSortMethod.VALUE} />}
       collateral={<HeaderCell category={PositionSortMethod.COLLATERAL} />}
       PnL={<HeaderCell category={PositionSortMethod.PNL} />}
@@ -484,6 +488,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
       header={false}
       // listNumber={<SmallLoadingBubble />}
       loading
+      marginInPosToken={false}
       positionInfo={
         <>
           <IconLoadingBubble />
@@ -671,6 +676,7 @@ export const LoadedRow = memo(
           <PositionRow
             header={false}
             positionKey={positionKey}
+            marginInPosToken={details.marginInPosToken}
             positionInfo={
               <ClickableContent>
                 <RowBetween>

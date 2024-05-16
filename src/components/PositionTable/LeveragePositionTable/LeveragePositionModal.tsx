@@ -37,6 +37,7 @@ import { LoadingBubble } from './loading'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
 
 interface TradeModalProps {
+  marginInPosToken: boolean
   isOpen: boolean
   selectedTab: TradeModalActiveTab | undefined
   positionKey: TraderPositionKey | undefined
@@ -168,6 +169,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
     if (!positionKey) return null
     return activeTab === TradeModalActiveTab.DECREASE_POSITION ? (
       <DecreasePositionContent
+        marginInPosToken={props.marginInPosToken}
         positionKey={positionKey}
         onPositionChange={setAlteredPosition}
         inputCurrency={inputCurrency ?? undefined}
@@ -194,6 +196,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
       />
     ) : (
       <DecreasePositionContent
+        marginInPosToken={props.marginInPosToken}
         positionKey={positionKey}
         onPositionChange={setAlteredPosition}
         inputCurrency={inputCurrency ?? undefined}
