@@ -114,14 +114,14 @@ const InfoDescriptionSection = ({
     }
   }, [result, isLoading, account, chainId])
 
-  const handleNztSlideChange = (value: number) => {
-    const strValue = String(value)
-    setNztPercentage(strValue)
-  }
+  // const handleNztSlideChange = (value: number) => {
+  //   const strValue = String(value)
+  //   setNztPercentage(strValue)
+  // }
 
-  const handleNztInputChange = (value: string) => {
-    setNztPercentage(value)
-  }
+  // const handleNztInputChange = (value: string) => {
+  //   setNztPercentage(value)
+  // }
 
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
@@ -135,15 +135,16 @@ const InfoDescriptionSection = ({
           <BluePillImg src={bluePill} />
         </Row>
       </Row>
-        <Row>
-          <ThemedText.BodySmall marginBottom="3px">NZT claimed</ThemedText.BodySmall>
-          <PercentSlider
-            initialValue={nztPercentage}
-            onSlideChange={handleNztSlideChange}
-            onInputChange={handleNztInputChange}
-            width={300}
-          />
-        </Row>
+      <Row>
+        <ThemedText.BodySmall marginBottom="3px">Total NZT claimed</ThemedText.BodySmall>
+        <PercentSlider
+          initialValue={nztPercentage}
+          onSlideChange={() => {}}
+          onInputChange={()=> {}}
+          width={280}
+          readOnly={true}
+        />
+      </Row>
       <InfoDescription description={description} fontSize={18} />
       <InfoItemStats brpData={brpData} loading={loading} />
     </Column>
