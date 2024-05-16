@@ -5,6 +5,7 @@ import Slider from '@mui/material/Slider'
 import { styled } from '@mui/material/styles'
 import * as React from 'react'
 import { useTheme } from 'styled-components'
+import { ThemedText } from 'theme'
 
 interface DiscreteSliderMarksProps {
   initialValue: number
@@ -18,6 +19,7 @@ interface DiscreteSliderInputMarksProps {
   onSlideChange: (val: number) => void
   onInputChange: (val: string) => void
   width?: number
+  readOnly?: boolean
 }
 
 export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLeverage }: DiscreteSliderMarksProps) {
@@ -116,7 +118,13 @@ const percentMarks = [
   },
 ]
 
-export function PercentSlider({ initialValue, onSlideChange, onInputChange, width }: DiscreteSliderInputMarksProps) {
+export function PercentSlider({
+  initialValue,
+  onSlideChange,
+  onInputChange,
+  width,
+  readOnly,
+}: DiscreteSliderInputMarksProps) {
   const handleSlideChange = (event: Event, newValue: number | number[]) => {
     onSlideChange(newValue as number)
   }
@@ -145,26 +153,32 @@ export function PercentSlider({ initialValue, onSlideChange, onInputChange, widt
           />
         </Grid>
         <Grid item>
-          <Input
-            placeholder="0"
-            value={initialValue}
-            size="small"
-            onChange={handleInputChange}
-            sx={{
-              input: {
-                color: 'white',
-              },
-              justifyContent: 'right',
-              width: '40px',
-            }}
-            inputProps={{
-              min: 0,
-              max: 100,
-              type: 'number',
-              'aria-labelledby': 'input-slider',
-            }}
-          />
-          %
+          {readOnly ? (
+            <ThemedText.BodySecondary fontSize={16} marginBottom="4px">{initialValue} %</ThemedText.BodySecondary>
+          ) : (
+            <>
+              <Input
+                placeholder="0"
+                value={initialValue}
+                size="small"
+                onChange={handleInputChange}
+                sx={{
+                  input: {
+                    color: 'white',
+                  },
+                  justifyContent: 'right',
+                  width: '40px',
+                }}
+                inputProps={{
+                  min: 0,
+                  max: 100,
+                  type: 'number',
+                  'aria-labelledby': 'input-slider',
+                }}
+              />
+              %
+            </>
+          )}
         </Grid>
       </Grid>
     </Box>

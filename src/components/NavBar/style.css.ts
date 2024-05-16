@@ -2,6 +2,7 @@ import { style } from '@vanilla-extract/css'
 
 import { subhead } from '../../nft/css/common.css'
 import { sprinkles } from '../../nft/css/sprinkles.css'
+import { bottom } from '@popperjs/core'
 
 export const logoContainer = style([
   sprinkles({
@@ -79,8 +80,8 @@ const baseMenuItem = style([
     paddingY: '4',
     paddingX: '14',
     // marginY: '4',
-    borderRadius: '12',
-    transition: '250',
+    // borderRadius: '12',
+    // transition: '250',
     height: 'max',
     width: 'full',
     textAlign: 'center',
@@ -105,6 +106,7 @@ export const menuItem = style([
       color: 'white',
       background: 'accentActiveSoft',
       fontWeight: 'bold',
+      opacity: '0.8',
       transform: 'scale(1.1,1.1)',
     },
   },
@@ -118,6 +120,8 @@ export const activeMenuItem = style([
     color: 'textPrimary',
   }),
   {
-    fontSize: '1em',
+    fontSize: '2em',
+    transform: 'scale(1.1,1.1)',
+    borderBottom: '1px solid #3665FF',
   },
 ])

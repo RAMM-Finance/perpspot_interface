@@ -63,9 +63,10 @@ interface MenuItemProps {
   margin?: string
   external?: boolean
   font?: boolean
+  noBorder?: boolean
 }
 
-const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, font }: MenuItemProps) => {
+const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, font, noBorder }: MenuItemProps) => {
   return (
     <NavLink
       target={external ? '_blank' : ''}
@@ -73,7 +74,7 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, 
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px' }}
+      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px', borderWidth: noBorder ? '0': '2px' }}
       data-testid={dataTestId}
     >
       {children}
@@ -96,10 +97,10 @@ const MenuItemDropDown = ({ href, dataTestId, id, isActive, children, margin, ex
 
   const dropdown = (
     <StyledMenu>
-      <MenuItem font={true} href="/pools/advanced" isActive={pathname.startsWith('/pools/advanced')}>
+      <MenuItem font={true} noBorder={true} href="/pools/advanced" isActive={pathname.startsWith('/pools/advanced')}>
         My LP Positions
       </MenuItem>
-      <MenuItem font={true} href="/pools/simple" isActive={pathname.startsWith('/pools/simple')}>
+      <MenuItem font={true} noBorder={true} href="/pools/simple" isActive={pathname.startsWith('/pools/simple')}>
         Simple LP
       </MenuItem>
     </StyledMenu>
@@ -202,7 +203,7 @@ const Navbar = () => {
     setShowModal(false)
   }, [])
 
-  console.log('hght')
+  // console.log('hght')
 
   return (
     <>
