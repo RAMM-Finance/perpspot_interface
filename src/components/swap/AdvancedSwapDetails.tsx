@@ -322,6 +322,7 @@ export function AdvancedMarginTradeDetails({
     </div>
   )
 
+  console.log("marginInPosToken- borrowAmount", trade?.marginInPosToken, trade?.marginInPosToken ? trade?.borrowAmount.toNumber() * Number(trade?.executionPrice.toFixed(18)) : trade?.borrowAmount.toNumber())
 
   return (
     <StyledCard>
@@ -351,7 +352,9 @@ export function AdvancedMarginTradeDetails({
         <ValueLabel
           description="The amount you borrow from Limitless"
           label="Borrow Amount"
-          value={trade?.marginInPosToken ? formatBNToString(trade?.borrowAmount.times(new BN(trade?.executionPrice.toFixed(18))), NumberType.SwapTradeAmount) : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}
+          value={trade?.marginInPosToken ? 
+            formatBNToString(trade?.borrowAmount.times(new BN(trade?.executionPrice.toFixed(18))), NumberType.SwapTradeAmount) 
+            : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
         />

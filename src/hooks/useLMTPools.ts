@@ -4,7 +4,7 @@ import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
-import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useEffect, useMemo, useRef } from 'react'
@@ -45,6 +45,36 @@ export function usePoolsData(): {
     return ['queryPoolsData', chainId, dataProvider.address]
   }, [chainId, dataProvider])
 
+  // async function fetchAllData(query: any, client: any) {
+  //   let allResults: any[] = []
+  //   let skip = 0;
+  //   const first = 1000 // maximum limit
+  
+  //   while (true) {
+  //     const result = await client.query(query, { first, skip }).toPromise()
+  //     if (query === AddQuery) {
+  //       if (!result.data || !result.data.marginPositionIncreaseds.length) {
+  //         break
+  //       }
+  //       allResults = [...allResults, ...result.data.marginPositionIncreaseds]
+  //     } else if (query === ReduceQuery) {
+  //       if (!result.data || !result.data.marginPositionReduceds.length) {
+  //         break
+  //       }
+  //       allResults = [...allResults, ...result.data.marginPositionReduceds]
+  //     }
+  //     if (query === AddQuery) {
+  //       allResults = [...allResults, ...result.data.marginPositionIncreaseds]
+  //     } else if (query === ReduceQuery) {
+  //       allResults = [...allResults, ...result.data.marginPositionReduceds]
+  //     }
+  
+  //     skip += first
+  //   }
+  
+  //   return allResults
+  // }
+
   const { data, isLoading, isError, refetch } = useQuery(
     queryKey,
     async () => {
@@ -57,18 +87,19 @@ export function usePoolsData(): {
         let ProvidedQueryData
         let WithdrawnQueryData
         if (chainId === SupportedChainId.BASE) {
-          AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-          ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
-          ProvidedQueryData = await clientBase.query(LiquidityProvidedQuery, {}).toPromise()
-          WithdrawnQueryData = await clientBase.query(LiquidityWithdrawnQuery, {}).toPromise()
+          AddQueryData = await fetchAllData(AddQuery, clientBase)
+          ReduceQueryData = await fetchAllData(ReduceQuery, clientBase)
+          ProvidedQueryData = await fetchAllData(LiquidityProvidedQuery, clientBase)
+          WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQuery, clientBase)
         } else {
-          AddQueryData = await client.query(AddQuery, {}).toPromise()
-          ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
-          ProvidedQueryData = await client.query(LiquidityProvidedQuery, {}).toPromise()
-          WithdrawnQueryData = await client.query(LiquidityWithdrawnQuery, {}).toPromise()
+          AddQueryData = await fetchAllData(AddQuery, client)
+          ReduceQueryData = await fetchAllData(ReduceQuery, client)
+          ProvidedQueryData = await fetchAllData(LiquidityProvidedQuery, client)
+          WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQuery, client)
         }
+
         const pools = new Set<string>()
-        ProvidedQueryData?.data?.liquidityProvideds.forEach((entry: any) => {
+        ProvidedQueryData?.forEach((entry: any) => {
           const pool = ethers.utils.getAddress(entry.pool)
           if (!pools.has(pool)) {
             pools.add(pool)
@@ -98,10 +129,10 @@ export function usePoolsData(): {
         return {
           uniquePools: Array.from(pools),
           uniqueTokens: uniqueTokens_,
-          addData: AddQueryData.data.marginPositionIncreaseds,
-          reduceData: ReduceQueryData.data.marginPositionReduceds,
-          providedData: ProvidedQueryData.data.liquidityProvideds,
-          withdrawnData: WithdrawnQueryData.data.liquidityWithdrawns,
+          addData: AddQueryData,
+          reduceData: ReduceQueryData,
+          providedData: ProvidedQueryData,
+          withdrawnData: WithdrawnQueryData,
           useQueryChainId: chainId,
         }
       } catch (err) {
@@ -154,23 +185,24 @@ export function usePoolsData(): {
     })
 
 
-    // const slot0ByPool: { [key: string]: any } = {}
-    // const slot0ByPoolAddress: { [key: string]: any } = {}
-    // uniquePools?.forEach((pool: any, index: any) => {
-    //   const slot0 = slot0s[index]
-    //   if (slot0 && uniqueTokens.get(pool)) {
-    //     const poolAdress = ethers.utils.getAddress(pool)
-    //     if (!slot0ByPoolAddress[poolAdress]) {
-    //       slot0ByPoolAddress[poolAdress] = slot0.result
-    //     }
-    //   }
-    // })
+    const slot0ByPool: { [key: string]: any } = {}
+    const slot0ByPoolAddress1: { [key: string]: any } = {}
+    uniquePools?.forEach((pool: any, index: any) => {
+      const slot0 = slot0s[index]
+      if (slot0 && uniqueTokens.get(pool)) {
+        const poolAdress = ethers.utils.getAddress(pool)
+        if (!slot0ByPoolAddress[poolAdress]) {
+          slot0ByPoolAddress[poolAdress] = slot0.result
+        }
+      }
+    })
 
 
     const processLiqEntry = (entry: any) => {
       
       const pool = ethers.utils.getAddress(entry.pool)
-      let curTick = slot0ByPoolAddress[pool]?.tick
+      let curTick = slot0ByPoolAddress1[pool]?.tick
+      
       // if (!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
       let amount0
       let amount1
@@ -239,14 +271,32 @@ export function usePoolsData(): {
         : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.reduceAmount,
     }))
+    const targetEntry1 = addData?.find((entry: any) => entry.pool.toLowerCase() === '0xba3f945812a83471d709bce9c3ca699a19fb46f7')
+    const targetEntry = addDataProcessed?.find((entry: any) => entry.key.toLowerCase() === '0xba3f945812a83471d709bce9c3ca699a19fb46f7')
+
 
     const processEntry = async (entry: any) => {
       // const usdValueOfToken = usdValue[entry.token] || 0
       // const totalValue = (usdValueOfToken * entry.amount) / 10 ** tokenDecimal[entry.token]
       const pool = ethers.utils.getAddress(entry.key)
+
+      const poolAddr = ethers.utils.getAddress("0xBA3F945812a83471d709BCe9C3CA699A19FB46f7")
+      // console.log("0xBA3F945812a83471d709BCe9C3CA699A19FB46f7".toLowerCase())
+      // if (uniqueTokens.get(poolAddr)) {
+      //   const tokens = uniqueTokens?.get(poolAddr)
+      //   console.log("TOKENNNN", tokens[3].symbol, tokens[4].symbol)
+      // }
       if (uniqueTokens.get(pool)) {
         const tokens = uniqueTokens?.get(pool)
         let totalValue
+
+
+        // if (tokens[3].symbol === 'BRETT' || tokens[4].symbol === 'BRETT')
+        //   {
+        //     console.log("TOKENS", tokens[3].symbol, tokens[4].symbol)
+        //     console.log("TOTLA VAUE tokens3", (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals)
+        //     console.log("TOTLA VAUE tokens4", (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals)
+        //   }
 
         if (tokens[3]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
           totalValue = (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals

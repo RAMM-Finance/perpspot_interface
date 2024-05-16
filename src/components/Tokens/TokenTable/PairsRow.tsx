@@ -440,14 +440,30 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
+
   // console.log("TOKEN 0 IS BASE ? ", token0?.symbol, token1?.symbol, poolOHLC?.token0IsBase)
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
   // console.log("UES EST ", token0, token1, priceInverted)
 
-  const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
+  const [token0Range, token1Range] = useMemo(() => {
+    if (token0?.symbol === "USDC" || token1?.symbol === "USDC") {
+      return [0.95, 1.05]
+    } else {
+      return [undefined, undefined]
+    }
+  }, [token0, token1])
+
+  const rawEstimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD, token0Range, token1Range)
   
-  if (token0?.symbol === "USDC" || token1?.symbol === "USDC")
-    console.log("HEREEEE EST", token0?.symbol, token1?.symbol, pool, tickSpacing, priceInverted, depositAmountUSD, estimatedAPR)
+  const estimatedAPR = useMemo(() => {
+    if (token0?.symbol === "USDC" || token1?.symbol === "USDC") {
+      return rawEstimatedAPR / 3
+    } else {
+      return rawEstimatedAPR
+    }
+  }, [token0, token1, rawEstimatedAPR])
+  // if (token0?.symbol === "USDC" || token1?.symbol === "USDC")
+  //   console.log("EST APR OF USDC", estimatedAPR)
 
   const filterString = useAtomValue(filterStringAtom)
 

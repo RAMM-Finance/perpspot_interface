@@ -548,9 +548,6 @@ const feeAprEstimation = (
     position.token0Decimals,
     position.token1Decimals
   )
-  // if (token1 === "INT") {
-  //   console.log("LIQ PERCENTAGE", liquidityDelta / (liquidityGross.toNumber() + liquidityDelta))
-  // }
 
   const feeTierPercentage: number = Number(position.fee) / 10000 / 100
 
@@ -676,6 +673,14 @@ export function useEstimatedAPR(
                 token0?.symbol,
                 token1?.symbol
               )
+
+              
+                // console.log("INFO of", token0?.symbol, token1?.symbol)
+                // console.log("liquidityGross", liquidityGross.toNumber())
+                // console.log("VOLUME 24h", volume24h)
+              
+                
+
               try {
                 const { apy, dailyIncome } = estimateAPR(
                   position,

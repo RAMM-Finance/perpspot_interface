@@ -19,8 +19,8 @@ query poolHourDatas($startTime: Int!, $address: String!) {
 `
 
 export const LiquidityProvidedQuery = `
-  query {
-    liquidityProvideds(first:1000 orderBy: blockTimestamp orderDirection: desc) {
+  query($first: Int!, $skip: Int!) {
+    liquidityProvideds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc) {
       pool
       recipient
       liquidity
@@ -30,9 +30,10 @@ export const LiquidityProvidedQuery = `
     }
   }
 `
+
 export const LiquidityWithdrawnQuery = `
-  query {
-    liquidityWithdrawns(first:1000 orderBy: blockTimestamp orderDirection: desc) {
+  query($first: Int!, $skip: Int!) {
+    liquidityWithdrawns(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc) {
       pool
       recipient
       liquidity
@@ -137,8 +138,8 @@ export const PoolAddedQuery = `
 `
 
 export const AddQuery = `
-  query {
-    marginPositionIncreaseds(orderBy: blockTimestamp orderDirection: desc)  {
+  query($first: Int!, $skip: Int!) {
+    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc)  {
       pool
       positionIsToken0
       marginInPosToken
@@ -152,9 +153,10 @@ export const AddQuery = `
     }
   }
 `
+
 export const ReduceQuery = `
-  query {
-    marginPositionReduceds(orderBy: blockTimestamp orderDirection: desc)  {
+  query($first: Int!, $skip: Int!) {
+    marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc)  {
       pool
       positionIsToken0
       marginInPosToken
@@ -171,8 +173,8 @@ export const ReduceQuery = `
 `
 
 export const IncreaseLiquidityQuery = `
-  query {
-    increaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {
+    query {
+      increaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {
       tokenId
       liquidity
       amount0
@@ -182,9 +184,10 @@ export const IncreaseLiquidityQuery = `
     }
   }
 `
+
 export const DecreaseLiquidityQuery = `
-  query {
-    decreaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {
+    query {
+      decreaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {
       tokenId
       liquidity
       amount0
@@ -263,19 +266,3 @@ export const Pool24hVolumeQuery = (poolAddress: string, timestamp: number) => {
     }
   `
 }
-// query {
-//   liquidityPool(id: "${poolAddress}") {
-//     dailySnapshots(
-//       where: {timestamp_gte: "${timestamp}"}
-//       orderBy: timestamp
-//       orderDirection: desc
-//       first: 7
-//     ) {
-//       dailyVolumeUSD
-//       timestamp
-//       pool {
-//         id
-//       }
-//     }
-//   }
-// }
