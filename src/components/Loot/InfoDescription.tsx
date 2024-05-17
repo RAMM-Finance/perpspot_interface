@@ -97,7 +97,7 @@ const InfoDescriptionSection = ({
       const divisor = BigNumber.from(10).pow(18)
       const balance = result?.balance?.div(divisor)
       const baseAmount = BigNumber.from(6942000000)
-      const percentage = baseAmount.sub(balance).div(1000000000)
+      const percentage = baseAmount.sub(balance).div(BigNumber.from(1000000000))
       setNztPercentage(percentage.toString())
     } else {
       setNztPercentage('-')
@@ -113,15 +113,6 @@ const InfoDescriptionSection = ({
       return '-'
     }
   }, [result, isLoading, account, chainId])
-
-  // const handleNztSlideChange = (value: number) => {
-  //   const strValue = String(value)
-  //   setNztPercentage(strValue)
-  // }
-
-  // const handleNztInputChange = (value: string) => {
-  //   setNztPercentage(value)
-  // }
 
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
