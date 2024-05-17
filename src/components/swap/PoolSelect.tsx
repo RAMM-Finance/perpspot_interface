@@ -319,7 +319,8 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
-        {poolOHLCData?.priceNow ? formatBNToString(new BN(poolOHLCData.priceNow), NumberType.FiatGasPrice, true) : ''}
+        {poolOHLCData?.priceNow ? poolOHLCData.priceNow < 1 ? poolOHLCData.priceNow.toFixed(10) : poolOHLCData.priceNow.toFixed(4) : ''} 
+        {/* formatBNToString(new BN(poolOHLCData.priceNow), NumberType.FiatGasPrice, true) : ''} */}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
     </RowWrapper>

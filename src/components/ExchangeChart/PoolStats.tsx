@@ -10,6 +10,7 @@ import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDeta
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
+import { NftApproveForAllPartsFragmentDoc } from 'graphql/data/__generated__/types-and-hooks'
 import { useTokenContract } from 'hooks/useContract'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -259,7 +260,7 @@ function Stat({
   baseQuoteSymbol,
   dollar,
   loading,
-  delta = false,
+  delta = false
 }: {
   dataCy: string
   value: NumericStat
@@ -270,11 +271,13 @@ function Stat({
   loading: boolean
   delta?: boolean
 }) {
-  let _value = formatBNToString(value ?? undefined, NumberType.FiatTokenPrice, true)
+  let _value = value && value.toNumber() < 1 ? value.toNumber().toFixed(10) : (value && value.toNumber().toFixed(4)) ?? undefined
   const arrow = getDeltaArrow(value?.toNumber(), 14)
   if (value && baseQuoteSymbol) {
     _value = `${_value} ${baseQuoteSymbol}`
   }
+
+  console.log("datCy, value, dollar", dataCy, value, dollar, baseQuoteSymbol, _value)
   if (loading) {
     return (
       <StatWrapper data-cy={`${dataCy}`}>
