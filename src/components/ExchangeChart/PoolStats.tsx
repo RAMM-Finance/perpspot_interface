@@ -277,7 +277,6 @@ function Stat({
     _value = `${_value} ${baseQuoteSymbol}`
   }
 
-  console.log("datCy, value, dollar", dataCy, value, dollar, baseQuoteSymbol, _value)
   if (loading) {
     return (
       <StatWrapper data-cy={`${dataCy}`}>
