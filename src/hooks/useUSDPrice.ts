@@ -102,7 +102,7 @@ export async function getDecimalAndUsdValueData(
   })
 
   const token: UniswapQueryTokenInfo = res?.data?.data?.token
-  const token2 = res?.data?.data?.token
+  // if (true) {
   if (!token || !token?.lastPriceUSD || token.lastPriceUSD === '0') {
     try {
       res = await axios.get(
@@ -115,6 +115,7 @@ export async function getDecimalAndUsdValueData(
         }
       )
       const data: any = res?.data
+      // console.log("DATA!", data)
       const usdValues = Object.values(data).map((value: any) => value.usd)
 
       return { ...token, lastPriceUSD: usdValues[0].toString() }

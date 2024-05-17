@@ -332,6 +332,7 @@ export function usePointsData() {
           DepositQuery = results[5]
           WithdrawQuery = results[6]
           registerQueryData = results[7]
+
         } else {
           const results = await Promise.all([
             fetchAllData(AddQuery, client),
@@ -393,8 +394,6 @@ export function usePointsData() {
           }
         })
         setVaultByAddress(vaultDataByAddress)
-
-        console.log('VAULT DATA BY ADDR', vaultDataByAddress)
 
         const uniqueTokenIds = new Set<string>()
         const uniqueTraders = new Set<string>()
@@ -617,19 +616,19 @@ export function usePointsData() {
     const lpPositionsByUniqueLps: { [key: string]: any } = {}
 
     lpPositionsProcessed?.forEach((entry: any) => {
-      const sameTokenIdCollects = collectData.filter((collect: any) => {
+      const sameTokenIdCollects = collectData?.filter((collect: any) => {
         if (collect.tokenId == entry.tokenId.toString()) {
           return true
         }
         return false
-      })
-
-      const sameTokenIdDecreases = decreaseLiqData.filter((decrease: any) => {
+      }) || []
+      
+      const sameTokenIdDecreases = decreaseLiqData?.filter((decrease: any) => {
         if (decrease.tokenId == entry.tokenId.toString()) {
           return true
         }
         return false
-      })
+      }) || []
 
       let amount0Collected = 0
       let amount1Collected = 0
