@@ -106,6 +106,8 @@ export type TBRPData = {
 
 const LootPage = () => {
   const { account, chainId } = useWeb3React()
+
+  // const account = '0x3e6b87FF2168d15794A865D09A6716415e7DbeCf'
   const blockNumber = useBlockNumber()
 
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
@@ -265,17 +267,13 @@ const LootPage = () => {
     if (!account) return
     const call = async () => {
       const docRef = doc(firestore, 'concatenated_addresses_v2', account.toLowerCase())
-
-      // const docRef2 = doc(firestore, 'concatenated_addresses_v2', '0x6e1Ae94810de8D10B4Edb6Bdd1bc6255BcC4eBd7'.toLowerCase())
+      // const docRef2 = doc(firestore, 'concatenated_addresses_v2', '0x3e6b87FF2168d15794A865D09A6716415e7DbeCf'.toLowerCase())
       const docSnap = await getDoc(docRef)
       // const docSnap2 = await getDoc(docRef2)
-
-      console.log('CHECK USER', docSnap.exists())
 
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
         const code = docSnap.data().Passcode
-        console.log('DATA', docSnap.data())
         setPasscode(code)
       } else {
         setIsInConcatenatedAddresses(false)
