@@ -29,6 +29,7 @@ import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
 import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
+import PositionInfoModal from './PositionInfoModal'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
@@ -59,7 +60,7 @@ const StyledTokenRow = styled.div<{
   font-size: 12px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 0.8fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 0.7fr 1fr;
   line-height: 24px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -586,6 +587,18 @@ export const LoadedRow = memo(
       [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey, token0, token1, chainId]
     )
 
+    const [showInfo, setShowInfo] = useState(false)
+
+    const handleCloseInfo = useCallback(() => {
+      // e.stopPropagation()
+      setShowInfo(false)
+    }, [])
+
+    const handleShowInfo = useCallback((e: any) => {
+      e.stopPropagation()
+      setShowInfo(true)
+    }, [])
+
     const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
     const inputCurrency = useCurrency(details.isToken0 ? details.poolKey.token1 : details.poolKey.token0)
 
@@ -666,224 +679,244 @@ export const LoadedRow = memo(
     }
 
     return (
-      <div ref={ref} data-testid="token-table-row">
-        <StyledLoadedRow>
-          <PositionRow
-            header={false}
-            positionKey={positionKey}
-            positionInfo={
-              <ClickableContent>
-                <RowBetween>
-                  <PositionInfo>
-                    <GreenText>x{`${Math.round(leverageFactor * 1000) / 1000} `}</GreenText>
-                    <GreenText>{`${outputCurrency?.symbol}/${inputCurrency?.symbol}`}</GreenText>
-                  </PositionInfo>
-                </RowBetween>
-              </ClickableContent>
-            }
-            value={
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    <AutoColumn style={{ width: '185px' }} gap="5px">
-                      <RowBetween>
-                        <div>Net Value (USD):</div>
-                        <div>
-                          $
-                          {details.totalPosition &&
-                            outputCurrencyPrice.data &&
-                            (details.totalPosition.toNumber() * outputCurrencyPrice?.data).toFixed(2)}
-                        </div>
-                      </RowBetween>
-                    </AutoColumn>
-                  </Trans>
-                }
-              >
-                <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                  <AutoColumn gap="5px">
-                    <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
-                      <CurrencyLogo currency={outputCurrency} size="10px" />
-                      {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
-                    </RowFixed>
-
-                    <div>{` ${outputCurrency?.symbol}`}</div>
-                  </AutoColumn>
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            collateral={
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    <AutoColumn style={{ width: '160px' }} gap="5px">
-                      <RowBetween>
-                        <div>Margin (USD):</div>
-                        <div>
-                          $
-                          {details.margin && outputCurrencyPrice.data && details.marginInPosToken
-                            ? (details.margin.toNumber() * outputCurrencyPrice?.data).toFixed(2)
-                            : inputCurrencyPrice.data &&
-                              (details.margin.toNumber() * inputCurrencyPrice?.data).toFixed(2)}
-                        </div>
-                      </RowBetween>
-                    </AutoColumn>
-                  </Trans>
-                }
-              >
-                <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
-                  <AutoColumn gap="5px">
-                    <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
-                      <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
-                      {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
-                    </RowFixed>
-                    <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
-                  </AutoColumn>
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            rate={
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    {'Annualized Rate: ' +
-                      String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) +
-                      ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
-                  </Trans>
-                }
-                disableHover={false}
-              >
-                <FlexStartRow>
-                  {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + '%'}
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            PnL={
-              <MouseoverTooltip
-                text={
-                  <Trans>
-                    <AutoColumn style={{ width: '200px' }} gap="5px">
-                      <RowBetween>
-                        <div>PnL (USD):</div>
-                        <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
-                      </RowBetween>
-                      <RowBetween>
-                        <div>Interest paid:</div>
-                        <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
-                      </RowBetween>
-                      <RowBetween>
-                        <div>PnL inc. int:</div>
-                        {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
-                        ' ' +
-                        details.marginInPosToken
-                          ? outputCurrency?.symbol
-                          : inputCurrency?.symbol}
-                      </RowBetween>
-                      <RowBetween>
-                        <div>PnL inc. int (USD):</div>
-                        <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
-                      </RowBetween>
-                    </AutoColumn>
-                  </Trans>
-                }
-                disableHover={false}
-              >
-                <FlexStartRow>
-                  {details.marginInPosToken ? (
-                    <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
-                        {PnL &&
-                          `${formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)} `}
-                      </DeltaText>
-                      <div>
-                        <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL &&
-                            `(${(
-                              (new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) *
-                              100
-                            ).toFixed(2)}%)`}
-                        </DeltaText>
-                        {' ' + outputCurrency?.symbol}
-                      </div>
-                    </AutoColumn>
-                  ) : (
-                    <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                        {PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
-                      </DeltaText>
-                      <div>
-                        <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL && `(${((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)} %)`}
-                        </DeltaText>
-                        {' ' + inputCurrency?.symbol}
-                      </div>
-                    </AutoColumn>
-                  )}
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            entryPrice={
-              <FlexStartRow>
-                <AutoColumn style={{ lineHeight: 1.5 }}>
-                  <RowBetween gap="5px">
-                    {isInverted ? (
-                      <>
-                        <AutoColumn>
-                          <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
-                          <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
-                        </AutoColumn>
-                      </>
-                    ) : (
-                      <>
-                        <AutoColumn>
-                          <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
-                          <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
-                        </AutoColumn>
-                      </>
-                    )}
-                    {invertedTooltipLogo}
+      <>
+        {showInfo && 
+          <PositionInfoModal 
+            showInfo={showInfo} 
+            handleCloseInfo={handleCloseInfo} 
+            outputCurrency={outputCurrency} 
+            inputCurrency={inputCurrency}
+            pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
+            currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
+            entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
+            />}
+        <div ref={ref} data-testid="token-table-row">
+          <StyledLoadedRow>
+            <PositionRow
+              header={false}
+              positionKey={positionKey}
+              positionInfo={
+                <ClickableContent>
+                  <RowBetween>
+                    <PositionInfo>
+                      <GreenText>x{`${Math.round(leverageFactor * 1000) / 1000} `}</GreenText>
+                      <GreenText>{`${outputCurrency?.symbol}/${inputCurrency?.symbol}`}</GreenText>
+                    </PositionInfo>
                   </RowBetween>
-                </AutoColumn>
-              </FlexStartRow>
-            }
-            remainingPremium={
-              <MouseoverTooltip
-                text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
-                disableHover={false}
-              >
+                </ClickableContent>
+              }
+              value={
+                <MouseoverTooltip
+                  text={
+                    <Trans>
+                      <AutoColumn style={{ width: '185px' }} gap="5px">
+                        <RowBetween>
+                          <div>Net Value (USD):</div>
+                          <div>
+                            $
+                            {details.totalPosition &&
+                              outputCurrencyPrice.data &&
+                              (details.totalPosition.toNumber() * outputCurrencyPrice?.data).toFixed(2)}
+                          </div>
+                        </RowBetween>
+                      </AutoColumn>
+                    </Trans>
+                  }
+                >
+                  <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
+                    <AutoColumn gap="5px">
+                      <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
+                        <CurrencyLogo currency={outputCurrency} size="10px" />
+                        {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
+                      </RowFixed>
+
+                      <div>{` ${outputCurrency?.symbol}`}</div>
+                    </AutoColumn>
+                  </FlexStartRow>
+                </MouseoverTooltip>
+              }
+              collateral={
+                <MouseoverTooltip
+                  text={
+                    <Trans>
+                      <AutoColumn style={{ width: '160px' }} gap="5px">
+                        <RowBetween>
+                          <div>Margin (USD):</div>
+                          <div>
+                            $
+                            {details.margin && outputCurrencyPrice.data && details.marginInPosToken
+                              ? (details.margin.toNumber() * outputCurrencyPrice?.data).toFixed(2)
+                              : inputCurrencyPrice.data &&
+                                (details.margin.toNumber() * inputCurrencyPrice?.data).toFixed(2)}
+                          </div>
+                        </RowBetween>
+                      </AutoColumn>
+                    </Trans>
+                  }
+                >
+                  <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
+                    <AutoColumn gap="5px">
+                      <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
+                        <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
+                        {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
+                      </RowFixed>
+                      <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
+                    </AutoColumn>
+                  </FlexStartRow>
+                </MouseoverTooltip>
+              }
+              rate={
+                <MouseoverTooltip
+                  text={
+                    <Trans>
+                      {'Annualized Rate: ' +
+                        String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) +
+                        ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
+                    </Trans>
+                  }
+                  disableHover={false}
+                >
+                  <FlexStartRow>
+                    {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + '%'}
+                  </FlexStartRow>
+                </MouseoverTooltip>
+              }
+              PnL={
+                <MouseoverTooltip
+                  text={
+                    <Trans>
+                      <AutoColumn style={{ width: '200px' }} gap="5px">
+                        <RowBetween>
+                          <div>PnL (USD):</div>
+                          <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
+                        </RowBetween>
+                        <RowBetween>
+                          <div>Interest paid:</div>
+                          <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
+                        </RowBetween>
+                        <RowBetween>
+                          <div>PnL inc. int:</div>
+                          {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
+                          ' ' +
+                          details.marginInPosToken
+                            ? outputCurrency?.symbol
+                            : inputCurrency?.symbol}
+                        </RowBetween>
+                        <RowBetween>
+                          <div>PnL inc. int (USD):</div>
+                          <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
+                        </RowBetween>
+                      </AutoColumn>
+                    </Trans>
+                  }
+                  disableHover={false}
+                >
+                  <FlexStartRow>
+                    {details.marginInPosToken ? (
+                      <AutoColumn style={{ lineHeight: 1.5 }}>
+                        <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
+                          {PnL &&
+                            `${formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)} `}
+                        </DeltaText>
+                        <div>
+                          <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                            {PnL &&
+                              `(${(
+                                (new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) *
+                                100
+                              ).toFixed(2)}%)`}
+                          </DeltaText>
+                          {' ' + outputCurrency?.symbol}
+                        </div>
+                      </AutoColumn>
+                    ) : (
+                      <AutoColumn style={{ lineHeight: 1.5 }}>
+                        <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                          {PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
+                        </DeltaText>
+                        <div>
+                          <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
+                            {PnL && `(${((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)} %)`}
+                          </DeltaText>
+                          {' ' + inputCurrency?.symbol}
+                        </div>
+                      </AutoColumn>
+                    )}
+                  </FlexStartRow>
+                </MouseoverTooltip>
+              }
+              entryPrice={
                 <FlexStartRow>
-                  {details?.premiumLeft.isGreaterThan(0) ? (
-                    <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <UnderlineText>
-                        <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                          {formatBNToString(details?.premiumLeft, NumberType.SwapTradeAmount)}/
-                        </GreenText>
-                      </UnderlineText>
-                      <div style={{ display: 'flex', gap: '3px' }}>
+                  <AutoColumn style={{ lineHeight: 1.5 }}>
+                    <RowBetween gap="5px">
+                      {isInverted ? (
+                        <>
+                          <AutoColumn>
+                            <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
+                            <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
+                          </AutoColumn>
+                        </>
+                      ) : (
+                        <>
+                          <AutoColumn>
+                            <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
+                            <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
+                          </AutoColumn>
+                        </>
+                      )}
+                      {invertedTooltipLogo}
+                    </RowBetween>
+                  </AutoColumn>
+                </FlexStartRow>
+              }
+              remainingPremium={
+                <MouseoverTooltip
+                  text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
+                  disableHover={false}
+                >
+                  <FlexStartRow>
+                    {details?.premiumLeft.isGreaterThan(0) ? (
+                      <AutoColumn style={{ lineHeight: 1.5 }}>
                         <UnderlineText>
                           <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                            {formatBNToString(details.premiumDeposit, NumberType.SwapTradeAmount)}
+                            {formatBNToString(details?.premiumLeft, NumberType.SwapTradeAmount)}/
                           </GreenText>
                         </UnderlineText>
-                        {inputCurrency?.symbol}
-                      </div>
-                    </AutoColumn>
-                  ) : (
-                    <RedText>0</RedText>
-                  )}
-                </FlexStartRow>
-              </MouseoverTooltip>
-            }
-            actions={
-              <SmallButtonPrimary
-                style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
-                onClick={handlePoolSelect}
-              >
-                <ThemedText.BodySmall> Set Current Pair</ThemedText.BodySmall>
-              </SmallButtonPrimary>
-            }
-          />
-        </StyledLoadedRow>
-      </div>
+                        <div style={{ display: 'flex', gap: '3px' }}>
+                          <UnderlineText>
+                            <GreenText style={{ display: 'flex', alignItems: 'center' }}>
+                              {formatBNToString(details.premiumDeposit, NumberType.SwapTradeAmount)}
+                            </GreenText>
+                          </UnderlineText>
+                          {inputCurrency?.symbol}
+                        </div>
+                      </AutoColumn>
+                    ) : (
+                      <RedText>0</RedText>
+                    )}
+                  </FlexStartRow>
+                </MouseoverTooltip>
+              }
+              actions={
+                <Row gap="7px">
+                  <SmallButtonPrimary
+                    style={{ height: '40px', lineHeight: '15px', width:'50px', background: `${theme.backgroundOutline}` }}
+                    onClick={handleShowInfo}
+                  >
+                    <ThemedText.BodySmall>Info</ThemedText.BodySmall>
+                  </SmallButtonPrimary>
+                  <SmallButtonPrimary
+                    style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+                    onClick={handlePoolSelect}
+                  >
+                    <ThemedText.BodySmall> Set Current Pair</ThemedText.BodySmall>
+                  </SmallButtonPrimary>
+                </Row>
+              }
+            />
+          </StyledLoadedRow>
+        </div>
+      </>
     )
   })
 )
