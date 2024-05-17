@@ -98,7 +98,7 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
-  const loading = loading0 || loading1 || !reserve0 || !reserve1
+  const loading = loading0 || loading1 || !reserve0 || !reserve1 || !currentPrice || !low24h || !high24h || !delta24h || !volume || !tvl
 
   return (
     <StatsWrapper>
