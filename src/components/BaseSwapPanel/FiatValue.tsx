@@ -45,7 +45,7 @@ export function FiatValue({
       ) : (
         <div>
           {fiatValue?.data ? formatNumber(fiatValue.data, NumberType.FiatTokenPrice) : undefined}
-          {priceImpact && (
+          {/* {priceImpact && (
             <span style={{ color: priceImpactColor }}>
               {' '}
               <MouseoverTooltip
@@ -58,7 +58,7 @@ export function FiatValue({
                 (<Trans>{formatPriceImpact(priceImpact)}</Trans>)
               </MouseoverTooltip>
             </span>
-          )}
+          )} */}
         </div>
       )}
     </ThemedText.DeprecatedBody>
