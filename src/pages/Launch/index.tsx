@@ -144,6 +144,20 @@ const CardDetailsWrapper = styled.div`
   isolation: isolate;
   max-width: 400px;
 `
+
+const LeadCardDetailsWrapper = styled.div`
+  position: relative;
+  display: flex;
+  border-radius: 12px;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  overflow: hidden;
+  box-shadow: 0px 0px 8px rgba(51, 53, 72, 0.04), 1px 2px 4px rgba(51, 53, 72, 0.12);
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  isolation: isolate;
+  max-width: 400px;
+`
+
 const DetailsWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -156,8 +170,6 @@ const DetailSection = styled.div`
   flex-direction: column;
   gap: 5px;
 `
-
-const CoinBox = styled.div``
 
 export const Launch = () => {
   const [showModal, setShowModal] = useState(false)
@@ -184,26 +196,28 @@ export const Launch = () => {
       <TableWrapper modalOpen={showModal}>
         <LeadCoinWrapper>
           <ThemedText.DeprecatedMediumHeader>King of the Hill</ThemedText.DeprecatedMediumHeader>
-          <StyledCardContainerLead>
-            <ItemImgContainer>
-              <StyledMediaContainer>
-                <StyledMediaImg src={ItemImg} />
-              </StyledMediaContainer>
-            </ItemImgContainer>
-            <StyledDetailsRelativeContainer>
-              <StyledDetailsContainer>
-                <StyledInfoContainer>
-                  <Row gap="8" justifyContent="space-between">
-                    <StyledPrimaryDetails>
-                      <PrimaryInfoContainer>Token A </PrimaryInfoContainer>
-                    </StyledPrimaryDetails>
-                  </Row>
-                  <Row justifyContent="space-between"></Row>
-                </StyledInfoContainer>
-              </StyledDetailsContainer>
-            </StyledDetailsRelativeContainer>
-            <StyledActionButton> More Details</StyledActionButton>
-          </StyledCardContainerLead>
+          <LeadCardDetailsWrapper>
+            <StyledCardContainerLead>
+              <ItemImgContainer>
+                <StyledMediaContainer>
+                  <StyledMediaImg src={ItemImg} />
+                </StyledMediaContainer>
+              </ItemImgContainer>
+              <StyledDetailsRelativeContainer>
+                <StyledDetailsContainer>
+                  <StyledInfoContainer>
+                    <Row gap="8" justifyContent="space-between">
+                      <StyledPrimaryDetails>
+                        <PrimaryInfoContainer>Token A </PrimaryInfoContainer>
+                      </StyledPrimaryDetails>
+                    </Row>
+                    <Row justifyContent="space-between"></Row>
+                  </StyledInfoContainer>
+                </StyledDetailsContainer>
+              </StyledDetailsRelativeContainer>
+              <StyledActionButton> More Details</StyledActionButton>
+            </StyledCardContainerLead>
+          </LeadCardDetailsWrapper>
         </LeadCoinWrapper>
         <Input placeholder="Search Coins" />
         <CoinListWrapper>
