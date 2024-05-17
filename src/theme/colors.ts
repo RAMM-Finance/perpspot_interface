@@ -103,7 +103,7 @@ export const colors = {
   softSkyBlue: '#869EFF29', //border
   vividBlue: '#3665FF',
   softLavender: '#E5E9FF',
-
+  softMintBlue: '#7cedf9',
 }
 export const limitlessColors = {
   darkPurple: '#201426ff',
@@ -159,6 +159,7 @@ const commonTheme = {
 
   accentTextBlue: colors.vividBlue,
   accentTextGray: colors.softLavender,
+  accentTextMint: colors.softMintBlue,
 
   stateLabel: opacify(30, colors.gray200),
 }
