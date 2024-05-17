@@ -179,6 +179,7 @@ const BelowRangeLimitReduceNote = () => {
 }
 
 export default function DecreasePositionContent({
+  marginInPosToken,
   positionKey,
   onPositionChange,
   positionData,
@@ -186,6 +187,7 @@ export default function DecreasePositionContent({
   outputCurrency,
   onClose,
 }: {
+  marginInPosToken: boolean
   positionKey: TraderPositionKey
   onPositionChange: (newPosition: AlteredPositionProperties) => void
   positionData: {
@@ -380,6 +382,7 @@ export default function DecreasePositionContent({
         // setErrorMessage(undefined)
 
         addTransaction(response, {
+          marginInPosToken: marginInPosToken,
           type: TransactionType.REDUCE_LEVERAGE,
           reduceAmount: Number(reduceAmount),
           inputCurrencyId: inputCurrency.wrapped.address,

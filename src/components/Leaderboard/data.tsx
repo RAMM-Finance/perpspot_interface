@@ -3,7 +3,7 @@ import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
   CollectQuery,
@@ -314,8 +314,8 @@ export function usePointsData() {
         let registerQueryData
         if (chainId === SupportedChainId.BASE) {
           const results = await Promise.all([
-            clientBase.query(AddQuery, {}).toPromise(),
-            clientBase.query(ReduceQuery, {}).toPromise(),
+            fetchAllData(AddQuery, clientBase),
+            fetchAllData(ReduceQuery, clientBase),
             clientBase.query(IncreaseLiquidityQuery, {}).toPromise(),
             clientBase.query(CollectQuery, {}).toPromise(),
             clientBase.query(DecreaseLiquidityQuery, {}).toPromise(),
@@ -334,8 +334,8 @@ export function usePointsData() {
           registerQueryData = results[7]
         } else {
           const results = await Promise.all([
-            client.query(AddQuery, {}).toPromise(),
-            client.query(ReduceQuery, {}).toPromise(),
+            fetchAllData(AddQuery, client),
+            fetchAllData(ReduceQuery, client),
             client.query(IncreaseLiquidityQuery, {}).toPromise(),
             client.query(CollectQuery, {}).toPromise(),
             client.query(DecreaseLiquidityQuery, {}).toPromise(),
@@ -406,7 +406,7 @@ export function usePointsData() {
         })
 
         const pools = new Set<string>()
-        AddQueryData?.data?.marginPositionIncreaseds.forEach((entry: any) => {
+        AddQueryData?.forEach((entry: any) => {
           // const poolContract = usePoolContract(entry.pool)
           if (!pools.has(entry.pool)) {
             pools.add(entry.pool)
@@ -486,8 +486,8 @@ export function usePointsData() {
         setUniqueTokenIds(bigNumberTokenIds)
         setUniqueReferrers(uniqueReferrers)
         setUniquePools(uniquePools)
-        setAddData(AddQueryData.data.marginPositionIncreaseds)
-        setReduceData(ReduceQueryData.data.marginPositionReduceds)
+        setAddData(AddQueryData)
+        setReduceData(ReduceQueryData)
         setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
         setDecreaseLiqData(DecreaseLiquidityData.data.decreaseLiquidities)
         setCollectData(CollectQueryData.data.collects)

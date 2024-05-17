@@ -1,7 +1,7 @@
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
-import { client, clientBase } from 'graphql/limitlessGraph/limitlessClients'
+import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddOrderQuery,
   AddQuery,
@@ -37,25 +37,25 @@ export function useHistoryData(address: any) {
       let CancelOrderData
       let ForceCloseData
       if (chainId === SupportedChainId.BASE) {
-        AddQueryData = await clientBase.query(AddQuery, {}).toPromise()
-        ReduceQueryData = await clientBase.query(ReduceQuery, {}).toPromise()
+        AddQueryData = await fetchAllData(AddQuery, clientBase)
+        ReduceQueryData = await fetchAllData(ReduceQuery, clientBase)
         AddOrderData = await clientBase.query(AddOrderQuery, {}).toPromise()
         CancelOrderData = await clientBase.query(CancelOrderQuery, {}).toPromise()
         ForceCloseData = await clientBase.query(ForceClosedQuery, {}).toPromise()
       } else {
-        AddQueryData = await client.query(AddQuery, {}).toPromise()
-        ReduceQueryData = await client.query(ReduceQuery, {}).toPromise()
+        AddQueryData = await fetchAllData(AddQuery, client)
+        ReduceQueryData = await fetchAllData(ReduceQuery, client)
         AddOrderData = await client.query(AddOrderQuery, {}).toPromise()
         CancelOrderData = await client.query(CancelOrderQuery, {}).toPromise()
         ForceCloseData = await client.query(ForceClosedQuery, {}).toPromise()
       }
 
-      const addQueryFiltered = AddQueryData?.data?.marginPositionIncreaseds.filter((data: any) => {
+      const addQueryFiltered = AddQueryData?.filter((data: any) => {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
       })
 
-      const reduceQueryFiltered = ReduceQueryData?.data?.marginPositionReduceds.filter((data: any) => {
+      const reduceQueryFiltered = ReduceQueryData?.filter((data: any) => {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
       })
@@ -75,12 +75,12 @@ export function useHistoryData(address: any) {
       })
 
       const pools = new Set<string>()
-      AddQueryData?.data?.marginPositionIncreaseds.forEach((entry: any) => {
+      AddQueryData?.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
           pools.add(entry.pool)
         }
       })
-      ReduceQueryData?.data.marginPositionReduceds.forEach((entry: any) => {
+      ReduceQueryData?.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
           pools.add(entry.pool)
         }

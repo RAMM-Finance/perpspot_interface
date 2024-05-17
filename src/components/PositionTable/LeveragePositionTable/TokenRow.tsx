@@ -356,6 +356,7 @@ function PositionRow({
   positionKey,
   remainingPremium,
   actions,
+  marginInPosToken,
   ...rest
 }: {
   first?: boolean
@@ -372,6 +373,7 @@ function PositionRow({
   PnL: ReactNode
   entryPrice: ReactNode
   remainingPremium: ReactNode
+  marginInPosToken: boolean
   last?: boolean
   style?: CSSProperties
 }) {
@@ -391,6 +393,7 @@ function PositionRow({
     <>
       {showModal && (
         <LeveragePositionModal
+          marginInPosToken={marginInPosToken}
           positionKey={positionKey}
           selectedTab={selectedTab}
           isOpen={showModal}
@@ -462,6 +465,7 @@ export function HeaderRow() {
           <ThemedText.TableText>Position</ThemedText.TableText>
         </Box>
       }
+      marginInPosToken={false}
       value={<HeaderCell category={PositionSortMethod.VALUE} />}
       collateral={<HeaderCell category={PositionSortMethod.COLLATERAL} />}
       PnL={<HeaderCell category={PositionSortMethod.PNL} />}
@@ -485,6 +489,7 @@ export function LoadingRow(props: { first?: boolean; last?: boolean }) {
       header={false}
       // listNumber={<SmallLoadingBubble />}
       loading
+      marginInPosToken={false}
       positionInfo={
         <>
           <IconLoadingBubble />
@@ -680,21 +685,23 @@ export const LoadedRow = memo(
 
     return (
       <>
-        {showInfo && 
-          <PositionInfoModal 
-            showInfo={showInfo} 
-            handleCloseInfo={handleCloseInfo} 
-            outputCurrency={outputCurrency} 
+        {showInfo && (
+          <PositionInfoModal
+            showInfo={showInfo}
+            handleCloseInfo={handleCloseInfo}
+            outputCurrency={outputCurrency}
             inputCurrency={inputCurrency}
             pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
             entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
-            />}
+          />
+        )}
         <div ref={ref} data-testid="token-table-row">
           <StyledLoadedRow>
             <PositionRow
               header={false}
               positionKey={positionKey}
+              marginInPosToken={details.marginInPosToken}
               positionInfo={
                 <ClickableContent>
                   <RowBetween>
@@ -729,7 +736,6 @@ export const LoadedRow = memo(
                         <CurrencyLogo currency={outputCurrency} size="10px" />
                         {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
                       </RowFixed>
-
                       <div>{` ${outputCurrency?.symbol}`}</div>
                     </AutoColumn>
                   </FlexStartRow>
@@ -757,7 +763,10 @@ export const LoadedRow = memo(
                   <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
                     <AutoColumn gap="5px">
                       <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
-                        <CurrencyLogo currency={details.marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
+                        <CurrencyLogo
+                          currency={details.marginInPosToken ? outputCurrency : inputCurrency}
+                          size="10px"
+                        />
                         {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
                       </RowFixed>
                       <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
@@ -804,7 +813,9 @@ export const LoadedRow = memo(
                         </RowBetween>
                         <RowBetween>
                           <div>PnL inc. int (USD):</div>
-                          <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(2)}`}</DeltaText>
+                          <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(
+                            2
+                          )}`}</DeltaText>
                         </RowBetween>
                       </AutoColumn>
                     </Trans>
@@ -900,7 +911,12 @@ export const LoadedRow = memo(
               actions={
                 <Row gap="7px">
                   <SmallButtonPrimary
-                    style={{ height: '40px', lineHeight: '15px', width:'50px', background: `${theme.backgroundOutline}` }}
+                    style={{
+                      height: '40px',
+                      lineHeight: '15px',
+                      width: '50px',
+                      background: `${theme.backgroundOutline}`,
+                    }}
                     onClick={handleShowInfo}
                   >
                     <ThemedText.BodySmall>Info</ThemedText.BodySmall>
