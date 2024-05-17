@@ -38,7 +38,7 @@ import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
-import { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
 import {
@@ -585,7 +585,7 @@ const TradeTabContent = () => {
       </Wrapper>
     )
   }
-
+  // console.log('trade modal found error', showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage)
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal
@@ -1227,4 +1227,4 @@ const TradeTabContent = () => {
   )
 }
 
-export default TradeTabContent
+export default React.memo(TradeTabContent)

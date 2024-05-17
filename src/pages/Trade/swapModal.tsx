@@ -33,7 +33,7 @@ import { useSwapCallback } from 'hooks/useSwapCallback'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
-import { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -591,4 +591,4 @@ const SwapTabContent = () => {
   )
 }
 
-export default SwapTabContent
+export default React.memo(SwapTabContent)
