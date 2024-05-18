@@ -86,14 +86,16 @@ const InfoDescriptionSection = ({
 }) => {
   const { account, chainId } = useWeb3React()
   const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
-  const { result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
+  const { result: result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
     "0x31EA2dD90Bd140d565726531f402D461E25A5f60" ?? undefined,
   ])
-
+  const { result: result2, loading: isLoading2 } = useSingleCallResult(nztContract, 'balanceOf', [
+    account ?? undefined,
+  ])
   const [nztPercentage, setNztPercentage] = useState('')
 
   useMemo(() => {
-    if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading) {
+    if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading && result) {
       const divisor = BigNumber.from(10).pow(18)
       const balance = result?.balance?.div(divisor)
       const baseAmount = BigNumber.from(6942000000)
@@ -105,14 +107,14 @@ const InfoDescriptionSection = ({
   }, [result, isLoading, account, chainId])
 
   const nztBalance: string = useMemo(() => {
-    if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading) {
+    if (account && nztContract && chainId === SupportedChainId.BASE && !isLoading2) {
       const divisor = BigNumber.from(10).pow(18)
-      const bal = result?.balance?.div(divisor).toString()
+      const bal = result2?.balance?.div(divisor).toString()
       return bal
     } else {
       return '-'
     }
-  }, [result, isLoading, account, chainId])
+  }, [result2, isLoading2, account, chainId])
 
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
