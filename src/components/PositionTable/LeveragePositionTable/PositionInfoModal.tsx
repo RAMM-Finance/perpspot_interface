@@ -2,6 +2,7 @@ import { Currency } from '@uniswap/sdk-core'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Modal from 'components/Modal'
 import Row from 'components/Row'
+import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -24,6 +25,7 @@ const ModalWrapper = styled.div`
 `
 
 const InfoTextWrapper = styled(Row)`
+  /* margin-top: 5px; */
   width: 65%;
   justify-content: space-between;
 `
@@ -71,21 +73,21 @@ const PositionInfoModal = ({
             {inputCurrency?.symbol}
           </ThemedText.BodySecondary>
         </Row>
-        <ThemedText.BodySecondary fontSize={18} marginTop="35px">
+        <ThemedText.BodySecondary fontSize={20} marginTop="35px">
           PNL
         </ThemedText.BodySecondary>
-        <ThemedText.BodySecondary fontSize={32} fontWeight={600} marginTop="5px" color="accentTextMint">
-          {pln}
-        </ThemedText.BodySecondary>
-        <InfoTextWrapper marginTop="40px">
-          <ThemedText.BodySecondary fontSize={18}>Entry Price</ThemedText.BodySecondary>
-          <ThemedText.BodySecondary fontSize={18} fontWeight={600} color="accentTextMint">
+        <DeltaText fontSize="40px" fontWeight={600} delta={Number(pln)}>
+          {pln} {inputCurrency?.symbol}
+        </DeltaText>
+        <InfoTextWrapper marginTop="35px">
+          <ThemedText.BodySecondary fontSize={20}>Entry Price</ThemedText.BodySecondary>
+          <ThemedText.BodySecondary fontSize={20} fontWeight={600} color="accentTextMint">
             {entryPrice}
           </ThemedText.BodySecondary>
         </InfoTextWrapper>
         <InfoTextWrapper>
-          <ThemedText.BodySecondary fontSize={18}>Current Price</ThemedText.BodySecondary>
-          <ThemedText.BodySecondary fontSize={18} fontWeight={600} color="accentTextMint">
+          <ThemedText.BodySecondary fontSize={20}>Current Price</ThemedText.BodySecondary>
+          <ThemedText.BodySecondary fontSize={20} fontWeight={600} color="accentTextMint">
             {currentPrice}
           </ThemedText.BodySecondary>
         </InfoTextWrapper>

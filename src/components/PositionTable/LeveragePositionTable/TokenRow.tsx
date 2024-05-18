@@ -90,7 +90,8 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: 1400px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
-    grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px;
+    // grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px;
+    grid-template-columns: 90px 100px 90px 90px 100px 135px 90px 70px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -914,7 +915,7 @@ export const LoadedRow = memo(
                     style={{
                       height: '40px',
                       lineHeight: '15px',
-                      width: '50px',
+                      minWidth: '50px',
                       background: `${theme.backgroundOutline}`,
                     }}
                     onClick={handleShowInfo}
@@ -922,7 +923,7 @@ export const LoadedRow = memo(
                     <ThemedText.BodySmall>Info</ThemedText.BodySmall>
                   </SmallButtonPrimary>
                   <SmallButtonPrimary
-                    style={{ height: '40px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+                    style={{ height: '40px', minWidth:'80px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
                     onClick={handlePoolSelect}
                   >
                     <ThemedText.BodySmall> Set Current Pair</ThemedText.BodySmall>

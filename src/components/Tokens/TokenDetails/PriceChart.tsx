@@ -64,10 +64,17 @@ export function formatDelta(delta: number | null | undefined) {
   return formattedDelta
 }
 
-export const DeltaText = styled.span<{ delta: number | undefined; fontSize?: string }>`
+export const DeltaText = styled.span<{
+  delta: number | undefined
+  fontSize?: string
+  fontWeight?: number
+  isNoWrap?: boolean
+}>`
   font-size: ${({ fontSize }) => (fontSize ? fontSize : '12px')};
+  font-weight: ${({ fontWeight }) => (fontWeight ? fontWeight : '400')};
   color: ${({ theme, delta }) =>
     delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
+  white-space: ${({ isNoWrap }) => (isNoWrap ? 'nowrap' : 'normal')};
 `
 
 const ChartHeader = styled.div`
