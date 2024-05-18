@@ -322,8 +322,6 @@ export function AdvancedMarginTradeDetails({
     </div>
   )
 
-  console.log("marginInPosToken- borrowAmount", trade?.marginInPosToken, trade?.marginInPosToken ? trade?.borrowAmount.toNumber() * Number(trade?.executionPrice.toFixed(18)) : trade?.borrowAmount.toNumber())
-
   return (
     <StyledCard>
       <AutoColumn gap="sm">

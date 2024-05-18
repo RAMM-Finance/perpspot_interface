@@ -12,9 +12,10 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { NftApproveForAllPartsFragmentDoc } from 'graphql/data/__generated__/types-and-hooks'
 import { useTokenContract } from 'hooks/useContract'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useState, useEffect, useMemo } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
@@ -64,6 +65,23 @@ export function PoolStatsSection({
   const contract0 = useTokenContract(address0)
   const contract1 = useTokenContract(address1)
 
+  const [usdPrice, setUsdPrice] = useState<BN>()
+  useEffect(() => {
+    const fetchData = async () => {
+      let usdPrice
+      if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
+        usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
+        console.log("USD PORICE", usdPrice)
+        setUsdPrice(new BN(usdPrice))
+      } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
+        usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
+        console.log("USD PRIE", usdPrice)
+        setUsdPrice(new BN(usdPrice))
+      }
+    }
+    fetchData()
+  }, [address0, address1, chainId])
+
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
     poolAddress ?? undefined,
   ])
@@ -99,7 +117,34 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
-  const loading = loading0 || loading1 || !reserve0 || !reserve1 || !currentPrice || !low24h || !high24h || !delta24h || !volume || !tvl
+
+  // const loading = loading0 || loading1 || !reserve0 || !reserve1 || currentPrice?.isZero() || low24h?.isZero() || high24h?.isZero() || delta24h?.isZero() || volume.isZero() || tvl.isZero()
+  const loading = 
+  loading0 || 
+  loading1 || 
+  !reserve0 || 
+  !reserve1 || 
+  !currentPrice || currentPrice?.isZero() || 
+  !low24h || low24h?.isZero() || 
+  !high24h || high24h?.isZero() || 
+  !delta24h || delta24h?.isZero() || 
+  volume.isZero() || 
+  tvl.isZero() ||
+  !usdPrice || usdPrice?.isZero()
+
+  // console.log('loading0:', loading0);
+  // console.log('loading1:', loading1);
+  // console.log('reserve0:', reserve0);
+  // console.log('reserve1:', reserve1);
+  // console.log('currentPrice is zero:', currentPrice?.isZero());
+  // console.log('low24h is zero:', low24h?.isZero());
+  // console.log('high24h is zero:', high24h?.isZero());
+  // console.log('delta24h is zero:', delta24h?.isZero());
+  // console.log('volume is zero:', volume.isZero());
+  // console.log('tvl is zero:', tvl.isZero());
+  // console.log("usd", usdPrice?.isZero())
+  // console.log("LOADING", loading)
+
 
   return (
     <StatsWrapper>
@@ -109,6 +154,17 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>Price</Trans>
+          </ThemedText.StatLabel>
+        }
+        loading={loading}
+      />
+      <Stat
+        dataCy="usd-price"
+        usdPrice={true}
+        value={usdPrice}
+        title={
+          <ThemedText.StatLabel>
+            <Trans>USD Price</Trans>
           </ThemedText.StatLabel>
         }
         loading={loading}
@@ -194,6 +250,13 @@ export const StatsSkeleton = () => {
       />
       <StatSkeleton
         title={
+          <ThemedText.BodySmall  color="textGrayPrimary">
+            <Trans>USD Price</Trans>
+          </ThemedText.BodySmall>
+        }
+      />
+      <StatSkeleton
+        title={
           <ThemedText.StatLabel>
             <Trans>24h Change</Trans>
           </ThemedText.StatLabel>
@@ -259,6 +322,7 @@ function Stat({
   description,
   baseQuoteSymbol,
   dollar,
+  usdPrice,
   loading,
   delta = false
 }: {
@@ -268,6 +332,7 @@ function Stat({
   description?: ReactNode
   baseQuoteSymbol?: string
   dollar?: boolean
+  usdPrice?: boolean
   loading: boolean
   delta?: boolean
 }) {
@@ -298,7 +363,18 @@ function Stat({
         </StatPrice>
       </StatWrapper>
     )
-  } else {
+  } else if (usdPrice) {
+    return (
+      <StatWrapper data-cy={`${dataCy}`}>
+        <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
+        <StatPrice>
+          <ThemedText.BodySmall color="textSecondary">
+            ${Number(value).toFixed(8)}
+          </ThemedText.BodySmall>
+        </StatPrice>
+      </StatWrapper>
+    )
+  }else {
     return (
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
