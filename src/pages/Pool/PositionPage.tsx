@@ -1197,7 +1197,7 @@ export function PositionPage() {
                       <Label>
                         <ThemedText.DeprecatedLargeHeader color={theme.accentSuccess} fontSize="12px" fontWeight={500}>
                           <Trans>
-                            Interest only APR (variable) : {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
+                            APR (variable: swap fees+ premiums from traders+ profit share+ origination fees) : {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
                           </Trans>
                         </ThemedText.DeprecatedLargeHeader>
                       </Label> : null

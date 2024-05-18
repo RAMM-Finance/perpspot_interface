@@ -87,7 +87,7 @@ const InfoDescriptionSection = ({
   const { account, chainId } = useWeb3React()
   const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
   const { result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
-    account ?? undefined,
+    "0x31EA2dD90Bd140d565726531f402D461E25A5f60" ?? undefined,
   ])
 
   const [nztPercentage, setNztPercentage] = useState('')
@@ -97,7 +97,7 @@ const InfoDescriptionSection = ({
       const divisor = BigNumber.from(10).pow(18)
       const balance = result?.balance?.div(divisor)
       const baseAmount = BigNumber.from(6942000000)
-      const percentage = baseAmount.sub(balance).div(BigNumber.from(1000000000))
+      const percentage = 100*((6942000000- balance.toNumber())/1000000000)
       setNztPercentage(percentage.toString())
     } else {
       setNztPercentage('-')
