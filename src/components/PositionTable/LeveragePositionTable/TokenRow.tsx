@@ -90,7 +90,7 @@ const StyledTokenRow = styled.div<{
 
   @media only screen and (max-width: 1400px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
-    // grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px;
+    /* grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px; */
     grid-template-columns: 90px 100px 90px 90px 100px 135px 90px 70px;
   }
 
@@ -695,6 +695,7 @@ export const LoadedRow = memo(
             pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
             entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
+            leverageValue={Math.round(leverageFactor * 1000) / 1000}
           />
         )}
         <div ref={ref} data-testid="token-table-row">

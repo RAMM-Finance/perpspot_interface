@@ -16,7 +16,6 @@ const ModalWrapper = styled.div`
   height: 500px;
   gap: 0.5rem;
   padding: 2rem;
-  padding-right: 3rem;
   border-radius: 7px;
   background-image: url(${modalBG});
   background-position: center;
@@ -29,6 +28,16 @@ const InfoTextWrapper = styled(Row)`
   width: 65%;
   justify-content: space-between;
 `
+
+const InfoLabel = styled(ThemedText.BodySecondary)`
+  white-space: nowrap;
+`
+const InfoText = styled(ThemedText.StatMint)`
+  white-space: nowrap;
+  width: 30%;
+`
+
+
 interface IPositionInfoModalProps {
   showInfo: boolean
   handleCloseInfo: () => void
@@ -37,6 +46,7 @@ interface IPositionInfoModalProps {
   pln: string
   currentPrice: string
   entryPrice: string
+  leverageValue: number
 }
 
 const PositionInfoModal = ({
@@ -46,6 +56,7 @@ const PositionInfoModal = ({
   inputCurrency,
   currentPrice,
   entryPrice,
+  leverageValue,
   pln,
 }: IPositionInfoModalProps) => {
   return (
@@ -73,23 +84,23 @@ const PositionInfoModal = ({
             {inputCurrency?.symbol}
           </ThemedText.BodySecondary>
         </Row>
-        <ThemedText.BodySecondary fontSize={20} marginTop="35px">
+        <InfoLabel fontSize={16} marginTop="35px">
           PNL
-        </ThemedText.BodySecondary>
-        <DeltaText fontSize="40px" fontWeight={600} delta={Number(pln)}>
+        </InfoLabel>
+        <DeltaText fontSize="32px" fontWeight={600} delta={Number(pln)} isNoWrap={true}>
           {pln} {inputCurrency?.symbol}
         </DeltaText>
         <InfoTextWrapper marginTop="35px">
-          <ThemedText.BodySecondary fontSize={20}>Entry Price</ThemedText.BodySecondary>
-          <ThemedText.BodySecondary fontSize={20} fontWeight={600} color="accentTextMint">
-            {entryPrice}
-          </ThemedText.BodySecondary>
+          <InfoLabel fontSize={16}>Entry Price</InfoLabel>
+          <InfoText>{entryPrice}</InfoText>
         </InfoTextWrapper>
         <InfoTextWrapper>
-          <ThemedText.BodySecondary fontSize={20}>Current Price</ThemedText.BodySecondary>
-          <ThemedText.BodySecondary fontSize={20} fontWeight={600} color="accentTextMint">
-            {currentPrice}
-          </ThemedText.BodySecondary>
+          <InfoLabel fontSize={16}>Current Price</InfoLabel>
+          <InfoText>{currentPrice}</InfoText>
+        </InfoTextWrapper>
+        <InfoTextWrapper>
+          <InfoLabel fontSize={16}>Leverage</InfoLabel>
+          <InfoText>{leverageValue}x</InfoText>
         </InfoTextWrapper>
       </ModalWrapper>
     </Modal>

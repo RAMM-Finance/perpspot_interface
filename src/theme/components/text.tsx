@@ -134,4 +134,7 @@ export const ThemedText = {
   StatLabel(props: TextProps) {
     return <TextWrapper fontWeight={400} fontSize={12} color="textSubtle" {...props} />
   },
+  StatMint(props: TextProps) {
+    return <TextWrapper fontWeight={600} fontSize={16} color="accentTextMint" {...props} />
+  },
 }
