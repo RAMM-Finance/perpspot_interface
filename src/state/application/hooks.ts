@@ -99,6 +99,7 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
   }, [result])
 
   return useMemo(() => {
+    console.log('poolList', poolList)
     return { poolList, loading, error }
   }, [poolList, loading, error])
 }

@@ -17,7 +17,14 @@ export function getDefaultBaseQuote(
   let base = token0
   let quote = token1
   let inputInToken0 = false
-  if (token0IsStable) {
+  if (
+    token0.toLowerCase() === '0x3c281a39944a2319aa653d81cfd93ca10983d234'.toLowerCase() ||
+    token0.toLowerCase() === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe'.toLowerCase()
+  ) {
+    base = token0
+    quote = token1
+    inputInToken0 = false
+  } else if (token0IsStable) {
     base = token1
     quote = token0
     inputInToken0 = true
