@@ -18,7 +18,7 @@ const strikes: PricesMap = {
   '0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa': [4500, 3900, 100000000000000000, 500],
 
   // brett
-  '0xba3f945812a83471d709bce9c3ca699a19fb46f7': [4500, 3500, 50000000000000000, 500],
+  '0xba3f945812a83471d709bce9c3ca699a19fb46f7': [4500, 3500, 0, 0],
 
   // toshi
   '0x4b0aaf3ebb163dd45f663b38b6d93f6093ebc2d3': [4500, 3500, 50000000000000000, 500],
@@ -31,6 +31,13 @@ const strikes: PricesMap = {
 
   // spec 
   '0x8055e6de251e414e8393b20adab096afb3cf8399': [4500, 3500, 200000000000000000, 500],
+
+  // build 
+  '0x0f082a7870908f8cebbb2cd27a42a9225c19f898': [4500, 3500, 30000000000000000, 500],
+
+  // higher 
+  '0xcc28456d4ff980cee3457ca809a257e52cd9cdb0': [4500, 3500, 30000000000000000, 500],
+
 
 }
 
@@ -128,6 +135,7 @@ export const useRebalanceCallback = () => {
     //     return await dataProvider_b.getPoolkeys(address)
     //   })
     // )
+    console.log('poolKeylist', poolKeyList, )
     if (poolKeyList && poolParams.length > 0 && chainId === SupportedChainId.BASE && lpmanager2) {
       poolKeyList.forEach(async (info, i) => {
         const tickDiscretization = poolParams[i].tickDiscretization
@@ -137,7 +145,8 @@ export const useRebalanceCallback = () => {
           info.fee,
           V3_CORE_FACTORY_ADDRESSES[SupportedChainId.BASE]
         )
-        const strike = Strikes[poolAddress.toLowerCase()]
+        let strike = Strikes[poolAddress.toLowerCase()] 
+        // if(!strike) strike = Strikes[poolAddress]
         if (strike[2] == 0) return
 
         const tickOuter = Math.round(strike[0] / tickDiscretization)
