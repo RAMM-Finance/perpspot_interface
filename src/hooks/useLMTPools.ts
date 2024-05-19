@@ -82,22 +82,14 @@ export function usePoolsData(): {
       if (!chainId) throw Error('missing chainId')
       try {
         // console.log('zeke:1')
-        let AddQueryData
-        let ReduceQueryData
-        let ProvidedQueryData
-        let WithdrawnQueryData
-        if (chainId === SupportedChainId.BASE) {
-          AddQueryData = await fetchAllData(AddQuery, clientBase)
-          ReduceQueryData = await fetchAllData(ReduceQuery, clientBase)
-          ProvidedQueryData = await fetchAllData(LiquidityProvidedQuery, clientBase)
-          WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQuery, clientBase)
-        } else {
-          AddQueryData = await fetchAllData(AddQuery, client)
-          ReduceQueryData = await fetchAllData(ReduceQuery, client)
-          ProvidedQueryData = await fetchAllData(LiquidityProvidedQuery, client)
-          WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQuery, client)
-        }
+        let clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
 
+        let [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData] = await Promise.all([
+          fetchAllData(AddQuery, clientToUse),
+          fetchAllData(ReduceQuery, clientToUse),
+          fetchAllData(LiquidityProvidedQuery, clientToUse),
+          fetchAllData(LiquidityWithdrawnQuery, clientToUse)
+        ])
         const pools = new Set<string>()
         ProvidedQueryData?.forEach((entry: any) => {
           const pool = ethers.utils.getAddress(entry.pool)
@@ -113,12 +105,16 @@ export function usePoolsData(): {
             if (token) {
               const poolAdress = ethers.utils.getAddress(pool)
               if (!uniqueTokens_.has(poolAdress)) {
+                const [value0, value1] = await Promise.all([
+                  getDecimalAndUsdValueData(chainId, token[0]),
+                  getDecimalAndUsdValueData(chainId, token[1]),
+                ])
                 uniqueTokens_.set(poolAdress, [
                   ethers.utils.getAddress(token[0]),
                   ethers.utils.getAddress(token[1]),
                   token[2],
-                  await getDecimalAndUsdValueData(chainId, token[0]),
-                  await getDecimalAndUsdValueData(chainId, token[1]),
+                  value0,
+                  value1,
                 ])
               }
               return { poolAdress: (token[0], token[1], token[2]) }
@@ -156,37 +152,37 @@ export function usePoolsData(): {
 
   const slot0s = [] as any
 
-  const uPools = data?.uniquePools ? data.uniquePools : []
+  // const uPools = data?.uniquePools ? data.uniquePools : []
   
-  const providedSlot0s = useMultipleContractSingleData(uPools, POOL_STATE_INTERFACE, 'slot0')
+  // const providedSlot0s = useMultipleContractSingleData(uPools, POOL_STATE_INTERFACE, 'slot0')
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
 
-    if (providedSlot0s.some(slot => slot.loading)) {
+    // if (providedSlot0s.some(slot => slot.loading)) {
 
-      return undefined
-    }
+    //   return undefined
+    // }
 
     const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, useQueryChainId } = data
 
     if (chainId !== useQueryChainId) return undefined
 
-    const slot0ByPoolAddress: { [key: string]: any } = {}
+    // const slot0ByPoolAddress: { [key: string]: any } = {}
 
-    uniquePools?.forEach((pool: any, index: any) => {
-      const slot0 = providedSlot0s[index]
-      if (slot0) {
-        const poolAddress = ethers.utils.getAddress(pool)
-        if (!slot0ByPoolAddress[poolAddress]) {
-          slot0ByPoolAddress[poolAddress] = slot0.result
-        }
-      }
-    })
+    // uniquePools?.forEach((pool: any, index: any) => {
+    //   const slot0 = providedSlot0s[index]
+    //   if (slot0) {
+    //     const poolAddress = ethers.utils.getAddress(pool)
+    //     if (!slot0ByPoolAddress[poolAddress]) {
+    //       slot0ByPoolAddress[poolAddress] = slot0.result
+    //     }
+    //   }
+    // })
 
 
     const slot0ByPool: { [key: string]: any } = {}
-    const slot0ByPoolAddress1: { [key: string]: any } = {}
+    const slot0ByPoolAddress: { [key: string]: any } = {}
     uniquePools?.forEach((pool: any, index: any) => {
       const slot0 = slot0s[index]
       if (slot0 && uniqueTokens.get(pool)) {
@@ -201,7 +197,7 @@ export function usePoolsData(): {
     const processLiqEntry = (entry: any) => {
       
       const pool = ethers.utils.getAddress(entry.pool)
-      let curTick = slot0ByPoolAddress1[pool]?.tick
+      let curTick = slot0ByPoolAddress[pool]?.tick
       
       // if (!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
       let amount0
@@ -345,7 +341,7 @@ export function usePoolsData(): {
     })
 
     return poolToData
-  }, [providedSlot0s, data, isError, isLoading])
+  }, [data, isError, isLoading])
 
   return useMemo(() => {
     return {

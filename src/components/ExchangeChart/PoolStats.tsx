@@ -71,11 +71,9 @@ export function PoolStatsSection({
       let usdPrice
       if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
         usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
-        console.log("USD PORICE", usdPrice)
         setUsdPrice(new BN(usdPrice))
       } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
         usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
-        console.log("USD PRIE", usdPrice)
         setUsdPrice(new BN(usdPrice))
       }
     }
