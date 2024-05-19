@@ -251,7 +251,7 @@ export function usePoolsData(): {
     const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
 
     const totalAmountsByPool: { [key: string]: number } = {}
-    const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
+    const poolToData: { [key: string]: { totalValueLocked: number, volume: number } } = {}
 
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
@@ -267,31 +267,23 @@ export function usePoolsData(): {
         : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.reduceAmount,
     }))
-    const targetEntry1 = addData?.find((entry: any) => entry.pool.toLowerCase() === '0xba3f945812a83471d709bce9c3ca699a19fb46f7')
-    const targetEntry = addDataProcessed?.find((entry: any) => entry.key.toLowerCase() === '0xba3f945812a83471d709bce9c3ca699a19fb46f7')
-
 
     const processEntry = async (entry: any) => {
-      // const usdValueOfToken = usdValue[entry.token] || 0
-      // const totalValue = (usdValueOfToken * entry.amount) / 10 ** tokenDecimal[entry.token]
+
       const pool = ethers.utils.getAddress(entry.key)
 
-      const poolAddr = ethers.utils.getAddress("0xBA3F945812a83471d709BCe9C3CA699A19FB46f7")
-      // console.log("0xBA3F945812a83471d709BCe9C3CA699A19FB46f7".toLowerCase())
-      // if (uniqueTokens.get(poolAddr)) {
-      //   const tokens = uniqueTokens?.get(poolAddr)
-      //   console.log("TOKENNNN", tokens[3].symbol, tokens[4].symbol)
-      // }
       if (uniqueTokens.get(pool)) {
         const tokens = uniqueTokens?.get(pool)
         let totalValue
 
 
-        // if (tokens[3].symbol === 'BRETT' || tokens[4].symbol === 'BRETT')
+        // if (tokens[3].symbol === 'HIGHER' || tokens[4].symbol === 'HIGHER')
         //   {
         //     console.log("TOKENS", tokens[3].symbol, tokens[4].symbol)
         //     console.log("TOTLA VAUE tokens3", (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals)
         //     console.log("TOTLA VAUE tokens4", (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals)
+        //   } else {
+        //     console.log("NO HIGHER")
         //   }
 
         if (tokens[3]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
@@ -334,7 +326,6 @@ export function usePoolsData(): {
       TVLDataPerPool[key] -= entry.amount0
       TVLDataPerPool[key] -= entry.amount1
     })
-    // console.log('provideddataprocessed', ProvidedDataProcessed, WithdrawDataProcessed)
 
     Object.keys(TVLDataPerPool).forEach((key) => {
       poolToData[key.toLowerCase()] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }

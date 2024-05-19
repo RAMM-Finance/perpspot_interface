@@ -126,7 +126,7 @@ export function PoolStatsSection({
   !low24h || low24h?.isZero() || 
   !high24h || high24h?.isZero() || 
   !delta24h || delta24h?.isZero() || 
-  volume.isZero() || 
+  // volume.isZero() || 
   tvl.isZero() ||
   !usdPrice || usdPrice?.isZero()
 
@@ -134,13 +134,13 @@ export function PoolStatsSection({
   // console.log('loading1:', loading1);
   // console.log('reserve0:', reserve0);
   // console.log('reserve1:', reserve1);
-  // console.log('currentPrice is zero:', currentPrice?.isZero());
-  // console.log('low24h is zero:', low24h?.isZero());
-  // console.log('high24h is zero:', high24h?.isZero());
-  // console.log('delta24h is zero:', delta24h?.isZero());
-  // console.log('volume is zero:', volume.isZero());
-  // console.log('tvl is zero:', tvl.isZero());
-  // console.log("usd", usdPrice?.isZero())
+  // console.log('currentPrice:', currentPrice?.toNumber());
+  // console.log('low24h:', low24h?.toNumber());
+  // console.log('high24h:', high24h?.toNumber());
+  // console.log('delta24h:', delta24h?.toNumber());
+  // console.log('volume:', volume.toNumber());
+  // console.log('tvl:', tvl.toNumber());
+  // console.log("usd", usdPrice?.toNumber())
   // console.log("LOADING", loading)
 
 
