@@ -1,12 +1,16 @@
 import Column from 'components/Column'
 import CreateCoinModal from 'components/Launch/CreateCoinModal'
 import Row from 'components/Row'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 
 import ItemImg from '../../assets/images/newItem7.webp'
 import banner from '../../components/Launch/launchBanner.png'
+import CoinBox from 'components/Launch/CoinBox'
+import { formatWallet } from 'components/Leaderboard/LeaderboardTable'
+import CoinDetailsModal from 'components/Launch/CoinDetailsModal'
+import { formatDollarAmount } from 'utils/formatNumbers'
 
 const BannerWrapper = styled.div`
   height: 100px;
@@ -106,14 +110,14 @@ const Input = styled.input`
   color: white;
   padding-left: 5px;
 `
-const TableWrapper = styled.div<{ modalOpen: boolean }>`
+const TableWrapper = styled.div<{ blur: boolean }>`
   display: flex;
   flex-direction: column;
   width: 100%;
   margin-left: 150px;
   margin-right: 50px;
   margin-top: 20px;
-  z-index: ${({ modalOpen }) => (modalOpen ? '10' : '1100')};
+  z-index: ${({ blur }) => (blur ? '10' : '1100')};
 `
 const LeadCoinWrapper = styled.div`
   width: 85%;
@@ -126,7 +130,7 @@ const LeadCoinWrapper = styled.div`
 const CoinListWrapper = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 30px;
+  gap: 40px;
   width: 100%;
   margin-top: 30px;
   margin-right: 10px;
@@ -136,7 +140,6 @@ const CardDetailsWrapper = styled.div`
   position: relative;
   display: flex;
   border-radius: 12px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
   overflow: hidden;
   box-shadow: 0px 0px 8px rgba(51, 53, 72, 0.04), 1px 2px 4px rgba(51, 53, 72, 0.12);
   box-sizing: border-box;
@@ -147,15 +150,18 @@ const CardDetailsWrapper = styled.div`
 
 const LeadCardDetailsWrapper = styled.div`
   position: relative;
+  padding: 5px;
   display: flex;
   border-radius: 12px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
   overflow: hidden;
   box-shadow: 0px 0px 8px rgba(51, 53, 72, 0.04), 1px 2px 4px rgba(51, 53, 72, 0.12);
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   isolation: isolate;
   max-width: 400px;
+  -webkit-box-shadow: 0 0 20px blue;
+  -moz-box-shadow: 0 0 20px blue;
+  box-shadow: 0 0 20px blue;
 `
 
 const DetailsWrapper = styled.div`
@@ -170,16 +176,51 @@ const DetailSection = styled.div`
   flex-direction: column;
   gap: 5px;
 `
+export interface CoinDetails {
+  name: string
+  account: string | undefined
+  ticker: string | undefined
+  description: string
+  image:   string | undefined   
+  replies: number
+  marketCap: number
+}
 
 export const Launch = () => {
   const [showModal, setShowModal] = useState(false)
+  const [showKingModal, setShowKingModal] = useState(false)
+  const [blur, setBlur] = useState(false)
+  const [searchKey, setSearchKey] = useState<string>('')
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
+    setBlur(false)
   }, [])
+  const handleCloseKingModal = useCallback(() => {
+    setShowKingModal(false)
+    setBlur(false)
+  }, [])
+
+  const [fakeCoins, setFakeCoins] = useState<CoinDetails[]>([
+    {account:'0x19321e81e9414055635e8A71f042e67cdB50649C', marketCap: 123124, replies:12, name: 'lorem',description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit unde modi, corrupti laboriosam ut dolor voluptatum assumenda fugit atque ab laudantium.', ticker: 'LOREM', image: undefined  },
+    {account:'0xsaf24135434320fdfdgfadf94343595349f99Bo0', marketCap: 3404, replies:5,  name: 'test',description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit unde modi, corrupti laboriosam ut dolor voluptatum assumenda fugit atque ab laudantium.', ticker: 'LOREM', image: undefined   },
+    {account:'0xca3423r0fmfdkfmfkd2354264262refmkfm345fV', marketCap: 76324, replies:20, name: 'lorem',description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit unde modi, corrupti laboriosam ut dolor voluptatum assumenda fugit atque ab laudantium.', ticker: 'LOREM', image:   undefined},
+    {account:'0xafe434235462349efFwffwgn350523454fmmge3F', marketCap: 1313044, replies:35,  name: 'king',description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit unde modi, corrupti laboriosam ut dolor voluptatum assumenda fugit atque ab.', ticker: 'KING', image:   undefined },
+    {account:'0x324239523emndjfnNJDf032432tnodf4GFND3fFF', marketCap: 340231, replies:2, name: 'lorem',description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Reprehenderit unde modi, corrupti laboriosam ut dolor voluptatum assumenda fugit atque ab laudan.', ticker: 'LOREM', image:undefined    },
+  ])
+
+
+  const filteredCoins =  fakeCoins?.filter((coin) => coin.name.toLowerCase().includes(searchKey.toLocaleLowerCase()))
+
+
+const king = useMemo(() => {
+  if(!fakeCoins) return undefined
+  return fakeCoins.reduce((max, coin) => max.marketCap > coin.marketCap ? max : coin);
+}, [fakeCoins])
+  
 
   return (
     <>
-      <CreateCoinModal isOpen={showModal} handleCloseModal={handleCloseModal} />
+      <CreateCoinModal isOpen={showModal} fakeCoins={fakeCoins} setFakeCoins={setFakeCoins} handleCloseModal={handleCloseModal} />
       <CollectionContainer>
         <BannerWrapper>
           <Banner src={banner} />
@@ -188,14 +229,18 @@ export const Launch = () => {
           <BannerTextWrapper>
             <BannerText>Launch your very own coin</BannerText>
             <BannerBtnWrapper>
-              <BannerBtn onClick={() => setShowModal(true)}>Create Coin</BannerBtn>
+              <BannerBtn onClick={() => {
+                setShowModal(true)
+                setBlur(true)
+                }}>Create Coin</BannerBtn>
             </BannerBtnWrapper>
           </BannerTextWrapper>
         </BannerInfoWrapper>
       </CollectionContainer>
-      <TableWrapper modalOpen={showModal}>
+      <TableWrapper blur={blur}>
         <LeadCoinWrapper>
           <ThemedText.DeprecatedMediumHeader>King of the Hill</ThemedText.DeprecatedMediumHeader>
+          <CoinDetailsModal fakeCoin={king} isOpen={showKingModal} handleCloseModal={handleCloseKingModal} />
           <LeadCardDetailsWrapper>
             <StyledCardContainerLead>
               <ItemImgContainer>
@@ -208,127 +253,40 @@ export const Launch = () => {
                   <StyledInfoContainer>
                     <Row gap="8" justifyContent="space-between">
                       <StyledPrimaryDetails>
-                        <PrimaryInfoContainer>Token A </PrimaryInfoContainer>
+                        <PrimaryInfoContainer>{king?.name}</PrimaryInfoContainer>
                       </StyledPrimaryDetails>
                     </Row>
                     <Row justifyContent="space-between"></Row>
                   </StyledInfoContainer>
                 </StyledDetailsContainer>
               </StyledDetailsRelativeContainer>
-              <StyledActionButton> More Details</StyledActionButton>
+              <StyledActionButton onClick={() => {
+                setShowKingModal(true)
+                setBlur(true)
+                }}> More Details</StyledActionButton>
             </StyledCardContainerLead>
+            <DetailsWrapper>
+        <DetailSection>
+          <ThemedText.BodySmall fontWeight={900}>Created By:</ThemedText.BodySmall>
+          <ThemedText.BodySmall color="textSecondary">{formatWallet(king?.account)}</ThemedText.BodySmall>
+        </DetailSection>
+        <DetailSection>
+          <ThemedText.BodySmall color="accentSuccess" fontWeight={900}>
+            Market Cap:
+          </ThemedText.BodySmall>
+          <ThemedText.BodySmall color="accentSuccess">              {formatDollarAmount({ num: king?.marketCap, long: false })}
+</ThemedText.BodySmall>
+        </DetailSection>
+        <DetailSection>
+          <ThemedText.BodySmall fontWeight={900}>Replies:</ThemedText.BodySmall>
+          <ThemedText.BodySmall color="textSecondary">{king?.replies}</ThemedText.BodySmall>
+        </DetailSection>
+      </DetailsWrapper>
           </LeadCardDetailsWrapper>
         </LeadCoinWrapper>
-        <Input placeholder="Search Coins" />
+        <Input placeholder="Search Coins" onChange={(e)=>setSearchKey(e.target.value)}/>
         <CoinListWrapper>
-          <CardDetailsWrapper>
-            <StyledCardContainer>
-              <ItemImgContainer>
-                <StyledMediaContainer>
-                  <StyledMediaImg src={ItemImg} />
-                </StyledMediaContainer>
-              </ItemImgContainer>
-              <StyledDetailsRelativeContainer>
-                <StyledDetailsContainer>
-                  <StyledInfoContainer>
-                    <Row gap="8" justifyContent="space-between">
-                      <StyledPrimaryDetails>
-                        <PrimaryInfoContainer>Token B </PrimaryInfoContainer>
-                      </StyledPrimaryDetails>
-                    </Row>
-                    <Row justifyContent="space-between"></Row>
-                  </StyledInfoContainer>
-                </StyledDetailsContainer>
-              </StyledDetailsRelativeContainer>
-              <StyledActionButton> More Details</StyledActionButton>
-            </StyledCardContainer>
-            <DetailsWrapper>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Created By:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">0x2312310123243143</ThemedText.BodySmall>
-              </DetailSection>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Market Cap:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">12.6k</ThemedText.BodySmall>
-              </DetailSection>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Replies:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">375</ThemedText.BodySmall>
-              </DetailSection>
-            </DetailsWrapper>
-          </CardDetailsWrapper>
-          <CardDetailsWrapper>
-            <StyledCardContainer>
-              <ItemImgContainer>
-                <StyledMediaContainer>
-                  <StyledMediaImg src={ItemImg} />
-                </StyledMediaContainer>
-              </ItemImgContainer>
-              <StyledDetailsRelativeContainer>
-                <StyledDetailsContainer>
-                  <StyledInfoContainer>
-                    <Row gap="8" justifyContent="space-between">
-                      <StyledPrimaryDetails>
-                        <PrimaryInfoContainer>Token C </PrimaryInfoContainer>
-                      </StyledPrimaryDetails>
-                    </Row>
-                    <Row justifyContent="space-between"></Row>
-                  </StyledInfoContainer>
-                </StyledDetailsContainer>
-              </StyledDetailsRelativeContainer>
-              <StyledActionButton> More Details</StyledActionButton>
-            </StyledCardContainer>
-            <DetailsWrapper>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Created By:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">0x2312310123243143</ThemedText.BodySmall>
-              </DetailSection>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Market Cap:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">12.6k</ThemedText.BodySmall>
-              </DetailSection>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Replies:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">375</ThemedText.BodySmall>
-              </DetailSection>
-            </DetailsWrapper>
-          </CardDetailsWrapper>
-          <CardDetailsWrapper>
-            <StyledCardContainer>
-              <ItemImgContainer>
-                <StyledMediaContainer>
-                  <StyledMediaImg src={ItemImg} />
-                </StyledMediaContainer>
-              </ItemImgContainer>
-              <StyledDetailsRelativeContainer>
-                <StyledDetailsContainer>
-                  <StyledInfoContainer>
-                    <Row gap="8" justifyContent="space-between">
-                      <StyledPrimaryDetails>
-                        <PrimaryInfoContainer>Token D </PrimaryInfoContainer>
-                      </StyledPrimaryDetails>
-                    </Row>
-                    <Row justifyContent="space-between"></Row>
-                  </StyledInfoContainer>
-                </StyledDetailsContainer>
-              </StyledDetailsRelativeContainer>
-              <StyledActionButton> More Details</StyledActionButton>
-            </StyledCardContainer>
-            <DetailsWrapper>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Created By:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">0x2312310123243143</ThemedText.BodySmall>
-              </DetailSection>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Market Cap:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">12.6k</ThemedText.BodySmall>
-              </DetailSection>
-              <DetailSection>
-                <ThemedText.BodySmall fontWeight={900}>Replies:</ThemedText.BodySmall>
-                <ThemedText.BodySmall color="textSecondary">375</ThemedText.BodySmall>
-              </DetailSection>
-            </DetailsWrapper>
-          </CardDetailsWrapper>
+          {filteredCoins?.map((coin:CoinDetails) => <CoinBox coinDetails={coin} setBlur={setBlur}/>)}
         </CoinListWrapper>
       </TableWrapper>
     </>
@@ -468,9 +426,6 @@ const StyledCardContainerLead = styled.div`
   isolation: isolate;
   max-width: 150px;
 
-  -webkit-box-shadow: 0 0 20px blue;
-  -moz-box-shadow: 0 0 20px blue;
-  box-shadow: 0 0 20px blue;
 
   :after {
     content: '';
@@ -480,50 +435,6 @@ const StyledCardContainerLead = styled.div`
     bottom: 0px;
     left: 0px;
     border: 1px solid;
-    border-radius: 12px;
-    border-color: ${({ theme }) => theme.backgroundOutline};
-    pointer-events: none;
-    transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} border`};
-    will-change: border;
-  }
-
-  :hover {
-    ${StyledActionButton} {
-      visibility: visible;
-      bottom: 8px;
-    }
-
-    ${StyledDetailsContainer} {
-      height: 112px;
-      transform: translateY(-28px);
-    }
-    ${StyledMediaImg} {
-      transform: scale(1.15);
-    }
-  }
-`
-
-const StyledCardContainer = styled.div`
-  position: relative;
-  border-radius: 12px;
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  overflow: hidden;
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  isolation: isolate;
-  max-width: 250px;
-
-  :after {
-    content: '';
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
-    left: 0px;
-    border-top: 1px solid;
-    border-left: 1px solid;
-    border-bottom: 1px solid;
-
     border-radius: 12px;
     border-color: ${({ theme }) => theme.backgroundOutline};
     pointer-events: none;

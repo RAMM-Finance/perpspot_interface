@@ -50,7 +50,7 @@ export const PoolDataChart = ({
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
-  entryPrices: number[] | undefined
+  entryPrices?: number[] | undefined
 }) => {
   const { chainId } = useWeb3React()
 

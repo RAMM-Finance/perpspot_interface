@@ -86,6 +86,14 @@ export const addresses = [
   '0x95e46c08d802a24aC2357217FFdceBa17FcCa082',
   '0x4F02Bbe7Fc56c412B24E59fDd79e2DfA4C6B6048',
 ]
+
+export const formatWallet = (wallet: string | undefined) => {
+  if (wallet) {
+    return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
+  } else {
+    return '-'
+  }
+}
 export default function LeaderboardTable() {
   const { chainId } = useWeb3React()
 
@@ -224,10 +232,6 @@ export default function LeaderboardTable() {
         </HeaderCell>
       </HeaderCellWrapper>
     )
-  }
-
-  const formatWallet = (wallet: string) => {
-    return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
   }
 
   const prevData = useStoredData(addresses)
