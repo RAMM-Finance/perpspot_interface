@@ -173,8 +173,8 @@ export const PageTabs = () => {
         <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
           <ThemedText.BodySecondary>Referral</ThemedText.BodySecondary>
         </MenuItem>
-        <MenuItem href="/loot" isActive={pathname.startsWith('/loot')}>
-          <ThemedText.BodySecondary>Loot</ThemedText.BodySecondary>
+        <MenuItem href="/airdrop" isActive={pathname.startsWith('/airdrop')}>
+          <ThemedText.BodySecondary>AirDrop</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">
           <ThemedText.BodySecondary>Docs</ThemedText.BodySecondary>

@@ -35,7 +35,7 @@ import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
 import LeaderboardPage from './Leaderboard'
-import LootPage from './Loot'
+import AirDropPage from './AirDrop'
 import MigrateV2 from './MigrateV2'
 import NotFound from './NotFound'
 import Pool from './Pool'
@@ -87,7 +87,7 @@ const MobileBottomBar = styled.div`
 
 const HeaderWrapper = styled.div<{ transparent?: boolean }>`
   ${flexRowNoWrap};
-  background-color: ${({ theme, transparent }) => theme.backgroundBackdrop};
+  background-color: ${({ theme }) => theme.backgroundBackdrop};
   width: 100%;
   margin-bottom: 1vh;
   justify-content: space-between;
@@ -236,8 +236,8 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
-                  <Route path="loot" element={<LootPage />} />
-                  <Route path="loot/?/activity" element={<LootPage />} />
+                  <Route path="airdrop" element={<AirDropPage />} />
+                  {/* <Route path="airDrop/?/activity" element={<AirDropPage />} /> */}
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
                   {/* <Route path="pool/v2" element={<PoolV2 />} /> */}

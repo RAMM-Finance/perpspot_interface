@@ -1,7 +1,6 @@
-import React from 'react'
 import { ArrowRight } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import airdrop from '../../assets/images/airdrop.png'
@@ -75,13 +74,13 @@ const TradeNavigation = () => {
         </TextWrapper>
         <Arrow />
       </Element>
-      <Element onClick={() => navigate('/loot')}>
+      <Element onClick={() => navigate('/airdrop')}>
         <TextWrapper>
           <TitleWrapper>
             <Icon src={treasure} />
-            <Title>Loot</Title>
+            <Title>Airdrop</Title>
           </TitleWrapper>
-          <ThemedText.BodySmall>Learn more about the lootbox program </ThemedText.BodySmall>
+          <ThemedText.BodySmall>Learn more about the AirDrop program </ThemedText.BodySmall>
         </TextWrapper>
         <Arrow />
       </Element>

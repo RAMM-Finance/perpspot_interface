@@ -4,8 +4,8 @@ import Column from 'components/Column'
 import ConnectWallet from 'components/ConnectWallet'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
-import BoxModal from 'components/Loot/BoxModal'
-import PointWarning from 'components/Loot/PointWarning'
+import BoxModal from 'components/AirDrop/BoxModal'
+import PointWarning from 'components/AirDrop/PointWarning'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useBRP } from 'hooks/useContract'
@@ -21,8 +21,8 @@ import ItemImg2 from '../../assets/images/newItem8.webp'
 import ItemImg3 from '../../assets/images/newItem9.webp'
 import ItemImg4 from '../../assets/images/newItem10.webp'
 import banner from '../../components/Leaderboard/banner.png'
-import BoxesContainer from '../../components/Loot/BoxesContainer'
-import InfoDescriptionSection from '../../components/Loot/InfoDescription'
+import BoxesContainer from '../../components/AirDrop/BoxesContainer'
+import InfoDescriptionSection from '../../components/AirDrop/InfoDescription'
 import { firestore } from '../../firebaseConfig'
 
 const CollectionContainer = styled(Column)`
@@ -104,7 +104,7 @@ export type TBRPData = {
   pointForUnlocks: number
 }
 
-const LootPage = () => {
+const AirDropPage = () => {
   const { account, chainId } = useWeb3React()
 
   // const account = '0x3e6b87FF2168d15794A865D09A6716415e7DbeCf'
@@ -450,4 +450,4 @@ const LootPage = () => {
   )
 }
 
-export default LootPage
+export default AirDropPage

@@ -1,21 +1,19 @@
+import { useWeb3React } from '@web3-react/core'
+import { PercentSlider } from 'components/Slider/MUISlider'
+import { NZT } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
+import { BigNumber } from 'ethers'
+import { useTokenContract } from 'hooks/useContract'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 import { Box } from 'nft/components/Box'
 import { Column, Row } from 'nft/components/Flex'
-import { TBRPData } from 'pages/Loot'
+import { TBRPData } from 'pages/AirDrop'
+import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import bluePill from '../../assets/images/bluePill.jpg'
 import InfoItemStats from './InfoItemStats'
-import { ButtonPrimary } from 'components/Button'
-import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
-import { NZT } from 'constants/addresses'
-import { useTokenContract } from 'hooks/useContract'
-import { SupportedChainId } from 'constants/chains'
-import { useMemo, useState } from 'react'
-import { BigNumber } from 'ethers'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { PercentSlider } from 'components/Slider/MUISlider'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -87,11 +85,9 @@ const InfoDescriptionSection = ({
   const { account, chainId } = useWeb3React()
   const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
   const { result: result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
-    "0x31EA2dD90Bd140d565726531f402D461E25A5f60" ?? undefined,
+    '0x31EA2dD90Bd140d565726531f402D461E25A5f60' ?? undefined,
   ])
-  const { result: result2, loading: isLoading2 } = useSingleCallResult(nztContract, 'balanceOf', [
-    account ?? undefined,
-  ])
+  const { result: result2, loading: isLoading2 } = useSingleCallResult(nztContract, 'balanceOf', [account ?? undefined])
   const [nztPercentage, setNztPercentage] = useState('')
 
   useMemo(() => {
@@ -99,7 +95,7 @@ const InfoDescriptionSection = ({
       const divisor = BigNumber.from(10).pow(18)
       const balance = result?.balance?.div(divisor)
       const baseAmount = BigNumber.from(6942000000)
-      const percentage = 100*((6942000000- balance.toNumber())/1000000000)
+      const percentage = 100 * ((6942000000 - balance.toNumber()) / 1000000000)
       setNztPercentage(percentage.toString())
     } else {
       setNztPercentage('-')
@@ -133,7 +129,7 @@ const InfoDescriptionSection = ({
         <PercentSlider
           initialValue={nztPercentage}
           onSlideChange={() => {}}
-          onInputChange={()=> {}}
+          onInputChange={() => {}}
           width={280}
           readOnly={true}
         />

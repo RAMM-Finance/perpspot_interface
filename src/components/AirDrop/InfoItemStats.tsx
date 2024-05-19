@@ -1,7 +1,7 @@
 import { LoadingBubble } from 'components/Tokens/loading'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
-import { TBRPData } from 'pages/Loot'
+import { TBRPData } from 'pages/AirDrop'
 import { ReactNode } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'

@@ -274,6 +274,10 @@ const PositionInfo = styled(AutoColumn)`
   margin-left: 8px;
 `
 
+const ActionText = styled(ThemedText.BodySmall)`
+  white-space: nowrap;
+`
+
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
   [PositionSortMethod.VALUE]: (
     <Trans>
@@ -921,13 +925,13 @@ export const LoadedRow = memo(
                     }}
                     onClick={handleShowInfo}
                   >
-                    <ThemedText.BodySmall>Info</ThemedText.BodySmall>
+                    <ActionText>Info</ActionText>
                   </SmallButtonPrimary>
                   <SmallButtonPrimary
-                    style={{ height: '40px', minWidth:'80px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+                    style={{ height: '40px', minWidth:'140px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
                     onClick={handlePoolSelect}
                   >
-                    <ThemedText.BodySmall> Set Current Pair</ThemedText.BodySmall>
+                    <ActionText>Set Current Pair</ActionText>
                   </SmallButtonPrimary>
                 </Row>
               }
