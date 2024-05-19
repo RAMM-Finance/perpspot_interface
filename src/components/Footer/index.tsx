@@ -33,7 +33,7 @@ const Footer = () => {
     <Wrapper>
       <Logo fill="#fff" width="200px" />
       <IconWrapper>
-        <Link href="https://twitter.com/LimitlessFi_" rel="noopener noreferrer" target="_blank">
+        <Link href="https://twitter.com/limitlessdefi" rel="noopener noreferrer" target="_blank">
           <X fill="#b8c0dc" width="25px" />
         </Link>
         <Link href="https://discord.com/invite/v7Dq4vTvUE" rel="noopener noreferrer" target="_blank">
