@@ -400,7 +400,11 @@ export default function TokenTable() {
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
-  const loading = poolsLoading || balanceLoading
+
+  const loading = !poolTvlData //poolsLoading || balanceLoading
+
+  console.log("poolTvlData", poolTvlData)
+  console.log("poolsLoading", poolsLoading)
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
@@ -448,7 +452,7 @@ export default function TokenTable() {
   return (
     <>
       <PairInfoContainer>
-        <TVLInfoContainer poolsInfo={protocolTvl} loading={loading} />
+        <TVLInfoContainer poolsInfo={protocolTvl} />
         <HowToDetails />
       </PairInfoContainer>
       <SearchBar />
@@ -546,13 +550,13 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
+          {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {loading || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
+          {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>
