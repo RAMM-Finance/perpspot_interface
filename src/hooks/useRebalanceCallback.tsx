@@ -26,19 +26,17 @@ const strikes: PricesMap = {
   // aero
   '0x3d5d143381916280ff91407febeb52f2b60f33cf': [4500, 3500, 100000000000000000, 500],
 
-  // okayeg 
+  // okayeg
   '0x58342c302dd4df0531f60dd3c0eabb0c95ac08cb': [4500, 3500, 100000000000000000, 500],
 
-  // spec 
+  // spec
   '0x8055e6de251e414e8393b20adab096afb3cf8399': [4500, 3500, 200000000000000000, 500],
 
-  // build 
+  // build
   '0x0f082a7870908f8cebbb2cd27a42a9225c19f898': [4500, 3500, 30000000000000000, 500],
 
-  // higher 
+  // higher
   '0xcc28456d4ff980cee3457ca809a257e52cd9cdb0': [4500, 3500, 30000000000000000, 500],
-
-
 }
 
 const Strikes = new Proxy<PricesMap>(strikes, {
@@ -135,7 +133,7 @@ export const useRebalanceCallback = () => {
     //     return await dataProvider_b.getPoolkeys(address)
     //   })
     // )
-    console.log('poolKeylist', poolKeyList, )
+    // console.log('poolKeylist', poolKeyList)
     if (poolKeyList && poolParams.length > 0 && chainId === SupportedChainId.BASE && lpmanager2) {
       poolKeyList.forEach(async (info, i) => {
         const tickDiscretization = poolParams[i].tickDiscretization
@@ -145,7 +143,7 @@ export const useRebalanceCallback = () => {
           info.fee,
           V3_CORE_FACTORY_ADDRESSES[SupportedChainId.BASE]
         )
-        let strike = Strikes[poolAddress.toLowerCase()] 
+        const strike = Strikes[poolAddress.toLowerCase()]
         // if(!strike) strike = Strikes[poolAddress]
         if (strike[2] == 0) return
 

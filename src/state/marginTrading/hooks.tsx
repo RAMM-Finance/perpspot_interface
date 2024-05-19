@@ -278,13 +278,6 @@ export function useDerivedAddPositionInfo(
     account ?? undefined,
     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
   )
-  // console.log(
-  //   'zeke:',
-  //   inputCurrency?.symbol,
-  //   outputCurrency?.symbol,
-  //   relevantTokenBalances[0]?.toExact(),
-  //   relevantTokenBalances[1]?.toExact()
-  // )
 
   const currencyBalances = useMemo(
     () => ({
@@ -1237,7 +1230,7 @@ const useSimulateMarginTrade = (
       if (!output) throw new Error('Quoter Error')
       amountOut = new BN(output.toString())
 
-      console.log('zeke:simulated', amountOut.toFixed(0))
+      // console.log('zeke:simulated', amountOut.toFixed(0))
 
       amountOut = amountOut.plus(marginInOutput.shiftedBy(outputCurrency.decimals))
     } else {
@@ -1331,13 +1324,12 @@ const useSimulateMarginTrade = (
       expectedAddedOutput = newTotalPosition
     }
 
+    // debt / added output
     const executionPrice = new Price<Currency, Currency>(
       inputCurrency,
       outputCurrency,
       swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-      marginInPosToken
-        ? JSBI.subtract(expectedAddedOutput, BnToJSBI(marginInOutput, outputCurrency))
-        : expectedAddedOutput.toString()
+      expectedAddedOutput.toString()
     )
 
     const result: AddMarginTrade = {
