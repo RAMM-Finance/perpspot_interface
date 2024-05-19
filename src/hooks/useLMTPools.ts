@@ -337,9 +337,6 @@ export function usePoolsData(): {
     // console.log('provideddataprocessed', ProvidedDataProcessed, WithdrawDataProcessed)
 
     Object.keys(TVLDataPerPool).forEach((key) => {
-      console.log("TVL", TVLDataPerPool[key])
-      console.log("key", key)
-      console.log("VOLUME", totalAmountsByPool?.[key])
       poolToData[key.toLowerCase()] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }
     })
 

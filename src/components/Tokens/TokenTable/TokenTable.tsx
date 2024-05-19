@@ -403,18 +403,18 @@ export default function TokenTable() {
 
   const loading = !poolTvlData //poolsLoading || balanceLoading
 
-  console.log("poolTvlData", poolTvlData)
-  console.log("poolsLoading", poolsLoading)
-
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
 
   useEffect(() => {
     const getBalance = async (limWeth: any) => {
-      const limWethBal = await limWeth?.tokenBalance()
-      const decimals = await limWeth?.decimals()
+      const [limWethBal, decimals, queryResult] = await Promise.all([
+        limWeth?.tokenBalance(),
+        limWeth?.decimals(),
+        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006')
+      ])
+
       const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
-      const queryResult = await getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006')
       const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
       setLimWethBal(price * tokenBalance)
     }
