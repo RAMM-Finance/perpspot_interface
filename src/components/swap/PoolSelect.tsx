@@ -46,6 +46,7 @@ import {
   poolSortMethodAtom,
   useSetPoolSortMethod,
 } from './state'
+import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 
 const PoolListHeaderRow = styled.div`
   display: grid;
@@ -223,6 +224,9 @@ const EarnButton = styled(SmallButtonPrimary)`
   }
   wrap: no-wrap;
 `
+const NewOrHotStatusText = styled(ThemedText.BodySmall)`
+  color: ${({ theme }) => theme.newOrHot};
+`
 
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
   const token0 = useCurrency(poolKey.token0)
@@ -307,6 +311,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     chainId,
   ])
 
+
   return (
     <RowWrapper active={active} onClick={handleRowClick}>
       <Row>
@@ -316,6 +321,17 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
           <FeeWrapper>
             <ThemedText.BodyPrimary fontSize={10}>{pool?.fee ? `${pool?.fee / 10000}%` : ''}</ThemedText.BodyPrimary>
           </FeeWrapper>
+          {token0?.symbol && token1?.symbol && (
+            (TokenStatus[token0.symbol as TokenStatusKey] === 'New' || TokenStatus[token1.symbol as TokenStatusKey] === 'New') ? (
+              <NewOrHotStatusText fontWeight={600} paddingBottom="10px">
+                {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+              </NewOrHotStatusText>
+            ) : (
+              <NewOrHotStatusText fontWeight={600} paddingBottom="7px" fontSize={14}> 
+                {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+              </NewOrHotStatusText>
+              )
+            )}
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
@@ -656,6 +672,17 @@ function SelectPool() {
                       <ThemedText.BodySmall fontSize="14px">
                         ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
                       </ThemedText.BodySmall>
+                      {token0?.symbol && token1?.symbol && (
+                        (TokenStatus[token0.symbol as TokenStatusKey] === 'New' || TokenStatus[token1.symbol as TokenStatusKey] === 'New') ? (
+                          <NewOrHotStatusText fontWeight={600} paddingBottom="10">
+                            {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                          </NewOrHotStatusText>
+                        ) : (
+                          <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}> 
+                            {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                          </NewOrHotStatusText>
+                          )
+                        )}
                     </Row>
                   </TextWithLoadingPlaceholder>
                 </AutoColumn>

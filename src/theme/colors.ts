@@ -104,6 +104,7 @@ export const colors = {
   vividBlue: '#3665FF',
   softLavender: '#E5E9FF',
   softMintBlue: '#7cedf9',
+  sunsetOrange: '#ffaa14'
 }
 export const limitlessColors = {
   darkPurple: '#201426ff',
@@ -162,6 +163,7 @@ const commonTheme = {
   accentTextMint: colors.softMintBlue,
 
   stateLabel: opacify(30, colors.gray200),
+  newOrHot: colors.sunsetOrange,
 }
 
 export const darkTheme = {

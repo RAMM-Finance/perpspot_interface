@@ -467,7 +467,7 @@ export default function TokenTable() {
   }, [poolOHLCs])
 
   const loading = !poolTvlData || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
-
+  // console.log('sortedPools', sortedPools);
   /* loading and error state */
   return (
     <>

@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
-import { ClickableStyle } from 'theme'
+import { ClickableStyle, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 
@@ -30,6 +30,7 @@ import { DeltaText } from '../TokenDetails/PriceChart'
 import ZapModal from './ZapModal/ZapModal'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useWeb3React } from '@web3-react/core'
+import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 
 const Cell = styled.div`
   display: flex;
@@ -225,10 +226,11 @@ export const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
 `
 
 const TokenInfoCell = styled(Cell)`
+  position: relative;
   gap: 10px;
   line-height: 24px;
   max-width: inherit;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
   white-space: nowrap;
 
@@ -280,6 +282,17 @@ const ButtonCell = styled(DataCell)`
 const LongLoadingBubble = styled(LoadingBubble)`
   width: 90%;
 `
+
+const NewOrHotStatusText = styled(ThemedText.BodySmall)`
+  color: ${({ theme }) => theme.newOrHot};
+`
+
+const HotStatusText = styled(ThemedText.BodySmall)`
+  padding-bottom: 13px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.newOrHot};
+`
+
 
 export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
   height: 4px;
@@ -540,8 +553,19 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               <DoubleCurrencyLogo currency0={baseCurrency} currency1={quoteCurrency} size={20} margin={true} />
               <TokenName data-cy="token-name">
                 <span>{token0?.symbol}</span>
-                <span>{token1?.symbol}</span>
+                <span>{token1?.symbol}</span>   
               </TokenName>
+              {token0?.symbol && token1?.symbol && (
+                (TokenStatus[token0.symbol as TokenStatusKey] === 'New' || TokenStatus[token1.symbol as TokenStatusKey] === 'New') ? (
+                  <NewOrHotStatusText fontWeight={600} paddingBottom="16px">
+                    {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                  </NewOrHotStatusText>
+                ) : (
+                  <NewOrHotStatusText fontWeight={600} paddingBottom="9px" fontSize={14}> 
+                    {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                  </NewOrHotStatusText>
+                  )
+                )}   
             </TokenInfoCell>
           </ClickableName>
         }
