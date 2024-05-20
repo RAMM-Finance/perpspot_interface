@@ -41,7 +41,8 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
 
   const { chainId } = useWeb3React()
 
-  const tokenList = usePoolKeyList()
+  const isDefaultPoolList = true
+  const tokenList = usePoolKeyList(isDefaultPoolList)
 
 
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)

@@ -28,6 +28,8 @@ import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
 import ZapModal from './ZapModal/ZapModal'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useWeb3React } from '@web3-react/core'
 
 const Cell = styled.div`
   display: flex;
@@ -51,7 +53,7 @@ const StyledTokenRow = styled.div<{
   min-width: 390px;
 
   ${({ first, last }) => css`
-    height: 4.5rem;
+    height: 5rem;
     padding-top: ${first ? '14px' : '0px'};
     padding-bottom: ${last ? '14px' : '0px'};
   `}
@@ -183,6 +185,8 @@ const NameCell = styled(Cell)`
   /* gap: 8px; */
 `
 const PriceCell = styled(DataCell)`
+  display: flex;
+  flex-direction; column;
   /* @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     display: none;
   } */
@@ -384,6 +388,7 @@ interface LoadedRowProps {
   tokenA: string
   tokenB: string
   poolKey: PoolKey
+  poolOHLC: any
   //token: NonNullable<TopToken>
   sparklineMap?: SparklineMap
   sortRank?: number
@@ -391,6 +396,7 @@ interface LoadedRowProps {
   tvl?: number
   volume?: number
   price?: number
+  pricesUSD?: any
   delta?: number
   apr?: number
   dailyLMT?: number
@@ -398,7 +404,7 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, dailyLMT, poolKey } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, dailyLMT, poolKey, pricesUSD, poolOHLC } = props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -416,9 +422,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
 
-  // const poolOHLCDatas = useAppPoolOHLC()
-
-  const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
+  // const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
 
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
@@ -440,10 +444,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
+  const priceUSD = useMemo(() => {
+    if (pricesUSD && baseCurrency) {
+      return pricesUSD[baseCurrency.wrapped.address]
+    } else return '0'
+  }, [pricesUSD, baseCurrency])
 
-  // console.log("TOKEN 0 IS BASE ? ", token0?.symbol, token1?.symbol, poolOHLC?.token0IsBase)
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
-  // console.log("UES EST ", token0, token1, priceInverted)
 
   const [token0Range, token1Range] = useMemo(() => {
     if (token0?.symbol === "USDC" || token1?.symbol === "USDC") {
@@ -462,8 +469,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       return rawEstimatedAPR
     }
   }, [token0, token1, rawEstimatedAPR])
-  // if (token0?.symbol === "USDC" || token1?.symbol === "USDC")
-  //   console.log("EST APR OF USDC", estimatedAPR)
 
   const filterString = useAtomValue(filterStringAtom)
 
@@ -541,12 +546,19 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           </ClickableName>
         }
         price={
-          <ClickableContent>
-            <PriceInfoCell>
-              <Price>{formatDollarAmount({ num: price, long: true })}</Price>
-              <span>{baseCurrency && quoteCurrency ? baseCurrency.symbol + '/' + quoteCurrency.symbol : null}</span>
-            </PriceInfoCell>
-          </ClickableContent>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <ClickableContent>
+              <PriceInfoCell>
+                <Price>{formatDollarAmount({ num: price, long: true })}</Price>
+                <span>{baseCurrency && quoteCurrency ? baseCurrency.symbol + '/' + quoteCurrency.symbol : null}</span>
+              </PriceInfoCell>
+            </ClickableContent>
+            <ClickableContent>
+              <PriceInfoCell>
+                <Price>${parseFloat(priceUSD).toFixed(8)}</Price>
+              </PriceInfoCell>
+            </ClickableContent>
+          </div>
         }
         priceChange={
           <ClickableContent>
@@ -560,9 +572,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         APR={
           <>
             <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
-              {apr !== undefined ? `${(apr + estimatedAPR)?.toFixed(4)} %` : '-'}
+              {apr !== undefined ? `${new Intl.NumberFormat().format(Number(((apr + estimatedAPR) ?? 0).toFixed(4)))} %` : '-'}
             </ClickableRate>
-            {/* <span style={{ paddingLeft: '.25rem', color: 'gray' }}>+ {estimatedAPR}</span> */}
           </>
         }
         dailyLMT={

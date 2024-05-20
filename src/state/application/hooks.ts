@@ -65,7 +65,7 @@ interface PoolContractInfo {
   token0: string
   token1: string
 }
-export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; loading: boolean; error: any } {
+export function usePoolKeyList(isDefaultPoolList?: boolean): { poolList: PoolContractInfo[] | undefined; loading: boolean; error: any } {
   const lmtQuoter = useLmtQuoterContract()
 
   const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
@@ -86,20 +86,24 @@ export function usePoolKeyList(): { poolList: PoolContractInfo[] | undefined; lo
         }
       })
 
-      const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'BRETT'] // remove pools with these symbols
+      if (!isDefaultPoolList) {
+        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'BRETT'] // remove pools with these symbols
 
-      const filteredResult = result[0].filter(
-        (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
-      )
+        const filteredResult = result[0].filter(
+          (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
+        )
+  
+        return filteredResult
+      } else {
+        return result[0]
+      }
 
-      return filteredResult
     } else {
       return undefined
     }
   }, [result])
 
   return useMemo(() => {
-    console.log('poolList', poolList)
     return { poolList, loading, error }
   }, [poolList, loading, error])
 }

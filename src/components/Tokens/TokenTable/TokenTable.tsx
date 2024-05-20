@@ -401,8 +401,6 @@ export default function TokenTable() {
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
 
-  const loading = !poolTvlData //poolsLoading || balanceLoading
-
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
 
@@ -448,6 +446,28 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
+  const [pricesUSD, setPricesUSD] = useState<{ [tokenId: string]: string }>({})
+
+  useEffect(() => {
+    const fetchPricesUSD = async () => {
+      const newPriceUSD: { [tokenId: string]: string } = {}
+      if (poolOHLCs) {
+        const promises = Object.values(poolOHLCs).map(async (poolOHLC: any) => {
+          const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
+          if (tokenId) {
+            const result = await getDecimalAndUsdValueData(chainId, tokenId)
+            newPriceUSD[tokenId] = result.lastPriceUSD
+          }
+        });
+        await Promise.all(promises)
+      }
+      setPricesUSD(newPriceUSD)
+    }
+    fetchPricesUSD()
+  }, [poolOHLCs])
+
+  const loading = !poolTvlData || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
+
   /* loading and error state */
   return (
     <>
@@ -473,6 +493,8 @@ export default function TokenTable() {
                   tvl={poolTvlData[id]?.totalValueLocked}
                   volume={poolTvlData[id]?.volume}
                   price={poolOHLCs[id]?.priceNow}
+                  poolOHLC={poolOHLCs[id]}
+                  pricesUSD={pricesUSD}
                   delta={poolOHLCs[id]?.delta24h}
                   apr={aprList[id]?.apr || 0}
                   dailyLMT={aprList[id]?.utilTotal}

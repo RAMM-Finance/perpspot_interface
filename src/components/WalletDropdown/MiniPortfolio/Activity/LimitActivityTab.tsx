@@ -154,12 +154,17 @@ function getFixedDecimal(amount: number, decimal?: number, fixed?: number) {
 async function getDescriptor(chainId: number | undefined, entry: any, tokens: any) {
   const token0Name = tokens[entry.token0]?.symbol ?? tokens[entry.token0]?.name
   const token1Name = tokens[entry.token1]?.symbol ?? tokens[entry.token1]?.name
+
+  const [token0Data, token1Data] = await Promise.all([
+    getDecimalAndUsdValueData(chainId, entry.token0),
+    getDecimalAndUsdValueData(chainId, entry.token1),
+  ])
   
-  // const token0Decimal = tokenDecimal[entry.token0]
-  // const token1Decimal = tokenDecimal[entry.token1]
-  
-  const token0Decimal = (await getDecimalAndUsdValueData(chainId, entry.token0))?.decimals
-  const token1Decimal = (await getDecimalAndUsdValueData(chainId, entry.token1))?.decimals
+  const token0Decimal = token0Data?.decimals
+  const token1Decimal = token1Data?.decimals
+
+  const token0PriceUSD = token0Data?.lastPriceUSD
+  const token1PriceUSD = token1Data?.lastPriceUSD
   
   // console.log('------getDescriptor token name', tokens[entry.token0]?.name, token0Name, token1Name)
   // console.log('------getDescriptor entry', entry);
@@ -281,7 +286,16 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         ? token1Name
         : token0Name
 
-    if (entry.positionIsToken0)
+    const pnlPriceUSD = parseFloat(entry.marginInPosToken
+      ? entry.positionIsToken0
+        ? token0PriceUSD
+        : token1PriceUSD
+      : entry.positionIsToken0
+        ? token1PriceUSD
+        : token0PriceUSD)
+
+    if (entry.positionIsToken0) {
+      console.log("PNL!!!", pnlPriceUSD)
       return (
         'Reduced ' +
         getFixedDecimal(entry.reduceAmount, token0Decimal) +
@@ -293,8 +307,9 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         token1Name +
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${getFixedDecimal(Number(price), 0, 7)}` +
-        ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken}`
+        ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken} ($${(pnlPriceUSD * PnL).toFixed(9)})`
       )
+    }
     else
       return (
         'Reduced ' +
@@ -307,7 +322,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         token1Name +
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price:  ${getFixedDecimal(Number(price), 0, 7)}` +
-        ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken}`
+        ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken} ($${(pnlPriceUSD * PnL).toFixed(9)})`
       )
   } else {
     return ' '

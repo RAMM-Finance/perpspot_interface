@@ -68,17 +68,30 @@ function processDescriptor(descriptor: string, title?: string) {
   // console.log(actionDescription, priceMatch, price, '-------processDescriptor------')
   let pnlNumber
   let marginToken
+  let usdValue
+
   if (title === ActivityDescriptionType.REDUCE_POSITION && price.includes('Pnl')) {
     // Extract the number and token following 'Pnl' using regular expression.
+    
     const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
     if (pnlMatch) {
+      console.log("PRICE", price)
       pnlNumber = parseFloat(pnlMatch[1]).toFixed(7)
+      console.log("PNL NUMBER", pnlNumber)
       marginToken = pnlMatch[2]
     }
+
+    const usdRegex = /\(\$(-?[\d.]+)\)/
+    const usdMatch = price.match(usdRegex)
+    if (usdMatch) {
+      usdValue = parseFloat(usdMatch[1])
+      console.log("USD VALUE!", usdValue)
+    }      
+
     price = price.slice(0, price.indexOf('Pnl')).trim()
   }
-  return { actionDescription, pnlNumber, marginToken, priceNumber }
+  return { actionDescription, pnlNumber, usdValue, marginToken, priceNumber }
 }
 
 export function ActivityRow({
@@ -89,7 +102,7 @@ export function ActivityRow({
   const { ENSName } = useENSName(otherAccount)
   const timeSince = useTimeStamp(timestamp)
   // descript modified
-  const { actionDescription, marginToken, pnlNumber, priceNumber } = processDescriptor(descriptor, title)
+  const { actionDescription, marginToken, usdValue, pnlNumber, priceNumber } = processDescriptor(descriptor, title)
   
   // console.log(descriptor, '-----descriptor----')
   // console.log('-----------marginToken', marginToken)
@@ -100,10 +113,6 @@ export function ActivityRow({
     if (!actionDescription) return ['-', '-']
     return actionDescription.split(',')
   }, [actionDescription])
-  console.log("descriptor", descriptor)
-  console.log("actionDescription", actionDescription)
-  console.log("action", action)
-  console.log("pair", pair)
 
   return (
     <TraceEvent
@@ -151,11 +160,12 @@ export function ActivityRow({
                     <ArrowUpRight size="16px" />
                   </MouseoverTooltip>
                 </ThemedText.SubHeaderSmall>
-                {(typeof pnlNumber !== 'undefined') ? (
+                {(typeof pnlNumber !== 'undefined' && typeof usdValue !== 'undefined') ? (
                   <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                     <ActivityPrice>
-                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${pnlNumber} `}</DeltaText>
-                      {marginToken}
+                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${pnlNumber}`}</DeltaText>{' '}
+                      {marginToken} 
+                      <DeltaText delta={usdValue}>{` ($${usdValue.toString()})`}</DeltaText>
                     </ActivityPrice>
                   {ENSName ?? otherAccount}
                   </ThemedText.SubHeaderSmall>
