@@ -88,7 +88,7 @@ const PositionInfoModal = ({
           PNL
         </InfoLabel>
         <DeltaText fontSize="32px" fontWeight={600} delta={Number(pln)} isNoWrap={true}>
-          {pln} {inputCurrency?.symbol}
+          {pln}% {inputCurrency?.symbol}
         </DeltaText>
         <InfoTextWrapper marginTop="35px">
           <InfoLabel fontSize={16}>Entry Price</InfoLabel>
