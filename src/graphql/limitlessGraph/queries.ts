@@ -147,7 +147,8 @@ export const AddQuery = `
       addedAmount    
       marginAmount
       borrowAmount
-      filler  
+      filler
+      blockNumber
       blockTimestamp
       transactionHash
     }
@@ -162,11 +163,12 @@ export const ReduceQuery = `
       marginInPosToken
       trader
       reduceAmount      
-      blockTimestamp
       PnL
       filler
       amount0
-      amount1 
+      amount1
+      blockNumber
+      blockTimestamp
       transactionHash
     }
   }

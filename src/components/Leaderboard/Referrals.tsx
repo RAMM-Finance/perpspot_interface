@@ -314,7 +314,7 @@ const Referrals = () => {
 
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
-  const refereesLimwethDeposit = useRefereeLimwethDeposit()
+  const { referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
   // console.log('zeke:', refereesLimwethDeposit, refereesLimwethDeposit2)
 
   // useEffect(() => {
@@ -335,7 +335,6 @@ const Referrals = () => {
   //       //     BRP.lastRecordedLpPoints(user),
   //       //     BRP.lastRecordedPoints(user)
   //       //   ])
-  //       //   console.log("TRADEPOINTS LPPOINTS POINTS of USERSSSSSSSSSSSS", user, tradePoints.toNumber(), lpPoints.toNumber(), points.toNumber())
   //       // }))
 
   //       // const referees = ['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0', '0x9e60aa0c7B3bAE800f725C20088330cDB05D7487']
@@ -789,7 +788,8 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereeActivity && account ? refereeActivity[account]?.usersReferred || 0 : '-'}
+                    {referredCount ? referredCount : '0'}
+                    {/* {refereeActivity && account ? refereeActivity[account]?.usersReferred || 0 : '-'} */}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>

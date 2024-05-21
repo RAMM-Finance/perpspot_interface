@@ -3,7 +3,7 @@ import { useBRP, useReferralContract } from 'hooks/useContract'
 import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 
-export const useRefereeLimwethDeposit = (): number | undefined => {
+export const useRefereeLimwethDeposit = (): {referredCount: number, refereesLimwethDeposit: number | undefined} => {
   const referralContract = useReferralContract()
   const { account } = useWeb3React()
   const {
@@ -11,8 +11,10 @@ export const useRefereeLimwethDeposit = (): number | undefined => {
     loading: refereesLoading,
     error: refereesError,
   } = useSingleCallResult(referralContract, 'getReferees', [account])
-
+  
   const referees = refereesResult ? refereesResult[0] : []
+  
+  console.log("referees", referees)
   const BRP = useBRP()
 
   const tradePointsCallStates = useSingleContractMultipleData(
@@ -49,7 +51,10 @@ export const useRefereeLimwethDeposit = (): number | undefined => {
       return points + parseFloat(callState.result[0].toString())
     }, 0)
 
-    return tradePoints + lpPoints + lastPoints
+    return {
+      referredCount: referees.length,
+      refereesLimwethDeposit: tradePoints + lpPoints + lastPoints
+    }
   }, [tradePointsCallStates, lpPointsCallStates, lastPointsCallStates])
 }
 

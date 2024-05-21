@@ -7,13 +7,15 @@ import { ethers } from 'ethers'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
+import { firestore } from 'firebaseConfig'
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -45,35 +47,7 @@ export function usePoolsData(): {
     return ['queryPoolsData', chainId, dataProvider.address]
   }, [chainId, dataProvider])
 
-  // async function fetchAllData(query: any, client: any) {
-  //   let allResults: any[] = []
-  //   let skip = 0;
-  //   const first = 1000 // maximum limit
-  
-  //   while (true) {
-  //     const result = await client.query(query, { first, skip }).toPromise()
-  //     if (query === AddQuery) {
-  //       if (!result.data || !result.data.marginPositionIncreaseds.length) {
-  //         break
-  //       }
-  //       allResults = [...allResults, ...result.data.marginPositionIncreaseds]
-  //     } else if (query === ReduceQuery) {
-  //       if (!result.data || !result.data.marginPositionReduceds.length) {
-  //         break
-  //       }
-  //       allResults = [...allResults, ...result.data.marginPositionReduceds]
-  //     }
-  //     if (query === AddQuery) {
-  //       allResults = [...allResults, ...result.data.marginPositionIncreaseds]
-  //     } else if (query === ReduceQuery) {
-  //       allResults = [...allResults, ...result.data.marginPositionReduceds]
-  //     }
-  
-  //     skip += first
-  //   }
-  
-  //   return allResults
-  // }
+  const [addFirebaseData, setAddFirebaseData] = useState<any[]>([])
 
   const { data, isLoading, isError, refetch } = useQuery(
     queryKey,
@@ -90,12 +64,31 @@ export function usePoolsData(): {
           fetchAllData(LiquidityProvidedQuery, clientToUse),
           fetchAllData(LiquidityWithdrawnQuery, clientToUse)
         ])
+
+        // const q = query(
+        //   collection(firestore, 'volumes'),
+        //   where('timestamp', '>=', 1000000),
+        //   where('type', '==', 'ADD')
+        // )
+
+        // const querySnapshot = await getDocs(q)
+        // querySnapshot.forEach((doc) => {
+        //   console.log(doc.id, " => ", doc.data())
+        // })
+
         const pools = new Set<string>()
         ProvidedQueryData?.forEach((entry: any) => {
           const pool = ethers.utils.getAddress(entry.pool)
           if (!pools.has(pool)) {
             pools.add(pool)
           }
+        })
+
+        const poolsMargin = new Set<string>()
+        AddQueryData?.forEach((entry: any) => {
+          const pool = ethers.utils.getAddress(entry.pool)
+          if (!poolsMargin.has(pool))
+            poolsMargin.add(pool)
         })
 
         const uniqueTokens_ = new Map<string, any>()
@@ -276,16 +269,6 @@ export function usePoolsData(): {
         const tokens = uniqueTokens?.get(pool)
         let totalValue
 
-
-        // if (tokens[3].symbol === 'HIGHER' || tokens[4].symbol === 'HIGHER')
-        //   {
-        //     console.log("TOKENS", tokens[3].symbol, tokens[4].symbol)
-        //     console.log("TOTLA VAUE tokens3", (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals)
-        //     console.log("TOTLA VAUE tokens4", (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals)
-        //   } else {
-        //     console.log("NO HIGHER")
-        //   }
-
         if (tokens[3]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
           totalValue = (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals
         } else if (tokens[4]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
@@ -305,6 +288,8 @@ export function usePoolsData(): {
 
     addDataProcessed?.forEach(processEntry)
     reduceDataProcessed?.forEach(processEntry)
+
+
 
     const TVLDataPerPool: { [key: string]: any } = {}
     ProvidedDataProcessed?.forEach((entry: any) => {
