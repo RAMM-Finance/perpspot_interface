@@ -697,6 +697,7 @@ export const LoadedRow = memo(
             outputCurrency={outputCurrency}
             inputCurrency={inputCurrency}
             pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
+            pnlPercent={`${((Number(PnL) / details?.margin.toNumber()) * 100).toFixed(2)}%`}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
             entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
             leverageValue={Math.round(leverageFactor * 1000) / 1000}

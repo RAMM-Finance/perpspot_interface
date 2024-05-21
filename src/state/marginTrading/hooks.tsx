@@ -1329,7 +1329,9 @@ const useSimulateMarginTrade = (
       inputCurrency,
       outputCurrency,
       swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-      expectedAddedOutput.toString()
+      !marginInPosToken
+        ? expectedAddedOutput.toString()
+        : new BN(expectedAddedOutput.toString()).minus(marginInOutput.shiftedBy(outputCurrency.decimals)).toFixed(0)
     )
 
     const result: AddMarginTrade = {
