@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import Menu from '@mui/material/Menu'
-import { NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -12,11 +11,11 @@ import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
+import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai/utils'
-import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { Row } from 'nft/components/Flex'
 import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
@@ -46,7 +45,6 @@ import {
   poolSortMethodAtom,
   useSetPoolSortMethod,
 } from './state'
-import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 
 const PoolListHeaderRow = styled.div`
   display: grid;
@@ -228,6 +226,10 @@ const NewOrHotStatusText = styled(ThemedText.BodySmall)`
   color: ${({ theme }) => theme.newOrHot};
 `
 
+const NewOrHotWrapper = styled.div`
+  margin-top: 10px;
+`
+
 const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
@@ -311,7 +313,6 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     chainId,
   ])
 
-
   return (
     <RowWrapper active={active} onClick={handleRowClick}>
       <Row>
@@ -321,21 +322,28 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
           <FeeWrapper>
             <ThemedText.BodyPrimary fontSize={10}>{pool?.fee ? `${pool?.fee / 10000}%` : ''}</ThemedText.BodyPrimary>
           </FeeWrapper>
-          {token0?.symbol && token1?.symbol && (
-            (TokenStatus[token0.symbol as TokenStatusKey] === 'New' || TokenStatus[token1.symbol as TokenStatusKey] === 'New') ? (
-              <NewOrHotStatusText fontWeight={600} paddingBottom="10px">
-                {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
-              </NewOrHotStatusText>
+          {token0?.symbol &&
+            token1?.symbol &&
+            (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
+            TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
+              <NewOrHotWrapper>
+                <NewOrHotStatusText fontWeight={600} paddingBottom="10px">
+                  {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                </NewOrHotStatusText>
+              </NewOrHotWrapper>
             ) : (
-              <NewOrHotStatusText fontWeight={600} paddingBottom="7px" fontSize={14}> 
+              <NewOrHotStatusText fontWeight={600} paddingBottom="7px" fontSize={14}>
                 {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
               </NewOrHotStatusText>
-              )
-            )}
+            ))}
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
-        {poolOHLCData?.priceNow ? poolOHLCData.priceNow < 1 ? poolOHLCData.priceNow.toFixed(10) : poolOHLCData.priceNow.toFixed(4) : ''} 
+        {poolOHLCData?.priceNow
+          ? poolOHLCData.priceNow < 1
+            ? poolOHLCData.priceNow.toFixed(10)
+            : poolOHLCData.priceNow.toFixed(4)
+          : ''}
         {/* formatBNToString(new BN(poolOHLCData.priceNow), NumberType.FiatGasPrice, true) : ''} */}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
@@ -672,17 +680,20 @@ function SelectPool() {
                       <ThemedText.BodySmall fontSize="14px">
                         ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
                       </ThemedText.BodySmall>
-                      {token0?.symbol && token1?.symbol && (
-                        (TokenStatus[token0.symbol as TokenStatusKey] === 'New' || TokenStatus[token1.symbol as TokenStatusKey] === 'New') ? (
+                      {token0?.symbol &&
+                        token1?.symbol &&
+                        (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
+                        TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
                           <NewOrHotStatusText fontWeight={600} paddingBottom="10">
-                            {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                            {TokenStatus[token0.symbol as TokenStatusKey] ||
+                              TokenStatus[token1.symbol as TokenStatusKey]}
                           </NewOrHotStatusText>
                         ) : (
-                          <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}> 
-                            {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+                          <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}>
+                            {TokenStatus[token0.symbol as TokenStatusKey] ||
+                              TokenStatus[token1.symbol as TokenStatusKey]}
                           </NewOrHotStatusText>
-                          )
-                        )}
+                        ))}
                     </Row>
                   </TextWithLoadingPlaceholder>
                 </AutoColumn>
