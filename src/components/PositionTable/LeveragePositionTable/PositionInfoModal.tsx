@@ -92,7 +92,7 @@ const PositionInfoModal = ({
           {pln} {inputCurrency?.symbol}
         </DeltaText>
         <DeltaText fontSize="34px" fontWeight={600} delta={Number(pln)}>
-          {`${Number(pln) > 0 ? '+' : Number(pln) < 0 ? '-' : ''}${pnlPercent}`}
+          {`${Number(pln) <= 0 ? '' : '+'} ${pnlPercent}`}
         </DeltaText>
         <InfoTextWrapper marginTop="35px">
           <InfoLabel fontSize={16}>Entry Price</InfoLabel>
