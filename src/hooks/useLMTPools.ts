@@ -17,6 +17,7 @@ import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { firestore } from 'firebaseConfig'
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { VOLUME_STARTPOINT } from 'constants/misc'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -63,7 +64,7 @@ export function usePoolsData(): {
           fetchAllData(LiquidityProvidedQuery, clientToUse),
           fetchAllData(LiquidityWithdrawnQuery, clientToUse)
         ])
-        const timestamp = 1716264730
+        const timestamp = VOLUME_STARTPOINT
 
         const queryAdd = query(
           collection(firestore, 'volumes'),
@@ -301,7 +302,6 @@ export function usePoolsData(): {
           totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
         }
         else {
-          console.log("NEW VOL")
           totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
         }
       } else if (entry.type === "REDUCE") {
@@ -310,7 +310,6 @@ export function usePoolsData(): {
           totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
         }
         else {
-          console.log("NEW VOL")
           totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
         }
       }

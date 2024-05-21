@@ -1,4 +1,5 @@
 import {gql} from "@apollo/client"
+import { VOLUME_STARTPOINT } from 'constants/misc'
 
 export const POOL_STATS_QUERY = gql`
 query poolHourDatas($startTime: Int!, $address: String!) {
@@ -176,7 +177,7 @@ export const ReduceQuery = `
 
 export const AddVolumeQuery = `
   query($first: Int!, $skip: Int!) {
-    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: 1716264730})  {
+    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
       pool
       positionIsToken0
       marginInPosToken
@@ -194,7 +195,7 @@ export const AddVolumeQuery = `
 
 export const ReduceVolumeQuery = `
   query($first: Int!, $skip: Int!) {
-    marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: 1716264730})  {
+    marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
       pool
       positionIsToken0
       marginInPosToken
