@@ -74,7 +74,12 @@ const MenuItem = ({ href, dataTestId, id, isActive, children, margin, external, 
       to={href}
       className={isActive ? styles.activeMenuItem : styles.menuItem}
       id={id}
-      style={{ textDecoration: 'none', marginRight: '4px', fontSize: font ? '14px' : '16px', borderWidth: noBorder ? '0': '2px' }}
+      style={{
+        textDecoration: 'none',
+        marginRight: '4px',
+        fontSize: font ? '14px' : '16px',
+        borderWidth: noBorder ? '0' : '2px',
+      }}
       data-testid={dataTestId}
     >
       {children}
@@ -173,7 +178,7 @@ export const PageTabs = () => {
         <MenuItem href="/referral" dataTestId="pool-nav-link" isActive={pathname.startsWith('/referral')}>
           <ThemedText.BodySecondary>Referral</ThemedText.BodySecondary>
         </MenuItem>
-        <MenuItem href="/airdrop" isActive={pathname.startsWith('/airdrop')}>
+        <MenuItem href="/airdrop" isActive={pathname.startsWith('/airdrop') || pathname.startsWith('/loot')}>
           <ThemedText.BodySecondary>AirDrop</ThemedText.BodySecondary>
         </MenuItem>
         <MenuItem external={true} href="https://limitless.gitbook.io/limitless/intro/why-limitless">

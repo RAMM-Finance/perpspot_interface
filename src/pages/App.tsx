@@ -32,10 +32,10 @@ import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamRead
 import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
+import AirDropPage from './AirDrop'
 import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
 import LeaderboardPage from './Leaderboard'
-import AirDropPage from './AirDrop'
 import MigrateV2 from './MigrateV2'
 import NotFound from './NotFound'
 import Pool from './Pool'
@@ -237,6 +237,8 @@ export default function App() {
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
                   <Route path="airdrop" element={<AirDropPage />} />
+                  <Route path="loot" element={<AirDropPage />} />
+
                   {/* <Route path="airDrop/?/activity" element={<AirDropPage />} /> */}
 
                   {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}

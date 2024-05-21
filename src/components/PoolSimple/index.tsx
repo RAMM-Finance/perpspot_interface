@@ -1042,7 +1042,12 @@ export default function SimplePool() {
                   <ThemedText.BodySecondary fontSize={12}>80% LPs, 20% Protocol</ThemedText.BodySecondary>
                 </RowBetween>
                 <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Maximum Withdrawable:</ThemedText.BodyPrimary>
+                  <MouseoverTooltip text="Given current utilization rates, the maximum withdrawable is the amount that can be withdrawn until utilization rate is lowered">
+                    <RowStart style={{ gap: '3px' }}>
+                      <ThemedText.BodyPrimary fontSize={12}>Maximum Withdrawable:</ThemedText.BodyPrimary>
+                      <Info size={14} />
+                    </RowStart>
+                  </MouseoverTooltip>
                   <ThemedText.BodySecondary fontSize={12}>
                     {indexData &&
                       `${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
