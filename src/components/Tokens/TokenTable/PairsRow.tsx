@@ -553,7 +553,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
                 <span>{baseCurrency && quoteCurrency ? baseCurrency.symbol + '/' + quoteCurrency.symbol : null}</span>
               </PriceInfoCell>
             </ClickableContent>
-            <ClickableContent>
+            <ClickableContent style={{ marginTop: '0.3rem' }}>
               <PriceInfoCell>
                 <Price>${parseFloat(priceUSD).toFixed(8)}</Price>
               </PriceInfoCell>

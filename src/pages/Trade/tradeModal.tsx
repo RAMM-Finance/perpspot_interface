@@ -34,7 +34,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { PoolState, usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
@@ -68,6 +68,9 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { firestore } from 'firebaseConfig'
 
 const Wrapper = styled.div`
   padding: 0.75rem;
@@ -376,7 +379,10 @@ const TradeTabContent = () => {
 
   const fiatValueTradeMargin = useUSDPriceBNV2(
     parsedMargin,
-    marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
+    (existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) 
+    ? outputCurrency ?? undefined 
+    : inputCurrency ?? undefined
+    // marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
   )
   // const fiatValueTradePremium = useUSDPriceBN(
   //   trade?.premium,
@@ -399,7 +405,6 @@ const TradeTabContent = () => {
   //   }
   // }, [fiatValueTradeMargin, fiatValueTradePremium])
 
-  // console.log("FIAT VALUE TRADE OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
@@ -514,8 +519,32 @@ const TradeTabContent = () => {
     setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
 
     addPositionCallback()
-      .then((hash) => {
+      .then(async (hash) => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
+
+        if (trade && inputCurrency && outputCurrency) {
+          try {
+            let tokenAmount = trade.marginInInput.toNumber()
+          
+            const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
+            
+            const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
+            const priceUSD = result.lastPriceUSD
+            const timestamp = Math.floor(Date.now() / 1000)
+            const type = "ADD"
+            const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
+  
+            await addDoc(collection(firestore, 'volumes'), {
+              poolId: poolId,
+              priceUSD: priceUSD,
+              timestamp: timestamp,
+              type: type,
+              volume: volume
+            })
+          } catch (error) {
+            console.error("An error occurred:", error)
+          }
+        }
       })
       .catch((error) => {
         setTradeState((currentState) => ({
@@ -736,7 +765,7 @@ const TradeTabContent = () => {
                   {Number(formattedMargin) > 1
                     ? Number(formattedMargin).toFixed(2)
                     : Number(formattedMargin).toFixed(6)}{' '}
-                  {marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+                  {(existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency?.symbol : inputCurrency?.symbol}
                 </ThemedText.BodySmall>
                 <ThemedText.BodySmall>+</ThemedText.BodySmall>
                 <ThemedText.BodySmall>

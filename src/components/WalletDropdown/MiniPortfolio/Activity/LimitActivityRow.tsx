@@ -76,9 +76,7 @@ function processDescriptor(descriptor: string, title?: string) {
     const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
     if (pnlMatch) {
-      console.log("PRICE", price)
       pnlNumber = parseFloat(pnlMatch[1]).toFixed(7)
-      console.log("PNL NUMBER", pnlNumber)
       marginToken = pnlMatch[2]
     }
 
@@ -86,7 +84,6 @@ function processDescriptor(descriptor: string, title?: string) {
     const usdMatch = price.match(usdRegex)
     if (usdMatch) {
       usdValue = parseFloat(usdMatch[1])
-      console.log("USD VALUE!", usdValue)
     }      
 
     price = price.slice(0, price.indexOf('Pnl')).trim()

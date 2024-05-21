@@ -28,7 +28,7 @@ import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorr
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DynamicSection } from 'pages/Trade/tradeModal'
@@ -55,6 +55,9 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { firestore } from 'firebaseConfig'
 
 export interface DerivedReducePositionInfo {
   /** if marginInPosToken then PnL in output token, otherwise in input token */
@@ -198,6 +201,7 @@ export default function DecreasePositionContent({
   outputCurrency?: Currency
   onClose: () => void
 }) {
+
   const { position: existingPosition } = positionData
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
@@ -342,7 +346,7 @@ export default function DecreasePositionContent({
   const addTransaction = useTransactionAdder()
 
   // callback
-  const { account } = useWeb3React()
+  const { account, chainId } = useWeb3React()
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
   const { callback: limitCallback } = useReduceLimitOrderCallback(
@@ -367,15 +371,17 @@ export default function DecreasePositionContent({
     allowedSlippage
   )
 
-  const handleReducePosition = useCallback(() => {
+  const handleReducePosition = useCallback(async () => {
     if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
       return
     }
+    
 
+    
     setCurrentState((prev) => ({ ...prev, attemptingTxn: true }))
 
     callback()
-      .then(({ response, closePosition }) => {
+      .then(async ({ response, closePosition }) => {
         // setAttemptingTxn(false)
         setCurrentState((prev) => ({ ...prev, attemptingTxn: false, txHash: response?.hash, errorMessage: undefined }))
         // setTxHash(response?.hash)
@@ -390,6 +396,27 @@ export default function DecreasePositionContent({
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
         })
+        try {
+          if (pool) {
+            const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
+            const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee) 
+            const priceUSD = result.lastPriceUSD
+            const timestamp = Math.floor(Date.now() / 1000)
+            const type = "REDUCE"
+            const volume = (parseFloat(priceUSD) * parseFloat(reduceAmount)).toFixed(10)
+
+            await addDoc(collection(firestore, 'volumes'), {
+              poolId: poolId,
+              priceUSD: priceUSD,
+              timestamp: timestamp,
+              type: type,
+              volume: volume
+            })
+          }
+        } catch (error) {
+          console.error("An error occurred:", error)
+        }
+
         if (closePosition) {
           onClose()
         }

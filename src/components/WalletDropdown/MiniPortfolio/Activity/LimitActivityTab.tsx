@@ -295,7 +295,6 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         : token0PriceUSD)
 
     if (entry.positionIsToken0) {
-      console.log("PNL!!!", pnlPriceUSD)
       return (
         'Reduced ' +
         getFixedDecimal(entry.reduceAmount, token0Decimal) +
