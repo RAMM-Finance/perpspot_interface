@@ -37,13 +37,13 @@ const InfoText = styled(ThemedText.StatMint)`
   width: 30%;
 `
 
-
 interface IPositionInfoModalProps {
   showInfo: boolean
   handleCloseInfo: () => void
   outputCurrency: Currency | null | undefined
   inputCurrency: Currency | null | undefined
   pln: string
+  pnlPercent: string
   currentPrice: string
   entryPrice: string
   leverageValue: number
@@ -58,6 +58,7 @@ const PositionInfoModal = ({
   entryPrice,
   leverageValue,
   pln,
+  pnlPercent,
 }: IPositionInfoModalProps) => {
   return (
     <Modal
@@ -88,7 +89,10 @@ const PositionInfoModal = ({
           PNL
         </InfoLabel>
         <DeltaText fontSize="32px" fontWeight={600} delta={Number(pln)} isNoWrap={true}>
-          {pln}% {inputCurrency?.symbol}
+          {pln} {inputCurrency?.symbol}
+        </DeltaText>
+        <DeltaText fontSize="34px" fontWeight={600} delta={Number(pln)}>
+          {`${Number(pln) > 0 ? '+' : Number(pln) < 0 ? '-' : ''}${pnlPercent}`}
         </DeltaText>
         <InfoTextWrapper marginTop="35px">
           <InfoLabel fontSize={16}>Entry Price</InfoLabel>
