@@ -174,6 +174,43 @@ export const ReduceQuery = `
   }
 `
 
+export const AddVolumeQuery = `
+  query($first: Int!, $skip: Int!) {
+    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: 1716264730})  {
+      pool
+      positionIsToken0
+      marginInPosToken
+      trader
+      addedAmount    
+      marginAmount
+      borrowAmount
+      filler
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+  }
+`
+
+export const ReduceVolumeQuery = `
+  query($first: Int!, $skip: Int!) {
+    marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: 1716264730})  {
+      pool
+      positionIsToken0
+      marginInPosToken
+      trader
+      reduceAmount      
+      PnL
+      filler
+      amount0
+      amount1
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+  }
+`
+
 export const IncreaseLiquidityQuery = `
     query {
       increaseLiquidities(orderBy: blockTimestamp orderDirection: desc) {

@@ -5,7 +5,7 @@ import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery } from 'graphql/limitlessGraph/queries'
+import { AddQuery, AddVolumeQuery, ReduceQuery, ReduceVolumeQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { useQuery } from 'react-query'
@@ -16,6 +16,7 @@ import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { firestore } from 'firebaseConfig'
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
 
@@ -47,8 +48,6 @@ export function usePoolsData(): {
     return ['queryPoolsData', chainId, dataProvider.address]
   }, [chainId, dataProvider])
 
-  const [addFirebaseData, setAddFirebaseData] = useState<any[]>([])
-
   const { data, isLoading, isError, refetch } = useQuery(
     queryKey,
     async () => {
@@ -59,22 +58,34 @@ export function usePoolsData(): {
         let clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
 
         let [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData] = await Promise.all([
-          fetchAllData(AddQuery, clientToUse),
-          fetchAllData(ReduceQuery, clientToUse),
+          fetchAllData(AddVolumeQuery, clientToUse),
+          fetchAllData(ReduceVolumeQuery, clientToUse),
           fetchAllData(LiquidityProvidedQuery, clientToUse),
           fetchAllData(LiquidityWithdrawnQuery, clientToUse)
         ])
+        const timestamp = 1716264730
 
-        // const q = query(
-        //   collection(firestore, 'volumes'),
-        //   where('timestamp', '>=', 1000000),
-        //   where('type', '==', 'ADD')
-        // )
+        const queryAdd = query(
+          collection(firestore, 'volumes'),
+          where('timestamp', '>=', timestamp),
+          where('type', '==', 'ADD')
+        )
 
-        // const querySnapshot = await getDocs(q)
-        // querySnapshot.forEach((doc) => {
-        //   console.log(doc.id, " => ", doc.data())
-        // })
+        const queryReduce = query(
+          collection(firestore, 'volumes'),
+          where('timestamp', '>=', timestamp),
+          where('type', '==', 'REDUCE')
+        )
+        const [addQuerySnapshot, reduceQuerySnapshot] = await Promise.all([
+          getDocs(queryAdd),
+          getDocs(queryReduce)
+        ])
+
+        const addData = addQuerySnapshot.docs.map(doc => doc.data())
+        const reduceData = reduceQuerySnapshot.docs.map(doc => doc.data())
+
+        // setAddFirebaseData(addData)
+        // setReduceFirebaseData(reduceData)
 
         const pools = new Set<string>()
         ProvidedQueryData?.forEach((entry: any) => {
@@ -82,13 +93,6 @@ export function usePoolsData(): {
           if (!pools.has(pool)) {
             pools.add(pool)
           }
-        })
-
-        const poolsMargin = new Set<string>()
-        AddQueryData?.forEach((entry: any) => {
-          const pool = ethers.utils.getAddress(entry.pool)
-          if (!poolsMargin.has(pool))
-            poolsMargin.add(pool)
         })
 
         const uniqueTokens_ = new Map<string, any>()
@@ -122,6 +126,8 @@ export function usePoolsData(): {
           reduceData: ReduceQueryData,
           providedData: ProvidedQueryData,
           withdrawnData: WithdrawnQueryData,
+          addedVolumes: addData,
+          reducedVolumes: reduceData,
           useQueryChainId: chainId,
         }
       } catch (err) {
@@ -150,14 +156,10 @@ export function usePoolsData(): {
   // const providedSlot0s = useMultipleContractSingleData(uPools, POOL_STATE_INTERFACE, 'slot0')
 
   const poolToData = useMemo(() => {
+    
     if (isLoading || isError || !data) return undefined
 
-    // if (providedSlot0s.some(slot => slot.loading)) {
-
-    //   return undefined
-    // }
-
-    const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, useQueryChainId } = data
+    const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, addedVolumes, reducedVolumes, useQueryChainId } = data
 
     if (chainId !== useQueryChainId) return undefined
 
@@ -261,7 +263,7 @@ export function usePoolsData(): {
       amount: entry.reduceAmount,
     }))
 
-    const processEntry = async (entry: any) => {
+    const processEntry = (entry: any) => {
 
       const pool = ethers.utils.getAddress(entry.key)
 
@@ -277,7 +279,8 @@ export function usePoolsData(): {
           totalValue = 0
         }
 
-        const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`
+        // const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`
+        const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
         if (totalAmountsByPool[newKey]) {
           totalAmountsByPool[newKey] += totalValue
         } else {
@@ -289,12 +292,39 @@ export function usePoolsData(): {
     addDataProcessed?.forEach(processEntry)
     reduceDataProcessed?.forEach(processEntry)
 
+    const processVolume = (entry: any) => {
+      
+      let totalVolume
+      if (entry.type === "ADD") {
+        if (totalAmountsByPool[entry.poolId]) {
+          console.log("ENTRY ADD", entry.volume)
+          totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
+        }
+        else {
+          console.log("NEW VOL")
+          totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
+        }
+      } else if (entry.type === "REDUCE") {
+        if (totalAmountsByPool[entry.poolId]) {
+          console.log("ENTRY REDUCE", entry.volume)
+          totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
+        }
+        else {
+          console.log("NEW VOL")
+          totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
+        }
+      }
+    }
+
+    addedVolumes.forEach(processVolume)
+    reducedVolumes.forEach(processVolume)
 
 
     const TVLDataPerPool: { [key: string]: any } = {}
     ProvidedDataProcessed?.forEach((entry: any) => {
       const tokens = uniqueTokens.get(entry.pool)
-      const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
+      // const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
+      const key = getPoolId(tokens[0], tokens[1], tokens[2])
 
       if (!TVLDataPerPool[key]) {
         TVLDataPerPool[key] = 0
@@ -306,7 +336,8 @@ export function usePoolsData(): {
 
     WithdrawDataProcessed?.forEach((entry: any) => {
       const tokens = uniqueTokens.get(entry.pool)
-      const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
+      // const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
+      const key = getPoolId(tokens[0], tokens[1], tokens[2])
 
       TVLDataPerPool[key] -= entry.amount0
       TVLDataPerPool[key] -= entry.amount1

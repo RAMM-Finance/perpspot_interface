@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
 import { cacheExchange, createClient, fetchExchange } from '@urql/core'
-import { AddQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, ReduceQuery, AddOrderQuery, CancelOrderQuery, ForceClosedQuery } from 'graphql/limitlessGraph/queries'
+import { AddQuery, AddVolumeQuery, ReduceQuery, ReduceVolumeQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, AddOrderQuery, CancelOrderQuery, ForceClosedQuery } from 'graphql/limitlessGraph/queries'
 
 // import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
@@ -25,13 +25,13 @@ export async function fetchAllData(query: any, client: any) {
 
   while (true) {
     const result = await client.query(query, { first, skip }).toPromise()
-    if (query === AddQuery) {
+    if ((query === AddQuery) || (query === AddVolumeQuery)) {
       if (!result.data || !result.data.marginPositionIncreaseds.length) {
         break
       }
       allResults = [...allResults, ...result.data.marginPositionIncreaseds]
 
-    } else if (query === ReduceQuery) {
+    } else if ((query === ReduceQuery) || (query === ReduceVolumeQuery)) {
       if (!result.data || !result.data.marginPositionReduceds.length) {
         break
       }
