@@ -522,7 +522,7 @@ const TradeTabContent = () => {
       .then(async (hash) => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
 
-        if (trade && inputCurrency && outputCurrency) {
+        if (trade && fiatValueTradeMargin && inputCurrency && outputCurrency) {
           try {
             let tokenAmount = trade.marginInInput.toNumber()
           
@@ -532,7 +532,8 @@ const TradeTabContent = () => {
             const priceUSD = result.lastPriceUSD
             const timestamp = Math.floor(Date.now() / 1000)
             const type = "ADD"
-            const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
+            const volume = fiatValueTradeMargin.data
+            // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
   
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolId,

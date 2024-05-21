@@ -397,13 +397,14 @@ export default function DecreasePositionContent({
           timestamp: new Date().getTime().toString(),
         })
         try {
-          if (pool) {
+          if (pool && fiatValueReduceAmount) {
             const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
             const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee) 
             const priceUSD = result.lastPriceUSD
             const timestamp = Math.floor(Date.now() / 1000)
             const type = "REDUCE"
-            const volume = (parseFloat(priceUSD) * parseFloat(reduceAmount)).toFixed(10)
+            const volume = fiatValueReduceAmount.data
+            // const volume = (parseFloat(priceUSD) * parseFloat(freduceAmount)).toFixed(10)
 
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolId,
