@@ -7,9 +7,10 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
+import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -20,7 +21,9 @@ const PageWrapper = styled.div`
   height: 100%;
   min-width: 800px;
   margin: auto;
-`
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    min-width: 360px;
+  }`
 const LeaderboardWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -32,12 +35,16 @@ const LeaderboardWrapper = styled.div`
 // Achievements
 const AchievementsWrapper = styled.div`
   width: 100%;
-  height: 200px;
 `
 const AchievementsBoxWrapper = styled.div`
   display: flex;
   gap: 20px;
   margin: 18px 0;
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+  }
 `
 const AchievementsBox = styled.div`
   display: flex;
@@ -48,6 +55,22 @@ const AchievementsBox = styled.div`
   height: 160px;
   padding: 16px;
   gap: 15px;
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    width: 85%;
+    height: 30px;
+    gap: 0;
+  }
+`
+const AchievementTitle = styled(ThemedText.HeadlineSmall)`
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    font-size: 16px !important;
+  }
+`
+
+const AchievementDesc = styled(ThemedText.BodyPrimary)`
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    font-size: 12px !important;
+  }
 `
 
 const PriceBox = styled.div`
@@ -103,10 +126,9 @@ const PointsWrapper = styled.div`
   margin-top: 15px;
   margin-bottom: 1rem;
   margin-left: 6%;
-  // border: solid 1px ${({ theme }) => theme.backgroundOutline};
   border-radius: 10px;
-  // background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 7px 0;
+  margin: auto;
 `
 
 const Filter = styled.div`
@@ -147,9 +169,12 @@ const BannerWrapper = styled.div`
   width: 88%;
   border-radius: 12px;
   padding: 16px;
-  background-position: center;
-  background-size: cover;
-  /* background-image: linear-gradient(to bottom, rgba(7, 7, 7, 0.5) 40%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%), url(${banner}); */
+  @media only screen and (max-width: ${BREAKPOINTS.xs}px) {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `
 const Banner = styled.img`
   width: 100%;
@@ -172,6 +197,10 @@ const BannerTextWrapper = styled.div`
   top: 50%;
   transform: translate(-50%, -50%);
   margin-left: -5px;
+
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}px) {
+    position: static;
+  }
 `
 
 const BannerText = styled.h1`
@@ -180,6 +209,19 @@ const BannerText = styled.h1`
   margin-bottom: 10px;
   white-space: nowrap;
   color: ${({ theme }) => theme.accentTextLightPrimary};
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    font-size: 36px;
+  }
+`
+
+const BannerSubText = styled.h3`
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.textSecondary};
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    font-size: 16px;
+  }
 `
 
 const BannerBtn = styled.button`
@@ -197,11 +239,18 @@ const BannerBtn = styled.button`
   &:hover {
     background-color: ${({ theme }) => theme.accentTextDarkPrimary};
   }
+  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    font-size: 14px;
+    width: 180px;
+    padding: 10px;
+  }
 `
 
 const BannerBtnWrapper = styled.div`
   margin-top: 15px;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 25px;
 `
 
@@ -246,9 +295,9 @@ export default function LeaderboardPage() {
         <BannerWrapper>
           <BannerTextWrapper>
             <BannerText>LMT Season 1</BannerText>
-            <ThemedText.BodySecondary marginTop="6px" fontSize={22} fontWeight={600}>
+            <BannerSubText>
               Points are updated everyday
-            </ThemedText.BodySecondary>
+            </BannerSubText>
             <BannerBtnWrapper>
               <NavLink to="/referral">
                 <BannerBtn>Join Points Program</BannerBtn>
@@ -257,7 +306,7 @@ export default function LeaderboardPage() {
                 <BannerBtn>Find out more</BannerBtn>
               </NavLink>
             </BannerBtnWrapper>
- 
+
           </BannerTextWrapper>
         </BannerWrapper>
         <PointsWrapper>
@@ -268,22 +317,22 @@ export default function LeaderboardPage() {
             {/*<ThemedText.SubHeader>Active Achievements</ThemedText.SubHeader>*/}
             <AchievementsBoxWrapper>
               <AchievementsBox>
-                <ThemedText.HeadlineSmall color="textSecondary">Trade your way up</ThemedText.HeadlineSmall>
-                <ThemedText.BodyPrimary lineHeight={1.5}>
+                <AchievementTitle color="textSecondary">Trade your way up</AchievementTitle>
+                <AchievementDesc lineHeight={1.5}>
                   The more you trade, the higher your trade LMT rewards are.
-                </ThemedText.BodyPrimary>
+                </AchievementDesc>
               </AchievementsBox>
               <AchievementsBox>
-                <ThemedText.HeadlineSmall color="textSecondary">LP to earn yield + LMT</ThemedText.HeadlineSmall>
-                <ThemedText.BodyPrimary lineHeight={1.5}>
+                <AchievementTitle color="textSecondary">LP to earn yield + LMT</AchievementTitle>
+                <AchievementDesc lineHeight={1.5}>
                   Earn LMT by holding LLP or collecting fees as an advanced LP <br />
-                </ThemedText.BodyPrimary>
+                </AchievementDesc>
               </AchievementsBox>
               <AchievementsBox>
-                <ThemedText.HeadlineSmall color="textSecondary">Refer to earn</ThemedText.HeadlineSmall>
-                <ThemedText.BodyPrimary lineHeight={1.5}>
+                <AchievementTitle color="textSecondary">Refer to earn</AchievementTitle>
+                <AchievementDesc lineHeight={1.5}>
                   Refer others and earn a portion of your referees' LMT
-                </ThemedText.BodyPrimary>
+                </AchievementDesc>
               </AchievementsBox>
             </AchievementsBoxWrapper>
           </AchievementsWrapper>

@@ -1,7 +1,7 @@
 import { useWeb3React } from '@web3-react/core'
 import { useMemo } from 'react'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 
 import affiliate from './affiliate-marketing.png'
 import coin from './coin.png'
@@ -20,12 +20,19 @@ const Wrapper = styled.div`
     align-items: center;
     flex-wrap: wrap;
     row-gap: 1.5rem;
-    column-gap: 2.5rem;
+    column-gap: 2rem;
     & > * {
       flex-basis: auto;
       min-width: 200px;
       max-width: 250px;
     }
+  }
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(130px, 180px));
+    grid-auto-flow: row;
+    justify-content: start;
+    column-gap: 2rem;
   }
 `
 const Point = styled.div`

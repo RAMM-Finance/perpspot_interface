@@ -133,8 +133,11 @@ const MainWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
   gap: 0.7rem;
-
   @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  @media only screen and (max-width: 1400px) {
     display: flex;
     flex-wrap: wrap;
   }
@@ -332,7 +335,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
                 </NewOrHotStatusText>
               </NewOrHotWrapper>
             ) : (
-              <NewOrHotStatusText fontWeight={600} paddingBottom="7px" fontSize={14}>
+              <NewOrHotStatusText fontWeight={600} paddingBottom="2px" fontSize={14}>
                 {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
               </NewOrHotStatusText>
             ))}
