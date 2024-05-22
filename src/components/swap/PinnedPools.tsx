@@ -141,7 +141,9 @@ export function PinnedPools({
   const theme = useTheme()
   return (
     <PinnedWrapper>
-      <TitleWrapper>User Pools:</TitleWrapper>
+      <TitleWrapper>
+        <ThemedText.LabelSmall>Pinned:</ThemedText.LabelSmall>
+      </TitleWrapper>
       <Wrapper>
         {pinnedPools?.map((poolKey) => {
           const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`

@@ -165,7 +165,7 @@ const MainWrapper = styled.article`
   margin-top: 0.75rem;
 
   grid-column-gap: 0.75rem;
-  grid-template-rows: 4vh 50vh 30vh;
+  grid-template-rows: 3vh 50vh 30vh;
 
   @media only screen and (max-width: 1265px) {
     grid-template-columns: 1fr 0 360px;
@@ -257,6 +257,10 @@ const PinWrapper = styled.div`
   grid-column: 1 / 3;
   grid-row: 1;
   height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
 `
 
 export default function Trade({ className }: { className?: string }) {
