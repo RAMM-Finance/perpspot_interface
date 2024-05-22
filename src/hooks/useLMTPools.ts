@@ -15,7 +15,7 @@ import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { firestore } from 'firebaseConfig'
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 
@@ -77,16 +77,20 @@ export function usePoolsData(): {
           where('timestamp', '>=', timestamp),
           where('type', '==', 'REDUCE')
         )
-        const [addQuerySnapshot, reduceQuerySnapshot] = await Promise.all([
+
+        const queryPrevPrice = query(
+          collection(firestore, 'priceUSD-from-1716269264')
+        )
+
+        const [addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           getDocs(queryAdd),
-          getDocs(queryReduce)
+          getDocs(queryReduce),
+          getDocs(queryPrevPrice)
         ])
 
         const addData = addQuerySnapshot.docs.map(doc => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map(doc => doc.data())
-
-        // setAddFirebaseData(addData)
-        // setReduceFirebaseData(reduceData)
+        const prevPriceData = prevPriceQuerySnapshot.docs.map(doc => doc.data())
 
         const pools = new Set<string>()
         ProvidedQueryData?.forEach((entry: any) => {
@@ -103,10 +107,27 @@ export function usePoolsData(): {
             if (token) {
               const poolAdress = ethers.utils.getAddress(pool)
               if (!uniqueTokens_.has(poolAdress)) {
+
                 const [value0, value1] = await Promise.all([
                   getDecimalAndUsdValueData(chainId, token[0]),
                   getDecimalAndUsdValueData(chainId, token[1]),
                 ])
+
+                // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
+
+                // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
+                //   poolId: poolId,
+                //   token0: token[0],
+                //   token1: token[1],
+                //   token0Price: value0.lastPriceUSD,
+                //   token1Price: value1.lastPriceUSD,
+                //   token0Decimals: value0.decimals,
+                //   token1Decimals: value1.decimals,
+                //   token0Symbol: value0.symbol,
+                //   token1Symbol: value1.symbol
+                // })
+
+
                 uniqueTokens_.set(poolAdress, [
                   ethers.utils.getAddress(token[0]),
                   ethers.utils.getAddress(token[1]),
@@ -120,6 +141,7 @@ export function usePoolsData(): {
           })
         )
 
+
         return {
           uniquePools: Array.from(pools),
           uniqueTokens: uniqueTokens_,
@@ -129,6 +151,7 @@ export function usePoolsData(): {
           withdrawnData: WithdrawnQueryData,
           addedVolumes: addData,
           reducedVolumes: reduceData,
+          prevPriceData: prevPriceData,
           useQueryChainId: chainId,
         }
       } catch (err) {
@@ -160,7 +183,7 @@ export function usePoolsData(): {
     
     if (isLoading || isError || !data) return undefined
 
-    const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, addedVolumes, reducedVolumes, useQueryChainId } = data
+    const { uniquePools, uniqueTokens, providedData, withdrawnData, addData, reduceData, addedVolumes, reducedVolumes, prevPriceData, useQueryChainId } = data
 
     if (chainId !== useQueryChainId) return undefined
 
@@ -272,16 +295,27 @@ export function usePoolsData(): {
         const tokens = uniqueTokens?.get(pool)
         let totalValue
 
-        if (tokens[3]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (tokens[3].lastPriceUSD * entry.amount) / 10 ** tokens[3].decimals
-        } else if (tokens[4]?.id.toString().toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (tokens[4].lastPriceUSD * entry.amount) / 10 ** tokens[4].decimals
+
+        const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
+
+        const data = prevPriceData?.find((entry: any) => entry.poolId === newKey)
+        
+        const token0Addr = data?.token0
+        const token1Addr = data?.token1
+        const token0PriceUSD = data?.token0Price
+        const token1PriceUSD = data?.token1Price
+        const token0Decimals = data?.token0Decimals
+        const token1Decimals = data?.token1Decimals
+
+        if (token0Addr.toLowerCase() === entry.token.toString().toLowerCase()) {
+          totalValue = (token0PriceUSD * entry.amount) / 10 ** token0Decimals
+        } else if (token1Addr.toLowerCase() === entry.token.toString().toLowerCase()) {
+          totalValue = (token1PriceUSD * entry.amount) / 10 ** token1Decimals
         } else {
           totalValue = 0
         }
 
-        // const newKey = `${tokens[0]}-${tokens[1]}-${tokens[2]}`
-        const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
+
         if (totalAmountsByPool[newKey]) {
           totalAmountsByPool[newKey] += totalValue
         } else {
@@ -298,7 +332,6 @@ export function usePoolsData(): {
       let totalVolume
       if (entry.type === "ADD") {
         if (totalAmountsByPool[entry.poolId]) {
-          console.log("ENTRY ADD", entry.volume)
           totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
         }
         else {
@@ -306,7 +339,6 @@ export function usePoolsData(): {
         }
       } else if (entry.type === "REDUCE") {
         if (totalAmountsByPool[entry.poolId]) {
-          console.log("ENTRY REDUCE", entry.volume)
           totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
         }
         else {
