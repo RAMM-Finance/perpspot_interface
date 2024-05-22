@@ -64,7 +64,7 @@ export function useTokenBalancesWithLoadingIndicator(
   )
   // console.log("validatedTokens: ", validatedTokens)
   const validatedTokenAddresses = useMemo(() => validatedTokens.map((vt) => vt.address), [validatedTokens])
-  
+
   const balances = useMultipleContractSingleData(
     validatedTokenAddresses,
     ERC20Interface,

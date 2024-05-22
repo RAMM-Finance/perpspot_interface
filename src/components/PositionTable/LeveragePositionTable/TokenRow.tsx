@@ -659,6 +659,7 @@ export const LoadedRow = memo(
     // PnL in input/collateral token
     const PnL = useMemo(() => {
       if (!currentPrice || !entryPrice) return undefined
+
       return details.totalPosition.times(currentPrice.minus(entryPrice))
     }, [details, entryPrice, currentPrice])
 
@@ -667,6 +668,15 @@ export const LoadedRow = memo(
       if (!PnL || !details.premiumLeft) return undefined
       return PnL.minus(details.premiumOwed)
     }, [details, PnL])
+
+    const PnLPercentage = useMemo(() => {
+      if (!currentPrice || !PnL || !details) return undefined
+      if (details.marginInPosToken) {
+        return ((new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) * 100).toFixed()
+      } else {
+        return ((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
+      }
+    }, [currentPrice, PnL, details])
 
     const pnlInfo = useMemo(() => {
       if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums) {
@@ -687,6 +697,8 @@ export const LoadedRow = memo(
     if (loading) {
       return <LoadingRow />
     }
+
+    console.log('here', formatBNToString(PnL, NumberType.SwapTradeAmount), details.marginInPosToken)
 
     return (
       <>
@@ -834,15 +846,22 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
                           {PnL &&
-                            `${formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)} `}
+                          Number(formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)) >
+                            0
+                            ? (Number(
+                                formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)
+                              ) /
+                                0.9) *
+                              Number(new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber())
+                            : PnL &&
+                              `${formatBNToString(
+                                new BN(1).div(currentPrice).times(PnL),
+                                NumberType.SwapTradeAmount
+                              )} `}
                         </DeltaText>
                         <div>
                           <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                            {PnL &&
-                              `(${(
-                                (new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) *
-                                100
-                              ).toFixed(2)}%)`}
+                            {PnL && `(${PnLPercentage}%)`}
                           </DeltaText>
                           {' ' + outputCurrency?.symbol}
                         </div>
@@ -850,11 +869,14 @@ export const LoadedRow = memo(
                     ) : (
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
+                          {PnL && Number(formatBNToString(PnL, NumberType.SwapTradeAmount)) > 0
+                            ? (Number(formatBNToString(PnL, NumberType.SwapTradeAmount)) / 0.9) *
+                              Number(PnL.toNumber() / details.margin.toNumber())
+                            : PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
                         </DeltaText>
                         <div>
                           <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                            {PnL && `(${((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)} %)`}
+                            {PnL && `(${PnLPercentage} %)`}
                           </DeltaText>
                           {' ' + inputCurrency?.symbol}
                         </div>
@@ -929,7 +951,12 @@ export const LoadedRow = memo(
                     <ActionText>Info</ActionText>
                   </SmallButtonPrimary>
                   <SmallButtonPrimary
-                    style={{ height: '40px', minWidth:'140px', lineHeight: '15px', background: `${theme.backgroundOutline}` }}
+                    style={{
+                      height: '40px',
+                      minWidth: '140px',
+                      lineHeight: '15px',
+                      background: `${theme.backgroundOutline}`,
+                    }}
                     onClick={handlePoolSelect}
                   >
                     <ActionText>Set Current Pair</ActionText>

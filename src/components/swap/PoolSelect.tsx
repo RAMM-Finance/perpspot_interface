@@ -602,9 +602,9 @@ function SelectPool() {
 
   const { poolList: aprPoolList } = usePoolsAprUtilList()
   const apr = useMemo(() => {
-    if (!aprPoolList || !poolId) return undefined
+    if (!aprPoolList || !poolId || aprPoolList) return undefined
     else {
-      return aprPoolList[poolId].apr
+      return aprPoolList[poolId]['apr']
     }
   }, [aprPoolList, poolId])
 
