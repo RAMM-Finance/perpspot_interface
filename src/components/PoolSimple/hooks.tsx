@@ -53,17 +53,18 @@ export const useVaultStaticRedeemAnyToken = (
   enabled: boolean,
   baseCurrency?: string,
   amountIn?: string,
-  account?: string
+  account?: string,
+  decimals?: number
 ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
   const calldata = useMemo(() => {
-    if (!baseCurrency || !amountIn || !account || !enabled) return undefined
+    if (!baseCurrency || !amountIn || !account || !enabled || !decimals) return undefined
     return LPVaultSDK.INTERFACE.encodeFunctionData('redeemToAnyToken', [baseCurrency, amountIn, account, account])
-  }, [baseCurrency, amountIn, account, enabled])
+  }, [baseCurrency, amountIn, account, enabled, decimals])
 
   const { result, error, loading } = useContractCallV2(LMT_VAULT, calldata, ['redeemToAnyToken'], true, enabled)
 
   return useMemo(() => {
-    if (!result || !enabled) {
+    if (!result || !enabled || !decimals) {
       return {
         result: undefined,
         error,
@@ -73,7 +74,7 @@ export const useVaultStaticRedeemAnyToken = (
       try {
         const parsed = LPVaultSDK.INTERFACE.decodeFunctionResult('redeemToAnyToken', result)
         return {
-          result: new BN(parsed[0].toString()).shiftedBy(-18).toNumber(),
+          result: new BN(parsed[0].toString()).shiftedBy(-decimals).toNumber(),
           error,
           loading,
         }
@@ -85,7 +86,7 @@ export const useVaultStaticRedeemAnyToken = (
         }
       }
     }
-  }, [result, error, loading, enabled])
+  }, [result, error, loading, enabled, decimals])
 }
 
 export const useLimWethStaticDeposit = (
