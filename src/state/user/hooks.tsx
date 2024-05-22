@@ -273,39 +273,65 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
   )
 }
 
-export function useAddPinnedPool(): (poolKey: PoolKey) => void {
-  const dispatch = useAppDispatch()
-  const { chainId } = useWeb3React()
-  return useCallback(
-    (poolKey: PoolKey) => {
-      // chainId && dispatch(updatePinnedPools({ add: true, poolKey, index: 0, chainId }))
-    },
-    [dispatch, chainId]
-  )
-}
+// export function useAddPinnedPool(): (poolKey: PoolKey) => void {
+//   // const dispatch = useAppDispatch()
+//   const { chainId } = useWeb3React()
 
-export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
-  const dispatch = useAppDispatch()
-  const { chainId } = useWeb3React()
-  return useCallback(
-    (poolKey: PoolKey) => {
-      // chainId && dispatch(updatePinnedPools({ add: false, poolKey, chainId }))
-    },
-    [dispatch, chainId]
-  )
-}
+//   return useCallback(
+//     (poolKey: PoolKey) => {
+//       const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+//       if (chainId) {
+//         if (!localStorage.getItem('userPools')) {
+//           localStorage.setItem('userPools', JSON.stringify([`${chainId}-${poolId}`]))
+//         } else {
+//           const userPools = JSON.parse(localStorage.getItem('userPools') ?? '[]')
+//           localStorage.setItem('userPools', JSON.stringify([...userPools, `${chainId}-${poolId}`]))
+//         }
+//       }
+//     },
+//     [chainId]
+//   )
+// }
 
-export function usePinnedPools(): PoolKey[] {
-  const { chainId } = useWeb3React()
-  return useAppSelector((state) => {
-    return []
-    // if (chainId && state.user.pinnedKeys[chainId]) {
-    //   return state.user.pinnedKeys[chainId]
-    // } else {
-    //   return []
-    // }
-  })
-}
+// export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
+//   // const dispatch = useAppDispatch()
+//   const { chainId } = useWeb3React()
+//   return useCallback(
+//     (poolKey: PoolKey) => {
+//       const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+//       if (chainId) {
+//         if (localStorage.getItem('userPools')) {
+//           const userPools = JSON.parse(localStorage.getItem('userPools') ?? '[]')
+//           localStorage.setItem(
+//             'userPools',
+//             JSON.stringify(userPools.filter((p: string) => p !== `${chainId}-${poolId}`))
+//           )
+//         }
+//       }
+//     },
+//     [chainId]
+//   )
+// }
+
+// export function usePinnedPools(): PoolKey[] {
+//   const { chainId } = useWeb3React()
+//   // const [poolKeys, setPoolsKeys] = useState<PoolKey[]>([])
+//   const allIds = localStorage.getItem('userPools') ? JSON.parse(localStorage.getItem('userPools') ?? '[]') : []
+
+//   return useMemo(() => {
+//     if (!chainId) return []
+//     return allIds
+//       .filter((id: string) => id.startsWith(`${chainId}-`))
+//       .map((id: string) => {
+//         const [chainId, token0, token1, fee] = id.split('-')
+//         return {
+//           token0,
+//           token1,
+//           fee: parseInt(fee),
+//         }
+//       })
+//   }, [allIds, chainId])
+// }
 
 export function useUserSlippedTickTolerance(): [Percent | 'auto', (slippageTolerance: Percent | 'auto') => void] {
   const userSlippedTickToleranceRaw = useAppSelector((state) => {

@@ -4,13 +4,12 @@ import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import { useCurrentPool, useRemovePinnedPool, useSetCurrentPool } from 'state/user/hooks'
-import styled from 'styled-components'
+import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
+import styled, { useTheme } from 'styled-components'
 import { ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 
 import { FilledStar } from './PoolSelect'
-// import { RawPoolKey } from 'types/lmtv2position'
 
 const Wrapper = styled.div`
   display: flex;
@@ -21,13 +20,15 @@ const Wrapper = styled.div`
   overflow-x: auto;
   align-items: start;
 `
+const IconWrapper = styled.img``
 
 const ItemWrapper = styled.div`
   display: flex;
   flex-direction: row;
+
   align-items: start;
   justify-content: space-between;
-  padding: 0.2rem 1rem;
+  padding: 0.5rem 1rem;
   width: fit-content;
   margin-right: 0.5rem;
   height: 100%;
@@ -54,7 +55,7 @@ const DeltaText = styled.span<{ delta: number | undefined }>`
     delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
 `
 
-const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
+const PinnedPool = ({ poolKey, removePinnedPool }: { poolKey: PoolKey; removePinnedPool: (i: PoolKey) => void }) => {
   const { onPremiumCurrencyToggle, onMarginChange, onSetMarginInPosToken, onSetIsSwap } =
     useMarginTradingActionHandlers()
 
@@ -80,7 +81,6 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const setCurrentPool = useSetCurrentPool()
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
-  const remove = useRemovePinnedPool()
 
   const handleRowClick = useCallback(() => {
     if (token0 && token1 && poolId !== id && token0.symbol && token1.symbol && poolOHLCData) {
@@ -106,15 +106,16 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   const unpinPool = useCallback(
     (e: any) => {
       e.stopPropagation()
-      remove(poolKey)
+      removePinnedPool(poolKey)
     },
-    [poolKey, remove]
+    [poolKey, removePinnedPool]
   )
 
   if (!pool || !baseQuoteSymbol) return null
   return (
     <ItemWrapper onClick={handleRowClick}>
       <StarWrapper onClick={unpinPool} style={{ marginRight: '8px' }}>
+        {/* <WhitePin2 fill="white" /> */}
         <FilledStar />
       </StarWrapper>
       <PoolLabelWrapper style={{ marginRight: '8px' }}>
@@ -130,18 +131,21 @@ const PinnedPool = ({ poolKey }: { poolKey: PoolKey }) => {
   )
 }
 
-export function PinnedPools({ pinnedPools }: { pinnedPools: PoolKey[] }) {
+export function PinnedPools({
+  pinnedPools,
+  removePinnedPool,
+}: {
+  pinnedPools: PoolKey[]
+  removePinnedPool: (i: PoolKey) => void
+}) {
+  const theme = useTheme()
   return (
     <PinnedWrapper>
-      <TitleWrapper>
-        <ThemedText.DeprecatedLabel fontSize="14px" color="textSecondary">
-          Pinned Pools
-        </ThemedText.DeprecatedLabel>
-      </TitleWrapper>
+      <TitleWrapper>User Pools:</TitleWrapper>
       <Wrapper>
         {pinnedPools?.map((poolKey) => {
           const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-          return <PinnedPool key={id} poolKey={poolKey} />
+          return <PinnedPool key={id} poolKey={poolKey} removePinnedPool={removePinnedPool} />
         })}
       </Wrapper>
     </PinnedWrapper>
@@ -150,10 +154,17 @@ export function PinnedPools({ pinnedPools }: { pinnedPools: PoolKey[] }) {
 
 const PinnedWrapper = styled.div`
   display: flex;
+  flex-direction: row;
   align-items: center;
+  padding: 0.5rem;
+  padding-top: 0;
+  justify-content: start;
 `
 
 const TitleWrapper = styled.div`
-  min-width: 120px;
-  margin-left: 10px;
+  margin-left: 30px;
+  margin-right: 10px;
+  padding: 0.5rem;
+  width: 150px;
+  height: 100%;
 `

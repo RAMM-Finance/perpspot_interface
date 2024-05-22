@@ -7,6 +7,8 @@ import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
+import { PinnedPools } from 'components/swap/PinnedPools'
 import SelectPool from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
 import TradeNavigation from 'components/swap/TradeNavigation'
@@ -18,7 +20,7 @@ import { useCurrency } from 'hooks/Tokens'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
-import React, { useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
@@ -28,7 +30,7 @@ import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS } from 'theme'
-import { MarginPositionDetails } from 'types/lmtv2position'
+import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -153,16 +155,17 @@ const SwapHeaderWrapper = styled.div`
   grid-column: 1;
   grid-row: 2;
 `
-
-const MainWrapper = styled.article<{ pins: boolean }>`
+// grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
+const MainWrapper = styled.article`
   width: 100%;
   height: 100%;
   display: grid;
   grid-template-columns: 1.6fr 0fr 365px;
 
   margin-top: 0.75rem;
-  grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
+
   grid-column-gap: 0.75rem;
+  grid-template-rows: 4vh 50vh 30vh;
 
   @media only screen and (max-width: 1265px) {
     grid-template-columns: 1fr 0 360px;
@@ -261,6 +264,60 @@ export default function Trade({ className }: { className?: string }) {
 
   const { account, chainId } = useWeb3React()
   const { isSwap } = useMarginTradingState()
+
+  const [userPools, setUserPools] = useState<PoolKey[]>([])
+
+  useEffect(() => {
+    if (chainId) {
+      const allIds = JSON.parse(localStorage.getItem('userPools') || '[]')
+      setUserPools(
+        allIds
+          .filter((id: string) => id.startsWith(`${chainId}-`))
+          .map((id: string) => {
+            const [chainId, token0, token1, fee] = id.split('-')
+            return {
+              token0,
+              token1,
+              fee: parseInt(fee),
+            }
+          })
+      )
+    }
+  }, [chainId])
+
+  const addUserPool = useCallback(
+    (poolKey: PoolKey) => {
+      const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+      if (chainId) {
+        const id = `${chainId}-${poolId}`
+        setUserPools((prev) => {
+          if (!localStorage.getItem('userPools')) {
+            localStorage.setItem('userPools', JSON.stringify([id]))
+          } else {
+            const userPools = JSON.parse(localStorage.getItem('userPools') ?? '[]')
+            localStorage.setItem('userPools', JSON.stringify([...userPools, `${chainId}-${poolId}`]))
+          }
+          return prev.includes(poolKey) ? prev : [...prev, poolKey]
+        })
+      }
+    },
+    [chainId, setUserPools]
+  )
+
+  const removeUserPool = useCallback(
+    (poolKey: PoolKey) => {
+      const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+      if (chainId) {
+        const id = `${chainId}-${poolId}`
+        setUserPools((prev) => {
+          const userPools = JSON.parse(localStorage.getItem('userPools') ?? '[]')
+          localStorage.setItem('userPools', JSON.stringify(userPools.filter((_poolId: string) => _poolId !== id)))
+          return prev.filter((pool) => getPoolId(pool.token0, pool.token1, pool.fee) !== poolId)
+        })
+      }
+    },
+    [chainId, setUserPools]
+  )
 
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
@@ -379,15 +436,18 @@ export default function Trade({ className }: { className?: string }) {
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
-  const isPin = false
+  // const pinnedPools = usePinnedPools()
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
         {/* {warning ? null : <Disclaimer setWarning={setWarning} />} */}
-        <MainWrapper pins={isPin}>
-          <PinWrapper>{/* <PinnedPools pinnedPools={pinnedPools} /> */}</PinWrapper>
+        <MainWrapper>
+          <PinWrapper>
+            <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />
+          </PinWrapper>
           <SwapHeaderWrapper>
-            <SelectPool />
+            <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">

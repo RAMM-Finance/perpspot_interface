@@ -39,9 +39,11 @@ export interface UserState {
   // deadline set by user in minutes, used in all txns
   userDeadline: number
 
-  favorites: {
-    [chainId: number]: string[]
-  }
+  // favorites: {
+  //   [chainId: number]: string[]
+  // }
+
+  // userPools: string[] // each item is chainId-poolId
 
   tokens: {
     [chainId: number]: {
@@ -92,7 +94,7 @@ export const initialState: UserState = {
   tokens: {},
   pairs: {},
   // pinnedKeys: {},
-  favorites: {},
+  // favorites: {},
   currentPoolKeys: {},
   timestamp: currentTimestamp(),
   URLWarningVisible: true,
@@ -127,51 +129,6 @@ const userSlice = createSlice({
       if (state.currentPoolKeys[action.payload.chainId]) {
         state.currentPoolKeys[action.payload.chainId].token0IsBase = action.payload.token0IsBase
       }
-    },
-    addPinnedPools(state, action) {
-      // const { chainId, token0, token1, fee } = action.payload
-      // const poolId = getPoolId(token0, token1, fee)
-      return state
-
-      // if (!state.favorites[chainId]) {
-
-      //   return {
-      //     ...state,
-      //     favorites: {
-      //       ...state.favorites,
-      //       [chainId]: [poolId],
-      //     },
-      //   }
-      // }
-
-      // if (state.favorites[chainId].includes(poolId)) {
-      //   return state // Pool already exists in favorites, no need to modify state
-      // }
-
-      // return {
-      //   ...state,
-      //   favorites: {
-      //     ...state.favorites,
-      //     [chainId]: [...state.favorites[chainId], poolId],
-      //   },
-      // }
-    },
-
-    removePinnedPools(state, action) {
-      return state
-      // const { chainId, token0, token1, fee } = action.payload
-      // const poolId = getPoolId(token0, token1, fee)
-      // if (!state.favorites[chainId]) {
-      //   return state // No pools to remove, return current state
-      // }
-      // const updatedPools = state.favorites[chainId].filter((id) => id !== poolId)
-      // return {
-      //   ...state,
-      //   favorites: {
-      //     ...state.favorites,
-      //     [chainId]: updatedPools,
-      //   },
-      // }
     },
     setInputCurrency(state, action) {
       if (state.currentPoolKeys[action.payload.chainId]) {
@@ -254,6 +211,12 @@ const userSlice = createSlice({
       if (!state.userLimitDeadline) {
         state.userLimitDeadline = DEFAULT_LIMIT_DEADLINE_FROM_NOW
       }
+
+      // if (!state.userPools) {
+      //   state.userPools = []
+      // }
+
+      // localStorage.removeItem('userPools')
 
       // remove on launch
       // state.currentPoolKeys = {}
