@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { SmallButtonPrimary } from 'components/Button'
+import { ResponsiveButton, SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Row, { RowBetween, RowFixed } from 'components/Row'
@@ -91,7 +91,7 @@ const StyledTokenRow = styled.div<{
   @media only screen and (max-width: 1400px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
     /* grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px; */
-    grid-template-columns: 90px 100px 90px 90px 100px 135px 90px 70px;
+    grid-template-columns: 90px 100px 90px 90px 100px 135px 1fr 90px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -950,7 +950,7 @@ export const LoadedRow = memo(
                   >
                     <ActionText>Info</ActionText>
                   </SmallButtonPrimary>
-                  <SmallButtonPrimary
+                  <ResponsiveButton
                     style={{
                       height: '40px',
                       minWidth: '140px',
@@ -960,7 +960,7 @@ export const LoadedRow = memo(
                     onClick={handlePoolSelect}
                   >
                     <ActionText>Set Current Pair</ActionText>
-                  </SmallButtonPrimary>
+                  </ResponsiveButton>
                 </Row>
               }
             />
