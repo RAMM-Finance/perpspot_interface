@@ -44,8 +44,6 @@ function detectEthereumProvider<T = BitKeepEthereumProvider>({
 
   return new Promise((resolve) => {
       if ((window as Window)?.bitkeep?.ethereum) {
-        console.log("BITKEEP>ETHE@@@@@@@@@@")
-        console.log(window.bitkeep)
           handleEthereum();
 
       } else {
@@ -67,13 +65,11 @@ function detectEthereumProvider<T = BitKeepEthereumProvider>({
               return;
           }
           handled = true;
-          console.log("HNADLE ETHE")
           window.removeEventListener('ethereum#initialized', handleEthereum);
 
           const { bitkeep } = (window as Window);
 
           if (bitkeep?.ethereum && (!mustBeBitKeep || bitkeep.ethereum.isBitKeep)) {
-            console.log("BITKPEEE OKE")
               resolve(bitkeep.ethereum as unknown as T);
           } else {
 

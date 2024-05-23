@@ -68,14 +68,10 @@ export class BitKeep extends Connector {
   }
 
   private async isomorphicInitialize(): Promise<void> {
-    console.log(this.eagerConnection)
       if (this.eagerConnection) return
-      console.log("HEREE!!")
 
       return (this.eagerConnection = detectEthereumProvider().then(async (provider: any) => {
-        console.log("OKKK")
           // const provider = await m.default(this.options)
-          console.log("PROVIDER", provider)
           if (provider) {
               this.provider = provider as unknown as BitKeepProvider
               if (this.provider.providers?.length) {
@@ -110,7 +106,6 @@ export class BitKeep extends Connector {
   /** {@inheritdoc Connector.connectEagerly} */
   public async connectEagerly(): Promise<void> {
       const cancelActivation = this.actions.startActivation()
-    console.log("CONNECT EAG")
       await this.isomorphicInitialize()
       if (!this.provider) return cancelActivation()
 
@@ -146,7 +141,6 @@ export class BitKeep extends Connector {
   public async activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<void> {
       let cancelActivation: () => void
       if (!this.provider?.isConnected?.()) cancelActivation = this.actions.startActivation()
-        console.log("ACTV")
       return this.isomorphicInitialize()
           .then(async () => {
               if (!this.provider) throw new NoBitKeepError()
@@ -358,7 +352,6 @@ const coinbaseWalletConnection: Connection = {
 const [bitgetWallet, bitgetWalletHooks] = initializeConnector<BitKeep>(
   (actions) => new BitKeep({ actions, onError })
 )
-console.log("BITGET WALLET", bitgetWallet)
 
 const bitgetWalletConnection: Connection = {
   getName: () => 'Bitget Wallet',
