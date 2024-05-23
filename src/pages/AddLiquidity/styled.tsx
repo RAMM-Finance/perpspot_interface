@@ -5,17 +5,19 @@ import { BodyWrapper } from 'pages/AppBody'
 import styled from 'styled-components/macro'
 
 import { ButtonError, ButtonPrimary } from '../../components/Button'
+import { BREAKPOINTS } from 'theme'
+import { RowBetween } from 'components/Row'
 
 export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
-  max-width: ${({ wide }) => (wide ? '1200px' : '800px')};
+  width: ${({ wide }) => (wide ? '1200px' : '800px')};
   background-color: ${({ theme }) => theme.backgroundSurface};
-  width: 100%;
 
   padding: ${({ wide }) => (wide ? '10px' : '0')};
 
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    min-width: 520px;
-  `};
+  @media only screen and (max-width: ${BREAKPOINTS.lg}px) {
+    flex-direction: column;
+    width: fit-content;
+  }
 `
 export const Wrapper = styled.div`
   position: relative;
@@ -34,11 +36,6 @@ export const ScrollablePage = styled.div`
   flex-direction: column;
   width: 90%;
   height: auto;
-/* 
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
-    max-width: 480px;
-    margin: 0 auto;
-  `}; */
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.md}px`}) {
     padding: 48px 8px 0px;
@@ -46,8 +43,6 @@ export const ScrollablePage = styled.div`
 
   @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.sm}px`}) {
     padding-top: 20px;
-    min-width: 600px;
-    /* margin: auto; */
   }
 `
 
@@ -117,17 +112,27 @@ export const RightContainer = styled(AutoColumn)`
 `
 export const SectionWrapper = styled.div`
   display: flex;
-
   justify-content: space-around;
+
+  @media only screen and (max-width: ${BREAKPOINTS.lg}px) {
+    flex-direction: column;
+  }
 `
 
 export const LeftSection = styled(AutoColumn)`
   width: 50%;
+  @media only screen and (max-width: ${BREAKPOINTS.lg}px) {
+    width: 100%;
+  }
 `
 
 export const RightSection = styled(AutoColumn)`
   width: 40%;
   padding-top: 50px;
+  @media only screen and (max-width: ${BREAKPOINTS.lg}px) {
+    padding-top: 0;
+    width: 100%;
+  }
 `
 
 export const StackedContainer = styled.div`
@@ -150,4 +155,13 @@ export const HideMedium = styled.div`
   ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
     display: block;
   `};
+`
+
+export const PresetButtonsRow = styled(RowBetween)`
+  gap: 10px;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: start;
+  }
 `
