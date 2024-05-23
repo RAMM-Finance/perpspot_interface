@@ -117,7 +117,6 @@
     "yarn-deduplicate": "^6.0.0"
   },
   "dependencies": {
-    "@akkafinance/bitkeep-detect-provider": "^1.0.0",
     "@apollo/client": "^3.7.2",
     "@coinbase/wallet-sdk": "^3.6.4",
     "@cypress/code-coverage": "^3.10.0",
