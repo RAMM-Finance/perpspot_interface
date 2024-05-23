@@ -99,7 +99,7 @@ export const FALLBACK_URLS = {
   ],
 }
 
-const ALCHEMY_KEY = process.env.ALCHEMY_KEY
+const ALCHEMY_KEY = process.env.REACT_APP_ALCHEMY_KEY
 console.log('zeke:ALCHEMY_KEY', ALCHEMY_KEY)
 /**
  * Known JSON-RPC endpoints.
