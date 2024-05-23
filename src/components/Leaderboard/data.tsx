@@ -217,9 +217,9 @@ export function useStoredData(addresses: any) {
           const querySnapshot = await getDocs(q)
           const data = querySnapshot.docs.map((doc) => doc.data())
 
-          if (data[0] && data[0].amount) {
-            tPoints += data[0].amount
-          }
+          // if (data[0] && data[0].amount) {
+          //   tPoints += data[0].amount
+          // }
 
           const lpPoints = lpPoints_[index].toNumber()
           const rPoints = referralPoints[index].toNumber()

@@ -104,6 +104,12 @@ export const SmallButtonPrimary = styled(ButtonPrimary)`
   white-space: wrap;
 `
 
+export const ResponsiveButton = styled(SmallButtonPrimary)`
+  @media only screen and (max-width: 1400px) {
+    display: none;
+  }
+`
+
 const BaseButtonLight = styled(BaseButton)`
   background-color: ${({ theme }) => theme.accentAction};
   color: ${({ theme }) => theme.textSecondary};

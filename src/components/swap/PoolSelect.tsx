@@ -25,13 +25,7 @@ import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC, usePoolsAprUtilList } from
 import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import {
-  useAddPinnedPool,
-  useCurrentPool,
-  usePinnedPools,
-  useRemovePinnedPool,
-  useSetCurrentPool,
-} from 'state/user/hooks'
+import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
@@ -133,8 +127,11 @@ const MainWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
   gap: 0.7rem;
-
   @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  @media only screen and (max-width: 1400px) {
     display: flex;
     flex-wrap: wrap;
   }
@@ -230,7 +227,19 @@ const NewOrHotWrapper = styled.div`
   margin-top: 10px;
 `
 
-const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose: any }) => {
+const PoolSelectRow = ({
+  poolKey,
+  handleClose,
+  addPinnedPool,
+  removePinnedPool,
+  pinnedPools,
+}: {
+  poolKey: PoolKey
+  handleClose: any
+  addPinnedPool: (i: PoolKey) => void
+  removePinnedPool: (i: PoolKey) => void
+  pinnedPools: PoolKey[]
+}) => {
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
 
@@ -252,12 +261,12 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
     return `${base}/${quote}`
   }, [poolOHLCData, token0, token1, chainId])
 
-  const addPinnedPool = useAddPinnedPool()
-  const removePinnedPool = useRemovePinnedPool()
-  const pinnedPools = usePinnedPools()
+  // const addPinnedPool = useAddPinnedPool()
+  // const removePinnedPool = useRemovePinnedPool()
+  // const pinnedPools = usePinnedPools()
 
   const isPinned = useMemo(() => {
-    return pinnedPools?.some((p) => {
+    return pinnedPools.some((p) => {
       const _id = `${p.token0.toLowerCase()}-${p.token1.toLowerCase()}-${p.fee}`
       return _id === id
     })
@@ -332,7 +341,7 @@ const PoolSelectRow = ({ poolKey, handleClose }: { poolKey: PoolKey; handleClose
                 </NewOrHotStatusText>
               </NewOrHotWrapper>
             ) : (
-              <NewOrHotStatusText fontWeight={600} paddingBottom="7px" fontSize={14}>
+              <NewOrHotStatusText fontWeight={600} paddingBottom="2px" fontSize={14}>
                 {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
               </NewOrHotStatusText>
             ))}
@@ -514,7 +523,15 @@ function useFilteredKeys() {
 //   margin-right: 5px;
 // `
 
-function SelectPool() {
+function SelectPool({
+  addPinnedPool,
+  removePinnedPool,
+  pinnedPools,
+}: {
+  addPinnedPool: (i: PoolKey) => void
+  removePinnedPool: (i: PoolKey) => void
+  pinnedPools: PoolKey[]
+}) {
   const { chainId } = useWeb3React()
   // const navigate = useNavigate()
 
@@ -733,7 +750,16 @@ function SelectPool() {
             <ListWrapper>
               {filteredKeys.map((poolKey) => {
                 const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-                return <PoolSelectRow key={id} poolKey={poolKey} handleClose={handleClose} />
+                return (
+                  <PoolSelectRow
+                    key={id}
+                    poolKey={poolKey}
+                    handleClose={handleClose}
+                    addPinnedPool={addPinnedPool}
+                    removePinnedPool={removePinnedPool}
+                    pinnedPools={pinnedPools}
+                  />
+                )
               })}
             </ListWrapper>
           )}
