@@ -520,8 +520,8 @@ export function usePointsData() {
             token,
             trader,
             amount,
-            lastPriceUSD: res.lastPriceUSD,
-            decimals: res.decimals,
+            lastPriceUSD: res?.lastPriceUSD,
+            decimals: res?.decimals,
           }))
         })
         const results = await Promise.all(promises)
@@ -546,8 +546,8 @@ export function usePointsData() {
             token,
             trader,
             amount,
-            lastPriceUSD: res.lastPriceUSD,
-            decimals: res.decimals,
+            lastPriceUSD: res?.lastPriceUSD,
+            decimals: res?.decimals,
           }))
         })
         const results = await Promise.all(promises)
@@ -568,10 +568,10 @@ export function usePointsData() {
 
           return {
             ...entry,
-            token0PriceUSD: res0.lastPriceUSD,
-            token1PriceUSD: res1.lastPriceUSD,
-            token0Decimals: res0.decimals,
-            token1Decimals: res1.decimals,
+            token0PriceUSD: res0?.lastPriceUSD,
+            token1PriceUSD: res1?.lastPriceUSD,
+            token0Decimals: res0?.decimals,
+            token1Decimals: res1?.decimals,
           }
         })
 

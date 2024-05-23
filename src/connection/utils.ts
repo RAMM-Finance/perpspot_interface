@@ -10,6 +10,16 @@ export const getIsMetaMaskWallet = () =>
 
 export const getIsCoinbaseWallet = () => Boolean(window.ethereum?.isCoinbaseWallet)
 
+declare global {
+  interface Window {
+    bitkeep?: {
+      ethereum?: any
+    }
+  }
+}
+
+export const getIsBitgetWallet = () => Boolean(window.bitkeep && window.bitkeep.ethereum)
+
 // https://eips.ethereum.org/EIPS/eip-1193#provider-errors
 export enum ErrorCode {
   USER_REJECTED_REQUEST = 4001,

@@ -195,9 +195,8 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
       ) : (
         <AutoColumn gap="16px">
           <OptionGrid data-testid="option-grid">
-            {connections.map((connection) =>
-              // Hides Uniswap Wallet if mgtm is disabled
-              connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET) ? (
+            {connections.map((connection) => {
+              return connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET) ? (
                 <Option
                   key={connection.getName()}
                   connection={connection}
@@ -205,6 +204,9 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
                   pendingConnectionType={pendingConnection?.type}
                 />
               ) : null
+            }
+              // Hides Uniswap Wallet if mgtm is disabled
+              
             )}
           </OptionGrid>
           <PrivacyPolicyWrapper>
