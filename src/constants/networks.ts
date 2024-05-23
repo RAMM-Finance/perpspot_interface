@@ -100,7 +100,7 @@ export const FALLBACK_URLS = {
 }
 
 const ALCHEMY_KEY = process.env.REACT_APP_ALCHEMY_KEY
-console.log('zeke:ALCHEMY_KEY', ALCHEMY_KEY)
+
 /**
  * Known JSON-RPC endpoints.
  * These are the URLs used by the interface when there is not another available source of chain data.
