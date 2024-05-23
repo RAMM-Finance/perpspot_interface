@@ -441,11 +441,11 @@ export default function Trade({ className }: { className?: string }) {
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
   // const pinnedPools = usePinnedPools()
+  // console.log('zeke:', provider)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
-        {/* {warning ? null : <Disclaimer setWarning={setWarning} />} */}
         <MainWrapper>
           <PinWrapper>
             <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />

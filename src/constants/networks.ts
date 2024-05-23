@@ -99,6 +99,8 @@ export const FALLBACK_URLS = {
   ],
 }
 
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY
+console.log('zeke:ALCHEMY_KEY', ALCHEMY_KEY)
 /**
  * Known JSON-RPC endpoints.
  * These are the URLs used by the interface when there is not another available source of chain data.
@@ -148,6 +150,7 @@ export const RPC_URLS = {
   ],
   [SupportedChainId.BASE]: [
     // `https://base-mainnet.infura.io/v3/${INFURA_KEY}`,
+    `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`,
     ...FALLBACK_URLS[SupportedChainId.BASE],
   ],
 }
