@@ -231,7 +231,7 @@ export default function LeaderboardTable() {
   }
 
   const prevData = useStoredData(addresses)
-
+  console.log('prevData', prevData)
   const [loading, setLoading] = useState(true)
 
   const combinedData = useMemo(() => {

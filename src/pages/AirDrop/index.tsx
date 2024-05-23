@@ -368,7 +368,6 @@ const AirDropPage = () => {
     }
     call()
   }, [brp, account, blockNumber])
-
   const handleShowModal = useCallback((modalData: TBoxData) => {
     setShowModal(true)
     setCurModalData(modalData)
