@@ -74,6 +74,7 @@ import {
   MediumOnly,
   PageWrapper,
   PositionPreviewWrapper,
+  PresetButtonsRow,
   RightContainer,
   RightSection,
   ScrollablePage,
@@ -863,7 +864,7 @@ export default function AddLiquidity() {
                                   />
                                 ) : null}
                               </PriceAndToggleWrapper>
-                              <RowBetween>
+                              <PresetButtonsRow>
                                 {!noLiquidity && (
                                   <>
                                     <PresetsButtons
@@ -889,7 +890,7 @@ export default function AddLiquidity() {
                                     />
                                   </>
                                 )}
-                              </RowBetween>
+                              </PresetButtonsRow>
                               <LiquidityChartRangeInput
                                 currencyA={baseCurrency ?? undefined}
                                 currencyB={quoteCurrency ?? undefined}
