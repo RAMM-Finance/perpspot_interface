@@ -24,6 +24,7 @@ import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainer from '../../components/AirDrop/BoxesContainer'
 import InfoDescriptionSection from '../../components/AirDrop/InfoDescription'
 import { firestore } from '../../firebaseConfig'
+import { useSingleCallResult } from 'lib/hooks/multicall'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -106,8 +107,8 @@ export type TBRPData = {
 
 const AirDropPage = () => {
   const { account, chainId } = useWeb3React()
+  // const account = '0x127f723220aed8b7c89e56988c559cd6d1aa60b1'
 
-  // const account = '0x3e6b87FF2168d15794A865D09A6716415e7DbeCf'
   const blockNumber = useBlockNumber()
 
   const itemImages = [ItemImg, ItemImg2, ItemImg3, ItemImg4]
@@ -193,7 +194,11 @@ const AirDropPage = () => {
         const tx = await brp.claimBoxes(passcode, {
           from: account,
         })
-
+        
+        // const { result: reserve1, loading: loading1 } = useSingleCallResult(brp, 'claimBoxes', [
+        //   account ?? undefined,
+        // ])
+        
         return tx as TransactionResponse
       } catch (error) {
         console.error(error, 'BRP instance is not available')
@@ -245,8 +250,8 @@ const AirDropPage = () => {
 
   const handleClaimBoxes = useCallback(
     async (passcode: number | null) => {
-      if (passcode === null) return
       try {
+        if (passcode === null) throw new Error('Passcode is null')
         const res = await claimBoxesCallback(passcode)
         addTransaction(res, {
           type: TransactionType.CLAIM_BOXES,
@@ -274,6 +279,7 @@ const AirDropPage = () => {
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
         const code = docSnap.data().Passcode
+        console.log("CODE!!", code)
         setPasscode(code)
       } else {
         setIsInConcatenatedAddresses(false)
