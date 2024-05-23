@@ -657,7 +657,7 @@ export const LoadedRow = memo(
     }, [details, rate, totalDebtInput])
 
     // PnL in input/collateral token
-    const PnL = useMemo(() => {
+    const initialPnL = useMemo(() => {
       if (!currentPrice || !entryPrice) return undefined
 
       return details.totalPosition.times(currentPrice.minus(entryPrice))
@@ -665,18 +665,23 @@ export const LoadedRow = memo(
 
     // PnL in input/collateral token including premium paid thus far
     const PnLWithPremiums = useMemo(() => {
-      if (!PnL || !details.premiumLeft) return undefined
-      return PnL.minus(details.premiumOwed)
-    }, [details, PnL])
+      if (!initialPnL || !details.premiumLeft) return undefined
+      return initialPnL.minus(details.premiumOwed)
+    }, [details, initialPnL])
 
     const PnLPercentage = useMemo(() => {
-      if (!currentPrice || !PnL || !details) return undefined
+      if (!currentPrice || !initialPnL || !details) return undefined
       if (details.marginInPosToken) {
-        return ((new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber()) * 100).toFixed()
+        return ((new BN(1).div(currentPrice).times(initialPnL).toNumber() / details.margin.toNumber()) * 100).toFixed()
       } else {
-        return ((PnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
+        return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
       }
-    }, [currentPrice, PnL, details])
+    }, [currentPrice, initialPnL, details])
+
+    const PnL = useMemo(() => {
+      if (!initialPnL) return undefined
+      return initialPnL.times(0.9)
+    }, [initialPnL])
 
     const pnlInfo = useMemo(() => {
       if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums) {
@@ -848,11 +853,7 @@ export const LoadedRow = memo(
                           {PnL &&
                           Number(formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)) >
                             0
-                            ? (Number(
-                                formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)
-                              ) /
-                                0.9) *
-                              Number(new BN(1).div(currentPrice).times(PnL).toNumber() / details.margin.toNumber())
+                            ? formatBNToString(PnL, NumberType.SwapTradeAmount)
                             : PnL &&
                               `${formatBNToString(
                                 new BN(1).div(currentPrice).times(PnL),
@@ -870,8 +871,7 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
                           {PnL && Number(formatBNToString(PnL, NumberType.SwapTradeAmount)) > 0
-                            ? (Number(formatBNToString(PnL, NumberType.SwapTradeAmount)) / 0.9) *
-                              Number(PnL.toNumber() / details.margin.toNumber())
+                            ? formatBNToString(PnL, NumberType.SwapTradeAmount)
                             : PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
                         </DeltaText>
                         <div>
