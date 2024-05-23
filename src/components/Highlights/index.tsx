@@ -9,7 +9,6 @@ const Wrapper = styled.div`
   border: solid ${({ theme }) => theme.backgroundOutline};
   border-width: 1px;
   border-radius: 10px;
-  margin-top: 2rem;
   height: 150px;
   padding-top: 10px;
   padding-left: 10px;

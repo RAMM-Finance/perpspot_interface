@@ -156,7 +156,7 @@ const SwapHeaderWrapper = styled.div`
   grid-row: 2;
 `
 // grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
-const MainWrapper = styled.article`
+const MainWrapper = styled.article<{ pins?: boolean }>`
   width: 100%;
   height: 100%;
   display: grid;
@@ -165,7 +165,7 @@ const MainWrapper = styled.article`
   margin-top: 0.75rem;
 
   grid-column-gap: 0.75rem;
-  grid-template-rows: 3vh 50vh 30vh;
+  grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
 
   @media only screen and (max-width: 1265px) {
     grid-template-columns: 1fr 0 360px;
@@ -261,6 +261,7 @@ const PinWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  overflow-x: scroll;
 `
 
 export default function Trade({ className }: { className?: string }) {
@@ -446,9 +447,11 @@ export default function Trade({ className }: { className?: string }) {
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
-        <MainWrapper>
+        <MainWrapper pins={userPools && userPools.length > 0}>
           <PinWrapper>
-            <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />
+            {userPools && userPools.length > 0 && (
+              <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />
+            )}
           </PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
