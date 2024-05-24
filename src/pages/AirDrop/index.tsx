@@ -25,6 +25,8 @@ import BoxesContainer from '../../components/AirDrop/BoxesContainer'
 import InfoDescriptionSection from '../../components/AirDrop/InfoDescription'
 import { firestore } from '../../firebaseConfig'
 import { useSingleCallResult } from 'lib/hooks/multicall'
+import { SupportedChainId } from 'constants/chains'
+import SwitchNetwork from 'components/SwitchNetwork'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -421,6 +423,10 @@ const AirDropPage = () => {
           <Row margin="auto">
             <ConnectWallet />
           </Row>
+        ) : (chainId !== SupportedChainId.BASE) ? (
+          <Row margin="auto">
+            <SwitchNetwork />
+          </Row>  
         ) : (
           <CollectionDisplaySection>
             <PointWarning
