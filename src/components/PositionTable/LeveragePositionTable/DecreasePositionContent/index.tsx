@@ -398,9 +398,9 @@ export default function DecreasePositionContent({
         })
         try {
           if (pool && fiatValueReduceAmount) {
-            const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
+            // const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
             const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee) 
-            const priceUSD = result.lastPriceUSD
+            // const priceUSD = result.lastPriceUSD
             const timestamp = Math.floor(Date.now() / 1000)
             const type = "REDUCE"
             const volume = fiatValueReduceAmount.data
@@ -408,7 +408,7 @@ export default function DecreasePositionContent({
 
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolId,
-              priceUSD: priceUSD,
+              // priceUSD: priceUSD,
               timestamp: timestamp,
               type: type,
               volume: volume,

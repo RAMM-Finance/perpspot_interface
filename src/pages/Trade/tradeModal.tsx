@@ -522,14 +522,14 @@ const TradeTabContent = () => {
       .then(async (hash) => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
 
-        if (trade && fiatValueTradeMargin && inputCurrency && outputCurrency) {
+        if (trade && fiatValueTradeMargin) {
           try {
-            let tokenAmount = trade.marginInInput.toNumber()
+            // let tokenAmount = trade.marginInInput.toNumber()
           
-            const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
+            // const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
             
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
-            const priceUSD = result.lastPriceUSD
+            // const priceUSD = result.lastPriceUSD
             const timestamp = Math.floor(Date.now() / 1000)
             const type = "ADD"
             const volume = fiatValueTradeMargin.data
@@ -537,7 +537,7 @@ const TradeTabContent = () => {
   
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolId,
-              priceUSD: priceUSD,
+              // priceUSD: priceUSD,
               timestamp: timestamp,
               type: type,
               volume: volume,

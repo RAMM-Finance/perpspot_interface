@@ -91,7 +91,11 @@ export function usePoolsData(): {
         ])
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
+        const fil = addData.filter(ele => ele?.volume > 10000)
+        console.log("addData", fil)
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
+        const fil2 = reduceData.filter(ele => ele?.volume > 10000)
+        console.log("reduceData", fil2)
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         const pools = new Set<string>()
