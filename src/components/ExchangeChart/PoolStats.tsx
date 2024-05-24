@@ -10,16 +10,14 @@ import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDeta
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
-import { NftApproveForAllPartsFragmentDoc } from 'graphql/data/__generated__/types-and-hooks'
 import { useTokenContract } from 'hooks/useContract'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReactNode, useState, useEffect, useMemo } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
-import { colors } from 'theme/colors'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
 
@@ -32,11 +30,12 @@ const StatsWrapper = styled.div`
   width: 100%;
   white-space: nowrap;
   height: 35px;
+  overflow-x: scroll;
 
-  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    height: 100%;
+  // @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+  //   display: grid;
+  //   grid-template-columns: repeat(3, minmax(0, 1fr));
+  //   height: 100%;
   }
 `
 
@@ -115,20 +114,24 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
-
   // const loading = loading0 || loading1 || !reserve0 || !reserve1 || currentPrice?.isZero() || low24h?.isZero() || high24h?.isZero() || delta24h?.isZero() || volume.isZero() || tvl.isZero()
-  const loading = 
-  loading0 || 
-  loading1 || 
-  !reserve0 || 
-  !reserve1 || 
-  !currentPrice || currentPrice?.isZero() || 
-  !low24h || low24h?.isZero() || 
-  !high24h || high24h?.isZero() || 
-  !delta24h || delta24h?.isZero() || 
-  // volume.isZero() || 
-  tvl.isZero() ||
-  !usdPrice || usdPrice?.isZero()
+  const loading =
+    loading0 ||
+    loading1 ||
+    !reserve0 ||
+    !reserve1 ||
+    !currentPrice ||
+    currentPrice?.isZero() ||
+    !low24h ||
+    low24h?.isZero() ||
+    !high24h ||
+    high24h?.isZero() ||
+    !delta24h ||
+    delta24h?.isZero() ||
+    // volume.isZero() ||
+    tvl.isZero() ||
+    !usdPrice ||
+    usdPrice?.isZero()
 
   // console.log('loading0:', loading0);
   // console.log('loading1:', loading1);
@@ -142,7 +145,6 @@ export function PoolStatsSection({
   // console.log('tvl:', tvl.toNumber());
   // console.log("usd", usdPrice?.toNumber())
   // console.log("LOADING", loading)
-
 
   return (
     <StatsWrapper>
@@ -241,14 +243,14 @@ export const StatsSkeleton = () => {
     <StatsWrapper>
       <StatSkeleton
         title={
-          <ThemedText.BodySmall  color="textGrayPrimary">
+          <ThemedText.BodySmall color="textGrayPrimary">
             <Trans>Price</Trans>
           </ThemedText.BodySmall>
         }
       />
       <StatSkeleton
         title={
-          <ThemedText.BodySmall  color="textGrayPrimary">
+          <ThemedText.BodySmall color="textGrayPrimary">
             <Trans>USD Price</Trans>
           </ThemedText.BodySmall>
         }
@@ -322,7 +324,7 @@ function Stat({
   dollar,
   usdPrice,
   loading,
-  delta = false
+  delta = false,
 }: {
   dataCy: string
   value: NumericStat
@@ -334,7 +336,8 @@ function Stat({
   loading: boolean
   delta?: boolean
 }) {
-  let _value = value && value.toNumber() < 1 ? value.toNumber().toFixed(10) : (value && value.toNumber().toFixed(4)) ?? undefined
+  let _value =
+    value && value.toNumber() < 1 ? value.toNumber().toFixed(10) : (value && value.toNumber().toFixed(4)) ?? undefined
   const arrow = getDeltaArrow(value?.toNumber(), 14)
   if (value && baseQuoteSymbol) {
     _value = `${_value} ${baseQuoteSymbol}`
@@ -366,13 +369,11 @@ function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <ThemedText.BodySmall color="textSecondary">
-            ${Number(value).toFixed(8)}
-          </ThemedText.BodySmall>
+          <ThemedText.BodySmall color="textSecondary">${Number(value).toFixed(8)}</ThemedText.BodySmall>
         </StatPrice>
       </StatWrapper>
     )
-  }else {
+  } else {
     return (
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
