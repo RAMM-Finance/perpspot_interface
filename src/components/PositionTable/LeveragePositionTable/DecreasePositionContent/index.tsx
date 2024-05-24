@@ -411,7 +411,8 @@ export default function DecreasePositionContent({
               priceUSD: priceUSD,
               timestamp: timestamp,
               type: type,
-              volume: volume
+              volume: volume,
+              account: account
             })
           }
         } catch (error) {

@@ -540,7 +540,8 @@ const TradeTabContent = () => {
               priceUSD: priceUSD,
               timestamp: timestamp,
               type: type,
-              volume: volume
+              volume: volume,
+              account: account
             })
           } catch (error) {
             console.error("An error occurred:", error)
