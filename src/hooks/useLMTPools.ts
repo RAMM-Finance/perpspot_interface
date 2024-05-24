@@ -16,7 +16,7 @@ import {
   ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useQuery } from 'react-query'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
@@ -91,11 +91,7 @@ export function usePoolsData(): {
         ])
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
-        const fil = addData.filter(ele => ele?.volume > 10000)
-        console.log("addData", fil)
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
-        const fil2 = reduceData.filter(ele => ele?.volume > 10000)
-        console.log("reduceData", fil2)
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         const pools = new Set<string>()
@@ -384,11 +380,18 @@ export function usePoolsData(): {
     return poolToData
   }, [data, isError, isLoading])
 
+  const [loading, setLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    if (poolToData && isLoading)
+      setLoading(false)
+  }, [poolToData, isLoading])
+
   return useMemo(() => {
     return {
-      loading: isLoading,
+      loading: loading,
       error: isError,
       result: poolToData,
     }
-  }, [poolToData, isLoading, isError])
+  }, [poolToData, loading, isError])
 }

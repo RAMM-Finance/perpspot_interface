@@ -1,6 +1,7 @@
 export enum TokenStatus {
     HIGHER = 'New',
     BUILD = 'New',
+    KEYCAT = 'New',
     SPEC = '🔥',
     OKAYEG = '🔥',
   }

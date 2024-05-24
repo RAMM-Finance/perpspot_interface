@@ -44,6 +44,7 @@ export function PoolStatsSection({
   address0,
   address1,
   fee,
+  poolLoading
 }: // invertPrice,
 {
   poolData: any
@@ -51,6 +52,7 @@ export function PoolStatsSection({
   address1?: string
   fee?: number
   chainId?: number
+  poolLoading: boolean
   // invertPrice?: boolean
 }) {
   const { chainId } = useWeb3React()
@@ -129,22 +131,10 @@ export function PoolStatsSection({
     !delta24h ||
     delta24h?.isZero() ||
     // volume.isZero() ||
-    tvl.isZero() ||
+    // tvl.isZero() ||
+    !poolLoading ||
     !usdPrice ||
     usdPrice?.isZero()
-
-  // console.log('loading0:', loading0);
-  // console.log('loading1:', loading1);
-  // console.log('reserve0:', reserve0);
-  // console.log('reserve1:', reserve1);
-  // console.log('currentPrice:', currentPrice?.toNumber());
-  // console.log('low24h:', low24h?.toNumber());
-  // console.log('high24h:', high24h?.toNumber());
-  // console.log('delta24h:', delta24h?.toNumber());
-  // console.log('volume:', volume.toNumber());
-  // console.log('tvl:', tvl.toNumber());
-  // console.log("usd", usdPrice?.toNumber())
-  // console.log("LOADING", loading)
 
   return (
     <StatsWrapper>
