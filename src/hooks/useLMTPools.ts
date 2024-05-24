@@ -114,19 +114,9 @@ export function usePoolsData(): {
                   getDecimalAndUsdValueData(chainId, token[1]),
                 ])
 
+                // if (token[0].symbol === "NEW_SYMBOL" || token[1].symbol === "NEW_SYMBOL") {
                 // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
 
-                // console.log({
-                //   poolId: poolId,
-                //   token0: token[0],
-                //   token1: token[1],
-                //   token0Price: value0.lastPriceUSD,
-                //   token1Price: value1.lastPriceUSD,
-                //   token0Decimals: value0.decimals,
-                //   token1Decimals: value1.decimals,
-                //   token0Symbol: value0.symbol,
-                //   token1Symbol: value1.symbol
-                // })
                 // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
                 //   poolId: poolId,
                 //   token0: token[0],
@@ -138,6 +128,7 @@ export function usePoolsData(): {
                 //   token0Symbol: value0.symbol,
                 //   token1Symbol: value1.symbol
                 // })
+                // }
 
                 uniqueTokens_.set(poolAdress, [
                   ethers.utils.getAddress(token[0]),
