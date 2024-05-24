@@ -1,6 +1,7 @@
 import { SupportedChainId } from 'constants/chains'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+console.log("INFU", INFURA_KEY)
 if (typeof INFURA_KEY === 'undefined') {
   throw new Error(`REACT_APP_INFURA_KEY must be a defined environment variable`)
 }
@@ -100,6 +101,7 @@ export const FALLBACK_URLS = {
 }
 
 const ALCHEMY_KEY = process.env.REACT_APP_ALCHEMY_KEY
+console.log("ALCHEMY_KEY", ALCHEMY_KEY)
 
 /**
  * Known JSON-RPC endpoints.
