@@ -6,7 +6,7 @@ import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenR
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers } from 'ethers'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, setDoc, doc, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
@@ -116,6 +116,17 @@ export function usePoolsData(): {
 
                 // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
 
+                // console.log({
+                //   poolId: poolId,
+                //   token0: token[0],
+                //   token1: token[1],
+                //   token0Price: value0.lastPriceUSD,
+                //   token1Price: value1.lastPriceUSD,
+                //   token0Decimals: value0.decimals,
+                //   token1Decimals: value1.decimals,
+                //   token0Symbol: value0.symbol,
+                //   token1Symbol: value1.symbol
+                // })
                 // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
                 //   poolId: poolId,
                 //   token0: token[0],
