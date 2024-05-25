@@ -703,8 +703,6 @@ export const LoadedRow = memo(
       return <LoadingRow />
     }
 
-    console.log('here', formatBNToString(PnL, NumberType.SwapTradeAmount), details.marginInPosToken)
-
     return (
       <>
         {showInfo && (

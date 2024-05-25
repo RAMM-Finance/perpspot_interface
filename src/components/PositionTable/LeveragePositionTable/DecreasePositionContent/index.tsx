@@ -376,8 +376,19 @@ export default function DecreasePositionContent({
       return
     }
     
+    const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
+    const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
 
-    
+    useEffect(() => {
+      if (pool && fiatValueReduceAmount) {
+        setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
+        setFiatValueForVolume(fiatValueReduceAmount.data)
+        console.log("STATE CHANGED!")
+        console.log("poolId", poolIdForVolume)
+        console.log("fiatValue", fiatValueForVolume)
+      }
+    }, [pool, fiatValueReduceAmount])
+
     setCurrentState((prev) => ({ ...prev, attemptingTxn: true }))
 
     callback()
@@ -396,13 +407,14 @@ export default function DecreasePositionContent({
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
         })
+        const timestamp = Math.floor(Date.now() / 1000)
+        const type = "REDUCE"
         try {
           if (pool && fiatValueReduceAmount) {
             // const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
             const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee) 
             // const priceUSD = result.lastPriceUSD
-            const timestamp = Math.floor(Date.now() / 1000)
-            const type = "REDUCE"
+
             const volume = fiatValueReduceAmount.data
             // const volume = (parseFloat(priceUSD) * parseFloat(freduceAmount)).toFixed(10)
 
@@ -412,6 +424,15 @@ export default function DecreasePositionContent({
               timestamp: timestamp,
               type: type,
               volume: volume,
+              account: account
+            })
+          } else {
+            await addDoc(collection(firestore, 'volumes'), {
+              poolId: poolIdForVolume,
+              // priceUSD: priceUSD,
+              timestamp: timestamp,
+              type: type,
+              volume: fiatValueForVolume,
               account: account
             })
           }

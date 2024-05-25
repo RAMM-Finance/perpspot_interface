@@ -35,4 +35,4 @@ export const LMT_PER_USD_PER_DAY = 0.1 * 5
 export const LMT_PER_USD_PER_DAY_LIMWETH = 0.05 * 5
 export const LMT_PER_USD_PER_DAY_USDC = 0.05 * 5
 
-export const VOLUME_STARTPOINT = 1716537547
+export const VOLUME_STARTPOINT = 1716541686

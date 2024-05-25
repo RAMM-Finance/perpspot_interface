@@ -38,7 +38,7 @@ import { getDecimalAndUsdValueData, useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { Info } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
 import {
@@ -512,6 +512,29 @@ const TradeTabContent = () => {
     allowedSlippage
   )
 
+  useEffect(() => {
+    if (!trade || !fiatValueTradeMargin) {
+      console.log("trade or fiatValue not found")
+      
+    }
+    console.log("TRADE", trade)
+    console.log("FIAT VLAUE", fiatValueTradeMargin)
+  }, [trade, fiatValueTradeMargin])
+
+
+  const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
+  const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
+  
+  useEffect(() => {
+    if (trade && fiatValueTradeMargin) {
+      setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
+      setFiatValueForVolume(fiatValueTradeMargin.data)
+      console.log("STATE CHANGED!")
+      console.log("poolIdForVolaume", poolIdForVolume)
+      console.log("fiatValue", fiatValueForVolume)
+    }
+  }, [trade, fiatValueTradeMargin])
+
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
       return
@@ -521,17 +544,18 @@ const TradeTabContent = () => {
     addPositionCallback()
       .then(async (hash) => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
-
-        if (trade && fiatValueTradeMargin) {
-          try {
+        
+        const timestamp = Math.floor(Date.now() / 1000)
+        const type = "ADD"
+        try {
+          if (trade && fiatValueTradeMargin) {
             // let tokenAmount = trade.marginInInput.toNumber()
           
             // const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
             
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
             // const priceUSD = result.lastPriceUSD
-            const timestamp = Math.floor(Date.now() / 1000)
-            const type = "ADD"
+
             const volume = fiatValueTradeMargin.data
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
   
@@ -543,10 +567,20 @@ const TradeTabContent = () => {
               volume: volume,
               account: account
             })
-          } catch (error) {
+          } else {
+            await addDoc(collection(firestore, 'volumes'), {
+              poolId: poolIdForVolume,
+              // priceUSD: priceUSD,
+              timestamp: timestamp,
+              type: type,
+              volume: fiatValueForVolume,
+              account: account
+            })
+          }
+        } catch (error) {
             console.error("An error occurred:", error)
           }
-        }
+
       })
       .catch((error) => {
         setTradeState((currentState) => ({

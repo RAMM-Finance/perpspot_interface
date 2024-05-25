@@ -608,6 +608,10 @@ export function useEstimatedAPR(
 
   useEffect(() => {
     const fetchData = async () => {
+      if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") {
+        console.log("INFO of33331", token0?.symbol, token1?.symbol)
+        console.log("tasfasfd", token0, token1, pool, tickSpacing)
+      }
       if (token0 && token1 && pool && tickSpacing) {
         const amount = amountUSD
         if (token0?.wrapped.address && token1?.wrapped.address) {
@@ -626,6 +630,10 @@ export function useEstimatedAPR(
 
           let lowerPrice = price
           let upperPrice = price
+
+          if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") {
+            console.log("INFO of111111111", token0?.symbol, token1?.symbol)
+          }
 
           if (!token0Range || !token1Range) {
             lowerPrice = lowerPrice * 0.8
@@ -655,6 +663,17 @@ export function useEstimatedAPR(
               fee: parseInt(pool.fee.toString()),
             }
 
+            if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") {
+              console.log("INFO of222222222", token0?.symbol, token1?.symbol)
+              console.log("MISC", pool.fee,
+              lowerTick,
+              upperTick,
+              chainId,
+              token0?.symbol,
+              token1?.symbol)
+
+            }
+
             const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
             if (v3CoreFactoryAddress && lowerTick && upperTick) {
               const poolAddress = computePoolAddress({
@@ -664,6 +683,7 @@ export function useEstimatedAPR(
                 fee: pool.fee,
               })
 
+              
               const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
                 pool.fee,
                 lowerTick,
@@ -674,12 +694,8 @@ export function useEstimatedAPR(
                 token1?.symbol
               )
 
-              
-                // console.log("INFO of", token0?.symbol, token1?.symbol)
-                // console.log("liquidityGross", liquidityGross.toNumber())
-                // console.log("VOLUME 24h", volume24h)
-              
-                
+
+
 
               try {
                 const { apy, dailyIncome } = estimateAPR(
