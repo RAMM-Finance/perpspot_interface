@@ -371,20 +371,16 @@ export default function DecreasePositionContent({
     allowedSlippage
   )
 
+  const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
+  const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
+
+
+  
   const handleReducePosition = useCallback(async () => {
     if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
       return
     }
     
-    const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
-    const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
-
-    useEffect(() => {
-      if (pool && fiatValueReduceAmount) {
-        setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
-        setFiatValueForVolume(fiatValueReduceAmount.data)
-      }
-    }, [pool, fiatValueReduceAmount])
 
     setCurrentState((prev) => ({ ...prev, attemptingTxn: true }))
 
@@ -617,6 +613,13 @@ export default function DecreasePositionContent({
       </DarkCard>
     )
   }
+  
+  useEffect(() => {
+    if (pool && fiatValueReduceAmount) {
+      setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
+      setFiatValueForVolume(fiatValueReduceAmount.data)
+    }
+  }, [pool, fiatValueReduceAmount])
 
   return (
     <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '0.75rem', paddingLeft: '0.75rem' }}>

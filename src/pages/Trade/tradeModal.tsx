@@ -218,6 +218,10 @@ const TradeTabContent = () => {
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
 
+  const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
+  const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
+
+
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
@@ -384,6 +388,14 @@ const TradeTabContent = () => {
     : inputCurrency ?? undefined
     // marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
   )
+
+  
+  useEffect(() => {
+    if (trade && fiatValueTradeMargin) {
+      setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
+      setFiatValueForVolume(fiatValueTradeMargin.data)
+    }
+  }, [trade, fiatValueTradeMargin])
   // const fiatValueTradePremium = useUSDPriceBN(
   //   trade?.premium,
   //   trade?.premiumInPosToken
@@ -511,16 +523,6 @@ const TradeTabContent = () => {
     outputCurrency || undefined,
     allowedSlippage
   )
-
-  const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
-  const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
-  
-  useEffect(() => {
-    if (trade && fiatValueTradeMargin) {
-      setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
-      setFiatValueForVolume(fiatValueTradeMargin.data)
-    }
-  }, [trade, fiatValueTradeMargin])
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
