@@ -614,13 +614,9 @@ export function useEstimatedAPR(
 
   useEffect(() => {
     const fetchData = async () => {
-
-      if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("1")
       if (token0 && token1 && pool && tickSpacing) {
-        if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("2")
         const amount = amountUSD
         if (token0?.wrapped.address && token1?.wrapped.address) {
-          if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("3")
           const [token0Res, token1Res] = await Promise.all([
             getDecimalAndUsdValueData(chainId, token0?.wrapped.address),
             getDecimalAndUsdValueData(chainId, token1?.wrapped.address),
@@ -646,18 +642,11 @@ export function useEstimatedAPR(
             upperPrice = upperPrice * token1Range
           }
 
-          if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("5")
           if (lowerPrice > upperPrice) [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
-          if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("5555 lower", token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
-            if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("5555 upper", token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
             
 
           let lowerTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
           let upperTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
-
-          if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("6")
-          
-            if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("lower upper tick", lowerTick, upperTick)
             
           if (lowerTick && upperTick) {
             if (lowerTick > upperTick) [lowerTick, upperTick] = [upperTick, lowerTick]
@@ -673,7 +662,7 @@ export function useEstimatedAPR(
               amount,
               fee: parseInt(pool.fee.toString()),
             }
-            if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("7")
+
             const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
             if (v3CoreFactoryAddress && lowerTick && upperTick) {
               const poolAddress = computePoolAddress({
@@ -682,7 +671,6 @@ export function useEstimatedAPR(
                 tokenB: token1.wrapped,
                 fee: pool.fee,
               })
-              if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("8")
               
               const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
                 pool.fee,
@@ -693,12 +681,7 @@ export function useEstimatedAPR(
                 token0?.symbol,
                 token1?.symbol
               )
-
-              if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("9")
-              if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD")
-                console.log("poolTicks, voluem, liqGross", poolTicks, volume24h, liquidityGross)
-
-
+              
               try {
                 const { apy, dailyIncome } = estimateAPR(
                   position,

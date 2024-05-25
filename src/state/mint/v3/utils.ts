@@ -10,12 +10,10 @@ import {
 import JSBI from 'jsbi'
 
 export function tryParsePrice(baseToken?: Token, quoteToken?: Token, val?: string) {
-  if (baseToken?.symbol === 'BUILD' || quoteToken?.symbol === 'BUILD') console.log("11111111111")
   if (!baseToken || !quoteToken || !val) {
     return undefined
   }
   let value = val
-  if (baseToken.symbol === 'BUILD' || quoteToken.symbol === 'BUILD') console.log("21222222")
   if (val && val.toLowerCase().includes('e')) {
     value = Number(val).toFixed(22)
     console.log("NUMMMM", value)
@@ -23,18 +21,14 @@ export function tryParsePrice(baseToken?: Token, quoteToken?: Token, val?: strin
     //   value = num.toString()
     // }
   }
-  if (baseToken.symbol === 'BUILD' || quoteToken.symbol === 'BUILD') console.log("333333333", value)
   if (!value.match(/^\d*\.?\d+$/)) {
     return undefined
   }
-  if (baseToken.symbol === 'BUILD' || quoteToken.symbol === 'BUILD') console.log("444444444444444")
   
-
   const [whole, fraction] = value.split('.')
 
   const decimals = fraction?.length ?? 0
   const withoutDecimals = JSBI.BigInt((whole ?? '') + (fraction ?? ''))
-  if (baseToken.symbol === 'BUILD' || quoteToken.symbol === 'BUILD') console.log("55555555")
   return new Price(
     baseToken,
     quoteToken,
@@ -88,7 +82,6 @@ export function tryParseLmtTick(
   }
 
   const price = tryParsePrice(baseToken, quoteToken, value)
-  if (baseToken?.symbol === "BUILD" || quoteToken?.symbol === "BUILD") console.log("5555 in tryParseLMT price", price)
 
   if (!price || !tickSpacing) {
     return undefined
@@ -107,7 +100,6 @@ export function tryParseLmtTick(
     // this function is agnostic to the base, will always return the correct tick
     tick = priceToClosestTick(price)
   }
-  if (baseToken?.symbol === "BUILD" || quoteToken?.symbol === "BUILD") console.log("5555 in tryParseLMT", tick, tickSpacing)
 
   if (isLeft) {
     console.log('ticks:parse', value, tick, nearestUsableTick(tick, tickSpacing), price)

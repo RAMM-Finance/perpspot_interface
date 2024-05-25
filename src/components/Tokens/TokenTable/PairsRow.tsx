@@ -475,11 +475,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
   }, [token0, token1])
 
-  if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") {
-    console.log("HHHHHHH")
-    console.log(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD, token0Range, token1Range)
-  }
-
   const rawEstimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD, token0Range, token1Range)
   
   const estimatedAPR = useMemo(() => {
