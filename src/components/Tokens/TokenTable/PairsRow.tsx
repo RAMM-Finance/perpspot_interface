@@ -465,6 +465,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
+  console.log("priceInverted", token0?.symbol, token1?.symbol, priceInverted)
+
   const [token0Range, token1Range] = useMemo(() => {
     if (token0?.symbol === "USDC" || token1?.symbol === "USDC") {
       return [0.95, 1.05]
@@ -472,6 +474,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       return [undefined, undefined]
     }
   }, [token0, token1])
+
+  if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") {
+    console.log("HHHHHHH")
+    console.log(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD, token0Range, token1Range)
+  }
 
   const rawEstimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD, token0Range, token1Range)
   

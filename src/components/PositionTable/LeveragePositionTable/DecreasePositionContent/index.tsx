@@ -383,9 +383,6 @@ export default function DecreasePositionContent({
       if (pool && fiatValueReduceAmount) {
         setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
         setFiatValueForVolume(fiatValueReduceAmount.data)
-        console.log("STATE CHANGED!")
-        console.log("poolId", poolIdForVolume)
-        console.log("fiatValue", fiatValueForVolume)
       }
     }, [pool, fiatValueReduceAmount])
 

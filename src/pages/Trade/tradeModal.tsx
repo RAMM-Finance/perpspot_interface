@@ -512,16 +512,6 @@ const TradeTabContent = () => {
     allowedSlippage
   )
 
-  useEffect(() => {
-    if (!trade || !fiatValueTradeMargin) {
-      console.log("trade or fiatValue not found")
-      
-    }
-    console.log("TRADE", trade)
-    console.log("FIAT VLAUE", fiatValueTradeMargin)
-  }, [trade, fiatValueTradeMargin])
-
-
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
   
@@ -529,9 +519,6 @@ const TradeTabContent = () => {
     if (trade && fiatValueTradeMargin) {
       setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
       setFiatValueForVolume(fiatValueTradeMargin.data)
-      console.log("STATE CHANGED!")
-      console.log("poolIdForVolaume", poolIdForVolume)
-      console.log("fiatValue", fiatValueForVolume)
     }
   }, [trade, fiatValueTradeMargin])
 
