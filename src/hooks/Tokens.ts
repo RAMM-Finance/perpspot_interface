@@ -45,7 +45,7 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   const tokenList = usePoolKeyList(isDefaultPoolList)
 
 
-  const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
+  const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
 
   // const userAddedTokens = useUserAddedTokens()
 
@@ -63,20 +63,23 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   //         { ...additionalTokens }
   //       )
   //   )
-  // }, [additionalTokens])
+  // }, [additionalTokens]) 
   return useMemo(() => {
     let tokensFromPool
     if (!tokenList.loading && chainId) {
       tokensFromPool = tokenList.poolList?.reduce((acc, pool) => {
         let token
-        if (pool.symbol1 !== 'WETH')
+        if (pool.symbol1 !== 'WETH') {
           token = new Token(chainId, pool.token1, pool.decimals1, pool.symbol1, pool.name1)
-        else 
+          return { ...acc, [pool.token1]: token }
+        }
+        else {
           token = new Token(chainId, pool.token0, pool.decimals0, pool.symbol0, pool.name0)
-        return { ...acc, [pool.token1]: token }
+          return { ...acc, [pool.token0]: token }
+        } 
       }, {})
-      const defaultTokens = getDefaultTokensMap(chainId ?? SupportedChainId.ARBITRUM_ONE)
-  
+      const defaultTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
+      
       const activeTokens = { ...tokensFromPool, ...defaultTokens }
 
       return activeTokens

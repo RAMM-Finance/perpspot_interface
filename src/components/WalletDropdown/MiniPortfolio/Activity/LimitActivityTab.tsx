@@ -379,7 +379,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
   const { chainId } = useWeb3React()
   const tokens = useDefaultActiveTokens()
-
+  console.log("TOKNES LIST", tokens)
   const localMap = undefined //useLocalActivities()
 
   const { data, loading, refetch } = useTransactionListQuery({
@@ -415,8 +415,6 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   // }, [history])
 
   const [historyToShow, setHistoryToShow] = useState<any[] | null>(null)
-
-  console.log("historyToShow", historyToShow)
 
   useEffect(() => {
     const fetchData = async () => {
