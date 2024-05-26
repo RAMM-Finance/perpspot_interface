@@ -60,7 +60,7 @@ const StyledTokenRow = styled.div<{
   font-size: 12px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1.5fr 1fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 1fr;
   line-height: 24px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -91,7 +91,7 @@ const StyledTokenRow = styled.div<{
   @media only screen and (max-width: 1400px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
     /* grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px; */
-    grid-template-columns: 90px 100px 90px 90px 100px 135px 160px 90px;
+    grid-template-columns: 90px 100px 90px 90px 100px 135px 100px 90px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -268,7 +268,6 @@ const InfoIconContainer = styled.div`
   display: flex;
   align-items: center;
   cursor: help;
-  padding-right: 1vw;
 `
 const PositionInfo = styled(AutoColumn)`
   margin-left: 8px;
@@ -331,7 +330,7 @@ function HeaderCell({
       {category}
       {description && (
         <MouseoverTooltip text={description} placement="right">
-          <InfoIconContainer style={{ paddingRight: '0px' }}>
+          <InfoIconContainer>
             <Info size={14} />
           </InfoIconContainer>
         </MouseoverTooltip>
@@ -851,12 +850,12 @@ export const LoadedRow = memo(
                           {PnL &&
                           Number(formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)) >
                             0
-                            ? formatBNToString(PnL, NumberType.SwapTradeAmount)
-                            : PnL &&
-                              `${formatBNToString(
-                                new BN(1).div(currentPrice).times(PnL),
+                            ? formatBNToString(
+                                new BN(1).div(currentPrice).times(PnL).times(0.9),
                                 NumberType.SwapTradeAmount
-                              )} `}
+                              )
+                            : PnL &&
+                              formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)}
                         </DeltaText>
                         <div>
                           <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
@@ -869,7 +868,7 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
                           {PnL && Number(formatBNToString(PnL, NumberType.SwapTradeAmount)) > 0
-                            ? formatBNToString(PnL, NumberType.SwapTradeAmount)
+                            ? formatBNToString(PnL.times(0.9), NumberType.SwapTradeAmount)
                             : PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
                         </DeltaText>
                         <div>
