@@ -41,8 +41,8 @@ export const HistoryContainer = styled.div`
 const HistoryTable = ({ historyToShow }: HistoryTableProps) => {
   return (
     <HistoryContainer>
-      {historyToShow?.map((history: any) => (
-        <ActivityGroupWrapper key={history.title}>
+      {historyToShow?.map((history: any, index: number) => (
+        <ActivityGroupWrapper key={index}>
           <Column style={{ marginBottom: '12px' }}>
             <ActivityRow key={history.hash} activity={history} />
           </Column>

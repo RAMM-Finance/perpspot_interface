@@ -48,11 +48,16 @@ const StyledTimestamp = styled.span`
 
 function processDescriptor(descriptor: string, title?: string) {
   const modifiedDescriptor = descriptor
-    .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
-      const roundedNumber = Math.round(parseFloat(capturedGroup) * 1e6) / 1e6
-      return `Price: ${roundedNumber.toString()}`
-    })
-    .trim()
+  .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
+    return `Price: ${capturedGroup}`
+  })
+  .trim()
+  // const modifiedDescriptor = descriptor
+  //   .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
+  //     const roundedNumber = Math.round(parseFloat(capturedGroup) * 1e6) / 1e6
+  //     return `Price: ${roundedNumber.toString()}`
+  //   })
+  //   .trim()
   const priceIndex = modifiedDescriptor.indexOf('Price')
 
   const actionDescription = priceIndex !== -1 ? modifiedDescriptor.slice(0, priceIndex) : modifiedDescriptor
@@ -179,7 +184,11 @@ export function ActivityRow({
                 >
                   <>
                     <ActivityPrice>
-                      {`Price: ${isInverted ? ((1 / priceNumber) as number).toFixed(5) : priceNumber.toFixed(5)}`}
+                    {`Price: ${
+                      isInverted
+                        ? ((1 / priceNumber) as number).toFixed((1 / priceNumber) < 1 ? 12 : 4)
+                        : priceNumber.toFixed(priceNumber < 1 ? 12 : 4)
+                    }`}
                     </ActivityPrice>
                     {invertedTooltipLogo} 
                   </>
