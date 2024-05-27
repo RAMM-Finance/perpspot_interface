@@ -393,7 +393,7 @@ const TradeTabContent = () => {
   useEffect(() => {
     if (trade && fiatValueTradeMargin) {
       setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
-      setFiatValueForVolume(fiatValueTradeMargin.data)
+      setFiatValueForVolume(fiatValueTradeOutput.data)
     }
   }, [trade, fiatValueTradeMargin])
   // const fiatValueTradePremium = useUSDPriceBN(
@@ -537,7 +537,7 @@ const TradeTabContent = () => {
         const timestamp = Math.floor(Date.now() / 1000)
         const type = "ADD"
         try {
-          if (trade && fiatValueTradeMargin) {
+          if (trade && fiatValueTradeOutput) {
             // let tokenAmount = trade.marginInInput.toNumber()
           
             // const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
@@ -545,7 +545,7 @@ const TradeTabContent = () => {
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
             // const priceUSD = result.lastPriceUSD
 
-            const volume = fiatValueTradeMargin.data
+            const volume = fiatValueTradeOutput.data
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
   
             await addDoc(collection(firestore, 'volumes'), {
