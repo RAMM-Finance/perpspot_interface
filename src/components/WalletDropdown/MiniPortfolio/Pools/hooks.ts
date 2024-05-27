@@ -1,7 +1,7 @@
 import { Token } from '@uniswap/sdk-core'
 import { AddressMap } from '@uniswap/smart-order-router'
-import { abi as MulticallABI } from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
-import { abi as NFTPositionManagerABI } from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
+import MulticallABI from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
+import NFTPositionManagerABI from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
 import { useWeb3React } from '@web3-react/core'
 import { MULTICALL_ADDRESS, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES as V3NFT_ADDRESSES } from 'constants/addresses'
 import { isSupportedChain, SupportedChainId } from 'constants/chains'
@@ -36,14 +36,14 @@ function useContractMultichain<T extends BaseContract>(
 
     return relevantChains.reduce((acc: ContractMap<T>, chainId) => {
       const provider = walletProvider && walletChainId === chainId ? walletProvider : RPC_PROVIDERS[chainId]
-      acc[chainId] = getContract(addressMap[chainId], ABI, provider) as T
+      acc[chainId] = getContract(addressMap[chainId] ?? '', ABI, provider) as T
       return acc
     }, {})
   }, [ABI, addressMap, chainIds, walletChainId, walletProvider])
 }
 
 export function useV3ManagerContracts(chainIds: SupportedChainId[]): ContractMap<NonfungiblePositionManager> {
-  return useContractMultichain<NonfungiblePositionManager>(V3NFT_ADDRESSES, NFTPositionManagerABI, chainIds)
+  return useContractMultichain<NonfungiblePositionManager>(V3NFT_ADDRESSES, NFTPositionManagerABI.abi, chainIds)
 }
 
 export function useInterfaceMulticallContracts(chainIds: SupportedChainId[]): ContractMap<UniswapInterfaceMulticall> {

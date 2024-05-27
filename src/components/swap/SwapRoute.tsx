@@ -4,7 +4,7 @@ import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/anal
 import { Protocol } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import { FeeAmount } from '@uniswap/v3-sdk'
+import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { AutoColumn } from 'components/Column'
@@ -57,9 +57,9 @@ export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...r
   const [darkMode] = useDarkModeManager()
 
   const formattedGasPriceString = trade?.gasUseEstimateUSD
-    ? trade.gasUseEstimateUSD.toFixed(2) === '0.00'
+    ? trade.gasUseEstimateUSD === '0'
       ? '<$0.01'
-      : '$' + trade.gasUseEstimateUSD.toFixed(2)
+      : '$' + trade.gasUseEstimateUSD
     : undefined
 
   return (
@@ -144,7 +144,7 @@ export function getTokenPath(trade: InterfaceTrade<Currency, Currency, TradeType
       const entry: RoutingDiagramEntry['path'][0] = [
         tokenIn,
         tokenOut,
-        nextPool instanceof Pair ? V2_DEFAULT_FEE_TIER : nextPool.fee,
+        nextPool instanceof Pair ? V2_DEFAULT_FEE_TIER : nextPool instanceof Pool ? nextPool.fee : V2_DEFAULT_FEE_TIER,
       ]
       path.push(entry)
     }

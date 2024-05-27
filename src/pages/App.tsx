@@ -31,13 +31,13 @@ import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
 import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
-import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
+// import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 import AirDropPage from './AirDrop'
 import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
 import StatsPage from './Stats'
 import LeaderboardPage from './Leaderboard'
-import MigrateV2 from './MigrateV2'
+// import MigrateV2 from './MigrateV2'
 import NotFound from './NotFound'
 import Pool from './Pool'
 import { PositionPage } from './Pool/PositionPage'
@@ -257,10 +257,10 @@ export default function App() {
                   <Route path="pools/simple" element={<Pool />} />
                   <Route path="pools/:tokenId" element={<PositionPage />} />
                   <Route path="referral" element={<ReferralPage />} />
-                  <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
+                  {/* <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
                     <Route path=":currencyIdA" />
                     <Route path=":currencyIdA/:currencyIdB" />
-                  </Route>
+                  </Route> */}
                   <Route path="add" element={<RedirectDuplicateTokenIds />}>
                     {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
                     <Route path=":currencyIdA" />
@@ -277,7 +277,7 @@ export default function App() {
                   <Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />
                   <Route path="close/:leverageManager/:trader/:tokenId" element={<ClosePosition />} />
 
-                  <Route path="migrate/v2" element={<MigrateV2 />} />
+                  {/* <Route path="migrate/v2" element={<MigrateV2 />} /> */}
                   <Route path="*" element={<Navigate to="/not-found" replace />} />
                   <Route path="/not-found" element={<NotFound />} />
                 </Routes>

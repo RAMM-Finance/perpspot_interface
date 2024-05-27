@@ -1,5 +1,5 @@
 import type { TransactionResponse } from '@ethersproject/providers'
-import { abi as MERKLE_DISTRIBUTOR_ABI } from '@uniswap/merkle-distributor/build/MerkleDistributor.json'
+import MERKLE_DISTRIBUTOR_ABI from '@uniswap/merkle-distributor/build/MerkleDistributor.json'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { MERKLE_DISTRIBUTOR_ADDRESS } from 'constants/addresses'

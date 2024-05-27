@@ -1,9 +1,9 @@
 import { NetworkStatus } from '@apollo/client'
-import { Currency, CurrencyAmount, Price, SupportedChainId, TradeType } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Price, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
-import { SupportedChainId as SupportedChainIdLMT } from 'constants/chains'
+import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
@@ -22,11 +22,11 @@ import useStablecoinPrice from './useStablecoinPrice'
 // ETH amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
 const ETH_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Currency> } = {
-  [SupportedChainId.MAINNET]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.MAINNET), 100e18),
+  // [SupportedChainId.MAINNET]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.MAINNET), 100e18),
   [SupportedChainId.ARBITRUM_ONE]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.ARBITRUM_ONE), 10e18),
-  [SupportedChainId.OPTIMISM]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.OPTIMISM), 10e18),
-  [SupportedChainId.POLYGON]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.POLYGON), 10_000e18),
-  [SupportedChainId.CELO]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.CELO), 10e18),
+  // [SupportedChainId.OPTIMISM]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.OPTIMISM), 10e18),
+  // [SupportedChainId.POLYGON]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.POLYGON), 10_000e18),
+  // [SupportedChainId.CELO]: CurrencyAmount.fromRawAmount(nativeOnChain(SupportedChainId.CELO), 10e18),
 }
 
 function useETHValue(currencyAmount?: CurrencyAmount<Currency>): {
@@ -77,13 +77,13 @@ export async function getDecimalAndUsdValueData(
   let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network = 'arbitrum-one'
 
-  if (chainId === SupportedChainIdLMT.ARBITRUM_ONE) {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
     if (tokenId === 'ETH') {
       tokenId = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
     }
     url += 'arbitrum'
     network = 'arbitrum-one'
-  } else if (chainId === SupportedChainIdLMT.BASE) {
+  } else if (chainId === SupportedChainId.BASE) {
     if (tokenId === 'ETH') {
       tokenId = '0x4200000000000000000000000000000000000006'
     }

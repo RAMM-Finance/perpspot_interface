@@ -97,7 +97,7 @@ const formatAnalyticsEventProperties = ({
   fiatValueInput,
   fiatValueOutput,
 }: AnalyticsEventProps) => ({
-  estimated_network_fee_usd: trade.gasUseEstimateUSD ? formatToDecimal(trade.gasUseEstimateUSD, 2) : undefined,
+  estimated_network_fee_usd: trade.gasUseEstimateUSD ? trade.gasUseEstimateUSD : undefined,
   transaction_hash: hash,
   transaction_deadline_seconds: getDurationUntilTimestampSeconds(transactionDeadlineSecondsSinceEpoch),
   token_in_address: getTokenAddress(trade.inputAmount.currency),

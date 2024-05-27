@@ -65,13 +65,6 @@ const sendAnalyticsEventAndUserInfo = (
   }
   user.postInsert(CustomUserProperties.ALL_WALLET_ADDRESSES_CONNECTED, account)
 
-  sendAnalyticsEvent(InterfaceEventName.WALLET_CONNECT_TXN_COMPLETED, {
-    result: WalletConnectionResult.SUCCEEDED,
-    wallet_address: account,
-    wallet_type: walletType,
-    is_reconnect: isReconnect,
-    peer_wallet_agent: peerWalletAgent,
-  })
 }
 
 function didUserReject(connection: Connection, error: any): boolean {
@@ -169,11 +162,6 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
         else if (error?.code !== ErrorCode.MM_ALREADY_PENDING) {
           console.debug(`web3-react connection error: ${error}`)
           setPendingError(error.message)
-
-          sendAnalyticsEvent(InterfaceEventName.WALLET_CONNECT_TXN_COMPLETED, {
-            result: WalletConnectionResult.FAILED,
-            wallet_type: connection.getName(),
-          })
         }
       }
     },
