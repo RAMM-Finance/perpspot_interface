@@ -940,23 +940,24 @@ export const LoadedRow = memo(
                     style={{
                       height: '40px',
                       lineHeight: '15px',
-                      minWidth: '50px',
+                      minWidth: '40px',
                       background: `${theme.backgroundOutline}`,
                     }}
                     onClick={handleShowInfo}
                   >
-                    <ActionText>Info</ActionText>
+                    <Info size={20} />
+                    {/* <ActionText>Info</ActionText> */}
                   </SmallButtonPrimary>
                   <ResponsiveButton
                     style={{
                       height: '40px',
-                      minWidth: '140px',
+                      minWidth: '120px',
                       lineHeight: '15px',
                       background: `${theme.backgroundOutline}`,
                     }}
                     onClick={handlePoolSelect}
                   >
-                    <ActionText>Set Current Pair</ActionText>
+                    <ActionText>Select Pair</ActionText>
                   </ResponsiveButton>
                 </Row>
               }
