@@ -117,7 +117,7 @@ export function Provider({ locale, forceRenderAfterLocaleChange = true, onActiva
   }
 
   return (
-    <I18nProvider forceRenderOnLocaleChange={forceRenderAfterLocaleChange} i18n={i18n}>
+    <I18nProvider i18n={i18n}>
       {children}
     </I18nProvider>
   )
