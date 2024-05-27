@@ -641,7 +641,7 @@ const TradeTabContent = () => {
       </Wrapper>
     )
   }
-  // console.log('trade modal found error', showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage)
+
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal
