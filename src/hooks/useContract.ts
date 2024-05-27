@@ -234,7 +234,7 @@ export function usePoolContract(poolAddress?: string, withSignerIfPossible?: boo
 export function useTestTokenContract(testTokenAd?: string, withSignerIfPossible?: boolean) {
   const contract = useContract(testTokenAd, testTokenAbi.abi, withSignerIfPossible)
 
-  return useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
+  return useContract(testTokenAd, testTokenAbi.abi, withSignerIfPossible)
 }
 
 export function useWETHContract(withSignerIfPossible?: boolean) {
