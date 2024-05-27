@@ -9,6 +9,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useTokenContract } from 'hooks/useContract'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
@@ -71,12 +72,23 @@ export function PoolStatsSection({
   useEffect(() => {
     const fetchData = async () => {
       let usdPrice
-      if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
-        usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
-        setUsdPrice(new BN(usdPrice))
-      } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
-        usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
-        setUsdPrice(new BN(usdPrice))
+      if (chainId === SupportedChainId.BASE) {
+        if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
+          usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
+          setUsdPrice(new BN(usdPrice))
+        } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
+          usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
+          setUsdPrice(new BN(usdPrice))
+        }
+      }
+      else if (chainId === SupportedChainId.ARBITRUM_ONE) {
+        if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
+          usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
+          setUsdPrice(new BN(usdPrice))
+        } else if (address1 && address1 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address0) {
+          usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
+          setUsdPrice(new BN(usdPrice))
+        }
       }
     }
     fetchData()

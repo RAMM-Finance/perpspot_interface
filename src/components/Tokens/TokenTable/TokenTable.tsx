@@ -451,12 +451,13 @@ export default function TokenTable() {
   useEffect(() => {
     const fetchPricesUSD = async () => {
       const newPriceUSD: { [tokenId: string]: string } = {}
-      if (poolOHLCs) {
+      console.log('poolOHLCs and chian', poolOHLCs, chainId)
+      if (poolOHLCs && chainId) {
         const promises = Object.values(poolOHLCs).map(async (poolOHLC: any) => {
           const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
           if (tokenId) {
             const result = await getDecimalAndUsdValueData(chainId, tokenId)
-            newPriceUSD[tokenId] = result.lastPriceUSD
+            newPriceUSD[tokenId] = result?.lastPriceUSD
           }
         });
         await Promise.all(promises)
@@ -464,7 +465,7 @@ export default function TokenTable() {
       setPricesUSD(newPriceUSD)
     }
     fetchPricesUSD()
-  }, [poolOHLCs])
+  }, [poolOHLCs, chainId])
 
   const loading = !poolTvlData || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
   // console.log('sortedPools', sortedPools);
