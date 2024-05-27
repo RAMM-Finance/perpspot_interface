@@ -3,7 +3,7 @@ import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
@@ -17,7 +17,7 @@ import { useMultipleContractSingleData, useSingleContractMultipleData } from 'li
 import { useEffect, useMemo, useState } from 'react'
 import { tryParseLmtTick } from 'state/mint/v3/utils'
 
-import { abi as IUniswapV3PoolABI } from '../abis_v2/UniswapV3Pool.json'
+import IUniswapV3PoolABI from '../abis_v2/UniswapV3Pool.json'
 import {
   BORROW_INIT_CODE_HASH,
   LEVERAGE_INIT_CODE_HASH,
@@ -28,8 +28,8 @@ import {
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useLmtPoolManagerContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
-const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI) as IUniswapV3PoolStateInterface
+const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
+const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI.abi) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
 // Classes are expensive to instantiate, so this caches the recently instantiated pools.
 // This avoids re-instantiating pools as the other pools in the same request are loaded.

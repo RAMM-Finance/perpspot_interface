@@ -120,15 +120,15 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
   ])
 }
 
-// only want to enable this when app hook called
-class GAMetric extends IMetric {
-  putDimensions() {
-    return
-  }
+// // only want to enable this when app hook called
+// class GAMetric extends IMetric {
+//   putDimensions() {
+//     return
+//   }
 
-  putMetric(key: string, value: number, unit?: MetricLoggerUnit) {
-    sendTiming('Routing API', `${key} | ${unit}`, value, 'client')
-  }
-}
+//   putMetric(key: string, value: number, unit?: MetricLoggerUnit) {
+//     sendTiming('Routing API', `${key} | ${unit}`, value, 'client')
+//   }
+// }
 
-setGlobalMetric(new GAMetric())
+// setGlobalMetric(new GAMetric())

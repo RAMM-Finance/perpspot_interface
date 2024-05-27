@@ -1,7 +1,7 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
-import { abi } from 'abis_v2/Quoter.json'
+import Quoter from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
@@ -24,7 +24,7 @@ import {
   updateBlockNumber,
 } from './reducer'
 
-const quoterAbi = new Interface(abi)
+const quoterAbi = new Interface(Quoter.abi)
 
 export function useModalIsOpen(modal: ApplicationModal): boolean {
   const openModal = useAppSelector((state: AppState) => state.application.openModal)
@@ -186,6 +186,7 @@ export function usePoolOHLC(
   | undefined {
   const { chainId } = useWeb3React()
   const poolOHLCs = useAppSelector((state: AppState) => state.application.poolPriceData)
+  // console.log('zeke:', poolOHLCs)
   return useMemo(() => {
     if (!tokenA || !tokenB || !fee || !chainId) return undefined
     const poolId = getPoolId(tokenA, tokenB, fee)

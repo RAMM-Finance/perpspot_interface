@@ -16,16 +16,16 @@ export enum PollingInterval {
 }
 
 // Polls a query only when the current component is mounted, as useQuery's pollInterval prop will continue to poll after unmount
-export function usePollQueryWhileMounted<T, K>(queryResult: QueryResult<T, K>, interval: PollingInterval) {
-  const { startPolling, stopPolling } = queryResult
+// export function usePollQueryWhileMounted<T, K>(queryResult: QueryResult<T, K>, interval: PollingInterval) {
+//   const { startPolling, stopPolling } = queryResult
 
-  useEffect(() => {
-    startPolling(interval)
-    return stopPolling
-  }, [interval, startPolling, stopPolling])
+//   useEffect(() => {
+//     startPolling(interval)
+//     return stopPolling
+//   }, [interval, startPolling, stopPolling])
 
-  return queryResult
-}
+//   return queryResult
+// }
 
 export enum TimePeriod {
   HOUR,

@@ -3,6 +3,7 @@ import { FeeAmount, TICK_SPACINGS } from '@uniswap/v3-sdk'
 import { TickProcessed } from 'hooks/usePoolTickData'
 import JSBI from 'jsbi'
 import { TickData } from 'graphql/thegraph/AllV3TicksQuery'
+import { BigNumber as BN } from 'bignumber.js'
 
 import computeSurroundingTicks from './computeSurroundingTicks'
 
@@ -21,8 +22,8 @@ describe('#computeSurroundingTicks', () => {
     const spacing = TICK_SPACINGS[feeAmount]
     const activeTickProcessed: TickProcessed = {
       tick: 1000,
-      liquidityActive: JSBI.BigInt(300),
-      liquidityNet: JSBI.BigInt(100),
+      liquidityActive: new BN(300),
+      liquidityNet: new BN(100),
       price0: '100',
     }
     const pivot = 3

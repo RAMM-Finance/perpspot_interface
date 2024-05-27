@@ -11,7 +11,7 @@ import { useMemo } from 'react'
 import { InterfaceTrade } from 'state/routing/types'
 
 import useGasPrice from './useGasPrice'
-import useStablecoinPrice, { useStablecoinValue } from './useStablecoinPrice'
+import useStablecoinPrice, { useStablecoinAmountFromFiatValue, useStablecoinValue } from './useStablecoinPrice'
 
 const DEFAULT_AUTO_SLIPPAGE = new Percent(1, 1000) // .10%
 
@@ -80,6 +80,10 @@ export default function useAutoSlippageTolerance(
   const outputDollarValue = useStablecoinValue(trade?.outputAmount)
   const nativeGasPrice = useGasPrice()
 
+  const supportsGasEstimate = useMemo(() => chainId && SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId), [chainId])
+  const gasEstimateUSD =
+    useStablecoinAmountFromFiatValue(supportsGasEstimate ? trade?.gasUseEstimateUSD : undefined) ?? null
+
   const gasEstimate = guesstimateGas(trade)
   const nativeCurrency = useNativeCurrency()
   const nativeCurrencyPrice = useStablecoinPrice((trade && nativeCurrency) ?? undefined)
@@ -101,7 +105,7 @@ export default function useAutoSlippageTolerance(
     // if not, use local heuristic
     const dollarCostToUse =
       chainId && SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) && trade?.gasUseEstimateUSD
-        ? trade.gasUseEstimateUSD
+        ? gasEstimateUSD
         : dollarGasCost
 
     if (outputDollarValue && dollarCostToUse) {

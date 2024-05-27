@@ -82,10 +82,9 @@ export function usePoolsOHLC(list: any[] | undefined): {
   // }, [poolKeys])
 
   const { chainId } = useWeb3React()
-
+  // console.log('zeke:ohlc', list, chainId)
   const fetchData = useCallback(async () => {
     if (!list || !chainId || list.length === 0) throw new Error('No list or chainId')
-
     const results = []
 
     // fetch data

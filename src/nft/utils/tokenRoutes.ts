@@ -1,10 +1,10 @@
-import { IRoute, Protocol } from '@uniswap/router-sdk'
-import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-import { Pair } from '@uniswap/v2-sdk'
-import { Pool } from '@uniswap/v3-sdk'
+import {  TradeType } from '@uniswap/sdk-core'
 import { TokenAmountInput, TokenTradeRouteInput, TradePoolInput } from 'graphql/data/__generated__/types-and-hooks'
 import { InterfaceTrade } from 'state/routing/types'
-
+import { IRoute, Protocol } from '@uniswap/router-sdk'
+import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
+import { Pair } from '@uniswap/v2-sdk'
+import { Pool } from '@uniswap/v3-sdk'
 interface SwapAmounts {
   inputAmount: CurrencyAmount<Currency>
   outputAmount: CurrencyAmount<Currency>
@@ -15,11 +15,11 @@ interface TradeTokenInputAmounts {
   outputAmount: TokenAmountInput
 }
 
-interface Swap {
-  route: IRoute<Currency, Currency, Pair | Pool>
-  inputAmount: CurrencyAmount<Currency>
-  outputAmount: CurrencyAmount<Currency>
-}
+// interface Swap {
+//   route: IRoute<Currency, Currency, Pool | Pair>
+//   inputAmount: CurrencyAmount<Currency>
+//   outputAmount: CurrencyAmount<Currency>
+// }
 
 function buildTradeRouteInputAmounts(swapAmounts: SwapAmounts): TradeTokenInputAmounts {
   return {
@@ -101,37 +101,37 @@ function buildPools(pools: (Pair | Pool)[]): TradePoolInput[] {
   return pools.map((pool) => buildPool(pool))
 }
 
-function buildTradeRouteInput(swap: Swap): TokenTradeRouteInput {
-  return {
-    ...buildTradeRouteInputAmounts({ inputAmount: swap.inputAmount, outputAmount: swap.outputAmount }),
-    pools: buildPools(swap.route.pools),
-  }
-}
+// function buildTradeRouteInput(swap: Swap): TokenTradeRouteInput {
+//   return {
+//     ...buildTradeRouteInputAmounts({ inputAmount: swap.inputAmount, outputAmount: swap.outputAmount }),
+//     pools: buildPools(swap.route.pools),
+//   }
+// }
 
-export function buildAllTradeRouteInputs(trade: InterfaceTrade<Currency, Currency, TradeType>): {
-  mixedTokenTradeRouteInputs: TokenTradeRouteInput[] | undefined
-  v2TokenTradeRouteInputs: TokenTradeRouteInput[] | undefined
-  v3TokenTradeRouteInputs: TokenTradeRouteInput[] | undefined
-} {
-  const mixedTokenTradeRouteInputs: TokenTradeRouteInput[] = []
-  const v2TokenTradeRouteInputs: TokenTradeRouteInput[] = []
-  const v3TokenTradeRouteInputs: TokenTradeRouteInput[] = []
+// export function buildAllTradeRouteInputs(trade: InterfaceTrade<Currency, Currency, TradeType>): {
+//   mixedTokenTradeRouteInputs: TokenTradeRouteInput[] | undefined
+//   v2TokenTradeRouteInputs: TokenTradeRouteInput[] | undefined
+//   v3TokenTradeRouteInputs: TokenTradeRouteInput[] | undefined
+// } {
+//   const mixedTokenTradeRouteInputs: TokenTradeRouteInput[] = []
+//   const v2TokenTradeRouteInputs: TokenTradeRouteInput[] = []
+//   const v3TokenTradeRouteInputs: TokenTradeRouteInput[] = []
 
-  const swaps = trade.swaps
+//   const swaps = trade.swaps
 
-  for (const swap of swaps) {
-    if (swap.route.protocol === Protocol.MIXED) {
-      mixedTokenTradeRouteInputs.push(buildTradeRouteInput(swap))
-    } else if (swap.route.protocol === Protocol.V2) {
-      v2TokenTradeRouteInputs.push(buildTradeRouteInput(swap))
-    } else {
-      v3TokenTradeRouteInputs.push(buildTradeRouteInput(swap))
-    }
-  }
+//   for (const swap of swaps) {
+//     if (swap.route.protocol === Protocol.MIXED) {
+//       mixedTokenTradeRouteInputs.push(buildTradeRouteInput(swap))
+//     } else if (swap.route.protocol === Protocol.V2) {
+//       v2TokenTradeRouteInputs.push(buildTradeRouteInput(swap))
+//     } else {
+//       v3TokenTradeRouteInputs.push(buildTradeRouteInput(swap))
+//     }
+//   }
 
-  return {
-    mixedTokenTradeRouteInputs: mixedTokenTradeRouteInputs.length > 0 ? mixedTokenTradeRouteInputs : undefined,
-    v2TokenTradeRouteInputs: v2TokenTradeRouteInputs.length > 0 ? v2TokenTradeRouteInputs : undefined,
-    v3TokenTradeRouteInputs: v3TokenTradeRouteInputs.length > 0 ? v3TokenTradeRouteInputs : undefined,
-  }
-}
+//   return {
+//     mixedTokenTradeRouteInputs: mixedTokenTradeRouteInputs.length > 0 ? mixedTokenTradeRouteInputs : undefined,
+//     v2TokenTradeRouteInputs: v2TokenTradeRouteInputs.length > 0 ? v2TokenTradeRouteInputs : undefined,
+//     v3TokenTradeRouteInputs: v3TokenTradeRouteInputs.length > 0 ? v3TokenTradeRouteInputs : undefined,
+//   }
+// }

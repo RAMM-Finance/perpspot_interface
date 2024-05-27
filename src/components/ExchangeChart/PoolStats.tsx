@@ -67,6 +67,7 @@ export function PoolStatsSection({
   const contract1 = useTokenContract(address1)
 
   const [usdPrice, setUsdPrice] = useState<BN>()
+
   useEffect(() => {
     const fetchData = async () => {
       let usdPrice
@@ -116,7 +117,19 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
-  // const loading = loading0 || loading1 || !reserve0 || !reserve1 || currentPrice?.isZero() || low24h?.isZero() || high24h?.isZero() || delta24h?.isZero() || volume.isZero() || tvl.isZero()
+  // console.log('zeke:',
+  // loading0,
+  // loading1,
+  // reserve0,
+  // reserve1,
+
+  // currentPrice,
+  // low24h,
+  // high24h,
+  // delta24h,
+  // poolLoading,
+  // usdPrice
+  // )
   const loading =
     loading0 ||
     loading1 ||
@@ -130,8 +143,6 @@ export function PoolStatsSection({
     high24h?.isZero() ||
     !delta24h ||
     delta24h?.isZero() ||
-    // volume.isZero() ||
-    // tvl.isZero() ||
     !poolLoading ||
     !usdPrice ||
     usdPrice?.isZero()
