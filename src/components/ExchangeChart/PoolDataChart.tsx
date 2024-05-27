@@ -53,7 +53,6 @@ export const PoolDataChart = ({
   entryPrices: number[] | undefined
 }) => {
   const { chainId } = useWeb3React()
-
   const { datafeed } = useGeckoDatafeed()
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)

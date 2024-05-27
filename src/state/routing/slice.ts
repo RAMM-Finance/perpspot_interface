@@ -1,14 +1,15 @@
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from '@reduxjs/toolkit/query/react'
 import { Protocol } from '@uniswap/router-sdk'
-import { AlphaRouter, ChainId } from '@uniswap/smart-order-router'
+import { AlphaRouter } from '@uniswap/smart-order-router'
 import { RPC_PROVIDERS } from 'constants/providers'
 import { getClientSideQuote, toSupportedChainId, isSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
 import qs from 'qs'
-import { trace } from 'tracing'
+// import { trace } from 'tracing'
 
 import { GetQuoteResult } from './types'
 import { SupportedChainId } from 'constants/chains'
+import { ChainId } from '@uniswap/sdk-core'
 
 export enum RouterPreference {
   API = 'api',
@@ -97,42 +98,42 @@ export const routingApi = createApi({
   endpoints: (build) => ({
     getQuote: build.query<GetQuoteResult, GetQuoteArgs>({
       async onQueryStarted(args: GetQuoteArgs, { queryFulfilled }) {
-        trace(
-          'quote',
-          async ({ setTraceError, setTraceStatus }) => {
-            try {
-              await queryFulfilled
-            } catch (error: unknown) {
-              if (error && typeof error === 'object' && 'error' in error) {
-                const err = error as { error: { data: any }, status?: number }
-                const queryError = (error as Record<'error', FetchBaseQueryError>).error
-                // const queryError = {
-                //   ...err,
-                //   error: {
-                //     ...err.error,
-                //     data: err.error.data instanceof Error
-                //       ? { message: err.error.data.message }
-                //       : err.error.data,
-                //   },
-                // }
-                if (typeof queryError.status === 'number') {
-                  setTraceStatus(queryError.status)
-                }
-                setTraceError(queryError)
-              } else {
-                throw error
-              }
-            }
-          },
-          {
-            data: {
-              ...args,
-              isPrice: args.routerPreference === RouterPreference.PRICE,
-              isAutoRouter: args.routerPreference === RouterPreference.API,
-            },
-            tags: { is_widget: false },
-          }
-        )
+        // trace(
+        //   'quote',
+        //   async ({ setTraceError, setTraceStatus }) => {
+        //     try {
+        //       await queryFulfilled
+        //     } catch (error: unknown) {
+        //       if (error && typeof error === 'object' && 'error' in error) {
+        //         const err = error as { error: { data: any }, status?: number }
+        //         const queryError = (error as Record<'error', FetchBaseQueryError>).error
+        //         // const queryError = {
+        //         //   ...err,
+        //         //   error: {
+        //         //     ...err.error,
+        //         //     data: err.error.data instanceof Error
+        //         //       ? { message: err.error.data.message }
+        //         //       : err.error.data,
+        //         //   },
+        //         // }
+        //         if (typeof queryError.status === 'number') {
+        //           setTraceStatus(queryError.status)
+        //         }
+        //         setTraceError(queryError)
+        //       } else {
+        //         throw error
+        //       }
+        //     }
+        //   },
+        //   {
+        //     data: {
+        //       ...args,
+        //       isPrice: args.routerPreference === RouterPreference.PRICE,
+        //       isAutoRouter: args.routerPreference === RouterPreference.API,
+        //     },
+        //     tags: { is_widget: false },
+        //   }
+        // )
       },
       async queryFn(args, _api, _extraOptions, fetch) {
         const { tokenInAddress, tokenInChainId, tokenOutAddress, tokenOutChainId, amount, routerPreference, type } =

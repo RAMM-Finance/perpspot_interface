@@ -1,7 +1,7 @@
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Fraction, Percent, TradeType } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import { FeeAmount } from '@uniswap/v3-sdk'
+import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
 
 import {
@@ -44,11 +44,14 @@ function computeRealizedLPFeePercent(trade: Trade<Currency, Currency, TradeType>
       const routeRealizedLPFeePercent = overallPercent.multiply(
         ONE_HUNDRED_PERCENT.subtract(
           swap.route.pools.reduce<Percent>((currentFee: Percent, pool): Percent => {
-            const fee =
-              pool instanceof Pair
-                ? // not currently possible given protocol check above, but not fatal
-                  FeeAmount.MEDIUM
-                : pool.fee
+            if (pool instanceof Pair) {
+              const fee = FeeAmount.MEDIUM
+              return currentFee.multiply(ONE_HUNDRED_PERCENT.subtract(new Fraction(fee, 1_000_000)))
+            } else if (pool instanceof Pool) {
+              const fee = pool.fee
+              return currentFee.multiply(ONE_HUNDRED_PERCENT.subtract(new Fraction(fee, 1_000_000)))
+            }
+            const fee = FeeAmount.MEDIUM
             return currentFee.multiply(ONE_HUNDRED_PERCENT.subtract(new Fraction(fee, 1_000_000)))
           }, ONE_HUNDRED_PERCENT)
         )

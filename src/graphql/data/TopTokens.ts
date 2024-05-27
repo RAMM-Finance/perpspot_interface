@@ -22,7 +22,7 @@ import {
   PricePoint,
   toHistoryDuration,
   unwrapToken,
-  usePollQueryWhileMounted,
+  // usePollQueryWhileMounted,
 } from './util'
 
 gql`
@@ -146,49 +146,49 @@ interface UseTopTokensReturnValue {
   sparklines: SparklineMap
 }
 
-export function useTopTokens(chain: Chain): UseTopTokensReturnValue {
-  const chainId = CHAIN_NAME_TO_CHAIN_ID[chain]
-  const duration = toHistoryDuration(useAtomValue(filterTimeAtom))
+// export function useTopTokens(chain: Chain): UseTopTokensReturnValue {
+//   const chainId = CHAIN_NAME_TO_CHAIN_ID[chain]
+//   const duration = toHistoryDuration(useAtomValue(filterTimeAtom))
 
-  const { data: sparklineQuery } = usePollQueryWhileMounted(
-    useTopTokensSparklineQuery({
-      variables: { duration, chain },
-    }),
-    PollingInterval.Slow
-  )
+//   const { data: sparklineQuery } = usePollQueryWhileMounted(
+//     useTopTokensSparklineQuery({
+//       variables: { duration, chain },
+//     }),
+//     PollingInterval.Slow
+//   )
 
-  const sparklines = useMemo(() => {
-    const unwrappedTokens = sparklineQuery?.topTokens?.map((topToken) => unwrapToken(chainId, topToken))
-    const map: SparklineMap = {}
-    unwrappedTokens?.forEach(
-      (current) => current?.address && (map[current.address] = current?.market?.priceHistory?.filter(isPricePoint))
-    )
-    return map
-  }, [chainId, sparklineQuery?.topTokens])
+//   const sparklines = useMemo(() => {
+//     const unwrappedTokens = sparklineQuery?.topTokens?.map((topToken) => unwrapToken(chainId, topToken))
+//     const map: SparklineMap = {}
+//     unwrappedTokens?.forEach(
+//       (current) => current?.address && (map[current.address] = current?.market?.priceHistory?.filter(isPricePoint))
+//     )
+//     return map
+//   }, [chainId, sparklineQuery?.topTokens])
 
-  const { data, loading: loadingTokens } = usePollQueryWhileMounted(
-    useTopTokens100Query({
-      variables: { duration, chain },
-    }),
-    PollingInterval.Fast
-  )
+//   const { data, loading: loadingTokens } = usePollQueryWhileMounted(
+//     useTopTokens100Query({
+//       variables: { duration, chain },
+//     }),
+//     PollingInterval.Fast
+//   )
 
-  const unwrappedTokens = useMemo(() => data?.topTokens?.map((token) => unwrapToken(chainId, token)), [chainId, data])
-  const sortedTokens = useSortedTokens(unwrappedTokens)
-  const tokenSortRank = useMemo(
-    () =>
-      sortedTokens?.reduce((acc, cur, i) => {
-        if (!cur.address) return acc
-        return {
-          ...acc,
-          [cur.address]: i + 1,
-        }
-      }, {}) ?? {},
-    [sortedTokens]
-  )
-  const filteredTokens = useFilteredTokens(sortedTokens)
-  return useMemo(
-    () => ({ tokens: filteredTokens, tokenSortRank, loadingTokens, sparklines }),
-    [filteredTokens, tokenSortRank, loadingTokens, sparklines]
-  )
-}
+//   const unwrappedTokens = useMemo(() => data?.topTokens?.map((token) => unwrapToken(chainId, token)), [chainId, data])
+//   const sortedTokens = useSortedTokens(unwrappedTokens)
+//   const tokenSortRank = useMemo(
+//     () =>
+//       sortedTokens?.reduce((acc, cur, i) => {
+//         if (!cur.address) return acc
+//         return {
+//           ...acc,
+//           [cur.address]: i + 1,
+//         }
+//       }, {}) ?? {},
+//     [sortedTokens]
+//   )
+//   const filteredTokens = useFilteredTokens(sortedTokens)
+//   return useMemo(
+//     () => ({ tokens: filteredTokens, tokenSortRank, loadingTokens, sparklines }),
+//     [filteredTokens, tokenSortRank, loadingTokens, sparklines]
+//   )
+// }

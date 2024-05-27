@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
+import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -152,7 +152,7 @@ export function AdvancedSwapDetails({
             </MouseoverTooltip>
             <TextWithLoadingPlaceholder syncing={syncing} width={50}>
               <ThemedText.DeprecatedBlack textAlign="right" fontSize={14} color={theme.textTertiary}>
-                ~${trade.gasUseEstimateUSD.toFixed(2)}
+                ~{formatNumber(Number(trade.gasUseEstimateUSD), NumberType.FiatTokenPrice)}
               </ThemedText.DeprecatedBlack>
             </TextWithLoadingPlaceholder>
           </RowBetween>

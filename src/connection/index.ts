@@ -57,7 +57,7 @@ export interface BitKeepConstructorArgs {
 
 export class BitKeep extends Connector {
   /** {@inheritdoc Connector.provider} */
-  public provider?: BitKeepProvider
+  declare public provider: BitKeepProvider | undefined;
 
   private readonly options?: Parameters<typeof detectEthereumProvider>[0]
   private eagerConnection?: Promise<void>

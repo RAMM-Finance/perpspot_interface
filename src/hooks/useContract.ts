@@ -44,18 +44,18 @@ import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
 
-import { abi as BRP_ABI } from '../abis_v2/BRP.json'
-import { abi as DataProviderABI } from '../abis_v2/DataProvider.json'
-import { abi as LIM_TokenABI } from '../abis_v2/LIM_Token.json'
-import { abi as LP_MANAGER2_ABI } from '../abis_v2/LPManager2.json'
-import { abi as VaultAbi } from '../abis_v2/LPVault.json'
-import { abi as MarginFacilityAbi } from '../abis_v2/MarginFacility.json'
+import BRP_ABI from '../abis_v2/BRP.json'
+import DataProviderABI from '../abis_v2/DataProvider.json'
+import LIM_TokenABI from '../abis_v2/LIM_Token.json'
+import LP_MANAGER2_ABI from '../abis_v2/LPManager2.json'
+import VaultAbi from '../abis_v2/LPVault.json'
+import MarginFacilityAbi from '../abis_v2/MarginFacility.json'
 import LmtNFTManagerJson from '../abis_v2/NonfungiblePositionManager.json'
 import LmtPoolManagerJson from '../abis_v2/PoolManager.json'
-import { abi as LmtQuoterAbi } from '../abis_v2/Quoter.json'
-import { abi as ReferralSystemABI } from '../abis_v2/ReferralSystem.json'
-import { abi as testTokenAbi } from '../abis_v2/TestToken.json'
-import { abi as PoolAbi } from '../abis_v2/UniswapV3Pool.json'
+import LmtQuoterAbi from '../abis_v2/Quoter.json'
+import ReferralSystemABI from '../abis_v2/ReferralSystem.json'
+import testTokenAbi from '../abis_v2/TestToken.json'
+import PoolAbi from '../abis_v2/UniswapV3Pool.json'
 import {
   BRP,
   DataProvider,
@@ -154,31 +154,31 @@ export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
 }
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
-  return useContract<MarginFacility>(LMT_MARGIN_FACILITY, MarginFacilityAbi, withSignerIfPossible)
+  return useContract<MarginFacility>(LMT_MARGIN_FACILITY, MarginFacilityAbi.abi, withSignerIfPossible)
 }
 
 export function useLmtQuoterContract(withSignerIfPossible?: boolean) {
-  return useContract<LmtQuoter>(LMT_QUOTER, LmtQuoterAbi, withSignerIfPossible)
+  return useContract<LmtQuoter>(LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible)
 }
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
-  return useContract<DataProvider>(DATA_PROVIDER_ADDRESSES, DataProviderABI, withSignerIfPossible)
+  return useContract<DataProvider>(DATA_PROVIDER_ADDRESSES, DataProviderABI.abi, withSignerIfPossible)
 }
 
 export function useReferralContract(withSignerIfPossible?: boolean) {
-  return useContract<ReferralSystem>(LMT_REFERRAL, ReferralSystemABI, withSignerIfPossible)
+  return useContract<ReferralSystem>(LMT_REFERRAL, ReferralSystemABI.abi, withSignerIfPossible)
 }
 
 export function useVaultContract(withSignerIfPossible?: boolean) {
-  return useContract<LPVault>(LMT_VAULT, VaultAbi, withSignerIfPossible)
+  return useContract<LPVault>(LMT_VAULT, VaultAbi.abi, withSignerIfPossible)
 }
 
 export function useLimweth(withSignerIfPossible?: boolean) {
-  return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI, withSignerIfPossible)
+  return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible)
 }
 
 export function useBRP(withSignerIfPossible?: boolean) {
-  return useContract<BRP>(BRP_ADDRESS, BRP_ABI, withSignerIfPossible)
+  return useContract<BRP>(BRP_ADDRESS, BRP_ABI.abi, withSignerIfPossible)
 }
 // returns null on errors
 export function useContract<T extends Contract = Contract>(
@@ -204,7 +204,7 @@ export function useContract<T extends Contract = Contract>(
 }
 
 export function useLpManager2(withSignerIfPossible?: boolean) {
-  return useContract<LPManager2>(LMT_LP_MANAGER2, LP_MANAGER2_ABI, withSignerIfPossible)
+  return useContract<LPManager2>(LMT_LP_MANAGER2, LP_MANAGER2_ABI.abi, withSignerIfPossible)
 }
 
 export function useV2MigratorContract() {
@@ -228,11 +228,11 @@ export function useBorrowManagerContract(borrowManagerAddress?: string, withSign
 }
 
 export function usePoolContract(poolAddress?: string, withSignerIfPossible?: boolean) {
-  return useContract(poolAddress, PoolAbi, withSignerIfPossible)
+  return useContract(poolAddress, PoolAbi.abi, withSignerIfPossible)
 }
 
 export function useTestTokenContract(testTokenAd?: string, withSignerIfPossible?: boolean) {
-  const contract = useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
+  const contract = useContract(testTokenAd, testTokenAbi.abi, withSignerIfPossible)
 
   return useContract(testTokenAd, testTokenAbi, withSignerIfPossible)
 }

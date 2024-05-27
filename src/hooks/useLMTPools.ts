@@ -1,5 +1,5 @@
 import { Interface } from '@ethersproject/abi'
-import { abi as IUniswapV3PoolStateABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
+import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -23,7 +23,7 @@ import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI) as IUniswapV3PoolStateInterface
+const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
 
 export function useRenderCount() {
   const renderCountRef = useRef(0)
@@ -47,7 +47,6 @@ export function usePoolsData(): {
 } {
   const { chainId } = useWeb3React()
   const dataProvider = useDataProviderContract()
-
   const queryKey = useMemo(() => {
     if (!chainId || !dataProvider) return []
     return ['queryPoolsData', chainId, dataProvider.address]
@@ -59,7 +58,6 @@ export function usePoolsData(): {
       if (!dataProvider) throw Error('missing dataProvider')
       if (!chainId) throw Error('missing chainId')
       try {
-        // console.log('zeke:1')
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
 
         const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData] = await Promise.all([
@@ -168,6 +166,8 @@ export function usePoolsData(): {
     }
   )
 
+  // console.log('zeke:', data, isError, isLoading)
+
   useEffect(() => {
     if (chainId) {
       refetch()
@@ -175,10 +175,6 @@ export function usePoolsData(): {
   }, [chainId, refetch])
 
   const slot0s = [] as any
-
-  // const uPools = data?.uniquePools ? data.uniquePools : []
-
-  // const providedSlot0s = useMultipleContractSingleData(uPools, POOL_STATE_INTERFACE, 'slot0')
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
@@ -197,18 +193,6 @@ export function usePoolsData(): {
     } = data
 
     if (chainId !== useQueryChainId) return undefined
-
-    // const slot0ByPoolAddress: { [key: string]: any } = {}
-
-    // uniquePools?.forEach((pool: any, index: any) => {
-    //   const slot0 = providedSlot0s[index]
-    //   if (slot0) {
-    //     const poolAddress = ethers.utils.getAddress(pool)
-    //     if (!slot0ByPoolAddress[poolAddress]) {
-    //       slot0ByPoolAddress[poolAddress] = slot0.result
-    //     }
-    //   }
-    // })
 
     const slot0ByPool: { [key: string]: any } = {}
     const slot0ByPoolAddress: { [key: string]: any } = {}
@@ -381,7 +365,6 @@ export function usePoolsData(): {
 
     return poolToData
   }, [data, isError, isLoading])
-
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {

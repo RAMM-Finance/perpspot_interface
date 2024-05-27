@@ -148,7 +148,7 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
               )}
               {trade ? (
                 <LoadingOpacityContainer $loading={syncing} data-testid="trade-price-container">
-                  <TradePrice price={trade.executionPrice} />
+                  <TradePrice price={trade.executionPrice as any} />
                 </LoadingOpacityContainer>
               ) : loading || syncing ? (
                 <ThemedText.DeprecatedMain fontSize={14}>

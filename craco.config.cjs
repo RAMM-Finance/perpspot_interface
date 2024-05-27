@@ -2,12 +2,24 @@
 const { VanillaExtractPlugin } = require('@vanilla-extract/webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const { DefinePlugin } = require('webpack')
-
+const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
+const path = require('path')
 const commitHash = require('child_process').execSync('git rev-parse HEAD')
+
+const isProduction = process.env.NODE_ENV === 'production'
+
+// Linting and type checking are only necessary as part of development and testing.
+// Omit them from production builds, as they slow down the feedback loop.
+const shouldLintOrTypeCheck = !isProduction
 
 module.exports = {
   babel: {
-    plugins: ['@vanilla-extract/babel-plugin'],
+    plugins: [[
+      '@babel/plugin-transform-typescript',
+      {
+        allowDeclareFields: true,
+      },
+    ], '@vanilla-extract/babel-plugin'],
     env: {
       test: {
         plugins: ['istanbul'],
@@ -41,14 +53,32 @@ module.exports = {
       return babelLoaderOptions
     },
   },
+  typescript: {
+    enableTypeChecking: true /* (default value) */,
+  },
+  eslint: {
+    enable: shouldLintOrTypeCheck,
+    pluginOptions(eslintConfig) {
+      return Object.assign(eslintConfig, {
+        cache: true,
+        cacheLocation: getCacheDirectory('eslint'),
+        ignorePath: '.gitignore',
+        // Use our own eslint/plugins/config, as overrides interfere with caching.
+        // This ensures that `yarn start` and `yarn lint` share one cache.
+        eslintPath: require.resolve('eslint'),
+        resolvePluginsRelativeTo: null,
+        baseConfig: null,
+      })
+    },
+  },
   jest: {
     configure(jestConfig) {
       return Object.assign({}, jestConfig, {
-        transformIgnorePatterns: ['@uniswap/conedison/format', '@uniswap/conedison/provider'],
-        moduleNameMapper: {
-          '@uniswap/conedison/format': '@uniswap/conedison/dist/format',
-          '@uniswap/conedison/provider': '@uniswap/conedison/dist/provider',
-        },
+       transformIgnorePatterns: ['@uniswap/conedison/format', '@uniswap/conedison/provider'],
+       moduleNameMapper: {
+         '@uniswap/conedison/format': '@uniswap/conedison/dist/format',
+         '@uniswap/conedison/provider': '@uniswap/conedison/dist/provider',
+       },
       })
     },
   },
@@ -68,14 +98,15 @@ module.exports = {
       )
       if (instanceOfMiniCssExtractPlugin !== undefined) instanceOfMiniCssExtractPlugin.options.ignoreOrder = true
 
-      // We're currently on Webpack 4.x that doesn't support the `exports` field in package.json.
-      // See https://github.com/webpack/webpack/issues/9509.
-      //
-      // In case you need to add more modules, make sure to remap them to the correct path.
-      //
-      // Map @uniswap/conedison to its dist folder.
-      // This is required because conedison uses * to redirect all imports to its dist.
-      webpackConfig.resolve.alias['@uniswap/conedison'] = '@uniswap/conedison/dist'
+      const moduleScopePlugin = webpackConfig.resolve.plugins.find(
+        (plugin) => plugin instanceof ModuleScopePlugin
+      );
+      moduleScopePlugin.allowedPaths.push(
+        path.resolve(
+          __dirname, 
+          "node_modules/@vanilla-extract/webpack-plugin"
+        )
+      );
 
       return webpackConfig
     },

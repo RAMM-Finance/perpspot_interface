@@ -12,6 +12,7 @@ import { ThemedText } from 'theme'
 import { ReactComponent as GasIcon } from '../../assets/images/gas-icon.svg'
 import { ResponsiveTooltipContainer } from './styleds'
 import SwapRoute from './SwapRoute'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
 
 const GasWrapper = styled(RowFixed)`
   border-radius: 8px;
@@ -43,9 +44,9 @@ export default function GasEstimateBadge({
   disableHover?: boolean
 }) {
   const formattedGasPriceString = trade?.gasUseEstimateUSD
-    ? trade.gasUseEstimateUSD.toFixed(2) === '0.00'
+    ? trade.gasUseEstimateUSD === '0.00'
       ? '<$0.01'
-      : '$' + trade.gasUseEstimateUSD.toFixed(2)
+      : '$' + trade.gasUseEstimateUSD
     : undefined
 
   return (
@@ -73,7 +74,7 @@ export default function GasEstimateBadge({
                   <Trans>Estimated network fee</Trans>
                 </ThemedText.DeprecatedMain>
                 <ThemedText.DeprecatedBody textAlign="center" fontWeight={500} style={{ userSelect: 'none' }}>
-                  <Trans>${trade?.gasUseEstimateUSD?.toFixed(2)}</Trans>
+                  <Trans>{formatNumber(Number(trade?.gasUseEstimateUSD), NumberType.FiatTokenPrice)}</Trans>
                 </ThemedText.DeprecatedBody>
                 <ThemedText.DeprecatedMain fontSize="10px" textAlign="center" maxWidth="140px" color="text3">
                   <Trans>Estimate may differ due to your wallet gas settings</Trans>

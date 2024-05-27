@@ -1,5 +1,5 @@
 import type { JsonRpcProvider } from '@ethersproject/providers'
-import { abi as PoolAbi } from 'abis_v2/UniswapV3Pool.json'
+import PoolAbi from 'abis_v2/UniswapV3Pool.json'
 import { BigNumber as BN } from 'bignumber.js'
 import { ethers } from 'ethers'
 
@@ -13,7 +13,7 @@ export default async function getToken0Price(
   provider: JsonRpcProvider
 ) {
   const sameDecimals = token0Decimals === token1Decimals
-  const poolContract = new ethers.Contract(address, PoolAbi, provider)
+  const poolContract = new ethers.Contract(address, PoolAbi.abi, provider)
 
   const slot0 = await poolContract.callStatic.slot0()
 
