@@ -35,6 +35,7 @@ import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 import AirDropPage from './AirDrop'
 import ClosePosition from './ClosePosition'
 import FaucetsPage from './Faucet'
+import StatsPage from './Stats'
 import LeaderboardPage from './Leaderboard'
 import MigrateV2 from './MigrateV2'
 import NotFound from './NotFound'
@@ -235,6 +236,7 @@ export default function App() {
                   <Route path="trade" element={<Trade />} />
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
+                  <Route path="stats" element={<StatsPage />} />
                   <Route path="leaderboard" element={<LeaderboardPage />} />
                   <Route path="airdrop" element={<AirDropPage />} />
                   <Route path="loot" element={<AirDropPage />} />

@@ -142,10 +142,12 @@ const Tabs = styled.div`
 
 export const PageTabs = () => {
   const { pathname } = useLocation()
-  const { chainId: connectedChainId } = useWeb3React()
+  const { chainId: connectedChainId, account } = useWeb3React()
   const chainName = chainIdToBackendName(connectedChainId)
   const isPoolActive = useIsPoolsPage()
   const micrositeEnabled = useMGTMMicrositeEnabled()
+  
+  const [addresses, setAddresses] = useState<string[]>(['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4'])
 
   return (
     <>
@@ -171,6 +173,11 @@ export const PageTabs = () => {
           <MenuItem href="/faucet" dataTestId="pool-nav-link" isActive={pathname.startsWith('/faucet')}>
             <ThemedText.BodySecondary>Faucets</ThemedText.BodySecondary>
           </MenuItem>
+        ) : null}
+        {account && addresses.includes(account) ? (
+          <MenuItem href="/stats" dataTestId="pool-nav-link" isActive={pathname.startsWith('/stats')}>
+          <ThemedText.BodySecondary>Stats</ThemedText.BodySecondary>
+        </MenuItem>
         ) : null}
         <MenuItem href="/leaderboard" dataTestId="pool-nav-link" isActive={pathname.startsWith('/leaderboard')}>
           <ThemedText.BodySecondary>LMT</ThemedText.BodySecondary>
