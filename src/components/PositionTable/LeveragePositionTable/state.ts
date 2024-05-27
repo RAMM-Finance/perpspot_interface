@@ -7,7 +7,7 @@ export enum PositionSortMethod {
   COLLATERAL = 'Margin',
   RATE = 'Hourly Rate',
   PNL = 'PnL',
-  ENTRYPRICE = 'Entry/Current Price',
+  ENTRYPRICE = 'Entry / Current Price',
   REMAINING = 'Int. Left',
   ACTIONS = '',
 }
