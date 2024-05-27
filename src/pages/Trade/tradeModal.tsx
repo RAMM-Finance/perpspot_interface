@@ -390,12 +390,15 @@ const TradeTabContent = () => {
   )
 
   
+  const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
+
   useEffect(() => {
-    if (trade && fiatValueTradeMargin) {
+    if (trade && fiatValueTradeMargin && fiatValueTradeMargin.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
       setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
-      setFiatValueForVolume(fiatValueTradeOutput.data)
+      setFiatValueForVolume(fiatValueTradeMargin.data * parseFloat(leverageFactor))
+        // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
     }
-  }, [trade, fiatValueTradeMargin])
+  }, [trade, fiatValueTradeMargin, leverageFactor])
   // const fiatValueTradePremium = useUSDPriceBN(
   //   trade?.premium,
   //   trade?.premiumInPosToken
@@ -417,7 +420,6 @@ const TradeTabContent = () => {
   //   }
   // }, [fiatValueTradeMargin, fiatValueTradePremium])
 
-  const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
@@ -537,7 +539,7 @@ const TradeTabContent = () => {
         const timestamp = Math.floor(Date.now() / 1000)
         const type = "ADD"
         try {
-          if (trade && fiatValueTradeOutput) {
+          if (trade && fiatValueTradeMargin && fiatValueTradeMargin.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
             // let tokenAmount = trade.marginInInput.toNumber()
           
             // const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
@@ -545,7 +547,7 @@ const TradeTabContent = () => {
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
             // const priceUSD = result.lastPriceUSD
 
-            const volume = fiatValueTradeOutput.data
+            const volume = fiatValueTradeMargin.data * parseFloat(leverageFactor)
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
   
             await addDoc(collection(firestore, 'volumes'), {
