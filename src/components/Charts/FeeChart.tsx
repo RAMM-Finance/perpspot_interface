@@ -11,24 +11,25 @@ const data = [
 ]
 
 const FeeChart = () => (
-  <LineChart
-    title="Fee"
-    width={500}
+  <div style={{ width: '50%', height: 'auto' }}>
+    <h2>Fee</h2>
+    <LineChart
+    width={650}
     height={300}
-    data={data}
-    margin={{
-      top: 5, right: 30, left: 20, bottom: 5,
-    }}
-    style={{ width: '50%', height: 'auto' }}
-  >
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-    <YAxis tick={{ fontSize: 10 }} />
-    <Tooltip />
-    <Legend />
-    <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-    <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-  </LineChart>
+      data={data}
+      margin={{
+        top: 5, right: 30, left: 20, bottom: 5,
+      }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+      <YAxis tick={{ fontSize: 10 }} />
+      <Tooltip />
+      <Legend />
+      <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
+      <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+    </LineChart>
+  </div>
 )
 
 export default FeeChart
