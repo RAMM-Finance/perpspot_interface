@@ -6,6 +6,7 @@ const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
 const path = require('path')
 const commitHash = require('child_process').execSync('git rev-parse HEAD')
 
+
 const isProduction = process.env.NODE_ENV === 'production'
 
 // Linting and type checking are only necessary as part of development and testing.
@@ -19,7 +20,8 @@ module.exports = {
       {
         allowDeclareFields: true,
       },
-    ], '@vanilla-extract/babel-plugin'],
+    ], '@vanilla-extract/babel-plugin'
+  ],
     env: {
       test: {
         plugins: ['istanbul'],

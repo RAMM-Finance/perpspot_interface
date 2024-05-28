@@ -26,12 +26,12 @@ export function PresetsButtons({ btnName, onSetRecommendedRange, isRecommended }
       <Button onClick={onSetRecommendedRange}>
         <div style={{ flexDirection: 'column' }}>
           <ThemedText.DeprecatedBody fontSize={12}>
-            <Trans>{btnName}</Trans>
+            {btnName}
           </ThemedText.DeprecatedBody>
           {isRecommended ? (
             <>
               <ThemedText.DeprecatedBody fontSize={12}>
-                <Trans>(Recommended)</Trans>
+                (Recommended)
               </ThemedText.DeprecatedBody>
             </>
           ) : null}
