@@ -10,10 +10,9 @@ const data = [
   { name: '28.05', uv: 3490, pv: 4300, amt: 2100 },
 ]
 
-
-const VolumeChart = () => (
+const FeeChart = () => (
   <LineChart
-    title="Volume"
+    title="Fee"
     width={500}
     height={300}
     data={data}
@@ -32,4 +31,4 @@ const VolumeChart = () => (
   </LineChart>
 )
 
-export default VolumeChart
+export default FeeChart
