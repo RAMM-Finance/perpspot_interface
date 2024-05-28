@@ -62,7 +62,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLe
         marks={marks}
         step={0.001}
         min={0}
-        max={max ? (isMaxLeverageRounded ? max + 1 : max) : 100}
+        max={maxLeverage ? Number(maxLeverage) - 0.0001 : 100}
         size="small"
         sx={{
           '& .MuiSlider-markLabel': {
@@ -154,7 +154,9 @@ export function PercentSlider({
         </Grid>
         <Grid item>
           {readOnly ? (
-            <ThemedText.BodySecondary fontSize={16} marginBottom="4px">{initialValue} %</ThemedText.BodySecondary>
+            <ThemedText.BodySecondary fontSize={16} marginBottom="4px">
+              {initialValue} %
+            </ThemedText.BodySecondary>
           ) : (
             <>
               <Input

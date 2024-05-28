@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { ResponsiveButton, SmallButtonPrimary } from 'components/Button'
+import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Row, { RowBetween, RowFixed } from 'components/Row'
@@ -17,9 +17,10 @@ import { useAtomValue } from 'jotai/utils'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Info } from 'react-feather'
+import { ArrowDown, ArrowUp, CornerDownRight, Info } from 'react-feather'
 import { Box } from 'rebass'
 import { usePoolOHLC } from 'state/application/hooks'
+import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
@@ -60,7 +61,7 @@ const StyledTokenRow = styled.div<{
   font-size: 12px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 1fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 0.7fr;
   line-height: 24px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -91,7 +92,7 @@ const StyledTokenRow = styled.div<{
   @media only screen and (max-width: 1400px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
     /* grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px; */
-    grid-template-columns: 90px 100px 90px 90px 100px 135px 100px 90px;
+    grid-template-columns: 90px 100px 90px 90px 120px 150px 100px 100px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
@@ -275,6 +276,16 @@ const PositionInfo = styled(AutoColumn)`
 
 const ActionText = styled(ThemedText.BodySmall)`
   white-space: nowrap;
+`
+
+const ActionButton = styled(SmallButtonPrimary)`
+  height: 30px;
+  line-height: 15px;
+  min-width: 30px;
+  background: transparent;
+  &:hover {
+    background-color: ${({ theme, disabled }) => !disabled && theme.backgroundOutline};
+  }
 `
 
 const HEADER_DESCRIPTIONS: Record<PositionSortMethod, ReactNode | undefined> = {
@@ -546,6 +557,8 @@ export const LoadedRow = memo(
     const { account } = useWeb3React()
     const theme = useTheme()
     const { chainId } = useWeb3React()
+    const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
+      useMarginTradingActionHandlers()
 
     const positionKey: TraderPositionKey = useMemo(() => {
       return {
@@ -580,6 +593,17 @@ export const LoadedRow = memo(
       }
     }, [margin, totalDebtInput, details])
 
+    const isWethUsdc = useMemo(() => {
+      if (
+        (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') ||
+        (token0?.symbol === 'USDC' && token1?.symbol === 'WETH')
+      ) {
+        return true
+      } else {
+        return false
+      }
+    }, [token0, token1])
+
     const currentPool = useCurrentPool()
     const poolId = currentPool?.poolId
     const handlePoolSelect = useCallback(
@@ -589,11 +613,32 @@ export const LoadedRow = memo(
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
             console.log('zeke:handle2')
+            localStorage.removeItem('defaultInputToken')
+            onMarginChange('')
+            onSetIsSwap(false)
+            onPremiumCurrencyToggle(false)
+            onSetMarginInPosToken(false)
+            onLeverageFactorChange('')
             setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
           }
         }
       },
-      [setCurrentPool, poolId, details, poolOHLCData, pool, positionKey, token0, token1, chainId]
+      [
+        setCurrentPool,
+        poolId,
+        details,
+        poolOHLCData,
+        pool,
+        positionKey,
+        token0,
+        token1,
+        chainId,
+        onMarginChange,
+        onPremiumCurrencyToggle,
+        onLeverageFactorChange,
+        onSetIsSwap,
+        onSetMarginInPosToken,
+      ]
     )
 
     const [showInfo, setShowInfo] = useState(false)
@@ -711,7 +756,7 @@ export const LoadedRow = memo(
             outputCurrency={outputCurrency}
             inputCurrency={inputCurrency}
             pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
-            pnlPercent={`${((Number(PnL) / details?.margin.toNumber()) * 100).toFixed(2)}%`}
+            pnlPercent={`(${PnLPercentage} %)`}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
             entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
             leverageValue={Math.round(leverageFactor * 1000) / 1000}
@@ -813,26 +858,26 @@ export const LoadedRow = memo(
               }
               PnL={
                 <MouseoverTooltip
+                  style={{ width: '100%' }}
                   text={
                     <Trans>
-                      <AutoColumn style={{ width: '200px' }} gap="5px">
-                        <RowBetween>
+                      <AutoColumn style={{ width: 'fit-content' }} gap="5px">
+                        <RowBetween gap="5px">
                           <div>PnL (USD):</div>
                           <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
                         </RowBetween>
-                        <RowBetween>
+                        <RowBetween gap="5px">
                           <div>Interest paid:</div>
                           <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
                         </RowBetween>
-                        <RowBetween>
-                          <div>PnL inc. int:</div>
-                          {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} ` +
-                          ' ' +
-                          details.marginInPosToken
-                            ? outputCurrency?.symbol
-                            : inputCurrency?.symbol}
+                        <RowBetween gap="5px">
+                          <div style={{ whiteSpace: 'nowrap' }}>PnL int:</div>
+                          <DeltaText delta={PnLWithPremiums?.toNumber()} isNoWrap={true}>
+                            {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
+                            {details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+                          </DeltaText>
                         </RowBetween>
-                        <RowBetween>
+                        <RowBetween gap="5px">
                           <div>PnL inc. int (USD):</div>
                           <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(
                             2
@@ -847,11 +892,9 @@ export const LoadedRow = memo(
                     {details.marginInPosToken ? (
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
-                          {PnL &&
-                          Number(formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)) >
-                            0
+                          {PnL && new BN(1).div(currentPrice).times(PnL).isGreaterThan(new BN(0)) && !isWethUsdc
                             ? formatBNToString(
-                                new BN(1).div(currentPrice).times(PnL).times(0.9),
+                                new BN(1).div(currentPrice).times(PnL).times(new BN(0.9)),
                                 NumberType.SwapTradeAmount
                               )
                             : PnL &&
@@ -867,8 +910,8 @@ export const LoadedRow = memo(
                     ) : (
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL && Number(formatBNToString(PnL, NumberType.SwapTradeAmount)) > 0
-                            ? formatBNToString(PnL.times(0.9), NumberType.SwapTradeAmount)
+                          {PnL && PnL.isGreaterThan(new BN(0)) && !isWethUsdc
+                            ? formatBNToString(PnL.times(new BN(0.9)), NumberType.SwapTradeAmount)
                             : PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
                         </DeltaText>
                         <div>
@@ -935,30 +978,39 @@ export const LoadedRow = memo(
                 </MouseoverTooltip>
               }
               actions={
-                <Row gap="7px">
-                  <SmallButtonPrimary
+                <Row gap="4px">
+                  <MouseoverTooltip
                     style={{
-                      height: '40px',
-                      lineHeight: '15px',
-                      minWidth: '40px',
-                      background: `${theme.backgroundOutline}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      height: '100%',
                     }}
-                    onClick={handleShowInfo}
+                    text="Select Pair"
                   >
-                    <Info size={20} />
-                    {/* <ActionText>Info</ActionText> */}
-                  </SmallButtonPrimary>
-                  <ResponsiveButton
+                    {' '}
+                    <ActionButton onClick={handlePoolSelect}>
+                      <CornerDownRight size={17} />
+                    </ActionButton>
+                  </MouseoverTooltip>
+                  <MouseoverTooltip
                     style={{
-                      height: '40px',
-                      minWidth: '120px',
-                      lineHeight: '15px',
-                      background: `${theme.backgroundOutline}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      height: '100%',
+                      marginRight: '5px',
                     }}
-                    onClick={handlePoolSelect}
+                    text="More Info"
                   >
-                    <ActionText>Select Pair</ActionText>
-                  </ResponsiveButton>
+                    {' '}
+                    <ActionButton onClick={handleShowInfo}>
+                      <Info size={17} />
+                    </ActionButton>
+                  </MouseoverTooltip>
+                  {/* <ActionText>Info</ActionText> */}
                 </Row>
               }
             />

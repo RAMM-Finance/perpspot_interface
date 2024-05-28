@@ -22,7 +22,6 @@ import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
 import { useAppPoolOHLC, usePoolKeyList, usePoolOHLC, usePoolsAprUtilList } from 'state/application/hooks'
-import { setBLScrollPosition } from 'state/application/reducer'
 import { useAppDispatch } from 'state/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
@@ -244,7 +243,7 @@ const PoolSelectRow = ({
   const token1 = useCurrency(poolKey.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  const { onPremiumCurrencyToggle, onMarginChange, onSetMarginInPosToken, onSetIsSwap } =
+  const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
     useMarginTradingActionHandlers()
 
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
@@ -302,9 +301,9 @@ const PoolSelectRow = ({
       onSetIsSwap(false)
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
+      onLeverageFactorChange('')
       setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
       handleClose()
-      dispatch(setBLScrollPosition(undefined))
     }
   }, [
     token0,
@@ -318,8 +317,8 @@ const PoolSelectRow = ({
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
     poolOHLCData,
-    dispatch,
     chainId,
+    onLeverageFactorChange,
   ])
 
   return (

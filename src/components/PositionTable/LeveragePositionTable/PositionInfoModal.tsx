@@ -43,7 +43,7 @@ interface IPositionInfoModalProps {
   outputCurrency: Currency | null | undefined
   inputCurrency: Currency | null | undefined
   pln: string
-  pnlPercent: string
+  pnlPercent: string | undefined
   currentPrice: string
   entryPrice: string
   leverageValue: number

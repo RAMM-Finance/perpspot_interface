@@ -1,19 +1,6 @@
 """This directive allows results to be deferred during execution"""
 directive @defer on FIELD
 
-"""Tells the service which mutation triggers this subscription."""
-directive @aws_subscribe(
-  """
-  List of mutations which will trigger this subscription when they are called.
-  """
-  mutations: [String]
-) on FIELD_DEFINITION
-
-"""
-Tells the service this field/object has access authorized by sigv4 signing.
-"""
-directive @aws_iam on OBJECT | FIELD_DEFINITION
-
 """Directs the schema to enforce authorization on a field"""
 directive @aws_auth(
   """List of cognito user pool groups which have access on this field"""
@@ -37,6 +24,24 @@ directive @aws_publish(
 ) on FIELD_DEFINITION
 
 """
+Tells the service this field/object has access authorized by sigv4 signing.
+"""
+directive @aws_iam on OBJECT | FIELD_DEFINITION
+
+"""Tells the service which mutation triggers this subscription."""
+directive @aws_subscribe(
+  """
+  List of mutations which will trigger this subscription when they are called.
+  """
+  mutations: [String]
+) on FIELD_DEFINITION
+
+"""
+Tells the service this field/object has access authorized by an OIDC token.
+"""
+directive @aws_oidc on OBJECT | FIELD_DEFINITION
+
+"""
 Tells the service this field/object has access authorized by an API key.
 """
 directive @aws_api_key on OBJECT | FIELD_DEFINITION
@@ -48,11 +53,6 @@ directive @aws_cognito_user_pools(
   """List of cognito user pool groups which have access on this field"""
   cognito_groups: [String]
 ) on OBJECT | FIELD_DEFINITION
-
-"""
-Tells the service this field/object has access authorized by an OIDC token.
-"""
-directive @aws_oidc on OBJECT | FIELD_DEFINITION
 
 """
   Types, unions, and inputs (alphabetized):
@@ -879,12 +879,14 @@ type PushNotification {
 }
 
 type Query {
+  isV3SubgraphStale(chain: Chain!): Boolean
   historicalProtocolVolume(chain: Chain!, version: ProtocolVersion!, duration: HistoryDuration!): [TimestampedAmount!]
   dailyProtocolTvl(chain: Chain!, version: ProtocolVersion!): [TimestampedAmount!]
 
   """  returns top v3 pools sorted by total value locked in desc order"""
   topV3Pools(chain: Chain!, first: Int!, tvlCursor: Float, tokenFilter: String): [V3Pool!]
   v3Pool(chain: Chain!, address: String!): V3Pool
+  v3PoolsForTokenPair(chain: Chain!, token0: String!, token1: String!): [V3Pool!]
   v3Transactions(chain: Chain!, first: Int!, timestampCursor: Int): [PoolTransaction!]
 
   """  returns top v2 pairs sorted by total value locked in desc order"""
@@ -1295,7 +1297,7 @@ type V3Pool implements IPool {
   historicalVolume(duration: HistoryDuration!): [TimestampedAmount]
   priceHistory(duration: HistoryDuration!): [TimestampedPoolPrice]
   transactions(first: Int!, timestampCursor: Int): [PoolTransaction]
-  ticks(first: Int!, tickIdxCursor: Int): [V3PoolTick]
+  ticks(skip: Int): [V3PoolTick]
 }
 
 type V3PoolTick {
@@ -1303,5 +1305,7 @@ type V3PoolTick {
   tickIdx: Int
   liquidityGross: String
   liquidityNet: String
+  price0: String
+  price1: String
 }
 
