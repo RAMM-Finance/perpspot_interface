@@ -42,7 +42,7 @@ const VolumeChart = () => {
           }}
           syncId="syncA"
         >
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="5 5" stroke="#808080" />
           <XAxis tick={{ fontSize: 12 }} dataKey="timestamp" />
           <YAxis tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} orientation="right" yAxisId="right" />
