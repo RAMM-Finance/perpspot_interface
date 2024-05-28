@@ -147,7 +147,7 @@ export const PageTabs = () => {
   const isPoolActive = useIsPoolsPage()
   const micrositeEnabled = useMGTMMicrositeEnabled()
   
-  const [addresses, setAddresses] = useState<string[]>(['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4'])
+  const [addresses, setAddresses] = useState<string[]>(['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
 
   return (
     <>

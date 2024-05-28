@@ -1,35 +1,61 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { ComposedChart, ResponsiveContainer, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import styled from 'styled-components/macro'
 
-const data = [
-  { name: '16.04', uv: 4000, pv: 2400, amt: 2400 },
-  { name: '23.04', uv: 3000, pv: 1398, amt: 2210 },
-  { name: '30.04', uv: 2000, pv: 9800, amt: 2290 },
-  { name: '07.05', uv: 2780, pv: 3908, amt: 2000 },
-  { name: '14.05', uv: 1890, pv: 4800, amt: 2181 },
-  { name: '21.05', uv: 2390, pv: 3800, amt: 2500 },
-  { name: '28.05', uv: 3490, pv: 4300, amt: 2100 },
-]
+const ChartHeader = styled.h2`
+  font-size: 24px;
+  margin-bottom: 20px;
+`
 
-const FeeChart = () => (
-  <div style={{ width: '50%', height: 'auto' }}>
-    <h2>Fee</h2>
-    <LineChart
-    width={650}
-    height={300}
-      data={data}
-      margin={{
-        top: 5, right: 30, left: 20, bottom: 5,
-      }}
-    >
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-      <YAxis tick={{ fontSize: 10 }} />
-      <Tooltip />
-      <Legend />
-      <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-      <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-    </LineChart>
-  </div>
-)
+const ChartContainer = styled.div`
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`
 
-export default FeeChart
+const startDate = new Date('2022-04-01');
+const endDate = new Date('2022-05-30');
+
+const data: any[] = [];
+
+let line = 0
+
+for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
+  const formattedDate = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+  const uv = Math.floor(Math.random() * 1000);
+  const pv = Math.floor(Math.random() * 1000);
+  const amt = Math.floor(Math.random() * 1000);
+  line += Math.floor(Math.random() * 1000)
+
+  data.push({ timestamp: formattedDate, uv, pv, amt, line });
+}
+
+const VolumeChart = () => {
+  return (
+    <ChartContainer>
+      <ChartHeader>Fee</ChartHeader>
+      <ResponsiveContainer width="100%" height={400}>
+        <ComposedChart
+          data={data}
+          margin={{
+            top: 20, right: 20, bottom: 20, left: 20,
+          }}
+          syncId="syncA"
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis tick={{ fontSize: 12 }} dataKey="timestamp" />
+          <YAxis tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} orientation="right" yAxisId="right" />
+          <Tooltip />
+          <Legend />
+          <Bar type="monotone" dataKey="uv" barSize={16} stackId="a" fill="#413ea0" name="uv" />
+          <Bar type="monotone" dataKey="pv" barSize={16} stackId="a" fill="#c43a31" name="pv" />
+          <Bar type="monotone" dataKey="amt" barSize={16} stackId="a" fill="#82ca9d" name="amt" />
+          <Line type="monotone" dataKey="line" stroke="#ff7300" strokeWidth={3} dot={false} yAxisId="right" name="Cumulative" />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartContainer>
+  )
+}
+
+export default VolumeChart

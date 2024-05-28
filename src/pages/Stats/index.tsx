@@ -123,11 +123,13 @@ const ChartWrapper = styled.div`
 const StyledVolumeChart = styled(VolumeChart)`
   flex: 1 0 50%;
   box-sizing: border-box;
+  height: 400px;
 `
 
 const StyledFeeChart = styled(FeeChart)`
   flex: 1 0 50%;
   box-sizing: border-box;
+  height: 400px;
 `
 
 
