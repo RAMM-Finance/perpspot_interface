@@ -151,9 +151,6 @@ export default function TransactionPopup({
 
 export function TransactionStatusPopup() {
   const activePopups: any = useActivePopups()
-  // const { account  } : any = useWeb3React();
-
-  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   return (
     <StatusPopup>

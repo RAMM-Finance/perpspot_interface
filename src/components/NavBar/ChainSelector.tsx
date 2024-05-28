@@ -19,7 +19,7 @@ import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
-  // SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.ARBITRUM_ONE,
   // SupportedChainId.BERA_ARTIO,
   // SupportedChainId.LINEA,
   SupportedChainId.BASE,
@@ -40,7 +40,6 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   const isMobile = useIsMobile()
 
   const theme = useTheme()
-
   const ref = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
@@ -52,8 +51,6 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
 
   const [pendingChainId, setPendingChainId] = useState<SupportedChainId | undefined>(undefined)
 
-  // const location = useLocation();
-
   const onSelectChain = useCallback(
     async (targetChainId: SupportedChainId) => {
       setPendingChainId(targetChainId)
@@ -63,10 +60,6 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
     },
     [selectChain, setIsOpen]
   )
-
-  // const getConnection = useGetConnection()
-  // const connectionType = getConnection(connector).type
-  // const isUniWallet = connectionType === ConnectionType.UNIWALLET
 
   if (!chainId) {
     return null
