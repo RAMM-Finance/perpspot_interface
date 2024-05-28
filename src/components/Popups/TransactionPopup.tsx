@@ -53,6 +53,7 @@ function TransactionPopupContent({
 
   if (!activity) return null
 
+  console.log('zeke-activity:', activity.title, tx, chainId, tokens)
   return (
     <PortfolioRow
       isPopUp={true}
@@ -151,9 +152,6 @@ export default function TransactionPopup({
 
 export function TransactionStatusPopup() {
   const activePopups: any = useActivePopups()
-  // const { account  } : any = useWeb3React();
-
-  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   return (
     <StatusPopup>
