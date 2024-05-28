@@ -1,7 +1,8 @@
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
-// import { VolumeChart } from 'components/Charts/VolumeChart'
+import VolumeChart from 'components/Charts/VolumeChart'
+import FeeChart from 'components/Charts/FeeChart'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -113,6 +114,21 @@ const StatDelta = styled(ThemedText.Caption)`
 }
 `
 
+const ChartWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+`
+
+const StyledVolumeChart = styled(VolumeChart)`
+  flex: 1 0 50%;
+  box-sizing: border-box;
+`
+
+const StyledFeeChart = styled(FeeChart)`
+  flex: 1 0 50%;
+  box-sizing: border-box;
+`
 
 
 export default function StatsPage() {
@@ -191,7 +207,10 @@ export default function StatsPage() {
               </StatsBox>
             </StatsBoxWrapper>
           </StatsWrapper>
-          {/* <VolumeChart /> */}
+          <ChartWrapper>
+            <StyledVolumeChart />
+            <StyledFeeChart />
+          </ChartWrapper>
         </Container>
       </PageWrapper>
     </>
