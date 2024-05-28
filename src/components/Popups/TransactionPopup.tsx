@@ -53,6 +53,7 @@ function TransactionPopupContent({
 
   if (!activity) return null
 
+  console.log('zeke-activity:', activity.title, tx, chainId, tokens)
   return (
     <PortfolioRow
       isPopUp={true}
