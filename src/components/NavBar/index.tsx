@@ -13,7 +13,7 @@ import { useIsNftPage } from 'hooks/useIsNftPage'
 import { useIsPoolsPage } from 'hooks/useIsPoolsPage'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { NavLink, NavLinkProps, useLocation } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -24,6 +24,7 @@ import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.sv
 import { ChainSelector } from './ChainSelector'
 import { NavDropdown } from './NavDropdown'
 import * as styles from './style.css'
+import { useBRP } from 'hooks/useContract'
 
 const Nav = styled.nav`
   /* padding: 10px 12px; */
@@ -146,6 +147,18 @@ export const PageTabs = () => {
   const chainName = chainIdToBackendName(connectedChainId)
   const isPoolActive = useIsPoolsPage()
   const micrositeEnabled = useMGTMMicrositeEnabled()
+
+  // const brp = useBRP()
+  // useEffect(() => {
+  //   const fetch = async () => {
+  //     if (account && brp) {
+  //       const users = await brp.getUsers()
+  //       setAddresses(users)
+  //     }  
+  //   }
+  //   fetch()
+  // }, [account, brp])
+  
   
   const [addresses, setAddresses] = useState<string[]>(['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
 

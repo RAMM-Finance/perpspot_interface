@@ -3,6 +3,15 @@ import { BREAKPOINTS, ThemedText } from 'theme'
 import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import VolumeChart from 'components/Charts/VolumeChart'
 import FeeChart from 'components/Charts/FeeChart'
+import { useEffect, useMemo, useState } from 'react'
+import { usePoolsData } from 'hooks/useLMTPools'
+import useVaultBalance from 'hooks/useVaultBalance'
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useBRP, useLimweth } from 'hooks/useContract'
+import { formatDollar } from 'utils/formatNumbers'
+import { useStatsData } from 'hooks/useStatsData'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -138,7 +147,7 @@ export default function StatsPage() {
   const totalVolume = 1000000
   const totalFees = 10000
   const pool = 100000000
-  const totalUsers = 1000
+  // const totalUsers = 1000
   const openInterest = 100000
 
   const volumeDelta = 4000
@@ -147,6 +156,68 @@ export default function StatsPage() {
   const usersDelta = 30
   const interestDelta = -2200
 
+  const { chainId, account } = useWeb3React()
+
+  const { result: poolTvlData, loading: poolsLoading } = useStatsData()
+  const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
+
+  const [limWethBal, setLimWethBal] = useState<number | null>(null)
+  const limWeth = useLimweth()
+
+  const [totalUsers, setTotalUsers] = useState<number | null>(null)
+  const brp = useBRP()
+  
+  useEffect(() => {
+    const fetch = async () => {
+      if (brp) {
+        const users = await brp.getUsers()
+        setTotalUsers(users.length)
+      }  
+    }
+    fetch()
+  }, [brp])
+
+  console.log("POOL TVL DATA", poolTvlData)
+
+  useEffect(() => {
+    const getBalance = async (limWeth: any) => {
+      const [limWethBal, decimals, queryResult] = await Promise.all([
+        limWeth?.tokenBalance(),
+        limWeth?.decimals(),
+        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006')
+      ])
+
+      const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
+      const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
+      setLimWethBal(price * tokenBalance)
+    }
+    if (chainId === SupportedChainId.BASE) {
+      getBalance(limWeth)
+    }
+  }, [chainId, limWeth])
+
+  const poolsInfo = useMemo(() => {
+    if (poolTvlData && !balanceLoading) {
+      if (chainId === SupportedChainId.BASE) {
+        return {
+          tvl:
+            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            Number(vaultBal) +
+            Number(limWethBal || 0),
+          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+        }
+      } else {
+        return {
+          tvl:
+            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            Number(vaultBal),
+          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+        }
+      }
+    } else {
+      return null
+    }
+  }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
   return (
     <>
@@ -163,42 +234,42 @@ export default function StatsPage() {
             {/*<ThemedText.SubHeader>Active Stats</ThemedText.SubHeader>*/}
             <StatsBoxWrapper>
               <StatsBox>
-                <StatTitle color="textSecondary">Total Volume</StatTitle>
+                <StatTitle color="textSecondary">TVL</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                  {totalVolume.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
                 </StatDesc>
-                <StatDelta>
+                {/* <StatDelta>
                 {`${volumeDelta > 0 ? '+' : ''}${volumeDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta>
+                </StatDelta> */}
               </StatsBox>
               <StatsBox>
-                <StatTitle color="textSecondary">Total Fees</StatTitle>
+                <StatTitle color="textSecondary">Total Volumes</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                {totalFees.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                {!poolsInfo || !poolsInfo?.volume ? '-' : poolsInfo?.volume ? formatDollar({ num: poolsInfo.volume, digits: 0 }) : '0'}
                 </StatDesc>
-                <StatDelta>
+                {/* <StatDelta>
                 {`${feesDelta > 0 ? '+' : ''}${feesDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta>
+                </StatDelta> */}
               </StatsBox>
               <StatsBox>
-                <StatTitle color="textSecondary">Pool</StatTitle>
+                <StatTitle color="textSecondary">Fee</StatTitle>
                 <StatDesc lineHeight={1.5}>
                 {pool.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </StatDesc>
-                <StatDelta>
+                {/* <StatDelta>
                 {`${poolDelta > 0 ? '+' : ''}${poolDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta>
+                </StatDelta> */}
               </StatsBox>
               <StatsBox>
                 <StatTitle color="textSecondary">Total Users</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                {totalUsers.toLocaleString()}
+                {!totalUsers ? '-' : totalUsers.toLocaleString()}
                 </StatDesc>
-                <StatDelta>
+                {/* <StatDelta>
                 {`${usersDelta > 0 ? '+' : ''}${usersDelta.toLocaleString('en-US')}`}
-                </StatDelta>
+                </StatDelta> */}
               </StatsBox>
-              <StatsBox>
+              {/* <StatsBox>
                 <StatTitle color="textSecondary">Open Interest</StatTitle>
                 <StatDesc lineHeight={1.5}>
                 {openInterest.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
@@ -206,7 +277,7 @@ export default function StatsPage() {
                 <StatDelta>
                 {`${interestDelta > 0 ? '+' : ''}${interestDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
                 </StatDelta>
-              </StatsBox>
+              </StatsBox> */}
             </StatsBoxWrapper>
           </StatsWrapper>
           <ChartWrapper>
