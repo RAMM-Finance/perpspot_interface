@@ -33,16 +33,19 @@ export function useRenderCount() {
   })
 }
 
-interface PoolTVLData {
-  [key: string]: {
-    totalValueLocked: number
-    volume: number
-  }
+export interface CombinedDataByDay {
+  timestamp: number;
+  tvl: number;
+}
+
+export interface StatsData {
+  totalTvl: number;
+  combinedDataByDay: CombinedDataByDay[];
 }
 
 export function useStatsData(): {
   loading: boolean
-  result: PoolTVLData | undefined
+  result: StatsData | undefined
   error: boolean
 } {
   const { chainId } = useWeb3React()
@@ -176,7 +179,7 @@ export function useStatsData(): {
 
   const slot0s = [] as any
 
-  const poolToData = useMemo(() => {
+  const statsData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
 
     const {
@@ -256,17 +259,72 @@ export function useStatsData(): {
           (parseFloat(token0InfoFromUniswap?.lastPriceUSD) * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
         amount1:
           (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
+        timestamp: entry.blockTimestamp,
       }
     }
+    const date = new Date()
+    date.setMonth(date.getMonth() - 1)
+    date.setUTCHours(0, 0, 0, 0)
+    const oneMonthAgo = Math.floor(date.getTime() / 1000)
 
-    const ProvidedDataProcessed = providedData?.map(processLiqEntry)
-    const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
+    const ProvidedDataFiltered: any[] = providedData?.filter((entry: any) => entry.blockTimestamp >= oneMonthAgo)
+    const ProvidedDataProcessed = ProvidedDataFiltered?.map(processLiqEntry)
 
-    console.log("BEFORE PROCESS", providedData)
-    console.log("PROCESSED", ProvidedDataProcessed)
+    const WithdrawDataFiltered: any[] = withdrawnData?.filter((entry: any) => entry.blockTimestamp >= oneMonthAgo)
+    const WithdrawDataProcessed = WithdrawDataFiltered?.map(processLiqEntry)
 
     const totalAmountsByPool: { [key: string]: number } = {}
-    const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
+
+    const providedDataByDay: { timestamp: number; tvl: number; }[] = ProvidedDataProcessed.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        existingEntry.tvl += cur.amount0
+        existingEntry.tvl += cur.amount1
+      } else {
+        let tvl = 0
+        tvl += cur.amount0
+        tvl += cur.amount1
+        acc.push({ timestamp: dayTimestamp, tvl: tvl })
+      }
+      return acc
+    }, [] as { timestamp: number; tvl: number; }[])
+
+    const withdrawDataByDay: { timestamp: number; tvl: number; }[] = WithdrawDataProcessed.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        existingEntry.tvl += cur.amount0
+        existingEntry.tvl += cur.amount1
+      } else {
+        let tvl = 0
+        tvl += cur.amount0
+        tvl += cur.amount1
+        acc.push({ timestamp: dayTimestamp, tvl: tvl })
+      }
+      return acc
+    }, [] as { timestamp: number; tvl: number; }[])
+
+    const combinedDataByDay = providedDataByDay.map(providedData => {
+      const correspondingWithdrawData = withdrawDataByDay.find(withdrawData => withdrawData.timestamp === providedData.timestamp);
+      const withdrawTvl = correspondingWithdrawData ? correspondingWithdrawData.tvl : 0
+      return {
+        timestamp: providedData.timestamp,
+        tvl: providedData.tvl - withdrawTvl
+      };
+    })
+
+
+
+    const sortedCombinedDataByDay = combinedDataByDay.sort((a, b) => a.timestamp - b.timestamp)
+    
+    const totalTvl = sortedCombinedDataByDay.reduce((sum, data) => sum + data.tvl, 0)
 
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
@@ -340,47 +398,24 @@ export function useStatsData(): {
     addedVolumes.forEach(processVolume)
     reducedVolumes.forEach(processVolume)
 
-    const TVLDataPerPool: { [key: string]: any } = {}
-    ProvidedDataProcessed?.forEach((entry: any) => {
-      const tokens = uniqueTokens.get(entry.pool)
-      // const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
-      const key = getPoolId(tokens[0], tokens[1], tokens[2])
-
-      if (!TVLDataPerPool[key]) {
-        TVLDataPerPool[key] = 0
-      }
-
-      TVLDataPerPool[key] += entry.amount0
-      TVLDataPerPool[key] += entry.amount1
-    })
-
-    WithdrawDataProcessed?.forEach((entry: any) => {
-      const tokens = uniqueTokens.get(entry.pool)
-      // const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
-      const key = getPoolId(tokens[0], tokens[1], tokens[2])
-
-      TVLDataPerPool[key] -= entry.amount0
-      TVLDataPerPool[key] -= entry.amount1
-    })
-
-    Object.keys(TVLDataPerPool).forEach((key) => {
-      poolToData[key.toLowerCase()] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }
-    })
-
-    return poolToData
+    const statsData = {
+      totalTvl: totalTvl,
+      combinedDataByDay: combinedDataByDay
+    }
+    return statsData
   }, [data, isError, isLoading])
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    if (poolToData && isLoading)
+    if (statsData && isLoading)
       setLoading(false)
-  }, [poolToData, isLoading])
+  }, [statsData, isLoading])
 
   return useMemo(() => {
     return {
       loading: loading,
       error: isError,
-      result: poolToData,
+      result: statsData,
     }
-  }, [poolToData, loading, isError])
+  }, [statsData, loading, isError])
 }

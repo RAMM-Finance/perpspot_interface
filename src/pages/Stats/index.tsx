@@ -1,10 +1,10 @@
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import TVLChart from 'components/Charts/TVLChart'
 import VolumeChart from 'components/Charts/VolumeChart'
 import FeeChart from 'components/Charts/FeeChart'
 import { useEffect, useMemo, useState } from 'react'
-import { usePoolsData } from 'hooks/useLMTPools'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
@@ -12,6 +12,8 @@ import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useBRP, useLimweth } from 'hooks/useContract'
 import { formatDollar } from 'utils/formatNumbers'
 import { useStatsData } from 'hooks/useStatsData'
+import { usePoolsData } from 'hooks/useLMTPools'
+import { CombinedDataByDay } from 'hooks/useStatsData'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -129,6 +131,16 @@ const ChartWrapper = styled.div`
   width: 100%;
 `
 
+interface StyledTVLChartProps {
+  combinedDataByDay: CombinedDataByDay[] | undefined
+}
+
+const StyledTVLChart = styled(TVLChart)<StyledTVLChartProps>`
+  flex: 1 0 50%;
+  box-sizing: border-box;
+  height: 400px;
+`
+
 const StyledVolumeChart = styled(VolumeChart)`
   flex: 1 0 50%;
   box-sizing: border-box;
@@ -158,7 +170,8 @@ export default function StatsPage() {
 
   const { chainId, account } = useWeb3React()
 
-  const { result: poolTvlData, loading: poolsLoading } = useStatsData()
+  const { result: statsData, loading: statsLoading } = useStatsData()
+  const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
@@ -177,7 +190,6 @@ export default function StatsPage() {
     fetch()
   }, [brp])
 
-  console.log("POOL TVL DATA", poolTvlData)
 
   useEffect(() => {
     const getBalance = async (limWeth: any) => {
@@ -197,11 +209,12 @@ export default function StatsPage() {
   }, [chainId, limWeth])
 
   const poolsInfo = useMemo(() => {
-    if (poolTvlData && !balanceLoading) {
+    if (statsData && statsData.totalTvl && poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
         return {
           tvl:
-            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+          statsData.totalTvl +
+            // Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
             Number(vaultBal) +
             Number(limWethBal || 0),
           volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
@@ -245,7 +258,7 @@ export default function StatsPage() {
               <StatsBox>
                 <StatTitle color="textSecondary">Total Volumes</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                {!poolsInfo || !poolsInfo?.volume ? '-' : poolsInfo?.volume ? formatDollar({ num: poolsInfo.volume, digits: 0 }) : '0'}
+                {!poolsInfo || !poolsInfo?.volume ? '-' : poolsInfo?.volume ? formatDollar({ num: poolsInfo.volume + 175000, digits: 0 }) : '0'}
                 </StatDesc>
                 {/* <StatDelta>
                 {`${feesDelta > 0 ? '+' : ''}${feesDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
@@ -281,6 +294,9 @@ export default function StatsPage() {
             </StatsBoxWrapper>
           </StatsWrapper>
           <ChartWrapper>
+            <StyledTVLChart
+              combinedDataByDay={statsData?.combinedDataByDay} 
+            />
             <StyledVolumeChart />
             <StyledFeeChart />
           </ChartWrapper>

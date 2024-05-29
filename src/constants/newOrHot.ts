@@ -4,6 +4,8 @@ export enum TokenStatus {
     KEYCAT = 'New',
     SPEC = '🔥',
     OKAYEG = '🔥',
+    CHOMP = 'New',
+    PRIME = 'New'
   }
 
 export type TokenStatusKey = keyof typeof TokenStatus
