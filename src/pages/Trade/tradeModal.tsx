@@ -14,6 +14,7 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { Input as NumericalInput } from 'components/NumericalInput'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { PremiumCurrencySelector } from 'components/PremiumCurrencySelector'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowEnd, RowFixed } from 'components/Row'
@@ -26,6 +27,8 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { addDoc, collection } from 'firebase/firestore'
+import { firestore } from 'firebaseConfig'
 import { useCurrency } from 'hooks/Tokens'
 import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
@@ -34,11 +37,11 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { PoolState, usePool } from 'hooks/usePools'
-import { getDecimalAndUsdValueData, useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
 import {
@@ -68,9 +71,6 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { firestore } from 'firebaseConfig'
 
 const Wrapper = styled.div`
   padding: 0.75rem;
@@ -221,7 +221,6 @@ const TradeTabContent = () => {
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
 
-
   const relevantTokenBalances = useCurrencyBalances(
     account ?? undefined,
     useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
@@ -282,7 +281,6 @@ const TradeTabContent = () => {
     premiumInPosToken,
   } = useMarginTradingState()
 
-
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
@@ -323,7 +321,6 @@ const TradeTabContent = () => {
     inputCurrency?.wrapped.address,
     outputCurrency?.wrapped.address
   )
-
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
@@ -383,20 +380,25 @@ const TradeTabContent = () => {
 
   const fiatValueTradeMargin = useUSDPriceBNV2(
     parsedMargin,
-    (existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) 
-    ? outputCurrency ?? undefined 
-    : inputCurrency ?? undefined
+    (existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken)
+      ? outputCurrency ?? undefined
+      : inputCurrency ?? undefined
     // marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
   )
 
-  
   const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   useEffect(() => {
-    if (trade && fiatValueTradeMargin && fiatValueTradeMargin.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
+    if (
+      trade &&
+      fiatValueTradeMargin &&
+      fiatValueTradeMargin.data &&
+      leverageFactor &&
+      !isNaN(parseFloat(leverageFactor))
+    ) {
       setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
       setFiatValueForVolume(fiatValueTradeMargin.data * parseFloat(leverageFactor))
-        // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
+      // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
     }
   }, [trade, fiatValueTradeMargin, leverageFactor])
   // const fiatValueTradePremium = useUSDPriceBN(
@@ -419,7 +421,6 @@ const TradeTabContent = () => {
   //     isLoading: fiatValueTradeMargin.isLoading || fiatValueTradePremium.isLoading,
   //   }
   // }, [fiatValueTradeMargin, fiatValueTradePremium])
-
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
@@ -535,43 +536,48 @@ const TradeTabContent = () => {
     addPositionCallback()
       .then(async (hash) => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
-        
+
         const timestamp = Math.floor(Date.now() / 1000)
-        const type = "ADD"
+        const type = 'ADD'
         try {
-          if (trade && fiatValueTradeMargin && fiatValueTradeMargin.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
+          if (
+            trade &&
+            fiatValueTradeMargin &&
+            fiatValueTradeMargin.data &&
+            leverageFactor &&
+            !isNaN(parseFloat(leverageFactor))
+          ) {
             // let tokenAmount = trade.marginInInput.toNumber()
-          
+
             // const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
-            
+
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
             // const priceUSD = result.lastPriceUSD
 
             const volume = fiatValueTradeMargin.data * parseFloat(leverageFactor)
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
-  
+
             await addDoc(collection(firestore, 'volumes'), {
-              poolId: poolId,
+              poolId,
               // priceUSD: priceUSD,
-              timestamp: timestamp,
-              type: type,
-              volume: volume,
-              account: account
+              timestamp,
+              type,
+              volume,
+              account,
             })
           } else {
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
               // priceUSD: priceUSD,
-              timestamp: timestamp,
-              type: type,
+              timestamp,
+              type,
               volume: fiatValueForVolume,
-              account: account
+              account,
             })
           }
         } catch (error) {
-            console.error("An error occurred:", error)
-          }
-
+          console.error('An error occurred:', error)
+        }
       })
       .catch((error) => {
         setTradeState((currentState) => ({
@@ -792,7 +798,9 @@ const TradeTabContent = () => {
                   {Number(formattedMargin) > 1
                     ? Number(formattedMargin).toFixed(2)
                     : Number(formattedMargin).toFixed(6)}{' '}
-                  {(existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken) ? outputCurrency?.symbol : inputCurrency?.symbol}
+                  {(existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken)
+                    ? outputCurrency?.symbol
+                    : inputCurrency?.symbol}
                 </ThemedText.BodySmall>
                 <ThemedText.BodySmall>+</ThemedText.BodySmall>
                 <ThemedText.BodySmall>
@@ -888,7 +896,7 @@ const TradeTabContent = () => {
                     if (str === '') {
                       onDebouncedLeverageFactor('')
                     } else if (!!str && Number(str) >= 0) {
-                      if (Number(str) > 100) {
+                      if (Number(str) > 1000) {
                         return
                       }
                       if (Number(str) >= 0) {
