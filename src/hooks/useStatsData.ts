@@ -33,14 +33,21 @@ export function useRenderCount() {
   })
 }
 
-export interface CombinedDataByDay {
+export interface TvlByDay {
   timestamp: number;
   tvl: number;
 }
 
+export interface VolumeByDay {
+  timestamp: number;
+  volume: number;
+}
+
 export interface StatsData {
   totalTvl: number;
-  combinedDataByDay: CombinedDataByDay[];
+  tvlByDay: TvlByDay[];
+  totalVolume: number;
+  volumeByDay: VolumeByDay[];
 }
 
 export function useStatsData(): {
@@ -114,22 +121,6 @@ export function useStatsData(): {
                   getDecimalAndUsdValueData(chainId, token[0]),
                   getDecimalAndUsdValueData(chainId, token[1]),
                 ])
-
-                // if (token[0].symbol === "NEW_SYMBOL" || token[1].symbol === "NEW_SYMBOL") {
-                // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
-
-                // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
-                //   poolId: poolId,
-                //   token0: token[0],
-                //   token1: token[1],
-                //   token0Price: value0.lastPriceUSD,
-                //   token1Price: value1.lastPriceUSD,
-                //   token0Decimals: value0.decimals,
-                //   token1Decimals: value1.decimals,
-                //   token0Symbol: value0.symbol,
-                //   token1Symbol: value1.symbol
-                // })
-                // }
 
                 uniqueTokens_.set(poolAdress, [
                   ethers.utils.getAddress(token[0]),
@@ -267,13 +258,94 @@ export function useStatsData(): {
     date.setUTCHours(0, 0, 0, 0)
     const oneMonthAgo = Math.floor(date.getTime() / 1000)
 
-    const ProvidedDataFiltered: any[] = providedData?.filter((entry: any) => entry.blockTimestamp >= oneMonthAgo)
+    const ProvidedDataFiltered: any[] = providedData?.filter((entry: any) => true) //entry.blockTimestamp >= oneMonthAgo)
     const ProvidedDataProcessed = ProvidedDataFiltered?.map(processLiqEntry)
 
-    const WithdrawDataFiltered: any[] = withdrawnData?.filter((entry: any) => entry.blockTimestamp >= oneMonthAgo)
+    const WithdrawDataFiltered: any[] = withdrawnData?.filter((entry: any) => true) //entry.blockTimestamp >= oneMonthAgo)
     const WithdrawDataProcessed = WithdrawDataFiltered?.map(processLiqEntry)
 
-    const totalAmountsByPool: { [key: string]: number } = {}
+    const addDataFiltered: any[] = addData?.filter((entry: any) => true) //entry.blockTimestamp >= oneMonthAgo)
+    const reduceDataFiltered: any[] = reduceData?.filter((entry: any) => true) //entry.blockTimestamp >= oneMonthAgo)
+
+    const addDataProcessed = addDataFiltered?.map((entry: any) => ({
+      key: entry.pool,
+      token: entry.positionIsToken0
+        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
+        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
+      amount: entry.addedAmount,
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+    const reduceDataProcessed = reduceDataFiltered?.map((entry: any) => ({
+      key: entry.pool,
+      token: entry.positionIsToken0
+        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
+        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
+      amount: entry.reduceAmount,
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+
+    const processEntry = (entry: any) => {
+      const pool = ethers.utils.getAddress(entry.key)
+
+      if (uniqueTokens.get(pool)) {
+        const tokens = uniqueTokens?.get(pool)
+        let totalValue
+
+        const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
+
+        const data = prevPriceData?.find((entry: any) => entry.poolId === newKey)
+
+        const token0Addr = data?.token0
+        const token1Addr = data?.token1
+        const token0PriceUSD = data?.token0Price
+        const token1PriceUSD = data?.token1Price
+        const token0Decimals = data?.token0Decimals
+        const token1Decimals = data?.token1Decimals
+
+        if (token0Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
+          totalValue = (token0PriceUSD * entry.amount) / 10 ** token0Decimals
+        } else if (token1Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
+          totalValue = (token1PriceUSD * entry.amount) / 10 ** token1Decimals
+        } else {
+          totalValue = 0
+        }
+
+        return {
+          volume: totalValue,
+          timestamp: entry.timestamp,
+        }
+      }
+      return {}
+    }
+
+    const volumeAdded = addDataProcessed?.map(processEntry)
+    const volumeReduced = reduceDataProcessed?.map(processEntry)
+
+
+    const processVolume = (entry: any) => {
+      // if (entry.type === 'ADD') {
+      //   if (totalAmountsByPool[entry.poolId]) {
+      //     totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
+      //   } else {
+      //     totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
+      //   }
+      // } else if (entry.type === 'REDUCE') {
+      //   if (totalAmountsByPool[entry.poolId]) {
+      //     totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
+      //   } else {
+      //     totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
+      //   }
+      // }
+      return {
+        volume: entry.volume,
+        timestamp: entry.timestamp
+      }
+    }
+
+    const volumeAdded2 = addedVolumes.map(processVolume)
+    const volumeReduced2 = reducedVolumes.map(processVolume)
+
+    // TVL
 
     const providedDataByDay: { timestamp: number; tvl: number; }[] = ProvidedDataProcessed.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
@@ -311,7 +383,7 @@ export function useStatsData(): {
       return acc
     }, [] as { timestamp: number; tvl: number; }[])
 
-    const combinedDataByDay = providedDataByDay.map(providedData => {
+    const tvlByDay = providedDataByDay.map(providedData => {
       const correspondingWithdrawData = withdrawDataByDay.find(withdrawData => withdrawData.timestamp === providedData.timestamp);
       const withdrawTvl = correspondingWithdrawData ? correspondingWithdrawData.tvl : 0
       return {
@@ -320,87 +392,117 @@ export function useStatsData(): {
       };
     })
 
-
-
-    const sortedCombinedDataByDay = combinedDataByDay.sort((a, b) => a.timestamp - b.timestamp)
+    const sortedTvlByDay = tvlByDay.sort((a, b) => a.timestamp - b.timestamp)
     
-    const totalTvl = sortedCombinedDataByDay.reduce((sum, data) => sum + data.tvl, 0)
+    const totalTvl = sortedTvlByDay.reduce((sum, data) => sum + data.tvl, 0)
 
-    const addDataProcessed = addData?.map((entry: any) => ({
-      key: entry.pool,
-      token: entry.positionIsToken0
-        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
-        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
-      amount: entry.addedAmount,
-    }))
-    const reduceDataProcessed = reduceData?.map((entry: any) => ({
-      key: entry.pool,
-      token: entry.positionIsToken0
-        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
-        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
-      amount: entry.reduceAmount,
-    }))
+    // volume before startpoint
 
-    const processEntry = (entry: any) => {
-      const pool = ethers.utils.getAddress(entry.key)
-
-      if (uniqueTokens.get(pool)) {
-        const tokens = uniqueTokens?.get(pool)
-        let totalValue
-
-        const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
-
-        const data = prevPriceData?.find((entry: any) => entry.poolId === newKey)
-
-        const token0Addr = data?.token0
-        const token1Addr = data?.token1
-        const token0PriceUSD = data?.token0Price
-        const token1PriceUSD = data?.token1Price
-        const token0Decimals = data?.token0Decimals
-        const token1Decimals = data?.token1Decimals
-
-        if (token0Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (token0PriceUSD * entry.amount) / 10 ** token0Decimals
-        } else if (token1Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (token1PriceUSD * entry.amount) / 10 ** token1Decimals
-        } else {
-          totalValue = 0
-        }
-
-        if (totalAmountsByPool[newKey]) {
-          totalAmountsByPool[newKey] += totalValue
-        } else {
-          totalAmountsByPool[newKey] = totalValue
-        }
+    const volumeAddedByDay1: { timestamp: number; volume: number; }[] = volumeAdded.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        existingEntry.volume += cur.volume || 0
+      } else {
+        let volume = 0
+        volume += cur.volume || 0
+        acc.push({ timestamp: dayTimestamp, volume: volume })
       }
-    }
+      return acc
+    }, [] as { timestamp: number; volume: number; }[])
 
-    addDataProcessed?.forEach(processEntry)
-    reduceDataProcessed?.forEach(processEntry)
-
-    const processVolume = (entry: any) => {
-      let totalVolume
-      if (entry.type === 'ADD') {
-        if (totalAmountsByPool[entry.poolId]) {
-          totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
-        } else {
-          totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
-        }
-      } else if (entry.type === 'REDUCE') {
-        if (totalAmountsByPool[entry.poolId]) {
-          totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
-        } else {
-          totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
-        }
+    const volumeReducedByDay1: { timestamp: number; volume: number; }[] = volumeReduced.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        existingEntry.volume += cur.volume || 0
+      } else {
+        let volume = 0
+        volume += cur.volume || 0
+        acc.push({ timestamp: dayTimestamp, volume: volume })
       }
-    }
+      return acc
+    }, [] as { timestamp: number; volume: number; }[])
 
-    addedVolumes.forEach(processVolume)
-    reducedVolumes.forEach(processVolume)
+    console.log("VOLUME ADDED BY DAY", volumeAddedByDay1)
+    console.log("VOLUME REDUCED BY DAY", volumeReducedByDay1)
+
+    const volumeAddedByDay2: { timestamp: number; volume: number; }[] = volumeAdded2.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        existingEntry.volume += cur.volume || 0
+      } else {
+        let volume = 0
+        volume += cur.volume || 0
+        acc.push({ timestamp: dayTimestamp, volume: volume })
+      }
+      return acc
+    }, [] as { timestamp: number; volume: number; }[])
+
+    const volumeReducedByDay2: { timestamp: number; volume: number; }[] = volumeReduced2.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        existingEntry.volume += cur.volume || 0
+      } else {
+        let volume = 0
+        volume += cur.volume || 0
+        acc.push({ timestamp: dayTimestamp, volume: volume })
+      }
+      return acc
+    }, [] as { timestamp: number; volume: number; }[])
+
+  // 모든 배열에서 타임스탬프 수집
+  const allTimestamps = [...volumeAddedByDay1, ...volumeAddedByDay2, ...volumeReducedByDay1, ...volumeReducedByDay2]
+    .map(item => item.timestamp)
+    .filter((value, index, self) => self.indexOf(value) === index); // 중복 제거
+
+  // 각 타임스탬프에 대해 볼륨 합산
+  const volumeByDay = allTimestamps.map(timestamp => {
+    const volumeAdded1 = volumeAddedByDay1.find(item => item.timestamp === timestamp)?.volume || 0;
+    const volumeAdded2 = volumeAddedByDay2.find(item => item.timestamp === timestamp)?.volume || 0;
+    const volumeReduced1 = volumeReducedByDay1.find(item => item.timestamp === timestamp)?.volume || 0;
+    const volumeReduced2 = volumeReducedByDay2.find(item => item.timestamp === timestamp)?.volume || 0;
+
+    return {
+      timestamp: timestamp,
+      volume: volumeAdded1 + volumeAdded2 + volumeReduced1 + volumeReduced2
+    };
+  });
+
+    const totalVolume = [
+      ...volumeAddedByDay1,
+      ...volumeAddedByDay2,
+      ...volumeReducedByDay1,
+      ...volumeReducedByDay2
+    ].reduce((acc, cur) => acc + (cur.volume || 0), 0);
+    
+    console.log("TOTAL VOLUME", totalVolume);
+
+    const sortedVolumeByDay = volumeByDay.sort((a, b) => a.timestamp - b.timestamp)
+
+    if (sortedVolumeByDay.length > 0) {
+      sortedVolumeByDay[0].volume += 175000
+    }
 
     const statsData = {
       totalTvl: totalTvl,
-      combinedDataByDay: combinedDataByDay
+      tvlByDay: sortedTvlByDay,
+      totalVolume: totalVolume,
+      volumeByDay: sortedVolumeByDay
     }
     return statsData
   }, [data, isError, isLoading])

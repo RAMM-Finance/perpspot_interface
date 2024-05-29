@@ -1,7 +1,6 @@
 import { ComposedChart, ResponsiveContainer, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import styled from 'styled-components/macro'
 import { StatsData } from 'hooks/useStatsData'
-import { CombinedDataByDay } from 'hooks/useStatsData'
 
 const ChartHeader = styled.h2`
   font-size: 24px;
@@ -15,39 +14,21 @@ const ChartContainer = styled.div`
   align-items: center;
 `
 
-const startDate = new Date('2022-04-01');
-const endDate = new Date('2022-05-30');
-
 const data: any[] = [];
-
-let line = 0
-
-for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
-  const formattedDate = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })
-  const tvl = Math.floor(Math.random() * 1000)
-  line += tvl
-
-  data.push({ timestamp: formattedDate, tvl, line })
-}
-
-
 
 const TVLChart = (props: any) => {
 
-  let line2 = 0;
-  const formattedData = props?.combinedDataByDay?.map((item: any) => {
+  let tvlLine = 0
+  const formattedData = props?.tvlByDay?.map((item: any) => {
     const date = new Date(item.timestamp * 1000);
     const formattedDate = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
-    line2 += item.tvl;
+    tvlLine += item.tvl
     return { 
       timestamp: formattedDate, 
       tvl: item.tvl, 
-      line: line2 };
-  });
-
-  console.log("STATS DATAA", props.combinedDataByDay)
-  console.log("DATAA", data)
-  console.log("FORMATTED DATAA", formattedData)
+      line: tvlLine }
+  })
+  
   return (
     <ChartContainer>
       <ChartHeader>TVL</ChartHeader>

@@ -12,8 +12,7 @@ import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useBRP, useLimweth } from 'hooks/useContract'
 import { formatDollar } from 'utils/formatNumbers'
 import { useStatsData } from 'hooks/useStatsData'
-import { usePoolsData } from 'hooks/useLMTPools'
-import { CombinedDataByDay } from 'hooks/useStatsData'
+import { TvlByDay, VolumeByDay } from 'hooks/useStatsData'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -132,7 +131,11 @@ const ChartWrapper = styled.div`
 `
 
 interface StyledTVLChartProps {
-  combinedDataByDay: CombinedDataByDay[] | undefined
+  tvlByDay: TvlByDay[] | undefined
+}
+
+interface StyledVolumeChartProps {
+  volumeByDay: VolumeByDay[] | undefined
 }
 
 const StyledTVLChart = styled(TVLChart)<StyledTVLChartProps>`
@@ -141,7 +144,7 @@ const StyledTVLChart = styled(TVLChart)<StyledTVLChartProps>`
   height: 400px;
 `
 
-const StyledVolumeChart = styled(VolumeChart)`
+const StyledVolumeChart = styled(VolumeChart)<StyledVolumeChartProps>`
   flex: 1 0 50%;
   box-sizing: border-box;
   height: 400px;
@@ -156,22 +159,11 @@ const StyledFeeChart = styled(FeeChart)`
 
 export default function StatsPage() {
 
-  const totalVolume = 1000000
-  const totalFees = 10000
   const pool = 100000000
-  // const totalUsers = 1000
-  const openInterest = 100000
 
-  const volumeDelta = 4000
-  const feesDelta = 200
-  const poolDelta = -30000
-  const usersDelta = 30
-  const interestDelta = -2200
-
-  const { chainId, account } = useWeb3React()
+  const { chainId } = useWeb3React()
 
   const { result: statsData, loading: statsLoading } = useStatsData()
-  const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
@@ -209,28 +201,27 @@ export default function StatsPage() {
   }, [chainId, limWeth])
 
   const poolsInfo = useMemo(() => {
-    if (statsData && statsData.totalTvl && poolTvlData && !balanceLoading) {
+    if (statsData && statsData.totalTvl && statsData.totalVolume && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
         return {
           tvl:
-          statsData.totalTvl +
-            // Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            statsData.totalTvl +
             Number(vaultBal) +
             Number(limWethBal || 0),
-          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          volume: statsData.totalVolume
         }
       } else {
         return {
           tvl:
-            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            statsData.totalTvl +
             Number(vaultBal),
-          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          volume: statsData.totalVolume
         }
       }
     } else {
       return null
     }
-  }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
+  }, [chainId, statsData, vaultBal, balanceLoading, limWethBal])
 
   return (
     <>
@@ -294,11 +285,13 @@ export default function StatsPage() {
             </StatsBoxWrapper>
           </StatsWrapper>
           <ChartWrapper>
-            <StyledTVLChart
-              combinedDataByDay={statsData?.combinedDataByDay} 
+            {/* <StyledTVLChart
+              tvlByDay={statsData?.tvlByDay} 
+            /> */}
+            <StyledVolumeChart
+              volumeByDay={statsData?.volumeByDay}
             />
-            <StyledVolumeChart />
-            <StyledFeeChart />
+            {/* <StyledFeeChart /> */}
           </ChartWrapper>
         </Container>
       </PageWrapper>
