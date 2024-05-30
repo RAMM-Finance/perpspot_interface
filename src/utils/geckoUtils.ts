@@ -14,7 +14,7 @@ export const formatOhlcEndpoint = (
   return `${geckoEndpoint}/networks/${network}/pools/${address}/ohlcv/${timeframe}?limit=${limit}&currency=${currency}&token=${token.toLowerCase()}`
 }
 
-export const formatFetchBarEndpoint = (
+export const formatGeckoOhlcEndpoint = (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
   aggregate: string,
