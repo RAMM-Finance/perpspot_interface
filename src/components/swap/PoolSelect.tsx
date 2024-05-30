@@ -730,7 +730,7 @@ function SelectPool({
         fee={poolKey?.fee}
         poolLoading={loading}
       />
-      <StyledMenu
+      {open &&<StyledMenu
         id="simple-menu"
         anchorEl={anchorEl}
         keepMounted
@@ -764,7 +764,7 @@ function SelectPool({
             </ListWrapper>
           )}
         </PoolListContainer>
-      </StyledMenu>
+      </StyledMenu>}
     </MainWrapper>
   )
 }
