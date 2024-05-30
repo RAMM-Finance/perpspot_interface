@@ -15,7 +15,6 @@ import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { getPoolId, HeaderRow, LoadedRow, LoadingRow, positionEntryPrice } from './TokenRow'
-import { position } from 'polished'
 
 const GridContainer = styled.div`
   display: flex;
@@ -94,12 +93,12 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
         const token0 = findCurrency(position?.poolKey.token0, tokens)
         const token1 = findCurrency(position?.poolKey.token1, tokens)
 
-        const token0Symbol = token0?.symbol ? token0?.symbol?.toLowerCase() : ""
-        const token1Symbol = token1?.symbol ? token1?.symbol?.toLowerCase() : ""
+        const token0Symbol = token0?.symbol ? token0?.symbol?.toLowerCase() : ''
+        const token1Symbol = token1?.symbol ? token1?.symbol?.toLowerCase() : ''
 
         const pair = token0Symbol + token1Symbol
 
-        const pairString = lowercaseFilterString.replace(/\/|-| /g, "")
+        const pairString = lowercaseFilterString.replace(/\/|-| /g, '')
         const pairIncludesFilterString = pair?.includes(pairString)
 
         const addressIncludesFilterString = position?.poolKey.token0?.toLowerCase().includes(lowercaseFilterString)
