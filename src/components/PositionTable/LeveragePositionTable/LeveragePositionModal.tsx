@@ -35,6 +35,7 @@ import DecreasePositionContent from './DecreasePositionContent'
 import IncreasePosition from './DecreasePositionContent/IncreasePosition'
 import { DepositPremiumContent } from './DepositPremiumContent'
 import { LoadingBubble } from './loading'
+import { positionEntryPrice } from './TokenRow'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
 
 interface TradeModalProps {
@@ -136,6 +137,7 @@ export interface AlteredPositionProperties {
   premiumOwed?: BN // how much premium is owed since last repayment
   premiumDeposit?: BN
   premiumLeft?: BN
+  executionPrice?: BN
 }
 
 export function LeveragePositionModal(props: TradeModalProps) {
@@ -149,6 +151,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
     totalDebtInput: undefined,
     totalDebtOutput: undefined,
     premiumDeposit: undefined,
+    executionPrice: undefined,
   })
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const inputCurrency = useCurrency(
@@ -242,6 +245,13 @@ export function LeveragePositionModal(props: TradeModalProps) {
               Decrease Position
             </TabElement>
             <TabElement
+              last={true}
+              isActive={activeTab === TradeModalActiveTab.INCREASE_POSITION}
+              onClick={() => setActiveTab(TradeModalActiveTab.INCREASE_POSITION)}
+            >
+              Increase Position
+            </TabElement>
+            <TabElement
               isActive={activeTab === TradeModalActiveTab.DEPOSIT_PREMIUM}
               onClick={() => setActiveTab(TradeModalActiveTab.DEPOSIT_PREMIUM)}
             >
@@ -253,13 +263,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
               onClick={() => setActiveTab(TradeModalActiveTab.WITHDRAW_PREMIUM)}
             >
               Withdraw Interest
-            </TabElement>
-            <TabElement
-              last={true}
-              isActive={activeTab === TradeModalActiveTab.INCREASE_POSITION}
-              onClick={() => setActiveTab(TradeModalActiveTab.INCREASE_POSITION)}
-            >
-              Increase Position
             </TabElement>
           </TabsWrapper>
           <ContentWrapper>{displayedContent}</ContentWrapper>
@@ -360,6 +363,24 @@ function MarginPositionInfo({
     position?.isToken0
   )
 
+  const [entryPrice, currentPrice, baseToken, quoteToken] = useMemo(() => {
+    if (pool && position) {
+      const _entryPrice = positionEntryPrice(position)
+      const _currentPrice = position.isToken0
+        ? new BN(pool.token0Price.toFixed(18))
+        : new BN(pool.token1Price.toFixed(18))
+
+      return [
+        _entryPrice,
+        _currentPrice,
+        position.isToken0 ? pool.token1 : pool.token0,
+        position.isToken0 ? pool.token0 : pool.token1,
+      ]
+    } else {
+      return [undefined, undefined, undefined]
+    }
+  }, [pool, position])
+
   const totalDebtInput = position?.totalDebtInput
   const premiumLeft = position?.premiumLeft
 
@@ -431,6 +452,15 @@ function MarginPositionInfo({
           value={position?.premiumLeft ? (position?.premiumLeft.gt(0) ? position?.premiumLeft : new BN(0)) : undefined}
           newValue={alteredPremium ? (alteredPremium.gt(0) ? alteredPremium : new BN(0)) : undefined}
           appendSymbol={inputCurrency?.symbol}
+          type={NumberType.SwapTradeAmount}
+        />
+        <PositionValueLabel
+          title={<Trans>Execution Price</Trans>}
+          description={<Trans>Current interest deposit remaining</Trans>}
+          syncing={loading}
+          value={entryPrice ? entryPrice : undefined}
+          newValue={alteredPosition?.executionPrice ? alteredPosition.executionPrice : undefined}
+          appendSymbol={`${outputCurrency?.symbol}/${inputCurrency?.symbol}`}
           type={NumberType.SwapTradeAmount}
         />
         <PositionTimeLabel

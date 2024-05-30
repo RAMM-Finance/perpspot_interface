@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency, Percent } from '@uniswap/sdk-core'
+import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import BigNumber, { BigNumber as BN } from 'bignumber.js'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
@@ -33,9 +33,24 @@ import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
-import { getPoolId } from '../TokenRow'
+import { getPoolId, positionEntryPrice } from '../TokenRow'
 
 const InputSection = styled.div`
+  background-color: ${({ theme }) => theme.surface1};
+  margin-bottom: 10px;
+  padding: 10px;
+  margin-top: 5px;
+  &:focus-within {
+    border: 1px solid ${({ theme }) => theme.accentActive};
+  }
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  color: ${({ theme }) => theme.textSecondary};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`
+const OutputSection = styled.div`
   background-color: ${({ theme }) => theme.surface1};
   margin-bottom: 10px;
   padding: 10px;
@@ -146,11 +161,51 @@ const IncreasePosition = ({
   }
 
   const marginFiatAmount = useUSDPriceBNV2(fixedToEightDecimals(increaseAmount), marginCurrency ?? undefined)
+  const outputFiatAmount = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
     setLeverageFactor
   )
+
+  const [entryPrice, , ,] = useMemo(() => {
+    if (pool && existingPosition) {
+      const _entryPrice = positionEntryPrice(existingPosition)
+      const _currentPrice = existingPosition.isToken0
+        ? new BN(pool.token0Price.toFixed(18))
+        : new BN(pool.token1Price.toFixed(18))
+
+      return [
+        _entryPrice,
+        _currentPrice,
+        existingPosition.isToken0 ? pool.token1 : pool.token0,
+        existingPosition.isToken0 ? pool.token0 : pool.token1,
+      ]
+    } else {
+      return [undefined, undefined, undefined]
+    }
+  }, [pool, existingPosition])
+
+  function lmtFormatPrice(price: Price<Currency, Currency> | undefined, entryPrice: BN | undefined): BN | undefined {
+    if (price && entryPrice) {
+      if (entryPrice.isGreaterThan(1)) {
+        if (price.greaterThan(1)) {
+          return new BN(1).div(price.toFixed(18))
+        } else {
+          return new BN(price.toFixed(18))
+        }
+      } else {
+        return new BN(1).div(price.toFixed(18))
+      }
+    } else {
+      return undefined
+    }
+  }
+
+  const newExecutionPrice: BN | undefined = useMemo(() => {
+    if (!trade) return undefined
+    return lmtFormatPrice(trade.executionPrice, entryPrice)
+  }, [trade, entryPrice])
 
   useEffect(() => {
     if (!trade || !existingPosition) {
@@ -166,13 +221,14 @@ const IncreasePosition = ({
   }, [trade, marginFiatAmount, leverageFactor, onPositionChange, existingPosition])
 
   useEffect(() => {
-    if (!leverageFactor || !existingPosition || !trade || !tradeApprovalInfo) return
+    if (!leverageFactor || !existingPosition || !trade || !tradeApprovalInfo || !newExecutionPrice) return
     onPositionChange({
       totalPosition: existingPosition.totalPosition.plus(trade.expectedAddedOutput),
       margin: existingPosition.margin.plus(trade.margin),
       totalDebtInput: existingPosition.totalDebtInput.plus(new BN(tradeApprovalInfo?.additionalPremium.toExact())),
+      executionPrice: newExecutionPrice,
     })
-  }, [leverageFactor, onPositionChange, existingPosition, trade, tradeApprovalInfo])
+  }, [leverageFactor, onPositionChange, existingPosition, trade, tradeApprovalInfo, newExecutionPrice])
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
@@ -315,10 +371,29 @@ const IncreasePosition = ({
             marginBalance && setIncreaseAmount(marginBalance.toExact())
           }}
           currency={marginCurrency}
-          label="Increase Total Position By"
+          label="Margin"
           id="increase-position-input"
         />
       </InputSection>
+      <OutputSection>
+        <SwapCurrencyInputPanelV2
+          value={
+            tradeState !== LeverageTradeState.VALID || !trade
+              ? '-'
+              : formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)
+          }
+          fiatValue={outputFiatAmount}
+          onUserInput={() => 0}
+          showFiat={true}
+          showMaxButton={false}
+          hideBalance={false}
+          currency={outputCurrency}
+          disabled={true}
+          label="Long"
+          id="increase-position-input"
+        />
+      </OutputSection>
+
       <LeverageGaugeSection>
         <AutoColumn gap="md">
           <RowBetween>
