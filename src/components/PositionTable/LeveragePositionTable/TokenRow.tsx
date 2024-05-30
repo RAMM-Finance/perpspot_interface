@@ -744,7 +744,7 @@ export const LoadedRow = memo(
 
       return {
         pnlUSD: PnL.times(details.marginInPosToken ? outputCurrencyPrice.data : inputCurrencyPrice.data).toNumber(),
-        pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data),
+        pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
         premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
       }
     }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
