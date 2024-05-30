@@ -32,6 +32,7 @@ import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
 import DecreasePositionContent from './DecreasePositionContent'
+import IncreasePosition from './DecreasePositionContent/IncreasePosition'
 import { DepositPremiumContent } from './DepositPremiumContent'
 import { LoadingBubble } from './loading'
 import { WithdrawPremiumContent } from './WithdrawPremiumContent'
@@ -194,6 +195,16 @@ export function LeveragePositionModal(props: TradeModalProps) {
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
       />
+    ) : activeTab === TradeModalActiveTab.INCREASE_POSITION ? (
+      <IncreasePosition
+        marginInPosToken={props.marginInPosToken}
+        positionKey={positionKey}
+        onPositionChange={setAlteredPosition}
+        inputCurrency={inputCurrency ?? undefined}
+        outputCurrency={outputCurrency ?? undefined}
+        positionData={{ position: existingPosition, loading: positionLoading }}
+        onClose={onClose}
+      />
     ) : (
       <DecreasePositionContent
         marginInPosToken={props.marginInPosToken}
@@ -242,6 +253,13 @@ export function LeveragePositionModal(props: TradeModalProps) {
               onClick={() => setActiveTab(TradeModalActiveTab.WITHDRAW_PREMIUM)}
             >
               Withdraw Interest
+            </TabElement>
+            <TabElement
+              last={true}
+              isActive={activeTab === TradeModalActiveTab.INCREASE_POSITION}
+              onClick={() => setActiveTab(TradeModalActiveTab.INCREASE_POSITION)}
+            >
+              Increase Position
             </TabElement>
           </TabsWrapper>
           <ContentWrapper>{displayedContent}</ContentWrapper>
