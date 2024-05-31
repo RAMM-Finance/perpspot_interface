@@ -325,27 +325,27 @@ export function useStatsData(): {
     const addUsersDataProcessed = addUsersData?.map((entry: any) => ({
       user: entry.trader.toLowerCase(),
       timestamp: parseInt(entry.blockTimestamp)
-    }))
+    })) || []
     
     const reduceUsersDataProcessed = reduceUsersData?.map((entry: any) => ({
       user: entry.trader.toLowerCase(),
       timestamp: parseInt(entry.blockTimestamp)
-    }))
+    })) || []
 
     const forceClosedDataProcessed = forceClosedData?.map((entry: any) => ({
       user: entry.trader.toLowerCase(),
       timestamp: parseInt(entry.blockTimestamp)
-    }))
+    })) || []
 
     const transferProcessed = transferData?.map((entry: any) => ({
       user: entry.from === "0x0000000000000000000000000000000000000000" ? entry.to.toLowerCase() : entry.from.toLowerCase(),
       timestamp: parseInt(entry.blockTimestamp)
-    }))
+    })) || []
 
     const registerDataProcessed = registerData?.map((entry: any) => ({
       user: entry.account.toLowerCase(),
       timestamp: parseInt(entry.blockTimestamp)
-    }))
+    })) || []
 
     console.log("ADD USERS DATA PROCESSED", addUsersDataProcessed)
     console.log("REDUCE USERS DATA PROCESSED", reduceUsersDataProcessed)
