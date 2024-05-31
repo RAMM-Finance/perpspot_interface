@@ -228,19 +228,6 @@ const TradeTabContent = () => {
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
 
-  const relevantTokenBalances = useCurrencyBalances(
-    account ?? undefined,
-    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
-  )
-
-  const currencyBalances = useMemo(
-    () => ({
-      [Field.INPUT]: relevantTokenBalances[0],
-      [Field.OUTPUT]: relevantTokenBalances[1],
-    }),
-    [relevantTokenBalances]
-  )
-
   const [{ showConfirm, attemptingTxn, txHash, tradeToConfirm, tradeErrorMessage }, setTradeState] = useState<{
     attemptingTxn: boolean
     txHash: string | undefined
@@ -347,6 +334,27 @@ const TradeTabContent = () => {
     inputCurrency ?? undefined, // currencies[Field.INPUT] ?? undefined,
     outputCurrency ?? undefined,
     allowedSlippage
+  )
+
+  const relevantTokenBalances = useCurrencyBalances(
+    account ?? undefined,
+    useMemo(
+      () => [
+        (existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken)
+          ? outputCurrency ?? undefined
+          : inputCurrency ?? undefined,
+        outputCurrency ?? undefined,
+      ],
+      [inputCurrency, outputCurrency, existingPositionOpen, existingPosition, marginInPosToken]
+    )
+  )
+
+  const currencyBalances = useMemo(
+    () => ({
+      [Field.INPUT]: relevantTokenBalances[0],
+      [Field.OUTPUT]: relevantTokenBalances[1],
+    }),
+    [relevantTokenBalances]
   )
 
   const { callback: addLimitCallback } = useAddLimitOrderCallback(limitTrade)
