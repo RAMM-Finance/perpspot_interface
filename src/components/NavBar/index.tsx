@@ -176,9 +176,9 @@ export const PageTabs = () => {
         <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
           <ThemedText.BodySecondary>Pairs</ThemedText.BodySecondary>
         </MenuItem>
-        <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
+        {/* <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
           <ThemedText.BodySecondary>Swap</ThemedText.BodySecondary>
-        </MenuItem>
+        </MenuItem> */}
         <MenuItemDropDown href="/pools" dataTestId="pool-nav-link" isActive={isPoolActive}>
           <ThemedText.BodySecondary>Earn</ThemedText.BodySecondary>
         </MenuItemDropDown>
