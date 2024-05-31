@@ -1,15 +1,18 @@
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from '@reduxjs/toolkit/query/react'
 import { Protocol } from '@uniswap/router-sdk'
+import { ChainId } from '@uniswap/sdk-core'
 import { AlphaRouter } from '@uniswap/smart-order-router'
 import { RPC_PROVIDERS } from 'constants/providers'
-import { getClientSideQuote, toSupportedChainId, isSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
+import {
+  getClientSideQuote,
+  isSupportedChainId,
+  toSupportedChainId,
+} from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
 import qs from 'qs'
-// import { trace } from 'tracing'
 
+// import { trace } from 'tracing'
 import { GetQuoteResult } from './types'
-import { SupportedChainId } from 'constants/chains'
-import { ChainId } from '@uniswap/sdk-core'
 
 export enum RouterPreference {
   API = 'api',
@@ -18,17 +21,17 @@ export enum RouterPreference {
 }
 
 const routers = new Map<ChainId, AlphaRouter>()
-function getRouter(chainId: ChainId): AlphaRouter { 
+function getRouter(chainId: ChainId): AlphaRouter {
   try {
     if (!isSupportedChainId(chainId))
       throw new Error(`No address for Uniswap Multicall Contract on chain id: ${chainId}`)
-    
+
     // if (toSupportedChainId(chainId) === SupportedChainId.BASE)
     //   throw new Error(`Router does not support this chain (chainId: ${chainId}).`)
-  
+
     const router = routers.get(chainId)
     if (router) return router
-  
+
     const supportedChainId = toSupportedChainId(chainId)
     if (supportedChainId) {
       const provider = RPC_PROVIDERS[supportedChainId]

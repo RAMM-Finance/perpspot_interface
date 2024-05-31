@@ -1,4 +1,4 @@
-import { MixedRouteSDK, Protocol } from '@uniswap/router-sdk'
+import { Protocol } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 import { Pair, Route as V2Route } from '@uniswap/v2-sdk'
 import { FeeAmount, Pool, Route as V3Route } from '@uniswap/v3-sdk'
@@ -72,13 +72,18 @@ export function transformRoutesToTrade<TTradeType extends TradeType>(
   gasUseEstimateUSD?: CurrencyAmount<Token> | null
 ): InterfaceTrade<Currency, Currency, TTradeType> {
   return new InterfaceTrade({
-    v2Routes:
-      route
-        ?.filter((r): r is typeof route[0] & { routev2: NonNullable<typeof route[0]['routev2']> } => r.routev2 !== null)
-        .map(({ routev2, inputAmount, outputAmount }) => ({ routev2, inputAmount, outputAmount })) ?? [],
+    // v2Routes:
+    //   route
+    //     ?.filter(
+    //       (r): r is (typeof route)[0] & { routev2: NonNullable<(typeof route)[0]['routev2']> } => r.routev2 !== null
+    //     )
+    //     .map(({ routev2, inputAmount, outputAmount }) => ({ routev2, inputAmount, outputAmount })) ?? [],
+    v2Routes: [],
     v3Routes:
       route
-        ?.filter((r): r is typeof route[0] & { routev3: NonNullable<typeof route[0]['routev3']> } => r.routev3 !== null)
+        ?.filter(
+          (r): r is (typeof route)[0] & { routev3: NonNullable<(typeof route)[0]['routev3']> } => r.routev3 !== null
+        )
         .map(({ routev3, inputAmount, outputAmount }) => ({ routev3, inputAmount, outputAmount })) ?? [],
     tradeType,
     gasUseEstimateUSD: gasUseEstimateUSD?.toExact() ?? null,

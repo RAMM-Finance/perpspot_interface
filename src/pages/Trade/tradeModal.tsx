@@ -98,7 +98,14 @@ const Wrapper = styled.div`
 const LimitInputWrapper = styled.div`
   margin-top: 5px;
 `
-
+class Apple {
+  constructor() {}
+}
+class Orange extends Apple {
+  constructor() {
+    super()
+  }
+}
 export const Filter = styled.div`
   display: flex;
   align-items: start;

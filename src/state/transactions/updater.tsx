@@ -1,28 +1,15 @@
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { SwapEventName } from '@uniswap/analytics-events'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { DEFAULT_TXN_DISMISS_MS, L2_TXN_DISMISS_MS } from 'constants/misc'
 import LibUpdater from 'lib/hooks/transactions/updater'
-import { formatPercentInBasisPointsNumber, formatToDecimal, getTokenAddress } from 'lib/utils/analytics'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
-import { InterfaceTrade } from 'state/routing/types'
 import { TransactionType } from 'state/transactions/types'
-import { computeRealizedPriceImpact } from 'utils/prices'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
 import { useDerivedSwapInfo } from '../../state/swap/hooks'
 import { useAddPopup } from '../application/hooks'
 import { checkedTransaction, finalizeTransaction } from './reducer'
 import { SerializableTransactionReceipt } from './types'
-
-interface AnalyticsEventProps {
-  trade: InterfaceTrade<Currency, Currency, TradeType>
-  hash: string | undefined
-  allowedSlippage: Percent
-  succeeded: boolean
-}
 
 // const formatAnalyticsEventProperties = ({ trade, hash, allowedSlippage, succeeded }: AnalyticsEventProps) => ({
 //   estimated_network_fee_usd: trade.gasUseEstimateUSD ? formatToDecimal(trade.gasUseEstimateUSD, 2) : undefined,

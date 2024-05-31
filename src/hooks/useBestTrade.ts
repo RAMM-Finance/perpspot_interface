@@ -4,7 +4,7 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { RouterPreference } from 'state/routing/slice'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
-import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
+import { useRoutingAPITradeV2 } from 'state/routing/useRoutingAPITrade'
 import { useClientSideRouter } from 'state/user/hooks'
 
 import useAutoRouterSupported from './useAutoRouterSupported'
@@ -47,18 +47,18 @@ export function useBestTrade(
   const shouldGetTrade = !isAWrapTransaction && isWindowVisible
 
   const [clientSideRouter] = useClientSideRouter()
-  const routingAPITrade = useRoutingAPITrade(
+  const routingAPITrade = useRoutingAPITradeV2(
     tradeType,
     autoRouterSupported && shouldGetTrade ? debouncedAmount : undefined,
     debouncedOtherCurrency,
     clientSideRouter ? RouterPreference.CLIENT : RouterPreference.API
   )
+
   const isLoading = routingAPITrade.state === TradeState.LOADING
 
-  
   const useFallback = (!autoRouterSupported || routingAPITrade.state === TradeState.NO_ROUTE_FOUND) && shouldGetTrade
 
-  console.log("USE FALLBACK", useFallback)
+  // console.log("USE FALLBACK", useFallback)
 
   // only use client side router if routing api trade failed or is not supported
   const bestV3Trade = useClientSideV3Trade(
@@ -66,7 +66,7 @@ export function useBestTrade(
     useFallback ? debouncedAmount : undefined,
     useFallback ? debouncedOtherCurrency : undefined
   )
-  // console.log('wtqff', routingAPITrade)
+  // console.log('zeke-start:', bestV3Trade, isLoading, routingAPITrade, useFallback, shouldGetTrade)
   // only return gas estimate from api if routing api trade is used
   return useMemo(
     () => ({

@@ -1,14 +1,18 @@
-import { Trade } from '@uniswap/router-sdk'
+// import { Trade } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { DerivedLimitReducePositionInfo, DerivedReducePositionInfo } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
+import {
+  DerivedLimitReducePositionInfo,
+  DerivedReducePositionInfo,
+} from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { AddMarginTrade } from 'state/marginTrading/hooks'
+import { SwapTrade } from 'state/routing/tradeEntity'
 
 /**
  * Returns true if the trade requires a confirmation of details before we can submit it
  * @param args either a pair of V2 trades or a pair of V3 trades
  */
 export function tradeMeaningfullyDiffers(
-  ...args: [Trade<Currency, Currency, TradeType>, Trade<Currency, Currency, TradeType>]
+  ...args: [SwapTrade<Currency, Currency, TradeType>, SwapTrade<Currency, Currency, TradeType>]
 ): boolean {
   const [tradeA, tradeB] = args
   return (
@@ -52,7 +56,6 @@ export function reduceLmtTradeMeaningfullyDiffers(
     // tradeA.margin !== tradeB.margin ||
     // tradeA.startingDebtReduceAmount !== tradeB.startingDebtReduceAmount ||
     // tradeA.minimumDebtReduceAmount !== tradeB.minimumDebtReduceAmount ||
-    !tradeA.newTotalPosition.eq(tradeB.newTotalPosition)||
-    !tradeA.estimatedPnL.eq(tradeB.estimatedPnL)
+    !tradeA.newTotalPosition.eq(tradeB.newTotalPosition) || !tradeA.estimatedPnL.eq(tradeB.estimatedPnL)
   )
 }

@@ -1,9 +1,11 @@
-import {  Trade } from '@uniswap/router-sdk'
+// import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 // import { Route as V2Route } from '@uniswap/v2-sdk'
 // import { Route as V3Route } from '@uniswap/v3-sdk'
-import { Pair, Route as V2RouteSDK, Trade as V2TradeSDK } from '@uniswap/v2-sdk'
-import { Pool, Route as V3RouteSDK, Trade as V3TradeSDK } from '@uniswap/v3-sdk'
+import { Route as V2RouteSDK } from '@uniswap/v2-sdk'
+import { Route as V3RouteSDK } from '@uniswap/v3-sdk'
+
+import { SwapTrade } from './tradeEntity'
 
 export enum TradeState {
   LOADING,
@@ -86,12 +88,11 @@ export interface GetQuoteResult {
   routeString: string
 }
 
-
 export class InterfaceTrade<
   TInput extends Currency,
   TOutput extends Currency,
   TTradeType extends TradeType
-> extends Trade<TInput, TOutput, TTradeType> {
+> extends SwapTrade<TInput, TOutput, TTradeType> {
   gasUseEstimateUSD: string | null | undefined
   blockNumber: string | null | undefined
 
@@ -119,6 +120,13 @@ export class InterfaceTrade<
     this.gasUseEstimateUSD = gasUseEstimateUSD
   }
 }
+
+/**
+ * inputAmount: currencyAmount
+ * outputAmount: currencyAmount
+ * executionPrice: Price<Currency, Currency>, The price expressed in terms of output amount/input amount.
+ * priceImpact
+ *  */
 
 // export class InterfaceTrade<
 //   TInput extends Currency,

@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { SwapPriceUpdateUserResponse } from '@uniswap/analytics-events'
 import { NumberType } from '@uniswap/conedison/format'
-import { Currency, Price, TradeType } from '@uniswap/sdk-core'
+import { Price } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { UnderlineText } from 'components/PositionTable/LeveragePositionTable/TokenRow'
@@ -14,7 +13,6 @@ import { useMemo } from 'react'
 import { AlertTriangle, ArrowDown } from 'react-feather'
 import { Text } from 'rebass'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
-import { InterfaceTrade } from 'state/routing/types'
 import styled, { useTheme } from 'styled-components/macro'
 
 import { ThemedText } from '../../theme'
@@ -51,21 +49,6 @@ const ArrowWrapper = styled.div`
   border-color: ${({ theme }) => theme.backgroundModule};
   z-index: 2;
 `
-
-const formatAnalyticsEventProperties = (
-  trade: InterfaceTrade<Currency, Currency, TradeType>,
-  priceUpdate: number | undefined,
-  response: SwapPriceUpdateUserResponse
-) => ({
-  chain_id:
-    trade.inputAmount.currency.chainId === trade.outputAmount.currency.chainId
-      ? trade.inputAmount.currency.chainId
-      : undefined,
-  response,
-  token_in_symbol: trade.inputAmount.currency.symbol,
-  token_out_symbol: trade.outputAmount.currency.symbol,
-  price_update_basis_points: priceUpdate,
-})
 
 export function useCheckAMISS(i: number, address0: string | undefined | null) {
   const { chainId } = useWeb3React()
