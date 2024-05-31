@@ -1,7 +1,8 @@
-import { Trade } from '@uniswap/router-sdk'
+// import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { PermitSignature } from 'hooks/usePermitAllowance'
 import { useMemo } from 'react'
+import { SwapTrade } from 'state/routing/tradeEntity'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -13,7 +14,7 @@ import { useUniversalRouterSwapCallback } from './useUniversalRouter'
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
 export function useSwapCallback(
-  trade: Trade<Currency, Currency, TradeType> | undefined, // trade to execute, required
+  trade: SwapTrade<Currency, Currency, TradeType> | undefined, // trade to execute, required
   fiatValues: { amountIn: number | undefined; amountOut: number | undefined }, // usd values for amount in and out, logged for analytics
   allowedSlippage: Percent, // in bips
   permitSignature: PermitSignature | undefined

@@ -2,15 +2,17 @@ import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceModalName } from '@uniswap/analytics-events'
 import { NumberType } from '@uniswap/conedison/format'
-import { Trade } from '@uniswap/router-sdk'
+// import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
+import { SwapTrade } from 'state/routing/tradeEntity'
 import { InterfaceTrade } from 'state/routing/types'
 import { MarginPositionDetails } from 'types/lmtv2position'
 import { marginTradeMeaningfullyDiffers, tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
-import { BigNumber as BN } from 'bignumber.js'
+
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
@@ -36,7 +38,7 @@ export default function ConfirmSwapModal({
 }: {
   isOpen: boolean
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined
-  originalTrade: Trade<Currency, Currency, TradeType> | undefined
+  originalTrade: SwapTrade<Currency, Currency, TradeType> | undefined
   attemptingTxn: boolean
   txHash: string | undefined
   recipient: string | null
@@ -231,10 +233,15 @@ export function AddMarginPositionConfirmModal({
   // text to show while loading
   const pendingText = (
     <Trans>
-      Borrowing {trade?.marginInPosToken ? 
-            formatBNToString(trade?.borrowAmount.times(new BN(trade?.executionPrice.toFixed(18))), NumberType.SwapTradeAmount) 
-            : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)} {trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol} and
-      Receiving {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
+      Borrowing{' '}
+      {trade?.marginInPosToken
+        ? formatBNToString(
+            trade?.borrowAmount.times(new BN(trade?.executionPrice.toFixed(18))),
+            NumberType.SwapTradeAmount
+          )
+        : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}{' '}
+      {trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol} and Receiving{' '}
+      {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
       {trade?.expectedAddedOutput?.tokenSymbol}
     </Trans>
   )

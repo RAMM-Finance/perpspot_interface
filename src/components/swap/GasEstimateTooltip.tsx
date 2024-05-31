@@ -1,9 +1,6 @@
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import { RowFixed } from 'components/Row'
-import { MouseoverTooltip, TooltipSize } from 'components/Tooltip'
-import { InterfaceTrade } from 'state/routing/types'
+import { MouseoverTooltip } from 'components/Tooltip'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 

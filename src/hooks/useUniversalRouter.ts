@@ -1,20 +1,18 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
-import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { SwapEventName } from '@uniswap/analytics-events'
-import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import { SwapRouter } from '@uniswap/universal-router-sdk'
+// import { SwapRouter } from '@uniswap/universal-router-sdk'
 import { FeeOptions, toHex } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
-import { formatSwapSignedAnalyticsEventProperties } from 'lib/utils/analytics'
 import { useCallback } from 'react'
-// import { trace } from 'tracing'
+import { SwapTrade } from 'state/routing/tradeEntity'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import isZero from 'utils/isZero'
-import { didUserReject, swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
+import { LocalSwapRouter } from 'utils/lmtSDK/SwapRouter'
+// import { trace } from 'tracing'
+import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
 
 import { PermitSignature } from './usePermitAllowance'
 
@@ -45,7 +43,7 @@ interface SwapOptions {
 }
 
 export function useUniversalRouterSwapCallback(
-  trade: Trade<Currency, Currency, TradeType> | undefined,
+  trade: SwapTrade<Currency, Currency, TradeType> | undefined,
   fiatValues: { amountIn: number | undefined; amountOut: number | undefined },
   options: SwapOptions
 ) {
@@ -53,14 +51,13 @@ export function useUniversalRouterSwapCallback(
 
   return useCallback(async (): Promise<TransactionResponse> => {
     try {
-
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
       if (!provider) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
 
       // setTraceData('slippageTolerance', options.slippageTolerance.toFixed(2))
-      const { calldata: data, value } = SwapRouter.swapERC20CallParameters(trade, {
+      const { calldata: data, value } = LocalSwapRouter.swapERC20CallParameters(trade, {
         slippageTolerance: options.slippageTolerance,
         deadlineOrPreviousBlockhash: options.deadline?.toString(),
         inputTokenPermit: options.permit,
@@ -89,12 +86,7 @@ export function useUniversalRouterSwapCallback(
         .getSigner()
         .sendTransaction({ ...tx, gasLimit })
         .then((response) => {
-          sendAnalyticsEvent(
-            SwapEventName.SWAP_SIGNED,
-            formatSwapSignedAnalyticsEventProperties({ trade, fiatValues, txHash: response.hash })
-          )
           if (tx.data !== response.data) {
-            sendAnalyticsEvent(SwapEventName.SWAP_MODIFIED_IN_WALLET, { txHash: response.hash })
             throw new ModifiedSwapError()
           }
           return response
@@ -114,7 +106,7 @@ export function useUniversalRouterSwapCallback(
     // return trace(
     //   'swap.send',
     //   async ({ setTraceData, setTraceStatus, setTraceError }) => {
-        
+
     //   },
     //   { tags: { is_widget: false } }
     // )

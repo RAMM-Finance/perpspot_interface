@@ -12,14 +12,7 @@ import { useBorrowManagerContract } from 'hooks/useContract'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { convertBNToNum } from 'hooks/useV3Positions'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
-import {
-  formatPercentInBasisPointsNumber,
-  formatPercentNumber,
-  formatToDecimal,
-  getDurationFromDateMilliseconds,
-  getDurationUntilTimestampSeconds,
-  getTokenAddress,
-} from 'lib/utils/analytics'
+import { formatPercentNumber, getTokenAddress } from 'lib/utils/analytics'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { Text } from 'rebass'
@@ -29,7 +22,6 @@ import { BorrowCreationDetails } from 'state/swap/hooks'
 import { useClientSideRouter, useUserSlippageTolerance } from 'state/user/hooks'
 import styled, { keyframes } from 'styled-components/macro'
 import { LimitlessPositionDetails } from 'types/leveragePosition'
-import { computeRealizedPriceImpact } from 'utils/prices'
 
 import { ButtonError } from '../Button'
 import Row, { AutoRow, RowBetween } from '../Row'
@@ -44,19 +36,6 @@ import { getTokenPath, RoutingDiagramEntry } from './SwapRoute'
 //   border-radius: 10px;
 //   font-size: 20px;
 // `
-
-interface AnalyticsEventProps {
-  trade: InterfaceTrade<Currency, Currency, TradeType>
-  hash: string | undefined
-  allowedSlippage: Percent
-  transactionDeadlineSecondsSinceEpoch: number | undefined
-  isAutoSlippage: boolean
-  isAutoRouterApi: boolean
-  swapQuoteReceivedDate: Date | undefined
-  routes: RoutingDiagramEntry[]
-  fiatValueInput?: number
-  fiatValueOutput?: number
-}
 
 const formatRoutesEventProperties = (routes: RoutingDiagramEntry[]) => {
   const routesEventProperties: Record<string, any[]> = {
@@ -84,44 +63,6 @@ const formatRoutesEventProperties = (routes: RoutingDiagramEntry[]) => {
 
   return routesEventProperties
 }
-
-const formatAnalyticsEventProperties = ({
-  trade,
-  hash,
-  allowedSlippage,
-  transactionDeadlineSecondsSinceEpoch,
-  isAutoSlippage,
-  isAutoRouterApi,
-  swapQuoteReceivedDate,
-  routes,
-  fiatValueInput,
-  fiatValueOutput,
-}: AnalyticsEventProps) => ({
-  estimated_network_fee_usd: trade.gasUseEstimateUSD ? trade.gasUseEstimateUSD : undefined,
-  transaction_hash: hash,
-  transaction_deadline_seconds: getDurationUntilTimestampSeconds(transactionDeadlineSecondsSinceEpoch),
-  token_in_address: getTokenAddress(trade.inputAmount.currency),
-  token_out_address: getTokenAddress(trade.outputAmount.currency),
-  token_in_symbol: trade.inputAmount.currency.symbol,
-  token_out_symbol: trade.outputAmount.currency.symbol,
-  token_in_amount: formatToDecimal(trade.inputAmount, trade.inputAmount.currency.decimals),
-  token_out_amount: formatToDecimal(trade.outputAmount, trade.outputAmount.currency.decimals),
-  token_in_amount_usd: fiatValueInput,
-  token_out_amount_usd: fiatValueOutput,
-  price_impact_basis_points: formatPercentInBasisPointsNumber(computeRealizedPriceImpact(trade)),
-  allowed_slippage_basis_points: formatPercentInBasisPointsNumber(allowedSlippage),
-  is_auto_router_api: isAutoRouterApi,
-  is_auto_slippage: isAutoSlippage,
-  chain_id:
-    trade.inputAmount.currency.chainId === trade.outputAmount.currency.chainId
-      ? trade.inputAmount.currency.chainId
-      : undefined,
-  duration_from_first_quote_to_swap_submission_milliseconds: swapQuoteReceivedDate
-    ? getDurationFromDateMilliseconds(swapQuoteReceivedDate)
-    : undefined,
-  swap_quote_block_number: trade.blockNumber,
-  ...formatRoutesEventProperties(routes),
-})
 
 export default function SwapModalFooter({
   trade,
@@ -156,18 +97,6 @@ export default function SwapModalFooter({
           events={[BrowserEvent.onClick]}
           element={InterfaceElementName.CONFIRM_SWAP_BUTTON}
           name={SwapEventName.SWAP_SUBMITTED_BUTTON_CLICKED}
-          properties={formatAnalyticsEventProperties({
-            trade,
-            hash,
-            allowedSlippage,
-            transactionDeadlineSecondsSinceEpoch,
-            isAutoSlippage,
-            isAutoRouterApi: !clientSideRouter,
-            swapQuoteReceivedDate,
-            routes,
-            fiatValueInput: fiatValueInput.data,
-            fiatValueOutput: fiatValueOutput.data,
-          })}
         >
           <ButtonError
             onClick={onConfirm}

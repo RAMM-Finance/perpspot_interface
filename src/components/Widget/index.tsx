@@ -27,7 +27,6 @@
 //   getTokenAddress,
 // } from 'lib/utils/analytics'
 // import { useCallback, useState } from 'react'
-import { useIsDarkMode } from 'theme/components/ThemeToggle'
 // import { computeRealizedPriceImpact } from 'utils/prices'
 // import { switchChain } from 'utils/switchChain'
 

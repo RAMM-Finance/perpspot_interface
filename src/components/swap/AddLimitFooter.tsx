@@ -1,46 +1,14 @@
 import { Trans } from '@lingui/macro'
 import { InterfaceElementName } from '@uniswap/analytics-events'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import {
-  formatPercentInBasisPointsNumber,
-  formatPercentNumber,
-  formatToDecimal,
-  getDurationFromDateMilliseconds,
-  getDurationUntilTimestampSeconds,
-  getTokenAddress,
-} from 'lib/utils/analytics'
+import { formatPercentNumber, getTokenAddress } from 'lib/utils/analytics'
 import { ReactNode } from 'react'
 import { Text } from 'rebass'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
-import { InterfaceTrade } from 'state/routing/types'
-import { computeRealizedPriceImpact } from 'utils/prices'
 
 import { ButtonError } from '../Button'
 import { AutoRow } from '../Row'
 import { SwapCallbackError } from './styleds'
 import { RoutingDiagramEntry } from './SwapRoute'
-
-// const StyledNumericalInput = styled(NumericalInput)`
-//   width: 70%;
-//   text-align: left;
-//   padding: 10px;
-//   background-color: ${({ theme }) => theme.backgroundFloating};
-//   border-radius: 10px;
-//   font-size: 20px;
-// `
-
-interface AnalyticsEventProps {
-  trade: InterfaceTrade<Currency, Currency, TradeType>
-  hash: string | undefined
-  allowedSlippage: Percent
-  transactionDeadlineSecondsSinceEpoch: number | undefined
-  isAutoSlippage: boolean
-  isAutoRouterApi: boolean
-  swapQuoteReceivedDate: Date | undefined
-  routes: RoutingDiagramEntry[]
-  fiatValueInput?: number
-  fiatValueOutput?: number
-}
 
 const formatRoutesEventProperties = (routes: RoutingDiagramEntry[]) => {
   const routesEventProperties: Record<string, any[]> = {
@@ -68,44 +36,6 @@ const formatRoutesEventProperties = (routes: RoutingDiagramEntry[]) => {
 
   return routesEventProperties
 }
-
-const formatAnalyticsEventProperties = ({
-  trade,
-  hash,
-  allowedSlippage,
-  transactionDeadlineSecondsSinceEpoch,
-  isAutoSlippage,
-  isAutoRouterApi,
-  swapQuoteReceivedDate,
-  routes,
-  fiatValueInput,
-  fiatValueOutput,
-}: AnalyticsEventProps) => ({
-  estimated_network_fee_usd: trade.gasUseEstimateUSD ? trade.gasUseEstimateUSD : undefined,
-  transaction_hash: hash,
-  transaction_deadline_seconds: getDurationUntilTimestampSeconds(transactionDeadlineSecondsSinceEpoch),
-  token_in_address: getTokenAddress(trade.inputAmount.currency),
-  token_out_address: getTokenAddress(trade.outputAmount.currency),
-  token_in_symbol: trade.inputAmount.currency.symbol,
-  token_out_symbol: trade.outputAmount.currency.symbol,
-  token_in_amount: formatToDecimal(trade.inputAmount, trade.inputAmount.currency.decimals),
-  token_out_amount: formatToDecimal(trade.outputAmount, trade.outputAmount.currency.decimals),
-  token_in_amount_usd: fiatValueInput,
-  token_out_amount_usd: fiatValueOutput,
-  price_impact_basis_points: formatPercentInBasisPointsNumber(computeRealizedPriceImpact(trade)),
-  allowed_slippage_basis_points: formatPercentInBasisPointsNumber(allowedSlippage),
-  is_auto_router_api: isAutoRouterApi,
-  is_auto_slippage: isAutoSlippage,
-  chain_id:
-    trade.inputAmount.currency.chainId === trade.outputAmount.currency.chainId
-      ? trade.inputAmount.currency.chainId
-      : undefined,
-  duration_from_first_quote_to_swap_submission_milliseconds: swapQuoteReceivedDate
-    ? getDurationFromDateMilliseconds(swapQuoteReceivedDate)
-    : undefined,
-  swap_quote_block_number: trade.blockNumber,
-  ...formatRoutesEventProperties(routes),
-})
 
 export default function AddLimitModalFooter({
   trade,

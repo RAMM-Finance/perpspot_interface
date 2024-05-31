@@ -7,7 +7,7 @@ import {
   InterfaceSectionName,
   SwapEventName,
 } from '@uniswap/analytics-events'
-import { Trade } from '@uniswap/router-sdk'
+// import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import AddressInputPanel from 'components/AddressInputPanel'
@@ -35,6 +35,7 @@ import useWrapCallback, { WrapErrorText, WrapType } from 'hooks/useWrapCallback'
 import JSBI from 'jsbi'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, Info, Maximize2 } from 'react-feather'
+import { SwapTrade } from 'state/routing/tradeEntity'
 import { TradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfo, useSwapActionHandlers, useSwapState } from 'state/swap/hooks'
@@ -104,7 +105,7 @@ const SwapTabContent = () => {
   const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash, showLeverageConfirm }, setSwapState] =
     useState<{
       showConfirm: boolean
-      tradeToConfirm: Trade<Currency, Currency, TradeType> | undefined
+      tradeToConfirm: SwapTrade<Currency, Currency, TradeType> | undefined
       attemptingTxn: boolean
       swapErrorMessage: string | undefined
       txHash: string | undefined

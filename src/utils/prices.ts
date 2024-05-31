@@ -1,8 +1,9 @@
-import { Trade } from '@uniswap/router-sdk'
+// import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Fraction, Percent, TradeType } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
+import { SwapTrade } from 'state/routing/tradeEntity'
 
 import {
   ALLOWED_PRICE_IMPACT_HIGH,
@@ -16,13 +17,13 @@ import {
 const THIRTY_BIPS_FEE = new Percent(JSBI.BigInt(30), JSBI.BigInt(10000))
 const INPUT_FRACTION_AFTER_FEE = ONE_HUNDRED_PERCENT.subtract(THIRTY_BIPS_FEE)
 
-export function computeRealizedPriceImpact(trade: Trade<Currency, Currency, TradeType>): Percent {
+export function computeRealizedPriceImpact(trade: SwapTrade<Currency, Currency, TradeType>): Percent {
   const realizedLpFeePercent = computeRealizedLPFeePercent(trade)
   return trade.priceImpact.subtract(realizedLpFeePercent)
 }
 
 // computes realized lp fee as a percent
-function computeRealizedLPFeePercent(trade: Trade<Currency, Currency, TradeType>): Percent {
+function computeRealizedLPFeePercent(trade: SwapTrade<Currency, Currency, TradeType>): Percent {
   let percent: Percent
 
   // Since routes are either all v2 or all v3 right now, calculate separately
@@ -66,7 +67,7 @@ function computeRealizedLPFeePercent(trade: Trade<Currency, Currency, TradeType>
 
 // computes price breakdown for the trade
 export function computeRealizedLPFeeAmount(
-  trade?: Trade<Currency, Currency, TradeType> | null
+  trade?: SwapTrade<Currency, Currency, TradeType> | null
 ): CurrencyAmount<Currency> | undefined {
   if (trade) {
     const realizedLPFee = computeRealizedLPFeePercent(trade)
