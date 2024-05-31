@@ -709,9 +709,9 @@ export const LoadedRow = memo(
 
     // PnL in input/collateral token including premium paid thus far
     const PnLWithPremiums = useMemo(() => {
-      if (!initialPnL || !details.premiumLeft) return undefined
+      if (!initialPnL || !details.premiumLeft || !currentPrice) return undefined
       return initialPnL.minus(details.premiumOwed)
-    }, [details, initialPnL])
+    }, [details, initialPnL, currentPrice])
 
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
@@ -723,25 +723,39 @@ export const LoadedRow = memo(
     }, [currentPrice, initialPnL, details])
 
     const PnL = useMemo(() => {
-      if (!initialPnL) return undefined
-      return initialPnL.times(0.9)
-    }, [initialPnL])
+      if (!initialPnL || !details || !currentPrice) return undefined
+      if (details.marginInPosToken) {
+        return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
+          ? new BN(1).div(currentPrice).times(initialPnL).times(0.9)
+          : new BN(1).div(currentPrice).times(initialPnL)
+      } else {
+        return initialPnL.isGreaterThan(0) && !isWethUsdc ? initialPnL.times(0.9) : initialPnL
+      }
+    }, [initialPnL, details, isWethUsdc, currentPrice])
 
     const pnlInfo = useMemo(() => {
-      if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums) {
+      if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums || !outputCurrencyPrice?.data || !details) {
         return {
           pnlUSD: 0,
           pnlPremiumsUSD: 0,
           premiumsPaid: 0,
         }
-      } else {
-        return {
-          pnlUSD: PnL.times(inputCurrencyPrice.data).toNumber(),
-          pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
-          premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
-        }
       }
-    }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL])
+
+      return {
+        pnlUSD: PnL.times(details.marginInPosToken ? outputCurrencyPrice.data : inputCurrencyPrice.data).toNumber(),
+        pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
+        premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
+      }
+    }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
+
+    console.log(
+      'here',
+      initialPnL &&
+        currentPrice &&
+        formatBNToString(new BN(1).div(currentPrice).times(initialPnL), NumberType.SwapTradeAmount),
+      initialPnL && currentPrice && formatBNToString(initialPnL, NumberType.SwapTradeAmount)
+    )
 
     if (loading) {
       return <LoadingRow />
@@ -871,10 +885,10 @@ export const LoadedRow = memo(
                           <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
                         </RowBetween>
                         <RowBetween gap="5px">
-                          <div style={{ whiteSpace: 'nowrap' }}>PnL int:</div>
+                          <div style={{ whiteSpace: 'nowrap' }}>PnL inc. int:</div>
                           <DeltaText delta={PnLWithPremiums?.toNumber()} isNoWrap={true}>
                             {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
-                            {details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+                            {inputCurrency?.symbol}
                           </DeltaText>
                         </RowBetween>
                         <RowBetween gap="5px">
@@ -889,39 +903,17 @@ export const LoadedRow = memo(
                   disableHover={false}
                 >
                   <FlexStartRow>
-                    {details.marginInPosToken ? (
-                      <AutoColumn style={{ lineHeight: 1.5 }}>
-                        <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
-                          {PnL && new BN(1).div(currentPrice).times(PnL).isGreaterThan(new BN(0)) && !isWethUsdc
-                            ? formatBNToString(
-                                new BN(1).div(currentPrice).times(PnL).times(new BN(0.9)),
-                                NumberType.SwapTradeAmount
-                              )
-                            : PnL &&
-                              formatBNToString(new BN(1).div(currentPrice).times(PnL), NumberType.SwapTradeAmount)}
-                        </DeltaText>
-                        <div>
-                          <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                            {PnL && `(${PnLPercentage}%)`}
-                          </DeltaText>
-                          {' ' + outputCurrency?.symbol}
-                        </div>
-                      </AutoColumn>
-                    ) : (
-                      <AutoColumn style={{ lineHeight: 1.5 }}>
+                    <AutoColumn style={{ lineHeight: 1.5 }}>
+                      <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
+                        {PnL && formatBNToString(PnL, NumberType.SwapTradeAmount)}
+                      </DeltaText>
+                      <div>
                         <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL && PnL.isGreaterThan(new BN(0)) && !isWethUsdc
-                            ? formatBNToString(PnL.times(new BN(0.9)), NumberType.SwapTradeAmount)
-                            : PnL && `${formatBNToString(PnL, NumberType.SwapTradeAmount)} `}
+                          {PnL && `(${PnLPercentage}%)`}
                         </DeltaText>
-                        <div>
-                          <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                            {PnL && `(${PnLPercentage} %)`}
-                          </DeltaText>
-                          {' ' + inputCurrency?.symbol}
-                        </div>
-                      </AutoColumn>
-                    )}
+                        {details.marginInPosToken ? ` ${outputCurrency?.symbol}` : ` ${inputCurrency?.symbol}`}
+                      </div>
+                    </AutoColumn>
                   </FlexStartRow>
                 </MouseoverTooltip>
               }
