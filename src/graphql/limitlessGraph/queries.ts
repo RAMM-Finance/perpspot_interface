@@ -123,6 +123,41 @@ export const ForceClosedQuery = `
   }
 `
 
+export const ForceClosedQueryV2 = `
+  query($first: Int!, $skip: Int!) {
+    forceCloseds(first: $first, skip: $skip, orderBy: blockTimestamp)  {
+      pool
+      positionIsToken0
+      marginInPosToken
+      margin
+      trader
+      forcedClosedAmount     
+      rangeCondition 
+      blockTimestamp
+      blockNumber
+      transactionHash
+    }
+  }
+`
+
+export const NftTransferQuery = `
+  query($first: Int!, $skip: Int!) {
+    transfers(first: $first, skip: $skip, orderBy: blockTimestamp) {
+      from
+      to
+      blockTimestamp
+      blockNumber
+      transactionHash
+    }
+  }
+`
+
+export const ClaimedRebatesQuery = `
+  query($first: Int!, $skip: Int!) {
+    claimedRebates(first: $first, skip: $skip, orderBy: blockTimestamp) {
+      
+    }
+}`
 
 export const PoolAddedQuery = `
   query {
@@ -283,6 +318,15 @@ export const RegisterQuery = `
     registerCodes {
       blockTimestamp
       account
+    }
+  }
+`
+
+export const RegisterQueryV2 =  `
+  query($first: Int!, $skip: Int!) {
+    registerCodes(first: $first, skip: $skip, orderBy: blockTimestamp)  {
+      account
+      blockTimestamp
     }
   }
 `

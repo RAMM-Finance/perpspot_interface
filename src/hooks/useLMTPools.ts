@@ -365,11 +365,15 @@ export function usePoolsData(): {
 
     return poolToData
   }, [data, isError, isLoading])
+  
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    if (poolToData && isLoading)
+    if (poolToData && !isLoading) {
+      console.log("POOLDATA LOADING DONE")
       setLoading(false)
+    }
+      
   }, [poolToData, isLoading])
 
   return useMemo(() => {

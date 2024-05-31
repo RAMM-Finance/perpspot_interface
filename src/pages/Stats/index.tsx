@@ -5,6 +5,7 @@ import TVLChart from 'components/Charts/TVLChart'
 import VolumeChart from 'components/Charts/VolumeChart'
 import FeeChart from 'components/Charts/FeeChart'
 import TradeChart from 'components/Charts/TradeChart'
+import UniqueUsersChart from 'components/Charts/UniqueUsersChart'
 import { useEffect, useMemo, useState } from 'react'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { useWeb3React } from '@web3-react/core'
@@ -13,7 +14,7 @@ import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useBRP, useLimweth } from 'hooks/useContract'
 import { formatDollar } from 'utils/formatNumbers'
 import { useStatsData } from 'hooks/useStatsData'
-import { TvlByDay, VolumeByDay } from 'hooks/useStatsData'
+import { TvlByDay, VolumeByDay, UniqueUsers } from 'hooks/useStatsData'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -139,6 +140,11 @@ interface StyledVolumeChartProps {
   volumeByDay: VolumeByDay[] | undefined
 }
 
+interface StyledUniqueUsersChartProps {
+  volumeByDay: UniqueUsers[] | undefined
+}
+
+
 const StyledTVLChart = styled(TVLChart)<StyledTVLChartProps>`
   flex: 1 0 50%;
   box-sizing: border-box;
@@ -152,6 +158,12 @@ const StyledVolumeChart = styled(VolumeChart)<StyledVolumeChartProps>`
 `
 
 const StyledTradeChart = styled(TradeChart)<StyledVolumeChartProps>`
+  flex: 1 0 50%;
+  box-sizing: border-box;
+  height: 400px;
+`
+
+const StyledUniqueUsersChart = styled(UniqueUsersChart)<StyledUniqueUsersChartProps>`
   flex: 1 0 50%;
   box-sizing: border-box;
   height: 400px;
@@ -301,6 +313,9 @@ export default function StatsPage() {
             />
             <StyledTradeChart
               volumeByDay={statsData?.volumeByDay}
+            />
+            <StyledUniqueUsersChart
+              uniqueUsers={statsData?.uniqueUsers}
             />
             {/* <StyledFeeChart /> */}
           </ChartWrapper>

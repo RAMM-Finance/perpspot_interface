@@ -539,6 +539,8 @@ function SelectPool({
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
   const { result: poolData, loading: loading } = usePoolsData()
+
+  console.log("POOLDATA and LOADING", poolData, loading)
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
 

@@ -1,6 +1,18 @@
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
 import { cacheExchange, createClient, fetchExchange } from '@urql/core'
-import { AddQuery, AddVolumeQuery, ReduceQuery, ReduceVolumeQuery, LiquidityProvidedQuery, LiquidityWithdrawnQuery, AddOrderQuery, CancelOrderQuery, ForceClosedQuery } from 'graphql/limitlessGraph/queries'
+import { 
+  AddQuery, 
+  AddVolumeQuery, 
+  ReduceQuery, 
+  ReduceVolumeQuery, 
+  LiquidityProvidedQuery, 
+  LiquidityWithdrawnQuery, 
+  AddOrderQuery, 
+  CancelOrderQuery, 
+  ForceClosedQueryV2,
+  NftTransferQuery,
+  RegisterQueryV2
+} from 'graphql/limitlessGraph/queries'
 
 // import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
@@ -48,6 +60,21 @@ export async function fetchAllData(query: any, client: any) {
         break
       }
       allResults = [...allResults, ...result.data.liquidityWithdrawns]
+    } else if (query === ForceClosedQueryV2) {
+      if (!result.data || !result.data.forceCloseds.length) {
+        break
+      }
+      allResults = [...allResults, ...result.data.forceCloseds]
+    } else if (query === NftTransferQuery) {
+      if (!result.data || !result.data.transfers.length) {
+        break
+      }
+      allResults = [...allResults, ...result.data.transfers]
+    } else if (query === RegisterQueryV2) {
+      if (!result.data || !result.data.registerCodes.length) {
+        break
+      }
+      allResults = [...allResults, ...result.data.registerCodes]
     }
 
     // else if (query === LiquidityWithdrawnQuery) {
