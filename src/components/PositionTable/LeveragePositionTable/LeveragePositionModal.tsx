@@ -264,6 +264,13 @@ export function LeveragePositionModal(props: TradeModalProps) {
             >
               Withdraw Interest
             </TabElement>
+            <TabElement
+              last={true}
+              isActive={activeTab === TradeModalActiveTab.INCREASE_POSITION}
+              onClick={() => setActiveTab(TradeModalActiveTab.INCREASE_POSITION)}
+            >
+              Increase Position
+            </TabElement>
           </TabsWrapper>
           <ContentWrapper>{displayedContent}</ContentWrapper>
         </ActionsWrapper>
