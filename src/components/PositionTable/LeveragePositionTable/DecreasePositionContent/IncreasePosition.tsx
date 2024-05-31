@@ -207,6 +207,14 @@ const IncreasePosition = ({
     return lmtFormatPrice(trade.executionPrice, entryPrice)
   }, [trade, entryPrice])
 
+  const newTotalPositionPrice = useMemo(() => {
+    if (!trade || !newExecutionPrice || !entryPrice || !existingPosition) return undefined
+    return existingPosition.totalPosition
+      .times(entryPrice)
+      .plus(trade.expectedAddedOutput.times(newExecutionPrice))
+      .div(existingPosition.totalPosition.plus(trade.expectedAddedOutput))
+  }, [trade, existingPosition, newExecutionPrice, entryPrice])
+
   useEffect(() => {
     if (!trade || !existingPosition) {
       onPositionChange({})
@@ -221,14 +229,14 @@ const IncreasePosition = ({
   }, [trade, marginFiatAmount, leverageFactor, onPositionChange, existingPosition])
 
   useEffect(() => {
-    if (!leverageFactor || !existingPosition || !trade || !tradeApprovalInfo || !newExecutionPrice) return
+    if (!leverageFactor || !existingPosition || !trade || !tradeApprovalInfo || !newTotalPositionPrice) return
     onPositionChange({
       totalPosition: existingPosition.totalPosition.plus(trade.expectedAddedOutput),
       margin: existingPosition.margin.plus(trade.margin),
       totalDebtInput: existingPosition.totalDebtInput.plus(new BN(tradeApprovalInfo?.additionalPremium.toExact())),
-      executionPrice: newExecutionPrice,
+      executionPrice: newTotalPositionPrice,
     })
-  }, [leverageFactor, onPositionChange, existingPosition, trade, tradeApprovalInfo, newExecutionPrice])
+  }, [leverageFactor, onPositionChange, existingPosition, trade, tradeApprovalInfo, newTotalPositionPrice])
 
   const { callback: addPositionCallback } = useAddPositionCallback(
     trade,
@@ -389,7 +397,7 @@ const IncreasePosition = ({
           hideBalance={false}
           currency={outputCurrency}
           disabled={true}
-          label="Long"
+          label="Added Position"
           id="increase-position-input"
         />
       </OutputSection>
