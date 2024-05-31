@@ -10,10 +10,15 @@ import { collection, getDocs, setDoc, doc, query, where } from 'firebase/firesto
 import { firestore } from 'firebaseConfig'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
+  AddQuery,
+  ReduceQuery,
   AddVolumeQuery,
   LiquidityProvidedQuery,
   LiquidityWithdrawnQuery,
   ReduceVolumeQuery,
+  ForceClosedQueryV2,
+  NftTransferQuery,
+  RegisterQueryV2
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useState, useEffect, useMemo, useRef } from 'react'
@@ -43,11 +48,17 @@ export interface VolumeByDay {
   volume: number;
 }
 
+export interface UniqueUsers {
+  timestamp: number;
+  count: number;
+}
+
 export interface StatsData {
   totalTvl: number;
   tvlByDay: TvlByDay[];
   totalVolume: number;
   volumeByDay: VolumeByDay[];
+  uniqueUsers: UniqueUsers[];
 }
 
 export function useStatsData(): {
@@ -70,11 +81,26 @@ export function useStatsData(): {
       try {
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
 
-        const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData] = await Promise.all([
+        const [
+          AddQueryData, 
+          ReduceQueryData, 
+          ProvidedQueryData, 
+          WithdrawnQueryData, 
+          AddUsersData, 
+          ReduceUsersData,
+          ForceClosedData,
+          TransferData,
+          RegisterQueryData
+        ] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
           fetchAllData(LiquidityProvidedQuery, clientToUse),
           fetchAllData(LiquidityWithdrawnQuery, clientToUse),
+          fetchAllData(AddQuery, clientToUse),
+          fetchAllData(ReduceQuery, clientToUse),
+          fetchAllData(ForceClosedQueryV2, clientToUse),
+          fetchAllData(NftTransferQuery, clientToUse),
+          fetchAllData(RegisterQueryV2, clientToUse)
         ])
         const timestamp = VOLUME_STARTPOINT
 
@@ -144,6 +170,11 @@ export function useStatsData(): {
           withdrawnData: WithdrawnQueryData,
           addedVolumes: addData,
           reducedVolumes: reduceData,
+          addUsersData: AddUsersData,
+          reduceUsersData: ReduceUsersData,
+          forceClosedData: ForceClosedData,
+          transferData: TransferData,
+          registerData: RegisterQueryData,
           prevPriceData,
           useQueryChainId: chainId,
         }
@@ -182,6 +213,11 @@ export function useStatsData(): {
       reduceData,
       addedVolumes,
       reducedVolumes,
+      addUsersData,
+      reduceUsersData,
+      forceClosedData,
+      transferData,
+      registerData,
       prevPriceData,
       useQueryChainId,
     } = data
@@ -283,6 +319,76 @@ export function useStatsData(): {
       amount: entry.reduceAmount,
       timestamp: parseInt(entry.blockTimestamp)
     }))
+
+    console.log("ADD USERS DATA", addUsersData)
+
+    const addUsersDataProcessed = addUsersData?.map((entry: any) => ({
+      user: entry.trader.toLowerCase(),
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+    
+    const reduceUsersDataProcessed = reduceUsersData?.map((entry: any) => ({
+      user: entry.trader.toLowerCase(),
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+
+    const forceClosedDataProcessed = forceClosedData?.map((entry: any) => ({
+      user: entry.trader.toLowerCase(),
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+
+    const transferProcessed = transferData?.map((entry: any) => ({
+      user: entry.from === "0x0000000000000000000000000000000000000000" ? entry.to.toLowerCase() : entry.from.toLowerCase(),
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+
+    const registerDataProcessed = registerData?.map((entry: any) => ({
+      user: entry.account.toLowerCase(),
+      timestamp: parseInt(entry.blockTimestamp)
+    }))
+
+    console.log("ADD USERS DATA PROCESSED", addUsersDataProcessed)
+    console.log("REDUCE USERS DATA PROCESSED", reduceUsersDataProcessed)
+    console.log("FORCE CLOSED DATA PROCESSED", forceClosedDataProcessed)
+    console.log("TRANSFER PROCESSED", transferProcessed)
+    console.log("RGISTER DATA PROCESS", registerDataProcessed)
+
+    const allDataProcessed = [
+      ...addUsersDataProcessed,
+      ...reduceUsersDataProcessed,
+      ...forceClosedDataProcessed,
+      ...transferProcessed,
+      ...registerDataProcessed
+    ]
+
+    const testData = [
+      {user: 'A', timestamp: 1714700249},
+      {user: 'B', timestamp: 1716064637},
+      {user: 'A', timestamp: 1715697721},
+      {user: 'A', timestamp: 1714700248},
+    ]
+
+
+    const uniqueUsers: { timestamp: number; count: number; users: string[] }[] = allDataProcessed.reduce((acc, cur) => {
+      const date = new Date(cur.timestamp * 1000)
+      date.setUTCHours(0, 0, 0, 0)
+      const dayTimestamp = date.getTime() / 1000
+    
+      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      if (existingEntry) {
+        if (existingEntry.users.includes(cur.user)) {
+          existingEntry.users.push(cur.user)
+          existingEntry.count += 1
+        }
+      } else {
+        acc.push({ timestamp: dayTimestamp, count: 1, users: [cur.user] })
+      }
+      return acc
+    }, [] as { timestamp: number; count: number; users: string[] }[])
+
+    console.log("UNIQUE USERS", uniqueUsers)
+
+    const sortedUniqueUsers = uniqueUsers.map(({timestamp, count}) => ({timestamp, count})).sort((a, b) => a.timestamp - b.timestamp)
 
     const processEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.key)
@@ -505,7 +611,8 @@ export function useStatsData(): {
       totalTvl: totalTvl,
       tvlByDay: sortedTvlByDay,
       totalVolume: totalVolume,
-      volumeByDay: sortedVolumeByDay
+      volumeByDay: sortedVolumeByDay,
+      uniqueUsers: sortedUniqueUsers
     }
     return statsData
   }, [data, isError, isLoading])

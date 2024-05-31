@@ -94,6 +94,10 @@ export function PoolStatsSection({
     fetchData()
   }, [address0, address1, chainId])
 
+  useEffect(() => {
+
+  }, [poolData])
+
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
     poolAddress ?? undefined,
   ])
@@ -155,7 +159,7 @@ export function PoolStatsSection({
     high24h?.isZero() ||
     !delta24h ||
     delta24h?.isZero() ||
-    !poolLoading ||
+    poolLoading ||
     !usdPrice ||
     usdPrice?.isZero()
 
