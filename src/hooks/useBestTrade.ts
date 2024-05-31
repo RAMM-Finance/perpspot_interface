@@ -58,6 +58,8 @@ export function useBestTrade(
   
   const useFallback = (!autoRouterSupported || routingAPITrade.state === TradeState.NO_ROUTE_FOUND) && shouldGetTrade
 
+  console.log("USE FALLBACK", useFallback)
+
   // only use client side router if routing api trade failed or is not supported
   const bestV3Trade = useClientSideV3Trade(
     tradeType,

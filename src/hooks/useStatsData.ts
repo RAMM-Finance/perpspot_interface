@@ -398,7 +398,7 @@ export function useStatsData(): {
 
     // volume before startpoint
 
-    const volumeAddedByDay1: { timestamp: number; volume: number; }[] = volumeAdded.reduce((acc, cur) => {
+    const volumeAddedByDay1: { timestamp: number; volume: number; count: number }[] = volumeAdded.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
@@ -406,15 +406,16 @@ export function useStatsData(): {
       const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.volume += cur.volume || 0
+        existingEntry.count += 1
       } else {
         let volume = 0
         volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume })
+        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
       }
       return acc
-    }, [] as { timestamp: number; volume: number; }[])
+    }, [] as { timestamp: number; volume: number; count: number }[])
 
-    const volumeReducedByDay1: { timestamp: number; volume: number; }[] = volumeReduced.reduce((acc, cur) => {
+    const volumeReducedByDay1: { timestamp: number; volume: number; count: number }[] = volumeReduced.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
@@ -422,66 +423,68 @@ export function useStatsData(): {
       const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.volume += cur.volume || 0
+        existingEntry.count += 1
       } else {
         let volume = 0
         volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume })
+        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
       }
       return acc
-    }, [] as { timestamp: number; volume: number; }[])
+    }, [] as { timestamp: number; volume: number; count: number }[])
 
     console.log("VOLUME ADDED BY DAY", volumeAddedByDay1)
     console.log("VOLUME REDUCED BY DAY", volumeReducedByDay1)
 
-    const volumeAddedByDay2: { timestamp: number; volume: number; }[] = volumeAdded2.reduce((acc, cur) => {
+    const volumeAddedByDay2: { timestamp: number; volume: number; count: number }[] = volumeAdded2.reduce((acc: any, cur: any) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
     
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      const existingEntry = acc.find((entry: any) => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.volume += cur.volume || 0
+        existingEntry.count += 1
       } else {
         let volume = 0
         volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume })
+        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
       }
       return acc
-    }, [] as { timestamp: number; volume: number; }[])
+    }, [] as { timestamp: number; volume: number; count: number }[])
 
-    const volumeReducedByDay2: { timestamp: number; volume: number; }[] = volumeReduced2.reduce((acc, cur) => {
+    const volumeReducedByDay2: { timestamp: number; volume: number; count: number }[] = volumeReduced2.reduce((acc: any, cur: any) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
     
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+      const existingEntry = acc.find((entry: any) => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.volume += cur.volume || 0
+        existingEntry.count += 1
       } else {
         let volume = 0
         volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume })
+        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
       }
       return acc
-    }, [] as { timestamp: number; volume: number; }[])
+    }, [] as { timestamp: number; volume: number; count: number }[])
 
-  // 모든 배열에서 타임스탬프 수집
   const allTimestamps = [...volumeAddedByDay1, ...volumeAddedByDay2, ...volumeReducedByDay1, ...volumeReducedByDay2]
     .map(item => item.timestamp)
-    .filter((value, index, self) => self.indexOf(value) === index); // 중복 제거
+    .filter((value, index, self) => self.indexOf(value) === index)
 
-  // 각 타임스탬프에 대해 볼륨 합산
   const volumeByDay = allTimestamps.map(timestamp => {
-    const volumeAdded1 = volumeAddedByDay1.find(item => item.timestamp === timestamp)?.volume || 0;
-    const volumeAdded2 = volumeAddedByDay2.find(item => item.timestamp === timestamp)?.volume || 0;
-    const volumeReduced1 = volumeReducedByDay1.find(item => item.timestamp === timestamp)?.volume || 0;
-    const volumeReduced2 = volumeReducedByDay2.find(item => item.timestamp === timestamp)?.volume || 0;
+    const volumeAdded1 = volumeAddedByDay1.find(item => item.timestamp === timestamp)
+    const volumeAdded2 = volumeAddedByDay2.find(item => item.timestamp === timestamp)
+    const volumeReduced1 = volumeReducedByDay1.find(item => item.timestamp === timestamp)
+    const volumeReduced2 = volumeReducedByDay2.find(item => item.timestamp === timestamp)
 
     return {
       timestamp: timestamp,
-      volume: volumeAdded1 + volumeAdded2 + volumeReduced1 + volumeReduced2
-    };
-  });
+      volume: (volumeAdded1?.volume || 0) + (volumeAdded2?.volume || 0) + (volumeReduced1?.volume || 0) + (volumeReduced2?.volume || 0),
+      count: (volumeAdded1?.count || 0) + (volumeAdded2?.count || 0) + (volumeReduced1?.count || 0) + (volumeReduced2?.count || 0)
+    }
+  })
 
     const totalVolume = [
       ...volumeAddedByDay1,

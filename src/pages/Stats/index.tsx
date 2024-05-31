@@ -4,6 +4,7 @@ import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import TVLChart from 'components/Charts/TVLChart'
 import VolumeChart from 'components/Charts/VolumeChart'
 import FeeChart from 'components/Charts/FeeChart'
+import TradeChart from 'components/Charts/TradeChart'
 import { useEffect, useMemo, useState } from 'react'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { useWeb3React } from '@web3-react/core'
@@ -150,6 +151,13 @@ const StyledVolumeChart = styled(VolumeChart)<StyledVolumeChartProps>`
   height: 400px;
 `
 
+const StyledTradeChart = styled(TradeChart)<StyledVolumeChartProps>`
+  flex: 1 0 50%;
+  box-sizing: border-box;
+  height: 400px;
+`
+
+
 const StyledFeeChart = styled(FeeChart)`
   flex: 1 0 50%;
   box-sizing: border-box;
@@ -289,6 +297,9 @@ export default function StatsPage() {
               tvlByDay={statsData?.tvlByDay} 
             /> */}
             <StyledVolumeChart
+              volumeByDay={statsData?.volumeByDay}
+            />
+            <StyledTradeChart
               volumeByDay={statsData?.volumeByDay}
             />
             {/* <StyledFeeChart /> */}
