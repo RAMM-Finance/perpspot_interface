@@ -708,10 +708,6 @@ export const LoadedRow = memo(
     }, [details, entryPrice, currentPrice])
 
     // PnL in input/collateral token including premium paid thus far
-    const PnLWithPremiums = useMemo(() => {
-      if (!initialPnL || !details.premiumLeft || !currentPrice) return undefined
-      return initialPnL.minus(details.premiumOwed)
-    }, [details, initialPnL, currentPrice])
 
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
@@ -722,14 +718,16 @@ export const LoadedRow = memo(
       }
     }, [currentPrice, initialPnL, details])
 
-    const PnL = useMemo(() => {
-      if (!initialPnL || !details || !currentPrice) return undefined
+    const [PnL, PnLWithPremiums] = useMemo(() => {
+      if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
       if (details.marginInPosToken) {
         return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? new BN(1).div(currentPrice).times(initialPnL).times(0.9)
-          : new BN(1).div(currentPrice).times(initialPnL)
+          ? [new BN(1).div(currentPrice).times(initialPnL).times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
+          : [new BN(1).div(currentPrice).times(initialPnL), initialPnL.minus(details.premiumOwed)]
       } else {
-        return initialPnL.isGreaterThan(0) && !isWethUsdc ? initialPnL.times(0.9) : initialPnL
+        return initialPnL.isGreaterThan(0) && !isWethUsdc
+          ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
+          : [initialPnL, initialPnL.minus(details.premiumOwed)]
       }
     }, [initialPnL, details, isWethUsdc, currentPrice])
 

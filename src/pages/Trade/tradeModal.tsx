@@ -139,7 +139,7 @@ const OpacityHoverState = css`
   }) => `opacity ${duration.medium} ${timing.ease}`};
 `
 
-const StyledLeverageInput = styled(NumericalInput)`
+export const StyledLeverageInput = styled(NumericalInput)`
   width: 4.2rem;
   text-align: right;
   padding-right: 5px;
