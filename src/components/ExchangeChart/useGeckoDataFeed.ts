@@ -133,6 +133,7 @@ const fetchBarsV2 = async (
 
   let numFetched = 0
   let before_timestamp = to
+  const bars: Bar[] = []
   while (numFetched < countBack) {
     const limit = Math.min(1000, countBack - numFetched)
     const response = await axios.get(
@@ -153,6 +154,12 @@ const fetchBarsV2 = async (
         },
       }
     )
+    // console.log(
+    //   'chart:[getBars]:axios',
+    //   periodParams.countBack,
+    //   response.data.data.attributes.ohlcv_list.length,
+    //   numFetched
+    // )
 
     if (response.status !== 200) {
       return {
@@ -161,8 +168,15 @@ const fetchBarsV2 = async (
       }
     }
 
+    if (response.data.data.attributes.ohlcv_list.length === 0) {
+      return {
+        error: null,
+        bars,
+      }
+    }
+
     const candles = response.data.data.attributes.ohlcv_list
-    const bars: Bar[] = candles
+    const newBars: Bar[] = candles
       .map((candle: any) => {
         return {
           time: Number(candle[0]) * 1000,
@@ -173,8 +187,10 @@ const fetchBarsV2 = async (
         }
       })
       .reverse()
-
+    bars.push(...newBars)
+    bars.sort((a, b) => a.time - b.time)
     numFetched += bars.length
+    // !bars[bars.length - 1] && console.log('zeke:', before_timestamp, limit, response, bars[bars.length - 1], bars)
     before_timestamp = bars[bars.length - 1].time
 
     if (numFetched === countBack) {
@@ -314,16 +330,16 @@ export default function useGeckoDatafeed() {
           onHistoryCallback: HistoryCallback,
           onErrorCallback: (error: string) => void
         ) => {
-          console.log('chart:[getBars]: Method call', resolution)
           const { poolAddress, chainId, invertPrice } = symbolInfo
 
           try {
             // console.log('poolAddress', poolAddress)
 
             const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
+            console.log('chart:[getBars]', periodParams, bars?.length, error)
             const noData = bars.length === 0
             if (error) {
-              return onErrorCallback('Unable to load historical data!')
+              return onErrorCallback('axios error!')
             }
 
             const filteredBars = bars.map((bar, index, array) => {
@@ -361,6 +377,7 @@ export default function useGeckoDatafeed() {
 
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
+            console.log('chart:[getBars]', err)
             onErrorCallback('Unable to load historical data!')
           }
         },
