@@ -13,7 +13,7 @@ import { useInvertedPrice } from 'hooks/useInvertedPrice'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -372,6 +372,7 @@ function PositionRow({
   remainingPremium,
   actions,
   marginInPosToken,
+  refetchLeveragePositions,
   ...rest
 }: {
   first?: boolean
@@ -391,6 +392,7 @@ function PositionRow({
   marginInPosToken: boolean
   last?: boolean
   style?: CSSProperties
+  refetchLeveragePositions?: () => any
 }) {
   const [showReduce, setShowReduce] = useState(false)
   const [selectedTab, setSelectedTab] = useState<TradeModalActiveTab>()
@@ -413,6 +415,7 @@ function PositionRow({
           selectedTab={selectedTab}
           isOpen={showModal}
           onClose={handleCloseModal}
+          refetchLeveragePositions={refetchLeveragePositions}
         />
       )}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
@@ -531,6 +534,7 @@ const FlexStartRow = styled(Row)`
 
 interface LoadedRowProps {
   position: MarginPositionDetails
+  refetchLeveragePositions: () => any
 }
 
 export function getPoolId(tokenA: string, tokenB: string, fee: number) {
@@ -553,9 +557,9 @@ export function positionEntryPrice(position: MarginPositionDetails): BN {
 export const LoadedRow = memo(
   forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
     const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
-    const { position: details } = props
+    const { position: details, refetchLeveragePositions } = props
     const { account } = useWeb3React()
-    const theme = useTheme()
+    // const theme = useTheme()
     const { chainId } = useWeb3React()
     const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
       useMarginTradingActionHandlers()
@@ -747,14 +751,6 @@ export const LoadedRow = memo(
       }
     }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
 
-    console.log(
-      'here',
-      initialPnL &&
-        currentPrice &&
-        formatBNToString(new BN(1).div(currentPrice).times(initialPnL), NumberType.SwapTradeAmount),
-      initialPnL && currentPrice && formatBNToString(initialPnL, NumberType.SwapTradeAmount)
-    )
-
     if (loading) {
       return <LoadingRow />
     }
@@ -780,6 +776,7 @@ export const LoadedRow = memo(
               header={false}
               positionKey={positionKey}
               marginInPosToken={details.marginInPosToken}
+              refetchLeveragePositions={refetchLeveragePositions}
               positionInfo={
                 <ClickableContent>
                   <RowBetween>

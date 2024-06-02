@@ -4,7 +4,8 @@ import { useWeb3React } from '@web3-react/core'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
-import { useAtomValue, useResetAtom } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
+import { useResetAtom } from 'jotai/utils'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
@@ -202,9 +203,11 @@ function useSelectPositions(positions?: MarginPositionDetails[]) {
 export default function LeveragePositionsTable({
   positions,
   loading,
+  refetchLeveragePositions,
 }: {
   positions?: MarginPositionDetails[]
   loading?: boolean
+  refetchLeveragePositions: () => any
 }) {
   const { chainId } = useWeb3React()
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
@@ -243,6 +246,7 @@ export default function LeveragePositionsTable({
                 position.isToken0
               }
               position={position}
+              refetchLeveragePositions={refetchLeveragePositions}
             />
           ))}
         </TokenDataContainer>

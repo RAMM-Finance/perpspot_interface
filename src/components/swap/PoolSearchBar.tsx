@@ -5,7 +5,7 @@ import searchIcon from 'assets/svg/search.svg'
 import xIcon from 'assets/svg/x.svg'
 import { MEDIUM_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import useDebounce from 'hooks/useDebounce'
-import { useAtomValue, useUpdateAtom } from 'jotai/utils'
+import { useAtomValue, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 
@@ -69,7 +69,7 @@ const SearchInput = styled.input`
 export default function PoolSearchBar() {
   const currentString = useAtomValue(poolFilterStringAtom)
   const [localFilterString, setLocalFilterString] = useState(currentString)
-  const setFilterString = useUpdateAtom(poolFilterStringAtom)
+  const setFilterString = useSetAtom(poolFilterStringAtom)
   const debouncedLocalFilterString = useDebounce(localFilterString, 500)
 
   useEffect(() => {

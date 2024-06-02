@@ -8,7 +8,7 @@ import { usePoolsData } from 'hooks/useLMTPools'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { useAppPoolOHLC, usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
@@ -409,7 +409,7 @@ export default function TokenTable() {
       const [limWethBal, decimals, queryResult] = await Promise.all([
         limWeth?.tokenBalance(),
         limWeth?.decimals(),
-        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006')
+        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
       ])
 
       const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
@@ -420,7 +420,7 @@ export default function TokenTable() {
       getBalance(limWeth)
     }
   }, [chainId, limWeth])
-  
+
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
@@ -459,7 +459,7 @@ export default function TokenTable() {
             const result = await getDecimalAndUsdValueData(chainId, tokenId)
             newPriceUSD[tokenId] = result?.lastPriceUSD
           }
-        });
+        })
         await Promise.all(promises)
       }
       setPricesUSD(newPriceUSD)
@@ -579,7 +579,11 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 }) : '0'}
+          {!poolsInfo || !poolsInfo?.tvl
+            ? '-'
+            : poolsInfo?.tvl
+            ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 })
+            : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
     </TVLInfoWrapper>

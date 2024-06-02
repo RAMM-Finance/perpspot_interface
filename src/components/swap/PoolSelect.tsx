@@ -15,7 +15,7 @@ import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { Row } from 'nft/components/Flex'
 import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
@@ -539,8 +539,6 @@ function SelectPool({
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
   const { result: poolData, loading: loading } = usePoolsData()
-
-  console.log("POOLDATA and LOADING", poolData, loading)
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
 
@@ -732,41 +730,43 @@ function SelectPool({
         fee={poolKey?.fee}
         poolLoading={loading}
       />
-      {open &&<StyledMenu
-        id="simple-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={open}
-        onClose={handleClose}
-        style={{ position: 'absolute' }}
-        marginThreshold={0}
-      >
-        <PoolSearchBar />
-        <PoolListContainer>
-          <PoolListHeaderRow>
-            <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
-            <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
-            <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
-          </PoolListHeaderRow>
-          {filteredKeys.length === 0 ? null : (
-            <ListWrapper>
-              {filteredKeys.map((poolKey) => {
-                const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-                return (
-                  <PoolSelectRow
-                    key={id}
-                    poolKey={poolKey}
-                    handleClose={handleClose}
-                    addPinnedPool={addPinnedPool}
-                    removePinnedPool={removePinnedPool}
-                    pinnedPools={pinnedPools}
-                  />
-                )
-              })}
-            </ListWrapper>
-          )}
-        </PoolListContainer>
-      </StyledMenu>}
+      {open && (
+        <StyledMenu
+          id="simple-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={open}
+          onClose={handleClose}
+          style={{ position: 'absolute' }}
+          marginThreshold={0}
+        >
+          <PoolSearchBar />
+          <PoolListContainer>
+            <PoolListHeaderRow>
+              <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
+              <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
+              <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+            </PoolListHeaderRow>
+            {filteredKeys.length === 0 ? null : (
+              <ListWrapper>
+                {filteredKeys.map((poolKey) => {
+                  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+                  return (
+                    <PoolSelectRow
+                      key={id}
+                      poolKey={poolKey}
+                      handleClose={handleClose}
+                      addPinnedPool={addPinnedPool}
+                      removePinnedPool={removePinnedPool}
+                      pinnedPools={pinnedPools}
+                    />
+                  )
+                })}
+              </ListWrapper>
+            )}
+          </PoolListContainer>
+        </StyledMenu>
+      )}
     </MainWrapper>
   )
 }

@@ -20,15 +20,18 @@ import {
   StyledPollingDot,
   TransactionDetails,
 } from 'components/modalFooters/common'
+import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import Row from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import Toggle from 'components/Toggle'
+import { addDoc, collection } from 'firebase/firestore'
+import { firestore } from 'firebaseConfig'
 import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { getDecimalAndUsdValueData, useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DynamicSection } from 'pages/Trade/tradeModal'
@@ -55,9 +58,6 @@ import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
 import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { firestore } from 'firebaseConfig'
 
 export interface DerivedReducePositionInfo {
   /** if marginInPosToken then PnL in output token, otherwise in input token */
@@ -189,6 +189,7 @@ export default function DecreasePositionContent({
   inputCurrency,
   outputCurrency,
   onClose,
+  refetchLeveragePositions,
 }: {
   marginInPosToken: boolean
   positionKey: TraderPositionKey
@@ -200,8 +201,8 @@ export default function DecreasePositionContent({
   inputCurrency?: Currency
   outputCurrency?: Currency
   onClose: () => void
+  refetchLeveragePositions?: () => any
 }) {
-
   const { position: existingPosition } = positionData
   // state inputs, derived, handlers for trade confirmation
   const [reduceAmount, setReduceAmount] = useState('')
@@ -374,13 +375,10 @@ export default function DecreasePositionContent({
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
 
-
-  
   const handleReducePosition = useCallback(async () => {
-    if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
+    if (!callback || !txnInfo || !inputCurrency || !outputCurrency || !refetchLeveragePositions) {
       return
     }
-    
 
     setCurrentState((prev) => ({ ...prev, attemptingTxn: true }))
 
@@ -392,45 +390,46 @@ export default function DecreasePositionContent({
         // setErrorMessage(undefined)
 
         addTransaction(response, {
-          marginInPosToken: marginInPosToken,
+          marginInPosToken,
           type: TransactionType.REDUCE_LEVERAGE,
           reduceAmount: Number(reduceAmount),
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
+          callback: refetchLeveragePositions,
         })
         const timestamp = Math.floor(Date.now() / 1000)
-        const type = "REDUCE"
+        const type = 'REDUCE'
         try {
           if (pool && fiatValueReduceAmount) {
             // const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
-            const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee) 
+            const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
             // const priceUSD = result.lastPriceUSD
 
             const volume = fiatValueReduceAmount.data
             // const volume = (parseFloat(priceUSD) * parseFloat(freduceAmount)).toFixed(10)
 
             await addDoc(collection(firestore, 'volumes'), {
-              poolId: poolId,
+              poolId,
               // priceUSD: priceUSD,
-              timestamp: timestamp,
-              type: type,
-              volume: volume,
-              account: account
+              timestamp,
+              type,
+              volume,
+              account,
             })
           } else {
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
               // priceUSD: priceUSD,
-              timestamp: timestamp,
-              type: type,
+              timestamp,
+              type,
               volume: fiatValueForVolume,
-              account: account
+              account,
             })
           }
         } catch (error) {
-          console.error("An error occurred:", error)
+          console.error('An error occurred:', error)
         }
 
         if (closePosition) {
@@ -445,7 +444,16 @@ export default function DecreasePositionContent({
           attemptingTxn: false,
         }))
       })
-  }, [callback, txnInfo, inputCurrency, outputCurrency, reduceAmount, addTransaction, onClose])
+  }, [
+    callback,
+    txnInfo,
+    inputCurrency,
+    outputCurrency,
+    reduceAmount,
+    addTransaction,
+    onClose,
+    refetchLeveragePositions,
+  ])
 
   const handleReduceLimitPosition = useCallback(() => {
     if (!limitCallback || !inputCurrency || !outputCurrency) {
@@ -613,7 +621,7 @@ export default function DecreasePositionContent({
       </DarkCard>
     )
   }
-  
+
   useEffect(() => {
     if (pool && fiatValueReduceAmount) {
       setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))

@@ -3,7 +3,7 @@ import { ChartContainer, LoadingChart } from 'components/Tokens/TokenDetails/Ske
 import { TokenPriceQuery } from 'graphql/data/TokenPrice'
 import { isPricePoint, PricePoint } from 'graphql/data/util'
 import { TimePeriod } from 'graphql/data/util'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { pageTimePeriodAtom } from 'pages/TokenDetails'
 import { startTransition, Suspense, useMemo } from 'react'
 
@@ -45,21 +45,19 @@ export default function ChartSection({
   )
 }
 
-export function PairChartSection(
-  {
-    token0PriceQuery,
-    token1PriceQuery,
-    onChangeTimePeriod,
-    token0symbol = "UNK",
-    token1symbol = "UNK"
-  }: {
-    token0PriceQuery?: TokenPriceQuery
-    token1PriceQuery?: TokenPriceQuery
-    onChangeTimePeriod: OnChangeTimePeriod
-    token0symbol?: string
-    token1symbol?: string
-  }
-) {
+export function PairChartSection({
+  token0PriceQuery,
+  token1PriceQuery,
+  onChangeTimePeriod,
+  token0symbol = 'UNK',
+  token1symbol = 'UNK',
+}: {
+  token0PriceQuery?: TokenPriceQuery
+  token1PriceQuery?: TokenPriceQuery
+  onChangeTimePeriod: OnChangeTimePeriod
+  token0symbol?: string
+  token1symbol?: string
+}) {
   if (!token0PriceQuery || !token1PriceQuery) {
     return <LoadingChart />
   }
@@ -67,7 +65,13 @@ export function PairChartSection(
   return (
     <Suspense fallback={<LoadingChart />}>
       <ChartContainer>
-        <PairChart token0PriceQuery={token0PriceQuery} token1PriceQuery={token1PriceQuery} onChangeTimePeriod={onChangeTimePeriod} token0symbol={token0symbol} token1symbol={token1symbol}/>
+        <PairChart
+          token0PriceQuery={token0PriceQuery}
+          token1PriceQuery={token1PriceQuery}
+          onChangeTimePeriod={onChangeTimePeriod}
+          token0symbol={token0symbol}
+          token1symbol={token1symbol}
+        />
       </ChartContainer>
     </Suspense>
   )
@@ -105,7 +109,7 @@ function PairChart({
   token1PriceQuery,
   onChangeTimePeriod,
   token0symbol,
-  token1symbol
+  token1symbol,
 }: {
   token0PriceQuery: TokenPriceQuery
   token1PriceQuery: TokenPriceQuery
@@ -123,7 +127,7 @@ function PairChart({
         const price1 = prices1[i]
         return {
           timestamp: price0.timestamp,
-          value: price0.value / price1.value
+          value: price0.value / price1.value,
         }
       })
     }
@@ -141,11 +145,19 @@ function PairChart({
     return f
   }, [token0PriceQuery, token1PriceQuery])
 
-
   return (
     <ChartContainer data-testid="chart-container">
       <ParentSize>
-        {({ width }) => <PriceChart prices={prices} width={width} height={436} timePeriod={timePeriod} priceFormatBool={true} priceFormat={priceFormat}/>}
+        {({ width }) => (
+          <PriceChart
+            prices={prices}
+            width={width}
+            height={436}
+            timePeriod={timePeriod}
+            priceFormatBool={true}
+            priceFormat={priceFormat}
+          />
+        )}
       </ParentSize>
       <TimePeriodSelector
         currentTimePeriod={timePeriod}

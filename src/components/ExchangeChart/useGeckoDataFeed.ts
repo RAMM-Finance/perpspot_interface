@@ -154,14 +154,15 @@ const fetchBarsV2 = async (
         },
       }
     )
-    // console.log(
-    //   'chart:[getBars]:axios',
-    //   periodParams.countBack,
-    //   response.data.data.attributes.ohlcv_list.length,
-    //   numFetched
-    // )
+    console.log(
+      'zeke:chart:[getBars]:axios',
+      periodParams.countBack,
+      response.data.data.attributes.ohlcv_list.length,
+      numFetched
+    )
 
     if (response.status !== 200) {
+      console.log('zeke:1')
       return {
         error: 'failed to fetch bars',
         bars: [],
@@ -194,6 +195,13 @@ const fetchBarsV2 = async (
     before_timestamp = bars[bars.length - 1].time
 
     if (numFetched === countBack) {
+      return {
+        error: null,
+        bars,
+      }
+    }
+
+    if (newBars.length < limit) {
       return {
         error: null,
         bars,
@@ -365,7 +373,11 @@ export default function useGeckoDatafeed() {
               } else if (lowWickLength < minWickLength * (bar.close - bar.open)) {
                 low = bar.close - minWickLength * (bar.close - bar.open)
               }
-
+              if (index !== array.length - 1) {
+                if (bar.close !== array[index + 1].open) {
+                  bar.close = array[index + 1].open
+                }
+              }
               return {
                 open: invertPrice ? 1 / bar.open : bar.open,
                 close: invertPrice ? 1 / bar.close : bar.close,

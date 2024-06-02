@@ -13,7 +13,8 @@ import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
 import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { TraderPositionKey } from 'types/lmtv2position'
-import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 
@@ -33,7 +34,8 @@ export function useAddPositionCallback(
   trade: AddMarginTrade | undefined,
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined,
-  allowedSlippage: Percent
+  allowedSlippage: Percent,
+  refetchLeveragePosition?: () => any | undefined
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const { account, chainId, provider } = useWeb3React()
@@ -93,8 +95,6 @@ export function useAddPositionCallback(
         if (!output) throw new Error('Quoter Error')
         amountOut = new BN(output.toString())
       }
-      // 2442588784069760304
-      // 3399642087168558543582
 
       // if (!swapOutput) throw new Error('unable to get trade output')
 
@@ -155,12 +155,12 @@ export function useAddPositionCallback(
 
       let gasEstimate: BigNumber
 
-      // try {
-      //   gasEstimate = await provider.estimateGas(tx)
-      // } catch (gasError) {
-      // throw new GasEstimationError()
-      // }
-      // const gasLimit = calculateGasMargin(gasEstimate)
+      try {
+        gasEstimate = await provider.estimateGas(tx)
+      } catch (gasError) {
+        throw new GasEstimationError()
+      }
+      const gasLimit = calculateGasMargin(gasEstimate)
       const response = await provider
         .getSigner()
         .sendTransaction({ ...tx })
@@ -178,10 +178,10 @@ export function useAddPositionCallback(
       console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, allowedSlippage, outputCurrency, inputCurrency])
+  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency])
 
   const callback = useMemo(() => {
-    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency) return null
+    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null
 
     return () =>
       addPositionCallback().then((response) => {
@@ -192,10 +192,11 @@ export function useAddPositionCallback(
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
           expectedAddedPosition: formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount),
+          callback: refetchLeveragePosition,
         })
         return response.hash
       })
-  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency])
+  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency, refetchLeveragePosition])
 
   return {
     callback,

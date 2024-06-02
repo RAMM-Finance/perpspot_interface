@@ -11,7 +11,7 @@ import ConfirmModifyPositionModal from 'components/PositionTable/LeveragePositio
 import Row, { AutoRow, RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { SmallMaxButton } from 'pages/RemoveLiquidity/styled'
 import { ForwardedRef, forwardRef, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'

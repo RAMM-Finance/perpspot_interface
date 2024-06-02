@@ -215,7 +215,7 @@ const PremiumWrapper = styled.div`
   gap: 10px;
 `
 
-const TradeTabContent = () => {
+const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePositions: () => any }) => {
   // const theme = useTheme()
   const { account, chainId } = useWeb3React()
   const currentPool = useCurrentPool()
@@ -539,7 +539,8 @@ const TradeTabContent = () => {
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
-    allowedSlippage
+    allowedSlippage,
+    refetchLeveragePositions
   )
 
   const handleAddPosition = useCallback(() => {

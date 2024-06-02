@@ -62,12 +62,14 @@ export function PostionsContainer({
   loadingOrders,
   positions,
   loadingPositions,
+  refetchLeveragePositions,
 }: {
   account?: string
   orders?: MarginLimitOrder[]
   loadingOrders?: boolean
   positions?: MarginPositionDetails[]
   loadingPositions?: boolean
+  refetchLeveragePositions: () => any
 }) {
   const [activePositionTable, setActiveTable] = useState(1)
 
@@ -94,7 +96,11 @@ export function PostionsContainer({
         {activePositionTable === 1 && <SearchBar />}
       </TableHeader>
       <TabContent id={1} activeTab={activePositionTable}>
-        <LeveragePositionsTable positions={positions} loading={loadingPositions} />
+        <LeveragePositionsTable
+          positions={positions}
+          loading={loadingPositions}
+          refetchLeveragePositions={refetchLeveragePositions}
+        />
       </TabContent>
       <TabContent id={2} activeTab={activePositionTable}>
         <OrdersTable orders={orders} loading={loadingOrders} />

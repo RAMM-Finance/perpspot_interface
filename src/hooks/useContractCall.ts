@@ -158,6 +158,7 @@ interface V2CallOutput {
   error: DecodedError | undefined
   loading: boolean
   syncing: boolean
+  refetch: () => void
 }
 // if no query key then
 export function useContractCallV2(
@@ -225,7 +226,7 @@ export function useContractCallV2(
     [calldata, address, chainId, provider, useSigner, parseFn]
   )
 
-  const { data, error, isLoading, dataUpdatedAt } = useQuery({
+  const { data, error, isLoading, dataUpdatedAt, refetch } = useQuery({
     queryFn: call,
     queryKey: currentQueryKey,
     enabled: _enabled,
@@ -234,8 +235,8 @@ export function useContractCallV2(
 
   return useMemo(() => {
     if (!_enabled) {
-      return { result: undefined, error: undefined, loading: false, syncing: false }
+      return { result: undefined, error: undefined, loading: false, syncing: false, refetch }
     }
-    return { result: data, error: error as DecodedError, loading: isLoading, syncing: false }
-  }, [data, isLoading, _enabled, error])
+    return { result: data, error: error as DecodedError, loading: isLoading, syncing: false, refetch }
+  }, [data, isLoading, _enabled, error, refetch])
 }

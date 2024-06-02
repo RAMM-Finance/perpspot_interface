@@ -5,7 +5,7 @@ import { SupportedChainId } from 'constants/chains'
 import ms from 'ms.macro'
 import { useCallback, useEffect } from 'react'
 import { useRemoveTransaction } from 'state/transactions/hooks'
-import { TransactionDetails } from 'state/transactions/types'
+import { TransactionDetails, TransactionInfo } from 'state/transactions/types'
 import { retry, RetryableError, RetryOptions } from 'utils/retry'
 
 import useBlockNumber, { useFastForwardBlockNumber } from '../useBlockNumber'
@@ -36,6 +36,7 @@ export function shouldCheck(lastBlockNumber: number, tx: Transaction): boolean {
 
 const RETRY_OPTIONS_BY_CHAIN_ID: { [chainId: number]: RetryOptions } = {
   [SupportedChainId.ARBITRUM_ONE]: { n: 10, minWait: 250, maxWait: 1000 },
+  [SupportedChainId.BASE]: { n: 10, minWait: 250, maxWait: 1000 },
   // [SupportedChainId.ARBITRUM_GOERLI]: { n: 10, minWait: 250, maxWait: 1000 },
   // [SupportedChainId.OPTIMISM]: { n: 10, minWait: 250, maxWait: 1000 },
   // [SupportedChainId.OPTIMISM_GOERLI]: { n: 10, minWait: 250, maxWait: 1000 },
@@ -45,7 +46,12 @@ const DEFAULT_RETRY_OPTIONS: RetryOptions = { n: 1, minWait: 0, maxWait: 0 }
 interface UpdaterProps {
   pendingTransactions: { [hash: string]: TransactionDetails }
   onCheck: (tx: { chainId: number; hash: string; blockNumber: number }) => void
-  onReceipt: (tx: { chainId: number; hash: string; receipt: TransactionReceipt }) => void
+  onReceipt: (tx: {
+    chainId: number
+    hash: string
+    receipt: TransactionReceipt
+    transactionInfo: TransactionInfo
+  }) => void
 }
 
 export default function Updater({ pendingTransactions, onCheck, onReceipt }: UpdaterProps): null {
@@ -101,7 +107,7 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
           .then((receipt) => {
             if (receipt) {
               fastForwardBlockNumber(receipt.blockNumber)
-              onReceipt({ chainId, hash, receipt })
+              onReceipt({ chainId, hash, receipt, transactionInfo: pendingTransactions[hash].info })
             } else {
               onCheck({ chainId, hash, blockNumber: lastBlockNumber })
             }

@@ -2,14 +2,14 @@ import { Trans } from '@lingui/macro'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
+import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { usePoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
@@ -28,9 +28,6 @@ import { LoadingBubble } from '../loading'
 import { filterStringAtom } from '../state'
 import { DeltaText } from '../TokenDetails/PriceChart'
 import ZapModal from './ZapModal/ZapModal'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
-import { useWeb3React } from '@web3-react/core'
-import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 
 const Cell = styled.div`
   display: flex;
@@ -293,7 +290,6 @@ const HotStatusText = styled(ThemedText.BodySmall)`
   color: ${({ theme }) => theme.newOrHot};
 `
 
-
 export const SparkLineLoadingBubble = styled(LongLoadingBubble)`
   height: 4px;
 `
@@ -417,7 +413,20 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, dailyLMT, poolKey, pricesUSD, poolOHLC } = props
+  const {
+    tokenListIndex,
+    tokenListLength,
+    tokenA,
+    tokenB,
+    tvl,
+    volume,
+    fee,
+    apr,
+    dailyLMT,
+    poolKey,
+    pricesUSD,
+    poolOHLC,
+  } = props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -466,17 +475,26 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const [token0Range, token1Range] = useMemo(() => {
-    if (token0?.symbol === "USDC" || token1?.symbol === "USDC") {
+    if (token0?.symbol === 'USDC' || token1?.symbol === 'USDC') {
       return [0.95, 1.05]
     } else {
       return [undefined, undefined]
     }
   }, [token0, token1])
 
-  const rawEstimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD, token0Range, token1Range)
-  
+  const rawEstimatedAPR = useEstimatedAPR(
+    token0,
+    token1,
+    pool,
+    tickSpacing,
+    priceInverted,
+    depositAmountUSD,
+    token0Range,
+    token1Range
+  )
+
   const estimatedAPR = useMemo(() => {
-    if (token0?.symbol === "USDC" || token1?.symbol === "USDC") {
+    if (token0?.symbol === 'USDC' || token1?.symbol === 'USDC') {
       return rawEstimatedAPR / 3
     } else {
       return rawEstimatedAPR
@@ -553,19 +571,20 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               <DoubleCurrencyLogo currency0={baseCurrency} currency1={quoteCurrency} size={20} margin={true} />
               <TokenName data-cy="token-name">
                 <span>{token0?.symbol}</span>
-                <span>{token1?.symbol}</span>   
+                <span>{token1?.symbol}</span>
               </TokenName>
-              {token0?.symbol && token1?.symbol && (
-                (TokenStatus[token0.symbol as TokenStatusKey] === 'New' || TokenStatus[token1.symbol as TokenStatusKey] === 'New') ? (
+              {token0?.symbol &&
+                token1?.symbol &&
+                (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
+                TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
                   <NewOrHotStatusText fontWeight={600} paddingBottom="16px">
                     {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
                   </NewOrHotStatusText>
                 ) : (
-                  <NewOrHotStatusText fontWeight={600} paddingBottom="9px" fontSize={14}> 
+                  <NewOrHotStatusText fontWeight={600} paddingBottom="9px" fontSize={14}>
                     {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
                   </NewOrHotStatusText>
-                  )
-                )}   
+                ))}
             </TokenInfoCell>
           </ClickableName>
         }
@@ -596,23 +615,25 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         APR={
           <>
             <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
-              {apr !== undefined ? `${new Intl.NumberFormat().format(Number(((apr + estimatedAPR) ?? 0).toFixed(4)))} %` : '-'}
+              {apr !== undefined
+                ? `${new Intl.NumberFormat().format(Number((apr + estimatedAPR ?? 0).toFixed(4)))} %`
+                : '-'}
             </ClickableRate>
           </>
         }
         dailyLMT={
-          <ClickableRate rate={              
-          (token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
-          (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
-            ? LMT_PER_USD_PER_DAY_USDC
-            : LMT_PER_USD_PER_DAY
-            }>
-            {
+          <ClickableRate
+            rate={
               (token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
               (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
-                ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
-                : `${LMT_PER_USD_PER_DAY} LMT/USD`
+                ? LMT_PER_USD_PER_DAY_USDC
+                : LMT_PER_USD_PER_DAY
             }
+          >
+            {(token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
+            (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
+              ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+              : `${LMT_PER_USD_PER_DAY} LMT/USD`}
           </ClickableRate>
         }
         first={tokenListIndex === 0}

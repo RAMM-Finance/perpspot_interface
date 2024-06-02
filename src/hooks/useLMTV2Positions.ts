@@ -134,71 +134,76 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
 
-  // const { result, loading, error, syncing } = useContractCallV2(
-  //   DATA_PROVIDER_ADDRESSES,
-  //   calldata,
-  //   ['getActiveMarginPositions'],
-  //   true,
-  //   true,
-  //   (data) => data,
-  //   {
-  //     keepPreviousData: true,
-  //     refetchInterval: 3500,
-  //     refetchOnReconnect: true,
-  //     refetchOnWindowFocus: false,
-  //     retry: false,
-  //     staleTime: Infinity,
-  //   }
-  // )
+  const { result, loading, error, syncing, refetch } = useContractCallV2(
+    DATA_PROVIDER_ADDRESSES,
+    calldata,
+    ['getActiveMarginPositions'],
+    true,
+    true,
+    (data) => DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', data)[0],
+    {
+      keepPreviousData: true,
+      refetchInterval: 1500,
+      refetchOnReconnect: true,
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: Infinity,
+    }
+  )
 
   const dataProvider = useDataProviderContract()
-  const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
-    gasRequired: 15_000_000,
-  })
+  // const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
+  //   gasRequired: 15_000_000,
+  // })
 
-  const result = useMemo(() => {
-    if (callStates.length > 0 && callStates[0].result) {
-      if (callStates[0].result[0]) {
-        return callStates[0].result[0]
-      }
-    }
-    return undefined
-  }, [callStates])
+  // const result = useMemo(() => {
+  //   if (callStates.length > 0 && callStates[0].result) {
+  //     if (callStates[0].result[0]) {
+  //       return callStates[0].result[0]
+  //     }
+  //   }
+  //   return undefined
+  // }, [callStates])
 
-  const loading = useMemo(() => {
-    if (callStates.length > 0 && callStates[0]) {
-      return callStates[0].loading
-    }
-    return false
-  }, [callStates])
+  // const loading = useMemo(() => {
+  //   if (callStates.length > 0 && callStates[0]) {
+  //     return callStates[0].loading
+  //   }
+  //   return false
+  // }, [callStates])
 
-  const syncing = useMemo(() => {
-    if (callStates.length > 0 && callStates[0]) {
-      return callStates[0].syncing
-    }
-    return false
-  }, [callStates])
+  // const syncing = useMemo(() => {
+  //   if (callStates.length > 0 && callStates[0]) {
+  //     return callStates[0].syncing
+  //   }
+  //   return false
+  // }, [callStates])
 
-  const error = useMemo(() => {
-    if (callStates.length > 0 && callStates[0]) {
-      return callStates[0].error
-    }
-    return false
-  }, [callStates])
+  // const error = useMemo(() => {
+  //   if (callStates.length > 0 && callStates[0]) {
+  //     return callStates[0].error
+  //   }
+  //   return false
+  // }, [callStates])
 
   const rateCalldatas: string[] = useMemo(() => {
     if (!result || !account) return []
     // const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
     const parsed = result
     return parsed.map((position: any) => {
+      // console.log('zeke:', {
+      //   token0: position[0][0],
+      //   token1: position[0][1],
+      //   fee: position[0][2],
+      // })
       return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', [
         {
-          token0: position.poolKey.token0,
-          token1: position.poolKey.token1,
-          fee: position.poolKey.fee,
+          token0: position[0][0],
+          token1: position[0][1],
+          fee: position[0][2],
         },
         account,
-        position.isToken0,
+        position[1],
       ])
     })
   }, [result, account])
@@ -214,6 +219,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         syncing,
         error,
         positions: undefined,
+        refetch,
       }
     }
 
@@ -223,53 +229,51 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         syncing,
         error,
         positions: undefined,
+        refetch,
       }
     }
     try {
       // const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
       const parsed = result
       const positions: MarginPositionDetails[] = parsed.map((position: any, i: number) => {
-        const inputDecimals = position.isToken0
-          ? Number(position.token1Decimals.toString())
-          : Number(position.token0Decimals.toString())
-        const outputDecimals = position.isToken0
-          ? Number(position.token0Decimals.toString())
-          : Number(position.token1Decimals.toString())
+        const token0Decimals = position[11]
+        const token1Decimals = position[12]
+        const isToken0 = position[1]
+        const inputDecimals = isToken0 ? Number(token1Decimals.toString()) : Number(token0Decimals.toString())
+        const outputDecimals = isToken0 ? Number(token0Decimals.toString()) : Number(token1Decimals.toString())
         const apr = rateData[i].result
         return {
           poolKey: {
-            token0: position.poolKey.token0,
-            token1: position.poolKey.token1,
-            fee: position.poolKey.fee,
+            token0: position[0][0],
+            token1: position[0][1],
+            fee: position[0][2],
           },
-          isToken0: position.isToken0,
-          totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
-          totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
-          openTime: position.openTime,
-          repayTime: position.repayTime,
-          premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
-          totalPosition: convertToBN(position.totalPosition, outputDecimals),
-          margin: convertToBN(position.margin, position.marginInPosToken ? outputDecimals : inputDecimals),
-          premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
+          isToken0: position[1],
+          totalDebtOutput: convertToBN(position[3], outputDecimals),
+          totalDebtInput: convertToBN(position[4], inputDecimals),
+          openTime: position[5],
+          repayTime: position[6],
+          premiumDeposit: convertToBN(position[7], inputDecimals),
+          totalPosition: convertToBN(position[8], outputDecimals),
+          margin: convertToBN(position[9], position[2] ? outputDecimals : inputDecimals),
+          premiumOwed: convertToBN(position[10], inputDecimals),
           isBorrow: false,
-          premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
-            convertToBN(position.premiumOwed, inputDecimals)
-          ),
-          token0Decimals: Number(position.token0Decimals.toString()),
-          token1Decimals: Number(position.token1Decimals.toString()),
+          premiumLeft: convertToBN(position[7], inputDecimals).minus(convertToBN(position[10], inputDecimals)),
+          token0Decimals: Number(token0Decimals.toString()),
+          token1Decimals: Number(token1Decimals.toString()),
           trader: account,
-          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
-          borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
+          maxWithdrawablePremium: convertToBN(position[13], inputDecimals),
+          borrowInfo: position[14].map((info: LiquidityLoanStructOutput) => {
             return {
-              tick: info.tick,
-              liquidity: new BN(info.liquidity.toString()),
-              premium: convertToBN(info.premium, inputDecimals),
-              feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
-              feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
-              lastGrowth: new BN(info.lastGrowth.toString()),
+              tick: info[0],
+              liquidity: new BN(info[1].toString()),
+              premium: convertToBN(info[2], inputDecimals),
+              feeGrowthInside0LastX128: new BN(info[3].toString()),
+              feeGrowthInside1LastX128: new BN(info[4].toString()),
+              lastGrowth: new BN(info[5].toString()),
             }
           }),
-          marginInPosToken: position.marginInPosToken,
+          marginInPosToken: position[2],
           apr: apr?.['0'] ? new BN(apr?.['0'].toString()).shiftedBy(-18) : new BN(0),
         }
       })
@@ -280,6 +284,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         error,
         positions, // assuming positions is processed from parsed data
         syncing,
+        refetch,
       }
     } catch (decodeError) {
       // Handle the error from decoding
@@ -289,9 +294,10 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         syncing,
         error: decodeError,
         positions: undefined,
+        refetch,
       }
     }
-  }, [result, loading, error, account, syncing, rateData])
+  }, [result, loading, error, account, syncing, rateData, refetch])
 }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
@@ -561,6 +567,7 @@ interface UseLmtMarginPositionsResults {
   error: any
   positions: MarginPositionDetails[] | undefined
   syncing: boolean
+  refetch: () => any
 }
 interface UseLmtOrdersResults {
   loading: boolean

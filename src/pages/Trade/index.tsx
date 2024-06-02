@@ -336,7 +336,11 @@ export default function Trade({ className }: { className?: string }) {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  const {
+    loading: leverageLoading,
+    positions: leveragePositions,
+    refetch: refetchLeveragePositions,
+  } = useLeveragedLMTPositions(account)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
@@ -458,7 +462,7 @@ export default function Trade({ className }: { className?: string }) {
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
-            {!isSwap && <TradeTabContent />}
+            {!isSwap && <TradeTabContent refetchLeveragePositions={refetchLeveragePositions} />}
             {isSwap && <SwapTabContent />}
             <TradeNavigation />
           </SwapWrapper>
@@ -469,6 +473,7 @@ export default function Trade({ className }: { className?: string }) {
               loadingOrders={orderLoading}
               positions={leveragePositions}
               loadingPositions={leverageLoading}
+              refetchLeveragePositions={refetchLeveragePositions}
             />
           </PositionsWrapper>
         </MainWrapper>

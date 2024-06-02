@@ -1,7 +1,8 @@
 import { Trans } from '@lingui/macro'
 import Row from 'components/Row'
 import { atom, useAtom } from 'jotai'
-import { atomWithStorage, useAtomValue, useUpdateAtom } from 'jotai/utils'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { atomWithStorage } from 'jotai/utils'
 import ms from 'ms.macro'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Moon, Sun } from 'react-feather'
@@ -21,14 +22,14 @@ export enum ThemeMode {
 // Tracks the device theme
 const systemThemeAtom = atom<ThemeMode.LIGHT | ThemeMode.DARK>(
   ThemeMode.DARK
- // DARKMODE_MEDIA_QUERY.matches ? ThemeMode.DARK : ThemeMode.LIGHT
+  // DARKMODE_MEDIA_QUERY.matches ? ThemeMode.DARK : ThemeMode.LIGHT
 )
 
 // Tracks the user's selected theme mode
 const themeModeAtom = atomWithStorage<ThemeMode>('interface_color_theme', ThemeMode.DARK)
 
 export function SystemThemeUpdater() {
-  const setSystemTheme = useUpdateAtom(systemThemeAtom)
+  const setSystemTheme = useSetAtom(systemThemeAtom)
 
   useEffect(() => {
     DARKMODE_MEDIA_QUERY.addEventListener('change', (event) => {
@@ -43,13 +44,13 @@ export function SystemThemeUpdater() {
 export function useIsDarkMode(): boolean {
   const mode = useAtomValue(themeModeAtom)
   const systemTheme = useAtomValue(systemThemeAtom)
-  return true; 
- // return (mode === ThemeMode.AUTO ? systemTheme : mode) === ThemeMode.DARK
+  return true
+  // return (mode === ThemeMode.AUTO ? systemTheme : mode) === ThemeMode.DARK
 }
 
 export function useDarkModeManager(): [boolean, (mode: ThemeMode) => void] {
   const isDarkMode = useIsDarkMode()
-  const setMode = useUpdateAtom(themeModeAtom)
+  const setMode = useSetAtom(themeModeAtom)
 
   return useMemo(() => {
     return [isDarkMode, setMode]

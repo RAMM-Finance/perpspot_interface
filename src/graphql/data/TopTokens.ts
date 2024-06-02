@@ -1,27 +1,11 @@
-import {
-  filterStringAtom,
-  filterTimeAtom,
-  sortAscendingAtom,
-  sortMethodAtom,
-  TokenSortMethod,
-} from 'components/Tokens/state'
+import { filterStringAtom, sortAscendingAtom, sortMethodAtom, TokenSortMethod } from 'components/Tokens/state'
 import gql from 'graphql-tag'
-import { useAtomValue } from 'jotai/utils'
+import { useAtomValue } from 'jotai'
 import { useMemo } from 'react'
 
+import { TopTokens100Query } from './__generated__/types-and-hooks'
 import {
-  Chain,
-  TopTokens100Query,
-  useTopTokens100Query,
-  useTopTokensSparklineQuery,
-} from './__generated__/types-and-hooks'
-import {
-  CHAIN_NAME_TO_CHAIN_ID,
-  isPricePoint,
-  PollingInterval,
   PricePoint,
-  toHistoryDuration,
-  unwrapToken,
   // usePollQueryWhileMounted,
 } from './util'
 

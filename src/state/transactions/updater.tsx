@@ -3,7 +3,7 @@ import { DEFAULT_TXN_DISMISS_MS, L2_TXN_DISMISS_MS } from 'constants/misc'
 import LibUpdater from 'lib/hooks/transactions/updater'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
-import { TransactionType } from 'state/transactions/types'
+import { TransactionInfo, TransactionType } from 'state/transactions/types'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
 import { useDerivedSwapInfo } from '../../state/swap/hooks'
@@ -49,7 +49,17 @@ export default function Updater() {
   )
 
   const onReceipt = useCallback(
-    ({ chainId, hash, receipt }: { chainId: number; hash: string; receipt: SerializableTransactionReceipt }) => {
+    ({
+      chainId,
+      hash,
+      receipt,
+      transactionInfo,
+    }: {
+      chainId: number
+      hash: string
+      receipt: SerializableTransactionReceipt
+      transactionInfo: TransactionInfo
+    }) => {
       dispatch(
         finalizeTransaction({
           chainId,
@@ -69,18 +79,6 @@ export default function Updater() {
 
       const tx = transactions[chainId]?.[hash]
 
-      if (tx.info.type === TransactionType.SWAP && trade) {
-        // sendAnalyticsEvent(
-        //   SwapEventName.SWAP_TRANSACTION_COMPLETED,
-        //   formatAnalyticsEventProperties({
-        //     trade,
-        //     hash,
-        //     allowedSlippage,
-        //     succeeded: receipt.status === 1,
-        //   })
-        // )
-      }
-
       addPopup(
         {
           txn: { hash },
@@ -88,11 +86,18 @@ export default function Updater() {
         hash,
         isL2 ? L2_TXN_DISMISS_MS : DEFAULT_TXN_DISMISS_MS
       )
+
+      if (transactionInfo.type === TransactionType.ADD_LEVERAGE) {
+        console.log('zeke:callback')
+        transactionInfo.callback()
+      }
     },
-    [addPopup, allowedSlippage, dispatch, isL2, trade, transactions]
+    [addPopup, dispatch, isL2, transactions]
   )
 
   const pendingTransactions = useMemo(() => (chainId ? transactions[chainId] ?? {} : {}), [chainId, transactions])
+
+  // console.log('zeke:pendingTransactions', pendingTransactions)
 
   return <LibUpdater pendingTransactions={pendingTransactions} onCheck={onCheck} onReceipt={onReceipt} />
 }
