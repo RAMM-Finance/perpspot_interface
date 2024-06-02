@@ -136,6 +136,7 @@ export function useMarginTradingActionHandlers(): {
     },
     [dispatch]
   )
+
   return {
     onUserInput,
     onLeverageFactorChange,
@@ -155,7 +156,7 @@ export interface AddMarginTrade {
   fees: TokenBN // fees
   borrowAmount: TokenBN // additional borrowAmount
   minimumOutput: TokenBN // minimum output amount
-  expectedAddedOutput: TokenBN // additional output amount
+  expectedAddedOutput: TokenBN // additional output (newTotalPosition - initialTotalPosition) amount
   swapInput: TokenBN // swap input (for marginInPosToken, borrowAmount - fees, else margin + borrowAmount - fees)
   allowedSlippage: Percent // should be Percent
   executionPrice: Price<Currency, Currency>
@@ -1324,7 +1325,6 @@ const useSimulateMarginTrade = (
       expectedAddedOutput = newTotalPosition
     }
 
-    // debt / added output
     const executionPrice = new Price<Currency, Currency>(
       inputCurrency,
       outputCurrency,
@@ -1441,8 +1441,12 @@ const useSimulateMarginTrade = (
     const executionPrice = new Price<Currency, Currency>(
       inputCurrency,
       outputCurrency,
-      inputIsToken0 ? new BN(1).shiftedBy(18).toFixed(0) : quoterResult.avgPrice.toString(),
-      !inputIsToken0 ? new BN(1).shiftedBy(18).toFixed(0) : quoterResult.avgPrice.toString()
+      quoterResult.swapInput.toString(),
+      !marginInPosToken
+        ? quoterResult.positionOutput.toString()
+        : new BN(quoterResult.positionOutput.toString())
+            .minus(marginInOutput.shiftedBy(outputCurrency.decimals))
+            .toFixed(0)
     )
 
     const result: AddMarginTrade = {
