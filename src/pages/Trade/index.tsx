@@ -394,7 +394,7 @@ export default function Trade({ className }: { className?: string }) {
     let currentPrice: number
 
     if (!leveragePositions || !poolKey || !poolOHLC || !chainId) {
-      return undefined
+      return []
     } else {
       currentPrice = poolOHLC.priceNow
       return leveragePositions
@@ -411,30 +411,7 @@ export default function Trade({ className }: { className?: string }) {
             matchedPosition.totalPosition,
             matchedPosition.margin
           ).toNumber()
-          // const isLong = positionIsLong(chainId, matchedPosition, poolKey)
-          // if (isLong) {
-          //   if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
-          //     return {
-          //       entryPrice: 1 / postionEntryPrice,
-          //       long: true,
-          //     }
-          //   }
-          //   return {
-          //     entryPrice: postionEntryPrice,
-          //     long: true,
-          //   }
-          // } else {
-          //   if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
-          //     return {
-          //       entryPrice: 1 / postionEntryPrice,
-          //       long: false,
-          //     }
-          //   }
-          //   return {
-          //     entryPrice: postionEntryPrice,
-          //     long: false,
-          //   }
-          // }
+
           if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
             return 1 / postionEntryPrice
           }
@@ -457,6 +434,7 @@ export default function Trade({ className }: { className?: string }) {
               <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />
             )}
           </PinWrapper>
+
           <SwapHeaderWrapper>
             <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
@@ -466,6 +444,7 @@ export default function Trade({ className }: { className?: string }) {
             {isSwap && <SwapTabContent />}
             <TradeNavigation />
           </SwapWrapper>
+
           <PositionsWrapper>
             <PostionsContainer
               account={account}
