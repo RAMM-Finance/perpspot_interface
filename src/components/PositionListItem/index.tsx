@@ -121,7 +121,7 @@ const PrimaryPositionIdData = styled.div`
   margin-right: 6px;
 `
 
-interface PositionListItemProps {
+export interface PositionListItemProps {
   token0: string
   token1: string
   tokenId: BigNumber

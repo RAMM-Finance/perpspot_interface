@@ -47,7 +47,7 @@ export function useV3ManagerContracts(chainIds: SupportedChainId[]): ContractMap
 }
 
 export function useInterfaceMulticallContracts(chainIds: SupportedChainId[]): ContractMap<UniswapInterfaceMulticall> {
-  return useContractMultichain<UniswapInterfaceMulticall>(MULTICALL_ADDRESS, MulticallABI, chainIds)
+  return useContractMultichain<UniswapInterfaceMulticall>(MULTICALL_ADDRESS, MulticallABI.abi, chainIds)
 }
 
 type PriceMap = { [key: CurrencyKey]: number | undefined }

@@ -320,8 +320,6 @@ export function useStatsData(): {
       timestamp: parseInt(entry.blockTimestamp)
     }))
 
-    console.log("ADD USERS DATA", addUsersData)
-
     const addUsersDataProcessed = addUsersData?.map((entry: any) => ({
       user: entry.trader.toLowerCase(),
       timestamp: parseInt(entry.blockTimestamp)

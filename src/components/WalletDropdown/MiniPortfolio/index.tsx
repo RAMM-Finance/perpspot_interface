@@ -60,12 +60,12 @@ interface Page {
 }
 
 const Pages: Array<Page> = [
-  {
-    title: <Trans>Tokens</Trans>,
-    key: 'tokens',
-    component: Tokens,
-    loggingElementName: InterfaceElementName.MINI_PORTFOLIO_TOKENS_TAB,
-  },
+  // {
+  //   title: <Trans>Tokens</Trans>,
+  //   key: 'tokens',
+  //   component: Tokens,
+  //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_TOKENS_TAB,
+  // },
   // {
   //   title: <Trans>NFTs</Trans>,
   //   key: 'nfts',
@@ -78,12 +78,12 @@ const Pages: Array<Page> = [
     component: Pools,
     loggingElementName: InterfaceElementName.MINI_PORTFOLIO_POOLS_TAB,
   },
-  {
-    title: <Trans>Activity</Trans>,
-    key: 'activity',
-    component: ActivityTab,
-    loggingElementName: InterfaceElementName.MINI_PORTFOLIO_ACTIVITY_TAB,
-  },
+  // {
+  //   title: <Trans>Activity</Trans>,
+  //   key: 'activity',
+  //   component: ActivityTab,
+  //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_ACTIVITY_TAB,
+  // },
 ]
 
 function MiniPortfolio({ account }: { account: string }) {
