@@ -19,6 +19,7 @@ export const fadeInOut = keyframes`
 `;
 
 
+
 export const LoadingRows = styled.div`
   display: grid;
 

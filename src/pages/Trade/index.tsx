@@ -425,6 +425,20 @@ export default function Trade({ className }: { className?: string }) {
   // const pinnedPools = usePinnedPools()
   // console.log('zeke:', provider)
 
+
+  {/* Entry Price Chart Line Testing
+  const [samplePrice, setSamplePrice] = useState<number>(3780)
+  const [sampleEntries, setSampleEntries] = useState<number[] | []>([])
+
+  function handleAdd() {
+    setSamplePrice(() => samplePrice + 10)
+    setSampleEntries([...sampleEntries, samplePrice])
+  }
+
+  function handleRemove() {
+    setSampleEntries(sampleEntries.length > 1 ? [...sampleEntries].slice(0, -1) : [])
+  }
+*/}
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
@@ -434,7 +448,6 @@ export default function Trade({ className }: { className?: string }) {
               <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />
             )}
           </PinWrapper>
-
           <SwapHeaderWrapper>
             <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
@@ -442,9 +455,11 @@ export default function Trade({ className }: { className?: string }) {
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
             {!isSwap && <TradeTabContent refetchLeveragePositions={refetchLeveragePositions} />}
             {isSwap && <SwapTabContent />}
+            {/* Entry Price Chart Line Testing
+            <button onClick={handleAdd}>add</button>
+            <button onClick={handleRemove}>remove</button> */}
             <TradeNavigation />
           </SwapWrapper>
-
           <PositionsWrapper>
             <PostionsContainer
               account={account}

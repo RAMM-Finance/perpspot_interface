@@ -81,12 +81,16 @@ export const PoolDataChart = ({
       if (entryLength === 1) {
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now(), price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Price' })
+          .createShape({ time: Date.now() - 10000, price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top' })
       }
       if (entryLength === 2) {
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now(), price: entryPrices[1] }, { shape: 'horizontal_line' })
+          .createShape({ time: Date.now(), price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top'  })
+
+        tvWidgetRef.current
+          ?.chart()
+          .createShape({ time: Date.now(), price: entryPrices[1] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top'  })
       }
     }
     return
@@ -125,7 +129,14 @@ export const PoolDataChart = ({
 
         tvWidgetRef.current?.onChartReady(function () {
           setChartReady(true)
-          tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
+          tvWidgetRef.current?.applyOverrides({
+            'mainSeriesProperties.minTick': '100000,1,false',
+            'linetoolhorzline.showLabel': true,
+            'linetoolhorzline.textcolor': 'white',
+            'linetoolhorzline.linecolor': 'white',
+            'linetoolhorzline.linewidth': 1,
+            'linetoolhorzline.horzLabelsAlign': 'left',
+          })
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
