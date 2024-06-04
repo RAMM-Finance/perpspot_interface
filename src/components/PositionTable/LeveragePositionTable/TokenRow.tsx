@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { NumberType } from '@uniswap/conedison/format'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
@@ -10,7 +10,6 @@ import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
-import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai'
@@ -25,6 +24,7 @@ import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -537,12 +537,6 @@ interface LoadedRowProps {
   refetchLeveragePositions: () => any
 }
 
-export function getPoolId(tokenA: string, tokenB: string, fee: number) {
-  const token0 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB
-  const token1 = tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA
-  return `${token0.toLowerCase()}-${token1.toLowerCase()}-${fee}`
-}
-
 // input token per 1 output token.
 export function positionEntryPrice(position: MarginPositionDetails): BN {
   const { marginInPosToken, totalDebtInput, totalPosition, margin } = position
@@ -679,30 +673,30 @@ export const LoadedRow = memo(
       }
     }, [pool, details])
 
-    const { result: rate } = useInstantaeneousRate(
-      pool?.token0?.address,
-      pool?.token1?.address,
-      pool?.fee,
-      account,
-      details?.isToken0
-    )
+    // const { result: rate } = useInstantaeneousRate(
+    //   pool?.token0?.address,
+    //   pool?.token1?.address,
+    //   pool?.fee,
+    //   account,
+    //   details?.isToken0
+    // )
 
     // call once with 1 token
     const inputCurrencyPrice = useUSDPriceBNV2(new BN(1), inputCurrency ?? undefined)
     const outputCurrencyPrice = useUSDPriceBNV2(new BN(1), outputCurrency ?? undefined)
 
-    const loading = !rate || !entryPrice || !currentPrice || !baseToken || !quoteToken
+    const loading = !entryPrice || !currentPrice || !baseToken || !quoteToken
 
     const estimatedTimeToClose = useMemo(() => {
-      if (!rate || !totalDebtInput) return undefined
+      if (!details.apr || !totalDebtInput) return undefined
 
-      const ratePerHour = Number(rate) / 1e18 / (365 * 24)
+      const ratePerHour = Number(details.apr.toNumber()) / 365 / 24
       const premPerHour = Number(totalDebtInput) * ratePerHour
 
       const hours = Number(details?.premiumLeft) / premPerHour
 
       return Math.round(hours * 100) / 100
-    }, [details, rate, totalDebtInput])
+    }, [details, totalDebtInput])
 
     // PnL in input/collateral token
     const initialPnL = useMemo(() => {
@@ -854,14 +848,14 @@ export const LoadedRow = memo(
                   text={
                     <Trans>
                       {'Annualized Rate: ' +
-                        String((100 * Math.round((10000000 * Number(rate)) / 1e18)) / 10000000) +
+                        formatNumber(details.apr.toNumber() * 100) +
                         ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
                     </Trans>
                   }
                   disableHover={false}
                 >
                   <FlexStartRow>
-                    {rate && String((100 * Math.round((10000000 * Number(rate)) / 1e18 / (365 * 24))) / 10000000) + '%'}
+                    {details.apr && formatNumber((details.apr.toNumber() / 365 / 24) * 100) + '%'}
                   </FlexStartRow>
                 </MouseoverTooltip>
               }

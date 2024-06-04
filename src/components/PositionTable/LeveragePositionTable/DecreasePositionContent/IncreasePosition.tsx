@@ -31,9 +31,10 @@ import { LeverageTradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
-import { getPoolId, positionEntryPrice } from '../TokenRow'
+import { positionEntryPrice } from '../TokenRow'
 
 const InputSection = styled.div`
   background-color: ${({ theme }) => theme.surface1};

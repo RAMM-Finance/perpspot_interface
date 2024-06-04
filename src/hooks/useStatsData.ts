@@ -2,27 +2,27 @@ import { Interface } from '@ethersproject/abi'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers } from 'ethers'
-import { collection, getDocs, setDoc, doc, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
-  ReduceQuery,
   AddVolumeQuery,
+  ForceClosedQueryV2,
   LiquidityProvidedQuery,
   LiquidityWithdrawnQuery,
-  ReduceVolumeQuery,
-  ForceClosedQueryV2,
   NftTransferQuery,
-  RegisterQueryV2
+  ReduceQuery,
+  ReduceVolumeQuery,
+  RegisterQueryV2,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
@@ -39,26 +39,26 @@ export function useRenderCount() {
 }
 
 export interface TvlByDay {
-  timestamp: number;
-  tvl: number;
+  timestamp: number
+  tvl: number
 }
 
 export interface VolumeByDay {
-  timestamp: number;
-  volume: number;
+  timestamp: number
+  volume: number
 }
 
 export interface UniqueUsers {
-  timestamp: number;
-  count: number;
+  timestamp: number
+  count: number
 }
 
 export interface StatsData {
-  totalTvl: number;
-  tvlByDay: TvlByDay[];
-  totalVolume: number;
-  volumeByDay: VolumeByDay[];
-  uniqueUsers: UniqueUsers[];
+  totalTvl: number
+  tvlByDay: TvlByDay[]
+  totalVolume: number
+  volumeByDay: VolumeByDay[]
+  uniqueUsers: UniqueUsers[]
 }
 
 export function useStatsData(): {
@@ -82,15 +82,15 @@ export function useStatsData(): {
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
 
         const [
-          AddQueryData, 
-          ReduceQueryData, 
-          ProvidedQueryData, 
-          WithdrawnQueryData, 
-          AddUsersData, 
+          AddQueryData,
+          ReduceQueryData,
+          ProvidedQueryData,
+          WithdrawnQueryData,
+          AddUsersData,
           ReduceUsersData,
           ForceClosedData,
           TransferData,
-          RegisterQueryData
+          RegisterQueryData,
         ] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
@@ -100,7 +100,7 @@ export function useStatsData(): {
           fetchAllData(ReduceQuery, clientToUse),
           fetchAllData(ForceClosedQueryV2, clientToUse),
           fetchAllData(NftTransferQuery, clientToUse),
-          fetchAllData(RegisterQueryV2, clientToUse)
+          fetchAllData(RegisterQueryV2, clientToUse),
         ])
         const timestamp = VOLUME_STARTPOINT
 
@@ -309,7 +309,7 @@ export function useStatsData(): {
         ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
         : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.addedAmount,
-      timestamp: parseInt(entry.blockTimestamp)
+      timestamp: parseInt(entry.blockTimestamp),
     }))
     const reduceDataProcessed = reduceDataFiltered?.map((entry: any) => ({
       key: entry.pool,
@@ -317,62 +317,69 @@ export function useStatsData(): {
         ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
         : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.reduceAmount,
-      timestamp: parseInt(entry.blockTimestamp)
+      timestamp: parseInt(entry.blockTimestamp),
     }))
 
-    const addUsersDataProcessed = addUsersData?.map((entry: any) => ({
-      user: entry.trader.toLowerCase(),
-      timestamp: parseInt(entry.blockTimestamp)
-    })) || []
-    
-    const reduceUsersDataProcessed = reduceUsersData?.map((entry: any) => ({
-      user: entry.trader.toLowerCase(),
-      timestamp: parseInt(entry.blockTimestamp)
-    })) || []
+    const addUsersDataProcessed =
+      addUsersData?.map((entry: any) => ({
+        user: entry.trader.toLowerCase(),
+        timestamp: parseInt(entry.blockTimestamp),
+      })) || []
 
-    const forceClosedDataProcessed = forceClosedData?.map((entry: any) => ({
-      user: entry.trader.toLowerCase(),
-      timestamp: parseInt(entry.blockTimestamp)
-    })) || []
+    const reduceUsersDataProcessed =
+      reduceUsersData?.map((entry: any) => ({
+        user: entry.trader.toLowerCase(),
+        timestamp: parseInt(entry.blockTimestamp),
+      })) || []
 
-    const transferProcessed = transferData?.map((entry: any) => ({
-      user: entry.from === "0x0000000000000000000000000000000000000000" ? entry.to.toLowerCase() : entry.from.toLowerCase(),
-      timestamp: parseInt(entry.blockTimestamp)
-    })) || []
+    const forceClosedDataProcessed =
+      forceClosedData?.map((entry: any) => ({
+        user: entry.trader.toLowerCase(),
+        timestamp: parseInt(entry.blockTimestamp),
+      })) || []
 
-    const registerDataProcessed = registerData?.map((entry: any) => ({
-      user: entry.account.toLowerCase(),
-      timestamp: parseInt(entry.blockTimestamp)
-    })) || []
+    const transferProcessed =
+      transferData?.map((entry: any) => ({
+        user:
+          entry.from === '0x0000000000000000000000000000000000000000'
+            ? entry.to.toLowerCase()
+            : entry.from.toLowerCase(),
+        timestamp: parseInt(entry.blockTimestamp),
+      })) || []
 
-    console.log("ADD USERS DATA PROCESSED", addUsersDataProcessed)
-    console.log("REDUCE USERS DATA PROCESSED", reduceUsersDataProcessed)
-    console.log("FORCE CLOSED DATA PROCESSED", forceClosedDataProcessed)
-    console.log("TRANSFER PROCESSED", transferProcessed)
-    console.log("RGISTER DATA PROCESS", registerDataProcessed)
+    const registerDataProcessed =
+      registerData?.map((entry: any) => ({
+        user: entry.account.toLowerCase(),
+        timestamp: parseInt(entry.blockTimestamp),
+      })) || []
+
+    console.log('ADD USERS DATA PROCESSED', addUsersDataProcessed)
+    console.log('REDUCE USERS DATA PROCESSED', reduceUsersDataProcessed)
+    console.log('FORCE CLOSED DATA PROCESSED', forceClosedDataProcessed)
+    console.log('TRANSFER PROCESSED', transferProcessed)
+    console.log('RGISTER DATA PROCESS', registerDataProcessed)
 
     const allDataProcessed = [
       ...addUsersDataProcessed,
       ...reduceUsersDataProcessed,
       ...forceClosedDataProcessed,
       ...transferProcessed,
-      ...registerDataProcessed
+      ...registerDataProcessed,
     ]
 
     const testData = [
-      {user: 'A', timestamp: 1714700249},
-      {user: 'B', timestamp: 1716064637},
-      {user: 'A', timestamp: 1715697721},
-      {user: 'A', timestamp: 1714700248},
+      { user: 'A', timestamp: 1714700249 },
+      { user: 'B', timestamp: 1716064637 },
+      { user: 'A', timestamp: 1715697721 },
+      { user: 'A', timestamp: 1714700248 },
     ]
-
 
     const uniqueUsers: { timestamp: number; count: number; users: string[] }[] = allDataProcessed.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+
+      const existingEntry = acc.find((entry) => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         if (existingEntry.users.includes(cur.user)) {
           existingEntry.users.push(cur.user)
@@ -384,9 +391,11 @@ export function useStatsData(): {
       return acc
     }, [] as { timestamp: number; count: number; users: string[] }[])
 
-    console.log("UNIQUE USERS", uniqueUsers)
+    console.log('UNIQUE USERS', uniqueUsers)
 
-    const sortedUniqueUsers = uniqueUsers.map(({timestamp, count}) => ({timestamp, count})).sort((a, b) => a.timestamp - b.timestamp)
+    const sortedUniqueUsers = uniqueUsers
+      .map(({ timestamp, count }) => ({ timestamp, count }))
+      .sort((a, b) => a.timestamp - b.timestamp)
 
     const processEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.key)
@@ -425,7 +434,6 @@ export function useStatsData(): {
     const volumeAdded = addDataProcessed?.map(processEntry)
     const volumeReduced = reduceDataProcessed?.map(processEntry)
 
-
     const processVolume = (entry: any) => {
       // if (entry.type === 'ADD') {
       //   if (totalAmountsByPool[entry.poolId]) {
@@ -442,7 +450,7 @@ export function useStatsData(): {
       // }
       return {
         volume: entry.volume,
-        timestamp: entry.timestamp
+        timestamp: entry.timestamp,
       }
     }
 
@@ -451,12 +459,12 @@ export function useStatsData(): {
 
     // TVL
 
-    const providedDataByDay: { timestamp: number; tvl: number; }[] = ProvidedDataProcessed.reduce((acc, cur) => {
+    const providedDataByDay: { timestamp: number; tvl: number }[] = ProvidedDataProcessed.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+
+      const existingEntry = acc.find((entry) => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.tvl += cur.amount0
         existingEntry.tvl += cur.amount1
@@ -464,17 +472,17 @@ export function useStatsData(): {
         let tvl = 0
         tvl += cur.amount0
         tvl += cur.amount1
-        acc.push({ timestamp: dayTimestamp, tvl: tvl })
+        acc.push({ timestamp: dayTimestamp, tvl })
       }
       return acc
-    }, [] as { timestamp: number; tvl: number; }[])
+    }, [] as { timestamp: number; tvl: number }[])
 
-    const withdrawDataByDay: { timestamp: number; tvl: number; }[] = WithdrawDataProcessed.reduce((acc, cur) => {
+    const withdrawDataByDay: { timestamp: number; tvl: number }[] = WithdrawDataProcessed.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+
+      const existingEntry = acc.find((entry) => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.tvl += cur.amount0
         existingEntry.tvl += cur.amount1
@@ -482,22 +490,24 @@ export function useStatsData(): {
         let tvl = 0
         tvl += cur.amount0
         tvl += cur.amount1
-        acc.push({ timestamp: dayTimestamp, tvl: tvl })
+        acc.push({ timestamp: dayTimestamp, tvl })
       }
       return acc
-    }, [] as { timestamp: number; tvl: number; }[])
+    }, [] as { timestamp: number; tvl: number }[])
 
-    const tvlByDay = providedDataByDay.map(providedData => {
-      const correspondingWithdrawData = withdrawDataByDay.find(withdrawData => withdrawData.timestamp === providedData.timestamp);
+    const tvlByDay = providedDataByDay.map((providedData) => {
+      const correspondingWithdrawData = withdrawDataByDay.find(
+        (withdrawData) => withdrawData.timestamp === providedData.timestamp
+      )
       const withdrawTvl = correspondingWithdrawData ? correspondingWithdrawData.tvl : 0
       return {
         timestamp: providedData.timestamp,
-        tvl: providedData.tvl - withdrawTvl
-      };
+        tvl: providedData.tvl - withdrawTvl,
+      }
     })
 
     const sortedTvlByDay = tvlByDay.sort((a, b) => a.timestamp - b.timestamp)
-    
+
     const totalTvl = sortedTvlByDay.reduce((sum, data) => sum + data.tvl, 0)
 
     // volume before startpoint
@@ -506,98 +516,115 @@ export function useStatsData(): {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
+
+      const existingEntry = acc.find((entry) => entry.timestamp === dayTimestamp)
       if (existingEntry) {
         existingEntry.volume += cur.volume || 0
         existingEntry.count += 1
       } else {
         let volume = 0
         volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
+        acc.push({ timestamp: dayTimestamp, volume, count: 1 })
       }
       return acc
     }, [] as { timestamp: number; volume: number; count: number }[])
 
-    const volumeReducedByDay1: { timestamp: number; volume: number; count: number }[] = volumeReduced.reduce((acc, cur) => {
-      const date = new Date(cur.timestamp * 1000)
-      date.setUTCHours(0, 0, 0, 0)
-      const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find(entry => entry.timestamp === dayTimestamp)
-      if (existingEntry) {
-        existingEntry.volume += cur.volume || 0
-        existingEntry.count += 1
-      } else {
-        let volume = 0
-        volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
+    const volumeReducedByDay1: { timestamp: number; volume: number; count: number }[] = volumeReduced.reduce(
+      (acc, cur) => {
+        const date = new Date(cur.timestamp * 1000)
+        date.setUTCHours(0, 0, 0, 0)
+        const dayTimestamp = date.getTime() / 1000
+
+        const existingEntry = acc.find((entry) => entry.timestamp === dayTimestamp)
+        if (existingEntry) {
+          existingEntry.volume += cur.volume || 0
+          existingEntry.count += 1
+        } else {
+          let volume = 0
+          volume += cur.volume || 0
+          acc.push({ timestamp: dayTimestamp, volume, count: 1 })
+        }
+        return acc
+      },
+      [] as { timestamp: number; volume: number; count: number }[]
+    )
+
+    console.log('VOLUME ADDED BY DAY', volumeAddedByDay1)
+    console.log('VOLUME REDUCED BY DAY', volumeReducedByDay1)
+
+    const volumeAddedByDay2: { timestamp: number; volume: number; count: number }[] = volumeAdded2.reduce(
+      (acc: any, cur: any) => {
+        const date = new Date(cur.timestamp * 1000)
+        date.setUTCHours(0, 0, 0, 0)
+        const dayTimestamp = date.getTime() / 1000
+
+        const existingEntry = acc.find((entry: any) => entry.timestamp === dayTimestamp)
+        if (existingEntry) {
+          existingEntry.volume += cur.volume || 0
+          existingEntry.count += 1
+        } else {
+          let volume = 0
+          volume += cur.volume || 0
+          acc.push({ timestamp: dayTimestamp, volume, count: 1 })
+        }
+        return acc
+      },
+      [] as { timestamp: number; volume: number; count: number }[]
+    )
+
+    const volumeReducedByDay2: { timestamp: number; volume: number; count: number }[] = volumeReduced2.reduce(
+      (acc: any, cur: any) => {
+        const date = new Date(cur.timestamp * 1000)
+        date.setUTCHours(0, 0, 0, 0)
+        const dayTimestamp = date.getTime() / 1000
+
+        const existingEntry = acc.find((entry: any) => entry.timestamp === dayTimestamp)
+        if (existingEntry) {
+          existingEntry.volume += cur.volume || 0
+          existingEntry.count += 1
+        } else {
+          let volume = 0
+          volume += cur.volume || 0
+          acc.push({ timestamp: dayTimestamp, volume, count: 1 })
+        }
+        return acc
+      },
+      [] as { timestamp: number; volume: number; count: number }[]
+    )
+
+    const allTimestamps = [...volumeAddedByDay1, ...volumeAddedByDay2, ...volumeReducedByDay1, ...volumeReducedByDay2]
+      .map((item) => item.timestamp)
+      .filter((value, index, self) => self.indexOf(value) === index)
+
+    const volumeByDay = allTimestamps.map((timestamp) => {
+      const volumeAdded1 = volumeAddedByDay1.find((item) => item.timestamp === timestamp)
+      const volumeAdded2 = volumeAddedByDay2.find((item) => item.timestamp === timestamp)
+      const volumeReduced1 = volumeReducedByDay1.find((item) => item.timestamp === timestamp)
+      const volumeReduced2 = volumeReducedByDay2.find((item) => item.timestamp === timestamp)
+
+      return {
+        timestamp,
+        volume:
+          (volumeAdded1?.volume || 0) +
+          (volumeAdded2?.volume || 0) +
+          (volumeReduced1?.volume || 0) +
+          (volumeReduced2?.volume || 0),
+        count:
+          (volumeAdded1?.count || 0) +
+          (volumeAdded2?.count || 0) +
+          (volumeReduced1?.count || 0) +
+          (volumeReduced2?.count || 0),
       }
-      return acc
-    }, [] as { timestamp: number; volume: number; count: number }[])
-
-    console.log("VOLUME ADDED BY DAY", volumeAddedByDay1)
-    console.log("VOLUME REDUCED BY DAY", volumeReducedByDay1)
-
-    const volumeAddedByDay2: { timestamp: number; volume: number; count: number }[] = volumeAdded2.reduce((acc: any, cur: any) => {
-      const date = new Date(cur.timestamp * 1000)
-      date.setUTCHours(0, 0, 0, 0)
-      const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find((entry: any) => entry.timestamp === dayTimestamp)
-      if (existingEntry) {
-        existingEntry.volume += cur.volume || 0
-        existingEntry.count += 1
-      } else {
-        let volume = 0
-        volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
-      }
-      return acc
-    }, [] as { timestamp: number; volume: number; count: number }[])
-
-    const volumeReducedByDay2: { timestamp: number; volume: number; count: number }[] = volumeReduced2.reduce((acc: any, cur: any) => {
-      const date = new Date(cur.timestamp * 1000)
-      date.setUTCHours(0, 0, 0, 0)
-      const dayTimestamp = date.getTime() / 1000
-    
-      const existingEntry = acc.find((entry: any) => entry.timestamp === dayTimestamp)
-      if (existingEntry) {
-        existingEntry.volume += cur.volume || 0
-        existingEntry.count += 1
-      } else {
-        let volume = 0
-        volume += cur.volume || 0
-        acc.push({ timestamp: dayTimestamp, volume: volume, count: 1 })
-      }
-      return acc
-    }, [] as { timestamp: number; volume: number; count: number }[])
-
-  const allTimestamps = [...volumeAddedByDay1, ...volumeAddedByDay2, ...volumeReducedByDay1, ...volumeReducedByDay2]
-    .map(item => item.timestamp)
-    .filter((value, index, self) => self.indexOf(value) === index)
-
-  const volumeByDay = allTimestamps.map(timestamp => {
-    const volumeAdded1 = volumeAddedByDay1.find(item => item.timestamp === timestamp)
-    const volumeAdded2 = volumeAddedByDay2.find(item => item.timestamp === timestamp)
-    const volumeReduced1 = volumeReducedByDay1.find(item => item.timestamp === timestamp)
-    const volumeReduced2 = volumeReducedByDay2.find(item => item.timestamp === timestamp)
-
-    return {
-      timestamp: timestamp,
-      volume: (volumeAdded1?.volume || 0) + (volumeAdded2?.volume || 0) + (volumeReduced1?.volume || 0) + (volumeReduced2?.volume || 0),
-      count: (volumeAdded1?.count || 0) + (volumeAdded2?.count || 0) + (volumeReduced1?.count || 0) + (volumeReduced2?.count || 0)
-    }
-  })
+    })
 
     const totalVolume = [
       ...volumeAddedByDay1,
       ...volumeAddedByDay2,
       ...volumeReducedByDay1,
-      ...volumeReducedByDay2
-    ].reduce((acc, cur) => acc + (cur.volume || 0), 0);
-    
-    console.log("TOTAL VOLUME", totalVolume);
+      ...volumeReducedByDay2,
+    ].reduce((acc, cur) => acc + (cur.volume || 0), 0)
+
+    console.log('TOTAL VOLUME', totalVolume)
 
     const sortedVolumeByDay = volumeByDay.sort((a, b) => a.timestamp - b.timestamp)
 
@@ -606,24 +633,23 @@ export function useStatsData(): {
     }
 
     const statsData = {
-      totalTvl: totalTvl,
+      totalTvl,
       tvlByDay: sortedTvlByDay,
-      totalVolume: totalVolume,
+      totalVolume,
       volumeByDay: sortedVolumeByDay,
-      uniqueUsers: sortedUniqueUsers
+      uniqueUsers: sortedUniqueUsers,
     }
     return statsData
   }, [data, isError, isLoading])
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    if (statsData && isLoading)
-      setLoading(false)
+    if (statsData && isLoading) setLoading(false)
   }, [statsData, isLoading])
 
   return useMemo(() => {
     return {
-      loading: loading,
+      loading,
       error: isError,
       result: statsData,
     }

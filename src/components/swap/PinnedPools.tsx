@@ -1,4 +1,3 @@
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { usePool } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
@@ -8,9 +7,9 @@ import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components'
 import { ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { FilledStar } from './PoolSelect'
-
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;

@@ -33,12 +33,3 @@ interface TickLiquidity {
   tick: number,
   liquidity: string
 }
-
-export type LiquidityLoan = {
-  tick: number
-  liquidity: string
-  premium: string
-  feeGrowthInside0LastX128: string
-  feeGrowthInside1LastX128: string
-  lastGrowth: string
-}

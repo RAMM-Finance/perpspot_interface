@@ -3,7 +3,6 @@ import { MoonpayEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
 import Quoter from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
 import { useLmtQuoterContract } from 'hooks/useContract'
@@ -11,6 +10,7 @@ import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PoolKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { AppState } from '../types'
 import {
@@ -65,7 +65,11 @@ interface PoolContractInfo {
   token0: string
   token1: string
 }
-export function usePoolKeyList(isDefaultPoolList?: boolean): { poolList: PoolContractInfo[] | undefined; loading: boolean; error: any } {
+export function usePoolKeyList(isDefaultPoolList?: boolean): {
+  poolList: PoolContractInfo[] | undefined
+  loading: boolean
+  error: any
+} {
   const lmtQuoter = useLmtQuoterContract()
 
   const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
@@ -92,12 +96,11 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): { poolList: PoolCon
         const filteredResult = result[0].filter(
           (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
         )
-  
+
         return filteredResult
       } else {
         return result[0]
       }
-
     } else {
       return undefined
     }

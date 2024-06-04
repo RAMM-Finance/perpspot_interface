@@ -2,11 +2,10 @@ import { Interface } from '@ethersproject/abi'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers } from 'ethers'
-import { collection, getDocs, setDoc, doc, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
@@ -16,15 +15,15 @@ import {
   ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
-
 export function useRenderCount() {
   const renderCountRef = useRef(0)
   useEffect(() => {
@@ -365,20 +364,19 @@ export function usePoolsData(): {
 
     return poolToData
   }, [data, isError, isLoading])
-  
+
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     if (poolToData && !isLoading) {
-      console.log("POOLDATA LOADING DONE")
+      console.log('POOLDATA LOADING DONE')
       setLoading(false)
     }
-      
   }, [poolToData, isLoading])
 
   return useMemo(() => {
     return {
-      loading: loading,
+      loading,
       error: isError,
       result: poolToData,
     }

@@ -4,8 +4,8 @@ import MarginFacilityJson from 'abis_v2/MarginFacility.json'
 import { BigNumber as BN } from 'bignumber.js'
 import { Interface } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
-import { LiquidityLoan } from 'types/leveragePosition'
-import { OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
+// import { LiquidityLoan } from 'types/leveragePosition'
+import { LiquidityLoan, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 
 // const errorParser = require('ethers-decode-error')
 
@@ -295,6 +295,8 @@ export abstract class MarginFacilitySDK {
     margin: JSBI
     borrowInfo: LiquidityLoan[]
     fees: JSBI
+    premiumOwed: JSBI
+    openTime: JSBI
   } {
     const result = MarginFacilitySDK.INTERFACE.decodeFunctionResult('addPosition', rawBytes)
     const position = result[0]
@@ -322,6 +324,8 @@ export abstract class MarginFacilitySDK {
       margin: JSBI.BigInt(position.margin.toString()),
       borrowInfo,
       fees: JSBI.BigInt(result[2].toString()),
+      premiumOwed: JSBI.BigInt(result[1].toString()),
+      openTime: JSBI.BigInt(position.base.openTime),
     }
   }
 }

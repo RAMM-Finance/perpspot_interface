@@ -1,7 +1,6 @@
 import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
@@ -14,6 +13,7 @@ import { usePoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 const PairWrapper = styled.div`
   display: grid;

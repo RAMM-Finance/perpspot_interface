@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { useWeb3React } from '@web3-react/core'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimweth } from 'hooks/useContract'
@@ -15,6 +14,7 @@ import { useAppPoolOHLC, usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } fro
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'

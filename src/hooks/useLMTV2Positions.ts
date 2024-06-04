@@ -213,7 +213,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
   })
 
   return useMemo(() => {
-    if (!result || !rateData || rateData.length === 0) {
+    if (!result || !rateData) {
       return {
         loading,
         syncing,
@@ -293,7 +293,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         loading,
         syncing,
         error: decodeError,
-        positions: undefined,
+        positions: [],
         refetch,
       }
     }

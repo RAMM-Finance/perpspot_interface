@@ -26,7 +26,13 @@ import {
   useUserPremiumDepositPercent,
   useUserSlippageTolerance,
 } from 'state/user/hooks'
-import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
+import {
+  MarginLimitOrder,
+  MarginPositionDetails,
+  OrderPositionKey,
+  SerializableMarginPositionDetails,
+  TraderPositionKey,
+} from 'types/lmtv2position'
 import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
@@ -37,9 +43,12 @@ import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../types'
 import {
+  addPreloadedLeveragePosition,
   MarginField,
+  removeLeveragePosition,
   setBaseCurrencyIsInputToken,
   setIsSwap,
+  setLeveragePositions,
   setLimit,
   setLocked,
   setMarginInPosToken,
@@ -53,6 +62,41 @@ export function useMarginTradingState(): AppState['margin'] {
   return margin
 }
 
+function serializeMarginPositionDetails(position: MarginPositionDetails): SerializableMarginPositionDetails {
+  const inputDecimals = position.isToken0 ? position.token0Decimals : position.token1Decimals
+  const outputDecimals = position.isToken0 ? position.token1Decimals : position.token0Decimals
+  return {
+    poolKey: position.poolKey,
+    margin: position.margin.shiftedBy(position.marginInPosToken ? outputDecimals : inputDecimals).toFixed(0),
+    totalDebtOutput: position.totalDebtOutput.shiftedBy(outputDecimals).toFixed(0),
+    totalDebtInput: position.totalDebtInput.shiftedBy(inputDecimals).toFixed(0),
+    openTime: position.openTime,
+    repayTime: position.repayTime,
+    isBorrow: position.isBorrow,
+    premiumOwed: position.premiumOwed.shiftedBy(inputDecimals).toFixed(0),
+    premiumDeposit: position.premiumDeposit.shiftedBy(inputDecimals).toFixed(0),
+    premiumLeft: position.premiumLeft.shiftedBy(inputDecimals).toFixed(0),
+    trader: position.trader,
+    token0Decimals: position.token0Decimals,
+    token1Decimals: position.token1Decimals,
+    maxWithdrawablePremium: position.maxWithdrawablePremium.shiftedBy(inputDecimals).toFixed(0),
+    borrowInfo: position.borrowInfo.map((item) => {
+      return {
+        tick: item.tick,
+        liquidity: item.liquidity,
+        premium: item.premium,
+        feeGrowthInside0LastX128: item.feeGrowthInside0LastX128,
+        feeGrowthInside1LastX128: item.feeGrowthInside1LastX128,
+        lastGrowth: item.lastGrowth,
+      }
+    }),
+    isToken0: position.isToken0,
+    totalPosition: position.totalPosition.shiftedBy(outputDecimals).toFixed(0),
+    apr: position.apr.shiftedBy(18).toFixed(0),
+    marginInPosToken: position.marginInPosToken,
+  }
+}
+
 export function useMarginTradingActionHandlers(): {
   onUserInput: (field: MarginField, typedValue: string) => void
   onLeverageFactorChange: (leverage: string) => void
@@ -64,6 +108,15 @@ export function useMarginTradingActionHandlers(): {
   onPremiumCurrencyToggle: (premiumInPosToken: boolean) => void
   onSetMarginInPosToken: (marginInPosToken: boolean) => void
   onSetIsSwap: (isSwap: boolean) => void
+  onSetLeveragePositions: (
+    positions: {
+      position: MarginPositionDetails
+      lastUpdated: number
+      preloaded: boolean
+    }[]
+  ) => void
+  onAddPreloadedLeveragePosition: (position: MarginPositionDetails) => void
+  onRemoveLeveragePosition: (positionId: string) => void
 } {
   const dispatch = useAppDispatch()
 
@@ -137,6 +190,42 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onSetLeveragePositions = useCallback(
+    (
+      positions: {
+        position: MarginPositionDetails
+        lastUpdated: number
+        preloaded: boolean
+      }[]
+    ) => {
+      const list = positions.map((p) => {
+        return {
+          position: serializeMarginPositionDetails(p.position),
+          lastUpdated: p.lastUpdated,
+          preloaded: p.preloaded,
+        }
+      })
+      dispatch(setLeveragePositions({ positions: list }))
+    },
+    [dispatch]
+  )
+
+  const onAddPreloadedLeveragePosition = useCallback(
+    (position: MarginPositionDetails) => {
+      dispatch(
+        addPreloadedLeveragePosition({ position: serializeMarginPositionDetails(position), lastUpdated: Date.now() })
+      )
+    },
+    [dispatch]
+  )
+
+  const onRemoveLeveragePosition = useCallback(
+    (positionId: string) => {
+      dispatch(removeLeveragePosition({ positionId }))
+    },
+    [dispatch]
+  )
+
   return {
     onUserInput,
     onLeverageFactorChange,
@@ -148,6 +237,9 @@ export function useMarginTradingActionHandlers(): {
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
     onSetIsSwap,
+    onSetLeveragePositions,
+    onAddPreloadedLeveragePosition,
+    onRemoveLeveragePosition,
   }
 }
 
@@ -172,6 +264,7 @@ export interface AddMarginTrade {
   feePercent: BN
   marginInOutput: BN
   marginInInput: BN
+  newPosition?: MarginPositionDetails
 }
 
 export interface MarginTradeApprovalInfo {
@@ -202,6 +295,77 @@ interface DerivedAddPositionResult {
   userHasSpecifiedInputOutput: boolean
   parsedMargin?: BN
   marginInPosToken: boolean
+}
+
+export function useLeveragePositions(): {
+  position: MarginPositionDetails
+  lastUpdated: number
+  preloaded: boolean
+}[] {
+  const positions = useAppSelector((state) => state.margin.positions)
+
+  return useMemo(() => {
+    return positions.map((p) => {
+      const {
+        poolKey,
+        margin,
+        isToken0,
+        totalDebtOutput,
+        totalDebtInput,
+        openTime,
+        repayTime,
+        isBorrow,
+        premiumOwed, // how much premium is owed since last repayment
+        premiumDeposit, // how much premium currently in deposit
+        premiumLeft, // premium deposit - premium owed
+        trader,
+        token0Decimals,
+        token1Decimals,
+        maxWithdrawablePremium,
+        borrowInfo,
+        marginInPosToken,
+        apr,
+        totalPosition,
+      } = p.position
+
+      const outputDecimals = isToken0 ? token1Decimals : token0Decimals
+      const inputDecimals = isToken0 ? token0Decimals : token1Decimals
+      return {
+        position: {
+          poolKey,
+          margin: new BN(margin).shiftedBy(marginInPosToken ? -outputDecimals : -inputDecimals),
+          totalDebtOutput: new BN(totalDebtOutput).shiftedBy(-outputDecimals),
+          totalDebtInput: new BN(totalDebtInput).shiftedBy(-inputDecimals),
+          openTime,
+          repayTime,
+          isBorrow,
+          premiumOwed: new BN(premiumOwed).shiftedBy(-inputDecimals),
+          premiumDeposit: new BN(premiumDeposit).shiftedBy(-inputDecimals),
+          premiumLeft: new BN(premiumLeft).shiftedBy(-inputDecimals),
+          trader,
+          token0Decimals,
+          token1Decimals,
+          maxWithdrawablePremium: new BN(maxWithdrawablePremium).shiftedBy(-inputDecimals),
+          borrowInfo: borrowInfo.map((item) => {
+            return {
+              tick: item.tick,
+              liquidity: item.liquidity,
+              premium: item.premium,
+              feeGrowthInside0LastX128: item.feeGrowthInside0LastX128,
+              feeGrowthInside1LastX128: item.feeGrowthInside1LastX128,
+              lastGrowth: item.lastGrowth,
+            }
+          }),
+          isToken0,
+          totalPosition: new BN(totalPosition).shiftedBy(-outputDecimals),
+          apr: new BN(apr).shiftedBy(-18),
+          marginInPosToken,
+        },
+        lastUpdated: p.lastUpdated,
+        preloaded: p.preloaded,
+      }
+    })
+  }, [positions])
 }
 
 export function useDerivedAddPositionInfo(
@@ -1196,6 +1360,7 @@ const useSimulateMarginTrade = (
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
+
     if (
       !pool ||
       !marginInInput ||
@@ -1211,10 +1376,12 @@ const useSimulateMarginTrade = (
       inputIsToken0 === undefined ||
       !dataProvider ||
       !feePercent ||
-      !positionKey
+      !positionKey ||
+      !account
     ) {
       throw new Error('Invalid position')
     }
+
     const swapRoute = new Route(
       [pool],
       inputIsToken0 ? pool.token0 : pool.token1,
@@ -1292,6 +1459,11 @@ const useSimulateMarginTrade = (
       totalPosition: newTotalPosition,
       borrowInfo,
       fees,
+      totalInputDebt,
+      totalOutputDebt,
+      premiumOwed,
+      openTime,
+      margin: newMargin,
     } = MarginFacilitySDK.decodeAddPositionResult(multicallResult[1])
 
     const poolKey = {
@@ -1317,6 +1489,34 @@ const useSimulateMarginTrade = (
     })
 
     const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
+
+    const newPosition: MarginPositionDetails = {
+      totalPosition: new BN(newTotalPosition.toString()).shiftedBy(-outputCurrency.decimals),
+      margin: new BN(newMargin.toString()).shiftedBy(
+        marginInPosToken ? -outputCurrency.decimals : -inputCurrency.decimals
+      ),
+      marginInPosToken,
+      apr: new BN(borrowRate.toString()).shiftedBy(-18),
+      poolKey,
+      isToken0: !inputIsToken0,
+      totalDebtOutput: new BN(totalOutputDebt.toString()).shiftedBy(-outputCurrency.decimals),
+      totalDebtInput: new BN(totalInputDebt.toString()).shiftedBy(-inputCurrency.decimals),
+      borrowInfo: newBorrowInfo,
+      openTime: JSBI.toNumber(openTime),
+      repayTime: 0,
+      premiumDeposit: existingPosition.premiumDeposit.plus(additionalPremium ? additionalPremium.toExact() : '0'),
+      premiumOwed: new BN(premiumOwed.toString()).shiftedBy(-inputCurrency.decimals),
+      premiumLeft: existingPosition.premiumDeposit
+        .plus(additionalPremium ? additionalPremium.toExact() : '0')
+        .minus(premiumOwed.toString()),
+      trader: account,
+      token0Decimals: pool.token0.decimals,
+      token1Decimals: pool.token1.decimals,
+      maxWithdrawablePremium: existingPosition.premiumDeposit
+        .plus(additionalPremium ? additionalPremium.toExact() : '0')
+        .minus(premiumOwed.toString()),
+      isBorrow: false,
+    }
 
     let expectedAddedOutput: JSBI
     if (existingPosition.openTime > 0) {
@@ -1366,6 +1566,7 @@ const useSimulateMarginTrade = (
       feePercent,
       marginInInput,
       marginInOutput,
+      newPosition,
     }
 
     return result
@@ -1389,6 +1590,7 @@ const useSimulateMarginTrade = (
     feePercent,
     marginInPosToken,
     premiumInPosToken,
+    account,
   ])
 
   const quoter = useLmtQuoterContract()
