@@ -32,34 +32,34 @@ export const clientBase = createClient({
 
 export async function fetchAllData(query: any, client: any) {
   let allResults: any[] = []
-  let skip = 0;
+  let skip = 0
   const first = 1000 // maximum limit
 
   while (true) {
     const result = await client.query(query, { first, skip }).toPromise()
-    let newData = null;
+    let newData = null
 
     if ((query === AddQuery) || (query === AddVolumeQuery)) {
-      newData = result.data?.marginPositionIncreaseds;
+      newData = result.data?.marginPositionIncreaseds
     } else if ((query === ReduceQuery) || (query === ReduceVolumeQuery)) {
-      newData = result.data?.marginPositionReduceds;
+      newData = result.data?.marginPositionReduceds
     } else if (query === LiquidityProvidedQuery) {
-      newData = result.data?.liquidityProvideds;
+      newData = result.data?.liquidityProvideds
     } else if (query === LiquidityWithdrawnQuery) {
-      newData = result.data?.liquidityWithdrawns;
+      newData = result.data?.liquidityWithdrawns
     } else if (query === ForceClosedQueryV2) {
-      newData = result.data?.forceCloseds;
+      newData = result.data?.forceCloseds
     } else if (query === NftTransferQuery) {
-      newData = result.data?.transfers;
+      newData = result.data?.transfers
     } else if (query === RegisterQueryV2) {
-      newData = result.data?.registerCodes;
+      newData = result.data?.registerCodes
     }
 
     if (!newData || !newData.length) {
       break
     }
 
-    allResults.push(...newData);
+    allResults.push(...newData)
     skip += first
   }
 

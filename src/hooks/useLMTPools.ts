@@ -75,7 +75,7 @@ export function usePoolsData(): {
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
-        console.log("BEFORE")
+        const start = Date.now()
         const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
@@ -85,7 +85,22 @@ export function usePoolsData(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-        console.log("AFTER")
+
+
+        console.log("QUERYYYY RESULT IN USE LMT POOLS")
+        console.log({
+          AddQueryData,
+          ReduceQueryData,
+          ProvidedQueryData,
+          WithdrawnQueryData,
+          addQuerySnapshot,
+          reduceQuerySnapshot,
+          prevPriceQuerySnapshot
+        });
+              
+        const end = Date.now()
+
+        console.log(`Execution time: ${(end - start) / 1000}s`)
 
 
         // const [addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([

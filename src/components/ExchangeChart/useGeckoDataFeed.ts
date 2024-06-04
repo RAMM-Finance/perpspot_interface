@@ -114,6 +114,7 @@ const fetchBarsV2 = async (
   error: any
 }> => {
   const { from, to, countBack } = periodParams
+  
   let timeframe: 'hour' | 'day' | 'minute' = 'hour'
   let aggregate = '1'
   if (resolution === '1D') {
@@ -438,9 +439,11 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           const { poolAddress, chainId, invertPrice } = symbolInfo
 
           try {
-          
+            console.log("PERIOD PARAMS", periodParams)
+            console.log("RESOLUTION", resolution)
             const { bars, error } = await fetchBarsV3(poolAddress.toLowerCase(), chainId, periodParams, resolution, token0IsBase, isUSDChart)
             // console.log("BARS V3", barsV3, errorV3)
+
             // const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
             console.log('chart:[getBars]', periodParams, bars?.length, error)
             const noData = bars.length === 0
