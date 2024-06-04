@@ -47,15 +47,13 @@ export const PoolDataChart = ({
   symbol,
   chartContainerRef,
   entryPrices,
-  token0IsBase
+  token0IsBase,
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
   entryPrices: number[] | undefined
   token0IsBase: boolean | undefined
 }) => {
-
-  
   const [isUSDChart, setUSDChart] = useState(false)
 
   const { chainId } = useWeb3React()
@@ -87,16 +85,25 @@ export const PoolDataChart = ({
       if (entryLength === 1) {
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now() - 10000, price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top' })
+          .createShape(
+            { time: Date.now() - 10000, price: entryPrices[0] },
+            { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
+          )
       }
       if (entryLength === 2) {
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now(), price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top'  })
+          .createShape(
+            { time: Date.now(), price: entryPrices[0] },
+            { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
+          )
 
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now(), price: entryPrices[1] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top'  })
+          .createShape(
+            { time: Date.now(), price: entryPrices[1] },
+            { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
+          )
       }
     }
     return
@@ -139,19 +146,16 @@ export const PoolDataChart = ({
             button.setAttribute('title', isUSDChart ? 'Switch to price in WETH' : 'Switch to price in USD')
             button.classList.add('apply-common-tooltip')
             button.classList.add('clickable')
-            button.onclick = function() {
+            button.onclick = function () {
               setUSDChart(!isUSDChart)
             }
-            button.innerHTML = isUSDChart ? '<span style="color: blue;">USD</span> / WETH' : 'USD / <span style="color: blue;">WETH</span>'
+            button.innerHTML = isUSDChart
+              ? '<span style="color: blue;">USD</span> / WETH'
+              : 'USD / <span style="color: blue;">WETH</span>'
           }
           setChartReady(true)
           tvWidgetRef.current?.applyOverrides({
             'mainSeriesProperties.minTick': '100000,1,false',
-            'linetoolhorzline.showLabel': true,
-            'linetoolhorzline.textcolor': 'white',
-            'linetoolhorzline.linecolor': 'white',
-            'linetoolhorzline.linewidth': 1,
-            'linetoolhorzline.horzLabelsAlign': 'left',
           })
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)

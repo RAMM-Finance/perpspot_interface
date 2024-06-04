@@ -2,17 +2,9 @@
 directive @defer on FIELD
 
 """
-Tells the service this field/object has access authorized by a Lambda Authorizer.
+Tells the service this field/object has access authorized by an OIDC token.
 """
-directive @aws_lambda on OBJECT | FIELD_DEFINITION
-
-"""Tells the service which mutation triggers this subscription."""
-directive @aws_subscribe(
-  """
-  List of mutations which will trigger this subscription when they are called.
-  """
-  mutations: [String]
-) on FIELD_DEFINITION
+directive @aws_oidc on OBJECT | FIELD_DEFINITION
 
 """
 Tells the service this field/object has access authorized by a Cognito User Pools token.
@@ -23,9 +15,33 @@ directive @aws_cognito_user_pools(
 ) on OBJECT | FIELD_DEFINITION
 
 """
-Tells the service this field/object has access authorized by an OIDC token.
+Tells the service this field/object has access authorized by a Lambda Authorizer.
 """
-directive @aws_oidc on OBJECT | FIELD_DEFINITION
+directive @aws_lambda on OBJECT | FIELD_DEFINITION
+
+"""
+Tells the service this field/object has access authorized by an API key.
+"""
+directive @aws_api_key on OBJECT | FIELD_DEFINITION
+
+"""Tells the service which mutation triggers this subscription."""
+directive @aws_subscribe(
+  """
+  List of mutations which will trigger this subscription when they are called.
+  """
+  mutations: [String]
+) on FIELD_DEFINITION
+
+"""Directs the schema to enforce authorization on a field"""
+directive @aws_auth(
+  """List of cognito user pool groups which have access on this field"""
+  cognito_groups: [String]
+) on FIELD_DEFINITION
+
+"""
+Tells the service this field/object has access authorized by sigv4 signing.
+"""
+directive @aws_iam on OBJECT | FIELD_DEFINITION
 
 """
 Tells the service which subscriptions will be published to when this mutation is
@@ -39,30 +55,15 @@ directive @aws_publish(
 ) on FIELD_DEFINITION
 
 """
-Tells the service this field/object has access authorized by sigv4 signing.
-"""
-directive @aws_iam on OBJECT | FIELD_DEFINITION
-
-"""
-Tells the service this field/object has access authorized by an API key.
-"""
-directive @aws_api_key on OBJECT | FIELD_DEFINITION
-
-"""Directs the schema to enforce authorization on a field"""
-directive @aws_auth(
-  """List of cognito user pool groups which have access on this field"""
-  cognito_groups: [String]
-) on FIELD_DEFINITION
-
-"""
   Types, unions, and inputs (alphabetized):
  These are colocated to highlight the relationship between some types and their inputs.
 """
-union ActivityDetails = TransactionDetails | SwapOrderDetails
+union ActivityDetails = TransactionDetails | SwapOrderDetails | OnRampTransactionDetails
 
 input ActivityDetailsInput {
   transactionDetails: TransactionDetailsInput
   swapOrderDetails: SwapOrderDetailsInput
+  onRampTransactionDetails: OnRampTransactionDetailsInput
 }
 
 """
@@ -91,6 +92,7 @@ enum ActivityType {
   STAKE
   UNSTAKE
   SWAP_ORDER
+  ON_RAMP
 }
 
 type Amount implements IAmount {
@@ -148,7 +150,7 @@ enum AssetActivitySwitch {
   LEGACY
 }
 
-union AssetChange = TokenTransfer | NftTransfer | TokenApproval | NftApproval | NftApproveForAll
+union AssetChange = TokenTransfer | NftTransfer | OnRampTransfer | TokenApproval | NftApproval | NftApproveForAll
 
 input AssetChangeInput {
   tokenTransfer: TokenTransferInput
@@ -156,6 +158,7 @@ input AssetChangeInput {
   nftTransfer: NftTransferInput
   nftApproval: NftApprovalInput
   nftApproveForAll: NftApproveForAllInput
+  onRampTransfer: OnRampTransferInput
 }
 
 """
@@ -773,6 +776,70 @@ input NftTransferInput {
   direction: TransactionDirection!
 }
 
+type OnRampServiceProvider {
+  id: ID!
+  serviceProvider: String!
+  name: String!
+  url: String!
+  logoLightUrl: String!
+  logoDarkUrl: String!
+  supportUrl: String
+}
+
+input OnRampServiceProviderInput {
+  serviceProvider: String!
+  name: String!
+  url: String!
+  logoLightUrl: String!
+  logoDarkUrl: String!
+  supportUrl: String
+}
+
+type OnRampTransactionDetails {
+  id: ID!
+  status: TransactionStatus!
+  receiverAddress: String!
+  onRampTransfer: OnRampTransfer!
+}
+
+input OnRampTransactionDetailsInput {
+  status: TransactionStatus!
+  receiverAddress: String!
+  onRampTransfer: OnRampTransferInput!
+}
+
+input OnRampTransactionsAuth {
+  queryParams: String!
+  signature: String!
+}
+
+type OnRampTransfer {
+  id: ID!
+  token: Token!
+  tokenStandard: TokenStandard!
+  amount: Float!
+  sourceCurrency: String
+  sourceAmount: Float!
+  serviceProvider: OnRampServiceProvider!
+  transactionReferenceId: String!
+  networkFee: Float
+  transactionFee: Float
+  totalFee: Float
+}
+
+input OnRampTransferInput {
+  token: TokenAssetInput!
+  tokenStandard: TokenStandard!
+  amount: Float!
+  sourceCurrency: String
+  sourceAmount: Float!
+  serviceProvider: OnRampServiceProviderInput!
+  transactionReferenceId: String!
+  networkFee: Float
+  transactionFee: Float
+  totalFee: Float
+}
+
 enum OrderStatus {
   VALID
   EXECUTED
@@ -854,7 +921,7 @@ type Portfolio {
 
   """  TODO: (michael.zhang) replace with paginated query"""
   nftBalances: [NftBalance]
-  assetActivities(page: Int, pageSize: Int, includeOffChain: Boolean, chains: [Chain!], _fs: AssetActivitySwitch): [AssetActivity]
+  assetActivities(page: Int, pageSize: Int, includeOffChain: Boolean, onRampTransactionsAuth: OnRampTransactionsAuth, chains: [Chain!], _fs: AssetActivitySwitch): [AssetActivity]
 }
 
 """  Specify how the portfolio value should be calculated for each `ownerAddress`.
@@ -1266,6 +1333,7 @@ enum TransactionType {
   UNKNOWN
   UNSTAKE
   WITHDRAW
+  ON_RAMP
 }
 
 type V2Pair implements IPool {
@@ -1305,7 +1373,7 @@ type V3Pool implements IPool {
   historicalVolume(duration: HistoryDuration!): [TimestampedAmount]
   priceHistory(duration: HistoryDuration!): [TimestampedPoolPrice]
   transactions(first: Int!, timestampCursor: Int): [PoolTransaction]
-  ticks(skip: Int): [V3PoolTick]
+  ticks(skip: Int, first: Int): [V3PoolTick]
 }
 
 type V3PoolTick {

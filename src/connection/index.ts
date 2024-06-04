@@ -3,15 +3,17 @@ import { initializeConnector, Web3ReactHooks } from '@web3-react/core'
 import { GnosisSafe } from '@web3-react/gnosis-safe'
 import { MetaMask } from '@web3-react/metamask'
 import { Network } from '@web3-react/network'
-import { 
-  Connector,
+import {
   Actions,
   AddEthereumChainParameter,
+  Connector,
   Provider,
   ProviderConnectInfo,
   ProviderRpcError,
-  WatchAssetParameters 
+  WatchAssetParameters,
 } from '@web3-react/types'
+import { WalletConnect as WalletConnectV2 } from '@web3-react/walletconnect-v2'
+import BITGET_ICON_URL from 'assets/images/bitgetWallet.svg'
 import COINBASE_ICON_URL from 'assets/images/coinbaseWalletIcon.svg'
 import GNOSIS_ICON_URL from 'assets/images/gnosis.png'
 import METAMASK_ICON_URL from 'assets/images/metamask.svg'
@@ -19,25 +21,23 @@ import UNIWALLET_ICON_URL from 'assets/images/uniwallet.svg'
 import WALLET_CONNECT_ICON_URL from 'assets/images/walletConnectIcon.svg'
 import INJECTED_LIGHT_ICON_URL from 'assets/svg/browser-wallet-light.svg'
 import UNISWAP_LOGO_URL from 'assets/svg/logo.svg'
-import BITGET_ICON_URL from 'assets/images/bitgetWallet.svg'
 import { SupportedChainId } from 'constants/chains'
 import { useCallback } from 'react'
 import { isMobile, isNonIOSPhone } from 'utils/userAgent'
 
 import { RPC_URLS } from '../constants/networks'
 import { RPC_PROVIDERS } from '../constants/providers'
-import { getIsCoinbaseWallet, getIsInjected, getIsMetaMaskWallet, getIsBitgetWallet } from './utils'
-import { UniwalletConnect, WalletConnectPopup } from './WalletConnect'
-
 import detectEthereumProvider from './detectEthereumProvider'
+import { getIsBitgetWallet, getIsCoinbaseWallet, getIsInjected, getIsMetaMaskWallet } from './utils'
+import { UniwalletConnect } from './WalletConnect'
 
 type BitKeepProvider = Provider & { isBitKeep?: boolean; isConnected?: () => boolean; providers?: BitKeepProvider[] }
 
 export class NoBitKeepError extends Error {
   public constructor() {
-      super('BitKeep not installed')
-      this.name = NoBitKeepError.name
-      Object.setPrototypeOf(this, NoBitKeepError.prototype)
+    super('BitKeep not installed')
+    this.name = NoBitKeepError.name
+    Object.setPrototypeOf(this, NoBitKeepError.prototype)
   }
 }
 
@@ -46,9 +46,9 @@ function parseChainId(chainId: string) {
 }
 
 /**
-* @param options - Options to pass to `./detect-provider`
-* @param onError - Handler to report errors thrown from eventListeners.
-*/
+ * @param options - Options to pass to `./detect-provider`
+ * @param onError - Handler to report errors thrown from eventListeners.
+ */
 export interface BitKeepConstructorArgs {
   actions: Actions
   options?: Parameters<typeof detectEthereumProvider>[0]
@@ -57,76 +57,76 @@ export interface BitKeepConstructorArgs {
 
 export class BitKeep extends Connector {
   /** {@inheritdoc Connector.provider} */
-  declare public provider: BitKeepProvider | undefined;
+  public declare provider: BitKeepProvider | undefined
 
   private readonly options?: Parameters<typeof detectEthereumProvider>[0]
   private eagerConnection?: Promise<void>
 
   constructor({ actions, options, onError }: BitKeepConstructorArgs) {
-      super(actions, onError)
-      this.options = options
+    super(actions, onError)
+    this.options = options
   }
 
   private async isomorphicInitialize(): Promise<void> {
-      if (this.eagerConnection) return
+    if (this.eagerConnection) return
 
-      return (this.eagerConnection = detectEthereumProvider().then(async (provider: any) => {
-          // const provider = await m.default(this.options)
-          if (provider) {
-              this.provider = provider as unknown as BitKeepProvider
-              if (this.provider.providers?.length) {
-                  this.provider = this.provider.providers.find((p) => p.isBitKeep) ?? this.provider.providers[0]
-              }
+    return (this.eagerConnection = detectEthereumProvider().then(async (provider: any) => {
+      // const provider = await m.default(this.options)
+      if (provider) {
+        this.provider = provider as unknown as BitKeepProvider
+        if (this.provider.providers?.length) {
+          this.provider = this.provider.providers.find((p) => p.isBitKeep) ?? this.provider.providers[0]
+        }
 
-              this.provider.on('connect', ({ chainId }: ProviderConnectInfo): void => {
-                  this.actions.update({ chainId: parseChainId(chainId) })
-              })
+        this.provider.on('connect', ({ chainId }: ProviderConnectInfo): void => {
+          this.actions.update({ chainId: parseChainId(chainId) })
+        })
 
-              this.provider.on('disconnect', (error: ProviderRpcError): void => {
-                  this.actions.resetState()
-                  this.onError?.(error)
-              })
+        this.provider.on('disconnect', (error: ProviderRpcError): void => {
+          this.actions.resetState()
+          this.onError?.(error)
+        })
 
-              this.provider.on('chainChanged', (chainId: string): void => {
-                  this.actions.update({ chainId: parseChainId(chainId) })
-              })
+        this.provider.on('chainChanged', (chainId: string): void => {
+          this.actions.update({ chainId: parseChainId(chainId) })
+        })
 
-              this.provider.on('accountsChanged', (accounts: string[]): void => {
-                  if (accounts.length === 0) {
-                      // handle this edge case by disconnecting
-                      this.actions.resetState()
-                  } else {
-                      this.actions.update({ accounts })
-                  }
-              })
+        this.provider.on('accountsChanged', (accounts: string[]): void => {
+          if (accounts.length === 0) {
+            // handle this edge case by disconnecting
+            this.actions.resetState()
+          } else {
+            this.actions.update({ accounts })
           }
-      }))
+        })
+      }
+    }))
   }
 
   /** {@inheritdoc Connector.connectEagerly} */
   public async connectEagerly(): Promise<void> {
-      const cancelActivation = this.actions.startActivation()
-      await this.isomorphicInitialize()
-      if (!this.provider) return cancelActivation()
+    const cancelActivation = this.actions.startActivation()
+    await this.isomorphicInitialize()
+    if (!this.provider) return cancelActivation()
 
-      return Promise.all([
-          this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
-          this.provider.request({ method: 'eth_accounts' }) as Promise<string[]>,
-      ])
-          .then(([chainId, accounts]) => {
-              if (accounts.length) {
-                  this.actions.update({ chainId: parseChainId(chainId), accounts })
-              } else {
-                  throw new Error('No accounts returned')
-              }
-          })
-          .catch((error) => {
-              console.debug('Could not connect eagerly', error)
-              // we should be able to use `cancelActivation` here, but on mobile, metamask emits a 'connect'
-              // event, meaning that chainId is updated, and cancelActivation doesn't work because an intermediary
-              // update has occurred, so we reset state instead
-              this.actions.resetState()
-          })
+    return Promise.all([
+      this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+      this.provider.request({ method: 'eth_accounts' }) as Promise<string[]>,
+    ])
+      .then(([chainId, accounts]) => {
+        if (accounts.length) {
+          this.actions.update({ chainId: parseChainId(chainId), accounts })
+        } else {
+          throw new Error('No accounts returned')
+        }
+      })
+      .catch((error) => {
+        console.debug('Could not connect eagerly', error)
+        // we should be able to use `cancelActivation` here, but on mobile, metamask emits a 'connect'
+        // event, meaning that chainId is updated, and cancelActivation doesn't work because an intermediary
+        // update has occurred, so we reset state instead
+        this.actions.resetState()
+      })
   }
 
   /**
@@ -139,79 +139,77 @@ export class BitKeep extends Connector {
    * specified parameters first, before being prompted to switch.
    */
   public async activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<void> {
-      let cancelActivation: () => void
-      if (!this.provider?.isConnected?.()) cancelActivation = this.actions.startActivation()
-      return this.isomorphicInitialize()
-          .then(async () => {
-              if (!this.provider) throw new NoBitKeepError()
+    let cancelActivation: () => void
+    if (!this.provider?.isConnected?.()) cancelActivation = this.actions.startActivation()
+    return this.isomorphicInitialize()
+      .then(async () => {
+        if (!this.provider) throw new NoBitKeepError()
 
-              return Promise.all([
-                  this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
-                  this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
-              ]).then(([chainId, accounts]) => {
-                  const receivedChainId = parseChainId(chainId)
-                  const desiredChainId =
-                      typeof desiredChainIdOrChainParameters === 'number'
-                          ? desiredChainIdOrChainParameters
-                          : desiredChainIdOrChainParameters?.chainId
+        return Promise.all([
+          this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+          this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
+        ]).then(([chainId, accounts]) => {
+          const receivedChainId = parseChainId(chainId)
+          const desiredChainId =
+            typeof desiredChainIdOrChainParameters === 'number'
+              ? desiredChainIdOrChainParameters
+              : desiredChainIdOrChainParameters?.chainId
 
-                  // if there's no desired chain, or it's equal to the received, update
-                  if (!desiredChainId || receivedChainId === desiredChainId)
-                      return this.actions.update({ chainId: receivedChainId, accounts })
+          // if there's no desired chain, or it's equal to the received, update
+          if (!desiredChainId || receivedChainId === desiredChainId)
+            return this.actions.update({ chainId: receivedChainId, accounts })
 
-                  const desiredChainIdHex = `0x${desiredChainId.toString(16)}`
+          const desiredChainIdHex = `0x${desiredChainId.toString(16)}`
 
-                  // if we're here, we can try to switch networks
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  return this.provider!.request({
-                      method: 'wallet_switchEthereumChain',
-                      params: [{ chainId: desiredChainIdHex }],
-                  })
-                      .catch((error: ProviderRpcError) => {
-                          if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
-                              // if we're here, we can try to add a new network
-                              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                              return this.provider!.request({
-                                  method: 'wallet_addEthereumChain',
-                                  params: [{ ...desiredChainIdOrChainParameters, chainId: desiredChainIdHex }],
-                              })
-                          }
-
-                          throw error
-                      })
-                      .then(() => this.activate(desiredChainId))
-              })
+          // if we're here, we can try to switch networks
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          return this.provider!.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: desiredChainIdHex }],
           })
-          .catch((error) => {
-              cancelActivation?.()
+            .catch((error: ProviderRpcError) => {
+              if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+                // if we're here, we can try to add a new network
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                return this.provider!.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{ ...desiredChainIdOrChainParameters, chainId: desiredChainIdHex }],
+                })
+              }
+
               throw error
-          })
+            })
+            .then(() => this.activate(desiredChainId))
+        })
+      })
+      .catch((error) => {
+        cancelActivation?.()
+        throw error
+      })
   }
 
   public async watchAsset({ address, symbol, decimals, image }: WatchAssetParameters): Promise<true> {
-      if (!this.provider) throw new Error('No provider')
+    if (!this.provider) throw new Error('No provider')
 
-      return this.provider
-          .request({
-              method: 'wallet_watchAsset',
-              params: {
-                  type: 'ERC20', // Initially only supports ERC20, but eventually more!
-                  options: {
-                      address, // The address that the token is at.
-                      symbol, // A ticker symbol or shorthand, up to 5 chars.
-                      decimals, // The number of decimals in the token
-                      image, // A string url of the token logo
-                  },
-              },
-          })
-          .then((success: any) => {
-              if (!success) throw new Error('Rejected')
-              return true
-          })
+    return this.provider
+      .request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20', // Initially only supports ERC20, but eventually more!
+          options: {
+            address, // The address that the token is at.
+            symbol, // A ticker symbol or shorthand, up to 5 chars.
+            decimals, // The number of decimals in the token
+            image, // A string url of the token logo
+          },
+        },
+      })
+      .then((success: any) => {
+        if (!success) throw new Error('Rejected')
+        return true
+      })
   }
 }
-
-
 
 export enum ConnectionType {
   UNIWALLET = 'UNIWALLET',
@@ -292,9 +290,38 @@ export const gnosisSafeConnection: Connection = {
   shouldDisplay: () => false,
 }
 
-const [web3WalletConnect, web3WalletConnectHooks] = initializeConnector<WalletConnectPopup>(
-  (actions) => new WalletConnectPopup({ actions, onError })
+// const [web3WalletConnect, web3WalletConnectHooks] = initializeConnector<WalletConnectPopup>(
+//   (actions) => new WalletConnectPopup({ actions, onError })
+// )
+// export const walletConnectConnection: Connection = {
+//   getName: () => 'WalletConnect',
+//   connector: web3WalletConnect,
+//   hooks: web3WalletConnectHooks,
+//   type: ConnectionType.WALLET_CONNECT,
+//   getIcon: () => WALLET_CONNECT_ICON_URL,
+//   shouldDisplay: () => !getIsInjectedMobileBrowser(),
+// }
+
+const projId = '411059a378ea4b8b5a8a6e4fc5f06337'
+const [web3WalletConnect, web3WalletConnectHooks] = initializeConnector<WalletConnectV2>(
+  (actions) =>
+    new WalletConnectV2({
+      actions,
+      options: {
+        projectId: projId,
+        chains: [SupportedChainId.BASE],
+        optionalChains: [SupportedChainId.ARBITRUM_ONE],
+        showQrModal: true,
+        metadata: {
+          name: 'limitless',
+          description: 'limitless',
+          url: 'https://limitless.fi',
+          icons: ['limitless'],
+        },
+      },
+    })
 )
+
 export const walletConnectConnection: Connection = {
   getName: () => 'WalletConnect',
   connector: web3WalletConnect,
@@ -349,9 +376,7 @@ const coinbaseWalletConnection: Connection = {
   },
 }
 
-const [bitgetWallet, bitgetWalletHooks] = initializeConnector<BitKeep>(
-  (actions) => new BitKeep({ actions, onError })
-)
+const [bitgetWallet, bitgetWalletHooks] = initializeConnector<BitKeep>((actions) => new BitKeep({ actions, onError }))
 
 const bitgetWalletConnection: Connection = {
   getName: () => 'Bitget Wallet',
@@ -366,7 +391,7 @@ const bitgetWalletConnection: Connection = {
       return true
     }
     return false
-  }
+  },
 }
 
 export function getConnections() {
